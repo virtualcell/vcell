@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -10,6 +9,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.InconsistentDomainException;
@@ -69,9 +69,13 @@ public OutputFunctionsListTableModel(JTable table) {
  * getColumnCount method comment.
  */
 @Override
-public int getColumnCount() { 
-	return columnNames.length - ((getOutputFunctionContext() == null 
-			|| getOutputFunctionContext().getSimulationOwner().getGeometry().getDimension() > 0) ? 0 : 1);
+public int getColumnCount() {
+	int nc = super.getColumnCount();
+	if (getOutputFunctionContext() == null 
+			||  getOutputFunctionContext().getSimulationOwner().getGeometry().getDimension() == 0) {
+		nc = nc - 1; // no domain
+	}
+	return nc;
 }
 
 public Class<?> getColumnClass(int column) {
@@ -80,7 +84,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_OUTPUTFN_EXPRESSION:{
-			return cbit.gui.ScopedExpression.class;
+			return ScopedExpression.class;
 		}
 		case COLUMN_OUTPUTFN_VARIABLETYPE: {
 			return String.class;
@@ -153,10 +157,10 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals("outputFunctions")) {
+	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals(OutputFunctionContext.PROPERTY_OUTPUT_FUNCTIONS)) {
 		setData(outputFunctionContext.getOutputFunctionsList());
 	}
-	if (evt.getPropertyName().equals("geometry")) {
+	if (evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
 		Geometry oldGeometry = (Geometry)evt.getOldValue();
 		Geometry newGeometry = (Geometry)evt.getNewValue();
 		// changing from ode to pde
@@ -208,41 +212,28 @@ private OutputFunctionContext getOutputFunctionContext() {
 	return outputFunctionContext;
 }
 
-public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
-	if (argOutputFnContext!=null){
-		argOutputFnContext.removePropertyChangeListener(this);
-		argOutputFnContext.getSimulationOwner().removePropertyChangeListener(this);
+public void setOutputFunctionContext(OutputFunctionContext newValue) {
+	OutputFunctionContext oldValue = this.outputFunctionContext;
+	if (oldValue!=null){
+		oldValue.removePropertyChangeListener(this);
+		oldValue.getSimulationOwner().removePropertyChangeListener(this);
 	}
-	this.outputFunctionContext = argOutputFnContext;
+	this.outputFunctionContext = newValue;
 	if (this.outputFunctionContext!=null){
 		this.outputFunctionContext.addPropertyChangeListener(this);
-		argOutputFnContext.getSimulationOwner().addPropertyChangeListener(this);
+		newValue.getSimulationOwner().addPropertyChangeListener(this);
 	}
-	if (argOutputFnContext != null) {
+	if (newValue == null) {
+		setData(null);
+	} else {
 		fireTableStructureChanged();
-		setData(argOutputFnContext.getOutputFunctionsList());
+		setData(newValue.getOutputFunctionsList());
 	}
 }
 
 public Comparator<AnnotatedFunction> getComparator(int col, boolean ascending)
 {
-  return new FunctionColumnComparator(col, ascending);
+	return new FunctionColumnComparator(col, ascending);
 }
 
-public AnnotatedFunction getSelectedOutputFunction() {
-	int row = ownerTable.getSelectedRow();
-	if (row < 0) {
-		return null;
-	}
-	return getValueAt(row);
-}
-
-public void selectOutputFunction(AnnotatedFunction annotatedFunction) {
-	for (int i = 0; i < getRowCount(); i ++) {
-		if (getValueAt(i, COLUMN_OUTPUTFN_NAME).equals(annotatedFunction.getName())) {
-			ownerTable.changeSelection(i, 0, false, false);
-			break;
-		}
-	}
-}
 }

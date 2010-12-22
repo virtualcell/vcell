@@ -1,7 +1,14 @@
 package cbit.vcell.desktop;
 
+import java.awt.BorderLayout;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
+
+import org.vcell.util.document.BioModelInfo;
+
+import cbit.vcell.clientdb.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,6 +18,7 @@ import javax.swing.JScrollPane;
  * Creation date: (3/29/01 10:39:36 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelMetaDataPanel extends JPanel {
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -19,13 +27,12 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connEtoM1(evt);
 		};
 	}
-	private JPanel ivjJPanel1 = null;
-	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
+	private JTree ivjJTree1 = null;
 	private BioModelInfoCellRenderer ivjbioModelInfoCellRenderer = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private DocumentManager fieldDocumentManager = null;
 	private BioModelInfoTreeModel ivjbioModelInfoTreeModel = null;
-	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private BioModelInfo fieldBioModelInfo = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 /**
  * BioModelMetaDataPanel constructor comment.
  */
@@ -240,10 +247,10 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return javax.swing.JTree
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTreeFancy getJTree1() {
+private JTree getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
+			ivjJTree1 = new JTree();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setToolTipText("Contents of saved BioModel");
 			ivjJTree1.setEnabled(true);
@@ -290,16 +297,10 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("BioModelMetaDataPanel");
-		setLayout(new java.awt.GridBagLayout());
-		setSize(379, 460);
+		setLayout(new BorderLayout());
+//		setSize(379, 460);
 
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 1;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JScrollPane(getJTree1()), constraintsJPanel1);
+		add(new JScrollPane(getJTree1()), BorderLayout.CENTER);
 		initConnections();
 		connEtoC2();
 		connEtoC3();

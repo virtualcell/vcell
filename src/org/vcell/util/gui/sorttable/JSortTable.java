@@ -40,7 +40,7 @@ private void initSortHeader() {
 		header.removeMouseListener(this);
 		header.addMouseListener(this);
 		for (int i = 0; i < getColumnCount(); i++) {
-			header.getColumnModel().getColumn(i).setHeaderRenderer(new SortHeaderRenderer(getTableHeader().getDefaultRenderer()));
+			header.getColumnModel().getColumn(i).setHeaderRenderer(new SortTableHeaderRenderer(getTableHeader().getDefaultRenderer()));
 		}
 	}
 }

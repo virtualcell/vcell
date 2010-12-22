@@ -175,25 +175,6 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 }
 
 /**
- * connEtoM11:  (Geometry.this --> Button1.enabled)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM11(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJButtonChangeDomain().setEnabled(getGeometry() != null);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoM2:  (Geometry.this --> ImagePlaneManagerPanel1.sourceDataInfo)
  * @param value cbit.vcell.geometry.Geometry
  */
@@ -232,28 +213,6 @@ private void refreshSourceDataInfo() {
 }
 
 /**
- * connEtoM3:  (Geometry.this --> CurveRendererGeometry1.geometry)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getGeometry() != null)) {
-			getCurveRendererGeometry1().setGeometry(getGeometry());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM5:  (GeometryViewer.initialize() --> ImagePlaneManagerPanel1.enableDrawingTools(Z)V)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -262,28 +221,6 @@ private void connEtoM5() {
 		// user code begin {1}
 		// user code end
 		getImagePlaneManagerPanel1().enableDrawingTools(false);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM6:  (Geometry.this --> GeometrySubVolumePanel.geometry)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getGeometry() != null)) {
-			getGeometrySubVolumePanel().setGeometry(getGeometry());
-		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -302,26 +239,6 @@ private void connEtoM7() {
 		// user code begin {1}
 		// user code end
 		getImagePlaneManagerPanel1().setMode(this.meshmode());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM8:  (Geometry.this --> ImagePlaneManagerPanel1.sourceDataInfo)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getImagePlaneManagerPanel1().setSourceDataInfo(null);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

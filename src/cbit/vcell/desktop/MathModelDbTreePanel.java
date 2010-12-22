@@ -5,6 +5,7 @@
 package cbit.vcell.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -1304,7 +1305,7 @@ private javax.swing.JPanel getBottomPanel() {
 			bottomPanel = new javax.swing.JPanel();
 			bottomPanel.setName("JPanel2");
 			bottomPanel.setLayout(new java.awt.GridBagLayout());
-			bottomPanel.setMinimumSize(new java.awt.Dimension(171, 300));
+//			bottomPanel.setMinimumSize(new java.awt.Dimension(171, 300));
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
@@ -1739,8 +1740,10 @@ private void initialize() {
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
 		if (bShowMetadata) {
 			JSplitPane splitPane = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			splitPane.setDividerLocation(350);
-			splitPane.setResizeWeight(0.6);
+			splitPane.setDividerLocation(150);
+			splitPane.setResizeWeight(0.7);
+			getBottomPanel().setMinimumSize(new Dimension(150,150));
+			getTopPanel().setMinimumSize(new Dimension(150,150));
 			splitPane.setTopComponent(getTopPanel());
 			splitPane.setBottomComponent(getBottomPanel());
 			add(splitPane, BorderLayout.CENTER);

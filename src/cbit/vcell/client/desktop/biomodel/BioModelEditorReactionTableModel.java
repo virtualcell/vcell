@@ -163,13 +163,26 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 
 	@Override
 	public boolean isSortable(int col) {
-		return false;
+		return true;
 	}
 	
 	@Override
-	public Comparator<ReactionStep> getComparator(int col, boolean ascending) {
-		// TODO Auto-generated method stub
-		return null;
+	public Comparator<ReactionStep> getComparator(final int col, final boolean ascending) {
+		return new Comparator<ReactionStep>() {
+            public int compare(ReactionStep o1, ReactionStep o2) {
+            	int scale = ascending ? 1 : -1;
+                if (col==COLUMN_NAME){
+					return scale * o1.getName().compareTo(o2.getName());
+				} else if (col == COLUMN_EQUATION) {
+					ReactionEquation re1 = new ReactionEquation(o1);
+					ReactionEquation re2 = new ReactionEquation(o2);
+					return scale * re1.toString().compareTo(re2.toString());
+				} else if (col == COLUMN_STRUCTURE) {
+					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
+				}
+				return 0;
+            }
+      };
 	}
 	
 	public String checkInputValue(String inputValue, int row, int column) {

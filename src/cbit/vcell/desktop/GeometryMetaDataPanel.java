@@ -1,8 +1,13 @@
 package cbit.vcell.desktop;
+import java.awt.BorderLayout;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.GeometryInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -12,17 +17,18 @@ import javax.swing.ToolTipManager;
  * Creation date: (3/29/01 10:39:36 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class GeometryMetaDataPanel extends JPanel {
-	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
-	private cbit.vcell.geometry.GeometryInfo fieldGeometryInfo = null;
+	private JTree ivjJTree1 = null;
+	private GeometryInfo fieldGeometryInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private cbit.vcell.geometry.GeometryInfo ivjgeometryInfo1 = null;
 	private GeometryMetaDataCellRenderer ivjgeometryMetaDataCellRenderer = null;
 	private GeometryMetaDataTreeModel ivjgeometryMetaDataTreeModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP4Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjdocumentManager1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private DocumentManager ivjdocumentManager1 = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean fieldPopupMenuDisabled = false;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -421,15 +427,15 @@ private GeometryMetaDataTreeModel getgeometryMetaDataTreeModel() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTreeFancy getJTree1() {
+private JTree getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
+			ivjJTree1 = new JTree();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);
 			ivjJTree1.setRequestFocusEnabled(false);
-			ivjJTree1.setSelectionModel(new javax.swing.tree.DefaultTreeSelectionModel());
+//			ivjJTree1.setSelectionModel(new javax.swing.tree.DefaultTreeSelectionModel());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -487,16 +493,10 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("BioModelMetaDataPanel");
-		setLayout(new java.awt.GridBagLayout());
-		setSize(379, 460);
+		setLayout(new BorderLayout());
+//		setSize(379, 460);
 
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 1;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JScrollPane(getJTree1()), constraintsJPanel1);
+		add(new JScrollPane(getJTree1()), BorderLayout.CENTER);
 		initConnections();
 		connEtoC3();
 	} catch (java.lang.Throwable ivjExc) {

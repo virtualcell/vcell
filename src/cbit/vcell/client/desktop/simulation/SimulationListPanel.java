@@ -10,7 +10,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -64,15 +63,13 @@ public class SimulationListPanel extends BioModelEditorSubPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
-	private DefaultCellEditor ivjcellEditor1 = null;
-	private java.awt.Component ivjComponent1 = null;
 	private JButton moreActionsButton = null;
 	private JPopupMenu popupMenuMoreAction = null;
 	private JMenuItem menuItemCopy = new JMenuItem("Copy");
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
 	
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
+	private class IvjEventHandler implements java.awt.event.ActionListener, 
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewButton()) {
@@ -95,16 +92,10 @@ public class SimulationListPanel extends BioModelEditorSubPanel {
 				getPopupMenuMore().show(moreActionsButton, 0, moreActionsButton.getHeight());
 			}
 		};
-		public void focusGained(java.awt.event.FocusEvent e) {};
-		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == SimulationListPanel.this.getComponent1()) 
-				connEtoC11(e);
-		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SimulationListPanel.this && (evt.getPropertyName().equals("simulationWorkspace"))) 
-				onPropertyChange_SimulationWorkspace(evt);
-			if (evt.getSource() == SimulationListPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("cellEditor"))) 
-				connEtoM4(evt);
+			if (evt.getSource() == fieldSimulationWorkspace && evt.getPropertyName().equals("status")) {
+				refreshButtonsLax();
+			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -135,75 +126,13 @@ public SimulationListPanel() {
 }
 
 /**
- * Comment
- */
-private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
-	if(getcellEditor1() != null){
-		getcellEditor1().stopCellEditing();
-	}
-}
-
-/**
- * connEtoC11:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> SimulationListPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-private void connEtoC11(java.awt.event.FocusEvent arg1) {
-	try {
-		this.component1_FocusLost(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC9:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SimulationListPanel.refreshButtons()V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
 private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		int[] selections = getScrollPaneTable().getSelectedRows();
-		refreshButtonsLax(selections);
+	try {		
+		refreshButtonsLax();
 		setSelectedObjectsFromTable(getScrollPaneTable(), getSimulationListTableModel1());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM1:  (SimulationListPanel.simulationWorkspace --> SimulationListTableModel1.simulationWorkspace)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void onPropertyChange_SimulationWorkspace(java.beans.PropertyChangeEvent arg1) {
-	try {
-		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM2:  (cellEditor1.this --> Component1.this)
- * @param value javax.swing.table.TableCellEditor
- */
-private void connEtoM2(javax.swing.DefaultCellEditor value) {
-	try {
-		if ((getcellEditor1() != null)) {
-			setComponent1(getcellEditor1().getComponent());
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM4:  (ScrollPaneTable.cellEditor --> cellEditor1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
-	try {
-		setcellEditor1((javax.swing.DefaultCellEditor)getScrollPaneTable().getCellEditor());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -301,28 +230,6 @@ private javax.swing.JPanel getButtonPanel() {
 		}
 	}
 	return ivjButtonPanel;
-}
-
-/**
- * Return the cellEditor1 property value.
- * @return javax.swing.table.TableCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.DefaultCellEditor getcellEditor1() {
-	// user code begin {1}
-	// user code end
-	return ivjcellEditor1;
-}
-
-/**
- * Return the Component1 property value.
- * @return java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.Component getComponent1() {
-	// user code begin {1}
-	// user code end
-	return ivjComponent1;
 }
 
 /**
@@ -531,7 +438,6 @@ private void initConnections() throws java.lang.Exception {
 	menuItemStop.addActionListener(ivjEventHandler);
 	getResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
-	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	menuItemStatusDetails.addActionListener(ivjEventHandler);
 	
@@ -612,7 +518,8 @@ private void newSimulation() {
 /**
  * Comment
  */
-private void refreshButtonsLax(int[] selections) {
+private void refreshButtonsLax() {
+	int[] selections = getScrollPaneTable().getSelectedRows();
 	// newButton always available...
 	menuItemCopy.setEnabled(selections.length > 0);
 	boolean bEditable = false;
@@ -806,78 +713,24 @@ public void scrollPaneTable_FocusLost(java.awt.event.FocusEvent focusEvent) {
 	}
 }
 
-
-/**
- * Set the cellEditor1 to a new value.
- * @param newValue javax.swing.table.TableCellEditor
- */
-private void setcellEditor1(javax.swing.DefaultCellEditor newValue) {
-	if (ivjcellEditor1 != newValue) {
-		try {
-			ivjcellEditor1 = newValue;
-			connEtoM2(ivjcellEditor1);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
-
-/**
- * Set the Component1 to a new value.
- * @param newValue java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setComponent1(java.awt.Component newValue) {
-	if (ivjComponent1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.removeFocusListener(ivjEventHandler);
-			}
-			ivjComponent1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.addFocusListener(ivjEventHandler);
-			}
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 2:00:46 PM)
- * @return int[]
- */
-public void setSelectedRows(int[] indices) {
-	if (indices != null) {
-		getScrollPaneTable().clearSelection();
-		for (int i = 0; i < indices.length; i++){
-			if (indices[i] < getScrollPaneTable().getRowCount()) {
-				getScrollPaneTable().getSelectionModel().addSelectionInterval(indices[i], indices[i]);
-			}	
-		}
-	}
-}
-
 /**
  * Sets the simulationWorkspace property (cbit.vcell.client.desktop.simulation.SimulationWorkspace) value.
  * @param simulationWorkspace The new value for the property.
  * @see #getSimulationWorkspace
  */
-public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
+public void setSimulationWorkspace(SimulationWorkspace newValue) {
+	if (fieldSimulationWorkspace == newValue) {
+		return;
+	}
 	SimulationWorkspace oldValue = fieldSimulationWorkspace;
-	fieldSimulationWorkspace = simulationWorkspace;
-	firePropertyChange("simulationWorkspace", oldValue, simulationWorkspace);
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+	}
+	fieldSimulationWorkspace = newValue;
+	if (fieldSimulationWorkspace != null) {
+		fieldSimulationWorkspace.addPropertyChangeListener(ivjEventHandler);
+	}
+	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);
 }
 
 
@@ -921,21 +774,6 @@ private void stopSimulations() {
 	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
-	
-	public void select(Simulation selection) {
-		if (selection == null) {
-			getScrollPaneTable().clearSelection();
-			return;
-		}
-		int numRows = getScrollPaneTable().getRowCount();
-		for(int i=0; i<numRows; i++) {
-			Simulation simulation = getSimulationListTableModel1().getValueAt(i);
-			if (simulation == selection) {
-				getScrollPaneTable().setRowSelectionInterval(i, i);
-				return;
-			}
-		}
-	}
 
 	private JPopupMenu getPopupMenuMore() {
 		if (popupMenuMoreAction == null) {

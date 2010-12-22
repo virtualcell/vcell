@@ -168,7 +168,7 @@ public ClientRequestManager(VCellClient vcellClient) {
 }
 
 private static final String GEOMETRY_KEY = "geometry";
-private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext,final VCMLEditorPanel vcmlEditorPanel) {
+private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext) {
 	AsynchClientTask selectDocumentTypeTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -228,9 +228,6 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 				} else if (requester instanceof MathModelWindowManager) {
 					MathModel mathModel = (MathModel)((MathModelWindowManager)requester).getVCDocument();
 					mathModel.getMathDescription().setGeometry(newGeometry);
-					if(vcmlEditorPanel != null){
-						vcmlEditorPanel.updateWarningText(mathModel.getMathDescription());
-					}
 				}
 			}
 		}
@@ -243,11 +240,7 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 }
 
 public void changeGeometry(DocumentWindowManager requester, SimulationContext simContext) {
-	changeGeometry0(requester, simContext,null);
-}
-
-public void changeGeometry(DocumentWindowManager requester,VCMLEditorPanel vcmlEditorPanel) {
-	changeGeometry0(requester, null,vcmlEditorPanel);
+	changeGeometry0(requester, simContext);
 }
 
 public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManager mathModelWindowManager,Geometry newGeometry) throws UserCancelException{

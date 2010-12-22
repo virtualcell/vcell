@@ -155,7 +155,7 @@ public class BioModelEditorPathwayDiagramPanel extends BioModelEditorSubPanel {
 	}
 
 	private void createGraph(Graph graph, SBBox sbbox) throws InterruptedException, GraphManipulationException {
-		Model model = sbbox.getRdf();
+		Model model = sbbox.getData();
 		StmtIterator stmtIter = model.listStatements();
 		RDFGraphCompTagCreator<Shape, Graph> tag = new RDFGraphCompTagCreator<Shape, Graph>(model, graph, 
 				new GraphCreationMethod("Sybil Graph Factory"));
@@ -172,6 +172,7 @@ public class BioModelEditorPathwayDiagramPanel extends BioModelEditorSubPanel {
 		grouper.applyToGraph(graph);
 		ReactionsManipulator<Shape, Graph> manip = new ReactionsManipulator<Shape, Graph>(fileManager.evaluator());
 		manip.setCollapseParticipants(true);
+		System.err.println("BioModelEditorPathwayDiagramPanel : applyToGraph needs to fixed");
 //		manip.applyToGraph(graph);
 		graph.layoutGraph(LayoutType.Randomizer);
 		graph.layoutGraph(LayoutType.Annealer);

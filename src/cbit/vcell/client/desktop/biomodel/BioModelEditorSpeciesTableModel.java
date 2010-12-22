@@ -10,7 +10,9 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ReactionEquation;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
@@ -143,13 +145,22 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 
 	@Override
 	public boolean isSortable(int col) {
-		return false;
+		return true;
 	}
 	
 	@Override
-	public Comparator<SpeciesContext> getComparator(int col, boolean ascending) {
-		// TODO Auto-generated method stub
-		return null;
+	public Comparator<SpeciesContext> getComparator(final int col, final boolean ascending) {
+		return new Comparator<SpeciesContext>() {
+            public int compare(SpeciesContext o1, SpeciesContext o2) {
+            	int scale = ascending ? 1 : -1;
+                if (col==COLUMN_NAME){
+					return scale * o1.getName().compareTo(o2.getName());
+				} else if (col == COLUMN_STRUCTURE) {
+					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
+				}
+				return 0;
+            }
+		};
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {

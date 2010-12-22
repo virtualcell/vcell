@@ -129,7 +129,7 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 				headerRenderer = targetTable.getTableHeader().getDefaultRenderer();
 			}
 			if (headerRenderer != null) {
-				java.awt.Component comp = headerRenderer.getTableCellRendererComponent(targetTable, column.getHeaderValue(), false, false, 0, 0); 
+				java.awt.Component comp = headerRenderer.getTableCellRendererComponent(targetTable, column.getHeaderValue(), false, false, 0, columnIndex); 
 				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);
 			}
 			for(int rowIndex=0;rowIndex<targetTable.getRowCount();rowIndex+= 1){

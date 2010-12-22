@@ -1,297 +1,68 @@
 package cbit.vcell.client.desktop.mathmodel;
 
-import cbit.gui.*;
-import java.awt.Container;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 
-import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.JToolBarToggleButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
-import cbit.vcell.client.*;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
+import cbit.vcell.client.desktop.simulation.SimulationListPanel;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelMetaDataPanel;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.GeometryMetaDataPanel;
+import cbit.vcell.desktop.MathModelMetaDataPanel;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
  * Insert the type's description here.
- * Creation date: (5/11/2004 4:48:35 PM)
+ * Creation date: (5/3/2004 2:55:18 PM)
  * @author: Ion Moraru
  */
-public class MathModelEditor extends JPanel {
+@SuppressWarnings("serial")
+public class MathModelEditor extends DocumentEditor {
 	private MathModelWindowManager mathModelWindowManager = null;
-	private cbit.vcell.math.MathDescription fieldMathDescription = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JToolBar ivjMathModelToolBar = null;
-	private JToolBarToggleButton ivjEquationsViewerToggleButton = null;
-	private JToolBarToggleButton ivjGeometryToggleButton = null;
-	private JToolBarToggleButton ivjSimulationsToggleButton = null;
-	private JToolBarToggleButton ivjvcmlToggleButton = null;
-
-class IvjEventHandler implements java.awt.event.ActionListener {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == MathModelEditor.this.getEquationsViewerToggleButton()) 
-				connEtoC2(e);
-			if (e.getSource() == MathModelEditor.this.getGeometryToggleButton()) 
-				connEtoC3(e);
-			if (e.getSource() == MathModelEditor.this.getSimulationsToggleButton()) 
-				connEtoC4(e);
-			if (e.getSource() == MathModelEditor.this.getvcmlToggleButton()) 
-				connEtoC1(e);
-		};
-	};
+	private MathModel mathModel = new MathModel(null);
+	
+	private SimulationListPanel simulationListPanel = null;
+	private GeometrySummaryViewer geometrySummaryViewer = null;
+	private OutputFunctionsPanel outputFunctionsPanel = null;
+//	private EquationViewerPanel equationViewerPanel;
+	private VCMLEditorPanel vcmlEditorPanel;
+	
+	private MathModelEditorTreeCellRenderer mathModelEditorTreeCellRenderer = null;
+	private MathModelEditorTreeModel mathModelEditorTreeModel = null;
+	
+	private SimulationSummaryPanel simulationSummaryPanel = null;
+	private JPanel rightBottomEmptyPanel = null;
+	
+/**
+ * BioModelEditor constructor comment.
+ */
 public MathModelEditor() {
 	super();
 	initialize();
 }
-/**
- * connEtoC1:  (vcmlToggleButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathModelEditor.showVCMLEditor(Z)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showVCMLEditor(this.getVCMLButtonSelected());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC2:  (EqunToggleButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathModelEditor.showEquationsViewer(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showEquationsViewer(this.getEqunButtonSelected());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC3:  (GeometryToggleButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathModelEditor.showGeometryViewer(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showGeometryViewer(this.getGeoButtonSelected());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC4:  (SimsToggleButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathModelEditor.showSimultionsList(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showSimulations(this.getSimsButtonSelected());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM1:  (MathModelEditor.initialize() --> vcmlToggleButton.selected)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1() {
-	try {
-		// user code begin {1}
-		// user code end
-		getvcmlToggleButton().setSelected(true);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * Return the EquationsViewerToggleButton property value.
- * @return cbit.gui.JToolBarToggleButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getEquationsViewerToggleButton() {
-	if (ivjEquationsViewerToggleButton == null) {
-		try {
-			ivjEquationsViewerToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
-			ivjEquationsViewerToggleButton.setName("EquationsViewerToggleButton");
-			ivjEquationsViewerToggleButton.setPreferredSize(new java.awt.Dimension(120, 25));
-			ivjEquationsViewerToggleButton.setText("Equations Viewer");
-			ivjEquationsViewerToggleButton.setMaximumSize(new java.awt.Dimension(120, 25));
-			ivjEquationsViewerToggleButton.setMinimumSize(new java.awt.Dimension(120, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjEquationsViewerToggleButton;
-}
-/**
- * Comment
- */
-private boolean getEqunButtonSelected() {
-	return getEquationsViewerToggleButton().isSelected();
-}
-/**
- * Comment
- */
-private boolean getGeoButtonSelected() {
-	return getGeometryToggleButton().isSelected();
-}
-/**
- * Return the GeometryToggleButton property value.
- * @return cbit.gui.JToolBarToggleButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getGeometryToggleButton() {
-	if (ivjGeometryToggleButton == null) {
-		try {
-			ivjGeometryToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
-			ivjGeometryToggleButton.setName("GeometryToggleButton");
-			ivjGeometryToggleButton.setPreferredSize(new java.awt.Dimension(120, 25));
-			ivjGeometryToggleButton.setText("Geometry Viewer");
-			ivjGeometryToggleButton.setMaximumSize(new java.awt.Dimension(120, 25));
-			ivjGeometryToggleButton.setMinimumSize(new java.awt.Dimension(120, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjGeometryToggleButton;
-}
-/**
- * Gets the mathDescription property (cbit.vcell.math.MathDescription) value.
- * @return The mathDescription property value.
- * @see #setMathDescription
- */
-public cbit.vcell.math.MathDescription getMathDescription() {
-	return fieldMathDescription;
-}
-/**
- * Return the MathModelToolBar property value.
- * @return javax.swing.JToolBar
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JToolBar getMathModelToolBar() {
-	if (ivjMathModelToolBar == null) {
-		try {
-			ivjMathModelToolBar = new javax.swing.JToolBar();
-			ivjMathModelToolBar.setName("MathModelToolBar");
-			ivjMathModelToolBar.setFloatable(false);
-			getMathModelToolBar().add(getvcmlToggleButton(), getvcmlToggleButton().getName());
-			ivjMathModelToolBar.addSeparator();
-			getMathModelToolBar().add(getEquationsViewerToggleButton(), getEquationsViewerToggleButton().getName());
-			ivjMathModelToolBar.addSeparator();
-			getMathModelToolBar().add(getGeometryToggleButton(), getGeometryToggleButton().getName());
-			ivjMathModelToolBar.addSeparator();
-			getMathModelToolBar().add(getSimulationsToggleButton(), getSimulationsToggleButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjMathModelToolBar;
-}
-/**
- * Gets the mathModelWindowManager property (cbit.vcell.client.desktop.MathModelWindowManager) value.
- * @return The mathModelWindowManager property value.
- * @see #setMathModelWindowManager
- */
-public MathModelWindowManager getMathModelWindowManager() {
-	return mathModelWindowManager;
-}
-/**
- * Comment
- */
-private boolean getSimsButtonSelected() {
-	return getSimulationsToggleButton().isSelected();
-}
-/**
- * Return the SimulationsToggleButton property value.
- * @return cbit.gui.JToolBarToggleButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getSimulationsToggleButton() {
-	if (ivjSimulationsToggleButton == null) {
-		try {
-			ivjSimulationsToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
-			ivjSimulationsToggleButton.setName("SimulationsToggleButton");
-			ivjSimulationsToggleButton.setPreferredSize(new java.awt.Dimension(100, 25));
-			ivjSimulationsToggleButton.setText("Simulations");
-			ivjSimulationsToggleButton.setMaximumSize(new java.awt.Dimension(100, 25));
-			ivjSimulationsToggleButton.setMinimumSize(new java.awt.Dimension(100, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSimulationsToggleButton;
-}
-/**
- * Comment
- */
-private boolean getVCMLButtonSelected() {
-	return getvcmlToggleButton().isSelected();
-}
-/**
- * Return the vcmlToggleButton property value.
- * @return cbit.gui.JToolBarToggleButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getvcmlToggleButton() {
-	if (ivjvcmlToggleButton == null) {
-		try {
-			ivjvcmlToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
-			ivjvcmlToggleButton.setName("vcmlToggleButton");
-			ivjvcmlToggleButton.setPreferredSize(new java.awt.Dimension(100, 25));
-			ivjvcmlToggleButton.setText("VCML Editor");
-			ivjvcmlToggleButton.setMinimumSize(new java.awt.Dimension(100, 25));
-			ivjvcmlToggleButton.setMaximumSize(new java.awt.Dimension(100, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjvcmlToggleButton;
-}
+
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -299,48 +70,191 @@ private org.vcell.util.gui.JToolBarToggleButton getvcmlToggleButton() {
 private void handleException(java.lang.Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	 exception.printStackTrace(System.out);
+	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+	exception.printStackTrace(System.out);
 }
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	getEquationsViewerToggleButton().addActionListener(ivjEventHandler);
-	if((getMathDescription() != null) && (getMathDescription().isNonSpatialStoch()))
-		getGeometryToggleButton().setEnabled(false);
-	else
-		getGeometryToggleButton().addActionListener(ivjEventHandler);
-	getSimulationsToggleButton().addActionListener(ivjEventHandler);
-	getvcmlToggleButton().addActionListener(ivjEventHandler);
-}
-/**
- * Initialize the class.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
-		setName("MathModelEditor");
-		setPreferredSize(new java.awt.Dimension(208, 25));
-		setLayout(new java.awt.BorderLayout());
-		setSize(504, 49);
-		setMaximumSize(new java.awt.Dimension(150, 150));
-		setMinimumSize(new java.awt.Dimension(208, 25));
-		add(getMathModelToolBar(), "Center");
-		initConnections();
-		connEtoM1();
+		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
+		rightBottomEmptyPanel.setBackground(Color.white);
+		JLabel label = new JLabel("Select only one object (e.g. species, reaction) to show properties.");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.insets = new Insets(10,10,4,4);
+		gbc.gridy = 0;
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.PAGE_START;
+		rightBottomEmptyPanel.add(label, gbc);
+
+		rightBottomEmptyPanel.setMinimumSize(new java.awt.Dimension(198, 148));		
+		rightSplitPane.setBottomComponent(null);
+		
+		mathModelEditorTreeModel = new MathModelEditorTreeModel(documentEditorTree);
+		mathModelEditorTreeCellRenderer = new MathModelEditorTreeCellRenderer(documentEditorTree);
+		documentEditorTree.setModel(mathModelEditorTreeModel);
+		documentEditorTree.setCellRenderer(mathModelEditorTreeCellRenderer);
+		
+		vcmlEditorPanel = new VCMLEditorPanel();
+		vcmlEditorPanel.setMinimumSize(new java.awt.Dimension(198, 148));
+		rightSplitPane.setTopComponent(vcmlEditorPanel);
+		geometrySummaryViewer = new GeometrySummaryViewer();		
+		simulationListPanel = new SimulationListPanel();
+		simulationSummaryPanel = new SimulationSummaryPanel();		
+		outputFunctionsPanel  = new OutputFunctionsPanel();
+		simulationSummaryPanel = new SimulationSummaryPanel();
+		
+		outputFunctionsPanel.setSelectionManager(selectionManager);
+		mathModelEditorTreeModel.setSelectionManager(selectionManager);		
+		simulationListPanel.setSelectionManager(selectionManager);
+		simulationSummaryPanel.setSelectionManager(selectionManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
+
+@Override
+protected void setRightBottomPanelOnSelection(Object[] selections) {
+	JComponent bottomComponent = rightBottomEmptyPanel;
+	boolean bShowBottom = true;
+	if (selections != null && selections.length == 1) {
+		Object singleSelection = selections[0];
+		if (singleSelection instanceof BioModelInfo) {
+			if (bioModelMetaDataPanel == null) {
+				bioModelMetaDataPanel = new BioModelMetaDataPanel();
+				bioModelMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
+			}
+			bioModelMetaDataPanel.setBioModelInfo((BioModelInfo) singleSelection);
+			bottomComponent = bioModelMetaDataPanel;
+		} else if (singleSelection instanceof MathModelInfo) {
+			if (mathModelMetaDataPanel == null) {
+				mathModelMetaDataPanel = new MathModelMetaDataPanel();
+				mathModelMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
+			}
+			mathModelMetaDataPanel.setMathModelInfo((MathModelInfo) singleSelection);
+			bottomComponent = mathModelMetaDataPanel;
+		} else if (singleSelection instanceof GeometryInfo) {
+			if (geometryMetaDataPanel == null) {
+				geometryMetaDataPanel = new GeometryMetaDataPanel();
+				geometryMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
+			}
+			geometryMetaDataPanel.setGeometryInfo((GeometryInfo) singleSelection);
+			bottomComponent = geometryMetaDataPanel;
+		} else if (singleSelection instanceof Simulation) {
+			bottomComponent = simulationSummaryPanel;
+		} else if (singleSelection instanceof DocumentEditorTreeFolderNode 
+				&& ((DocumentEditorTreeFolderNode) singleSelection).getFolderClass() == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
+			bottomComponent = simulationSummaryPanel;			
+		} else {
+			bShowBottom = false;
+		}
+	}
+	if (bShowBottom) {
+		if (rightSplitPane.getBottomComponent() != bottomComponent) {
+			rightSplitPane.setBottomComponent(bottomComponent);
+		}
+	} else {
+		rightSplitPane.setBottomComponent(null);
+	}
+}
+
+@Override
+protected void treeSelectionChanged() {
+	try {
+		Object lastSelectedPathComponent = documentEditorTree.getLastSelectedPathComponent();
+		if (lastSelectedPathComponent == null || !(lastSelectedPathComponent instanceof BioModelNode)) {
+			return;
+		}
+		BioModelNode selectedNode = (BioModelNode)lastSelectedPathComponent;
+	    Object selectedObject = selectedNode.getUserObject();
+	    if (selectedObject instanceof MathModel) {
+	    	setRightTopPanel(null, null);
+	    } else if (selectedObject instanceof DocumentEditorTreeFolderNode) { // it's a folder	    	
+	    	setRightTopPanel((DocumentEditorTreeFolderNode)selectedObject, null);
+	    } else {
+	        Object leafObject = selectedObject;
+			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
+			Object parentObject =  parentNode.getUserObject();
+			if (!(parentObject instanceof DocumentEditorTreeFolderNode)) {
+				return;
+			}
+			DocumentEditorTreeFolderNode parent = (DocumentEditorTreeFolderNode)parentObject;
+			setRightTopPanel(parent, leafObject);
+	    }
+	}catch (Exception ex){
+		ex.printStackTrace(System.out);
+	}
+}
+
+private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object leafObject) {
+	JComponent newTopPanel = emptyPanel;
+	double dividerLocation = DEFAULT_DIVIDER_LOCATION;
+	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
+		
+	} else {
+		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
+		if (folderClass == DocumentEditorTreeFolderClass.MATH_VCML_NODE) {
+			newTopPanel = vcmlEditorPanel;
+			dividerLocation = 1.0;
+		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE) {
+			newTopPanel = geometrySummaryViewer;
+			dividerLocation = 1.0;
+		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
+			newTopPanel = simulationListPanel;
+			dividerLocation = 0.4;
+			simulationListPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());			
+		} else if(folderClass == DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE) {
+			dividerLocation = 1.0;
+			newTopPanel = outputFunctionsPanel;
+			outputFunctionsPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());
+		}
+	}
+	Component rightTopComponent = rightSplitPane.getTopComponent();
+	if (rightTopComponent != newTopPanel) {
+		rightSplitPane.setTopComponent(newTopPanel);
+	}
+	if (dividerLocation < 1.0) {
+		rightSplitPane.setDividerLocation(dividerLocation);
+	}
+}
+
+/**
+ * Sets the bioModel property (cbit.vcell.biomodel.BioModel) value.
+ * @param bioModel The new value for the property.
+ * @see #getBioModel
+ */
+public void setMathModel(MathModel newValue) {
+	if (this.mathModel == newValue) {
+		return;
+	}
+	this.mathModel = newValue;
+	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
+	vcmlEditorPanel.setMathModel(mathModel);
+	geometrySummaryViewer.setGeometryOwner(mathModel);
+	mathModelEditorTreeModel.setMathModel(mathModel);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/7/2004 5:40:13 PM)
+ * @param newBioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
+ */
+public void setMathModelWindowManager(MathModelWindowManager newValue) {
+	if (this.mathModelWindowManager == newValue) {
+		return;
+	}
+	this.mathModelWindowManager = newValue;
+	geometrySummaryViewer.addActionListener(mathModelWindowManager);
+	
+	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, mathModelWindowManager.getRequestManager());
+	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);
+	DocumentManager documentManager = mathModelWindowManager.getRequestManager().getDocumentManager();
+	databaseWindowPanel.setDocumentManager(documentManager);
+}
+
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -350,87 +264,27 @@ public static void main(java.lang.String[] args) {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		
 		JFrame frame = new javax.swing.JFrame();
-		MathModelEditor aMathModelEditor;
-		aMathModelEditor = new MathModelEditor();
-		frame.setContentPane(aMathModelEditor);
-		frame.setSize(aMathModelEditor.getSize());
+		MathModelEditor aBioModelEditor = new MathModelEditor();
+		frame.setContentPane(aBioModelEditor);
+		frame.setSize(aBioModelEditor.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				System.exit(0);
 			};
 		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+		frame.pack();
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);
 	}
 }
-/**
- * Sets the mathDescription property (cbit.vcell.math.MathDescription) value.
- * @param mathDescription The new value for the property.
- * @see #getMathDescription
- */
-public void setMathDescription(cbit.vcell.math.MathDescription mathDescription) {
-	cbit.vcell.math.MathDescription oldValue = fieldMathDescription;
-	fieldMathDescription = mathDescription;
-	firePropertyChange("mathDescription", oldValue, mathDescription);
-}
-/**
- * Sets the mathModelWindowManager property (cbit.vcell.client.desktop.MathModelWindowManager) value.
- * @param mathModelWindowManager The new value for the property.
- * @see #getMathModelWindowManager
- */
-public void setMathModelWindowManager(MathModelWindowManager newMathModelWindowManager) {
-	MathModelWindowManager oldValue = mathModelWindowManager;
-	mathModelWindowManager = newMathModelWindowManager;
-	firePropertyChange("mathModelWindowManager", oldValue, newMathModelWindowManager);
-}
-/**
- * Comment
- */
-public void setToggleButtonSelected(String whichButton, boolean bSelected) {
-	if (whichButton.equals("VCML Editor")) {
-		getvcmlToggleButton().setSelected(bSelected);
-	} else if (whichButton.equals("Equations Viewer")) {
-		getEquationsViewerToggleButton().setSelected(bSelected);
-	} else if (whichButton.equals("Geometry Viewer")) {
-		getGeometryToggleButton().setSelected(bSelected);
-	} else if (whichButton.equals("Simulations")) {
-		getSimulationsToggleButton().setSelected(bSelected);
-	} 
-}
 
-/**
- * Comment
- */
-private void showEquationsViewer(boolean bSelected)
-{
-	getMathModelWindowManager().equationsViewerButtonPressed(bSelected);
-}
-/**
- * Comment
- */
-private void showGeometryViewer(boolean bSelected) {
-	getMathModelWindowManager().geometryViewerButtonPressed(bSelected);
-}
-/**
- * Comment
- */
-private void showSimulations(boolean bSelected) {
-	getMathModelWindowManager().simulationsButtonPressed(bSelected);
-}
-
-/**
- * Comment
- */
-private void showVCMLEditor(boolean bSelected) {
-	if (getMathModelWindowManager() == null) {
-		return;
-	} else {
-		getMathModelWindowManager().vcmlEditorButtonPressed(bSelected);
+public boolean hasUnappliedChanges() {
+	if (vcmlEditorPanel.hasUnappliedChanges()) {
+		return true;
 	}
+	return false;
 }
 
 }

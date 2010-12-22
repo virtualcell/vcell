@@ -40,8 +40,6 @@ public interface RequestManager {
  */
 void changeGeometry(DocumentWindowManager requester, SimulationContext simContext);
 
-void changeGeometry(DocumentWindowManager requester,VCMLEditorPanel vcmlEditorPanel);
-
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 2:51:33 AM)

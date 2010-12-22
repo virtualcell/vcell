@@ -2067,37 +2067,37 @@ public boolean isValid() {
 				if (equ instanceof OdeEquation){
 					odeCount ++;
 				} else {
-					setWarning("Compartmental Model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
+					setWarning("Compartmental model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
 					return false;
 				}
 			}
 			if (odeCount==0){
-				setWarning("Compartmental Model, expecting at least one "+VCML.OdeEquation);
+				setWarning("Compartmental model, expecting at least one "+VCML.OdeEquation);
 				return false;
 			}
 
 			if (volVarCount!=odeCount){
-				setWarning("Compartmental Model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable);
+				setWarning("Compartmental model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable);
 				return false;
 			}
 			if (memVarCount>0){
-				setWarning("Compartmental Model, must not declare any "+VCML.MembraneVariable+"'s");
+				setWarning("Compartmental model, must not declare any "+VCML.MembraneVariable+"'s");
 				return false;
 			}
 			if (filVarCount>0){
-				setWarning("Compartmental Model, must not declare any "+VCML.FilamentVariable+"'s");
+				setWarning("Compartmental model, must not declare any "+VCML.FilamentVariable+"'s");
 				return false;
 			}
 			if (volRegionVarCount>0){
-				setWarning("Compartmental Model, must not declare any "+VCML.VolumeRegionVariable+"'s");
+				setWarning("Compartmental model, must not declare any "+VCML.VolumeRegionVariable+"'s");
 				return false;
 			}
 			if (memRegionVarCount>0){
-				setWarning("Compartmental Model, must not declare any "+VCML.MembraneRegionVariable+"'s");
+				setWarning("Compartmental model, must not declare any "+VCML.MembraneRegionVariable+"'s");
 				return false;
 			}
 			if (filRegionVarCount>0){
-				setWarning("Compartmental Model, must not declare any "+VCML.FilamentRegionVariable+"'s");
+				setWarning("Compartmental model, must not declare any "+VCML.FilamentRegionVariable+"'s");
 				return false;
 			}
 		}
@@ -2114,6 +2114,11 @@ public boolean isValid() {
 		int filamentCount = 0;
 		for (int i=0;i<subDomainList.size();i++){
 			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
+			if (geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null) {
+				setWarning("Spatial model, can't find a matching geometry subdomain for math subdomain '" + subDomain.getName() 
+						+ "'. Geometry subdomain names must match math subdomain names.");
+				return false;
+			}
 			if (subDomain instanceof CompartmentSubDomain){
 				compartmentCount++;
 			}else if (subDomain instanceof MembraneSubDomain){
@@ -2121,23 +2126,23 @@ public boolean isValid() {
 			}else if (subDomain instanceof FilamentSubDomain){
 				filamentCount++;
 			}else{
-				setWarning("Spatial Model, unexpected subdomain type for subdomain "+subDomain.getName());
+				setWarning("Spatial model, unexpected subdomain type for subdomain "+subDomain.getName());
 				return false;
 			}
 		}
 		if (geometry.getGeometrySpec().getNumSubVolumes()!=compartmentCount){
-			setWarning("Spatial Model, there are "+geometry.getGeometrySpec().getNumSubVolumes()+" subdomains in geometry, but "+compartmentCount+" "+VCML.CompartmentSubDomain+"s in math description. They must match.");
+			setWarning("Spatial model, there are "+geometry.getGeometrySpec().getNumSubVolumes()+" subdomains in geometry, but "+compartmentCount+" "+VCML.CompartmentSubDomain+"s in math description. They must match.");
 			return false;
 		}
 		if (geometry.getGeometrySpec().getFilamentGroup().getFilamentCount()!=filamentCount){
-			setWarning("Spatial Model, there are "+geometry.getGeometrySpec().getFilamentGroup().getFilamentCount()+" filaments in geometry, but "+filamentCount+" "+VCML.FilamentSubDomain+"'s, must be equal");
+			setWarning("Spatial model, there are "+geometry.getGeometrySpec().getFilamentGroup().getFilamentCount()+" filaments in geometry, but "+filamentCount+" "+VCML.FilamentSubDomain+"'s, must be equal");
 			return false;
 		}
 		if (filamentCount==0 && (filVarCount>0 || filRegionVarCount>0)){
-			setWarning("Spatial Model, there are no "+VCML.FilamentSubDomain+"s defined, cannot define "+VCML.FilamentVariable+" or "+VCML.FilamentRegionVariable);
+			setWarning("Spatial model, there are no "+VCML.FilamentSubDomain+"s defined, cannot define "+VCML.FilamentVariable+" or "+VCML.FilamentRegionVariable);
 		}
 		if (membraneCount==0 && (memVarCount>0 || memRegionVarCount>0)){
-			setWarning("Spatial Model, there are no "+VCML.MembraneSubDomain+"s defined, cannot define "+VCML.MembraneVariable+" or "+VCML.MembraneRegionVariable);
+			setWarning("Spatial model, there are no "+VCML.MembraneSubDomain+"s defined, cannot define "+VCML.MembraneVariable+" or "+VCML.MembraneRegionVariable);
 		}
 		//
 		// Check that there are no duplicate Subdomains and that priorities are unique

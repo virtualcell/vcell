@@ -7,16 +7,18 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 
 public class SortArrowIcon implements Icon {
-	public static final int NONE = 0;
-	public static final int DECENDING = 1;
-	public static final int ASCENDING = 2;
+	public enum SortDirection {
+		NOSORTING,
+		ASCENDING,
+		DECENDING;
+	}
 
-	protected int direction;
+	protected SortDirection sortDirection;
 	protected int width = 17;
 	protected int height = 7;
 
-	public SortArrowIcon(int direction) {
-		this.direction = direction;
+	public SortArrowIcon(SortDirection sd) {
+		this.sortDirection = sd;
 	}
 
 	public int getIconHeight() {
@@ -31,11 +33,11 @@ public class SortArrowIcon implements Icon {
 		Color color = new Color(172,168,153);
 		g.setColor(color);
 		int x1 = x + 9;
-		if (direction == ASCENDING) {
+		if (sortDirection == SortDirection.ASCENDING) {
 			for (int w = 0; w < 5; w ++) {
 				g.fillRect(x1 - w, y + w, w * 2 + 1, 1);
 			}
-		} else if (direction == DECENDING) {
+		} else if (sortDirection == SortDirection.DECENDING) {
 			int y1 = y + 4;
 			for (int w = 0; w < 5; w ++) {
 				g.fillRect(x1 - w, y1 - w, w * 2 + 1, 1);

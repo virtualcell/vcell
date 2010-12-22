@@ -30,7 +30,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.JTreeFancy;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
@@ -54,7 +53,7 @@ public class BioModelTreePanel extends JPanel {
 	private static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic Application";
 	private static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic Application";
 	private JScrollPane ivjJScrollPane1 = null;
-	private JTreeFancy ivjJTree2 = null;
+	private JTree ivjJTree2 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
 	private BioModel ivjBioModel = null;
@@ -1225,13 +1224,13 @@ private javax.swing.JSeparator getJSeparator2() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTreeFancy getJTree2() {
+private JTree getJTree2() {
 	if (ivjJTree2 == null) {
 		try {
 			javax.swing.tree.DefaultTreeSelectionModel ivjLocalSelectionModel;
 			ivjLocalSelectionModel = new javax.swing.tree.DefaultTreeSelectionModel();
 			ivjLocalSelectionModel.setRowMapper(getLocalSelectionModelVariableHeightLayoutCache());
-			ivjJTree2 = new JTreeFancy();
+			ivjJTree2 = new JTree();
 			ivjJTree2.setName("JTree2");
 			ivjJTree2.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("loading",false)));
 			ivjJTree2.setBounds(0, 0, 78, 72);

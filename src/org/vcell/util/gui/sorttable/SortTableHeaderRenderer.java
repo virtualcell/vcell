@@ -11,15 +11,17 @@ import javax.swing.border.Border;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
-public class SortHeaderRenderer implements TableCellRenderer
+import org.vcell.util.gui.sorttable.SortArrowIcon.SortDirection;
+
+public class SortTableHeaderRenderer implements TableCellRenderer
 {
-  private static Icon NONSORTED = new SortArrowIcon(SortArrowIcon.NONE);
-  private static Icon ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
-  private static Icon DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
+  private static Icon NOSORTING_ICON = new SortArrowIcon(SortDirection.NOSORTING);
+  private static Icon ASCENDING_ICON = new SortArrowIcon(SortDirection.ASCENDING);
+  private static Icon DECENDING_ICON = new SortArrowIcon(SortDirection.DECENDING);
   
   private TableCellRenderer defaultTableCellRender = null;
   
-public SortHeaderRenderer(TableCellRenderer tableCellRenderer) {
+public SortTableHeaderRenderer(TableCellRenderer tableCellRenderer) {
   defaultTableCellRender = tableCellRenderer;
 }
 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -60,7 +62,7 @@ public Component getTableCellRendererComponent(JTable table, Object value, boole
 		} 
 	}
 	boolean ascending = false;
-	Icon icon = NONSORTED;
+	Icon icon = NOSORTING_ICON;
 	if (table instanceof JSortTable) {
 		int columnIndex = -1;
 		JSortTable sortTable = (JSortTable) table;
@@ -74,7 +76,7 @@ public Component getTableCellRendererComponent(JTable table, Object value, boole
 		}
 		ascending = sortPreference.isSortedColumnAscending();
 		if (col == columnIndex) {
-			icon = ascending ? ASCENDING : DECENDING;
+			icon = ascending ? ASCENDING_ICON : DECENDING_ICON;
 		}
 	}
 	label.setHorizontalTextPosition(JLabel.LEFT);

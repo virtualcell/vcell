@@ -1,8 +1,13 @@
 package cbit.vcell.client.desktop.mathmodel;
 
-import javax.swing.JMenu;
+import java.awt.BorderLayout;
+import java.awt.Font;
 
-import cbit.vcell.math.MathDescription;
+import javax.swing.JMenu;
+import javax.swing.JScrollPane;
+
+import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.mathmodel.MathModel;
 
@@ -11,24 +16,36 @@ import cbit.vcell.mathmodel.MathModel;
  * Creation date: (5/20/2004 3:35:42 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class VCMLEditorPanel extends javax.swing.JPanel {
-	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private MathDescEditor ivjmathDescEditor = null;
+	private MathDescEditor mathDescEditor = null;
 	private MathModel fieldMathModel = new MathModel(null);
-	private MathModel ivjmathModel1 = null;
-	private javax.swing.JTextPane ivjMathWarningTextPane = null;
+	private javax.swing.JTextPane mathWarningTextPane = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == VCMLEditorPanel.this && (evt.getPropertyName().equals("mathModel"))) 
-				connPtoP1SetTarget();
-			if (evt.getSource() == VCMLEditorPanel.this.getmathModel1() && (evt.getPropertyName().equals("mathDescription"))) 
-				connEtoM2(evt);
-			if (evt.getSource() == VCMLEditorPanel.this.getmathDescEditor() && (evt.getPropertyName().equals("mathDescription"))) 
-				connEtoM3(evt);
-			if (evt.getSource() == VCMLEditorPanel.this.getmathModel1() && (evt.getPropertyName().equals("mathDescription"))) 
-				connEtoC2(evt);
+			if (evt.getSource() == fieldMathModel && (evt.getPropertyName().equals(MathModel.PROPERTY_NAME_MATH_DESCRIPTION))) { 
+				getMathDescEditor().setMathDescription(fieldMathModel.getMathDescription());
+				updateWarningText();
+			}
+			if (evt.getSource() == fieldMathModel && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
+				Geometry oldValue = (Geometry) evt.getOldValue();
+				if (oldValue != null) {
+					oldValue.getGeometrySpec().removePropertyChangeListener(this);
+				}
+				Geometry newValue = (Geometry) evt.getNewValue();
+				if (newValue != null) {
+					newValue.getGeometrySpec().addPropertyChangeListener(this);
+				}
+				updateWarningText();
+			}
+			if (fieldMathModel.getGeometry() != null && evt.getSource() == fieldMathModel.getGeometry().getGeometrySpec()) {
+				updateWarningText();
+			}
+			if (evt.getSource() == VCMLEditorPanel.this.getMathDescEditor() && (evt.getPropertyName().equals("mathDescription"))) {
+				fieldMathModel.setMathDescription(getMathDescEditor().getMathDescription()); 
+			}
 		};
 	};
 
@@ -41,169 +58,15 @@ public VCMLEditorPanel() {
 }
 
 /**
- * connEtoC1:  (mathModel1.this --> VCMLEditorPanel.updateWarningText(Lcbit.vcell.math.MathDescription;)V)
- * @param value cbit.vcell.mathmodel.MathModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(MathModel value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getmathModel1() != null)) {
-			this.updateWarningText(getmathModel1().getMathDescription());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (mathModel1.mathDescription --> VCMLEditorPanel.updateWarningText(Lcbit.vcell.math.MathDescription;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateWarningText(getmathModel1().getMathDescription());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (mathModel1.this --> mathDescEditor.mathDescription)
- * @param value cbit.vcell.mathmodel.MathModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(MathModel value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getmathModel1() != null)) {
-			getmathDescEditor().setMathDescription(getmathModel1().getMathDescription());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM2:  (mathModel1.mathDescription --> mathDescEditor.mathDescription)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getmathDescEditor().setMathDescription(getmathModel1().getMathDescription());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM3:  (mathDescEditor.mathDescription --> mathModel1.mathDescription)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getmathModel1().setMathDescription(getmathDescEditor().getMathDescription());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetSource:  (VCMLEditorPanel.mathDescription <--> mathDescription1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getmathModel1() != null)) {
-				this.setMathModel(getmathModel1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP1SetTarget:  (VCMLEditorPanel.mathDescription <--> mathDescription1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			setmathModel1(this.getMathModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * Return the mathDescEditor property value.
  * @return cbit.vcell.math.gui.MathDescEditor
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private MathDescEditor getmathDescEditor() {
-	if (ivjmathDescEditor == null) {
+private MathDescEditor getMathDescEditor() {
+	if (mathDescEditor == null) {
 		try {
-			ivjmathDescEditor = new MathDescEditor();
-			ivjmathDescEditor.setName("mathDescEditor");
+			mathDescEditor = new MathDescEditor();
+			mathDescEditor.setName("mathDescEditor");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -212,56 +75,28 @@ private MathDescEditor getmathDescEditor() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjmathDescEditor;
+	return mathDescEditor;
 }
-
-
-/**
- * Gets the mathModel property (cbit.vcell.mathmodel.MathModel) value.
- * @return The mathModel property value.
- * @see #setMathModel
- */
-public MathModel getMathModel() {
-	return fieldMathModel;
-}
-
-
-/**
- * Return the mathModel1 property value.
- * @return cbit.vcell.mathmodel.MathModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private MathModel getmathModel1() {
-	// user code begin {1}
-	// user code end
-	return ivjmathModel1;
-}
-
 
 /**
  * Return the MathWarningTextPane property value.
  * @return javax.swing.JTextPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextPane getMathWarningTextPane() {
-	if (ivjMathWarningTextPane == null) {
+	if (mathWarningTextPane == null) {
 		try {
-			ivjMathWarningTextPane = new javax.swing.JTextPane();
-			ivjMathWarningTextPane.setName("MathWarningTextPane");
-			ivjMathWarningTextPane.setForeground(java.awt.Color.red);
-			ivjMathWarningTextPane.setPreferredSize(new java.awt.Dimension(11, 50));
-			ivjMathWarningTextPane.setFont(new java.awt.Font("Arial", 3, 14));
-			ivjMathWarningTextPane.setMinimumSize(new java.awt.Dimension(11, 50));
-			ivjMathWarningTextPane.setEditable(false);
-			// user code begin {1}
-			// user code end
+			mathWarningTextPane = new javax.swing.JTextPane();
+			mathWarningTextPane.setName("MathWarningTextPane");
+			mathWarningTextPane.setForeground(java.awt.Color.red);
+			mathWarningTextPane.setFont(mathWarningTextPane.getFont().deriveFont(Font.BOLD));
+			mathWarningTextPane.setPreferredSize(new java.awt.Dimension(11, 50));
+			mathWarningTextPane.setMinimumSize(new java.awt.Dimension(11, 50));
+			mathWarningTextPane.setEditable(false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjMathWarningTextPane;
+	return mathWarningTextPane;
 }
 
 /**
@@ -275,20 +110,6 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
-	getmathDescEditor().addPropertyChangeListener(ivjEventHandler);
-	connPtoP1SetTarget();
-}
-
 /**
  * Initialize the class.
  */
@@ -300,9 +121,10 @@ private void initialize() {
 		setName("VCMLEditorPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(354, 336);
-		add(getmathDescEditor(), "Center");
-		add(getMathWarningTextPane(), "South");
-		initConnections();
+		add(getMathDescEditor(), BorderLayout.CENTER);
+		add(new JScrollPane(getMathWarningTextPane()), BorderLayout.SOUTH);
+		
+		getMathDescEditor().addPropertyChangeListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -341,64 +163,47 @@ public static void main(java.lang.String[] args) {
  * @param mathModel The new value for the property.
  * @see #getMathModel
  */
-public void setMathModel(MathModel mathModel) {
+public void setMathModel(MathModel newValue) {
+	if (fieldMathModel == newValue) {
+		return;
+	}
 	MathModel oldValue = fieldMathModel;
-	fieldMathModel = mathModel;
-	firePropertyChange("mathModel", oldValue, mathModel);
-}
-
-
-/**
- * Set the mathModel1 to a new value.
- * @param newValue cbit.vcell.mathmodel.MathModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmathModel1(MathModel newValue) {
-	if (ivjmathModel1 != newValue) {
-		try {
-			MathModel oldValue = getmathModel1();
-			/* Stop listening for events from the current object */
-			if (ivjmathModel1 != null) {
-				ivjmathModel1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjmathModel1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjmathModel1 != null) {
-				ivjmathModel1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP1SetSource();
-			connEtoM1(ivjmathModel1);
-			connEtoC1(ivjmathModel1);
-			firePropertyChange("mathModel", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+		if (oldValue.getGeometry() != null) {
+			oldValue.getGeometry().getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
 		}
-	};
-	// user code begin {3}
-	// user code end
+	}
+	fieldMathModel = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(ivjEventHandler);
+		if (newValue.getGeometry() != null) {
+			newValue.getGeometry().getGeometrySpec().addPropertyChangeListener(ivjEventHandler);
+		}
+		getMathDescEditor().setMathDescription(fieldMathModel.getMathDescription());
+		updateWarningText();
+	}
 }
 
 /**
  * Comment
  */
-public void updateWarningText(MathDescription argMathDescription) {
-	if (argMathDescription.isValid()){
+public void updateWarningText() {
+	if (fieldMathModel == null) {
+		return;
+	}
+	if (fieldMathModel.getMathDescription().isValid()){
 		getMathWarningTextPane().setText("");
 	}else{
-		getMathWarningTextPane().setText(argMathDescription.getWarning());
+		getMathWarningTextPane().setText(fieldMathModel.getMathDescription().getWarning());
 	}
 }
 
 public boolean hasUnappliedChanges() {
-	return getmathDescEditor().hasUnappliedChanges();
+	return getMathDescEditor().hasUnappliedChanges();
 }
 
 public JMenu getEditMenu() {
-	return getmathDescEditor().getEditMenu();
+	return getMathDescEditor().getEditMenu();
 }
 }

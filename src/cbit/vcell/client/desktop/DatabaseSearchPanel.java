@@ -43,6 +43,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 			if (namePattern == null || namePattern.trim().length() == 0) { // no constraints
 				return true;
 			}
+			if (docInfo.getVersion().getOwner().getName().toLowerCase().indexOf(namePattern.toLowerCase()) >= 0) {
+				return true;
+			}
 			if (docInfo.getVersion().getName().toLowerCase().indexOf(namePattern.toLowerCase()) >= 0) {
 				return true;
 			}
@@ -154,7 +157,6 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private void initialize() {
 //		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
-		nameSearchTextField.setColumns(20);
 		textFieldAutoComSet.add(nameSearchTextField);
 		
 		advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");
@@ -166,8 +168,6 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedOptions.add(dateLabel);
 		startDatePanel = new DatePanel();
 		advancedOptions.add(startDatePanel);
-//		JLabel andLabel = new JLabel("and");
-//		advancedOptions.add(andLabel);
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
 		
@@ -182,20 +182,15 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		// 0
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.insets = new Insets(4, 5, 0, 0);
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		mainPanel.add(nameLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(2, 4, 0, 0);
+		gbc.insets = new Insets(2, 4, 0, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(nameSearchTextField, gbc);
 		
 		gridy ++;
@@ -221,12 +216,6 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.insets = new Insets(2, 0, 0, 0);
 		mainPanel.add(startDatePanel, gbc);
 		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = 1;
-//		gbc.insets = new Insets(2, 5, 0, 5);
-//		mainPanel.add(andLabel, gbc);
-
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -250,8 +239,6 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		mainPanel.add(cancelButton, gbc);
 
 		JScrollPane scroll = new JScrollPane(mainPanel);		
-//		scroll.setViewportBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED),"Search", TitledBorder.DEFAULT_JUSTIFICATION,
-//				TitledBorder.DEFAULT_POSITION, getFont()));
 		setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
