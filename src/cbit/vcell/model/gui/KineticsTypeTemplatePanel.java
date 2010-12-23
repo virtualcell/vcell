@@ -1,5 +1,6 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
@@ -39,7 +40,6 @@ import cbit.vcell.model.SimpleReaction;
  */
 @SuppressWarnings("serial")
 public class KineticsTypeTemplatePanel extends DocumentEditorSubPanel {
-	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;
 	private JButton jToggleButton = null;
@@ -63,14 +63,7 @@ public class KineticsTypeTemplatePanel extends DocumentEditorSubPanel {
 			KineticsDescription.Nernst
 	};
 	
-class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener, ListSelectionListener {
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == KineticsTypeTemplatePanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
-				getParameterTableModel().setKinetics(getKinetics());
-				getKineticsTypeComboBox().setSelectedItem(getKineticType(getKinetics()));
-				updateToggleButtonLabel();
-			}			
-		}
+class IvjEventHandler implements ActionListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) 
 				updateKineticChoice((KineticsDescription)getKineticsTypeComboBox().getSelectedItem());
@@ -168,24 +161,18 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
 	getKineticsTypeComboBox().addActionListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 }
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("KineticsTypeTemplatePanel");
 		setLayout(new java.awt.GridBagLayout());
+		setBackground(Color.white);
 
 		int gridy = 0;
 		java.awt.GridBagConstraints constraintsKineticTypeTitleLabel = new java.awt.GridBagConstraints();
@@ -226,8 +213,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -259,9 +244,13 @@ public static void main(java.lang.String[] args) {
  * @see #getKinetics
  */
 public void setReactionStep(ReactionStep newValue) {
-	ReactionStep oldValue = reactionStep;
+	if (reactionStep == newValue) {
+		return;
+	}
 	reactionStep = newValue;
-	firePropertyChange(PROPERTY_NAME_REACTION_STEP, oldValue, newValue);
+	getParameterTableModel().setKinetics(getKinetics());
+	getKineticsTypeComboBox().setSelectedItem(getKineticType(getKinetics()));
+	updateToggleButtonLabel();	
 }
 
 private javax.swing.JComboBox getKineticsTypeComboBox() {
@@ -462,7 +451,9 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 				break;
 			}
 		}
-	}	
+	} else {
+		setReactionStep(null);
+	}
 }
 
 }

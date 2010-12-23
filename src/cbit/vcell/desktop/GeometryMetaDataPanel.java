@@ -1,11 +1,11 @@
 package cbit.vcell.desktop;
 import java.awt.BorderLayout;
 
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.GeometryInfo;
 /*©
@@ -18,7 +18,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class GeometryMetaDataPanel extends JPanel {
+public class GeometryMetaDataPanel extends DocumentEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private GeometryInfo fieldGeometryInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -47,34 +47,6 @@ public GeometryMetaDataPanel() {
 	super();
 	initialize();
 }
-
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public GeometryMetaDataPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public GeometryMetaDataPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public GeometryMetaDataPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
 
 /**
  * connEtoC1:  ( (bioModelMetaData1,this --> bioModelMetaDataTreeModel,bioModelMetaData).normalResult --> BioModelMetaDataPanel.expandAllRows()V)
@@ -617,6 +589,18 @@ public void setPopupMenuDisabled(boolean popupMenuDisabled) {
 	boolean oldValue = fieldPopupMenuDisabled;
 	fieldPopupMenuDisabled = popupMenuDisabled;
 	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		setGeometryInfo(null);
+	} else if (selectedObjects[0] instanceof GeometryInfo) {
+		setGeometryInfo((GeometryInfo) selectedObjects[0]);
+	} else {
+		setGeometryInfo(null);
+	}	
+	
 }
 
 }

@@ -5,6 +5,11 @@ package cbit.vcell.mapping.gui;
 ©*/
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -88,7 +93,12 @@ private void initialize() {
 		setName("SpeciesContextSpecPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
+		setBackground(Color.white);
 
+		JLabel label = new JLabel("Select only one species to set initial conditions.");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		initConnections();
 		

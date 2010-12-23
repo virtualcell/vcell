@@ -53,7 +53,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		if (getModel() != null){
 			for (ReactionStep rs : getModel().getReactionSteps()){
 				if (searchText == null || searchText.length() == 0 || rs.getName().indexOf(searchText) >= 0
-						|| new ReactionEquation(rs).toString().indexOf(searchText) >= 0) {
+						|| new ReactionEquation(rs, bioModel.getModel()).toString().indexOf(searchText) >= 0) {
 					reactionStepList.add(rs);
 				}
 			}
@@ -73,7 +73,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						return reactionStep.getName();
 					} 
 					case COLUMN_EQUATION: {
-						return new ReactionEquation(reactionStep);
+						return new ReactionEquation(reactionStep, bioModel.getModel());
 					} 
 					case COLUMN_STRUCTURE: {
 						return reactionStep.getStructure();
@@ -81,7 +81,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				}
 			} else {
 				if (column == COLUMN_EQUATION) {
-					return ADD_NEW_HERE_REACTION_TEXT;
+					return new ReactionEquation(null, bioModel.getModel());
 				} 
 			}
 			return null;
@@ -174,8 +174,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
                 if (col==COLUMN_NAME){
 					return scale * o1.getName().compareTo(o2.getName());
 				} else if (col == COLUMN_EQUATION) {
-					ReactionEquation re1 = new ReactionEquation(o1);
-					ReactionEquation re2 = new ReactionEquation(o2);
+					ReactionEquation re1 = new ReactionEquation(o1, bioModel.getModel());
+					ReactionEquation re2 = new ReactionEquation(o2, bioModel.getModel());
 					return scale * re1.toString().compareTo(re2.toString());
 				} else if (col == COLUMN_STRUCTURE) {
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());

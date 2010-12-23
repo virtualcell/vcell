@@ -2,12 +2,12 @@ package cbit.vcell.desktop;
 
 import java.awt.BorderLayout;
 
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 
 import org.vcell.util.document.BioModelInfo;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -19,7 +19,7 @@ import cbit.vcell.clientdb.DocumentManager;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelMetaDataPanel extends JPanel {
+public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -40,28 +40,7 @@ public BioModelMetaDataPanel() {
 	super();
 	initialize();
 }
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public BioModelMetaDataPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public BioModelMetaDataPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public BioModelMetaDataPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
+
 /**
  * Comment
  */
@@ -189,7 +168,7 @@ public void expandAllRows() {
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public org.vcell.util.document.BioModelInfo getBioModelInfo() {
+public BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -200,7 +179,7 @@ public org.vcell.util.document.BioModelInfo getBioModelInfo() {
 private BioModelInfoCellRenderer getbioModelInfoCellRenderer() {
 	if (ivjbioModelInfoCellRenderer == null) {
 		try {
-			ivjbioModelInfoCellRenderer = new cbit.vcell.desktop.BioModelInfoCellRenderer();
+			ivjbioModelInfoCellRenderer = new BioModelInfoCellRenderer();
 			ivjbioModelInfoCellRenderer.setName("bioModelInfoCellRenderer");
 			ivjbioModelInfoCellRenderer.setText("bioModelInfoCellRenderer");
 			ivjbioModelInfoCellRenderer.setBounds(446, 285, 179, 16);
@@ -222,7 +201,7 @@ private BioModelInfoCellRenderer getbioModelInfoCellRenderer() {
 private BioModelInfoTreeModel getbioModelInfoTreeModel() {
 	if (ivjbioModelInfoTreeModel == null) {
 		try {
-			ivjbioModelInfoTreeModel = new cbit.vcell.desktop.BioModelInfoTreeModel();
+			ivjbioModelInfoTreeModel = new BioModelInfoTreeModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -238,7 +217,7 @@ private BioModelInfoTreeModel getbioModelInfoTreeModel() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -347,8 +326,8 @@ public void refresh() {
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
-	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(BioModelInfo bioModelInfo) {
+	BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 }
@@ -357,10 +336,20 @@ public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
+}
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		setBioModelInfo(null);
+	} else if (selectedObjects[0] instanceof BioModelInfo) {
+		setBioModelInfo((BioModelInfo) selectedObjects[0]);
+	} else {
+		setBioModelInfo(null);
+	}	
 }
 
 }

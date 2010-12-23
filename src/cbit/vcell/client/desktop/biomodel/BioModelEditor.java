@@ -401,6 +401,7 @@ private void initialize() {
 		bioModelsNetPanel.setSelectionManager(selectionManager);
 		bioModelEditorPathwayCommonsPanel.setSelectionManager(selectionManager);
 		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
+		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -433,33 +434,16 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getReactionPropertiesPanel();
 		} else if (singleSelection instanceof SimulationContext) {
 			bottomComponent = getApplicationPropertiesPanel();
-			getApplicationPropertiesPanel().setSimulationContext((SimulationContext) singleSelection);	
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
 			bottomComponent = getReactionParticipantPropertiesPanel();
-			getReactionParticipantPropertiesPanel().setReactionParticipant((ReactionParticipant) singleSelection);
 		} else if (singleSelection instanceof BioModelInfo) {
 			bShowInDatabaseProperties = true;
-			if (bioModelMetaDataPanel == null) {
-				bioModelMetaDataPanel = new BioModelMetaDataPanel();
-				bioModelMetaDataPanel.setDocumentManager(bioModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			bioModelMetaDataPanel.setBioModelInfo((BioModelInfo) singleSelection);
 			bottomComponent = bioModelMetaDataPanel;
 		} else if (singleSelection instanceof MathModelInfo) {
 			bShowInDatabaseProperties = true;
-			if (mathModelMetaDataPanel == null) {
-				mathModelMetaDataPanel = new MathModelMetaDataPanel();
-				mathModelMetaDataPanel.setDocumentManager(bioModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			mathModelMetaDataPanel.setMathModelInfo((MathModelInfo) singleSelection);
 			bottomComponent = mathModelMetaDataPanel;
 		} else if (singleSelection instanceof GeometryInfo) {
 			bShowInDatabaseProperties = true;
-			if (geometryMetaDataPanel == null) {
-				geometryMetaDataPanel = new GeometryMetaDataPanel();
-				geometryMetaDataPanel.setDocumentManager(bioModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			geometryMetaDataPanel.setGeometryInfo((GeometryInfo) singleSelection);
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof SpeciesContextSpec) {
 			bottomComponent = getSpeciesContextSpecPanel();
@@ -491,6 +475,28 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
 			}
 			rightSplitPane.setDividerLocation(0.5);
+		} else if (singleSelection instanceof Model) {
+		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
+			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
+			if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
+				bottomComponent = getSimulationSummaryPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
+				bottomComponent = getApplicationPropertiesPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
+				bottomComponent = getSpeciesContextSpecPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.APP_REACTIONS_NODE) {
+				bottomComponent = getKineticsTypeTemplatePanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.EVENTS_NODE) {
+				bottomComponent = getEventPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
+				bottomComponent = getDataSymbolsSpecPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE 
+					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
+			} else {
+				bShowBottom = false;
+			}
 		} else {
 			bShowBottom = false;
 		}
@@ -857,6 +863,10 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	DocumentManager documentManager = bioModelWindowManager.getRequestManager().getDocumentManager();
 	databaseWindowPanel.setDocumentManager(documentManager);
 	bioModelEditorModelPanel.setDocumentManager(documentManager);
+	
+	bioModelMetaDataPanel.setDocumentManager(documentManager);
+	mathModelMetaDataPanel.setDocumentManager(documentManager);
+	geometryMetaDataPanel.setDocumentManager(documentManager);
 	
 	getoptTestPanel().setOptimizationService(bioModelWindowManager.getOptimizationService());
 }

@@ -95,10 +95,14 @@ public Kinetics getKinetics() {
  */
 private void refreshData() {
 	List<Parameter> parameterList = new ArrayList<Parameter>();
-	parameterList.addAll(Arrays.asList(getKinetics().getKineticsParameters()));
-	parameterList.addAll(Arrays.asList(getKinetics().getProxyParameters()));
-	parameterList.addAll(Arrays.asList(getKinetics().getUnresolvedParameters()));
-	setData(parameterList);
+	if (getKinetics() == null) {
+		setData(null);
+	} else {
+		parameterList.addAll(Arrays.asList(getKinetics().getKineticsParameters()));
+		parameterList.addAll(Arrays.asList(getKinetics().getProxyParameters()));
+		parameterList.addAll(Arrays.asList(getKinetics().getUnresolvedParameters()));
+		setData(parameterList);
+	}
 }
 
 /**
