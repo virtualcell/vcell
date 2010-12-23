@@ -8,12 +8,13 @@ package cbit.vcell.opt;
  * Creation date: (3/3/00 12:24:17 AM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class OptimizationStatus implements java.io.Serializable {
-	
+
 	private int statusCode = 0;
 	private String statusString = null;
 
-		
+
 	public static final int NORMAL_TERMINATION				= 0;
 	public static final int NONFEASIBLE_LINEAR				= 1;
 	public static final int NONFEASIBLE_NONLINEAR			= 2;	
@@ -30,7 +31,6 @@ public class OptimizationStatus implements java.io.Serializable {
 	private static final int MIN_CODE						= 0;
 	private static final int MAX_CODE						= 11;
 
-
 	/*
 	private String statusString[] = {
 		"normal termination",
@@ -44,73 +44,60 @@ public class OptimizationStatus implements java.io.Serializable {
 		"new iterate essentially identical to previous iterate, though stopping criterion not satisfied",
 		"penalty parameter too large, unable to satisfy nonlinear equality constraint"
 	};
-	*/
+	 */
 
-/**
- * ConstraintType constructor comment.
- */
-public OptimizationStatus(int argStatusCode, String argStatusMsg) {
-	if (argStatusCode < MIN_CODE || argStatusCode > MAX_CODE) {
-		throw new RuntimeException("Status code out of range");
-	}
-	this.statusCode = argStatusCode;
-	this.statusString = argStatusMsg;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:31:17 AM)
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean equals(Object obj) {
-	if (obj instanceof OptimizationStatus){
-		if (statusCode == ((OptimizationStatus)obj).statusCode){
-			return true;
+	/**
+	 * ConstraintType constructor comment.
+	 */
+	public OptimizationStatus(int argStatusCode, String argStatusMsg) {
+		if (argStatusCode < MIN_CODE || argStatusCode > MAX_CODE) {
+			throw new RuntimeException("Status code out of range");
 		}
+		this.statusCode = argStatusCode;
+		this.statusString = argStatusMsg;
 	}
-	return false;
-}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:31:17 AM)
- * @return boolean
- * @param obj java.lang.Object
- */
-public int hashCode() {
-	return statusCode;
-}
+	public boolean equals(Object obj) {
+		if (obj instanceof OptimizationStatus){
+			if (statusCode == ((OptimizationStatus)obj).statusCode){
+				return true;
+			}
+		}
+		return false;
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:29:37 AM)
- * @return boolean
- */
-public boolean isFailed() {
-	return (statusCode>=FAILED_CONSTRUCTING_D0);
-}
+	public int hashCode() {
+		return statusCode;
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:29:37 AM)
- * @return boolean
- */
-public boolean isNormal() {
-	return (statusCode==NORMAL_TERMINATION);
-}
+	public int getReturnCode() {
+		return statusCode;
+	}
+
+	public String getReturnMessage()
+	{
+		return statusString;
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (3/3/00 12:29:37 AM)
+	 * @return boolean
+	 */
+	public boolean isNormal() {
+		return (statusCode==NORMAL_TERMINATION);
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/3/00 12:57:51 AM)
- * @return java.lang.String
- */
-public String toString() {
-	return "[" + statusCode + "," + statusString + "]";
-}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (3/3/00 12:57:51 AM)
+	 * @return java.lang.String
+	 */
+	public String toString() {
+		return "[" + statusCode + "," + statusString + "]";
+	}
 }

@@ -1,5 +1,7 @@
 package cbit.vcell.opt.solvers;
 
+import org.vcell.util.DescriptiveStatistics;
+
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 /**
@@ -47,6 +49,49 @@ public void addEvaluation(double[] paramValues, double objectiveFuncValue) {
 	addEvaluation(new EvaluationHolder(paramValues, objectiveFuncValue), null);
 }
 
+public void showStatistics(){
+	if(evaluations.size() > 0)
+	{
+		//index 0 stores max of parameter value, and index 1 stores min of parameter value
+		int indexMax = 0;
+		int indexMin = 1;
+		int numParameters = evaluations.get(0).parameterVector.length;
+		double[][] stat= new double[numParameters][2]; 
+		for(int i=0; i<numParameters; i++)
+		{
+			stat[i][indexMax]=0;
+			stat[i][indexMin]=1e8;
+		}
+		for (EvaluationHolder evalHolder : evaluations)
+		{
+			System.out.println("objective funciton error :"+evalHolder.objFunctionValue);
+			for(int i=0; i<evalHolder.parameterVector.length; i++)
+			{
+				if(stat[i][indexMax]<evalHolder.parameterVector[i])
+				{
+					stat[i][indexMax] = evalHolder.parameterVector[i];
+				}
+				if(stat[i][indexMin]>evalHolder.parameterVector[i])
+				{
+					stat[i][indexMin] = evalHolder.parameterVector[i];
+				}
+			}
+		}
+		//print out
+		for(int i=0; i<stat.length; i++)
+		{
+			System.out.println("------------ Parameter"+i+" max and min------------");
+			double[] oneParam = stat[i];
+			for(double oneStat: oneParam)
+			{
+				System.out.print("    " + oneStat);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+}
+	
 
 /**
  * Insert the method's description here.
