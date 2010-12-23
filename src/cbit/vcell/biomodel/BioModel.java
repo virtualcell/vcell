@@ -419,7 +419,7 @@ public SimulationContext[] getSimulationContexts() {
  * @param index The index value into the property array.
  * @see #setSimulationContexts
  */
-public SimulationContext getSimulationContexts(int index) {
+public SimulationContext getSimulationContext(int index) {
 	return getSimulationContexts()[index];
 }
 

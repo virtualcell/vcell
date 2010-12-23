@@ -54,6 +54,8 @@ public class MathModelEditor extends DocumentEditor {
 	
 	private SimulationSummaryPanel simulationSummaryPanel = null;
 	private JPanel rightBottomEmptyPanel = null;
+	private MathModelPropertiesPanel mathModelPropertiesPanel = new MathModelPropertiesPanel();
+	private MathModelEditorAnnotationPanel mathModelEditorAnnotationPanel = new MathModelEditorAnnotationPanel();
 	
 /**
  * BioModelEditor constructor comment.
@@ -107,6 +109,7 @@ private void initialize() {
 		outputFunctionsPanel  = new OutputFunctionsPanel();
 		simulationSummaryPanel = new SimulationSummaryPanel();
 		
+		mathModelEditorAnnotationPanel.setSelectionManager(selectionManager);
 		outputFunctionsPanel.setSelectionManager(selectionManager);
 		mathModelEditorTreeModel.setSelectionManager(selectionManager);		
 		simulationListPanel.setSelectionManager(selectionManager);
@@ -122,7 +125,18 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	boolean bShowBottom = true;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
-		if (singleSelection instanceof BioModelInfo) {
+		if (singleSelection == mathModel) {
+			bottomComponent = mathModelEditorAnnotationPanel;
+		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
+			DocumentEditorTreeFolderNode folderNode = (DocumentEditorTreeFolderNode) singleSelection;
+			if (folderNode.getFolderClass() == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {		
+				bottomComponent = mathModelEditorAnnotationPanel;
+			} else if (folderNode.getFolderClass() == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
+				bottomComponent = simulationSummaryPanel;			
+			} else {
+				bShowBottom = false;
+			}
+		} else if (singleSelection instanceof BioModelInfo) {
 			if (bioModelMetaDataPanel == null) {
 				bioModelMetaDataPanel = new BioModelMetaDataPanel();
 				bioModelMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
@@ -145,9 +159,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
-		} else if (singleSelection instanceof DocumentEditorTreeFolderNode 
-				&& ((DocumentEditorTreeFolderNode) singleSelection).getFolderClass() == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
-			bottomComponent = simulationSummaryPanel;			
 		} else {
 			bShowBottom = false;
 		}
@@ -171,7 +182,7 @@ protected void treeSelectionChanged() {
 		BioModelNode selectedNode = (BioModelNode)lastSelectedPathComponent;
 	    Object selectedObject = selectedNode.getUserObject();
 	    if (selectedObject instanceof MathModel) {
-	    	setRightTopPanel(null, null);
+	    	setRightTopPanel(null, selectedObject);
 	    } else if (selectedObject instanceof DocumentEditorTreeFolderNode) { // it's a folder	    	
 	    	setRightTopPanel((DocumentEditorTreeFolderNode)selectedObject, null);
 	    } else {
@@ -192,11 +203,16 @@ protected void treeSelectionChanged() {
 private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object leafObject) {
 	JComponent newTopPanel = emptyPanel;
 	double dividerLocation = DEFAULT_DIVIDER_LOCATION;
-	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
-		
+	if (folderNode == null) {
+		if (leafObject == mathModel) {
+			newTopPanel = mathModelPropertiesPanel;
+		}
 	} else {
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
-		if (folderClass == DocumentEditorTreeFolderClass.MATH_VCML_NODE) {
+		if (folderClass == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {
+			newTopPanel = mathModelPropertiesPanel;
+			dividerLocation = 1.0;
+		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_VCML_NODE) {
 			newTopPanel = vcmlEditorPanel;
 			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE) {
@@ -234,6 +250,7 @@ public void setMathModel(MathModel newValue) {
 	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
 	vcmlEditorPanel.setMathModel(mathModel);
 	geometrySummaryViewer.setGeometryOwner(mathModel);
+	mathModelPropertiesPanel.setMathModel(mathModel);
 	mathModelEditorTreeModel.setMathModel(mathModel);
 }
 
@@ -248,6 +265,7 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	}
 	this.mathModelWindowManager = newValue;
 	geometrySummaryViewer.addActionListener(mathModelWindowManager);
+	mathModelPropertiesPanel.setMathModelWindowManager(mathModelWindowManager);
 	
 	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, mathModelWindowManager.getRequestManager());
 	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);

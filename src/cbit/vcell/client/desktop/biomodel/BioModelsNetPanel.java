@@ -32,6 +32,8 @@ import javax.swing.tree.TreePath;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.vcell.sbml.test.BiomodelsDB_TestSuite;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
@@ -43,7 +45,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.xml.XMLInfo;
 
 @SuppressWarnings("serial")
-public class BioModelsNetPanel extends BioModelEditorSubPanel {
+public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	private static final String BIO_MODELS_NET = "BioModels.net";	
 
 	private class BioModelsNetTreeCellRenderer extends DefaultTreeCellRenderer  {
@@ -77,13 +79,19 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 	}
 	private class BioModelsNetTreeModel extends DefaultTreeModel {
 		private BioModelNode rootNode = null;
+		private String searchText = null;
 		
+
 		private BioModelsNetTreeModel() {
 			super(new BioModelNode(BIO_MODELS_NET, true),true);			
 			rootNode = (BioModelNode)root;
 			populateRootNode();
 		}
 
+		public void setSearchText(String searchText) {
+			this.searchText = searchText;
+			populateRootNode();
+		}
 		private void populateRootNode() {
 			try {
 				List<BioModelsNetModelInfo> infoList = readVCellCompatibleBioModels_ID_Name_Hash();
@@ -93,9 +101,21 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 						return o1.getName().compareTo(o2.getName());
 					}
 				});
+				rootNode.removeAllChildren();
 				for (BioModelsNetModelInfo bioModelsNetInfo : infoList) {
-					BioModelNode node = new BioModelNode(bioModelsNetInfo, false);
-					rootNode.add(node);
+					boolean bAddNode = true;
+					if (searchText != null) {
+						String lowerCaseSearchText = searchText.toLowerCase();
+						if (lowerCaseSearchText.length() > 0) {
+							bAddNode = bioModelsNetInfo.getId().toLowerCase().contains(lowerCaseSearchText) 
+								|| bioModelsNetInfo.getName().toLowerCase().contains(lowerCaseSearchText)
+								|| bioModelsNetInfo.getLink().toLowerCase().contains(lowerCaseSearchText);
+						}
+					}
+					if (bAddNode) {
+						BioModelNode node = new BioModelNode(bioModelsNetInfo, false);
+						rootNode.add(node);
+					}
 				}
 				nodeStructureChanged(rootNode);
 			} catch (Exception ex) {
@@ -126,6 +146,11 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == importButton) {
 				importFromBioModelsNet();
+			} else if (e.getSource() == searchButton || e.getSource() == searchTextField) {
+				treeModel.setSearchText(searchTextField.getText());
+			} else if (e.getSource() == showAllButton) {
+				searchTextField.setText(null);
+				treeModel.setSearchText(null);
 			}
 		}
 
@@ -194,6 +219,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 
 	private void initialize() {
 		searchTextField = new JTextField(10);
+		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);
 		showAllButton = new JButton("Show All");
@@ -220,13 +246,13 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = 0;
-		gbc.insets = new Insets(0,4,0,0);
+		gbc.insets = new Insets(0,2,0,0);
 		searchPanel.add(searchButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = 0;
-		gbc.insets = new Insets(0,4,0,0);
+		gbc.insets = new Insets(0,2,0,0);
 		searchPanel.add(showAllButton, gbc);	
 		
 		setPreferredSize(new Dimension(475, 300));
@@ -237,7 +263,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(4,0,4,0);
 		add(searchPanel, gbc);	
 
 		gridy ++;
@@ -246,7 +272,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(4,0,4,0);
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new JScrollPane(tree), gbc);
 		
@@ -255,7 +281,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(4,0,4,0);
 		add(importButton, gbc);
 	}
 
@@ -269,7 +295,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		final String BIOMODELSNET_INFO_FILENAME = "/bioModelsNetInfo.xml";
 		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME);
 		if (tableInputStream==null){
-			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME+" not found");
+			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME + " not found");
 		}
 		//Process the Info files
 		org.jdom.input.SAXBuilder saxparser = new org.jdom.input.SAXBuilder(false);
@@ -297,11 +323,13 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		if (selectedObjects == null || selectedObjects.length != 1 || !(selectedObjects[0] instanceof BioModelsNetModelInfo)) {
+		if (selectedObjects == null || selectedObjects.length != 1 || selectedObjects[0] == null || selectedObjects[0] instanceof VCDocumentInfo) {
 			tree.clearSelection();
 			return;
 		}
-		BioModelsNetModelInfo bioModelsNetModelInfo = (BioModelsNetModelInfo) selectedObjects[0];
-		treeModel.select(bioModelsNetModelInfo); 
+		if (selectedObjects[0] instanceof BioModelsNetModelInfo) {
+			BioModelsNetModelInfo bioModelsNetModelInfo = (BioModelsNetModelInfo) selectedObjects[0];
+			treeModel.select(bioModelsNetModelInfo);
+		}
 	}
 }

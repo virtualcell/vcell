@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -12,7 +13,6 @@ import java.util.Hashtable;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 
 import org.vcell.util.gui.DialogUtils;
 
@@ -24,10 +24,12 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.xml.XMLInfo;
 
 @SuppressWarnings("serial")
-public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
+public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 	
-	private JTextField nameTextField;
-	private JTextField idTextField;
+	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels/";
+	private JLabel urlLabel;
+	private JLabel nameLabel;
+	private JLabel idLabel;
 	private JLabel linkLabel = null;
 	private JButton importButton = null;
 	private BioModelsNetModelInfo bioModelsNetModelInfo = null;
@@ -43,10 +45,13 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		}
 
 		public void mouseClicked(MouseEvent e) {
-			if (e.getSource() == linkLabel) {
-				DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open the link!", false);
+			if (e.getClickCount() == 2) {
+				if (e.getSource() == linkLabel) {
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open " + bioModelsNetModelInfo.getLink(), false);
+				} else if (e.getSource() == urlLabel) {
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BIOMODELS_DATABASE_URL, "Failed to open " + BIOMODELS_DATABASE_URL, false);
+				}
 			}
-			
 		}
 
 		public void mousePressed(MouseEvent e) {
@@ -96,10 +101,13 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 
 	private void initialize() {
 		setBackground(Color.white);
-		nameTextField = new JTextField();
-		nameTextField.setEditable(false);
-		idTextField = new JTextField();
-		idTextField.setEditable(false);
+		nameLabel = new JLabel();		
+		urlLabel = new JLabel("<html><b><font color=blue><u>" + BIOMODELS_DATABASE_URL + "</u></font>" +
+				", a data resource that allows researchers to" +
+				" store, search and retrieve published mathematical models of biological interest.</b>" +
+				"</html>");
+		urlLabel.addMouseListener(eventHandler);
+		idLabel = new JLabel();
 		importButton = new JButton("Import");
 		importButton.addActionListener(eventHandler);
 		importButton.setEnabled(true);
@@ -114,8 +122,10 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.weightx = 0.2;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(new JLabel("Model Name"), gbc);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+		JLabel label = new JLabel("BioModels.net:");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -124,7 +134,7 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4,4,4,4);
-		add(nameTextField, gbc);
+		add(urlLabel, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -133,7 +143,25 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(new JLabel("Entry ID"), gbc);
+		add(new JLabel("Model Name:"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(4,4,4,4);
+		add(nameLabel, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.weightx = 0.2;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(new JLabel("Entry ID:"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -142,7 +170,7 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		add(idTextField, gbc);
+		add(idLabel, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -151,7 +179,7 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(new JLabel("Link"), gbc);
+		add(new JLabel("Link:"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -184,12 +212,12 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		this.bioModelsNetModelInfo = bioModelsNetModelInfo;
 		if (bioModelsNetModelInfo == null) {
 			importButton.setEnabled(false);
-			nameTextField.setText(null);
-			idTextField.setText(null);
+			nameLabel.setText(null);
+			idLabel.setText(null);
 		} else {
 			importButton.setEnabled(true);
-			nameTextField.setText(bioModelsNetModelInfo.getName());
-			idTextField.setText(bioModelsNetModelInfo.getId());
+			nameLabel.setText(bioModelsNetModelInfo.getName());
+			idLabel.setText(bioModelsNetModelInfo.getId());
 			linkLabel.setText("<html><u>" + bioModelsNetModelInfo.getLink() + "</u></html>");
 		}
 	}

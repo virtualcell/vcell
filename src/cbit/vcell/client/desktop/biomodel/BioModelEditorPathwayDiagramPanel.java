@@ -48,7 +48,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayDiagramPanel extends BioModelEditorSubPanel {
+public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private EventHandler eventHandler = new EventHandler();

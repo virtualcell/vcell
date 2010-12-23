@@ -323,6 +323,7 @@ private void createBioModelFrame() {
 	editorFrame.add(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
+	editorFrame.setSize(850, 680);
 	editorFrame.setLocation(0,0);
 	editorFrame.show();
 	try {

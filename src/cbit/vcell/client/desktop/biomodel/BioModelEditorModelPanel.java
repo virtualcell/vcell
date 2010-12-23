@@ -58,7 +58,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
-public class BioModelEditorModelPanel extends BioModelEditorSubPanel implements Model.Owner {
+public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTab {
 		reaction_diagram("Reaction Diagram"),
@@ -613,9 +613,11 @@ public class BioModelEditorModelPanel extends BioModelEditorSubPanel implements 
 	
 	private void showDiagramView() {
 		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()) {
-			if (tabbedPane.getComponent(ModelPanelTab.reaction_diagram.ordinal()) != ModelPanelTab.reaction_diagram.getComponent()) {
+			if (tabbedPane.getComponentAt(ModelPanelTab.reaction_diagram.ordinal()) != ModelPanelTab.reaction_diagram.getComponent()) {
 				try {
-					diagramViewInternalFrame.setSelected(true);
+					if (diagramViewInternalFrame != null) {
+						diagramViewInternalFrame.setSelected(true);
+					}
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}

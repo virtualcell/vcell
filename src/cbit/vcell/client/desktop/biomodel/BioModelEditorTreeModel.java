@@ -814,7 +814,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	public void annotationChanged(AnnotationEvent annotationEvent) {
 		if (annotationEvent.getIdentifiable() == bioModel) {
 			nodeChanged(rootNode);
-			ownerTree.setSelectionPath(new TreePath(pathwayNode.getPath()));
+			if (annotationEvent.isPathwayChange()) {
+				ownerTree.setSelectionPath(new TreePath(pathwayNode.getPath()));
+			}
 		}
 	}
 

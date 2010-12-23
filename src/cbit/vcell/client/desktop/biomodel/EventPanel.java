@@ -52,7 +52,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
-public class EventPanel extends BioModelEditorSubPanel {
+public class EventPanel extends DocumentEditorSubPanel {
 		// for trigger and delay 
 		private JPanel labels_n_textfields_Panel = null;
 		private JLabel triggerLabel = null;

@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
@@ -13,7 +12,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
@@ -26,7 +25,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class DatabaseWindowPanel extends BioModelEditorSubPanel {
+public class DatabaseWindowPanel extends DocumentEditorSubPanel {
 	public static final String PROPERTY_NAME_SELECTED_DOCUMENT_INFO = "selectedDocumentInfo";
 	private BioModelDbTreePanel ivjBioModelDbTreePanel1 = null;
 	private GeometryTreePanel ivjGeometryTreePanel1 = null;

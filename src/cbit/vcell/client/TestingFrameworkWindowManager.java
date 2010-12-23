@@ -350,8 +350,8 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 					}
 					SimulationContext simContext = null;
 					for (int j = 0; j < newBioModel.getSimulationContexts().length; j++){
-						if (newBioModel.getSimulationContexts(j).getName().equals(bioTestCase.getSimContextName())){
-							simContext = newBioModel.getSimulationContexts(j);
+						if (newBioModel.getSimulationContext(j).getName().equals(bioTestCase.getSimContextName())){
+							simContext = newBioModel.getSimulationContext(j);
 						}
 					}
 					

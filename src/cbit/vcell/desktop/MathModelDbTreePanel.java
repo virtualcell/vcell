@@ -33,6 +33,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
@@ -41,7 +42,8 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -52,7 +54,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class MathModelDbTreePanel extends BioModelEditorSubPanel {
+public class MathModelDbTreePanel extends DocumentEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private DocumentManager ivjDocumentManager = null;
@@ -184,7 +186,7 @@ public void onSelectedObjectsChange(Object[] selectedObjects) {
 			if (node != null) {
 				getJTree1().setSelectionPath(new TreePath(node.getPath()));
 			}
-		} else {
+		} else if (selectedObjects[0] == null || selectedObjects[0] instanceof VCDocumentInfo || selectedObjects[0] instanceof BioModelsNetModelInfo) {
 			getJTree1().clearSelection();
 		}
 	}

@@ -1,50 +1,60 @@
-package cbit.vcell.client.desktop.biomodel;
+package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.beans.PropertyVetoException;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
-import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.Version;
 
+import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mathmodel.MathModel;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class ModelParameterPropertiesPanel extends JPanel {
-	private ModelParameter modelParameter = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+public class MathModelEditorAnnotationPanel extends DocumentEditorSubPanel {
+	private MathModel mathModel = null;
+	private EventHandler eventHandler = new EventHandler();
 	private JTextArea annotationTextArea;
-	private JTextField nameTextField = null;
 
-	private class IvjEventHandler implements FocusListener {
+	private class EventHandler implements FocusListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeAnnotation();
-			} else if (e.getSource() == nameTextField) {
-				changeName();
 			}
-		};
-	};
+		}
+	}
 
 /**
  * EditSpeciesDialog constructor comment.
  */
-public ModelParameterPropertiesPanel() {
+public MathModelEditorAnnotationPanel() {
 	super();
 	initialize();
 }
@@ -64,52 +74,33 @@ private void handleException(java.lang.Throwable exception) {
  * Initialize the class.
  */
 private void initialize() {
-	try {
-		nameTextField = new JTextField();
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+	try {		
+		annotationTextArea = new javax.swing.JTextArea();
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
-
-		setBackground(Color.white);
+		
 		setLayout(new GridBagLayout());
+		setBackground(Color.white);
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_END;		
-		JLabel label = new JLabel("Parameter Name");
-		add(label, gbc);
-		
-		gbc.gridx = 1; 
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(nameTextField, gbc);
-		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		add(new JLabel("Annotation"), gbc);
+		add(new JLabel("Notes:"), gbc);
 
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);		
 		gbc = new java.awt.GridBagConstraints();
+		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 20, 10);
 		add(jsp, gbc);		
-		
-		annotationTextArea.addFocusListener(ivjEventHandler);
-		nameTextField.addFocusListener(ivjEventHandler);
+				
+		annotationTextArea.addFocusListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -122,7 +113,7 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ModelParameterPropertiesPanel aEditSpeciesPanel = new ModelParameterPropertiesPanel();
+		MathModelEditorAnnotationPanel aEditSpeciesPanel = new MathModelEditorAnnotationPanel();
 		frame.add(aEditSpeciesPanel);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
@@ -142,10 +133,10 @@ public static void main(java.lang.String[] args) {
  */
 private void changeAnnotation() {
 	try{
-		if (modelParameter == null) {
+		if (mathModel == null) {
 			return;
 		}
-		modelParameter.setModelParameterAnnotation(annotationTextArea.getText());
+		mathModel.setDescription(annotationTextArea.getText());	
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
@@ -157,11 +148,11 @@ private void changeAnnotation() {
  * @param speciesContext The new value for the property.
  * @see #getSpeciesContext
  */
-public void setModelParameter(ModelParameter newValue) {
-	if (newValue == modelParameter) {
+public void setMathModel(MathModel newValue) {
+	if (newValue == mathModel) {
 		return;
 	}
-	modelParameter = newValue;
+	mathModel = newValue;
 	updateInterface();
 }
 
@@ -169,29 +160,14 @@ public void setModelParameter(ModelParameter newValue) {
  * Comment
  */
 private void updateInterface() {
-	if (modelParameter == null) {
-		annotationTextArea.setText(null);
-		nameTextField.setText(null);
-	} else {
-		nameTextField.setText(modelParameter.getName());
-		annotationTextArea.setText(modelParameter.getModelParameterAnnotation());	
+	if (mathModel == null) {
+		return;
 	}
+	annotationTextArea.setText(mathModel.getDescription());
 }
 
-private void changeName() {
-	if (modelParameter == null) {
-		return;
-	}
-	String newName = nameTextField.getText();
-	if (newName == null || newName.length() == 0) {
-		nameTextField.setText(modelParameter.getName());
-		return;
-	}
-	try {
-		modelParameter.setName(nameTextField.getText());
-	} catch (PropertyVetoException e1) {
-		e1.printStackTrace();
-		DialogUtils.showErrorDialog(ModelParameterPropertiesPanel.this, e1.getMessage());
-	}
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
 }
+
 }

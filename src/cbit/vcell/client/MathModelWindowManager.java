@@ -262,6 +262,7 @@ private void createMathModelFrame() {
 	editorFrame.add(mathModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
+	editorFrame.setSize(850, 680);
 	editorFrame.setLocation(0,0);
 	editorFrame.show();
 	try {

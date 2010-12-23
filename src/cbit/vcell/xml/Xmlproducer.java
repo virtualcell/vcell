@@ -433,7 +433,7 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	//Get SimulationContexts
 	if ( param.getSimulationContexts()!=null ){
 		for (int index=0;index<param.getSimulationContexts().length;index++){
-			biomodelnode.addContent( getXML(param.getSimulationContexts(index),param) );
+			biomodelnode.addContent( getXML(param.getSimulationContext(index),param) );
 		}
 	}
 	//Add Database Metadata (Version) information

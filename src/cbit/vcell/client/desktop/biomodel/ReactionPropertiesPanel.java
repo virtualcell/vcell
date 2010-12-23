@@ -39,7 +39,7 @@ import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
 @SuppressWarnings("serial")
-public class ReactionPropertiesPanel extends BioModelEditorSubPanel {
+public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;

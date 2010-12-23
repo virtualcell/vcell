@@ -20,7 +20,7 @@ import org.vcell.util.gui.UtilCancelException;
 
 import com.sun.org.apache.bcel.internal.generic.BALOAD;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
@@ -38,7 +38,7 @@ import cbit.vcell.model.SimpleReaction;
  * @author: Anuradha Lakshminarayana
  */
 @SuppressWarnings("serial")
-public class KineticsTypeTemplatePanel extends BioModelEditorSubPanel {
+public class KineticsTypeTemplatePanel extends DocumentEditorSubPanel {
 	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;

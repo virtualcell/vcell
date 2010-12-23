@@ -53,11 +53,19 @@ public class VCMetaData implements Serializable {
 		void annotationChanged(AnnotationEvent annotationEvent);
 	}
 	public static class AnnotationEvent extends EventObject {
+		private boolean bPathwayChange = false;
 		public AnnotationEvent(Identifiable identifiable) {
+			this(identifiable, false);
+		}
+		public AnnotationEvent(Identifiable identifiable, boolean bPathwayChange) {
 			super(identifiable);
+			this.bPathwayChange = bPathwayChange;
 		}
 		public Identifiable getIdentifiable(){
 			return (Identifiable)getSource();
+		}
+		public boolean isPathwayChange() {
+			return bPathwayChange;
 		}
 	}
 	
@@ -311,7 +319,7 @@ public class VCMetaData implements Serializable {
 
 	public void addPathwayModel(BioModel bioModel, Model model) {
 		getSBbox().getData().add(model);
-		fireAnnotationEventListener(new AnnotationEvent(bioModel));
+		fireAnnotationEventListener(new AnnotationEvent(bioModel, true));
 	}
 
 }

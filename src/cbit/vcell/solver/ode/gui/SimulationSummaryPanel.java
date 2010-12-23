@@ -25,7 +25,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -43,7 +43,7 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class SimulationSummaryPanel extends BioModelEditorSubPanel {
+public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private Simulation fieldSimulation = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JLabel ivjJLabel1 = null;

@@ -61,8 +61,17 @@ import cbit.vcell.desktop.BioModelNode;
 import com.hp.hpl.jena.rdf.model.Model;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
+public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 
+	public static class PathwayStringObject {
+		private String stringObject;
+		public PathwayStringObject(String so) {
+			this.stringObject = so;
+		}
+		public final String getStringObject() {
+			return stringObject;
+		}
+	}
 	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
 	private static final String uniport = "uniprot";
 	public static class PathwayData {
@@ -124,7 +133,7 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 		private Map<String, BioModelNode> searchMap = new HashMap<String, BioModelNode>();
 		
 		ResponseTreeModel() {
-			super(new BioModelNode("search results", true), true);
+			super(new BioModelNode(new PathwayStringObject("search results"), true), true);
 			rootNode = (BioModelNode)root;
 		}
 		
@@ -132,12 +141,12 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 			BioModelNode namesNode = null;
 			if (childElementList.size() > 0) {
 				if (childElementList.size() == 1) {
-					namesNode = new BioModelNode("1 " + childName + ": " + childElementList.get(0), true);
+					namesNode = new BioModelNode(new PathwayStringObject("1 " + childName + ": " + childElementList.get(0)), true);
 				} else {
-					namesNode = new BioModelNode(childElementList.size() + " " + childName + "s", true);
+					namesNode = new BioModelNode(new PathwayStringObject(childElementList.size() + " " + childName + "s"), true);
 				}
 				for (String element : childElementList) {
-					namesNode.add(new BioModelNode(element, false));
+					namesNode.add(new BioModelNode(new PathwayStringObject(element), false));
 				}
 				hitNode.add(namesNode);
 			}
@@ -157,7 +166,7 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 				rootNode.remove(searchNode);
 			}
 			if (searchResponse == null) {
-				searchNode = new BioModelNode("Keyword \"" + searchText + "\": no matches");				
+				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\": no matches"));				
 			} else {
 				List<Hit> hitList = new ArrayList<Hit>();
 				List<Element> hitElements = DOMUtil.childElements(searchResponse, "search_hit");
@@ -176,7 +185,7 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 					}
 				}
 				int totalNumHits = Integer.parseInt(searchResponse.getAttribute("total_num_hits"));
-				searchNode = new BioModelNode("Keyword \"" + searchText + "\": " + hitList.size() + " of " + totalNumHits + " matches", true);				
+				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\": " + hitList.size() + " of " + totalNumHits + " matches"), true);				
 				for (Hit hit : hitList) {
 					BioModelNode hitNode = new BioModelNode(hit, true);
 					createHitChildNode(hitNode, hit.names(), "name");
@@ -185,22 +194,21 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 					createHitChildNode(hitNode, hit.excerpts(), "excerpt");
 					DataSource dataSource = hit.dataSource();
 					if (dataSource != null) {
-						hitNode.add(new BioModelNode("Data source: " + dataSource.name() + " (" + dataSource.primaryId() + ")"));			
+						hitNode.add(new BioModelNode(dataSource, false));
 					}
 					Organism organism = hit.organism();
 					if (organism != null) {
-						hitNode.add(new BioModelNode("Organism: (" + organism.speciesName() + ", " + organism.commonName() + ", " +
-								organism.ncbiOrganismId() + ")"));			
+						hitNode.add(new BioModelNode(organism, false));
 					}
 					// xref
 					List<XRef> xrefList = hit.xRefs();
 					BioModelNode xrefsNode = null;
 					int numXRefs = xrefList.size();
 					if (numXRefs == 0) {
-						xrefsNode = new BioModelNode("no cross references", false);
+						xrefsNode = new BioModelNode(new PathwayStringObject("no cross references"), false);
 					} else {					
 						List<XRef> obsoleteXRefs = new ArrayList<XRef>();
-						xrefsNode = new BioModelNode("", true);
+						xrefsNode = new BioModelNode(null, true);
 						for(XRef xRef : hit.xRefs()) { 
 							if (obsolete(xRef)) {
 								obsoleteXRefs.add(xRef);
@@ -209,7 +217,7 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 							}
 						}
 						int numObsoletes = obsoleteXRefs.size();
-						xrefsNode.setUserObject(numXRefs + " cross reference(s) " + (numObsoletes == 0 ? "" : "(" + numObsoletes + " obsolete(s))"));
+						xrefsNode.setUserObject(new PathwayStringObject(numXRefs + " cross reference(s) " + (numObsoletes == 0 ? "" : "(" + numObsoletes + " obsolete(s))")));
 						for(XRef xRef : obsoleteXRefs) {							
 							xrefsNode.add(new BioModelNode(xRef, false));
 						}
@@ -220,9 +228,9 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 					BioModelNode pathwaysNode = null;
 					int numPathways = pathwayList.size();
 					if (numPathways == 0) {
-						pathwaysNode = new BioModelNode("no pathways", false);
+						pathwaysNode = new BioModelNode(new PathwayStringObject("no pathways"), false);
 					} else {
-						pathwaysNode = new BioModelNode(numPathways + " pathway(s)", true);
+						pathwaysNode = new BioModelNode(new PathwayStringObject(numPathways + " pathway(s)"), true);
 						for (Pathway pathway: pathwayList) {
 							pathwaysNode.add(new BioModelNode(pathway, false));
 						}
@@ -266,8 +274,8 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 			if (value instanceof BioModelNode) {
 				BioModelNode bioModelNode = (BioModelNode)value;
 				Object userObject = bioModelNode.getUserObject();
-				if (userObject instanceof String) {
-					labelText = ((String)userObject);
+				if (userObject instanceof PathwayStringObject) {
+					labelText = ((PathwayStringObject)userObject).getStringObject();
 				} else if (userObject instanceof XRef) {
 					XRef xRef = (XRef)userObject;
 					labelText = xRef.db() + ":" + xRef.id();
@@ -301,6 +309,13 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 				} else if (userObject instanceof Pathway){
 					Pathway pathway = (Pathway)userObject;
 					labelText = pathway.primaryId() + ":  " + pathway.name() + "  [" + pathway.dataSource().name() + "]";
+				} else if (userObject instanceof DataSource){
+					DataSource dataSource = (DataSource)userObject;
+					labelText = "Data source: " + dataSource.name() + " (" + dataSource.primaryId() + ")";
+				} else if (userObject instanceof Organism) {
+					Organism organism = (Organism)userObject;
+					labelText = "Organism: (" + organism.speciesName() + ", " + organism.commonName() + ", " 
+						+ organism.ncbiOrganismId() + ")";
 				}
 				if (labelText != null) {
 					setText(labelText);
@@ -423,36 +438,6 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
-		
-//		try { 
-//			URL url = new URL(defaultBaseURL + "?" + searchText);
-//			URLConnection connection = url.openConnection();
-//			document = DOMUtil.parse(connection.getInputStream());
-//		} 
-//		catch (MalformedURLException e) { 
-//			return new PCExceptionResponse(this, e); } 
-//		catch (IOException e) { 
-//			return new PCExceptionResponse(this, e); } 
-//		catch (ParserConfigurationException e) { 
-//			return new PCExceptionResponse(this, e); } 
-//		catch (SAXException e) { 
-//			return new PCExceptionResponse(this, e); 
-//			}
-//		Element errorElement = DOMUtil.firstChildElement(document, "error");
-//		if(errorElement != null) { return new PCErrorResponse(this, errorElement); }
-//		Element searchResponse = DOMUtil.firstChildElement(document, "search_response");
-//		if(searchResponse != null) { return new PCKeywordResponse(this, searchResponse); }
-//		return new PCEmptyResponse(this);
-	}
-
-	private String generateTIP(String path){
-		String tip;
-		if(path.indexOf("http") >0){
-			tip = path.substring(0,path.indexOf("http")-2);
-		}else{
-			tip = path;
-		}
-		return tip;
 	}
 	
 	private void initialize() {
@@ -515,45 +500,33 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 		add(showPathwayButton, gbc);
 		
 		responseTree.getSelectionModel().addTreeSelectionListener(eventHandler);
+		responseTree.setCellRenderer(new ResonseTreeCellRenderer());
 		
 		responseTree.addMouseMotionListener(new MouseMotionAdapter() { 
 		    public void mouseMoved(MouseEvent e) { 	
 		    	mouseOverRow = -1;
 		    	TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
-		    	if(path != null){
-		    		if(responseTree.getModel().isLeaf(path.getLastPathComponent())){
-		    			Object object = path.getLastPathComponent();
-		    			if (object != null && object instanceof BioModelNode) {
-		    				BioModelNode node = (BioModelNode)object;
-		    				Object userObject = node.getUserObject();
-		    				if (userObject instanceof Pathway
-		    						|| userObject instanceof XRef) {
-			    				mouseOverRow = responseTree.getClosestRowForLocation(e.getX(), e.getY());
-			    				responseTree.setToolTipText("Double click to launch the web page");
-			    				responseTree.repaint();
-		    				}
-		    			} 
-		    		}
+		    	String url = generateURL(path);
+				if (url != null) {
+    				mouseOverRow = responseTree.getClosestRowForLocation(e.getX(), e.getY());
+    				responseTree.setToolTipText("Double click to launch the web page " + url);
+    				responseTree.repaint();
+		    	} else {
+		    		responseTree.setToolTipText(null);
 		    	}
 		    } 
 		});
 		
-		responseTree.setCellRenderer(new ResonseTreeCellRenderer());
-		
-		// adding hyperlink to tree leaves
-		// when double clicking the node, a web browser will be launched
 		responseTree.addMouseListener( new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
+				if (e.getClickCount() <= 1) {
+					return;
+				}
 				TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
-		    	if(path != null){
-		    		if(responseTree.getModel().isLeaf(path.getLastPathComponent())){		    			
-		    			if(e.getClickCount()>1){
-							String url = generateURL(path);
-							if (url.indexOf("http")>=0){// only launch a webpage if a valid url exists
-//									Process pc = Runtime.getRuntime().exec("cmd.exe /c start "+url);
-								DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url, false);
-							}
-		    			}
+		    	if (path != null){
+		    		String url = generateURL(path);
+		    		if (url != null) {
+		    			DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url, false);
 		    		}
 				}
 			}
@@ -566,52 +539,56 @@ public class BioModelEditorPathwayCommonsPanel extends BioModelEditorSubPanel {
 			}			
 		});
 		// done
-
+		responseTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+			
+			public void valueChanged(TreeSelectionEvent e) {
+				Object obj = responseTree.getLastSelectedPathComponent();
+				if (obj == null || !(obj instanceof BioModelNode)) {
+					return;
+				}
+				BioModelNode selectedNode = (BioModelNode)obj;
+				Object userObject = selectedNode.getUserObject();
+				setSelectedObjects(new Object[] {userObject});
+			}
+		});
 	}
 
-	@Override
-	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		// TODO Auto-generated method stub
-
+	public static boolean isPathwayObject(Object object) {
+		return  object instanceof Pathway ||  object instanceof DataSource
+				||  object instanceof PathwayStringObject ||  object instanceof XRef
+				||  object instanceof Organism;
 	}
 	
-	private String generateURL(TreePath long_path){
-		String path = long_path.getLastPathComponent().toString();
-		String l_path = long_path.toString();
-		String url;
-		// different webpages have different ways of their url. they also be updated so frequently.
-		// make sure to change them here
-		// for instance the NCBI using the new ways to create its urls.
-		if(l_path.indexOf("pathways")>=0){
-			url = "http://www.pathwaycommons.org/pc/record2.do?id=" + path.substring(0,6);
-		}else{
-			if(path.indexOf("http") >=0){ // URL is in the content
-				if(path.indexOf("RefSeq Protein")>=0){
-					url = "http://www.ncbi.nlm.nih.gov/protein/" + path.substring(15, 24);
-				}else if(path.indexOf("Entrez Gene")>=0){
-					url = "http://www.ncbi.nlm.nih.gov/gene/" + path.substring(path.length()-4);
-				}else if(path.indexOf("OMIM")>=0){
-					url = "http://www.ncbi.nlm.nih.gov/omim/" + path.substring(path.length()-6);
-				}else{
-					url = path.substring(path.indexOf("http"));
-				}
-			}else{
-				if(path.indexOf("Organism")>=0){
-					String[] temp = path.split(",");
-					url = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id="+
-						temp[2].substring(1,temp[2].length()-1);
-				}else{
-					url = "";
-				}
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	}
+	
+	private String generateURL(TreePath treePath) {
+		if (treePath == null) {
+			return null;
+		}
+		Object selectedObject = treePath.getLastPathComponent();
+		String url = null;
+		if (selectedObject instanceof BioModelNode) {
+			selectedObject = ((BioModelNode) selectedObject).getUserObject();
+		}
+		if (selectedObject instanceof Organism) {
+			Organism organism = (Organism) selectedObject;
+			url = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=" + organism.ncbiOrganismId();
+		} else if (selectedObject instanceof Pathway) {
+			Pathway pathway = (Pathway) selectedObject;
+			url = "http://www.pathwaycommons.org/pc/record2.do?id=" + pathway.primaryId();
+		} else if (selectedObject instanceof XRef) {
+			XRef xref = (XRef) selectedObject;
+			url = xref.url();
+		}
+		if (url != null) {
+			url = url.trim();
+			if (url.length() > 0) {
+				return url;
 			}
 		}
-		// clean the url by removing ","
-		// how to deal with multiple url link???
-		// I just displace the first url in a web browser so far.
-		if(url.indexOf(",")>=0){
-			url = url.substring(0,url.indexOf(","));
-		}
-		return url;
+		return null;
 	}
 
 }

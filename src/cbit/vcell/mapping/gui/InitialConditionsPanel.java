@@ -28,7 +28,7 @@ import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -49,7 +49,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class InitialConditionsPanel extends BioModelEditorSubPanel {
+public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;

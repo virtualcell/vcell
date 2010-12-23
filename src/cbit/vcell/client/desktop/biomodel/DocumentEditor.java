@@ -21,6 +21,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.desktop.BioModelMetaDataPanel;
@@ -57,7 +58,7 @@ public abstract class DocumentEditor extends JPanel {
 			if (e.getSource() == expandAllMenuItem || e.getSource() == collapseAllMenuItem) {
 				Object lastSelectedPathComponent = documentEditorTree.getLastSelectedPathComponent();
 				if (lastSelectedPathComponent instanceof BioModelNode) {
-					expandAll((BioModelNode)lastSelectedPathComponent, e.getSource() == expandAllMenuItem);
+					GuiUtils.treeExpandAll(documentEditorTree, (BioModelNode)lastSelectedPathComponent, e.getSource() == expandAllMenuItem);
 				}
 			} 
 		};
@@ -179,7 +180,6 @@ private void initialize() {
 		selectionManager.addPropertyChangeListener(ivjEventHandler);
 		
 		databaseWindowPanel.setSelectionManager(selectionManager);
-		
 		documentEditorTree.addTreeSelectionListener(ivjEventHandler);
 		documentEditorTree.addMouseListener(ivjEventHandler);
 		
@@ -244,26 +244,6 @@ private JMenuItem getMenuItemCollapseAll() {
 		}
 	}
 	return collapseAllMenuItem;
-}
-
-private void expandAll(BioModelNode treeNode, boolean bExpand) {
-	int childCount = treeNode.getChildCount();
-	if (childCount > 0) {
-		for (int i = 0; i < childCount; i++) {
-			TreeNode n = treeNode.getChildAt(i);
-			if (n instanceof BioModelNode) {
-				expandAll((BioModelNode)n, bExpand);
-			}
-		}
-		if (!bExpand) {
-			documentEditorTree.collapsePath(new TreePath(treeNode.getPath()));
-		}
-	} else {
-		TreePath path = new TreePath(treeNode.getPath());
-		if (bExpand && !documentEditorTree.isExpanded(path)) {
-			documentEditorTree.expandPath(path.getParentPath());
-		} 
-	}
 }
 
 }
