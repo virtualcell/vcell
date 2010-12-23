@@ -3,10 +3,14 @@ package cbit.vcell.microscopy.gui.choosemodelwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -73,32 +77,35 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
-				if(fStudy != null)
+				if(fStudy == null)
 		    	{
-					boolean[] models = modelTypesPanel.getModelTypes();
-					boolean isOneSelected = false;
-					for(int i = 0; i<models.length; i++)
+					throw new Exception("FRAPStudy is null. Please load data.");
+		    	}
+				boolean[] models = modelTypesPanel.getModelTypes();
+				//perform checkings...is one selected, is koffRatemodel selected(in this case force to use bleached ROI only)					
+				if(modelTypesPanel.getNumUserSelectedModelTypes() < 1)
+				{
+					throw new Exception("At least one model type has to be selected.");
+				}
+				if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE])
+				{
+					if((fStudy.getNumSelectedROIs() > 1) ||
+					   (fStudy.getNumSelectedROIs() == 1) && !fStudy.isROISelectedForErrorCalculation(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()))
 					{
-						if(models[i])
+						String choice = DialogUtils.showWarningDialog(modelTypesPanel, "Since \'Reaction Dominant Off Rate\' model is selected,\nthe selected ROI for error calculation will be set to bleached\nregion only. There are two solutions, \n\nClick OK to select only bleached ROI to proceed, or\nClick Cancel and uncheck \'Finding Reaction Off Rate\' model to proceed.",
+								                                   new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+						if(choice.equals(UserMessage.OPTION_OK))
 						{
-							isOneSelected = true;
-							break;
+							fStudy.setSelectedROIsForErrorCalculation(FRAPStudy.createSelectedROIsForReactionOffRateModel());
+						}
+						else
+						{
+							throw UserCancelException.CANCEL_GENERIC;
 						}
 					}
-					if(isOneSelected)
-					{
-			    		//update selected models in FrapStudy
-			    		fStudy.refreshModels(models);
-					}
-					else
-					{
-						throw new Exception("At least one model type has to be selected.");
-					}
-		    	}
-				else
-				{
-					throw new Exception("FRAPStudy is null. Please load data.");
 				}
+				//update selected models in FrapStudy
+			    fStudy.refreshModels(models);
 			}
 		};
 		

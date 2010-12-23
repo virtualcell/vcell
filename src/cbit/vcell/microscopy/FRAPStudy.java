@@ -29,6 +29,7 @@ import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VersionFlag;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -112,6 +113,7 @@ public class FRAPStudy implements Matchable{
 	//Added in August 2010, store the profile data for confidence intervals of the estimates
 	private ProfileData[] profileData_oneDiffComponent = null;
 	private ProfileData[] profileData_twoDiffComponents = null;
+	private ProfileData[] profileData_reactionOffRate = null;
 	
 	//models
 	private FRAPModel[] models = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
@@ -121,6 +123,9 @@ public class FRAPStudy implements Matchable{
 	private boolean[] selectedROIsForErrCalculation = null; 
 	
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	//to store movie file info. movie file will be refreshed after each simulation run.
+	private transient String movieURLString = null;
+	private transient String movieFileString = null;
 	//temporary data structure for reference data used in optimization
 	private transient FRAPOptData frapOptData = null;
 	//temporary data structure for optimization with explicit functions
@@ -558,6 +563,26 @@ public class FRAPStudy implements Matchable{
 		return bioModel;
 	}
 	
+	public static boolean[] createSelectedROIsForReactionOffRateModel()
+	{
+		boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+		int bleachedIdx = 0;
+		for(FRAPData.VFRAP_ROI_ENUM enu: FRAPData.VFRAP_ROI_ENUM.values())
+		{
+			if(enu.equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			{
+				break;
+			}
+			else
+			{
+				bleachedIdx ++;
+			}
+		}
+		selectedROIs[bleachedIdx] = true;
+		
+		return selectedROIs;
+	}
+	
 	public static SpatialAnalysisResults spatialAnalysis(
 			PDEDataManager simulationDataManager,
 			int startingIndexForRecovery,
@@ -891,9 +916,10 @@ public class FRAPStudy implements Matchable{
 		}
 		return result;
 	}
-	
+	//refresh selected models and reset best model index(to null, if models have been changed)
 	public void refreshModels(boolean[] modelBooleans)
 	{
+		boolean isSelectedModelChanged = false;
 		for(int i =0; i<FRAPModel.NUM_MODEL_TYPES; i++)
 		{
 			if(modelBooleans[i])
@@ -901,12 +927,21 @@ public class FRAPStudy implements Matchable{
 				if(models[i] == null)
 				{
 					models[i] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null, null);
+					isSelectedModelChanged = true;
 				}
 			}
 			else
 			{
+				if(models[i] != null)
+				{
+					isSelectedModelChanged = true;
+				}
 				models[i] = null;
 			}
+		}
+		if(isSelectedModelChanged)
+		{
+			setBestModelIndex(null);
 		}
 	}
 	
@@ -1309,6 +1344,23 @@ public class FRAPStudy implements Matchable{
 		this.bioModel = argBioModel;
 		propertyChangeSupport.firePropertyChange("bioModel", oldValue, argBioModel);
 	}
+
+	public String getMovieURLString() {
+		return movieURLString;
+	}
+
+	public void setMovieURLString(String movieURLString) {
+		this.movieURLString = movieURLString;
+	}
+
+	public String getMovieFileString() {
+		return movieFileString;
+	}
+
+	public void setMovieFileString(String movieFileString) {
+		this.movieFileString = movieFileString;
+	}
+
 	public FRAPData getFrapData() {
 		return frapData;
 	}
@@ -1462,6 +1514,14 @@ public class FRAPStudy implements Matchable{
 		this.profileData_twoDiffComponents = profileData;
 	}
 	
+	public ProfileData[] getProfileData_reactionOffRate() {
+		return profileData_reactionOffRate;
+	}
+
+	public void setProfileData_reactionOffRate(ProfileData[] profileData) {
+		profileData_reactionOffRate = profileData;
+	}
+	
 	public Integer getStartingIndexForRecovery() {
 		return startingIndexForRecovery;
 	}
@@ -1481,24 +1541,34 @@ public class FRAPStudy implements Matchable{
 		return selectedROIsForErrCalculation;
 	}
 	
-	public boolean[] getSelectedROIsForReactionOffRateModel()
+	public int getNumSelectedROIs()
 	{
-		boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
-		int bleachedIdx = 0;
-		for(FRAPData.VFRAP_ROI_ENUM enu: FRAPData.VFRAP_ROI_ENUM.values())
+		int numSelectedROIs = 0;
+		for(boolean bSelected:selectedROIsForErrCalculation)
 		{
-			if(enu.equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			if(bSelected)
 			{
-				break;
+				numSelectedROIs++;
+			}
+		}
+		return numSelectedROIs;
+	}
+	
+	public boolean isROISelectedForErrorCalculation(String roiName)
+	{
+		int roiIdx = 0;
+		for(FRAPData.VFRAP_ROI_ENUM roiEnum:FRAPData.VFRAP_ROI_ENUM.values())
+		{
+			if(!roiName.equals(roiEnum.name()))
+			{
+				roiIdx++;
 			}
 			else
 			{
-				bleachedIdx ++;
+				break;
 			}
 		}
-		selectedROIs[bleachedIdx] = true;
-		
-		return selectedROIs;
+		return selectedROIsForErrCalculation[roiIdx];
 	}
 	
 	public boolean hasDiffusionOnlyModel()
@@ -1590,21 +1660,34 @@ public class FRAPStudy implements Matchable{
 	//the summary is for errors of different models under ROIs
 	public void createAnalysisMSESummaryData()
 	{
-		if(getFrapOptData() != null)
+		if(getFrapOptData() != null || getFrapOptFunc() != null)
 		{
-			double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];
-			
-			//get dimension reduced exp data
-			double[][] expData = getDimensionReducedExpData();
-			//calculate summary data
+			double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];//len: all ROIS except cellROI and bkgroundROI, plus a sum of error field
+			//fill sumData with big numbers
 			for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
 			{
-				//fill all elements with 1e8 first
 				Arrays.fill(sumData[i], FRAPOptimizationUtils.largeNumber);
-				
-				if(getFrapModel(i) != null && getFrapModel(i).getData() != null)
+			}
+			//get dimension reduced exp data
+			double[][] expData = getDimensionReducedExpData();
+			//calculate summary data for diffusion only models
+			if(getFrapOptData() != null)
+			{
+				for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
 				{
-					sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
+					
+					if((i == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT || i == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS) &&
+						getFrapModel(i) != null && getFrapModel(i).getData() != null)
+					{
+						sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
+					}
+				}
+			}
+			if(getFrapOptFunc() != null)
+			{
+				if(getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE) != null && getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).getData() != null)
+				{
+					sumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]=calculateMSE_OneParamSet(expData, getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).getData());
 				}
 			}
 			setAnalysisMSESummaryData(sumData);

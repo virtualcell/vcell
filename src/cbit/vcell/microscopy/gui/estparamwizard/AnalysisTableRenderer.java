@@ -62,7 +62,8 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 		}
     	
 		if((column == AnalysisTableModel.COLUMN_DIFF_ONE_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF &&/*there is a CI*/ table.getValueAt(row , column -1) != null) ||
-		   (column == AnalysisTableModel.COLUMN_DIFF_TWO_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF &&/*there is a CI*/ table.getValueAt(row , column -1) != null))
+		   (column == AnalysisTableModel.COLUMN_DIFF_TWO_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF &&/*there is a CI*/ table.getValueAt(row , column -1) != null) ||
+		   (column == AnalysisTableModel.COLUMN_KOFF_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE &&/*there is a CI*/ table.getValueAt(row , column -1) != null))
 		{
 			return button;
 		}
@@ -100,7 +101,18 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 				}
 			}
 		}	
-		
+		if(column == AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_KOFF_CI)
+		{
+			Object identifyStr = table.getValueAt(AnalysisTableModel.INDEX_MODEL_SIGNIFICANCE, AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL);
+			if(identifyStr instanceof String)
+			{
+				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
+				{
+					setForeground(Color.red);
+					setBackground(new Color(255,170,170));
+				}
+			}
+		}	
 		
 		return this;
 	}

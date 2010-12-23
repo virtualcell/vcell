@@ -3,6 +3,7 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 import javax.swing.table.AbstractTableModel;
 
 import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.ProfileDataElement;
 import org.vcell.optimization.ProfileSummaryData;
 
 import cbit.vcell.microscopy.FRAPModel;
@@ -13,11 +14,11 @@ import cbit.vcell.opt.Parameter;
 @SuppressWarnings("serial")
 public class AnalysisTableModel extends AbstractTableModel 
 {
-	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF + 2; //add one row for immobile fraction and one for model significance
-	public final static int NUM_COLUMNS = 7;//name + diff 1 model params+ CI +plot +diff 2 model params + CI +plot
-	public final static int INDEX_IMMOBILE_FRAC = 5;
+	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE + 2; //add one row for immobile fraction and one for model significance
+	public final static int NUM_COLUMNS = 10;//name + diff 1 model params+ CI +plot +diff 2 model params + CI +plot+koff model params +CI+plot
+	public final static int INDEX_IMMOBILE_FRAC = 8;
 	public final static String IMMOBILE_FRAC_NAME = "Immobile Fraction";
-	public final static int INDEX_MODEL_SIGNIFICANCE = 6;
+	public final static int INDEX_MODEL_SIGNIFICANCE = 9;
 	public final static String MODEL_SIGNIFICANCE_NAME = "Model Identifiability";
 	public final static int COLUMN_PARAM_NAME = 0;
 	public final static int COLUMN_DIFF_ONE_PARAMETER_VAL = 1;
@@ -26,7 +27,10 @@ public class AnalysisTableModel extends AbstractTableModel
 	public final static int COLUMN_DIFF_TWO_PARAMETER_VAL = 4;
 	public final static int COLUMN_DIFF_TWO_CI = 5;
 	public final static int COLUMN_DIFF_TWO_CI_PLOT = 6;
-	public final static String COL_LABELS[] = { "Parameter Name", "Value","Confidence Interval", "", "Value", "Confidence Interval", ""};
+	public final static int COLUMN_KOFF_PARAMETER_VAL = 7;
+	public final static int COLUMN_KOFF_CI = 8;
+	public final static int COLUMN_KOFF_CI_PLOT = 9;
+	public final static String COL_LABELS[] = {"Parameter Name", "Value","Confidence Interval", "", "Value", "Confidence Interval", "","Value", "Confidence Interval", ""};
 	public final static String STR_SIGNIFICANT = "";
 	public final static String STR_NOT_SIGNIFICANT = "NOT IDENTIFIABLE";
 	
@@ -35,10 +39,6 @@ public class AnalysisTableModel extends AbstractTableModel
 	private ProfileSummaryData[][] allProfileSumData = null;
 	private int currentConfidenceLevelIndex = 0; 
 	
-    public AnalysisTableModel() {
-    	super();
-    }
-
     public int getColumnCount() {
         return NUM_COLUMNS;
     }
@@ -57,7 +57,7 @@ public class AnalysisTableModel extends AbstractTableModel
     	}
     	
     	frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
-    	allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
+    	allProfileSumData = FRAPOptimizationUtils.getAllProfileSummaryData(frapWorkspace.getWorkingFrapStudy());
     	
     	if (frapModels == null)
     	{
@@ -65,17 +65,17 @@ public class AnalysisTableModel extends AbstractTableModel
     	}
     	if(col == COLUMN_PARAM_NAME)
     	{
-    		if(row == INDEX_IMMOBILE_FRAC)
+    		if(row < FRAPModel.MODEL_PARAMETER_NAMES.length)
+			{
+    			return FRAPModel.MODEL_PARAMETER_NAMES[row];
+			}
+    		else if(row == INDEX_IMMOBILE_FRAC)
     		{
     			return IMMOBILE_FRAC_NAME;
     		}
     		else if(row == INDEX_MODEL_SIGNIFICANCE)
     		{
     			return MODEL_SIGNIFICANCE_NAME;
-    		}
-    		else
-    		{
-    			return FRAPModel.MODEL_PARAMETER_NAMES[row];
     		}
     	}
     	else if(col == COLUMN_DIFF_ONE_PARAMETER_VAL)
@@ -99,17 +99,19 @@ public class AnalysisTableModel extends AbstractTableModel
     			}
     			else if(row == INDEX_MODEL_SIGNIFICANCE)
 	    		{
-    				if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
-    				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
+    				if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null)
     	    		{
 		    			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
 		    			{
-		    				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
-		    				if(intervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
-		    				   intervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
-		    				{
-		    					return STR_NOT_SIGNIFICANT;
-		    				}
+		    				if(allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i] != null)
+	    					{
+			    				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
+			    				if(intervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
+			    				   intervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+			    				{
+			    					return STR_NOT_SIGNIFICANT;
+			    				}
+	    					}
 		    			}
 		    			return STR_SIGNIFICANT;
     	    		}
@@ -125,10 +127,9 @@ public class AnalysisTableModel extends AbstractTableModel
     		//make sure diff_one model is selected
     		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null)
     		{
-	    		if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null &&
-	    		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
+	    		if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null)
 	    		{
-		    		if(row < FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+		    		if(row < FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][row] != null)
 					{
 		    			ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][row].getConfidenceIntervals();
 		    			return intervals[currentConfidenceLevelIndex].toString();
@@ -158,16 +159,18 @@ public class AnalysisTableModel extends AbstractTableModel
     			}
     			else if(row == INDEX_MODEL_SIGNIFICANCE)
 	    		{
-    				if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
-    				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
+    				if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null)
     	    		{
 		    			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
 		    			{
-		    				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
-		    				if(intervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
-		    				   intervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+		    				if(allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i] != null)
 		    				{
-		    					return STR_NOT_SIGNIFICANT;
+			    				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
+			    				if(intervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
+			    				   intervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+			    				{
+			    					return STR_NOT_SIGNIFICANT;
+			    				}
 		    				}
 		    			}
 		    			return STR_SIGNIFICANT;
@@ -184,10 +187,9 @@ public class AnalysisTableModel extends AbstractTableModel
     		//make sure two diff model is selected
     		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null && frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null)
     		{
-    			if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
-	    		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
+    			if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null)
 	    		{
-		    		if(row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+		    		if(row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][row] != null)
 					{
 		    			ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][row].getConfidenceIntervals();
 		    			return intervals[currentConfidenceLevelIndex].toString();
@@ -196,7 +198,79 @@ public class AnalysisTableModel extends AbstractTableModel
     		}
     		
     	}
-    	
+    	else if(col == COLUMN_KOFF_PARAMETER_VAL)
+    	{
+    		if(frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null && frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null)
+    		{
+    			Parameter[] params = frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters();
+    			if(row == FRAPModel.INDEX_BLEACH_MONITOR_RATE || row == FRAPModel.INDEX_OFF_RATE)
+    			{
+    				return params[row].getInitialGuess(); 
+    			}
+    			else if(row == INDEX_MODEL_SIGNIFICANCE)
+	    		{
+    				if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]!= null)
+    	    		{
+    					ProfileSummaryData[] ciSummaryData = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE];
+		    			for(int i=0; i<ciSummaryData.length; i++)
+		    			{
+		    				if(ciSummaryData[i] != null && ciSummaryData[i].getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+		    				{
+		    					ConfidenceInterval[] bwmIntervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][i].getConfidenceIntervals();
+			    				if(bwmIntervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[i].getUpperBound() && 
+			    				   bwmIntervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[i].getLowerBound())
+			    				{
+			    					return STR_NOT_SIGNIFICANT;
+			    				}
+		    				}
+	    					else if(ciSummaryData[i] != null && ciSummaryData[i].getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+	    					{
+	    						ConfidenceInterval[] offRateIntervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][i].getConfidenceIntervals();
+			    				if(offRateIntervals[currentConfidenceLevelIndex].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[i].getUpperBound() && 
+			    				   offRateIntervals[currentConfidenceLevelIndex].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[i].getLowerBound())
+			    				{
+			    					return STR_NOT_SIGNIFICANT;
+			    				}
+	    					}
+		    			}
+		    			return STR_SIGNIFICANT;
+    	    		}
+	    		}
+    		}
+    	}
+    	else if (col == COLUMN_KOFF_CI)
+    	{
+    		//make sure two diff model is selected
+    		if(frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null && frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null)
+    		{
+    			if(allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]!= null)
+	    		{
+    				ProfileSummaryData[] ciSummaryData = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE];
+    				if(row == FRAPModel.INDEX_BLEACH_MONITOR_RATE)
+    				{
+		    			for(int i=0; i<ciSummaryData.length; i++)
+		    			{
+		    				if(ciSummaryData[i] != null && ciSummaryData[i].getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+		    				{
+		    					ConfidenceInterval[] bwmIntervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][i].getConfidenceIntervals();
+			    				return bwmIntervals[currentConfidenceLevelIndex].toString();
+		    				}
+		    			}
+    				}
+    				if(row == FRAPModel.INDEX_OFF_RATE)
+    				{
+    					for(int i=0; i<ciSummaryData.length; i++)
+		    			{
+    						if(ciSummaryData[i] != null && ciSummaryData[i].getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+	    					{
+	    						ConfidenceInterval[] offRateIntervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][i].getConfidenceIntervals();
+			    				return offRateIntervals[currentConfidenceLevelIndex].toString();
+	    					}
+		    			}
+    				}
+	    		}
+    		}
+    	}
     	return null;
     }
 
@@ -223,6 +297,15 @@ public class AnalysisTableModel extends AbstractTableModel
     		case COLUMN_DIFF_TWO_CI_PLOT:{
     			return Object.class;
         	}
+    		case COLUMN_KOFF_PARAMETER_VAL:{
+    			return Double.class;
+    		}
+    		case COLUMN_KOFF_CI:{
+    			return String.class;
+        	}
+    		case COLUMN_KOFF_CI_PLOT:{
+    			return Object.class;
+        	}
 //    		case COLUMN_REAC_BINDING: {
 //    			return Double.class;
 //    		}
@@ -242,7 +325,8 @@ public class AnalysisTableModel extends AbstractTableModel
     public boolean isCellEditable(int row,int column) 
     {
     	if((column == COLUMN_DIFF_ONE_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF) ||
-    	   (column == COLUMN_DIFF_TWO_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF))
+    	   (column == COLUMN_DIFF_TWO_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF) ||
+    	   (column == COLUMN_KOFF_CI_PLOT && (row == FRAPModel.INDEX_BLEACH_MONITOR_RATE || row == FRAPModel.INDEX_OFF_RATE)))
     	{
     		return true;
     	}

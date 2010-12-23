@@ -10,10 +10,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
@@ -22,8 +24,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.gui.ConfidenceIntervalPlotPanel;
+import org.vcell.optimization.gui.ProfileDataPanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptFunctions;
@@ -332,7 +339,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				//TODO: action;
+				showParameterEvaluation();
 			}
 		});
 		buttonPanel.add(optimalButton);
@@ -538,7 +545,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		String errorStr = checkParameters();
 		if(errorStr.equals(""))
 		{
-			Parameter[] bestParameters = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getBestParamters(frapWorkspace.getWorkingFrapStudy().getFrapData());
+			Parameter[] bestParameters = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getBestParamters(frapWorkspace.getWorkingFrapStudy().getFrapData(), null);
 			setParameterValues(
 					new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
 					new Double(bestParameters[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()),//binding site is used to store fitting parameter A
@@ -550,6 +557,58 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		{
 			throw new IllegalArgumentException(errorStr);
 		}
+	}
+	
+	public void showParameterEvaluation()
+	{
+		
+		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				String errorStr = checkParameters();
+				if(!errorStr.equals(""))
+				{
+					throw new IllegalArgumentException(errorStr);
+				}
+			}
+		};
+		
+		AsynchClientTask showResultTask = new AsynchClientTask("Showing profile likelihood and confidence intervals ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				ProfileData[] profileData = frapWorkspace.getWorkingFrapStudy().getProfileData_reactionOffRate();
+				if(profileData != null && profileData.length > 0)
+				{
+					//put plotpanes of different parameters' profile likelihoods into a base panel
+					JPanel basePanel= new JPanel();
+			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
+					for(int i=0; i<profileData.length; i++)
+					{
+						ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
+						plotPanel.setProfileSummaryData(FRAPOptimizationUtils.getSummaryFromProfileData(profileData[i]));
+						plotPanel.setBorder(new EtchedBorder());
+						String paramName = "";
+						if(profileData[i].getProfileDataElements().size() > 0)
+						{
+							paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+						}
+						ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
+						basePanel.add(profileDataPanel);
+					}
+					JScrollPane scrollPane = new JScrollPane(basePanel);
+			    	scrollPane.setAutoscrolls(true);
+			    	scrollPane.setPreferredSize(new Dimension(620, 600));
+			    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			    	//show plots in a dialog
+			    	DialogUtils.showComponentCloseDialog(FRAPReacOffRateParametersPanel.this, scrollPane, "Profile Likelihood of Parameters");
+				}
+			}
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(FRAPReacOffRateParametersPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, true, null, true); 
 	}
 	
 	public static void main(String argv[])

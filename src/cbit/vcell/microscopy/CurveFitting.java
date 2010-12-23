@@ -5,11 +5,13 @@ import java.io.IOException;
 import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.SimpleReferenceData;
@@ -67,9 +69,9 @@ public class CurveFitting {
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
-		if (optSolverResultSet.getOptimizationStatus().isFailed()){
-			//throw new OptimizationException("optimization failed",paramValues);
-		}
+		//investigate the return information 
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
+		
 		//
 		// construct final equation
 		// 
@@ -85,7 +87,7 @@ public class CurveFitting {
 		//
 		// undo time shift
 		//
-		fit.substituteInPlace(new Expression("t"), new Expression("t-"+time[0]));
+		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
 		//
 		// undo fluorescence normalization
 		//
@@ -153,29 +155,23 @@ public class CurveFitting {
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
-		if (optSolverResultSet.getOptimizationStatus().isFailed()){
-			throw new OptimizationException("optimization failed",paramValues);
-		}
-
-		//
+		//investigate the return information 
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
+		
 		// construct recovery under bleached region by diffusion only expression
-		// 
 		Expression fit = new Expression(modelExp);
 
 		System.out.println("fit before subsituting parameters:"+fit.infix());
-		//
+		
 		// substitute parameter values
-		//
 		for (int i = 0; i < paramValues.length; i++) {
 			fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
 		}
-		//
+		
 		// undo time shift
-		//
-		fit.substituteInPlace(new Expression("t"), new Expression("t-"+time[0]));
-		//
+		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
+		
 		// undo fluorescence normalization
-		//
 		System.out.println("fit equation after unnorm:" + fit.infix());
 		return fit;
 	}
@@ -185,8 +181,9 @@ public class CurveFitting {
 	 * @para: flour, average intensities under bleached region according to time points since the first post bleach.
 	 * @para: inputparam, bleaching while monitoring rate, will be substituted in the model expression.
 	 * @para: outputParam, the array which will pass results back. 
+	 * output: double, return the least objective function error 
 	 */
-	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam) throws ExpressionException, OptimizationException, IOException
+	public static double fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate) throws ExpressionException, OptimizationException, IOException
 	{
 
 		if (time.length!=normalized_fluor.length){
@@ -211,6 +208,10 @@ public class CurveFitting {
 		double bleachWhileMonitoringRate = inputparam[1];
 		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(iniBleachedIntensity));
 		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]), new Expression(bleachWhileMonitoringRate));
+		if(offRate != null)
+		{
+			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]), new Expression(offRate));
+		}
 		
 		Parameter koffParam = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE],
 											FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
@@ -222,7 +223,16 @@ public class CurveFitting {
 												FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
 												FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(),
 												FRAPModel.REF_BS_CONCENTRATION_OR_A.getInitialGuess());
-		Parameter parameters[] = new Parameter[]{koffParam, fittingParamA};
+		//setting parameters to be esitmated
+		Parameter parameters[] = null;
+		if(offRate != null)
+		{
+			parameters = new Parameter[]{fittingParamA};
+		}
+		else
+		{
+			parameters = new Parameter[]{koffParam, fittingParamA};
+		}
 		//estimate parameters by minimizing the errors between function values and reference data
 		optResultSet = solve(koffRateExp.flatten(), parameters, normalized_time, normalized_fluor);
 		
@@ -238,32 +248,10 @@ public class CurveFitting {
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
+		//investigate the return information 
+		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
 		
-		if (optSolverResultSet.getOptimizationStatus().isFailed()){
-			throw new OptimizationException("optimization failed",paramValues);
-		}
-
-		//
-		// construct recovery under bleached region by reaction only expression
-		// 
-		Expression fit = new Expression(koffRateExp);
-
-		System.out.println("fit before subsituting parameters:"+fit.infix());
-		//
-		// substitute parameter values
-		//
-		for (int i = 0; i < paramValues.length; i++) {
-			fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
-		}
-		//
-		// undo time shift
-		//
-		fit.substituteInPlace(new Expression("t"), new Expression("t-"+time[0]));
-		//
-		// undo fluorescence normalization
-		//
-		System.out.println("fit equation after unnorm:" + fit.infix());
-		return fit;
+		return optSolverResultSet.getLeastObjectiveFunctionValue();
 	}
 	
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data) throws ExpressionException, OptimizationException, IOException {
@@ -282,7 +270,7 @@ public class CurveFitting {
 			realData[0][i] = time[i];
 			realData[1][i]= data[i];
 		}
-		String[] colNames = new String[]{"t", "intensity"};
+		String[] colNames = new String[]{ReservedSymbol.TIME.getName(), "intensity"};
 		double[] weights = new double[]{1.0,1.0};
 		SimpleReferenceData refData = new SimpleReferenceData(colNames, weights, realData);
 		//send to optimization service	
@@ -301,7 +289,6 @@ public class CurveFitting {
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
-
 		OptimizationResultSet optResultSet = null;
 		
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
@@ -312,6 +299,8 @@ public class CurveFitting {
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
+		
+//		optSolverCallbacks.showStatistics(); //uncomment for debug purpose
 		return optResultSet;
 	}
 
@@ -350,4 +339,21 @@ public class CurveFitting {
 		}
 		return optResultSet;
 	}
-}
+	
+	private static void processReturnCode(String solverType, OptSolverResultSet optResultSet) throws OptimizationException
+	{
+		int returnCode = optResultSet.getOptimizationStatus().getReturnCode(); 
+		//the normal termination code for both CFSQP and POWELL is 0. 
+		if(solverType.equals(OptimizationSolverSpec.SOLVERTYPE_CFSQP) || solverType.equals(OptimizationSolverSpec.SOLVERTYPE_POWELL))
+		{
+			String messageToUser = "Return code is: " + returnCode + ". The explaination of the return code is : \n" + optResultSet.getOptimizationStatus().getReturnMessage();
+			//if return code is abnormal termination, but we still can get best solution, let the program continue
+			//exception only will be thrown when return code is abnormal and not best solution acquired.
+			if(returnCode != OptimizationStatus.NORMAL_TERMINATION &&
+			   optResultSet.getBestEstimates() == null)
+			{
+				throw new OptimizationException(messageToUser);
+			}
+		}
+	}
+}//end of class

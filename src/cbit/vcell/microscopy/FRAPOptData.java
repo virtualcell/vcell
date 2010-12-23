@@ -47,6 +47,7 @@ public class FRAPOptData {
 	/*----------------for calculating confidence intervals of estimated parameters-----------------*/
 	//initial increasing/decreasing steps
 	public static final double[] DEFAULT_CI_STEPS = new double[]{0.04, 0.004, 0.04, 0.04, 0.04};
+	public static final double[] DEFAULT_CI_STEPS_OFF_RATE = new double[]{0.04, 0.04};
 	public static final int MAX_ITERATION = 100;
 	public static final double MIN_LIKELIHOOD_CHANGE = 0.01;
 	
@@ -1051,10 +1052,6 @@ public class FRAPOptData {
 		return resultData;
 	}
 	
-	
-	
-	
-	
 	public void getFromStoredRefData(SimpleReferenceData argSimRefData)
 	{
 		int roiLen = getExpFrapStudy().getFrapData().getROILength();
@@ -1069,188 +1066,5 @@ public class FRAPOptData {
 			}
 			dimensionReducedRefData = result;
 		}
-	}
-
-	public ProfileSummaryData getSummaryFromProfileData(ProfileData profileData) 
-	{
-		ArrayList<ProfileDataElement> profileElements = profileData.getProfileDataElements();
-		int dataSize = profileElements.size();
-		double[] paramValArray = new double[dataSize];
-		double[] errorArray = new double[dataSize];
-		if(dataSize >0)
-		{
-			//profile likelihood curve
-			String paramName = profileElements.get(0).getParamName();
-			//find the parameter to locate the upper and lower bounds
-			Parameter parameter = null;
-			Parameter[] bestParameters = profileElements.get(0).getBestParameters();
-			for(int i=0; i<bestParameters.length; i++)
-			{
-				if(bestParameters[i].getName().equals(paramName))
-				{
-					parameter = bestParameters[i];
-				}
-			}
-//			double upperBound = (parameter == null)? 100 : parameter.getUpperBound();
-//			double lowerBound = (parameter == null)? 0 : parameter.getLowerBound();
-//			double logUpperBound = (upperBound == 0)? 0: Math.log10(upperBound);
-//			double logLowerBound = (lowerBound == 0)? 0: Math.log10(lowerBound);
-			for(int i=0; i<dataSize; i++)
-			{
-				paramValArray[i] = profileElements.get(i).getParameterValue();
-				errorArray[i] = profileElements.get(i).getLikelihood();
-			}
-			PlotData dataPlot = new PlotData(paramValArray, errorArray);
-			//get confidence interval line
-			//make array copy in order to not change the data orders afte the sorting
-			double[] paramValArrayCopy = new double[paramValArray.length];
-			System.arraycopy(paramValArray, 0, paramValArrayCopy, 0, paramValArray.length);
-			double[] errorArrayCopy = new double[errorArray.length];
-			System.arraycopy(errorArray, 0, errorArrayCopy, 0, errorArray.length);
-			DescriptiveStatistics paramValStat = DescriptiveStatistics.CreateBasicStatistics(paramValArrayCopy);
-			DescriptiveStatistics errorStat = DescriptiveStatistics.CreateBasicStatistics(errorArrayCopy);
-			double[] xArray = new double[2];
-			double[][] yArray = new double[ConfidenceInterval.NUM_CONFIDENCE_LEVELS][2];
-			//get confidence level plot lines
-			xArray[0] = paramValStat.getMin() -  (Math.abs(paramValStat.getMin()) * 0.2);
-			xArray[1] = paramValStat.getMax() + (Math.abs(paramValStat.getMax()) * 0.2) ;
-			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-			{
-				yArray[i][0] = errorStat.getMin() + ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-				yArray[i][1] = yArray[i][0];
-			}
-			PlotData confidence80Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_80]);
-			PlotData confidence90Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_90]);
-			PlotData confidence95Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_95]);
-			PlotData confidence99Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_99]);
-			//generate plot2D data
-			Plot2D plots = new Plot2D(null,new String[] {"profile Likelihood Data", "80% confidence", "90% confidence", "95% confidence", "99% confidence"}, 
-					                  new PlotData[] {dataPlot, confidence80Plot, confidence90Plot, confidence95Plot, confidence99Plot},
-					                  new String[] {"Profile likelihood of " + paramName, "Log base 10 of "+paramName, "Profile Likelihood"}, 
-					                  new boolean[] {true, true, true, true, true});
-			//get the best parameter for the minimal error
-			int minErrIndex = -1;
-			for(int i=0; i<errorArray.length; i++)
-			{
-				if(errorArray[i] == errorStat.getMin())
-				{
-					minErrIndex = i;
-					break;
-				}
-			}
-			double bestParamVal = Math.pow(10,paramValArray[minErrIndex]);
-			//find confidence interval points
-			ConfidenceInterval[] intervals = new ConfidenceInterval[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-			//half loop through the errors(left side curve)
-			int[] smallLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
-			int[] bigLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-			{
-				smallLeftIdx[i] = -1;
-				bigLeftIdx[i] = -1;
-				for(int j=1; j < minErrIndex+1 ; j++)//loop from bigger error to smaller error
-				{
-					if((errorArray[j] < (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])) &&
-					   (errorArray[j-1] > (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])))
-					{
-						smallLeftIdx[i]= j-1;
-						bigLeftIdx[i]=j;
-						break;
-					}
-				}
-			}
-			//another half loop through the errors(right side curve)
-			int[] smallRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
-			int[] bigRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-			{
-				smallRightIdx[i] = -1;
-				bigRightIdx[i] = -1;
-				for(int j=(minErrIndex+1); j<errorArray.length; j++)//loop from bigger error to smaller error
-				{
-					if((errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) < errorArray[j] &&
-					   (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) > errorArray[j-1])
-					{
-						smallRightIdx[i]= j-1;
-						bigRightIdx[i]=j;
-						break;
-					}
-				}
-			}
-			//calculate intervals
-			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-			{
-				double lowerBound = Double.NEGATIVE_INFINITY;
-				boolean bLowerBoundOpen = true;
-				double upperBound = Double.POSITIVE_INFINITY;
-				boolean bUpperBoundOpen = true;
-				if(smallLeftIdx[i] == -1 && bigLeftIdx[i] == -1)//no lower bound
-				{
-					lowerBound = parameter.getLowerBound();
-					bLowerBoundOpen = false;
-				}
-				else if(smallLeftIdx[i] != -1 && bigLeftIdx[i] != -1)//there is a lower bound
-				{
-					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
-					double x1 = paramValArray[smallLeftIdx[i]];
-					double x2 = paramValArray[bigLeftIdx[i]];
-					double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-					double y1 = errorArray[smallLeftIdx[i]];
-					double y2 = errorArray[bigLeftIdx[i]];
-					lowerBound = x1+(x2-x1)*(y-y1)/(y2-y1);
-					lowerBound = Math.pow(10,lowerBound);
-					bLowerBoundOpen = false;
-				}
-				if(smallRightIdx[i] == -1 && bigRightIdx[i] == -1)//no upper bound
-				{
-					upperBound = parameter.getUpperBound();
-					bUpperBoundOpen = false;
-				}
-				else if(smallRightIdx[i] != -1 && bigRightIdx[i] != -1)//there is a upper bound
-				{
-					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
-					double x1 = paramValArray[smallRightIdx[i]];
-					double x2 = paramValArray[bigRightIdx[i]];
-					double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-					double y1 = errorArray[smallRightIdx[i]];
-					double y2 = errorArray[bigRightIdx[i]];
-					upperBound = x1+(x2-x1)*(y-y1)/(y2-y1);
-					upperBound = Math.pow(10,upperBound);
-					bUpperBoundOpen = false;
-				}
-				intervals[i] = new ConfidenceInterval(lowerBound, bLowerBoundOpen, upperBound, bUpperBoundOpen);
-			}
-			return new ProfileSummaryData(plots, bestParamVal, intervals, paramName);
-		}
-		return null;
-	}
-	
-	//save all the profile summary data for parameters from either one diffusing component model or two diffusing components model
-	//first dimension :2 two types of models, second dimension :5 max parameters length(3 for Diff 1, 5 for Diff 2)
-	public ProfileSummaryData[][] getAllProfileSummaryData()
-	{
-//		if(allProfileSummaryData == null)
-//		{
-			ProfileSummaryData[][] summaryData = new ProfileSummaryData[FRAPModel.NUM_MODEL_TYPES-1][FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
-			//for parameters from diffusion with one diffusing component
-			if(getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
-			{
-				ProfileData[] profileData = getExpFrapStudy().getProfileData_oneDiffComponent();
-				for(int i=0; i<profileData.length; i++)
-				{
-					summaryData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i] = getSummaryFromProfileData(profileData[i]);
-				}
-			}
-			if(getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
-			{
-				ProfileData[] profileData = getExpFrapStudy().getProfileData_twoDiffComponents();
-				for(int i=0; i<profileData.length; i++)
-				{
-					summaryData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i] = getSummaryFromProfileData(profileData[i]);
-				}
-			}
-			allProfileSummaryData = summaryData;
-//		}
-		return allProfileSummaryData;
 	}
 }
