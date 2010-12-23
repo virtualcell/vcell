@@ -10,7 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
+import javax.media.jai.operator.DivideDescriptor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -25,14 +27,17 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptFunctions;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
@@ -67,7 +72,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 		gridBagConstraints_8.gridx = 0;
 		paramPanel.add(interactiveAnalysisLabel, gridBagConstraints_8);
 		interactiveAnalysisLabel.setFont(new Font("", Font.PLAIN, 14));
-		interactiveAnalysisLabel.setText("Interactive Analysis on 'Finding Reaction Off Rate' Model using Analytic Equations");
+		interactiveAnalysisLabel.setText("Interactive Analysis on 'Reaction Dominant Off Rate' Model using Analytic Equations");
 
 		offRateParamPanel = new FRAPReacOffRateParametersPanel();
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
@@ -136,7 +141,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 				   frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation() != null)
 				{
 					getROIPanel().setFrapWorkspace(frapWorkspace);
-					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForReactionOffRateModel());
+					getROIPanel().setCheckboxesForDisplay(FRAPStudy.createSelectedROIsForReactionOffRateModel());
 					getROIPanel().refreshROIImageForDisplay();
 				}
 				JOptionPane.showMessageDialog(EstParams_ReactionOffRatePanel.this, getROIPanel());
@@ -196,7 +201,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 		displayResults(fData, startIndexRecovery);
 	}
 	
-	private void displayResults(FRAPData frapData, int startIndexRecovery) throws ExpressionException
+	private void displayResults(FRAPData frapData, int startIndexRecovery) throws ExpressionException, DivideByZeroException
 	{
 		Parameter[] currentParams = offRateParamPanel.getCurrentParameters();
 		if (frapData == null || currentParams == null)
@@ -209,18 +214,18 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			//Experiment - Cell ROI Average
 			double[] temp_background = frapData.getAvgBackGroundIntensity();
 			double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
-			double[] cellRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
-			ReferenceData expCellAvgData = new SimpleReferenceData(new String[] { "t", "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] {frapDataTimeStamps, cellRegionData });
+			/*double[] cellRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
+			ReferenceData expCellAvgData = new SimpleReferenceData(new String[] { ReservedSymbol.TIME.getName(), "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] {frapDataTimeStamps, cellRegionData });
 			DataSource expCellAvgDataSource = new DataSource.DataSourceReferenceData("exp", expCellAvgData);
 			//Analytic - Cell ROI Average with Bleach while monitor
 			ODESolverResultSet bleachWhileMonitorOdeSolverResultSet = new ODESolverResultSet();
-			bleachWhileMonitorOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+			bleachWhileMonitorOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedSymbol.TIME.getName()));
 			Expression cellAvgExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 			// substitute parameter values 
 			cellAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellRegionData[startIndexRecovery]));
 			cellAvgExp.substituteInPlace(new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getName()), new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()));
 			// time shift
-			cellAvgExp.substituteInPlace(new Expression("t"), new Expression("t-"+frapDataTimeStamps[startIndexRecovery]));
+			cellAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
 			try {
 				bleachWhileMonitorOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
@@ -234,15 +239,15 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			{
 				bleachWhileMonitorOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
 			}
-			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", bleachWhileMonitorOdeSolverResultSet);
+			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", bleachWhileMonitorOdeSolverResultSet);*/
 
 			//experimental bleach region average intensity curve
 			double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
-			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
+			ReferenceData expRefData = new SimpleReferenceData(new String[] { ReservedSymbol.TIME.getName(), "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
 			DataSource expBleachDataSource = new DataSource.DataSourceReferenceData("exp", expRefData);
 			//Analytic - bleach region average intensity with bleach while monitoring rate
 			ODESolverResultSet koffFitOdeSolverResultSet = new ODESolverResultSet();
-			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedSymbol.TIME.getName()));
 			Expression bleachedAvgExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
 			// substitute parameter values 
 			bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachRegionData[startIndexRecovery]));
@@ -250,7 +255,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(currentParams[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()));
 			bleachedAvgExp.substituteInPlace(new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getName()), new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getInitialGuess()));
 			// time shift
-			bleachedAvgExp.substituteInPlace(new Expression("t"), new Expression("t-"+frapDataTimeStamps[startIndexRecovery]));
+			bleachedAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
 			try {
 				koffFitOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
@@ -260,14 +265,46 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 			}
+			double[] truncatedTimes = new double[frapDataTimeStamps.length - startIndexRecovery];
 			for (int i = startIndexRecovery; i < frapDataTimeStamps.length; i++) 
 			{
 				koffFitOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
+				truncatedTimes[i-startIndexRecovery] = frapDataTimeStamps[i];
 			}
+			setCurrentEstimationResults(createCurrentEstimationResults(bleachedAvgExp.flatten(), truncatedTimes));
 			DataSource koffFitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", koffFitOdeSolverResultSet);
-			multisourcePlotPane.setDataSources(new DataSource[] {expBleachDataSource, koffFitDataSource , expCellAvgDataSource , bleachWhileMonitorDataSource} );
+			multisourcePlotPane.setDataSources(new DataSource[] {expBleachDataSource, koffFitDataSource /*, expCellAvgDataSource , bleachWhileMonitorDataSource*/} );
 			multisourcePlotPane.selectAll();		
 		}
+	}
+	
+	//with all rois in first dimension and reduced time points in second dimension.
+	public double[][] createCurrentEstimationResults(Expression bleachedAvgExp, double[] time) throws DivideByZeroException, ExpressionException
+	{
+		double[][] result = null;
+		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		int roiLen = frapData.getROILength();
+		result = new double[roiLen][time.length];
+		
+		for(int i=0; i< FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			{
+				for(int j=0; j<time.length; j++)
+				{
+					Expression tempExp = new Expression(bleachedAvgExp);
+					double tempData;
+					tempExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[j]));
+					tempData = tempExp.evaluateConstant();
+					result[i][j] = tempData;
+				}
+			}
+			else
+			{
+				Arrays.fill(result[i], FRAPOptimizationUtils.largeNumber);
+			}
+		}
+		return result;
 	}
 	
 	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)

@@ -33,6 +33,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 {
 	private JLabel oneDiffComponentLabel = null;
 	private JLabel twoDiffComponentLabel = null;
+	private JLabel reactionOffRateLabel = null;
 	private JPanel titlePanel = null;
 	private JPanel modelPanel = null;
 	private JPanel tablePanel = null;
@@ -126,8 +127,14 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			gridBagConstraints2.gridy = 2;
 			gridBagConstraints2.anchor = GridBagConstraints.WEST;
 					
+			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+			gridBagConstraints3.gridx = 1;
+			gridBagConstraints3.gridy = 4;
+			gridBagConstraints3.anchor = GridBagConstraints.WEST;
+			
 			modelPanel.add(getOneDiffComLabel(), gridBagConstraints1);
 			modelPanel.add(getTwoDiffComLabel(), gridBagConstraints2);
+			modelPanel.add(getRactionOffRateLabel(), gridBagConstraints3);
 		}	
 		return modelPanel;
 	}
@@ -136,7 +143,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 	{
 		if(oneDiffComponentLabel == null)
 		{
-			oneDiffComponentLabel = new JLabel(" \u25CF  Diffusion with One Diffusing Component ");
+			oneDiffComponentLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 			oneDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return oneDiffComponentLabel;
@@ -146,10 +153,20 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 	{
 		if(twoDiffComponentLabel == null)
 		{
-			twoDiffComponentLabel = new JLabel(" \u25CF  Diffusion with Two Diffusing Components ");
+			twoDiffComponentLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 			twoDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return twoDiffComponentLabel;
+	}
+	
+	public JLabel getRactionOffRateLabel()
+	{
+		if(reactionOffRateLabel == null)
+		{
+			reactionOffRateLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]);
+			reactionOffRateLabel.setFont(new Font("arial", Font.PLAIN, 12));
+		}
+		return reactionOffRateLabel;
 	}
 	
 //	public JLabel getReacBindingLabel()
@@ -172,15 +189,28 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		twoDiffComponentLabel.setBorder(new LineBorder(Color.black, 2));
 	}
 	
+	private void highLightOffRateLabel()
+	{
+		reactionOffRateLabel.setBorder(new LineBorder(Color.black, 2));
+	}
+	
 //	private void highLightReacBindingLabel()
 //	{
 //		reacBindingLabel.setBorder(new LineBorder(Color.black, 2));
 //	}
 	
-	public void clearBestModel()
+	public void clearBestModelDisplay()
+	{
+		clearBestModelLabelHighlight();
+		setRunSimButtonEnable(false);
+		setResultsButtonEnabled(false);
+	}
+	
+	public void clearBestModelLabelHighlight()
 	{
 		oneDiffComponentLabel.setBorder(null);
 		twoDiffComponentLabel.setBorder(null);
+		reactionOffRateLabel.setBorder(null);
 //		reacBindingLabel.setBorder(null);
 	}
 	
@@ -227,7 +257,6 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			setResultsButtonEnabled(false); //enable it after loading frap data/doc(if sim data exists).
 			buttonPanel.add(getRunSimButton(), BorderLayout.WEST);
 			buttonPanel.add(new JLabel("             "), BorderLayout.CENTER); //used to nicely arrange buttons
-			buttonPanel.setBackground(Color.white);
 		}
 		return buttonPanel;
 	}
@@ -295,7 +324,6 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 	
 	public void setBestModel(int bestModelIndex, LocalWorkspace localWorkspace)
 	{
-		clearBestModel();
 		if(bestModelIndex == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
 			highLightOneDiffLabel();
@@ -304,29 +332,30 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		{
 			highLightTwoDiffLabel();
 		}
+		else if(bestModelIndex == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		{
+			highLightOffRateLabel();
+		}
 		else
 		{
 //			highLightReacBindingLabel();
 		}
 		//refresh parameter table and buttons
 		FRAPStudy fStudy = getFRAPWorkspace().getWorkingFrapStudy();
-		setRunSimButtonEnable(false);
-		setResultsButtonEnabled(false);
 		if(fStudy.getModels()[bestModelIndex].getModelParameters() != null && fStudy.getModels()[bestModelIndex].getModelParameters().length > 0)
 		{
 			getBestParameterTableModel().setBestModelIndex(bestModelIndex);
-			setRunSimButtonEnable(true);
-			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
-			   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
-			   fStudy.getFrapDataExternalDataInfo() != null && fStudy.getRoiExternalDataInfo() != null &&
-			   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+			if(bestModelIndex != FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
 			{
-				setResultsButtonEnabled(true);
+				setRunSimButtonEnable(true);
+				if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
+				   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
+				   fStudy.getFrapDataExternalDataInfo() != null && fStudy.getRoiExternalDataInfo() != null &&
+				   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+				{
+					setResultsButtonEnabled(true);
+				}
 			}
-		}
-		else
-		{
-			clearResultTable();
 		}
 	}
 	

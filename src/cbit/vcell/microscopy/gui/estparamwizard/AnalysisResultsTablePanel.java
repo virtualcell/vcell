@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -39,6 +40,7 @@ import org.vcell.util.gui.StyleTable;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.groupableTableHeader.ColumnGroup;
 import cbit.vcell.microscopy.gui.groupableTableHeader.GroupableTableColumnModel;
@@ -213,18 +215,22 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         }
         
         GroupableTableColumnModel cm = (GroupableTableColumnModel)table.getColumnModel();
-        ColumnGroup group_df1 = new ColumnGroup(new GroupableTableCellRenderer(),"Diffusion with one diffusing component");
+        ColumnGroup group_df1 = new ColumnGroup(new GroupableTableCellRenderer(),"Diffusion with one diffusing component (DF1)");
         group_df1.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_ONE_PARAMETER_VAL));
         group_df1.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_ONE_CI));
         group_df1.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_ONE_CI_PLOT));
-        ColumnGroup group_df2 = new ColumnGroup(new GroupableTableCellRenderer(), "Diffusion with two diffusing components");
+        ColumnGroup group_df2 = new ColumnGroup(new GroupableTableCellRenderer(), "Diffusion with two diffusing components (DF2)");
         group_df2.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_TWO_PARAMETER_VAL));
         group_df2.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_TWO_CI));
         group_df2.add(cm.getColumn(AnalysisTableModel.COLUMN_DIFF_TWO_CI_PLOT));
+        ColumnGroup group_koff = new ColumnGroup(new GroupableTableCellRenderer(), "Reaction Only Off Rate (KOff)");
+        group_koff.add(cm.getColumn(AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL));
+        group_koff.add(cm.getColumn(AnalysisTableModel.COLUMN_KOFF_CI));
+        group_koff.add(cm.getColumn(AnalysisTableModel.COLUMN_KOFF_CI_PLOT));
         
         cm.addColumnGroup(group_df1);
         cm.addColumnGroup(group_df2);
-        
+        cm.addColumnGroup(group_koff);
         //set special editor for confidence interval plot columns
         AnalysisTableEditor ciPlotTableEditor = new AnalysisTableEditor(table);
         ciPlotTableEditor.addPropertyChangeListener(this);
@@ -236,6 +242,10 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         diffTwoCIPlotCol.setCellEditor(ciPlotTableEditor);
         diffTwoCIPlotCol.setPreferredWidth(68);
         diffTwoCIPlotCol.setMaxWidth(68);
+        TableColumn koffCIPlotCol = table.getColumnModel().getColumn(AnalysisTableModel.COLUMN_KOFF_CI_PLOT);
+        koffCIPlotCol.setCellEditor(ciPlotTableEditor);
+        koffCIPlotCol.setPreferredWidth(68);
+        koffCIPlotCol.setMaxWidth(68);
         
         table.addMouseListener(evtHandler);
         scrTable = new JScrollPane(table);
@@ -243,11 +253,11 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
     }
 
 	public void actionPerformed(ActionEvent evt) {
-		ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
+		ProfileSummaryData[][] allProfileSumData = FRAPOptimizationUtils.getAllProfileSummaryData(frapWorkspace.getWorkingFrapStudy());
 		FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
 		int confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_80;
-		boolean diffOneModelSignificance = true;
-		boolean diffTwoModelSignificance = true;
+		boolean[] modelSignificance = new boolean[FRAPModel.NUM_MODEL_TYPES];
+		Arrays.fill(modelSignificance, true);
 		
 		if(confidence80RadioButton.isSelected())
 		{
@@ -270,9 +280,10 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 			confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_99;
 		}
 		//adjust best model button
-		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
-		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
-		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
+		int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
+		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
+		   frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null)
 		{
 			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
 			{
@@ -280,14 +291,14 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
 				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
 				{
-					diffOneModelSignificance = false;
+					modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = false;
 					break;
 				}
 			}
 		}
-		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null && frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
-		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
-		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
+		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
+		   frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null)
 		{
 			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
 			{
@@ -295,38 +306,70 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
 				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
 				{
-					diffTwoModelSignificance = false;
+					modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = false;
 					break;
 				}
 			}
 		}
-		int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
-		if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
+		if(frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null &&
+		   frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null &&
+		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]!= null)
 		{
-			if(diffTwoModelSignificance)
+			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE; i++)
 			{
-				bestModel = FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
+				if(i == FRAPModel.INDEX_BLEACH_MONITOR_RATE)
+				{
+					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_BLEACH_MONITOR_RATE].getConfidenceIntervals();
+					if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getUpperBound() && 
+					   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getLowerBound())
+					{
+						modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = false;
+						break;
+					}
+				}
+				else if(i == FRAPModel.INDEX_OFF_RATE)
+				{
+					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_OFF_RATE].getConfidenceIntervals();
+					if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getUpperBound() && 
+					   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getLowerBound())
+					{
+						modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = false;
+						break;
+					}
+				}
 			}
 		}
-		else //both model are identifiable or not identifiable, we choose the one with least sum of error
-		{
-			double[][] mseSummaryData = frapWorkspace.getWorkingFrapStudy().getAnalysisMSESummaryData();
-	    	
-    		//check least error model
-	    	double minError = 1E8;
-	    	if(mseSummaryData != null)
-	    	{
-	    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error
-	    		for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+		//check least error model with significance
+    	double minError = 1E8;
+    	double[][] mseSummaryData = frapWorkspace.getWorkingFrapStudy().getAnalysisMSESummaryData();
+    	if(mseSummaryData != null)
+    	{
+    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error
+    		if(modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] &&
+    		   modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS])
+    		{//if all models' significance are the same, find the least error
+    			for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
 	    		{
-	    			if(minError > mseSummaryData[i][secDimLen - 1])
+	    			if((minError > mseSummaryData[i][secDimLen - 1]))
 	    			{
 	    				minError = mseSummaryData[i][secDimLen - 1];
 	    				bestModel = i;
 	    			}
 	    		}
-	    	}
-		}
+    		}
+    		else
+    		{//if models' significance are different, find the least error with significance
+	    		for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+	    		{
+	    			if(modelSignificance[i] && (minError > mseSummaryData[i][secDimLen - 1]))
+	    			{
+	    				minError = mseSummaryData[i][secDimLen - 1];
+	    				bestModel = i;
+	    			}
+	    		}
+    		}
+    	}
+		
 		firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(bestModel));
 	}
 
@@ -345,7 +388,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
 
 			    	ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-					plotPanel.setProfileSummaryData(frapWorkspace.getWorkingFrapStudy().getFrapOptData().getSummaryFromProfileData(profileData[paramIdx]));
+					plotPanel.setProfileSummaryData(FRAPOptimizationUtils.getSummaryFromProfileData(profileData[paramIdx]));
 					plotPanel.setBorder(new EtchedBorder());
 					String paramName = "";
 					if(profileData[paramIdx].getProfileDataElements().size() > 0)
@@ -380,7 +423,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
 					
 					ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-					plotPanel.setProfileSummaryData(frapWorkspace.getWorkingFrapStudy().getFrapOptData().getSummaryFromProfileData(profileData[paramIdx]));
+					plotPanel.setProfileSummaryData(FRAPOptimizationUtils.getSummaryFromProfileData(profileData[paramIdx]));
 					plotPanel.setBorder(new EtchedBorder());
 					String paramName = "";
 					if(profileData[paramIdx].getProfileDataElements().size() > 0)
@@ -394,6 +437,62 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 					JScrollPane scrollPane = new JScrollPane(basePanel);
 			    	scrollPane.setAutoscrolls(true);
 			    	scrollPane.setPreferredSize(new Dimension(620, 600));
+			    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			    	//show plots in a dialog
+			    	DialogUtils.showComponentCloseDialog(parent, scrollPane, "Profile Likelihood of Parameters");
+				}
+				else
+				{
+					DialogUtils.showErrorDialog(parent, "Confidence Intervals haven't been evaluated.");
+				}
+			}
+			else if(((Integer)evt.getNewValue()).intValue() == AnalysisTableModel.COLUMN_KOFF_CI_PLOT)
+			{
+				if(frapWorkspace.getWorkingFrapStudy() != null && frapWorkspace.getWorkingFrapStudy().getProfileData_reactionOffRate()!= null)
+				{
+					ProfileData[] profileData = frapWorkspace.getWorkingFrapStudy().getProfileData_reactionOffRate();
+					ProfileData tempProfileData = null;
+					if(getTable().getSelectedRow() == FRAPModel.INDEX_BLEACH_MONITOR_RATE)
+					{
+						for(ProfileData pData: profileData)
+						{
+							if(pData.getProfileDataElements().size() > 0 && pData.getProfileDataElements().get(0).getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+							{
+								tempProfileData = pData;
+							}
+						}
+					}
+					else if(getTable().getSelectedRow() == FRAPModel.INDEX_OFF_RATE)
+					{
+						for(ProfileData pData: profileData)
+						{
+							if(pData.getProfileDataElements().size() > 0 && pData.getProfileDataElements().get(0).getParamName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+							{
+								tempProfileData = pData;
+							}
+						}
+					}
+					
+					//put plotpanes of different parameters' profile likelihoods into a base panel
+					JPanel basePanel= new JPanel();
+			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
+
+			    	ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
+					plotPanel.setProfileSummaryData(FRAPOptimizationUtils.getSummaryFromProfileData(tempProfileData));
+					plotPanel.setBorder(new EtchedBorder());
+					String paramName = "";
+					if(tempProfileData.getProfileDataElements().size() > 0)
+					{
+						paramName = tempProfileData.getProfileDataElements().get(0).getParamName();
+					}
+					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
+					profileDataPanel.setProfileDataPlotDetailsVisible(true);
+					basePanel.add(profileDataPanel);
+					
+					JScrollPane scrollPane = new JScrollPane(basePanel);
+			    	scrollPane.setAutoscrolls(true);
+			    	scrollPane.setPreferredSize(new Dimension(600, 600));
 			    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			    	//show plots in a dialog

@@ -3,6 +3,7 @@ package cbit.vcell.microscopy.gui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.help.plaf.basic.BasicFavoritesNavigatorUI.RemoveAction;
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
@@ -50,7 +51,10 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
     	if (row<0 || row>=getRowCount()){
     		throw new RuntimeException("AnalysisTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
     	}
-    	
+    	if(bestModelIndex == null)
+    	{
+    		return null;
+    	}
     	Parameter param = getParameter(row);
         
     	if (param == null)
@@ -128,18 +132,27 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
     	if( bestModelIndex != null && -1 < bestModelIndex.intValue() && bestModelIndex.intValue() < FRAPModel.NUM_MODEL_TYPES)
     	{
 	    	FRAPModel bestModel = getFrapWorkspace().getWorkingFrapStudy().getModels()[bestModelIndex.intValue()];
-	    	parameters = bestModel.getModelParameters();
-	        return parameters;
+	    	if(bestModel != null)
+	    	{
+		    	if(bestModelIndex != FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		    	{
+		    		parameters = bestModel.getModelParameters();
+		    	}
+		    	else
+		    	{
+		    		parameters = new Parameter[2];
+		    		parameters[0] = bestModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+		    		parameters[1] = bestModel.getModelParameters()[FRAPModel.INDEX_OFF_RATE];
+		    	}
+		    	return parameters;
+	    	}
     	}
-    	else
-    	{
-    		return null;
-    	}
-    }
+   		return null;
+   	}
     
     public Parameter getParameter(int paramIndex)
     {
-    	if(parameters != null)
+    	if(parameters != null && paramIndex < parameters.length)
     	{
     		return parameters[paramIndex];
     	}

@@ -15,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -178,9 +179,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private JPanel simResultsViewPanel = null;
 	private JPanel fitSpatialModelPanel = null;
 	private FRAPSimDataViewerPanel frapSimDataViewerPanel = null;
-	//to store movie file info. movie file will be refreshed after each simulation run.
-	private String movieURLString = null;
-	private String movieFileString = null;
 	
 	//wizards created for new VFRAP version
 	private Wizard loadFRAPDataWizard = null;
@@ -362,9 +360,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setRoiExternalDataInfo(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setStoredRefData(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setFrapOptFunc(null);
 	  	   						//reset data for confidence intervals
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setProfileData_oneDiffComponent(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setProfileData_twoDiffComponents(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setProfileData_reactionOffRate(null);
 	  	   						//clear model parameters
 	  	   						FRAPModel[] models = getFrapWorkspace().getWorkingFrapStudy().getModels();
 	  	   						if(models != null)
@@ -1091,7 +1091,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if(fStudy.hasDiffusionOnlyModel())
+				if(fStudy.getSelectedModels() != null && fStudy.getSelectedModels().size() > 0)
 				{
 					ArrayList<Integer> models = fStudy.getSelectedModels();
 					for(int i = 0; i<models.size(); i++)
@@ -1120,10 +1120,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						}
 						else if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
 						{
-							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() == null)
 							{
-								Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData());
-								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+								Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null);
+								fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].setModelParameters(bestParameters);
 								fStudy.setSaveNeeded(true);
 							}
 						}
@@ -1138,7 +1138,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if(fStudy.hasDiffusionOnlyModel())
+				if(fStudy.getSelectedModels() != null && fStudy.getSelectedModels().size() > 0)
 				{
 					ArrayList<Integer> models = fStudy.getSelectedModels();
 					for(int i = 0; i<models.size(); i++)
@@ -1151,7 +1151,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								Parameter[] currentParams = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
 								fStudy.getFrapOptData().setNumEstimatedParams(currentParams.length);
 								ProfileData[] profileData = null;
-								if(fStudy.getFrapOptData().getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
+								if(fStudy.getProfileData_oneDiffComponent() != null )
 								{
 									profileData = fStudy.getProfileData_oneDiffComponent();
 								}
@@ -1171,7 +1171,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								Parameter[] currentParams = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
 								fStudy.getFrapOptData().setNumEstimatedParams(currentParams.length);
 								ProfileData[] profileData = null;
-								if(fStudy.getFrapOptData().getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
+								if(fStudy.getProfileData_twoDiffComponents() != null )
 								{
 									profileData = fStudy.getProfileData_twoDiffComponents();
 								}
@@ -1183,7 +1183,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								}
 							}
 						}
-						
+						else if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null &&
+							   fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters().length > 0)
+							{
+								Parameter[] currentParams = fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters();
+								ProfileData[] profileData = null;
+								if(fStudy.getProfileData_reactionOffRate() != null )
+								{
+									profileData = fStudy.getProfileData_reactionOffRate();
+								}
+								else
+								{
+								    profileData = fStudy.getFrapOptFunc().evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+								    fStudy.setProfileData_reactionOffRate(profileData);
+								    fStudy.setSaveNeeded(true);
+								}
+							}
+						}
 					}
 				}
 				hashTable.put(FRAPSTUDY_KEY, fStudy);
@@ -1221,7 +1239,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				final Wizard estParamWizard = getEstimateParametersWizard();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						estParamWizard.showModalDialog(new Dimension(1000,700));
+						estParamWizard.showModalDialog(new Dimension(1000,750));
 					}
 				});
 				//put wizard in hashtable in order to check return code in next task
@@ -1258,10 +1276,36 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask, runOptTask, evaulateCITask, showDialogTask, updateSaveStatusTask}, true, true, true, null, true);
 	}
 	
+	public void clearSimulationResults()
+	{
+		if(getFrapWorkspace().getWorkingFrapStudy()!= null && getFrapWorkspace().getWorkingFrapStudy().getBioModel() != null 
+		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations() != null
+		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations().length > 0)
+		{
+			Simulation sim = getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations()[0];
+			try {
+				FRAPStudy.removeSimulationFiles(sim.getVersion().getVersionKey(), getLocalWorkspace());
+			} catch (Exception e) {
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error when deleting simulation files " + e.getMessage());
+			}
+		}
+	}
+
 	public void clearMovieBuffer()
 	{
-		movieURLString = null;
-		movieFileString = null;
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
+		if(fStudy != null)
+		{
+			fStudy.setMovieURLString(null);
+			fStudy.setMovieFileString(null);
+		}
+	}
+	
+	public void clearBestModelData()
+	{
+		clearSimulationResults();
+		clearMovieBuffer();
 	}
 	
 	private void showMovie()
@@ -1270,14 +1314,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(movieURLString != null && movieFileString != null)
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
+				if(fStudy == null)
+				{
+					return;
+				}
+				if(fStudy.getMovieURLString() != null && fStudy.getMovieFileString() != null)
 				{
 					return;
 				}
 				//create export specs
 				Simulation sim = null;
-				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1 ){
+				if (fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1 ){
 					return;
 				}else{
 					sim = fStudy.getBioModel().getSimulations()[0];
@@ -1331,6 +1379,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				// pass the request
 				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext, this.getClientTaskStatusSupport());
 				hashTable.put("ExportEvt", exportEvt);
+				hashTable.put("FrapStudy", fStudy);
 			}
 		};
 		AsynchClientTask showMovieTask = new AsynchClientTask("Showing movie ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING)
@@ -1338,15 +1387,16 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				ExportEvent exportEvt = (ExportEvent)hashTable.get("ExportEvt");
+				FRAPStudy fStudy = (FRAPStudy)hashTable.get("FrapStudy");
 				//show movie if successfully exported
 				if(exportEvt != null)
 				{
 					final String fileURLString = System.getProperty(PropertyLoader.exportBaseURLProperty) + exportEvt.getJobID() + ".mov";
 					final String fileString = System.getProperty(PropertyLoader.exportBaseDirProperty) + exportEvt.getJobID() + ".mov";
-					movieURLString = fileURLString;
-					movieFileString = fileString;
+					fStudy.setMovieURLString(fileURLString);
+					fStudy.setMovieFileString(fileString);
 				}
-				JMFPlayer.showMovieInDialog(get2DResultDialog(),movieURLString, movieFileString);
+				JMFPlayer.showMovieInDialog(get2DResultDialog(),fStudy.getMovieURLString(), fStudy.getMovieFileString());
 			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, true, true, null, true);
@@ -1501,10 +1551,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL))
 		{
-			if(evt.getNewValue() instanceof Integer)
+			clearBestModelData();
+			getAnalysisResultsPanel().clearBestModelDisplay();
+			
+			if(evt.getNewValue() != null && evt.getNewValue() instanceof Integer)
 			{
 				int newBestModelIdx = ((Integer)evt.getNewValue()).intValue();
 				(getAnalysisResultsPanel()).setBestModel(newBestModelIdx, getLocalWorkspace());
+			}
+			else
+			{
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						getAnalysisResultsPanel().clearResultTable();
+					}
+				});
 			}
 		}
 	}
@@ -1862,6 +1923,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private void updateAnalysisResult(FRAPStudy frapStudy)
 	{
 		Integer bestIdx = frapStudy.getBestModelIndex();
+		clearBestModelData();
+		getAnalysisResultsPanel().clearBestModelDisplay();
 		if(bestIdx != null)
 		{
 			FRAPModel bestModel = frapStudy.getFrapModel(bestIdx);
@@ -1872,11 +1935,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		else
 		{
-			getAnalysisResultsPanel().clearBestModel();
 			getAnalysisResultsPanel().clearResultTable();
-			getAnalysisResultsPanel().setRunSimButtonEnable(false);
-			clearMovieBuffer();
-			getAnalysisResultsPanel().setResultsButtonEnabled(false);
 		}
 	}
 	

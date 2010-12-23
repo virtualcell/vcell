@@ -14,7 +14,7 @@ public class FRAPModel implements Matchable
 {
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
-		                                                       "Reaction Off Rate",
+		                                                       "Reaction Dominant Off-Rate",
 		                                                       "Diffusion plus Binding"};
 	//different model types
 	public static final int NUM_MODEL_TYPES = 4;
@@ -336,9 +336,21 @@ public class FRAPModel implements Matchable
 			{
 				return false;
 			}
-			if(!Compare.isEqualOrNull(modelParameters, frapModel.getModelParameters()))
+			//there are modelparameters null, so we cannot directly use Compare.isEqualOrNull(Machable[] v1, Machable[] v2)
+//			if(!Compare.isEqualOrNull(modelParameters, frapModel.getModelParameters()))
+//			{
+//				return false;
+//			}
+			if(modelParameters.length != frapModel.getModelParameters().length)
 			{
 				return false;
+			}
+			for(int i = 0; i < modelParameters.length; i++)
+			{
+				if(!Compare.isEqualOrNull(modelParameters[i], frapModel.getModelParameters()[i]))
+				{
+					return false;
+				}
 			}
 			if(!Compare.isEqualOrNull(timepoints, frapModel.getTimepoints()))
 			{
@@ -357,7 +369,14 @@ public class FRAPModel implements Matchable
 			Parameter[] result = new Parameter[this.getModelParameters().length];
 			for(int i=0; i<this.getModelParameters().length; i++)
 			{
-				result[i] = this.getModelParameters()[i].duplicate();
+				if(this.getModelParameters()[i] == null)
+				{
+					result[i] = null;
+				}
+				else
+				{
+					result[i] = this.getModelParameters()[i].duplicate();
+				}
 			}
 			return result;
 		}

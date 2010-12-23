@@ -967,7 +967,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 					for(int i=0; i<profileData.length; i++)
 					{
 						ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-						plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
+						plotPanel.setProfileSummaryData(FRAPOptimizationUtils.getSummaryFromProfileData(profileData[i]));
 						plotPanel.setBorder(new EtchedBorder());
 						String paramName = "";
 						if(profileData[i].getProfileDataElements().size() > 0)

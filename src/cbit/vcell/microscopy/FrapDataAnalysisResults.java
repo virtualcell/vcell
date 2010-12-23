@@ -101,7 +101,16 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		private Expression offRateFitExpression = null;
 		private Double bleachWhileMonitoringTau = null;
 		private Expression fitBleachWhileMonitorExpression = null;
+		private Double leastOffRateFuncError = null;
 		
+		public Double getLeastOffRateFuncError() {
+			return leastOffRateFuncError;
+		}
+
+		public void setLeastOffRateFuncError(Double leastOffRateFuncError) {
+			this.leastOffRateFuncError = leastOffRateFuncError;
+		}
+
 		public Double getBleachWhileMonitoringTau() {
 			return bleachWhileMonitoringTau;
 		}

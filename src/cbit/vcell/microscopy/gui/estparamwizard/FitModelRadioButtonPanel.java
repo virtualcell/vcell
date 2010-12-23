@@ -14,6 +14,7 @@ public class FitModelRadioButtonPanel extends JPanel
 {
 	private JRadioButton diffOneRadioButton = null;
 	private JRadioButton diffTwoRadioButton = null;
+	private JRadioButton koffRadioButton = null;
 //	private JRadioButton diffBindingRadioButton = null;
 	
 	public FitModelRadioButtonPanel() {
@@ -53,9 +54,19 @@ public class FitModelRadioButtonPanel extends JPanel
 //		gridBagConstraints_2.gridx = 0;
 //		add(diffBindingRadioButton, gridBagConstraints_2);
 		
+		koffRadioButton = new JRadioButton();
+		koffRadioButton.setText("Reaction only Model with Off Rate");
+		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+		gridBagConstraints_2.gridy = 2;
+		gridBagConstraints_2.gridx = 0;
+		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
+		add(koffRadioButton, gridBagConstraints_2);
 		ButtonGroup bg = new ButtonGroup();
+		
 		bg.add(diffOneRadioButton);
 		bg.add(diffTwoRadioButton);
+		bg.add(koffRadioButton);
 //		bg.add(diffBindingRadioButton);
 		
 	}
@@ -69,6 +80,10 @@ public class FitModelRadioButtonPanel extends JPanel
 		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 		{
 			diffTwoRadioButton.setSelected(true);
+		}
+		else if(bestModel == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		{
+			koffRadioButton.setSelected(true);
 		}
 //		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_BINDING)
 //		{
@@ -86,6 +101,10 @@ public class FitModelRadioButtonPanel extends JPanel
 		{
 			return FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
 		}
+		else if(koffRadioButton.isSelected())
+		{
+			return FRAPModel.IDX_MODEL_REACTION_OFF_RATE;
+		}
 		else 
 		{
 			return FRAPModel.IDX_MODEL_DIFF_BINDING;
@@ -96,6 +115,7 @@ public class FitModelRadioButtonPanel extends JPanel
 	{
 		diffOneRadioButton.setEnabled(false);
 		diffTwoRadioButton.setEnabled(false);
+		koffRadioButton.setEnabled(false);
 //		diffBindingRadioButton.setEnabled(false);
 	}
 	
@@ -108,6 +128,10 @@ public class FitModelRadioButtonPanel extends JPanel
 		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 		{
 			diffTwoRadioButton.setEnabled(true);
+		}
+		else if(modelIdx == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		{
+			koffRadioButton.setEnabled(true);
 		}
 //		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_BINDING)
 //		{

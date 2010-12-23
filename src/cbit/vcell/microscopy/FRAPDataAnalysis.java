@@ -25,7 +25,7 @@ public class FRAPDataAnalysis {
 	public final static Parameter para_Ii = new Parameter("Ii", -1, 1, 1.0, 0.0); 
 	public final static Parameter para_A = new Parameter("A", 0.1, 4, 1.0, 1.0); 
 //	public final static Parameter para_CicularDisk_Tau = new cbit.vcell.opt.Parameter("Tau",0.1, 50.0, 1.0, 1.0);
-	public final static Parameter para_If = new Parameter("If", 0, 1, 1.0, 0.1);
+	public final static Parameter para_If = new Parameter("If", 0, 1, 1.0, 0.9);
 	public final static Parameter para_Io = new Parameter("Io", 0, 1, 1.0, 0.1);
 	public final static Parameter para_tau = new Parameter("tau", 0.1, 50.0, 1.0, 1.0);
 //	public final static Parameter para_R = new cbit.vcell.opt.Parameter("R", 0.01, 1.0, 1.0, 0.1);
@@ -206,7 +206,7 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData) throws ExpressionException, OptimizationException, IOException
+	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam) throws ExpressionException, OptimizationException, IOException
 	{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
@@ -239,31 +239,56 @@ public class FRAPDataAnalysis {
 		double[] inputParamValues = null; //bleaching while monitoring rate
 		double[] outputParamValues = null; // koff rate
 		
-		//
-		//Bleach while monitoring fit
-		//
+		/*
+		 * to fit Bleach while monitoring rate
+		 */
 		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];
 		//Cell Avg. points start from the first post bleach
 		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
-
-		outputParamValues = new double[2];
-		Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
-		double bleachWhileMonitoringRate = outputParamValues[0];
+		double bleachWhileMonitoringRate = 0;
+		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+		{
+			bleachWhileMonitoringRate = fixedParam.getInitialGuess();
+		}
+		else
+		{
+			outputParamValues = new double[2];
+			Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
+			offRateAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
+			bleachWhileMonitoringRate = outputParamValues[0];
+		}
 		offRateAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
-		offRateAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
-
-		//to fit reaction koff rate expression
+		
+		
+		/*
+		 * to fit reaction koff rate expression
+		 */
 		inputParamValues = new double[]{fluor[0], bleachWhileMonitoringRate}; // the input parameter is the initial intensity under bleached area(first post bleach), bleach while monitoring rate
-		outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
-		Expression offRateExp = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues);
-		//get reaction off rate
-		double koffRate = outputParamValues[0];
-		double fittingParamA = outputParamValues[1];
+		double leastError = 0;
+		double koffRate = 0;
+		double fittingParamA = 0;
+		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+		{
+			outputParamValues = new double[1];// the array is used to get fitting parameter A back.
+			leastError = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()));
+			//get reaction off rate, fitting parameter
+			koffRate = fixedParam.getInitialGuess();
+			fittingParamA = outputParamValues[0];
+		}
+		else
+		{
+			outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
+			leastError = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null);
+			//get reaction off rate, fitting parameter
+			koffRate = outputParamValues[0];
+			fittingParamA = outputParamValues[1];
+		}
+		
 		//set reaction only off rate analysis results
 		offRateAnalysisResults.setOffRate(koffRate);
 		offRateAnalysisResults.setFittingParamA(fittingParamA);
-		offRateAnalysisResults.setOffRateFitExpression(offRateExp);
+		offRateAnalysisResults.setLeastOffRateFuncError(leastError);
 		
 		return offRateAnalysisResults;
 	}

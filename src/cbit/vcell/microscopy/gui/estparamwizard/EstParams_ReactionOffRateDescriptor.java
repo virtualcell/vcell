@@ -28,7 +28,7 @@ public class EstParams_ReactionOffRateDescriptor extends WizardPanelDescriptor
     	try{
 	    	if(params == null)
 	    	{
-	    		params = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData());
+	    		params = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null);
 	    	}
 			((EstParams_ReactionOffRatePanel)getPanelComponent()).setData(params, fStudy.getFrapData(), /*fStudy.getFrapOptFunc().getOffRateResults(),*/ fStudy.getStartingIndexForRecovery());
     	}catch(Exception ex)
@@ -50,7 +50,7 @@ public class EstParams_ReactionOffRateDescriptor extends WizardPanelDescriptor
 				Parameter[] params = ((EstParams_ReactionOffRatePanel)getPanelComponent()).getCurrentParameters();
 				FRAPModel  frapModel = getFrapWorkspace().getWorkingFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE);
 				frapModel.setModelParameters(params);
-//				frapModel.setData(((EstParams_OneDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
+				frapModel.setData(((EstParams_ReactionOffRatePanel)getPanelComponent()).getCurrentEstimationResults());
 			}
 		};
 		

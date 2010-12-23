@@ -81,7 +81,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		
 		diffOneCheckBox = new JCheckBox();
 		diffOneCheckBox.setSelected(true);
-		diffOneCheckBox.setText("Diffusion with One Diffusing Component");
+		diffOneCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_5.gridy = 14;
@@ -89,7 +89,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(diffOneCheckBox, gridBagConstraints_5);
 
 		diffTwoCheckBox = new JCheckBox();
-		diffTwoCheckBox.setText("Diffusion with Two Diffusing Components");
+		diffTwoCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_6.gridy = 15;
@@ -106,7 +106,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(reactionOnlyLabel, gridBagConstraints_9);
 		
 		koffCheckBox = new JCheckBox();
-		koffCheckBox.setText("Finding reaction off rate");
+		koffCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]);
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_10.gridy = 20;
@@ -138,6 +138,19 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 			result[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = true;
 		}
 		return result;
+	}
+	
+	public int getNumUserSelectedModelTypes()
+	{
+		int numTypes = 0;
+		for(boolean modelSelected:getModelTypes())
+		{
+			if(modelSelected)
+			{
+				numTypes++;
+			}
+		}
+		return numTypes;
 	}
 	
 	public void clearAllSelected()
