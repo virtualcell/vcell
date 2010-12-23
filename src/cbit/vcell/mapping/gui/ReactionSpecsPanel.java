@@ -19,7 +19,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
@@ -34,7 +34,7 @@ import cbit.vcell.model.ReactionStep;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsPanel extends BioModelEditorSubPanel {
+public class ReactionSpecsPanel extends DocumentEditorSubPanel {
 	public static final String PARAMETER_NAME_SELECTED_REACTION_STEP = "selectedReactionStep";
 	private JSortTable ivjScrollPaneTable = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;

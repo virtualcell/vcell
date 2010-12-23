@@ -29,7 +29,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayPanel extends BioModelEditorSubPanel {
+public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	
 	private PathwayData pathwayData = null; 
 	private JSortTable table;

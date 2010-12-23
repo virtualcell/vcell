@@ -22,7 +22,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSidePanel<T> extends BioModelEditorSubPanel implements Model.Owner {
+public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	
 	protected JButton newButton = null;

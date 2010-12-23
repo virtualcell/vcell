@@ -43,10 +43,11 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 			if (namePattern == null || namePattern.trim().length() == 0) { // no constraints
 				return true;
 			}
-			if (docInfo.getVersion().getOwner().getName().toLowerCase().indexOf(namePattern.toLowerCase()) >= 0) {
+			String lowerCaseNamePattern = namePattern.toLowerCase();
+			if (docInfo.getVersion().getOwner().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
 				return true;
 			}
-			if (docInfo.getVersion().getName().toLowerCase().indexOf(namePattern.toLowerCase()) >= 0) {
+			if (docInfo.getVersion().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
 				return true;
 			}
 			return false;

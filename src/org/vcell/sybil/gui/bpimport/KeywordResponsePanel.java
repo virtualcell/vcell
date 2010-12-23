@@ -38,6 +38,9 @@ import org.vcell.sybil.util.gui.ButtonFormatter;
 import org.vcell.sybil.util.http.pathwaycommons.search.PCIDPathwayRequest;
 import org.vcell.sybil.util.http.pathwaycommons.search.PCKeywordResponse;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel;
 
 public class KeywordResponsePanel extends ResponsePanel {
 	
@@ -169,14 +172,9 @@ public class KeywordResponsePanel extends ResponsePanel {
 		    		if(responseTree.getModel().isLeaf(path.getLastPathComponent())){
 		    			
 		    			if(e.getClickCount()>1){
-							try{
-								String url = generateURL(path);
-								if (url.indexOf("http")>=0){ // only launch a webpage if a valid url exists
-									Process pc = Runtime.getRuntime().exec("cmd.exe /c start "+url);
-								}
-							}catch(IOException ex){
-								System.out.println(ex.getMessage());
-								System.out.println();
+		    				String url = generateURL(path);
+		    				if (url.indexOf("http")>=0){ // only launch a webpage if a valid url exists
+		    					DialogUtils.browserLauncher(KeywordResponsePanel.this, url, "failed to open " + url, false);
 							}
 		    			}
 		    		}

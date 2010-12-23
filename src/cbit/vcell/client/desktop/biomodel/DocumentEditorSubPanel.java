@@ -12,10 +12,10 @@ import javax.swing.JTable;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorSubPanel extends JPanel implements PropertyChangeListener {
+public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener {
 	private SelectionManager selectionManager = null;
 	
-	public BioModelEditorSubPanel() {
+	public DocumentEditorSubPanel() {
 		super();
 	}
 	
@@ -78,6 +78,8 @@ public abstract class BioModelEditorSubPanel extends JPanel implements PropertyC
 		table.scrollRectToVisible(r);
 	}
 	protected void setSelectedObjects(Object[] selectedObjects) {
-		selectionManager.setSelectedObjects(selectedObjects);
+		if (selectionManager != null) {
+			selectionManager.setSelectedObjects(selectedObjects);
+		}
 	}
 }

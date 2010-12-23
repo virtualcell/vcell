@@ -76,7 +76,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
 			// matlab from application; get application
 			Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
-			SimulationContext chosenSimContext = bioModel.getSimulationContexts(chosenSimContextIndex.intValue());
+			SimulationContext chosenSimContext = bioModel.getSimulationContext(chosenSimContextIndex.intValue());
 			// regenerate a fresh MathDescription
 			MathMapping mathMapping = chosenSimContext.createNewMathMapping();
 			MathDescription mathDesc = mathMapping.getMathDescription();
@@ -140,7 +140,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					}
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
 					Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
-					String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
+					String applicationName = bioModel.getSimulationContext(chosenSimContextIndex.intValue()).getName();
 					resultString = XmlHelper.exportCellML(bioModel, applicationName);
 					// cellml still uses default character encoding for now ... maybe UTF-8 in the future
 				}

@@ -103,7 +103,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // export bioModel as sbml and save
 			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
 			    // SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContexts(0), null);
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null);
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath(), true);
 			    
 			    // re-import bioModel from exported sbml
@@ -118,7 +118,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-		    SimulationContext simContext = bioModel.getSimulationContexts(0);
+		    SimulationContext simContext = bioModel.getSimulationContext(0);
 		    MathMapping mathMapping = simContext.createNewMathMapping();
 		    MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
@@ -390,7 +390,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // Round trip the bioModel (bioModel->sbml->bioModel).
 		    	
 			    // export bioModel as sbml and save
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContexts(0), null);
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null);
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
@@ -402,7 +402,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-		    SimulationContext simContext = bioModel.getSimulationContexts(0);
+		    SimulationContext simContext = bioModel.getSimulationContext(0);
 		    MathMapping mathMapping = simContext.createNewMathMapping();
 		    MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);

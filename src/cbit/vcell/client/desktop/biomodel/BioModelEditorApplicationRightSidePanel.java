@@ -17,7 +17,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorApplicationRightSidePanel<T> extends BioModelEditorSubPanel {
+public abstract class BioModelEditorApplicationRightSidePanel<T> extends DocumentEditorSubPanel {
 	protected static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	
 	protected JButton addButton = null;

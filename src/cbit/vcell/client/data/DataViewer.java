@@ -4,7 +4,7 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 /**
@@ -13,7 +13,7 @@ import cbit.vcell.export.ExportMonitorPanel;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public abstract class DataViewer extends BioModelEditorSubPanel implements ExportListener, DataJobListener {
+public abstract class DataViewer extends DocumentEditorSubPanel implements ExportListener, DataJobListener {
 	public static final String PROP_SIM_MODEL_INFO = "simulationModelInfo";
 	private DataViewerManager fieldDataViewerManager = null;
 	private SimulationModelInfo fieldSimulationModelInfo = null;

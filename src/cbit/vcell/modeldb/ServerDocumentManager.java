@@ -822,7 +822,7 @@ long l2 = 0;
 					VCImage databaseImage = null;
 					if (origBioModel!=null){
 						for (int j = 0; j < origBioModel.getNumSimulationContexts(); j++){
-							VCImage origImage = origBioModel.getSimulationContexts(j).getGeometry().getGeometrySpec().getImage();
+							VCImage origImage = origBioModel.getSimulationContext(j).getGeometry().getGeometrySpec().getImage();
 							if (origImage!=null && origImage.getKey().equals(memoryImage.getKey())){
 								databaseImage = origImage;
 							}
@@ -907,7 +907,7 @@ roundtripTimer += l2 - l1;
 					Geometry databaseGeometry = null;
 					if (origBioModel!=null){
 						for (int j = 0; j < origBioModel.getNumSimulationContexts(); j++){
-							Geometry origGeometry = origBioModel.getSimulationContexts(j).getGeometry();
+							Geometry origGeometry = origBioModel.getSimulationContext(j).getGeometry();
 							if (origGeometry!=null && origGeometry.getKey().equals(memoryGeometry.getKey())){
 								databaseGeometry = origGeometry;
 							}
@@ -1004,7 +1004,7 @@ roundtripTimer += l2 - l1;
 				//
 				if (origBioModel!=null){
 					for (int j = 0; j < origBioModel.getNumSimulationContexts(); j++){
-						MathDescription math = origBioModel.getSimulationContexts(j).getMathDescription();
+						MathDescription math = origBioModel.getSimulationContext(j).getMathDescription();
 						if (math.getKey().equals(memoryMathDescription.getKey())){
 							databaseMathDescription = math;
 						}
@@ -1165,8 +1165,8 @@ roundtripTimer += l2 - l1;
 					SimulationContext databaseSimContext = null;
 					if (origBioModel!=null){
 						for (int j = 0; j < origBioModel.getNumSimulationContexts(); j++){
-							if (origBioModel.getSimulationContexts(j).getKey().equals(memorySimContext.getKey())){
-								databaseSimContext = origBioModel.getSimulationContexts(j);
+							if (origBioModel.getSimulationContext(j).getKey().equals(memorySimContext.getKey())){
+								databaseSimContext = origBioModel.getSimulationContext(j);
 							}
 						}
 					}
@@ -1368,7 +1368,7 @@ roundtripTimer += l2 - l1;
 		KeyValue modelKey = ((Model)memoryToDatabaseHash.get(bioModel.getModel())).getKey();
 		KeyValue scKeys[] = new KeyValue[bioModel.getNumSimulationContexts()];
 		for (int i = 0; i < bioModel.getNumSimulationContexts(); i++){
-			scKeys[i] = ((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContexts(i))).getKey();
+			scKeys[i] = ((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContext(i))).getKey();
 		}
 		KeyValue simKeys[] = new KeyValue[bioModel.getNumSimulations()];
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
@@ -1417,7 +1417,7 @@ roundtripTimer += l2 - l1;
 		//updatedBioModel.setMIRIAMAnnotation(updatedBioModelMetaData.getMIRIAMAnnotation());
 		updatedBioModel.setModel((Model)memoryToDatabaseHash.get(bioModel.getModel()));
 		for (int i = 0; i < bioModel.getNumSimulationContexts(); i++){
-			updatedBioModel.addSimulationContext((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContexts(i)));
+			updatedBioModel.addSimulationContext((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContext(i)));
 		}
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
 			updatedBioModel.addSimulation((Simulation)memoryToDatabaseHash.get(bioModel.getSimulations(i)));

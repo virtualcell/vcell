@@ -8,14 +8,14 @@ import java.awt.BorderLayout;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class SpeciesContextSpecPanel extends BioModelEditorSubPanel {
+public class SpeciesContextSpecPanel extends DocumentEditorSubPanel {
 	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecParameterTableModel ivjSpeciesContextSpecParameterTableModel1 = null;
 

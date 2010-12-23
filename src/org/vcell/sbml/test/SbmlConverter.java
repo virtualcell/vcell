@@ -116,7 +116,7 @@ public static void main(String[] args) {
 					return;
 				}
 				// Generate math for lone simContext
-				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContexts(0);  
+				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContext(0);  
 				MathDescription mathDesc = simContext.createNewMathMapping().getMathDescription();
 				simContext.setMathDescription(mathDesc);
 
@@ -184,8 +184,8 @@ public static void main(String[] args) {
 				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
 				SimulationContext simContext = null;
 				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
-					if (bioModel.getSimulationContexts(i).getGeometry().getDimension() == 0 && !bioModel.getSimulationContexts(i).isStoch()) {
-						simContext = bioModel.getSimulationContexts(i);
+					if (bioModel.getSimulationContext(i).getGeometry().getDimension() == 0 && !bioModel.getSimulationContext(i).isStoch()) {
+						simContext = bioModel.getSimulationContext(i);
 						// check if structure sizes are set. If not, get a structure from the model, and set its size 
 						// (thro' the structureMappings in the geometry of the simContext); invoke the structureSizeEvaluator 
 						// to compute and set the sizes of the remaining structures.

@@ -28,7 +28,7 @@ import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
-public class AnalysisPanel extends BioModelEditorSubPanel {
+public class AnalysisPanel extends DocumentEditorSubPanel {
 
 	private static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	private JPanel taskTablePanel;

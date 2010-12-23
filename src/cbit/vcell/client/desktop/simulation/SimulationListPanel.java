@@ -29,7 +29,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
@@ -51,7 +51,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class SimulationListPanel extends BioModelEditorSubPanel {
+public class SimulationListPanel extends DocumentEditorSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JPanel ivjButtonPanel = null;
 	private JButton ivjEditButton = null;

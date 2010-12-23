@@ -87,8 +87,8 @@ private static void testBioModel(ClientDocumentManager docManager) throws Except
 	// should only re-save the SimulationContext, not the physiology
 	//
 	System.out.println("\n\n\n      trying to save again, shouldn't re-save everything     \n\n\n");
-	double elementSize = modifiedBioModel.getSimulationContexts(0).getCharacteristicSize().doubleValue();
-	modifiedBioModel.getSimulationContexts(0).setCharacteristicSize(new Double(elementSize+0.01));
+	double elementSize = modifiedBioModel.getSimulationContext(0).getCharacteristicSize().doubleValue();
+	modifiedBioModel.getSimulationContext(0).setCharacteristicSize(new Double(elementSize+0.01));
 	modifiedBioModel = docManager.save(modifiedBioModel,null);
 
 	//

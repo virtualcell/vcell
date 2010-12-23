@@ -30,7 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
@@ -46,7 +46,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 
 @SuppressWarnings("serial")
-public class OutputFunctionsPanel extends BioModelEditorSubPanel {
+public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	private JPanel buttons_n_label_Panel = null;
 	private JButton addButton = null;
 	private JButton deleteButton = null;

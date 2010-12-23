@@ -256,7 +256,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 					ODESolverResultSet odeSolverResultSet_1 = solveSimulation(sim_11);
 
 					// For the imported simContext
-					SimulationContext simContext_2 = bioModel_2.getSimulationContexts(0);
+					SimulationContext simContext_2 = bioModel_2.getSimulationContext(0);
 			        MathMapping mathMapping_2 = simContext_2.createNewMathMapping();
 			        MathDescription mathDesc_2 = mathMapping_2.getMathDescription();
 			        simContext_2.setMathDescription(mathDesc_2);
@@ -326,7 +326,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 							ODESolverResultSet odeSolverResultSet_1 = solveSimulation(simulation);
 	
 							// For the imported simContext, create new simulation
-							SimulationContext simContext_2 = bioModel_2.getSimulationContexts(0);
+							SimulationContext simContext_2 = bioModel_2.getSimulationContext(0);
 					        MathMapping mathMapping_2 = simContext_2.createNewMathMapping();
 					        MathDescription mathDesc_2 = mathMapping_2.getMathDescription();
 					        simContext_2.setMathDescription(mathDesc_2);
