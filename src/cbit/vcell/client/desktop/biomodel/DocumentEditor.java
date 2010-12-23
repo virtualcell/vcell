@@ -16,7 +16,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -134,7 +133,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {
 		setLayout(new BorderLayout());
-		
+				
 		documentEditorTree = new javax.swing.JTree();
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);			
@@ -183,6 +182,13 @@ private void initialize() {
 		documentEditorTree.addTreeSelectionListener(ivjEventHandler);
 		documentEditorTree.addMouseListener(ivjEventHandler);
 		
+		bioModelMetaDataPanel = new BioModelMetaDataPanel();
+		bioModelMetaDataPanel.setSelectionManager(selectionManager);
+		mathModelMetaDataPanel = new MathModelMetaDataPanel();
+		mathModelMetaDataPanel.setSelectionManager(selectionManager);
+		geometryMetaDataPanel = new GeometryMetaDataPanel();
+		geometryMetaDataPanel.setSelectionManager(selectionManager);
+
 		getMenuItemExpandAll().addActionListener(ivjEventHandler);
 		getMenuItemCollapseAll().addActionListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {

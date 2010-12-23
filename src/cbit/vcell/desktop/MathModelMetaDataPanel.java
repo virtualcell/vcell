@@ -9,7 +9,9 @@ import javax.swing.ToolTipManager;
 
 import org.vcell.util.document.MathModelInfo;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.GeometryInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -20,7 +22,7 @@ import cbit.vcell.clientdb.DocumentManager;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class MathModelMetaDataPanel extends JPanel {
+public class MathModelMetaDataPanel extends DocumentEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
@@ -44,28 +46,7 @@ public MathModelMetaDataPanel() {
 	super();
 	initialize();
 }
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public MathModelMetaDataPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public MathModelMetaDataPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-/**
- * BioModelMetaDataPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public MathModelMetaDataPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
+
 /**
  * connEtoC1:  ( (mathModelInfo1,this --> mathModelMetaDataTreeModel,mathModelInfo).normalResult --> MathModelMetaDataPanel.expandAllRows()V)
  */
@@ -461,6 +442,16 @@ public void setPopupMenuDisabled(boolean popupMenuDisabled) {
 	boolean oldValue = fieldPopupMenuDisabled;
 	fieldPopupMenuDisabled = popupMenuDisabled;
 	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
+}
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		setMathModelInfo(null);
+	} else if (selectedObjects[0] instanceof MathModelInfo) {
+		setMathModelInfo((MathModelInfo) selectedObjects[0]);
+	} else {
+		setMathModelInfo(null);
+	}	
 }
 
 }

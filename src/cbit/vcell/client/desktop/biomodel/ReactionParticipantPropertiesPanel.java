@@ -11,10 +11,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionParticipant;
 
 @SuppressWarnings("serial")
-public class ReactionParticipantPropertiesPanel extends JPanel {
+public class ReactionParticipantPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField stoichiometryTextField = new JTextField();
 	private ReactionParticipant reactionParticipant;
 
@@ -72,13 +73,29 @@ public class ReactionParticipantPropertiesPanel extends JPanel {
 		}
 	}
 	
-	public void setReactionParticipant(ReactionParticipant newValue) {
+	private void setReactionParticipant(ReactionParticipant newValue) {
 		if (reactionParticipant == newValue) {
 			return;
 		}
 		commitChange();
 		reactionParticipant = newValue;
-		stoichiometryTextField.setText(reactionParticipant.getStoichiometry() + "");
+		if (reactionParticipant == null) {
+			stoichiometryTextField.setText(null);
+		} else {
+			stoichiometryTextField.setText(reactionParticipant.getStoichiometry() + "");
+		}
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		if (selectedObjects == null || selectedObjects.length != 1) {
+			setReactionParticipant(null);
+		} else if (selectedObjects[0] instanceof ReactionParticipant) {
+			setReactionParticipant((ReactionParticipant) selectedObjects[0]);
+		} else {
+			setReactionParticipant(null);
+		}
+		
 	}
 	
 }

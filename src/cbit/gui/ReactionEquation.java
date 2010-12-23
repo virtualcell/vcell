@@ -3,6 +3,7 @@ package cbit.gui;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
@@ -30,14 +31,16 @@ public class ReactionEquation {
 	public static final String REACTION_GOESTO = "->";
 	
 	private ReactionStep reactionStep = null;
+	private Model model = null;
 	private String equationString = null;
 	private String equationleftHand = null;
 	private String equationRightHand = null;
 	private ExpressionBindingException expressionBindingException = null;
 	
-	public ReactionEquation(ReactionStep reactionStep) {
+	public ReactionEquation(ReactionStep reactionStep, Model model) {
 		super();
 		this.reactionStep = reactionStep;
+		this.model = model;
 	}
 
 /**
@@ -46,7 +49,7 @@ public class ReactionEquation {
  * @return cbit.vcell.parser.NameScope
  */
 public NameScope getNameScope() {
-	return reactionStep.getNameScope();
+	return model.getNameScope();
 }
 
 /**
@@ -55,10 +58,14 @@ public NameScope getNameScope() {
  * @return java.lang.String
  */
 public String toString() {
-	if (equationString == null) {
-		computeEquationString();
+	if (reactionStep == null) {
+		return BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT;
+	} else {
+		if (equationString == null) {
+			computeEquationString();
+		}
+		return equationString;
 	}
-	return equationString;
 }
 
 private void computeEquationString() {	
@@ -110,7 +117,7 @@ private void computeEquationString() {
 }
 
 public final AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
-	return reactionStep.getAutoCompleteSymbolFilter();
+	return reactionStep == null ? null : reactionStep.getAutoCompleteSymbolFilter();
 }
 public final ExpressionBindingException getExpressionBindingException() {
 	return expressionBindingException;

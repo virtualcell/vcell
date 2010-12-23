@@ -13,20 +13,10 @@ import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public class ApplicationPropertiesPanel extends JPanel {	
-	private static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
+public class ApplicationPropertiesPanel extends DocumentEditorSubPanel {
 	private JTree tree = null;
 	private SimulationContext simulationContext = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	ApplicationPropertiesTreeModel treeModel = null;
-
-	private class IvjEventHandler implements java.beans.PropertyChangeListener {
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ApplicationPropertiesPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT)) {
-				treeModel.setSimulationContext(simulationContext);
-			}
-		}
-	};
+	private ApplicationPropertiesTreeModel treeModel = null;
 
 /**
  * BioModelTreePanel constructor comment.
@@ -53,8 +43,6 @@ private void handleException(java.lang.Throwable exception) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		addPropertyChangeListener(ivjEventHandler);
-		
 		tree = new JTree();
 		treeModel = new ApplicationPropertiesTreeModel(tree);
 		tree.setModel(treeModel);
@@ -75,10 +63,23 @@ private void initialize() {
  * Set the BioModel to a new value.
  * @param newValue cbit.vcell.biomodel.BioModel
  */
-public void setSimulationContext(SimulationContext newValue) {
-	SimulationContext oldValue = simulationContext;
+private void setSimulationContext(SimulationContext newValue) {
+	if (simulationContext == newValue) {
+		return;
+	}
 	simulationContext = newValue;
-	firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXT, oldValue, newValue);
+	treeModel.setSimulationContext(simulationContext);
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		setSimulationContext(null);
+	} else if (selectedObjects[0] instanceof SimulationContext) {
+		setSimulationContext((SimulationContext) selectedObjects[0]);
+	} else {
+		setSimulationContext(null);
+	}
 }
 
 }

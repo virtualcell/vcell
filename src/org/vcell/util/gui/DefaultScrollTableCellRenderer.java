@@ -14,6 +14,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.NumberUtils;
 
+import cbit.gui.ReactionEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 
 @SuppressWarnings("serial")
@@ -89,15 +90,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_HTML);
-		} else if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(value)) {
+		} else if (value instanceof ReactionEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ReactionEquation)value).toString())) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
-		} 
-//		if (value instanceof ReactionEquation) {
-//			ReactionEquation reactionEquation = (ReactionEquation)value;
-//			setText("<html>" + reactionEquation.getEquationleftHand() 
-//					+ "&nbsp;<b>" + ReactionEquation.REACTION_GOESTO + "</b>" 
-//					+ reactionEquation.getEquationRightHand()+ "&nbsp;</html>");
-//		}
+		}
 		return this;
 	}
 }

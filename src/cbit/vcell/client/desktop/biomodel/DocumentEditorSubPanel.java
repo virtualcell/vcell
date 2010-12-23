@@ -40,7 +40,9 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		if (rows != null) {
 			selectedObjects = new Object[rows.length];
 			for (int i = 0; i < rows.length; i++) {
-				selectedObjects[i] = tableModel.getValueAt(rows[i]);
+				if (rows[i] < tableModel.getDataSize()) {
+					selectedObjects[i] = tableModel.getValueAt(rows[i]);
+				}
 			}
 		}
 		setSelectedObjects(selectedObjects);

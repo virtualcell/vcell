@@ -25,10 +25,7 @@ import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.GeometryMetaDataPanel;
-import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
@@ -137,25 +134,10 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bShowBottom = false;
 			}
 		} else if (singleSelection instanceof BioModelInfo) {
-			if (bioModelMetaDataPanel == null) {
-				bioModelMetaDataPanel = new BioModelMetaDataPanel();
-				bioModelMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			bioModelMetaDataPanel.setBioModelInfo((BioModelInfo) singleSelection);
 			bottomComponent = bioModelMetaDataPanel;
 		} else if (singleSelection instanceof MathModelInfo) {
-			if (mathModelMetaDataPanel == null) {
-				mathModelMetaDataPanel = new MathModelMetaDataPanel();
-				mathModelMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			mathModelMetaDataPanel.setMathModelInfo((MathModelInfo) singleSelection);
 			bottomComponent = mathModelMetaDataPanel;
 		} else if (singleSelection instanceof GeometryInfo) {
-			if (geometryMetaDataPanel == null) {
-				geometryMetaDataPanel = new GeometryMetaDataPanel();
-				geometryMetaDataPanel.setDocumentManager(mathModelWindowManager.getRequestManager().getDocumentManager());
-			}
-			geometryMetaDataPanel.setGeometryInfo((GeometryInfo) singleSelection);
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
@@ -271,6 +253,10 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);
 	DocumentManager documentManager = mathModelWindowManager.getRequestManager().getDocumentManager();
 	databaseWindowPanel.setDocumentManager(documentManager);
+	
+	bioModelMetaDataPanel.setDocumentManager(documentManager);
+	mathModelMetaDataPanel.setDocumentManager(documentManager);
+	geometryMetaDataPanel.setDocumentManager(documentManager);
 }
 
 /**
