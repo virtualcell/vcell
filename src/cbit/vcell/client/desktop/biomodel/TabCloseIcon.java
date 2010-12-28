@@ -1,24 +1,19 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTabbedPane;
 
-import sun.awt.RepaintArea;
-
 public class TabCloseIcon implements Icon {
 	private final Icon closeIcon;
 	private JTabbedPane tabbedPane = null;
 	private transient Rectangle iconRectangle = null;
-	private boolean bMouseOver = false;
 	
 	public TabCloseIcon() {
 		closeIcon = new ImageIcon(getClass().getResource("/icons/tab_close.gif"));

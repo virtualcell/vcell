@@ -1,16 +1,9 @@
 package cbit.vcell.client.desktop.mathmodel;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.vcell.util.document.BioModelInfo;
@@ -19,6 +12,7 @@ import org.vcell.util.document.MathModelInfo;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
+import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
@@ -50,7 +44,6 @@ public class MathModelEditor extends DocumentEditor {
 	private MathModelEditorTreeModel mathModelEditorTreeModel = null;
 	
 	private SimulationSummaryPanel simulationSummaryPanel = null;
-	private JPanel rightBottomEmptyPanel = null;
 	private MathModelPropertiesPanel mathModelPropertiesPanel = new MathModelPropertiesPanel();
 	private MathModelEditorAnnotationPanel mathModelEditorAnnotationPanel = new MathModelEditorAnnotationPanel();
 	
@@ -75,21 +68,7 @@ private void handleException(java.lang.Throwable exception) {
 
 private void initialize() {
 	try {
-		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyPanel.setBackground(Color.white);
-		JLabel label = new JLabel("Select only one object (e.g. species, reaction) to show properties.");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.insets = new Insets(10,10,4,4);
-		gbc.gridy = 0;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.PAGE_START;
-		rightBottomEmptyPanel.add(label, gbc);
 
-		rightBottomEmptyPanel.setMinimumSize(new java.awt.Dimension(198, 148));		
 		rightSplitPane.setBottomComponent(null);
 		
 		mathModelEditorTreeModel = new MathModelEditorTreeModel(documentEditorTree);
@@ -118,8 +97,13 @@ private void initialize() {
 
 @Override
 protected void setRightBottomPanelOnSelection(Object[] selections) {
+	if (selections == null || selections.length == 0) {
+		return;
+	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
 	boolean bShowBottom = true;
+	int destComponentIndex = RIGHT_BOTTOM_TAB_PROPERTIES_INDEX;
+	boolean bShowInDatabaseProperties = false;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection == mathModel) {
@@ -134,10 +118,13 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bShowBottom = false;
 			}
 		} else if (singleSelection instanceof BioModelInfo) {
+			bShowInDatabaseProperties = true;
 			bottomComponent = bioModelMetaDataPanel;
 		} else if (singleSelection instanceof MathModelInfo) {
+			bShowInDatabaseProperties = true;
 			bottomComponent = mathModelMetaDataPanel;
 		} else if (singleSelection instanceof GeometryInfo) {
+			bShowInDatabaseProperties = true;
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
@@ -146,9 +133,24 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 	}
 	if (bShowBottom) {
-		if (rightSplitPane.getBottomComponent() != bottomComponent) {
-			rightSplitPane.setBottomComponent(bottomComponent);
+		if (bShowInDatabaseProperties) {
+			for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
+				if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
+					break;
+				}
+			}
+			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+				rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
+			}
 		}
+		if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
+			rightSplitPane.setBottomComponent(rightBottomTabbedPane);
+		}	
+		if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+			rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
+			rightBottomTabbedPane.repaint();
+		}
+		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 	} else {
 		rightSplitPane.setBottomComponent(null);
 	}
@@ -203,7 +205,6 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
 			newTopPanel = simulationListPanel;
 			dividerLocation = 0.4;
-			simulationListPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());			
 		} else if(folderClass == DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE) {
 			dividerLocation = 1.0;
 			newTopPanel = outputFunctionsPanel;
@@ -248,6 +249,7 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	this.mathModelWindowManager = newValue;
 	geometrySummaryViewer.addActionListener(mathModelWindowManager);
 	mathModelPropertiesPanel.setMathModelWindowManager(mathModelWindowManager);
+	simulationListPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());
 	
 	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, mathModelWindowManager.getRequestManager());
 	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);

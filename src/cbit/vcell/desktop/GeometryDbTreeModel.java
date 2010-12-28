@@ -3,19 +3,16 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
 /**
@@ -24,27 +21,17 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class GeometryDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
+public class GeometryDbTreeModel extends VCDocumentDbTreeModel {
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
-	private boolean fieldLatestOnly = false;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private DocumentManager fieldDocumentManager = null;
-	private ArrayList<SearchCriterion> searchCriterionList = null;
 
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
-public GeometryDbTreeModel() {
-	super(new BioModelNode("not connected",false),true);
-}
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+public GeometryDbTreeModel(JTree tree) {
+	super(tree);
+	rootNode.setUserObject("Geometries");
+	sharedModelsNode.setUserObject(SHARED_GEOMETRIES);
 }
 
 
@@ -54,9 +41,8 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createBaseTree() throws DataAccessException {
+protected void createBaseTree() throws DataAccessException {
 	GeometryInfo geometryInfos[] = getDocumentManager().getGeometryInfos();
-	BioModelNode rootRootNode = new BioModelNode("Geometries",true);
 	//
 	// get list of users (owners)
 	//
@@ -83,31 +69,19 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	//
 	// create final tree
 	//
-	rootRootNode.add((BioModelNode)treeMap.remove(loginUser.getName().toLowerCase()));
-	BioModelNode otherUsersNode = new BioModelNode(SHARED_GEOMETRIES,true);
-	rootRootNode.add(otherUsersNode);
+	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName().toLowerCase());
+	myModelsNode.removeAllChildren();
+	for (int c = 0; c < ownerNode.getChildCount();) {
+		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
+		myModelsNode.add(childNode);
+	}
+	sharedModelsNode.removeAllChildren();
 	for (BioModelNode userNode : treeMap.values()) {
 		for (int c = 0; c < userNode.getChildCount();) {
 			// when added to otherUserNode, this childNode was removed from userNode
-			otherUsersNode.add((MutableTreeNode) userNode.getChildAt(c));
+			sharedModelsNode.add((MutableTreeNode) userNode.getChildAt(c));
 		}
-	}
-	
-	return rootRootNode;
-}
-
-private boolean meetSearchCriteria(GeometryInfo geoInfo) {
-	if (searchCriterionList == null) {
-		return true;		
-	}
-	boolean bPass = true;
-	for (SearchCriterion sc : searchCriterionList) {
-		if (!sc.meetCriterion(geoInfo)) {
-			bPass = false;
-			break;
-		}		
-	}
-	return bPass;
+	}	
 }
 
 /**
@@ -297,121 +271,6 @@ public void databaseUpdate(DatabaseEvent databaseEvent) {
 		BioModelNode node = ((BioModelNode)getRoot()).findNodeByUserObject(databaseEvent.getOldVersionInfo());
 		node.setUserObject(databaseEvent.getNewVersionInfo());
 		nodeChanged(node);
-	}
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
-}
-
-
-/**
- * Gets the latestOnly property (boolean) value.
- * @return The latestOnly property value.
- * @see #setLatestOnly
- */
-public boolean getLatestOnly() {
-	return fieldLatestOnly;
-}
-
-
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-
-public void refreshTree(ArrayList<SearchCriterion> newFilterList) {
-	searchCriterionList = newFilterList;
-	refreshTree();
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 3:50:24 PM)
- */
-public void refreshTree() {
-	if (getDocumentManager()!=null && getDocumentManager().getUser() != null){
-		try {
-			setRoot(createBaseTree());
-		}catch (DataAccessException e){
-			e.printStackTrace(System.out);
-		}
-	}else{
-		setRoot(new BioModelNode("not connected"));
-	}	
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-
-	if (oldValue != null){
-		oldValue.removeDatabaseListener(this);
-	}
-	if (documentManager != null){
-		documentManager.addDatabaseListener(this);
-	}
-
-	firePropertyChange("documentManager", oldValue, documentManager);
-
-	if (documentManager != oldValue){
-		refreshTree();
-	}
-}
-
-
-/**
- * Sets the latestOnly property (boolean) value.
- * @param latestOnly The new value for the property.
- * @see #getLatestOnly
- */
-public void setLatestOnly(boolean latestOnly) {
-	boolean oldValue = fieldLatestOnly;
-	fieldLatestOnly = latestOnly;
-	firePropertyChange("latestOnly", new Boolean(oldValue), new Boolean(latestOnly));
-	if (latestOnly != oldValue){
-		refreshTree();
 	}
 }
 }

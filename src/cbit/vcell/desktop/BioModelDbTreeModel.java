@@ -4,18 +4,16 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
+
+import javax.swing.JTree;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
  * Insert the type's description here.
@@ -23,53 +21,46 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
-	public static final String SHARED_BIO_MODELS = "Shared BioModels";
-	private boolean fieldLatestOnly = false;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private DocumentManager fieldDocumentManager = null;
-	private ArrayList<SearchCriterion> searchCriterionList = null;
+public class BioModelDbTreeModel extends VCDocumentDbTreeModel {
+	private static final String SHARED_BIO_MODELS = "Shared BioModels";
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
-public BioModelDbTreeModel() {
-	super(new BioModelNode("not connected",false),true);
+public BioModelDbTreeModel(JTree tree) {
+	super(tree);
+	rootNode.setUserObject("Biological Models");
+	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);
 }
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 1:06:51 PM)
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createBaseTree() throws DataAccessException {
+protected void createBaseTree() throws DataAccessException {
 	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();
-	BioModelNode rootRootNode = new BioModelNode("Biological Models",true);
+	
 	//
 	// get list of users (owners)
 	//
-	Vector<User> ownerList = new Vector<User>();
+	Vector<User> userList = new Vector<User>();
 	User loginUser = getDocumentManager().getUser();
-	ownerList.addElement(loginUser);
+	userList.addElement(loginUser);
 	for (int i=0;i<bioModelInfos.length;i++){
 		BioModelInfo bioModelInfo = bioModelInfos[i];
-		if (!ownerList.contains(bioModelInfo.getVersion().getOwner())){
-			ownerList.addElement(bioModelInfo.getVersion().getOwner());
+		if (!userList.contains(bioModelInfo.getVersion().getOwner())){
+			userList.addElement(bioModelInfo.getVersion().getOwner());
 		}
 	}
 	//
 	// for each user
 	//
 	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
-	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
-		User owner = (User)ownerList.elementAt(ownerIndex);
-		BioModelNode ownerNode = createOwnerSubTree(owner);
+	for (int ownerIndex=0;ownerIndex<userList.size();ownerIndex++){
+		User owner = (User)userList.elementAt(ownerIndex);
+		BioModelNode ownerNode = createUserSubTree(owner);
 		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
 			treeMap.put(owner.getName().toLowerCase(),ownerNode);
 		}
@@ -77,48 +68,40 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	//
 	// create final tree
 	//
-	rootRootNode.add((BioModelNode)treeMap.remove(loginUser.getName().toLowerCase()));
-	BioModelNode otherUsersNode = new BioModelNode(SHARED_BIO_MODELS,true);
-	rootRootNode.add(otherUsersNode);
+	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName().toLowerCase());
+	myModelsNode.setUserObject(loginUser);
+	myModelsNode.removeAllChildren();
+	for (int c = 0; c < ownerNode.getChildCount();) {
+		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
+		myModelsNode.add(childNode);
+	}	
+	
+	sharedModelsNode.removeAllChildren();
 	for (BioModelNode userNode : treeMap.values()) {
 		for (int c = 0; c < userNode.getChildCount();) {
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
 			// when added to otherUserNode, this childNode was removed from userNode
-			otherUsersNode.add(childNode);
+			sharedModelsNode.add(childNode);
 		}
 	}
-	return rootRootNode;
 }
 
-private boolean meetSearchCriteria(BioModelInfo bioModelInfo) {
-	if (searchCriterionList == null) {
-		return true;		
-	}
-	boolean bPass = true;
-	for (SearchCriterion sc : searchCriterionList) {
-		if (!sc.meetCriterion(bioModelInfo)) {
-			bPass = false;
-			break;
-		}		
-	}
-	return bPass;
-}
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 1:06:51 PM)
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
+private BioModelNode createUserSubTree(User user) throws DataAccessException {
 	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();
 	//
 	// for each user
 	//
-	BioModelNode rootNode = new BioModelNode(owner,true);
+	BioModelNode rootNode = new BioModelNode(user,true);
 	for (int i = 0; i < bioModelInfos.length; i ++){
 		BioModelInfo bioModelInfo = bioModelInfos[i];
 		
-		if (bioModelInfo.getVersion().getOwner().equals(owner)){
+		if (bioModelInfo.getVersion().getOwner().equals(user)){
 			if (!meetSearchCriteria(bioModelInfo)) {
 				continue;
 			}
@@ -164,7 +147,7 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
  */
 private BioModelNode createVersionSubTree(BioModelInfo bmInfo) throws DataAccessException {
 	BioModelNode versionNode = new BioModelNode(bmInfo,false);
-	versionNode.setRenderHint(BioModelNode.MAX_ERROR_LEVEL,new Integer(getMaxErrorLevel(bmInfo)));
+	versionNode.setRenderHint(BioModelNode.MAX_ERROR_LEVEL, new Integer(getMaxErrorLevel(bmInfo)));
 	return versionNode;
 }
 /**
@@ -262,28 +245,7 @@ public void databaseUpdate(DatabaseEvent databaseEvent) {
 		}
 	}
 }
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
-}
-/**
- * Gets the latestOnly property (boolean) value.
- * @return The latestOnly property value.
- * @see #setLatestOnly
- */
-public boolean getLatestOnly() {
-	return fieldLatestOnly;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/6/2002 4:41:23 PM)
@@ -311,80 +273,5 @@ private int getMaxErrorLevel(BioModelInfo bioModelInfo) {
 	//}
 	return BioModelNode.ERROR_NONE;
 }
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
 
-public void refreshTree() {
-	if (getDocumentManager()!=null && getDocumentManager().getUser() != null){
-		try {
-			setRoot(createBaseTree());
-		}catch (DataAccessException e){
-			e.printStackTrace(System.out);
-		}
-	}else{
-		setRoot(new BioModelNode("not connected"));
-	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 3:50:24 PM)
- */
-public void refreshTree(ArrayList<SearchCriterion> newFilterList) {
-	searchCriterionList = newFilterList;
-	refreshTree();
-}
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-
-	if (oldValue != null){
-		oldValue.removeDatabaseListener(this);
-	}
-	if (documentManager != null){
-		documentManager.addDatabaseListener(this);
-	}
-
-	firePropertyChange("documentManager", oldValue, documentManager);
-
-	if (documentManager != oldValue){
-		refreshTree();
-	}
-}
-/**
- * Sets the latestOnly property (boolean) value.
- * @param latestOnly The new value for the property.
- * @see #getLatestOnly
- */
-public void setLatestOnly(boolean latestOnly) {
-	boolean oldValue = fieldLatestOnly;
-	fieldLatestOnly = latestOnly;
-	firePropertyChange("latestOnly", new Boolean(oldValue), new Boolean(latestOnly));
-	if (latestOnly != oldValue){
-		refreshTree();
-	}
-}
 }

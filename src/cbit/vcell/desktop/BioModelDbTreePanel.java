@@ -28,7 +28,6 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
-import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
@@ -474,27 +473,6 @@ private void connEtoC19(VersionInfo value) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC2:  (DocumentManager.this --> BioModelDbTreePanel.expandTreeToOwner()V)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.expandTreeToOwner();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC20:  (selectedVersionInfo1.this --> BioModelDbTreePanel.latestEditionMenuItemEnable(Lcbit.sql.VersionInfo;)V)
@@ -948,27 +926,6 @@ private void enableToolTips(JTree tree) {
 	ToolTipManager.sharedInstance().registerComponent(tree);
 }
 
-
-/**
- * 
- * @exception org.vcell.util.DataAccessException The exception description.
- */
-private void expandTreeToOwner() {
-	//
-	// expand tree up to and including the "Owner" subtree's first children
-	//
-	if (getDocumentManager()==null){
-		return;
-	}
-	User currentUser = getDocumentManager().getUser();
-	BioModelNode rootNode = (BioModelNode)getBioModelDbTreeModel().getRoot();
-	BioModelNode currentUserNode = (BioModelNode)rootNode.findNodeByUserObject(currentUser);
-	if (currentUserNode!=null){
-		getJTree1().expandPath(new TreePath(getBioModelDbTreeModel().getPathToRoot(currentUserNode)));
-	}
-}
-
-
 /**
  * Method to support listener events.
  */
@@ -1046,7 +1003,7 @@ private javax.swing.tree.TreeCellRenderer getBioModelCellRenderer() {
 private BioModelDbTreeModel getBioModelDbTreeModel() {
 	if (ivjBioModelDbTreeModel == null) {
 		try {
-			ivjBioModelDbTreeModel = new BioModelDbTreeModel();
+			ivjBioModelDbTreeModel = new BioModelDbTreeModel(getJTree1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1840,7 +1797,6 @@ private void refireActionPerformed(ActionEvent e) {
 private void refresh() {
 	getBioModelDbTreeModel().refreshTree();
 	getJTree1().setCellRenderer(this.getBioModelCellRenderer());
-	expandTreeToOwner();
 }
 /**
  * 
@@ -1848,7 +1804,6 @@ private void refresh() {
  */
 public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessException {
 	getBioModelDbTreeModel().refreshTree(newFilterList);
-	expandTreeToOwner();
 }
 
 
@@ -1879,7 +1834,6 @@ public void setDocumentManager(DocumentManager newValue) {
 			}
 			connPtoP2SetSource();
 			connPtoP3SetTarget();
-			connEtoC2(ivjDocumentManager);
 			getJTree1().setCellRenderer(this.getBioModelCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}

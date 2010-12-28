@@ -6,6 +6,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DocumentManager;
@@ -21,7 +22,7 @@ import cbit.vcell.clientdb.DocumentManager;
 @SuppressWarnings("serial")
 public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelMetaDataPanel.this && (evt.getPropertyName().equals("bioModelInfo"))) 
 				connEtoM1(evt);
@@ -42,63 +43,6 @@ public BioModelMetaDataPanel() {
 }
 
 /**
- * Comment
- */
-private void bioModelMetaDataPanel_Initialize() {
-	getJTree1().getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
-}
-/**
- * connEtoC1:  ( (BioModelMetaDataPanel,bioModelInfo --> bioModelInfoTreeModel,bioModelInfo).normalResult --> BioModelMetaDataPanel.expandAllRows()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.expandAllRows();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC2:  (BioModelMetaDataPanel.initialize() --> BioModelMetaDataPanel.enableToolTips(Ljavax.swing.JTree;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.enableToolTips(getJTree1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC3:  (BioModelMetaDataPanel.initialize() --> BioModelMetaDataPanel.bioModelMetaDataPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.bioModelMetaDataPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
  * connEtoM1:  (BioModelMetaDataPanel.bioModelInfo --> bioModelInfoTreeModel.bioModelInfo)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -108,7 +52,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getbioModelInfoTreeModel().setBioModelInfo(this.getBioModelInfo());
-		connEtoC1();
+		GuiUtils.treeExpandAllRows(getJTree1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -149,20 +93,7 @@ private void connPtoP3SetTarget() {
 		handleException(ivjExc);
 	}
 }
-/**
- * Comment
- */
-public void enableToolTips(javax.swing.JTree tree) {
-	javax.swing.ToolTipManager.sharedInstance().registerComponent(tree);
-}
-/**
- * Comment
- */
-public void expandAllRows() {
-	for (int row=0;row<getJTree1().getRowCount();row++){
-		getJTree1().expandRow(row);
-	}
-}
+
 /**
  * Gets the bioModelInfo property (cbit.vcell.biomodel.BioModelInfo) value.
  * @return The bioModelInfo property value.
@@ -281,8 +212,8 @@ private void initialize() {
 
 		add(new JScrollPane(getJTree1()), BorderLayout.CENTER);
 		initConnections();
-		connEtoC2();
-		connEtoC3();
+		javax.swing.ToolTipManager.sharedInstance().registerComponent(getJTree1());
+		getJTree1().getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -318,8 +249,7 @@ public static void main(java.lang.String[] args) {
  */
 public void refresh() {
 	getbioModelInfoTreeModel().setBioModelInfo(getBioModelInfo());
-	expandAllRows();
-	return;
+	GuiUtils.treeExpandAllRows(getJTree1());
 }
 /**
  * Sets the bioModelInfo property (cbit.vcell.biomodel.BioModelInfo) value.
@@ -341,6 +271,7 @@ public void setDocumentManager(DocumentManager documentManager) {
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
+
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length != 1) {
@@ -349,7 +280,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setBioModelInfo((BioModelInfo) selectedObjects[0]);
 	} else {
 		setBioModelInfo(null);
-	}	
+	}
 }
 
 }

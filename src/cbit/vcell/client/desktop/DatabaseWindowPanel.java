@@ -414,7 +414,7 @@ public DocumentManager getDocumentManager() {
 private GeometryTreePanel getGeometryTreePanel1() {
 	if (ivjGeometryTreePanel1 == null) {
 		try {
-			ivjGeometryTreePanel1 = new GeometryTreePanel();
+			ivjGeometryTreePanel1 = new GeometryTreePanel(bShowMetadata);
 			ivjGeometryTreePanel1.setName("GeometryTreePanel1");
 			// user code begin {1}
 			// user code end
@@ -608,7 +608,11 @@ private void setSelectedDocumentInfo(VCDocumentInfo selectedDocumentInfo) {
 	VCDocumentInfo oldValue = fieldSelectedDocumentInfo;
 	fieldSelectedDocumentInfo = selectedDocumentInfo;
 	firePropertyChange(PROPERTY_NAME_SELECTED_DOCUMENT_INFO, oldValue, selectedDocumentInfo);
-	setSelectedObjects(new Object[] {fieldSelectedDocumentInfo});
+	if (fieldSelectedDocumentInfo == null) {
+		setSelectedObjects(new Object[] {});
+	} else {
+		setSelectedObjects(new Object[] {fieldSelectedDocumentInfo});
+	}
 }
 
 @Override

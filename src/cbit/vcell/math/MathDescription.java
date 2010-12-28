@@ -2114,12 +2114,12 @@ public boolean isValid() {
 		int filamentCount = 0;
 		for (int i=0;i<subDomainList.size();i++){
 			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
-			if (geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null) {
-				setWarning("Spatial model, can't find a matching geometry subdomain for math subdomain '" + subDomain.getName() 
-						+ "'. Geometry subdomain names must match math subdomain names.");
-				return false;
-			}
 			if (subDomain instanceof CompartmentSubDomain){
+				if (geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null) {
+					setWarning("Spatial model, can't find a matching geometry subdomain for math subdomain '" + subDomain.getName() 
+							+ "'. Math subdomain names must match geometry subdomain names .");
+					return false;
+				}
 				compartmentCount++;
 			}else if (subDomain instanceof MembraneSubDomain){
 				membraneCount++;

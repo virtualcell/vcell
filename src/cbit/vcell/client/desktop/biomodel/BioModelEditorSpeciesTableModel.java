@@ -10,9 +10,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.ReactionEquation;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;

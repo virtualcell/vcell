@@ -32,7 +32,6 @@ import javax.swing.tree.TreePath;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.vcell.sbml.test.BiomodelsDB_TestSuite;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
