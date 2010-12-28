@@ -1,32 +1,18 @@
 package cbit.vcell.desktop;
-import cbit.image.VCImageInfo;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.Vector;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.SimulationInfo;
-import java.util.Enumeration;
-import cbit.vcell.clientdb.DatabaseListener;
-import javax.swing.tree.DefaultTreeModel;
-
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.User;
 
+import cbit.image.VCImageInfo;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class GeometryMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
-	private cbit.vcell.geometry.GeometryInfo fieldGeometryInfo = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private GeometryInfo fieldGeometryInfo = null;
+	private DocumentManager fieldDocumentManager = null;
 
 /**
  * BioModelDbTreeModel constructor comment.
@@ -68,7 +54,7 @@ private BioModelNode createVersionSubTree(GeometryInfo geoInfo) throws DataAcces
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -78,7 +64,7 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return The geometryInfo property value.
  * @see #setGeometryInfo
  */
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo() {
+public GeometryInfo getGeometryInfo() {
 	return fieldGeometryInfo;
 }
 
@@ -88,7 +74,7 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo() {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 private void refreshTree() {
-	if (getGeometryInfo()!=null){
+	if (getGeometryInfo() != null && getDocumentManager() != null){
 		try {
 			setRoot(createVersionSubTree(getGeometryInfo()));
 		}catch (DataAccessException e){
@@ -105,7 +91,7 @@ private void refreshTree() {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
+public void setDocumentManager(DocumentManager documentManager) {
 	fieldDocumentManager = documentManager;
 	refreshTree();
 }
@@ -116,7 +102,10 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
  * @param geometryInfo The new value for the property.
  * @see #getGeometryInfo
  */
-public void setGeometryInfo(cbit.vcell.geometry.GeometryInfo geometryInfo) {
+public void setGeometryInfo(GeometryInfo geometryInfo) {
+	if (geometryInfo == fieldGeometryInfo) {
+		return;
+	}
 	fieldGeometryInfo = geometryInfo;
 	refreshTree();
 }

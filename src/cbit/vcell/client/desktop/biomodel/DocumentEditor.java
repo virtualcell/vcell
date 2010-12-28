@@ -1,12 +1,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -36,6 +42,8 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 @SuppressWarnings("serial")
 public abstract class DocumentEditor extends JPanel {
 	protected static final double DEFAULT_DIVIDER_LOCATION = 0.7;
+	protected final static int RIGHT_BOTTOM_TAB_PROPERTIES_INDEX = 0;
+	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
 	protected JTree documentEditorTree = null;
@@ -46,12 +54,15 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem expandAllMenuItem = null;
 	private JMenuItem collapseAllMenuItem = null;
 	protected DatabaseWindowPanel databaseWindowPanel = null;
-	protected JTabbedPane leftTabbedPaneBottom = null;
+	protected JTabbedPane leftBottomTabbedPane = null;
 	protected JSplitPane rightSplitPane = null;
 	protected BioModelMetaDataPanel bioModelMetaDataPanel = null;
 	protected MathModelMetaDataPanel mathModelMetaDataPanel = null;
 	protected GeometryMetaDataPanel geometryMetaDataPanel = null;
 	
+	protected JTabbedPane rightBottomTabbedPane = null;
+	protected JPanel rightBottomEmptyPanel = null;
+
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == expandAllMenuItem || e.getSource() == collapseAllMenuItem) {
@@ -146,14 +157,14 @@ private void initialize() {
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
-		leftTabbedPaneBottom  = new JTabbedPane();
-		leftTabbedPaneBottom.addTab("VCell Database", databaseWindowPanel);
+		leftBottomTabbedPane  = new JTabbedPane();
+		leftBottomTabbedPane.addTab("VCell Database", databaseWindowPanel);
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);		
 		treePanel.setMinimumSize(new java.awt.Dimension(198, 148));
 		leftSplitPane.setTopComponent(treePanel);
-		leftTabbedPaneBottom.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftSplitPane.setBottomComponent(leftTabbedPaneBottom);
+		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
+		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
 		leftSplitPane.setResizeWeight(0.5);
 		leftSplitPane.setDividerLocation(300);
 		leftSplitPane.setDividerSize(8);
@@ -164,7 +175,26 @@ private void initialize() {
 		rightSplitPane.setDividerLocation(550);
 		rightSplitPane.setDividerSize(8);
 		rightSplitPane.setOneTouchExpandable(true);
-
+		
+		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
+		rightBottomEmptyPanel.setBackground(Color.white);
+		JLabel label = new JLabel("Select only one object (e.g. species, reaction, simulation) to show properties.");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.insets = new Insets(10,10,4,4);
+		gbc.gridy = 0;
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.PAGE_START;
+		rightBottomEmptyPanel.add(label, gbc);
+		
+		rightBottomTabbedPane = new JTabbedPane();
+		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
+		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
+		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
+		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(270);
 		splitPane.setOneTouchExpandable(true);

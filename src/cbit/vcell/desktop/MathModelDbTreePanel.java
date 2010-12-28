@@ -1521,7 +1521,7 @@ private javax.swing.tree.TreeCellRenderer getMathModelCellRenderer() {
 private MathModelDbTreeModel getMathModelDbTreeModel() {
 	if (ivjMathModelDbTreeModel == null) {
 		try {
-			ivjMathModelDbTreeModel = new MathModelDbTreeModel();
+			ivjMathModelDbTreeModel = new MathModelDbTreeModel(getJTree1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

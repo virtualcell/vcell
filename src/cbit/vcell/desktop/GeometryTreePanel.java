@@ -861,7 +861,7 @@ public DocumentManager getDocumentManager() {
 private GeometryDbTreeModel getGeometryDbTreeModel() {
 	if (ivjGeometryDbTreeModel == null) {
 		try {
-			ivjGeometryDbTreeModel = new GeometryDbTreeModel();
+			ivjGeometryDbTreeModel = new GeometryDbTreeModel(getJTree1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

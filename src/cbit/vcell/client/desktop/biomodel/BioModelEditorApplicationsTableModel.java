@@ -65,7 +65,16 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 					return simulationContext.getName();
 				} 
 				case COLUMN_MATH_TYPE: {
-					return simulationContext.getMathType();
+					String str = "";
+					int dimension = simulationContext.getGeometry().getDimension(); 
+					if (dimension == 0) {
+						str = "compartmental ";
+					} else {
+						String temp = simulationContext.getGeometry().getGeometrySpec().hasImage() ? "(image)" : "(analytic)";
+						str = dimension + "D " + temp + " spatial ";
+					}					
+					str += simulationContext.isStoch() ? "stochastic" : "deterministic"; 
+					return str;
 				} 
 				case COLUMN_ANNOTATION: {
 					return simulationContext.getDescription();

@@ -1,40 +1,17 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
-import javax.swing.tree.DefaultTreeModel;
-
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.Version;
-import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.desktop.BioModelCellRenderer;
-import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)

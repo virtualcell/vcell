@@ -26,4 +26,10 @@ public class GuiUtils {
 			} 
 		}
 	}
+	
+	public static void treeExpandAllRows(JTree tree) {
+		for (int row = 0; row < tree.getRowCount(); row ++){
+			tree.expandRow(row);
+		}
+	}
 }

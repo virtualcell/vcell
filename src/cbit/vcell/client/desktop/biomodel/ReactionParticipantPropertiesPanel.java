@@ -8,10 +8,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionParticipant;
 
 @SuppressWarnings("serial")

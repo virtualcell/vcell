@@ -1,18 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeNode;
 
@@ -34,10 +26,7 @@ import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.GeometryMetaDataPanel;
-import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
@@ -56,7 +45,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -72,7 +60,6 @@ import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
  */
 @SuppressWarnings("serial")
 public class BioModelEditor extends DocumentEditor {
-	private static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	private BioModelWindowManager bioModelWindowManager = null;
 	private BioModel bioModel = new BioModel(null);
 	
@@ -116,9 +103,6 @@ public class BioModelEditor extends DocumentEditor {
 	private EventPanel eventPanel = null;
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
 	
-	private JTabbedPane rightBottomTabbedPane = null;
-	private JPanel rightBottomEmptyPanel = null;
-
 /**
  * BioModelEditor constructor comment.
  */
@@ -350,28 +334,9 @@ private void initialize() {
 		
 		bioModelsNetPanel = new BioModelsNetPanel();
 		bioModelEditorPathwayCommonsPanel = new BioModelEditorPathwayCommonsPanel();
-		leftTabbedPaneBottom.addTab("BioModels.net", bioModelsNetPanel);
-		leftTabbedPaneBottom.addTab("Pathway Commons", bioModelEditorPathwayCommonsPanel);
-		
-		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyPanel.setBackground(Color.white);
-		JLabel label = new JLabel("Select only one object (e.g. species, reaction) to show properties.");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.insets = new Insets(10,10,4,4);
-		gbc.gridy = 0;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.PAGE_START;
-		rightBottomEmptyPanel.add(label, gbc);
-
+		leftBottomTabbedPane.addTab("BioModels.net", bioModelsNetPanel);
+		leftBottomTabbedPane.addTab("Pathway Commons", bioModelEditorPathwayCommonsPanel);
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
-		rightBottomTabbedPane = new JTabbedPane();
-		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
-		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
-		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
 		bioModelEditorTreeCellRenderer = new BioModelEditorTreeCellRenderer(documentEditorTree);
@@ -407,10 +372,11 @@ private void initialize() {
 	}
 }
 
-private final static int RIGHT_BOTTOM_TAB_PROPERTIES_INDEX = 0;
-
 @Override
 protected void setRightBottomPanelOnSelection(Object[] selections) {
+	if (selections == null || selections.length == 0) {
+		return;
+	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
 	int destComponentIndex = RIGHT_BOTTOM_TAB_PROPERTIES_INDEX;
 	boolean bShowBottom = true;
@@ -514,7 +480,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 		if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
 			rightSplitPane.setBottomComponent(rightBottomTabbedPane);
-			rightSplitPane.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
+//			rightSplitPane.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
 		}	
 		if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
 			rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);

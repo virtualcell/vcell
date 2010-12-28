@@ -25,7 +25,6 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
-import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public class AnalysisPanel extends DocumentEditorSubPanel {

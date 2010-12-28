@@ -5,10 +5,10 @@ package cbit.vcell.client.desktop.biomodel;
 ©*/
 import java.awt.BorderLayout;
 
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+
 import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.mapping.SimulationContext;
 

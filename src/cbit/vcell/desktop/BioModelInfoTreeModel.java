@@ -4,27 +4,18 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.Vector;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.SimulationInfo;
-import java.util.Enumeration;
-import cbit.vcell.clientdb.DatabaseListener;
-import javax.swing.tree.DefaultTreeModel;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.User;
-
-import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelInfoTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
+	private BioModelInfo fieldBioModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -38,12 +29,7 @@ public BioModelInfoTreeModel() {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 2:41:43 PM)
@@ -135,25 +121,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -161,7 +129,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public org.vcell.util.document.BioModelInfo getBioModelInfo() {
+public BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -201,18 +169,15 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-/**
  * Sets the bioModelInfo property (cbit.vcell.biomodel.BioModelInfo) value.
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
-	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(BioModelInfo bioModelInfo) {
+	if (bioModelInfo == fieldBioModelInfo) {
+		return;
+	}
+	BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 	refreshTree();

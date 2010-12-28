@@ -1,34 +1,18 @@
 package cbit.vcell.desktop;
 
-import cbit.vcell.mathmodel.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.Vector;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.SimulationInfo;
-import java.util.Enumeration;
-import cbit.vcell.clientdb.DatabaseListener;
-import javax.swing.tree.DefaultTreeModel;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.User;
-
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class MathModelMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private org.vcell.util.document.MathModelInfo fieldMathModelInfo = null;
+	private MathModelInfo fieldMathModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -41,12 +25,6 @@ public MathModelMetaDataTreeModel() {
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
 /**
  * Insert the method's description here.
@@ -103,25 +81,7 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -129,7 +89,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-public org.vcell.util.document.MathModelInfo getMathModelInfo() {
+public MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 /**
@@ -169,17 +129,14 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-/**
  * Sets the mathModelInfo property (cbit.vcell.mathmodel.MathModelInfo) value.
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-public void setMathModelInfo(org.vcell.util.document.MathModelInfo mathModelInfo) {
+public void setMathModelInfo(MathModelInfo mathModelInfo) {
+	if (mathModelInfo == fieldMathModelInfo) {
+		return;
+	}
 	MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
