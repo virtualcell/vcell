@@ -641,9 +641,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)) {
 				Parameter forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
 				Parameter reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
-				forwardRate = forwardRateParameter.getExpression();
+				forwardRate = new Expression(forwardRateParameter, getNameScope());
 				forwardRateUnit = forwardRateParameter.getUnitDefinition();
-				reverseRate = reverseRateParameter.getExpression();
+				reverseRate = new Expression(reverseRateParameter, getNameScope());
 				reverseRateUnit = reverseRateParameter.getUnitDefinition();
 			}
 			else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
@@ -742,8 +742,43 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 			if (forwardRate!=null)
 			{
-				String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-
+				// 
+				// Smoldyn assumes kinectic constants work on molecules/size. VCell assumes a unit of molecules/size 
+				// only on membrane reactions. Hence the need to perform unit conversion if reaction is in vol.
+				//
+				// The algorithm used to perform the unit conversion for reaction rate:
+				//	(1) Count the # of vol. (reactants * stoichiometry) : N
+				// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
+				//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+				//
+				
+				// Step (1) : Calculate N
+				ReactionParticipant[] rxnParticipants = reactionStep.getReactionParticipants();
+				int N = 0;
+				for (int i = 0; i < rxnParticipants.length; i++) {
+					// for a reactant
+					if (rxnParticipants[i] instanceof Reactant) {
+						Reactant r = (Reactant)rxnParticipants[i];
+						// if reactant is in vol
+						if (r.getStructure() instanceof Feature) {
+							// add it to total count N
+							N += r.getStoichiometry();
+						}
+						
+					}
+				}
+				
+				// Step (2) : if reaction is a vol reaction, N = N-1
+				if (reactionStep .getStructure() instanceof Feature) {
+					N = N-1;
+				}
+				
+				// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+				if (N == 1) {
+					forwardRate = Expression.mult(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+				} else if (N > 1) {
+					forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+				}
 				Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
 				ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
 				
@@ -754,15 +789,46 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 //				for (ParticleVariable productVar : productParticles){
 //					actions.add(Action.createCreateAction(productVar));
 //				}
+				String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 				ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partProbRate, forwardActions);
 				subdomain.addParticleJumpProcess(forwardProcess);
 			}
 			if (reverseRate!=null)
 			{
-				// get jump process name
-				String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
-				// get probability
+				// The algorithm used to perform the unit conversion for reverse reaction rate:
+				//	(1) Count the # of vol. (products * stoichiometry) : N
+				// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
+				//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+				//
 				
+				// Step (1) : Calculate N
+				ReactionParticipant[] rxnParticipants = reactionStep.getReactionParticipants();
+				int N = 0;
+				for (int i = 0; i < rxnParticipants.length; i++) {
+					// for a product
+					if (rxnParticipants[i] instanceof Product) {
+						Product p = (Product)rxnParticipants[i];
+						// if product is in vol
+						if (p.getStructure() instanceof Feature) {
+							// add it to total count N
+							N += p.getStoichiometry();
+						}
+						
+					}
+				}
+				
+				// Step (2) : if reaction is a vol reaction, N = N-1
+				if (reactionStep .getStructure() instanceof Feature) {
+					N = N-1;
+				}
+				
+				// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+				if (N == 1) {
+					reverseRate = Expression.mult(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+				} else if (N > 1) {
+					reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+				}
+				// get probability
 				Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
 				ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
 				
@@ -773,6 +839,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 //				for (ParticleVariable reactantVar : reactantParticles){
 //					actions.add(Action.createCreateAction(reactantVar));
 //				}
+
+				// get jump process name
+				String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
 				ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions);
 				subdomain.addParticleJumpProcess(reverseProcess);
 			}
