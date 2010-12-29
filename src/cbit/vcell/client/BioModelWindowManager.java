@@ -97,46 +97,46 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 }
 
 
-private void editSelectGeometry(boolean bShowOldGeomEditor/*DocumentCreationInfo documentCreationInfo*/,Geometry newGeom,ApplicationEditor applicationEditor){
-	SimulationOwner simulationOwner = applicationEditor.getSimulationWorkspace().getSimulationOwner();
-	Geometry origGeom = simulationOwner.getGeometry();
-	if(bShowOldGeomEditor
-			/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
-		GeometryViewer localGeometryViewer = new GeometryViewer();
-		localGeometryViewer.setGeometry(newGeom);
-		localGeometryViewer.setSize(800,600);
-		int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
-		localGeometryViewer.setGeometry(null);
-		if(result != JOptionPane.OK_OPTION){
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-	}
- 		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
-		while (appComponentsEnum.hasMoreElements()) {
-			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
-			ApplicationEditor appEditor = appComponents.getAppEditor();
-			if (appEditor == applicationEditor) {
-				if (simulationOwner instanceof SimulationContext) {
-					try {
-						if(newGeom.getName() == null){
-							newGeom.setName(
-								getBioModel().getName()+"_"+
-								((SimulationContext)simulationOwner).getName()+"_"+
-								ClientRequestManager.generateDateTimeString());
-						}
-						showSurfaceViewerFrame((SimulationContext)simulationOwner, false);
-						((SimulationContext)simulationOwner).setGeometry(newGeom);
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-						DialogUtils.showErrorDialog(getComponent(), e1.getMessage());
-					}
-					return;
-				} 
-			}
-		DialogUtils.showErrorDialog(getComponent(), "Geometry "+origGeom.getName()+" key="+origGeom.getVersion().getVersionKey()+" not found in application hash");
-	}
-}
+//private void editSelectGeometry(boolean bShowOldGeomEditor/*DocumentCreationInfo documentCreationInfo*/,Geometry newGeom,ApplicationEditor applicationEditor){
+//	SimulationOwner simulationOwner = applicationEditor.getSimulationWorkspace().getSimulationOwner();
+//	Geometry origGeom = simulationOwner.getGeometry();
+//	if(bShowOldGeomEditor
+//			/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
+//		GeometryViewer localGeometryViewer = new GeometryViewer();
+//		localGeometryViewer.setGeometry(newGeom);
+//		localGeometryViewer.setSize(800,600);
+//		int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+//		localGeometryViewer.setGeometry(null);
+//		if(result != JOptionPane.OK_OPTION){
+//			throw UserCancelException.CANCEL_GENERIC;
+//		}
+//	}
+// 		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
+//		while (appComponentsEnum.hasMoreElements()) {
+//			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
+//			ApplicationEditor appEditor = appComponents.getAppEditor();
+//			if (appEditor == applicationEditor) {
+//				if (simulationOwner instanceof SimulationContext) {
+//					try {
+//						if(newGeom.getName() == null){
+//							newGeom.setName(
+//								getBioModel().getName()+"_"+
+//								((SimulationContext)simulationOwner).getName()+"_"+
+//								ClientRequestManager.generateDateTimeString());
+//						}
+//						showSurfaceViewerFrame((SimulationContext)simulationOwner, false);
+//						((SimulationContext)simulationOwner).setGeometry(newGeom);
+//					} catch (Exception e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//						DialogUtils.showErrorDialog(getComponent(), e1.getMessage());
+//					}
+//					return;
+//				} 
+//			}
+//		DialogUtils.showErrorDialog(getComponent(), "Geometry "+origGeom.getName()+" key="+origGeom.getVersion().getVersionKey()+" not found in application hash");
+//	}
+//}
 
 //private void createGeometry(final GeometrySummaryViewer source){
 //		
@@ -201,19 +201,64 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	}
 
 	if(source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
-		AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		AsynchClientTask oldEditorTask = new AsynchClientTask("Show Old Editor",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Geometry newGeom = (Geometry)hashTable.get("doc");
+				if(newGeom == null){
+					throw new IllegalArgumentException("No template geometry found during create.");
+				}
+				Boolean bShowOldGeomEditor = (Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR);
+				if(bShowOldGeomEditor){
+					GeometryViewer localGeometryViewer = new GeometryViewer();
+					localGeometryViewer.setGeometry(newGeom);
+					localGeometryViewer.setPreferredSize(new Dimension(700,500));
+					int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+					localGeometryViewer.setGeometry(null);//force cleanup so localGeometryViewer can be garbage collected
+					if(result != JOptionPane.OK_OPTION){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+			}
+		};
+		AsynchClientTask precomputeAllTask = new AsynchClientTask("precomputeAll geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");
 				if(newGeom != null){
-					editSelectGeometry(
-							(Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR),
-//						((DocumentWindowManager.GeometrySelectionInfo)
-//						hashTable.get(DocumentWindowManager.GEOMETRY_SELECTIONINFO_KEY)).getDocumentCreationInfo(),
-						newGeom, (ApplicationEditor)source);
-				}else{
-					DialogUtils.showErrorDialog(getComponent(), "No Geometry found in edit task");
+					newGeom.precomputeAll();
 				}
+			}
+		};
+
+		AsynchClientTask setGeomOnSimContextTask = new AsynchClientTask("Set Geometry On SimContext",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ApplicationEditor applicationEditor = (ApplicationEditor)source;
+				SimulationOwner simulationOwner = applicationEditor.getSimulationWorkspace().getSimulationOwner();
+				Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
+				Geometry newGeom = (Geometry)hashTable.get("doc");
+				while (appComponentsEnum.hasMoreElements()) {
+					ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
+					ApplicationEditor appEditor = appComponents.getAppEditor();
+					if (appEditor == applicationEditor) {
+						if (simulationOwner instanceof SimulationContext) {
+							if(newGeom.getName() == null){
+								newGeom.setName(
+									getBioModel().getName()+"_"+
+									((SimulationContext)simulationOwner).getName()+"_"+
+									ClientRequestManager.generateDateTimeString());
+							}
+							showSurfaceViewerFrame((SimulationContext)simulationOwner, false);
+							((SimulationContext)simulationOwner).setGeometry(newGeom);
+							return;
+						} 
+					}
+				}
+				Geometry origGeom = simulationOwner.getGeometry();
+				throw new IllegalArgumentException(
+					"Couldn't find matching application editor for orig geom '"+origGeom.getName()+"' key="+origGeom.getKey()+" in application hash.");
 			}
 		};
 
@@ -222,7 +267,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				(ApplicationEditor)source).getAppEditor().getSimulationWorkspace().getSimulationOwner().getGeometry();
 		createGeometry(
 				currentGeometry,
-				new AsynchClientTask[] {editSelectTask}
+				new AsynchClientTask[] {oldEditorTask,precomputeAllTask,setGeomOnSimContextTask}
 				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
 	}
 	

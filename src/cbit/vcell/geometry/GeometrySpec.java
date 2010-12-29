@@ -19,6 +19,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.document.Version;
 
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -171,7 +172,7 @@ public GeometrySpec(String aName, VCImage aVCImage) {
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
 
@@ -826,7 +827,7 @@ public VCImage getSampledImage() throws GeometryException, ImageException, Expre
 		ISize sampleSize = getDefaultSampledImageSize();
 		VCImage oldImage = sampledImage;
 		sampledImage = createSampledImage(sampleSize);
-		firePropertyChange("sampledImage",oldImage,sampledImage);
+		//firePropertyChange("sampledImage",oldImage,sampledImage);
 		try {
 			verifyCompleteSampling(sampledImage);
 			setWarningMessage("");
@@ -1164,7 +1165,7 @@ public void removeAnalyticSubVolume(AnalyticSubVolume subVolume) throws Property
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(),listener);
 }
 
 
