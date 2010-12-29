@@ -7,6 +7,7 @@ import java.io.OutputStream;
 
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import cbit.vcell.visit.VisitPythonCommand;
 
 
 
@@ -125,11 +126,18 @@ public class VisitProcess {
 	}
 	
 	
-	public static String sendAndListen(String visitCmd){
+	public static void visitCommand(final String visitCmd){
+		sendCommandAndNoteResponse(visitCmd +"\n");
+	}
+	
+	public static String sendAndListen(final String visitCmd){
 		sendVisitCommand(visitCmd);
 		waitASec();
 		return(myProcessInfo.normalOutput.getString());
 	}
+	
+	public static void testSend(final String visitCmd){sendVisitCommand(visitCmd+"\n"); waitASec();}
+	
 	
 	public static void sendCommandAndNoteResponse(final String visitCmd){
 		//System.out.println(visitCmd);
@@ -173,7 +181,7 @@ public class VisitProcess {
 			e.printStackTrace();
 		}
 		myBOS = new BufferedOutputStream(myProcessInfo.getExecProcess().getOutputStream());
- 
+        System.out.println("Started Python, made myBOS");
 		waitASec();
 		sendCommandAndNoteResponse("import sys\n");
 		sendCommandAndNoteResponse("import os\n");
@@ -188,7 +196,7 @@ public class VisitProcess {
 	}
 
 	public static void main(String[] args){
-
+        System.out.println("Starting main");
 		String execCommand = "python -i";
 		//String execCommand = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/bin/cli"; 
 		try {
@@ -196,6 +204,7 @@ public class VisitProcess {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("About to make new BOS");
 		myBOS = new BufferedOutputStream(myProcessInfo.getExecProcess().getOutputStream());
  
 		waitASec();
@@ -205,8 +214,17 @@ public class VisitProcess {
 		sendCommandAndNoteResponse("import visit\n");
 		sendCommandAndNoteResponse("from visit import *\n");
 		waitASec();
-		//System.out.println("About to execute visit.Launch()");
+		testSend(VisitPythonCommand.Launch());
+		sendCommandAndNoteResponse("isCLI = True\n");
+		waitASec();
+		//testSend(VisitPythonCommand.OpenMDServer("10.84.11.40"));
+		testSend(VisitPythonCommand.OpenDatabase("/home/VCELL/eboyce/visit2_1_1/data/globe.silo"));
+		testSend(VisitPythonCommand.AddPlot("Pseudocolor","u"));
+		testSend(VisitPythonCommand.Drawplots());
 		
+		
+		//System.out.println("About to execute visit.Launch()");
+		/*
 		sendCommandAndNoteResponse("Launch()\n");
 	
 		waitNSecs(10);
@@ -219,7 +237,7 @@ public class VisitProcess {
 		waitASec();
 		sendCommandAndNoteResponse("visit.DrawPlots()\n");
 		System.out.println("Done.");
-		
+		*/
 	}
 	}
 	

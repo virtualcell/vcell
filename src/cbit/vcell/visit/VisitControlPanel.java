@@ -13,14 +13,24 @@ import javax.swing.SwingUtilities;
 
 
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 
 public class VisitControlPanel extends JPanel {
+	Origin origin;
+	Extent extent;
+	JComboBox comboBox = new JComboBox();
+	private PDEDataContext pdeDataContext;
 	private JTextField textField;
 	private DataIdentifier dataIdentifier;
 	private VisitProcess visitProcess;
@@ -53,6 +63,79 @@ public class VisitControlPanel extends JPanel {
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 1;
 		add(panel, gbc_panel);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		
+		JLabel lblSelectVariable = new JLabel("Select variable");
+		GridBagConstraints gbc_lblSelectVariable = new GridBagConstraints();
+		gbc_lblSelectVariable.insets = new Insets(0, 0, 5, 0);
+		gbc_lblSelectVariable.gridx = 0;
+		gbc_lblSelectVariable.gridy = 1;
+		panel.add(lblSelectVariable, gbc_lblSelectVariable);
+		
+		
+		GridBagConstraints gbc_comboBox = new GridBagConstraints();
+		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
+		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBox.gridx = 0;
+		gbc_comboBox.gridy = 2;
+		/*comboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DataIdentifier dataIdentifier = null;
+				String varName = (String) comboBox.getSelectedItem();
+				for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
+					if (pdeDataContext.getDataIdentifiers()[i].getName().equals(varName)) {
+						dataIdentifier=pdeDataContext.getDataIdentifiers()[i];
+						break;
+					}
+				}
+				init(dataIdentifier, visitProcess);
+			}
+		});*/
+		
+		panel.add(comboBox, gbc_comboBox);
+		
+		JButton btnClearPlots = new JButton("Clear Plots");
+		btnClearPlots.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Trying to delete all plots");
+				VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());			}
+		});
+		GridBagConstraints gbc_btnClearPlots = new GridBagConstraints();
+		gbc_btnClearPlots.insets = new Insets(0, 0, 5, 0);
+		gbc_btnClearPlots.gridx = 0;
+		gbc_btnClearPlots.gridy = 3;
+		panel.add(btnClearPlots, gbc_btnClearPlots);
+		
+		JButton btnAddPlot = new JButton("Add Plot");
+		GridBagConstraints gbc_btnAddPlot = new GridBagConstraints();
+		gbc_btnAddPlot.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAddPlot.gridx = 0;
+		gbc_btnAddPlot.gridy = 4;
+		panel.add(btnAddPlot, gbc_btnAddPlot);
+		
+		JButton btnDrawPlot = new JButton("Draw Plot");
+		GridBagConstraints gbc_btnDrawPlot = new GridBagConstraints();
+		gbc_btnDrawPlot.insets = new Insets(0, 0, 5, 0);
+		gbc_btnDrawPlot.gridx = 0;
+		gbc_btnDrawPlot.gridy = 5;
+		panel.add(btnDrawPlot, gbc_btnDrawPlot);
+		
+		JButton btnShowVisitGui = new JButton("Show VisIt GUI");
+		btnShowVisitGui.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Trying to open VisIt GUI");
+				VisitProcess.visitCommand(VisitPythonCommand.OpenGUI());  
+			}
+		});
+		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
+		gbc_btnShowVisitGui.gridx = 0;
+		gbc_btnShowVisitGui.gridy = 6;
+		panel.add(btnShowVisitGui, gbc_btnShowVisitGui);
 		
 		JPanel panel_1 = new JPanel();
 		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
@@ -76,7 +159,7 @@ public class VisitControlPanel extends JPanel {
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 0;
 		panel_1.add(scrollPane, gbc_scrollPane);
-				
+		
 		textField = new JTextField();
 		
 		//listen for up-arrow key
@@ -151,5 +234,16 @@ public class VisitControlPanel extends JPanel {
 		this.visitProcess = visitProcess;
 		lblDataset.setText(dataIdentifier.getName());
 		VisitProcess.setJTextArea(this.jTextArea);
+	}
+
+
+	public void setPdeDataContext(PDEDataContext pdeDataContext, Origin origin, Extent extent) {
+		this.origin = origin;
+		this.extent = extent;
+		this.pdeDataContext = pdeDataContext;
+		comboBox.removeAllItems();
+		for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
+			comboBox.addItem(pdeDataContext.getDataIdentifiers()[i].getName());
+		}
 	}
 }

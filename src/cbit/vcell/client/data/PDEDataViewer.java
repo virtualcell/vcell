@@ -1728,6 +1728,7 @@ private JButton getJButtonVisit(){
 					String userName = getSimulation().getVersion().getOwner().getName();
 					visitProcess = new VisitProcess();
 					VisitControlPanel visitControlPanel= new VisitControlPanel();
+					visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
 					visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
 					
 					showComponentInFrame(visitControlPanel, "Visit Control Panel");
