@@ -26,6 +26,12 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	public static final int iColSelected = 0;
 	public static final int iColEntity = 1;
 	public static final int iColType = 2;
+	
+	// filtering variables 
+	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
+	protected String searchText = null;
+	protected List<EntitySelectionTableRow> rowList = null;
+	//done
 
 	private SBBox sbbox;
 
@@ -41,7 +47,8 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		if (sbbox == null) {
 			setData(null);
 		} else {
-			List<EntitySelectionTableRow> rowList = addRows(sbbox.factories().processFactory());
+//wei			List<EntitySelectionTableRow> rowList = addRows(sbbox.factories().processFactory());
+			rowList = addRows(sbbox.factories().processFactory());
 			rowList.addAll(addRows(sbbox.factories().substanceFactory()));
 			setData(rowList);
 		}
@@ -131,5 +138,34 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		    }
 		};
 	}
+	
+	// filtering functions
+	public void setSearchText(String newValue) {
+		String oldValue = searchText;
+		searchText = newValue;
+		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);	
+		refreshData();
+	}
+
+	protected void refreshData() {
+		List<EntitySelectionTableRow> newData = computeData();
+		setData(newData);
+	}
+	
+	protected ArrayList<EntitySelectionTableRow> computeData() {
+		ArrayList<EntitySelectionTableRow> reactionStepList = new ArrayList<EntitySelectionTableRow>();
+		if (rowList != null){
+			for (EntitySelectionTableRow rs : rowList){
+				if (searchText == null || searchText.length() == 0 || rs.thing().label().indexOf(searchText) >= 0
+						|| rs.type().label().indexOf(searchText) >= 0) {
+					reactionStepList.add(rs);
+				}
+			}
+			
+		}
+		return reactionStepList;
+	}
+	// done
+
 	
 }
