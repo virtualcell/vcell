@@ -104,7 +104,10 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
-
+		@Override
+		public String getConextDescription() {
+			return "Global";
+		}
 	}
 
 	public static final int ROLE_UserDefined	= 0;
@@ -1358,7 +1361,7 @@ public Structure[] getStructures() {
  * @param index The index value into the property array.
  * @see #setStructures
  */
-public Structure getStructures(int index) {
+public Structure getStructure(int index) {
 	return getStructures()[index];
 }
 

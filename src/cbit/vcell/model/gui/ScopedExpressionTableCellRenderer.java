@@ -15,11 +15,15 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 
@@ -218,9 +222,19 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	try{
 		if(value == null){
-			templateJLabel.setText(null);
 			templateJLabel.setIcon(null);
-			return templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			templateJLabel.setText(null);
+			templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			TableModel tableModel = table.getModel();
+			if (tableModel instanceof DefaultSortTableModel) {
+				if (row < ((DefaultSortTableModel) tableModel).getDataSize()) {
+					Object rowObject = ((DefaultSortTableModel) tableModel).getValueAt(row);
+					if (rowObject instanceof SpeciesContextSpecParameter) {
+						templateJLabel.setText(((SpeciesContextSpecParameter) rowObject).getNullExpressionDescription());
+					}
+				}
+			}
+			return templateJLabel;
 		}
 		
 		if (!(value instanceof ScopedExpression)){

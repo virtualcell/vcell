@@ -39,10 +39,6 @@ public VCDocumentDbTreeModel(JTree tree) {
 	super(new BioModelNode("not connected", true),true);
 	ownerTree = tree;
 	rootNode = (BioModelNode)root;
-	myModelsNode = new BioModelNode("My Models", true);
-	sharedModelsNode = new BioModelNode("Shared Models", true);
-	rootNode.add(myModelsNode);
-	rootNode.add(sharedModelsNode);
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -112,7 +108,13 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 }
 
 public void refreshTree() {
-	if (getDocumentManager()!=null && getDocumentManager().getUser() != null){
+	if (getDocumentManager() != null && getDocumentManager().getUser() != null){
+		if (rootNode.getChildCount() == 0) {
+			myModelsNode = new BioModelNode("My Models", true);
+			sharedModelsNode = new BioModelNode("Shared Models", true);
+			rootNode.add(myModelsNode);
+			rootNode.add(sharedModelsNode);
+		}
 		try {
 			createBaseTree();
 		}catch (DataAccessException e){
@@ -120,9 +122,12 @@ public void refreshTree() {
 		}
 	} else {
 		rootNode.setUserObject("not connected");
+		rootNode.removeAllChildren();
 	}
 	nodeStructureChanged(rootNode);
-	ownerTree.expandPath(new TreePath(myModelsNode.getPath()));
+	if (myModelsNode != null && rootNode.isNodeDescendant(myModelsNode)) {
+		ownerTree.expandPath(new TreePath(myModelsNode.getPath()));
+	}
 }
 /**
  * Insert the method's description here.

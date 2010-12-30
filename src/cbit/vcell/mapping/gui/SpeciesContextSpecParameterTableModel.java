@@ -1,5 +1,4 @@
 package cbit.vcell.mapping.gui;
-import java.util.ArrayList;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -13,10 +12,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -137,74 +133,11 @@ public Class<?> getColumnClass(int column) {
  * @param row int
  */
 private void refreshData() {
-	ArrayList<SpeciesContextSpecParameter> speciesContextSpecParameterList = new ArrayList<SpeciesContextSpecParameter>();
-	if (fieldSpeciesContextSpec != null){
-		speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getInitialConditionParameter());
-	
-		SimulationContext simulationContext = fieldSpeciesContextSpec.getSimulationContext();
-		if (simulationContext!=null && !fieldSpeciesContextSpec.isConstant()){
-			SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
-			if (speciesContext.getStructure() instanceof Membrane){
-				if (simulationContext.getGeometry() != null && !fieldSpeciesContextSpec.isWellMixed()){
-					int dimension = simulationContext.getGeometry().getDimension();
-					if (dimension > 1) {
-						// diffusion
-						speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getDiffusionParameter());
-						
-						if (!simulationContext.isStoch()) {
-							// boundary condition
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
-					
-							if (dimension > 2) {
-								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
-							}
-						}
-					}
-				}
-			} else if (speciesContext.getStructure() instanceof Feature){
-				if (simulationContext.getGeometry() != null && !fieldSpeciesContextSpec.isWellMixed()){
-					int dimension = simulationContext.getGeometry().getDimension();
-					if (dimension > 0) {
-						speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getDiffusionParameter());
-						
-						if (!simulationContext.isStoch()) {
-							// boundary condition
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-						 
-							if (dimension > 1) {
-								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
-							
-							
-								if (dimension > 2) {
-									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
-								}
-							}
-							
-							// velocity
-							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityXParameter());
-							if (dimension > 1) {
-								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityYParameter());
-							
-								if (dimension > 2) {
-									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityZParameter());
-								}
-							}
-						}
-					}
-				}
-			} else {
-				throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
-			}
-		}
+	if (fieldSpeciesContextSpec == null){
+		setData(null);
+	} else {
+		setData(fieldSpeciesContextSpec.computeApplicableParameterList());
 	}
-	setData(speciesContextSpecParameterList);
 }
 
 
@@ -229,12 +162,10 @@ public Object getValueAt(int row, int col) {
 				}
 			}
 			case COLUMN_VALUE:{
-				if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-					if (parameter.getExpression()==null){
-						return null;
-					}else{
-						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-					}
+				if (parameter.getExpression()==null){
+					return null;
+				}else{
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 				}
 			}
 			default:{
@@ -432,24 +363,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					String newExpressionString = (String)aValue;
 					if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 						SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-						if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX 
-								|| scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY 
-								|| scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
-							Expression newExp = null;
-							if (newExpressionString == null || newExpressionString.trim().length() == 0) {
+						Expression newExp = null;
+						if (newExpressionString == null || newExpressionString.trim().length() == 0) {
+							if (scsParm.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_DiffusionRate
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
 								newExp = new Expression(0.0);
-							} else {
-								newExp = new Expression(newExpressionString);
 							}
-							scsParm.setExpression(newExp);
 						} else {
-							// scsParam is a velocity parameter
-							Expression newExp = null;
-							if (newExpressionString != null && newExpressionString.trim().length() > 0) {
-								newExp = new Expression(newExpressionString);
-							} 
-							scsParm.setExpression(newExp);							
+							newExp = new Expression(newExpressionString);
 						}
+						scsParm.setExpression(newExp);
 					}
 				}
 			}catch (java.beans.PropertyVetoException e){

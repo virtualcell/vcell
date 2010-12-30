@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -58,8 +57,20 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 		if (simulationContext == null || simulationContext.getBioEvents() == null){
 			return null;
 		}
-		
-		return Arrays.asList(simulationContext.getBioEvents());
+		List<BioEvent> bioEventList = new ArrayList<BioEvent>();
+		for (BioEvent bioEvent : simulationContext.getBioEvents()) {
+			if (searchText == null || searchText.length() == 0) {
+				bioEventList.add(bioEvent);
+			} else {
+				String lowerCaseSearchText = searchText.toLowerCase();	
+				if (bioEvent.getName().toLowerCase().contains(lowerCaseSearchText)
+					|| bioEvent.getTriggerExpression() != null && bioEvent.getTriggerExpression().infix().toLowerCase().contains(lowerCaseSearchText)
+					|| bioEvent.getDelay() != null && bioEvent.getDelay().getDurationExpression().infix().toLowerCase().contains(lowerCaseSearchText)) {					
+					bioEventList.add(bioEvent);
+				}
+			}
+		}
+		return bioEventList;
 	}
 
 	public Object getValueAt(int row, int column) {

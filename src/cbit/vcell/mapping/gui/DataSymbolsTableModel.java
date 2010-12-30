@@ -4,6 +4,7 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -11,11 +12,14 @@ import java.util.Set;
 
 import javax.swing.JTable;
 
+import loci.formats.in.FEIReader;
+
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.SymbolTable;
 /**
@@ -78,6 +82,22 @@ protected List<DataSymbol> computeData() {
 	if (simulationContext == null){
 		return null;
 	} 
+	
+	List<DataSymbol> dataSymbolList = new ArrayList<DataSymbol>();
+	for (DataSymbol dataSymbol : simulationContext.getDataContext().getDataSymbols()) {
+		if (searchText == null || searchText.length() == 0) {
+			dataSymbolList.add(dataSymbol);
+		} else {
+			String lowerCaseSearchText = searchText.toLowerCase();	
+			if (dataSymbol.getName().toLowerCase().contains(lowerCaseSearchText)
+				|| dataSymbol.getDataSymbolType().getDisplayName().toLowerCase().contains(lowerCaseSearchText)
+				|| (dataSymbol instanceof FieldDataSymbol && ((FieldDataSymbol)dataSymbol).getExternalDataIdentifier().getName().toLowerCase().contains(lowerCaseSearchText)
+						|| ((FieldDataSymbol)dataSymbol).getFieldDataVarName().toLowerCase().contains(lowerCaseSearchText)
+						|| ((FieldDataSymbol)dataSymbol).getFieldDataVarType().toLowerCase().contains(lowerCaseSearchText))) {					
+				dataSymbolList.add(dataSymbol);
+			}
+		}
+	}
 	
 	return (Arrays.asList(simulationContext.getDataContext().getDataSymbols()));
 	

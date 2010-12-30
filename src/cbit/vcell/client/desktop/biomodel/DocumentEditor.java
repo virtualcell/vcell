@@ -13,15 +13,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -29,10 +32,18 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -41,18 +52,31 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 @SuppressWarnings("serial")
 public abstract class DocumentEditor extends JPanel {
-	protected static final double DEFAULT_DIVIDER_LOCATION = 0.7;
+	protected enum DocumentEditorPopupMenuAction {
+		add_new,
+		delete,
+		add_new_app_deterministic,
+		add_new_app_stochastic,
+		copy_app,
+	}
+	protected static final double DEFAULT_DIVIDER_LOCATION = 0.68;
 	protected final static int RIGHT_BOTTOM_TAB_PROPERTIES_INDEX = 0;
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
-	protected IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	protected IvjEventHandler eventHandler = new IvjEventHandler();
 	
 	protected JTree documentEditorTree = null;
 	protected SelectionManager selectionManager = new SelectionManager();
 
 	protected JPanel emptyPanel = new JPanel();
 	private JPopupMenu popupMenu = null;
+	private JMenu addNewAppMenu = null;
+	private JMenuItem addNewAppDeterministicMenuItem = null;
+	private JMenuItem addNewAppStochasticMenuItem = null;
 	private JMenuItem expandAllMenuItem = null;
 	private JMenuItem collapseAllMenuItem = null;
+	private JMenuItem addNewMenuItem;
+	private JMenuItem deleteMenuItem;
+	
 	protected DatabaseWindowPanel databaseWindowPanel = null;
 	protected JTabbedPane leftBottomTabbedPane = null;
 	protected JSplitPane rightSplitPane = null;
@@ -62,15 +86,42 @@ public abstract class DocumentEditor extends JPanel {
 	
 	protected JTabbedPane rightBottomTabbedPane = null;
 	protected JPanel rightBottomEmptyPanel = null;
-
+	private JSeparator popupMenuSeparator = null;
+	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == expandAllMenuItem || e.getSource() == collapseAllMenuItem) {
-				Object lastSelectedPathComponent = documentEditorTree.getLastSelectedPathComponent();
-				if (lastSelectedPathComponent instanceof BioModelNode) {
-					GuiUtils.treeExpandAll(documentEditorTree, (BioModelNode)lastSelectedPathComponent, e.getSource() == expandAllMenuItem);
+			if (e.getSource() == expandAllMenuItem) {
+				TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+				for (TreePath tp : selectedPaths) {
+					Object lastSelectedPathComponent = tp.getLastPathComponent();
+					if (lastSelectedPathComponent instanceof BioModelNode) {
+						GuiUtils.treeExpandAll(documentEditorTree, (BioModelNode)lastSelectedPathComponent, true);
+					}
 				}
-			} 
+			} else if (e.getSource() == collapseAllMenuItem) {
+				TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+				for (TreePath tp : selectedPaths) {
+					Object lastSelectedPathComponent = tp.getLastPathComponent();
+					if (lastSelectedPathComponent instanceof BioModelNode) {
+						BioModelNode selectedNode = (BioModelNode)lastSelectedPathComponent;
+						if (selectedNode.getParent() == null) {// root
+							for (int i = 0; i < selectedNode.getChildCount(); i ++) {
+								GuiUtils.treeExpandAll(documentEditorTree, (BioModelNode) selectedNode.getChildAt(i), false);
+							}
+						} else {
+							GuiUtils.treeExpandAll(documentEditorTree, selectedNode, false);
+						}
+					}
+				}
+			} else if (e.getSource() == addNewMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new);
+			} else if (e.getSource() == deleteMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete);
+			} else if (e.getSource() == addNewAppDeterministicMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic);
+			} else if (e.getSource() == addNewAppStochasticMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_stochastic);
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == selectionManager) {
@@ -79,33 +130,29 @@ public abstract class DocumentEditor extends JPanel {
 		};
 		
 		public void mouseClicked(MouseEvent e) {
-			if (e.getSource() == documentEditorTree) {
-				if (SwingUtilities.isRightMouseButton(e)) {	// right click		
-					Point mousePoint = e.getPoint();
-					TreePath path = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
-                    if (path == null) {
-                    	return; 
-                    }
-					Object node = documentEditorTree.getLastSelectedPathComponent();
-					if (node == null || !(node instanceof BioModelNode) || path.getLastPathComponent() != node) {
-						return;
-					}
-					getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
-				} else if (e.getClickCount() == 2) {
-					Object node = documentEditorTree.getLastSelectedPathComponent();
-					if (node instanceof LinkNode) {
-						String link = ((LinkNode)node).getLink();
-						if (link != null) {
-							DialogUtils.browserLauncher(documentEditorTree, link, "failed to launch", false);
-						}
+			if (e.getClickCount() == 2) {
+				Object node = documentEditorTree.getLastSelectedPathComponent();
+				if (node instanceof LinkNode) {
+					String link = ((LinkNode)node).getLink();
+					if (link != null) {
+						DialogUtils.browserLauncher(documentEditorTree, link, "failed to launch", false);
 					}
 				}
 			}
 		}
 		public void mouseEntered(MouseEvent e) {}
 		public void mouseExited(MouseEvent e) {}
-		public void mousePressed(MouseEvent e) {}
-		public void mouseReleased(MouseEvent e) {}	
+		public void mousePressed(MouseEvent e) {
+			if (e.getSource() == documentEditorTree) {
+				documentEditorTree_tryPopupTrigger(e);
+			}
+		}
+		public void mouseReleased(MouseEvent e) {
+			if (e.getSource() == documentEditorTree) {
+				documentEditorTree_tryPopupTrigger(e);
+			}
+		}
+
 		
 		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
 			if (e.getSource() == documentEditorTree)
@@ -121,10 +168,41 @@ public DocumentEditor() {
 	initialize();
 }
 
+protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction action);
+
 public void onSelectedObjectsChange() {
 	Object[] selectedObjects = selectionManager.getSelectedObjects();
 	setRightBottomPanelOnSelection(selectedObjects);
 }
+
+private void documentEditorTree_tryPopupTrigger(MouseEvent e) {
+	if (e.isPopupTrigger()) {	
+		Point mousePoint = e.getPoint();
+		TreePath path = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
+	    if (path == null) {
+	    	return; 
+	    }
+		Object rightClickNode = path.getLastPathComponent();
+		if (rightClickNode == null || !(rightClickNode instanceof BioModelNode)) {
+			return;
+		}
+		TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+		if (selectedPaths == null || selectedPaths.length == 0) {
+			return;
+		} 
+		boolean bFound = false;
+		for (TreePath tp : selectedPaths) {
+			if (tp.equals(path)) {
+				bFound = true;
+				break;
+			}
+		}
+		if (!bFound) {
+			return;
+		}
+		getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
+	}
+}	
 
 /**
  * Called whenever the part throws an exception.
@@ -206,11 +284,11 @@ private void initialize() {
 		add(splitPane, BorderLayout.CENTER);
 		
 		
-		selectionManager.addPropertyChangeListener(ivjEventHandler);
+		selectionManager.addPropertyChangeListener(eventHandler);
 		
 		databaseWindowPanel.setSelectionManager(selectionManager);
-		documentEditorTree.addTreeSelectionListener(ivjEventHandler);
-		documentEditorTree.addMouseListener(ivjEventHandler);
+		documentEditorTree.addTreeSelectionListener(eventHandler);
+		documentEditorTree.addMouseListener(eventHandler);
 		
 		bioModelMetaDataPanel = new BioModelMetaDataPanel();
 		bioModelMetaDataPanel.setSelectionManager(selectionManager);
@@ -219,8 +297,6 @@ private void initialize() {
 		geometryMetaDataPanel = new GeometryMetaDataPanel();
 		geometryMetaDataPanel.setSelectionManager(selectionManager);
 
-		getMenuItemExpandAll().addActionListener(ivjEventHandler);
-		getMenuItemCollapseAll().addActionListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -248,38 +324,99 @@ private void treeSelectionChanged0() {
 protected abstract void setRightBottomPanelOnSelection(Object[] selections);
 protected abstract void treeSelectionChanged();
 
-private JPopupMenu getPopupMenu() {
-	if (popupMenu == null) {
-		try {
-			popupMenu = new javax.swing.JPopupMenu();
-			popupMenu.add(getMenuItemExpandAll());
-			popupMenu.add(getMenuItemCollapseAll());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
+private void construcutPopupMenu() {
+	popupMenu.removeAll();
+	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+	boolean bDelete = false;
+	boolean bExpand = true;
+	boolean bAddNew = false;
+	boolean bAddNewApp = false;
+	for (TreePath tp : selectedPaths) {
+		Object obj = tp.getLastPathComponent();
+		if (obj == null || !(obj instanceof BioModelNode)) {
+			continue;
+		}
+		if (documentEditorTree.getModel().isLeaf(obj)) {
+			bExpand = false;
+		}
+		
+		BioModelNode selectedNode = (BioModelNode) obj;
+		Object userObject = selectedNode.getUserObject();
+		if (userObject instanceof DocumentEditorTreeFolderNode) {
+			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
+			if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
+				bAddNewApp = true;
+			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
+//					|| folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
+//					|| folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE
+				) {
+				bAddNew = (selectedPaths.length == 1);
+				bDelete = false;
+			}
+		} else if (userObject instanceof ReactionStep
+				|| userObject instanceof Feature
+				|| userObject instanceof SpeciesContext
+				|| userObject instanceof ModelParameter
+				|| userObject instanceof SimulationContext
+				|| userObject instanceof Simulation
+//				|| userObject instanceof AnnotatedFunction
+			) {			
+			bDelete = true;
 		}
 	}
-	return popupMenu;
+	if (bAddNewApp) {
+		if (addNewAppMenu == null) {
+			addNewAppMenu = new JMenu("Add New");
+			addNewAppDeterministicMenuItem = new JMenuItem(BioModelEditorApplicationsPanel.MENU_TEXT_DETERMINISTIC_APPLICATION);
+			addNewAppDeterministicMenuItem.addActionListener(eventHandler);
+			addNewAppStochasticMenuItem = new JMenuItem(BioModelEditorApplicationsPanel.MENU_TEXT_STOCHASTIC_APPLICATION);
+			addNewAppStochasticMenuItem.addActionListener(eventHandler);
+			addNewAppMenu.add(addNewAppDeterministicMenuItem);
+			addNewAppMenu.add(addNewAppStochasticMenuItem);
+		}
+		popupMenu.add(addNewAppMenu);
+	}
+	if (bAddNew) {
+		if (addNewMenuItem == null) {
+			addNewMenuItem = new javax.swing.JMenuItem("Add New");
+			addNewMenuItem.addActionListener(eventHandler);
+		}
+		popupMenu.add(addNewMenuItem);
+	}
+	if (bDelete) {
+		if (deleteMenuItem == null) {
+			deleteMenuItem = new javax.swing.JMenuItem("Delete");
+			deleteMenuItem.addActionListener(eventHandler);
+		}
+		popupMenu.add(deleteMenuItem);
+	}
+	
+	if (bExpand) {
+		if (expandAllMenuItem == null) {
+			popupMenuSeparator = new JSeparator();
+			expandAllMenuItem = new javax.swing.JMenuItem("Expand All");
+			collapseAllMenuItem = new javax.swing.JMenuItem("Collapse All");
+			expandAllMenuItem.addActionListener(eventHandler);
+			collapseAllMenuItem.addActionListener(eventHandler);
+		}
+		if (bAddNew || bDelete || bAddNewApp) {
+			popupMenu.add(popupMenuSeparator);
+		}
+		popupMenu.add(expandAllMenuItem);
+		popupMenu.add(collapseAllMenuItem);
+	}
 }
 
-private JMenuItem getMenuItemExpandAll() {
-	if (expandAllMenuItem == null) {
-		try {
-			expandAllMenuItem = new javax.swing.JMenuItem("Expand All");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
+private JPopupMenu getPopupMenu() {
+	if (popupMenu == null) {
+		popupMenu = new javax.swing.JPopupMenu();	
 	}
-	return expandAllMenuItem;
-}
-private JMenuItem getMenuItemCollapseAll() {
-	if (collapseAllMenuItem == null) {
-		try {
-			collapseAllMenuItem = new javax.swing.JMenuItem("Collapse All");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return collapseAllMenuItem;
+	construcutPopupMenu();
+	return popupMenu;
 }
 
 }

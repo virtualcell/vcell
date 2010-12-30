@@ -145,6 +145,10 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 	
 	public class DefaultNameScope implements NameScope {
 		
+		public String getConextDescription() {
+			return getName();
+		}
+
 		public boolean isPeer(NameScope nameScope) {
 			return false;
 		}		

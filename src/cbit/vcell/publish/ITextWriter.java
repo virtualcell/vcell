@@ -1762,7 +1762,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			structTable.addCell(createHeaderCell("Outside", getFont(), 1));
 			structTable.endHeaders();
 		}
-		writeStructure(model, model.getStructures(i), structTable);
+		writeStructure(model, model.getStructure(i), structTable);
 	}
 	
 	if (structTable != null) {
@@ -2027,15 +2027,15 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			boolean firstTime = true;
 			Section reactStructSection = null;
 			for (int j = 0; j < reactionSteps.length; j++) {
-				if (reactionSteps[j].getStructure() == model.getStructures(i)) {         //can also use structureName1.equals(structureName2)
+				if (reactionSteps[j].getStructure() == model.getStructure(i)) {         //can also use structureName1.equals(structureName2)
 					if (firstTime) {
 						Paragraph linkParagraph = new Paragraph();
-						linkParagraph.add(new Chunk("Reaction(s) in " + model.getStructures(i).getName()).setLocalDestination(model.getStructures(i).getName()));
+						linkParagraph.add(new Chunk("Reaction(s) in " + model.getStructure(i).getName()).setLocalDestination(model.getStructure(i).getName()));
 						reactStructSection = physioChapter.addSection(linkParagraph, physioChapter.numberDepth() + 1);
 						try {
 							//int width = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());  
 							//int height = (int)(document.getPageSize().height() - document.topMargin() - document.bottomMargin())/2;        //half the page size.    
-							ByteArrayOutputStream bos = generateDocReactionsImage(model, model.getStructures(i), ITextWriter.LOW_RESOLUTION);               
+							ByteArrayOutputStream bos = generateDocReactionsImage(model, model.getStructure(i), ITextWriter.LOW_RESOLUTION);               
 							addImage(reactStructSection, bos);
 						} catch (Exception e) {
 							System.err.println("Unable to add structure mapping image to report.");

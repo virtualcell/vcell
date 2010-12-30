@@ -191,7 +191,7 @@ public static void main(String[] args) {
 						// to compute and set the sizes of the remaining structures.
 						
 						if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
-							Structure structure = simContext.getModel().getStructures(0);
+							Structure structure = simContext.getModel().getStructure(0);
 							double structureSize = 1.0;
 							StructureMapping structMapping = simContext.getGeometryContext().getStructureMapping(structure); 
 							StructureSizeSolver.updateAbsoluteStructureSizes(simContext, structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());

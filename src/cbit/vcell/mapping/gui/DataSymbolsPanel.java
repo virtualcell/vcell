@@ -27,7 +27,6 @@ import java.util.Calendar;
 import java.util.Hashtable;
 
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -698,28 +697,38 @@ private void initialize() {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(textFieldSearch, gbc);
-				
+		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,100,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addButton, gbc);
+		gbc.insets = new Insets(4,4,4,4);
+		add(searchButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
-		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		add(showAllButton, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,20,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		addButton.setPreferredSize(deleteButton.getPreferredSize());
+		add(addButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.insets = new Insets(4,4,4,10);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(deleteButton, gbc);
@@ -731,7 +740,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(table.getEnclosingScrollPane(), gbc);
 		

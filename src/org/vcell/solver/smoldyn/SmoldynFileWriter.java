@@ -442,7 +442,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 		}		
 	}
 	printWriter.println("# molecules");	
-	printWriter.println(SmoldynKeyword.max_mol + " " + max_mol * 3);
+	printWriter.println(SmoldynKeyword.max_mol + " " + Math.max(50000, max_mol * 10));
 	printWriter.println(sb);
 }
 

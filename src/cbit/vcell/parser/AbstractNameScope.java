@@ -391,4 +391,8 @@ public void getExternalEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 	getScopedSymbolTable().getLocalEntries(entryMap);
 }
+
+public String getConextDescription() {
+	return getName();
+}
 }

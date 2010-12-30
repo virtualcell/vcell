@@ -7,6 +7,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorTreeModel extends DefaultTreeModel
@@ -168,6 +169,29 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		} else {
 			restoreTreeSelection();
 		}
+//		boolean bAllSimulationContext = true;
+//		if (selectedObjects != null && selectedObjects.length > 0) {
+//			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
+//			for (Object object : selectedObjects) {
+//				BioModelNode node = rootNode.findNodeByUserObject(object);
+//				if (node != null) {
+//					if (!(node.getUserObject() instanceof SimulationContext)) {
+//						bAllSimulationContext = false;
+//					}
+//					newPathList.add(new TreePath(node.getPath()));
+//				}
+//			}
+//			if (newPathList.size() > 0) {
+//				TreePath path = newPathList.get(0);
+//				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
+//				if (!bAllSimulationContext) {
+//					ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
+//					ownerTree.scrollPathToVisible(path);
+//				}
+//			}
+//		} else {
+//			restoreTreeSelection();
+//		}
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {

@@ -24,7 +24,7 @@ import cbit.vcell.clientdb.DocumentManager;
 @SuppressWarnings("serial")
 public class CartoonEditorPanelFixed extends JPanel {
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
-	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(15,0);
+	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,5);
 	private JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
 	private JToolBarToggleButton ivjSelectButton = null;
@@ -436,7 +436,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjJToolBar.setName("JToolBar");
 				ivjJToolBar.setFloatable(false);
 				ivjJToolBar.setBorder(new javax.swing.border.EtchedBorder());
-				ivjJToolBar.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+				ivjJToolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar().add(getFeatureButton(), getFeatureButton().getName());
@@ -599,7 +599,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 			setName("CartoonEditorPanelFixed");
 			setLayout(new BorderLayout());
 
-			add(getJToolBar(), BorderLayout.NORTH);
+			add(getJToolBar(), BorderLayout.WEST);
 			add(getJScrollPane1(), BorderLayout.CENTER);
 			initConnections();
 			connEtoC1();

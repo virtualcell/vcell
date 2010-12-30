@@ -235,7 +235,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar = new JToolBar();
 				toolBar.setName("JToolBar1");
 				toolBar.setFloatable(false);
-				toolBar.setBorder(new EtchedBorder());
 				toolBar.setOrientation(SwingConstants.HORIZONTAL);
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
@@ -573,7 +572,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //			setMinimumSize(new Dimension(54, 425));
 			add(getJScrollPane(), BorderLayout.CENTER);
 			
-			getJToolBar().setBorder(null);
 			
 			JPanel panel = new JPanel(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -589,6 +587,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			gbc.weightx = 1.0;
 			gbc.anchor = GridBagConstraints.LINE_END;
 			panel.add(getFloatRequestButton(), gbc);
+			
+			panel.setBorder(new EtchedBorder());
 			
 			add(panel, BorderLayout.NORTH);
 			initConnections();

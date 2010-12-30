@@ -22,7 +22,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public static final Color hoverColor = new Color(0xFDFCDC);
 	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(2,4,2,4);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
-	public static final Color uneditableForeground = UIManager.getColor("TextField.inactiveForeground");
+	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 	static final Color everyOtherRowColor = new Color(0xe8edff);
 	static Font regularFont = null;
@@ -68,8 +68,10 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		
 		if (bEnableUneditableForeground && (!table.isEnabled() || !table.getModel().isCellEditable(row, column))) {
-			setForeground(uneditableForeground);
-			setFont(uneditableFont);
+			if (!isSelected) {
+				setForeground(uneditableForeground);
+				setFont(uneditableFont);
+			}
 		}
 		if (value instanceof Double) {
 			Double doubleValue = (Double)value;

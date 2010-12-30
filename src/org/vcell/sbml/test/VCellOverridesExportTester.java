@@ -216,7 +216,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				// (thro' the structureMapping in the geometry of the simContext); invoke the structureSizeEvaluator 
 				// to compute and set the sizes of the remaining structures.
 				if (simContexts[k].getGeometryContext().isAllSizeSpecifiedNull() && simContexts[k].getGeometryContext().isAllVolFracAndSurfVolSpecified()) {
-					Structure structure = simContexts[k].getModel().getStructures(0);
+					Structure structure = simContexts[k].getModel().getStructure(0);
 					double structureSize = 1.0;
 					StructureMapping structMapping = simContexts[k].getGeometryContext().getStructureMapping(structure); 
 					StructureSizeSolver.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());

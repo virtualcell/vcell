@@ -94,7 +94,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private BioModelEditorStructureTableModel structureTableModel = null;
 	private BioModelEditorReactionTableModel reactionTableModel = null;
 	private BioModelEditorSpeciesTableModel speciesTableModel = null;
-	private BioModelEditorGlobalParameterTableModel parametersTableModel = null;
+	private BioModelEditorModelParameterTableModel parametersTableModel = null;
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JTabbedPane tabbedPane = null;
@@ -270,7 +270,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		structureTableModel = new BioModelEditorStructureTableModel(structuresTable);
 		reactionTableModel = new BioModelEditorReactionTableModel(reactionsTable);
 		speciesTableModel = new BioModelEditorSpeciesTableModel(speciesTable);
-		parametersTableModel = new BioModelEditorGlobalParameterTableModel(parametersTable, false);
+		parametersTableModel = new BioModelEditorModelParameterTableModel(parametersTable, false);
 		structuresTable.setModel(structureTableModel);
 		reactionsTable.setModel(reactionTableModel);
 		speciesTable.setModel(speciesTableModel);
@@ -475,7 +475,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (r < speciesTableModel.getDataSize()) {
 						SpeciesContext speciesContext = speciesTableModel.getValueAt(r);
 						deleteList.add(speciesContext);
-						deleteListText += speciesContext.getName() + "\n"; 
+						deleteListText += "\t" + speciesContext.getName() + "\n"; 
 					}
 				}
 				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following species:\n\n " + deleteListText + "\n Continue?");
@@ -492,11 +492,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Structure rowValue = structureTableModel.getValueAt(r);
 						if (rowValue instanceof Feature) {
 							deleteList.add((Feature) rowValue);
-							deleteListText += ((Feature)rowValue).getName() + "\n"; 
+							deleteListText += "\t" + ((Feature)rowValue).getName() + "\n"; 
 						}
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
@@ -509,10 +509,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (r < reactionTableModel.getDataSize()) {
 						ReactionStep reaction = reactionTableModel.getValueAt(r);
 						deleteList.add(reaction);
-						deleteListText += reaction.getName() + "\n"; 
+						deleteListText += "\t" + reaction.getName() + "\n"; 
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
@@ -526,11 +526,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Parameter parameter = parametersTableModel.getValueAt(r);
 						if (parameter instanceof ModelParameter) {
 							deleteList.add((ModelParameter)parameter);
-							deleteListText += ((ModelParameter)parameter).getName() + "\n"; 
+							deleteListText += "\t" + parameter.getName() + "\n"; 
 						}
 					}
 				}	
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
@@ -608,7 +608,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	public void setDocumentManager(DocumentManager documentManager) {
-		cartoonEditorPanel.setDocumentManager(documentManager);		
+		cartoonEditorPanel.setDocumentManager(documentManager);	
+		reactionCartoonEditorPanel.setDocumentManager(documentManager);
 	}
 	
 	private void showDiagramView() {
