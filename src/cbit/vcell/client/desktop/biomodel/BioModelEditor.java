@@ -2,20 +2,28 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -24,6 +32,8 @@ import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
@@ -40,6 +50,8 @@ import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -102,6 +114,7 @@ public class BioModelEditor extends DocumentEditor {
 	private SimulationSummaryPanel simulationSummaryPanel = null;
 	private EventPanel eventPanel = null;
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
+	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
 	
 /**
  * BioModelEditor constructor comment.
@@ -111,14 +124,212 @@ public BioModelEditor() {
 	initialize();
 }
 
-/**
- * Method generated to support the promotion of the optimizationService attribute.
- * @return cbit.vcell.opt.solvers.OptimizationService
- */
-public OptimizationService getOptimizationService() {
-	return getoptTestPanel().getOptimizationService();
+@Override
+protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {	
+	Model model = bioModel.getModel();
+	switch (action) {
+	case add_new: 
+		try {
+			Object obj = documentEditorTree.getLastSelectedPathComponent();
+			if (obj == null || !(obj instanceof BioModelNode)) {
+				return;
+			}
+			BioModelNode selectedNode = (BioModelNode) obj;
+			Object userObject = selectedNode.getUserObject();
+			if (userObject instanceof DocumentEditorTreeFolderNode) {
+				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
+				Object newObject = null;
+				switch (folderClass) {
+				case REACTIONS_NODE:
+					newObject = model.createSimpleReaction(model.getStructure(0));
+					break;
+				case STRUCTURES_NODE:
+					Feature parentFeature = null;
+					for (int i = model.getNumStructures() - 1; i >= 0; i --) {
+						if (model.getStructures()[i] instanceof Feature) {
+							parentFeature = (Feature) model.getStructures()[i];
+							break;
+						}
+					}
+					newObject = model.createFeature(parentFeature);
+					break;
+				case SPECIES_NODE:
+					newObject = model.createSpeciesContext(model.getStructure(0));
+					break;
+				case GLOBAL_PARAMETER_NODE:
+					newObject = model.createModelParameter();
+					break;
+				case APPLICATTIONS_NODE:
+					break;
+				case SIMULATIONS_NODE:
+					final SimulationContext simulationContext = getSelectedSimulationContext();
+					AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							simulationContext.refreshMathDescription();
+						}
+					};
+					AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Object newsim = simulationContext.addNewSimulation();
+							selectionManager.setSelectedObjects(new Object[]{newsim});
+						}
+					};
+					ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+					break;
+				case OUTPUT_FUNCTIONS_NODE:
+					break;
+				}
+				if (newObject != null) {
+					selectionManager.setSelectedObjects(new Object[]{newObject});
+				}
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+		break;
+	case delete:
+		try {
+			TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+			List<ReactionStep> reactionList = new ArrayList<ReactionStep>();
+			List<Feature> featureList = new ArrayList<Feature>();
+			List<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
+			List<ModelParameter> modelParameterList = new ArrayList<ModelParameter>();
+			List<SimulationContext> simulationContextList = new ArrayList<SimulationContext>();
+			List<Simulation> simulationList = new ArrayList<Simulation>();
+			List<AnnotatedFunction> outputFunctionList = new ArrayList<AnnotatedFunction>();
+			StringBuilder sb = new StringBuilder();
+			for (TreePath tp : selectedPaths) {
+				Object obj = tp.getLastPathComponent();
+				if (obj == null || !(obj instanceof BioModelNode)) {
+					continue;
+				}				
+				BioModelNode selectedNode = (BioModelNode) obj;
+				Object userObject = selectedNode.getUserObject();
+				if (userObject instanceof ReactionStep) {
+					ReactionStep reactionStep = (ReactionStep)userObject;
+					reactionList.add(reactionStep);
+				} else if (userObject instanceof Feature) {	
+					Feature feature = (Feature)userObject;
+					featureList.add(feature);
+				} else if (userObject instanceof SpeciesContext) {
+					SpeciesContext speciesContext = (SpeciesContext)userObject;
+					speciesContextList.add(speciesContext);
+				} else if (userObject instanceof ModelParameter) {
+					ModelParameter modelParameter = (ModelParameter)userObject;
+					modelParameterList.add(modelParameter);
+				} else if (userObject instanceof SimulationContext) {
+					SimulationContext simulationContext = (SimulationContext)userObject;
+					simulationContextList.add(simulationContext);
+				} else if (userObject instanceof Simulation) {
+					Simulation simulation = (Simulation)userObject;
+					simulationList.add(simulation);
+				} else if (userObject instanceof AnnotatedFunction) {
+					AnnotatedFunction annotatedFunction = (AnnotatedFunction)userObject;
+					outputFunctionList.add(annotatedFunction);
+				}
+			}
+			if (reactionList.size() > 0) {
+				sb.append("Reaction: \n");
+			}
+			for (ReactionStep reactionStep : reactionList) {
+				sb.append("\t" + reactionStep.getName() + "\n");
+			}
+			if (featureList.size() > 0) {
+				sb.append(Structure.TYPE_NAME_FEATURE + ": \n");
+			}
+			for (Feature feature : featureList) {
+				sb.append("\t" + feature.getName() + "\n");
+			}
+			if (speciesContextList.size() > 0) {
+				sb.append("Species: \n");
+			}
+			for (SpeciesContext speciesContext : speciesContextList) {
+				sb.append("\t" + speciesContext.getName() + "\n");
+			}
+			if (modelParameterList.size() > 0) {
+				sb.append("Global Parameter: \n");
+			}
+			for (ModelParameter	modelParameter : modelParameterList) {
+				sb.append("\t" + modelParameter.getName() + "\n");
+			}
+			if (simulationContextList.size() > 0) {
+				sb.append("Application: \n");
+			}
+			for (SimulationContext	simulationContext : simulationContextList) {
+				sb.append("\t" + simulationContext.getName() + "\n");
+			}
+			if (simulationList.size() > 0) {
+				sb.append("Simulation: \n");
+			}
+			for (Simulation	simulation : simulationList) {
+				sb.append("\t" + simulation.getName() + "\n");
+			}
+			if (outputFunctionList.size() > 0) {
+				sb.append("Output Function: \n");
+			}
+			for (AnnotatedFunction annotatedFunction: outputFunctionList) {
+				sb.append("\t" + annotatedFunction.getName() + "\n");
+			}
+			
+			if (sb.length() > 0) {
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following:\n\n" + sb.toString() + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (ReactionStep sc : reactionList) {
+					model.removeReactionStep(sc);
+				}
+				for (Feature f : featureList) {
+					model.removeFeature(f);
+				}
+				for (SpeciesContext sc : speciesContextList) {
+					model.removeSpeciesContext(sc);
+				}
+				for (ModelParameter param : modelParameterList) {
+					model.removeModelParameter(param);
+				}
+				for (SimulationContext simulationContext : simulationContextList) {
+					Simulation[] simulations = simulationContext.getSimulations();
+					if(simulations != null && simulations.length != 0){
+						for (Simulation simulation : simulations) {
+							bioModel.removeSimulation(simulation);
+						}
+					}
+					bioModel.removeSimulationContext(simulationContext);
+				}
+				for (Simulation simulation : simulationList) {
+					bioModel.removeSimulation(simulation);
+				}
+				for (AnnotatedFunction annotatedFunction: outputFunctionList) {
+					//TODO
+				}
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+		break;
+	case add_new_app_deterministic:
+	case add_new_app_stochastic:
+		AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+				selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
+			}
+		};
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic);
+		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
+		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
+		tasks[newApplicationTasks.length] = task;
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
+		break;
+	}
 }
-
 
 /**
  * Return the optTestPanel property value.
@@ -343,6 +554,8 @@ private void initialize() {
 		documentEditorTree.setModel(bioModelEditorTreeModel);
 		documentEditorTree.setCellRenderer(bioModelEditorTreeCellRenderer);
 		
+		bioModelEditorApplicationPanel = new BioModelEditorApplicationPanel();
+		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
 		bioModelEditorAnnotationPanel.setSelectionManager(selectionManager);
 		getOutputFunctionsPanel().setSelectionManager(selectionManager);
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
@@ -696,7 +909,11 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
 			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
-			newTopPanel = getBioModelEditorApplicationsPanel();
+			if (leafObject == null) {
+				newTopPanel = getBioModelEditorApplicationsPanel();
+			} else {
+				newTopPanel = bioModelEditorApplicationPanel;
+			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
 			dividerLocation = 1.0;

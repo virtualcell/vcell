@@ -33,9 +33,9 @@ public static void main(java.lang.String[] args) {
 		System.arraycopy(args,0,args2,0,args.length-1);
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample_Bound();
 		if(mode.equalsIgnoreCase("edit")){
-			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0], model);
+			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructure(0))[0], model);
 		}else if(mode.equalsIgnoreCase("add")){
-			aEditSpeciesDialog.initAddSpecies(model,model.getStructures(0));
+			aEditSpeciesDialog.initAddSpecies(model,model.getStructure(0));
 		}else{
 			throw new IllegalArgumentException("unknown test type="+args[args.length-1]);
 		}

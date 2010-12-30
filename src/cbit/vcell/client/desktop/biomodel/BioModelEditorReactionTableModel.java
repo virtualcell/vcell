@@ -30,7 +30,6 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
-		addPropertyChangeListener(this);
 	}
 
 	public Class<?> getColumnClass(int column) {
@@ -52,9 +51,14 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		if (getModel() != null){
 			for (ReactionStep rs : getModel().getReactionSteps()){
-				if (searchText == null || searchText.length() == 0 || rs.getName().indexOf(searchText) >= 0
-						|| new ReactionEquation(rs, bioModel.getModel()).toString().indexOf(searchText) >= 0) {
+				if (searchText == null || searchText.length() == 0) {
 					reactionStepList.add(rs);
+				} else {
+					String lowerCaseSearchText = searchText.toLowerCase();	
+					if (rs.getName().toLowerCase().contains(lowerCaseSearchText)
+						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)) {
+						reactionStepList.add(rs);
+					}
 				}
 			}
 		}
@@ -141,7 +145,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				case COLUMN_EQUATION: {
 					String inputValue = ((String)value);
 					inputValue = inputValue.trim();
-					ReactionStep reactionStep = getModel().createSimpleReaction(getModel().getStructures(0));
+					ReactionStep reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
 					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
 					for (ReactionParticipant rp : rpArray) {
 						SpeciesContext speciesContext = rp.getSpeciesContext();

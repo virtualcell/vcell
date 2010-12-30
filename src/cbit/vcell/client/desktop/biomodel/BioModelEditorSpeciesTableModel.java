@@ -44,9 +44,14 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		ArrayList<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
 		if (getModel() != null){
 			for (SpeciesContext s : getModel().getSpeciesContexts()){
-				if (searchText == null || searchText.length() == 0 || s.getName().indexOf(searchText) >= 0
-						|| s.getStructure().getName().indexOf(searchText) >= 0) {
+				if (searchText == null || searchText.length() == 0) {
 					speciesContextList.add(s);
+				} else {
+					String lowerCaseSearchText = searchText.toLowerCase();
+					if (s.getName().toLowerCase().contains(lowerCaseSearchText)		
+						|| s.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
+						speciesContextList.add(s);
+					}
 				}
 			}
 		}

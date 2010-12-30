@@ -30,8 +30,7 @@ public class MathModelDbTreeModel extends VCDocumentDbTreeModel {
  */
 public MathModelDbTreeModel(JTree tree) {
 	super(tree);
-	rootNode.setUserObject("Math Models");
-	sharedModelsNode.setUserObject(SHARED_MATH_MODELS);
+	rootNode.setUserObject("Math Models");	
 }
 
 
@@ -42,6 +41,8 @@ public MathModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	sharedModelsNode.setUserObject(SHARED_MATH_MODELS);
+	
 	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();
 	//
 	// get list of users (owners)

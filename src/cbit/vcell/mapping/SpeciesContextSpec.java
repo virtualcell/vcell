@@ -2,6 +2,8 @@ package cbit.vcell.mapping;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -16,6 +18,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
@@ -37,6 +40,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
+@SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable {
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
@@ -67,8 +71,12 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return SpeciesContextSpec.this;
 		}
+		@Override
+		public String getConextDescription() {
+			return "Species: " + getSpeciesContext().getName();
+		}
 	}
-
+	
 	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
@@ -88,7 +96,29 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			fieldUnitDefinition = argUnitDefinition;
 			setDescription(argDescription);
 		}
-
+		
+		@Override	
+		public String getNullExpressionDescription() {
+			if (fieldParameterRole == ROLE_BoundaryValueXm
+					|| fieldParameterRole == ROLE_BoundaryValueXp
+					|| fieldParameterRole == ROLE_BoundaryValueYm
+					|| fieldParameterRole == ROLE_BoundaryValueYp
+					|| fieldParameterRole == ROLE_BoundaryValueZm
+					|| fieldParameterRole == ROLE_BoundaryValueZp) {
+				if (fieldUnitDefinition != null) {
+					if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition())) {
+						return "<html><i>&lt;initial value&gt;</i></html>"; 
+					} else if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um_per_s))){
+						return "<html><i>&lt;zero flux&gt;</i></html>";
+					}
+				}
+			} else if (fieldParameterRole == ROLE_VelocityX
+					|| fieldParameterRole == ROLE_VelocityY
+					|| fieldParameterRole == ROLE_VelocityZ) {
+				return "<html><i>&lt;0.0&gt;</i></html>";
+			}
+			return null;
+		}
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecParameter)){
 				return false;
@@ -457,12 +487,7 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 
 
 public VCUnitDefinition computeFluxUnit() {
-	VCUnitDefinition unit = speciesContext.getUnitDefinition();
-	VCUnitDefinition fluxUnits = VCUnitDefinition.UNIT_uM_um_per_s;
-	if (!unit.getSymbol().equals(VCUnitDefinition.UNIT_uM.getSymbol())) {
-		fluxUnits = unit.multiplyBy(VCUnitDefinition.UNIT_um_per_s);
-	}
-	return fluxUnits;
+	return speciesContext.getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um_per_s);
 }
 
 
@@ -1350,9 +1375,94 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
-
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
 
+public boolean hasTransport() {
+	if (isConstant() || isWellMixed() || simulationContext == null 
+			|| simulationContext.getGeometry() == null || simulationContext.getGeometry().getDimension() == 0) {
+		return false;
+	}
+	int dimension = simulationContext.getGeometry().getDimension();
+	SpeciesContext speciesContext = getSpeciesContext();
+	if (speciesContext.getStructure() instanceof Membrane){
+		if (dimension > 1 && !getDiffusionParameter().getExpression().isZero()) {
+			return true;
+		}			
+	} else if (speciesContext.getStructure() instanceof Feature){
+		if (!getDiffusionParameter().getExpression().isZero()) {
+			return true;
+		}
+	
+		if (getVelocityXParameter().getExpression() != null && !getVelocityXParameter().getExpression().isZero()) {
+			return true;
+		}
+		if (dimension > 1) {
+			if (getVelocityYParameter().getExpression() != null && !getVelocityYParameter().getExpression().isZero()) {
+				return true;
+			}						
+		
+			if (dimension > 2) {
+				if (getVelocityZParameter().getExpression() != null && !getVelocityZParameter().getExpression().isZero()) {
+					return true;
+				}
+			}
+		}						
+	}	
+	return false;
+}
+
+public List<SpeciesContextSpecParameter> computeApplicableParameterList() {
+	List<SpeciesContextSpecParameter> speciesContextSpecParameterList = new ArrayList<SpeciesContextSpecParameter>();
+	speciesContextSpecParameterList.add(getInitialConditionParameter());
+	int dimension = simulationContext.getGeometry().getDimension();
+	if (!isConstant() && !isWellMixed() && dimension > 0) {
+		// diffusion
+		speciesContextSpecParameterList.add(getDiffusionParameter());
+	}
+	if (hasTransport()) {
+		SpeciesContext speciesContext = getSpeciesContext();
+		if (speciesContext.getStructure() instanceof Membrane) {
+			
+			// boundary condition
+			speciesContextSpecParameterList.add(getBoundaryXmParameter());
+			speciesContextSpecParameterList.add(getBoundaryXpParameter());
+			speciesContextSpecParameterList.add(getBoundaryYmParameter());
+			speciesContextSpecParameterList.add(getBoundaryYpParameter());
+	
+			if (dimension > 2) {
+				speciesContextSpecParameterList.add(getBoundaryZmParameter());
+				speciesContextSpecParameterList.add(getBoundaryZpParameter());
+			}
+			
+		} else if (speciesContext.getStructure() instanceof Feature){						
+			// boundary condition
+			speciesContextSpecParameterList.add(getBoundaryXmParameter());
+			speciesContextSpecParameterList.add(getBoundaryXpParameter());
+						 
+			if (dimension > 1) {
+				speciesContextSpecParameterList.add(getBoundaryYmParameter());
+				speciesContextSpecParameterList.add(getBoundaryYpParameter());
+			
+			
+				if (dimension > 2) {
+					speciesContextSpecParameterList.add(getBoundaryZmParameter());
+					speciesContextSpecParameterList.add(getBoundaryZpParameter());
+				}
+			}
+			
+			// velocity
+			speciesContextSpecParameterList.add(getVelocityXParameter());
+			if (dimension > 1) {
+				speciesContextSpecParameterList.add(getVelocityYParameter());
+			
+				if (dimension > 2) {
+					speciesContextSpecParameterList.add(getVelocityZParameter());
+				}
+			}
+		}
+	}
+	return speciesContextSpecParameterList;
+}
 }

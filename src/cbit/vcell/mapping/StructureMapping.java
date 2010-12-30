@@ -1,5 +1,7 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -11,6 +13,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -57,6 +60,10 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return StructureMapping.this;
+		}
+		@Override
+		public String getConextDescription() {
+			return getStructure().getTypeName() + ": " + getStructure().getName();
 		}
 	}
 	
@@ -115,13 +122,13 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			switch (fieldParameterRole){
 			case ROLE_AreaPerUnitArea:{
 				if (getStructure() instanceof Membrane && geometryClass instanceof SurfaceClass){
-					return "Area(\""+structure.getName()+"\") per Unit Area of \""+geometryClass.getName()+"\"";
+					return "Area Ratio (\""+structure.getName()+"\" : \""+geometryClass.getName()+"\")";
 				}
 				break;
 			}
 			case ROLE_AreaPerUnitVolume:{
 				if (getStructure() instanceof Membrane && geometryClass instanceof SubVolume){
-					return "Area(\""+structure.getName()+"\") per Unit Volume of \""+geometryClass.getName()+"\"";
+					return "Area Ratio (\""+structure.getName()+"\" : \""+geometryClass.getName()+"\")";
 				}
 				break;
 			}
@@ -142,13 +149,13 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			}
 			case ROLE_VolumePerUnitArea:{
 				if (getStructure() instanceof Feature && geometryClass instanceof SurfaceClass){
-					return "Volume(\""+structure.getName()+"\") per Unit Area of \""+geometryClass.getName()+"\"";
+					return "Volume Ratio (\""+structure.getName()+"\" : \""+geometryClass.getName()+"\")";
 				}
 				break;
 			}
 			case ROLE_VolumePerUnitVolume:{
 				if (getStructure() instanceof Feature && geometryClass instanceof SubVolume){
-					return "Volume(\""+structure.getName()+"\") per Unit Volume of \""+geometryClass.getName()+"\"";
+					return "Volume Ratio (\""+structure.getName()+"\" : \""+geometryClass.getName()+"\")";
 				}
 				break;
 			}
@@ -168,7 +175,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 
 		public boolean isNameEditable(){
-			return true;
+			return false;
 		}
 
 		public NameScope getNameScope(){
@@ -255,14 +262,14 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 	};
 	public static final String DefaultNames[] = {
 		"SurfToVolRatio",
-		"VolFract",
+		"VolFraction",
 		"SpecCapacitance",
 		"InitialVoltage",
 		"Size",
-		"VolumePerUnitVolume",
-		"VolumePerUnitArea",
+		"VolPerUnitVol",
+		"VolPerUnitArea",
 		"AreaPerUnitArea",
-		"AreaPerUnitVolume"
+		"AreaPerUnitVol"
 	};
 	private static final RealInterval[] parameterBounds = {
 		new RealInterval(1.0E-3, 1.0E4),	// s/v ratio
@@ -825,5 +832,22 @@ public void setGeometryClass(GeometryClass argGeometryClass) throws PropertyVeto
 	firePropertyChange("geometryClass", oldValue, argGeometryClass);
 }
 
+public List<StructureMappingParameter> computeApplicableParameterList() {
+	List<StructureMappingParameter> structureMappingParameterList = new ArrayList<StructureMapping.StructureMappingParameter>();	
+	if (getGeometryClass() instanceof CompartmentSubVolume) { // non spatial
+		structureMappingParameterList.add(getSizeParameter());
+		if (this instanceof MembraneMapping) {
+			structureMappingParameterList.add(((MembraneMapping)this).getSurfaceToVolumeParameter());
+			structureMappingParameterList.add(((MembraneMapping)this).getVolumeFractionParameter());
+		}
+	} else {
+		if (getGeometryClass() instanceof SubVolume) {
+			structureMappingParameterList.add(getUnitSizeParameter());			
+		} else if (getGeometryClass() instanceof SurfaceClass) {
+			structureMappingParameterList.add(getUnitSizeParameter());			
+		}
+	}
+	return structureMappingParameterList;
+}
 
 }

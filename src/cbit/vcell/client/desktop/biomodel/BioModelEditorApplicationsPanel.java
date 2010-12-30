@@ -20,6 +20,8 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.ImageException;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -38,10 +40,10 @@ import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePanel<SimulationContext> {
-	private static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial";
-	private static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial";
-	private static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
-	private static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
+	public static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial";
+	public static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial";
+	public static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
+	public static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
 
 	private JButton moreActionsButton = null;
 	// application popup menu items
@@ -215,8 +217,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 
 	@Override
 	protected void tableSelectionChanged() {
-		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
+		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
 			moreActionsButton.setEnabled(true);
 		} else {
@@ -516,43 +518,19 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				return;
 			}
 		}
-		
-		try {
-			String newApplicationName = bioModel.getFreeSimulationContextName();
-			if (newApplicationName != null) {			
-				final String finalNewAppName = newApplicationName; 
-				final boolean finalIsStoch = isStoch;
-				AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext newSimulationContext = bioModel.addNewSimulationContext(finalNewAppName, finalIsStoch);
-						hashTable.put("newSimulationContext", newSimulationContext);
-					}
-				};
-				AsynchClientTask task1 = new AsynchClientTask("process geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-						newSimulationContext.getGeometry().precomputeAll();
-					}
-				};
-				AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-						//bioModelWindowManager.showApplicationFrame(newSimulationContext);
-						setSelectedObjects(new Object[]{newSimulationContext});
-					}
-				};
-				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2});				
+		AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+				setSelectedObjects(new Object[]{newSimulationContext});
 			}
-		} catch (Throwable exc) {
-			exc.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this, "Failed to create new Application!\n"+exc.getMessage(), exc);
-		}
+		};
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, isStoch);
+		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
+		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
+		tasks[newApplicationTasks.length] = task;
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 	}
 
 	private void deleteApplication(SimulationContext simulationContext) throws PropertyVetoException {

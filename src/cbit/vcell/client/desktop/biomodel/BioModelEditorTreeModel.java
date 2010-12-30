@@ -478,20 +478,25 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 					}
 				}
 				
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.APP_REACTIONS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.EVENTS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, bSelectedInSimulationContext, bFoundSelected);
-				populateApplicationNode(appNode, DocumentEditorTreeFolderClass.ANALYSIS_NODE, bSelectedInSimulationContext, bFoundSelected);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.APP_REACTIONS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.EVENTS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
+				bFoundSelected = populateApplicationNode(appNode, DocumentEditorTreeFolderClass.ANALYSIS_NODE, bSelectedInSimulationContext, bFoundSelected, true);
 			}
 		}
 		nodeStructureChanged(applicationsNode);
 		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
-		if (!bFromRoot && bSelected && bFoundSelected) {
-			restoreTreeSelection();
+		if (bSelected) {
+			if (!bFoundSelected) {
+				selectedBioModelNode = applicationsNode;
+			}
+			if (!bFromRoot) {
+				restoreTreeSelection();
+			}
 		}
 	}
 
@@ -516,13 +521,13 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		for (BioModelNode node : applicationsChildNodes) {
 			Object userObject = node.getUserObject();
 			if (userObject instanceof SimulationContext && userObject == simulationContext) {
-				populateApplicationNode(node, folderClass, false, false);
+				populateApplicationNode(node, folderClass, false, false, false);
 				break;
 			}
 		}
 	}
 	
-	private void populateApplicationNode(BioModelNode appNode, DocumentEditorTreeFolderClass folderClass, boolean bSelected, boolean bFoundSelected) {
+	private boolean populateApplicationNode(BioModelNode appNode, DocumentEditorTreeFolderClass folderClass, boolean bSelected, boolean bFoundSelected, boolean bFromApplications) {
 		if (!(appNode.getUserObject() instanceof SimulationContext)) {
 			throw new RuntimeException("Application node's user Object must be an instance of SimulationContext");
 		}
@@ -719,10 +724,13 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			break;
 		}
 		}
-		nodeStructureChanged(popNode);
-		if (bSelected && bFoundSelected) {
-			restoreTreeSelection();
+		if (!bFromApplications) {
+			nodeStructureChanged(popNode);
+			if (bSelected && bFoundSelected) {
+				restoreTreeSelection();
+			}
 		}
+		return bFoundSelected;
 	}
 	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -735,6 +743,18 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 				nodeChanged(rootNode);
 			} else if (source == bioModel) {
 				if (propertyName.equals(BioModel.PROPERTY_NAME_SIMULATION_CONTEXTS)) {
+					SimulationContext[] oldValue = (SimulationContext[]) evt.getOldValue();
+					if (oldValue != null) {
+						for (SimulationContext simulationContext : oldValue) {
+							simulationContext.removePropertyChangeListener(this);
+						}
+					}
+					SimulationContext[] newValue = (SimulationContext[]) evt.getNewValue();
+					if (newValue != null) {
+						for (SimulationContext simulationContext : newValue) {
+							simulationContext.addPropertyChangeListener(this);
+						}
+					}
 					populateApplicationsNode(false);
 				}
 			} else if (source == bioModel.getModel()) {

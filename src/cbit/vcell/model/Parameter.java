@@ -4,16 +4,17 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.*;
 import cbit.gui.PropertyChangeListenerProxyVCell;
-import cbit.util.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
 
+@SuppressWarnings("serial")
 public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable
 {
 	//private NameScope nameScope = null;
@@ -33,25 +34,13 @@ protected Parameter () {
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
-}
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 /**
  * This method was created in VisualAge.
@@ -82,43 +71,13 @@ public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 public abstract double getConstantValue() throws ExpressionException;
@@ -205,6 +164,7 @@ public boolean isDescriptionEditable() {
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
@@ -230,5 +190,9 @@ public void setDescription(java.lang.String description) {
  */
 public String toString() {
 	return getClass().getName()+"@"+Integer.toHexString(hashCode())+": <"+getName()+"> = '"+getExpression()+"' ["+getUnitDefinition()+"], \""+getDescription()+"\"";
+}
+
+public String getNullExpressionDescription() {
+	return null;
 }
 }

@@ -272,8 +272,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			Structure fromRxnStruct = copyFromReactionStep.getStructure();
 
 			if(!fromRxnStruct.getClass().equals(pasteToStructure.getClass())){
-				throw new Exception("Copied RectionStep structure type="+fromRxnStruct.getClass().getName()+
-						"\ndoes not equal target structure type="+pasteToStructure.getClass().getName());
+				throw new Exception("Cannot copy reaction from "+fromRxnStruct.getTypeName() + 
+						" to " + pasteToStructure.getTypeName() + ".");
 			}
 
 			// add appropriate reactionParticipants to newReactionStep.

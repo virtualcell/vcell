@@ -293,4 +293,10 @@ public boolean hasUnappliedChanges() {
 	return false;
 }
 
+@Override
+protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {
+	// TODO Auto-generated method stub
+	
+}
+
 }

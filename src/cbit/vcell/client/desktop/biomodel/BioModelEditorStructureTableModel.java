@@ -29,7 +29,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
-		addPropertyChangeListener(this);
 	}
 	
 	public Class<?> getColumnClass(int column) {
@@ -60,8 +59,18 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 		ArrayList<Structure> structureList = new ArrayList<Structure>();
 		if (getModel() != null){
 			for (Structure s : getModel().getStructures()){
-				if (searchText == null || searchText.length() == 0 || s.getName().startsWith(searchText)) {
+				if (searchText == null || searchText.length() == 0) {
 					structureList.add(s);
+				} else {
+					String lowerCaseSearchText = searchText.toLowerCase();	
+					if (s.getName().toLowerCase().contains(lowerCaseSearchText)
+							|| s.getTypeName().toLowerCase().contains(lowerCaseSearchText)
+							|| s.getParentStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+							|| s.getStructureSize().getName().toLowerCase().contains(lowerCaseSearchText)
+							|| (s instanceof Membrane && ((Membrane)s).getInsideFeature().getName().toLowerCase().contains(lowerCaseSearchText)
+									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText))) {
+						structureList.add(s);
+					}
 				}
 			}
 		}

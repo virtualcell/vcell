@@ -1782,7 +1782,9 @@ public boolean hasVelocity(VolVariable volVariable) {
 			Equation equation = subDomain.getEquation(volVariable);
 			if (equation instanceof PdeEquation){
 				PdeEquation pdeEqn = (PdeEquation)equation;
-				if (pdeEqn.getVelocityX() != null || pdeEqn.getVelocityY() != null || pdeEqn.getVelocityZ() != null) {
+				if ((pdeEqn.getVelocityX() != null && !pdeEqn.getVelocityX().isZero()) 
+					|| (pdeEqn.getVelocityY() != null && !pdeEqn.getVelocityY().isZero())
+					|| (pdeEqn.getVelocityZ() != null && !pdeEqn.getVelocityZ().isZero())) {
 					return true;
 				}
 			}	

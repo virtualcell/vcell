@@ -24,7 +24,6 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	public BioModelEditorApplicationsTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
-		addPropertyChangeListener(this);
 	}
 
 	public Class<?> getColumnClass(int column) {
@@ -46,8 +45,13 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 		ArrayList<SimulationContext> simulationContextList = new ArrayList<SimulationContext>();
 		if (bioModel != null){
 			for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
-				if (searchText == null || searchText.length() == 0 || simulationContext.getName().startsWith(searchText)) {
+				if (searchText == null || searchText.length() == 0) {
 					simulationContextList.add(simulationContext);
+				} else {
+					String lowerCaseSearchText = searchText.toLowerCase();		
+					if (simulationContext.getName().toLowerCase().contains(lowerCaseSearchText)) {
+						simulationContextList.add(simulationContext);
+					}
 				}
 			}
 		}

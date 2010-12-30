@@ -2,17 +2,21 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
@@ -31,71 +35,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
-
-	private class ParameterColumnComparator implements Comparator<Parameter> {
-		protected int index;
-		protected boolean ascending;
-
-		public ParameterColumnComparator(int index, boolean ascending){
-			this.index = index;
-			this.ascending = ascending;
-		}
-		
-		/**
-		 * Compares its two arguments for order.  Returns a negative integer,
-		 * zero, or a positive integer as the first argument is less than, equal
-		 * to, or greater than the second.<p>
-		 */
-public int compare(Parameter parm1, Parameter parm2){
-			
-			switch (index){
-				case COLUMN_NAME:{
-					if (ascending){
-						return parm1.getName().compareToIgnoreCase(parm2.getName());
-					}else{
-						return parm2.getName().compareToIgnoreCase(parm1.getName());
-					}
-					//break;
-				}
-				case COLUMN_DESCRIPTION:{
-					if (ascending){
-						return parm1.getDescription().compareToIgnoreCase(parm2.getDescription());
-					}else{
-						return parm2.getDescription().compareToIgnoreCase(parm1.getDescription());
-					}
-					//break;
-				}
-				case COLUMN_EXPRESSION:{
-					if (ascending){
-						return parm1.getExpression().infix().compareToIgnoreCase(parm2.getExpression().infix());
-					}else{
-						return parm2.getExpression().infix().compareToIgnoreCase(parm1.getExpression().infix());
-					}
-					//break;
-				}
-				case COLUMN_SCOPE:{
-					if (ascending){
-						return parm1.getNameScope().getName().compareToIgnoreCase(parm2.getNameScope().getName());
-					}else{
-						return parm2.getNameScope().getName().compareToIgnoreCase(parm1.getNameScope().getName());
-					}
-					//break;
-				}
-				case COLUMN_UNIT:{
-					String unit1 = (parm1.getUnitDefinition()!=null)?(parm1.getUnitDefinition().getSymbol()):"null";
-					String unit2 = (parm2.getUnitDefinition()!=null)?(parm2.getUnitDefinition().getSymbol()):"null";
-					if (ascending){
-						return unit1.compareToIgnoreCase(unit2);
-					}else{
-						return unit2.compareToIgnoreCase(unit1);
-					}
-					//break;
-				}
-			}
-			return 1;
-		}
-	}
+public class ApplicationParameterTableMode extends BioModelEditorApplicationRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_SCOPE = 0;
 	public static final int COLUMN_NAME = 1;
 	public static final int COLUMN_DESCRIPTION = 2;
@@ -103,16 +43,15 @@ public int compare(Parameter parm1, Parameter parm2){
 	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
 	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
-	private boolean bGlobalOnly = false;
+	private boolean bIncludeReactionParameters = false;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public BioModelEditorGlobalParameterTableModel(EditorScrollTable table, boolean bGlobalOnly) {
+public ApplicationParameterTableMode(ScrollTable table, boolean bIncludeReactionParameters) {
 	super(table);
 	setColumns(LABELS);
-	this.bGlobalOnly = bGlobalOnly;
-	addPropertyChangeListener(this);
+	this.bIncludeReactionParameters = bIncludeReactionParameters;
 }
 
 /**
@@ -152,35 +91,42 @@ public Class<?> getColumnClass(int column) {
  * @param row int
  */
 protected List<Parameter> computeData() {
-	if (getModel() == null){
+	ArrayList<Parameter> allParameterList = new ArrayList<Parameter>();
+	if (simulationContext == null){
 		return null;
-	} 
+	}
+	Model model = simulationContext.getModel();
+	allParameterList.addAll(Arrays.asList(model.getModelParameters()));
+	if (bIncludeReactionParameters) {
+		for (ReactionStep reactionStep : model.getReactionSteps()) {
+			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
+			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+		}
+	}
+	for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+		allParameterList.addAll(mapping.computeApplicableParameterList());
+	}
+	for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+		allParameterList.addAll(spec.computeApplicableParameterList());
+	}
+	for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
+		allParameterList.addAll(Arrays.asList(elect.getParameters()));
+	}
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
-	for (Parameter parameter : getModel().getModelParameters()) {
-		if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
-				|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
-				|| parameter.getDescription().indexOf(searchText) >= 0) {
+	for (Parameter parameter : allParameterList) {
+		if (searchText == null || searchText.length() == 0) {
 			parameterList.add(parameter);
-		}
-	}
-	if (!bGlobalOnly) {
-		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
-			for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
-				if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
-						|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
-						|| parameter.getDescription().indexOf(searchText) >= 0) {
-					parameterList.add(parameter);
-				}
-			}
-			for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
-				if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
-						|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
-						|| parameter.getDescription().indexOf(searchText) >= 0) {
-					parameterList.add(parameter);
-				}
+		} else {
+			String lowerCaseSearchText = searchText.toLowerCase();		
+			if (parameter.getName().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)) {
+				parameterList.add(parameter);
 			}
 		}
 	}
+	// later, events,
+	
 	return parameterList;
 }
 
@@ -194,7 +140,7 @@ public Object getValueAt(int row, int col) {
 			Parameter parameter = getValueAt(row);
 			switch (col){
 				case COLUMN_SCOPE:{
-					return parameter.getNameScope();					
+					return parameter.getNameScope();
 				}
 				case COLUMN_NAME:{
 					return parameter.getName();
@@ -203,8 +149,8 @@ public Object getValueAt(int row, int col) {
 					return parameter.getDescription();
 				}					
 				case COLUMN_EXPRESSION:{					
-					if (parameter.getExpression() == null) {
-						return ""; 
+					if (parameter.getExpression() == null) {						
+						return null;						
 					} else {
 						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 					}
@@ -235,13 +181,13 @@ public Object getValueAt(int row, int col) {
 			}
 		} else {
 			if (col == COLUMN_SCOPE) {
-				if (bioModel != null) {
-					return bioModel.getModel().getNameScope();
+				if (simulationContext != null) {
+					return simulationContext.getModel().getNameScope();
 				}
 			}
 			if (col == COLUMN_NAME) {
-				return ADD_NEW_HERE_TEXT;
-			}			
+				return BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT;
+			}
 		}
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
@@ -252,6 +198,9 @@ public Object getValueAt(int row, int col) {
 public boolean isCellEditable(int row, int column) {
 	if (row < getDataSize()) {
 		Parameter parameter = getValueAt(row);
+		if (parameter instanceof KineticsParameter || parameter instanceof UnresolvedParameter) {
+			return false;
+		}
 		if (column == COLUMN_SCOPE || column == COLUMN_DESCRIPTION){
 			return false;
 		}
@@ -296,12 +245,20 @@ public boolean isSortable(int col) {
 @Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);
-	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
-		refreshData();
+	if (simulationContext == null) {
+		return;
 	}
 	if (evt.getSource() instanceof Parameter) {
-		fireTableDataChanged();
-	}
+		refreshData();
+	} else if (evt.getSource() == simulationContext.getModel()) {
+		if (evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
+			refreshData();
+		} else if (bIncludeReactionParameters) {
+			refreshData();
+		}
+	} else {
+		refreshData();
+	}	
 }
 
 public void setValueAt(Object value, int row, int column) {
@@ -322,9 +279,25 @@ public void setValueAt(Object value, int row, int column) {
 					break;
 				}
 				case COLUMN_EXPRESSION:{
-					Expression exp1 = new Expression(inputValue);
-					exp1.bindExpression(getModel());
-					parameter.setExpression(exp1);
+					String newExpressionString = inputValue;
+					if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+						SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
+						Expression newExp = null;
+						if (newExpressionString == null || newExpressionString.trim().length() == 0) {
+							if (scsParm.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_DiffusionRate
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
+								newExp = new Expression(0.0);
+							}
+						} else {
+							newExp = new Expression(newExpressionString);
+						}
+						scsParm.setExpression(newExp);				
+					} else {
+						Expression exp1 = new Expression(inputValue);
+						exp1.bindExpression(simulationContext);
+						parameter.setExpression(exp1);
+					}
 					break;
 				}
 				case COLUMN_UNIT:{
@@ -345,11 +318,11 @@ public void setValueAt(Object value, int row, int column) {
 		} else {
 			switch (column) {
 			case COLUMN_NAME: {
-				if (inputValue.length() == 0 || inputValue.equals(ADD_NEW_HERE_TEXT)) {
+				if (inputValue.length() == 0 || inputValue.equals(BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT)) {
 					return;
 				}
-				ModelParameter modelParameter = getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-				getModel().addModelParameter(modelParameter);
+				ModelParameter modelParameter = simulationContext.getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+				simulationContext.getModel().addModelParameter(modelParameter);
 				break;
 			}
 			}
@@ -362,49 +335,36 @@ public void setValueAt(Object value, int row, int column) {
 
 
   public Comparator<Parameter> getComparator(int col, boolean ascending) {
-    return new ParameterColumnComparator(col, ascending);
+    return new BioModelEditorModelParameterTableModel.ParameterColumnComparator(col, ascending);
   }
 
-public String checkInputValue(String inputValue, int row, int column) {
-	Parameter parameter = null;
-	if (row >= 0 && row < getDataSize()) {
-		parameter = getValueAt(row);
-	}
-	switch (column) {
-	case COLUMN_NAME:
-		if (parameter == null || !parameter.getName().equals(inputValue)) {
-			if (getModel().getModelParameter(inputValue) != null) {
-				return "Global parameter '" + inputValue + "' already exists!";
+@Override
+protected void simulationContextChange(PropertyChangeEvent evt) {
+	super.simulationContextChange(evt);
+	SimulationContext oldValue = (SimulationContext)evt.getOldValue();
+	if (oldValue!=null){
+		oldValue.getModel().removePropertyChangeListener(this);
+		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
+			parameter.removePropertyChangeListener(this);
+		}
+		for (StructureMapping mapping : oldValue.getGeometryContext().getStructureMappings()) {
+			for (Parameter parameter : mapping.getParameters()) {
+				parameter.removePropertyChangeListener(this);
 			}
 		}
-		break;
-	}
-	return null;
-}
-
-public SymbolTable getSymbolTable(int row, int column) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-public Set<String> getAutoCompletionWords(int row, int column) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-@Override
-protected void bioModelChange(PropertyChangeEvent evt) {
-	super.bioModelChange(evt);
-	BioModel oldValue = (BioModel)evt.getOldValue();
-	if (oldValue!=null){
-		for (ModelParameter modelParameter : oldValue.getModel().getModelParameters()) {
-			modelParameter.removePropertyChangeListener(this);
+		for (SpeciesContextSpec spec : oldValue.getReactionContext().getSpeciesContextSpecs()) {
+			spec.removePropertyChangeListener(this);
+			for (Parameter parameter : spec.getParameters()) {
+				parameter.removePropertyChangeListener(this);
+			}
 		}
+		for (ElectricalStimulus elect : oldValue.getElectricalStimuli()) {
+			elect.removePropertyChangeListener(this);
+			for (Parameter parameter : elect.getParameters()) {
+				parameter.removePropertyChangeListener(this);
+			}
+		}
+
 		for (ReactionStep reactionStep : oldValue.getModel().getReactionSteps()){
 			reactionStep.removePropertyChangeListener(this);
 			reactionStep.getKinetics().removePropertyChangeListener(this);
@@ -419,10 +379,28 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			}
 		}
 	}
-	BioModel newValue = (BioModel)evt.getNewValue();
-	if (newValue!=null){
+	SimulationContext newValue = (SimulationContext)evt.getNewValue();
+	if (newValue != null){
+		newValue.getModel().addPropertyChangeListener(this);
 		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
 			modelParameter.addPropertyChangeListener(this);
+		}
+		for (StructureMapping mapping : newValue.getGeometryContext().getStructureMappings()) {
+			for (Parameter parameter : mapping.getParameters()) {
+				parameter.addPropertyChangeListener(this);
+			}
+		}
+		for (SpeciesContextSpec spec : newValue.getReactionContext().getSpeciesContextSpecs()) {
+			spec.addPropertyChangeListener(this);
+			for (Parameter parameter : spec.getParameters()) {
+				parameter.addPropertyChangeListener(this);
+			}
+		}
+		for (ElectricalStimulus elect : newValue.getElectricalStimuli()) {
+			elect.addPropertyChangeListener(this);
+			for (Parameter parameter : elect.getParameters()) {
+				parameter.addPropertyChangeListener(this);
+			}
 		}
 		for (ReactionStep reactionStep : newValue.getModel().getReactionSteps()){
 			reactionStep.addPropertyChangeListener(this);
@@ -438,5 +416,29 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			}
 		}
 	}
+}
+
+public String checkInputValue(String inputValue, int row, int column) {
+	return null;
+}
+
+public SymbolTable getSymbolTable(int row, int column) {
+	return null;
+}
+
+public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column) {
+	return null;
+}
+
+public Set<String> getAutoCompletionWords(int row, int column) {
+	return null;
+}
+
+public final void setIncludeReactionParameters(boolean newValue) {
+	if (newValue == bIncludeReactionParameters) {
+		return;
+	}	
+	this.bIncludeReactionParameters = newValue;
+	refreshData();
 }
 }

@@ -49,8 +49,8 @@ public static void main(java.lang.String[] args) {
         //
         cbit.vcell.model.Structure struct = null;
         for(int i = 0;i < model.getNumStructures();i+= 1){
-	        if(model.getStructures(i).getClass().equals(structClass)){
-		        struct = model.getStructures(i);
+	        if(model.getStructure(i).getClass().equals(structClass)){
+		        struct = model.getStructure(i);
 		        break;
 	        }
         }
