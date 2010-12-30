@@ -1,20 +1,14 @@
 package cbit.vcell.microscopy;
 
-import java.util.Arrays;
-
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.parser.ExpressionException;
 
 public class FRAPOptFunctions 
 {
@@ -26,11 +20,15 @@ public class FRAPOptFunctions
 	public static String SYMBOL_I_inicell = "I_inicell";
 	public static String FUNC_CELL_INTENSITY = SYMBOL_I_inicell + "*(exp(-1*"+SYMBOL_BWM_RATE+"*"+ReservedSymbol.TIME.getName()+"))";
 	
-	private static int NUM_PARAM_ESTIMATED = 2;
+	private static int NUM_PARAM_ESTIMATED = 2;//reaction off rate and bleaching while monitoring rate
+	
 	//used for optimization when taking measurement error into account.
 	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
+	//(to estimate reaction off rate, we use bleached ROI only)
 	//second dimension time, total time length - starting index for recovery 
-//	private double[][] measurementErrors = null;
+	private boolean bApplyMeasurementError = false;
+	private double[][] measurementErrors = null;
+	
 	private FRAPStudy expFrapStudy = null;
 	private FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = null;
 	
@@ -51,13 +49,30 @@ public class FRAPOptFunctions
 		this.offRateResults = offRateResults;
 	}
 
+	public boolean isApplyMeasurementError() {
+		return bApplyMeasurementError;
+	}
+
+	public void setIsApplyMeasurementError(boolean bApplyMeasurementError) {
+		this.bApplyMeasurementError = bApplyMeasurementError;
+	}
+	
+	public double[][] getMeasurementErrors() {
+		return measurementErrors;
+	}
+
+	public void setMeasurementErrors(double[][] measurementErrors) {
+		this.measurementErrors = measurementErrors;
+	}
+
 	//The best parameters will return a whole set of reaction off rate parameters (totally 8 parameters)
-	public Parameter[] getBestParamters(FRAPData frapData, Parameter fixedParam) throws Exception
+	public Parameter[] getBestParamters(FRAPData frapData, Parameter fixedParam, boolean bApplyMeasurementError) throws Exception
 	{
-//		if(measurementErrors == null)
-//		{
-//			FRAPOptimizationUtils.refreshNormalizedMeasurementError(getExpFrapStudy());
-//		}
+		if(measurementErrors == null)
+		{
+			measurementErrors = FRAPOptimizationUtils.refreshNormalizedMeasurementError(getExpFrapStudy());
+		}
+		setIsApplyMeasurementError(bApplyMeasurementError);
 		Parameter[] outputParams = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE];
 		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = FRAPDataAnalysis.fitRecovery_reacOffRateOnly(frapData, fixedParam);
 		setOffRateResults(offRateResults);
@@ -81,6 +96,52 @@ public class FRAPOptFunctions
 		return outputParams;
 	}
 	
+	public double getWeightedError(Expression fitExpression) throws ExpressionException
+	{
+		double weightedError = 0;
+		FRAPData frapData = getExpFrapStudy().getFrapData();
+		int startIndexForRecovery = getExpFrapStudy().getStartingIndexForRecovery();
+		//get normalized experimental data as reference
+		double[] temp_background = frapData.getAvgBackGroundIntensity();
+		//the prebleachAvg has backgroud subtracted.
+		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
+		//temp_fluor has subtracted background and divided by prebleach average.
+		double[] temp_fluor = FRAPDataAnalysis.getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
+		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
+
+		//get nomalized preBleachAverage under bleached area.
+		double preBleachAverage_bleachedArea = 0.0;
+		for (int i = 0; i < startIndexForRecovery; i++) {
+			preBleachAverage_bleachedArea += temp_fluor[i];
+		}
+		preBleachAverage_bleachedArea /= startIndexForRecovery;
+		//average intensity under bleached area. The time points start from the first post bleach
+		double[] fluor = new double[temp_fluor.length-startIndexForRecovery];
+		//Time points stat from the first post bleach
+		double[] time = new double[temp_time.length-startIndexForRecovery];
+		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
+		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
+		
+		//get measurementErrors under bleached area
+		double[] measurementErr_bleached = measurementErrors[0];
+		
+		//calculate the weighted error
+		for(int i=0; i < time.length; i++)
+		{
+			Expression tempExpression = new Expression(fitExpression);
+			tempExpression.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[i]));
+			double expTimeVal = tempExpression.evaluateConstant();
+			double difference = fluor[i] - expTimeVal;
+			if(bApplyMeasurementError)
+			{
+				difference = difference/measurementErr_bleached[i];
+			}
+			weightedError = weightedError + difference * difference;
+		}
+		
+		return weightedError;
+	}
+	
 	public ProfileData[] evaluateParameters(Parameter[] currentParams, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		int totalParamLen = currentParams.length;
@@ -94,8 +155,8 @@ public class FRAPOptFunctions
 			{
 				ProfileData profileData = new ProfileData();
 				//add the fixed parameter to profileData, output exp data and opt results
-				Parameter[] newBestParameters = getBestParamters(frapStudy.getFrapData(), null);
-				double iniError = getOffRateResults().getLeastOffRateFuncError();
+				Parameter[] newBestParameters = getBestParamters(frapStudy.getFrapData(), null, true);
+				double iniError = getWeightedError(getOffRateResults().getOffRateFitExpression());
 				//fixed parameter(make sure parameter shall not be smaller than epsilon)
 				Parameter fixedParam = newBestParameters[j];
 				if(fixedParam.getInitialGuess() == 0)//log function cannot take 0 as parameter
@@ -144,8 +205,8 @@ public class FRAPOptFunctions
 		                                                      fixedParam.getScale(),
 		                                                      paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
-					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), increasedParam);
-					double error = getOffRateResults().getLeastOffRateFuncError();
+					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), increasedParam, true);
+					double error = getWeightedError(getOffRateResults().getOffRateFitExpression());
 					pde = new ProfileDataElement(increasedParam.getName(), paramLogVal, error, newParameters);
 					profileData.addElement(pde);
 					//check if the we run enough to get confidence intervals(99% @6.635, we plus 10 over the min error)
@@ -209,8 +270,8 @@ public class FRAPOptFunctions
 		                                            fixedParam.getScale(),
 		                                            paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
-					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), decreasedParam);
-					double error = getOffRateResults().getLeastOffRateFuncError();
+					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), decreasedParam, true);
+					double error = getWeightedError(getOffRateResults().getOffRateFitExpression());
 					pde = new ProfileDataElement(decreasedParam.getName(), paramLogVal, error, newParameters);
 					profileData.addElement(0,pde);
 					if(error > (iniError+10))

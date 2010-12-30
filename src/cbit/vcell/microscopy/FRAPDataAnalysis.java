@@ -265,13 +265,13 @@ public class FRAPDataAnalysis {
 		 * to fit reaction koff rate expression
 		 */
 		inputParamValues = new double[]{fluor[0], bleachWhileMonitoringRate}; // the input parameter is the initial intensity under bleached area(first post bleach), bleach while monitoring rate
-		double leastError = 0;
+		Expression fitExpression = null;
 		double koffRate = 0;
 		double fittingParamA = 0;
 		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
 		{
 			outputParamValues = new double[1];// the array is used to get fitting parameter A back.
-			leastError = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()));
+			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()));
 			//get reaction off rate, fitting parameter
 			koffRate = fixedParam.getInitialGuess();
 			fittingParamA = outputParamValues[0];
@@ -279,7 +279,7 @@ public class FRAPDataAnalysis {
 		else
 		{
 			outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
-			leastError = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null);
+			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null);
 			//get reaction off rate, fitting parameter
 			koffRate = outputParamValues[0];
 			fittingParamA = outputParamValues[1];
@@ -288,7 +288,7 @@ public class FRAPDataAnalysis {
 		//set reaction only off rate analysis results
 		offRateAnalysisResults.setOffRate(koffRate);
 		offRateAnalysisResults.setFittingParamA(fittingParamA);
-		offRateAnalysisResults.setLeastOffRateFuncError(leastError);
+		offRateAnalysisResults.setOffRateFitExpression(fitExpression);
 		
 		return offRateAnalysisResults;
 	}

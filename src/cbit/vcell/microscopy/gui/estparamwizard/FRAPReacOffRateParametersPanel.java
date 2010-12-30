@@ -545,7 +545,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		String errorStr = checkParameters();
 		if(errorStr.equals(""))
 		{
-			Parameter[] bestParameters = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getBestParamters(frapWorkspace.getWorkingFrapStudy().getFrapData(), null);
+			Parameter[] bestParameters = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getBestParamters(frapWorkspace.getWorkingFrapStudy().getFrapData(), null, true);
 			setParameterValues(
 					new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
 					new Double(bestParameters[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()),//binding site is used to store fitting parameter A

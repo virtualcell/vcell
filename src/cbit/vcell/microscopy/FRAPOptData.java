@@ -557,7 +557,7 @@ public class FRAPOptData {
 		//set fixed parameter
 		setFixedParameter(fixedParam);
 		//set if apply measurement error
-		setbApplyMeasurementError(bApplyMeasurementError);
+		setIsApplyMeasurementError(bApplyMeasurementError);
 		//optimization
 		double lestError = FRAPOptimizationUtils.estimate(this, inParams, outParaNames, outParaVals, errorOfInterest);
 		setLeastError(lestError);
@@ -671,7 +671,7 @@ public class FRAPOptData {
 		return bApplyMeasurementError;
 	}
 
-	public void setbApplyMeasurementError(boolean bApplyMeasurementError) {
+	public void setIsApplyMeasurementError(boolean bApplyMeasurementError) {
 		this.bApplyMeasurementError = bApplyMeasurementError;
 	}
 	

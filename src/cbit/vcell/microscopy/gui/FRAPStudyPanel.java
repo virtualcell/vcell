@@ -1122,7 +1122,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						{
 							if(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() == null)
 							{
-								Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null);
+								Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null, true);
 								fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].setModelParameters(bestParameters);
 								fStudy.setSaveNeeded(true);
 							}

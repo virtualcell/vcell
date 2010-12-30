@@ -183,7 +183,7 @@ public class CurveFitting {
 	 * @para: outputParam, the array which will pass results back. 
 	 * output: double, return the least objective function error 
 	 */
-	public static double fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate) throws ExpressionException, OptimizationException, IOException
+	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate) throws ExpressionException, OptimizationException, IOException
 	{
 
 		if (time.length!=normalized_fluor.length){
@@ -251,7 +251,23 @@ public class CurveFitting {
 		//investigate the return information 
 		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
 		
-		return optSolverResultSet.getLeastObjectiveFunctionValue();
+		// construct recovery under bleached region by diffusion only expression
+		Expression fit = new Expression(koffRateExp);
+
+		System.out.println("fit before subsituting parameters:"+fit.infix());
+		
+		// substitute parameter values
+		for (int i = 0; i < paramValues.length; i++) {
+			fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
+		}
+		
+		// undo time shift
+		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
+		
+		// undo fluorescence normalization
+		System.out.println("fit equation after unnorm:" + fit.infix());
+		
+		return fit;
 	}
 	
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data) throws ExpressionException, OptimizationException, IOException {
