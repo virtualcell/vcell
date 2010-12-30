@@ -28,7 +28,7 @@ public class EstParams_ReactionOffRateDescriptor extends WizardPanelDescriptor
     	try{
 	    	if(params == null)
 	    	{
-	    		params = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null);
+	    		params = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null, true);
 	    	}
 			((EstParams_ReactionOffRatePanel)getPanelComponent()).setData(params, fStudy.getFrapData(), /*fStudy.getFrapOptFunc().getOffRateResults(),*/ fStudy.getStartingIndexForRecovery());
     	}catch(Exception ex)

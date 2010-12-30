@@ -257,7 +257,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 		FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
 		int confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_80;
 		boolean[] modelSignificance = new boolean[FRAPModel.NUM_MODEL_TYPES];
-		Arrays.fill(modelSignificance, true);
+		Arrays.fill(modelSignificance, false);
 		
 		if(confidence80RadioButton.isSelected())
 		{
@@ -281,95 +281,110 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 		}
 		//adjust best model button
 		int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
-		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
-		   frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
-		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null)
-		{
-			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
-			{
-				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
-				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
-				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
-				{
-					modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = false;
-					break;
-				}
-			}
-		}
-		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
-		   frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
-		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null)
-		{
-			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
-			{
-				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
-				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
-				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
-				{
-					modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = false;
-					break;
-				}
-			}
-		}
-		if(frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null &&
-		   frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null &&
-		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]!= null)
-		{
-			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE; i++)
-			{
-				if(i == FRAPModel.INDEX_BLEACH_MONITOR_RATE)
-				{
-					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_BLEACH_MONITOR_RATE].getConfidenceIntervals();
-					if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getUpperBound() && 
-					   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getLowerBound())
-					{
-						modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = false;
-						break;
-					}
-				}
-				else if(i == FRAPModel.INDEX_OFF_RATE)
-				{
-					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_OFF_RATE].getConfidenceIntervals();
-					if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getUpperBound() && 
-					   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getLowerBound())
-					{
-						modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = false;
-						break;
-					}
-				}
-			}
-		}
-		//check least error model with significance
-    	double minError = 1E8;
-    	double[][] mseSummaryData = frapWorkspace.getWorkingFrapStudy().getAnalysisMSESummaryData();
-    	if(mseSummaryData != null)
+		//check model significance if more than one model
+    	if(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() > 1)
     	{
-    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error
-    		if(modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] &&
-    		   modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS])
-    		{//if all models' significance are the same, find the least error
-    			for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
-	    		{
-	    			if((minError > mseSummaryData[i][secDimLen - 1]))
-	    			{
-	    				minError = mseSummaryData[i][secDimLen - 1];
-	    				bestModel = i;
-	    			}
+			if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
+			   frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+			   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null)
+			{
+				for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
+				{
+					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
+					if(intervals[confidenceIdx].getUpperBound() <= frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
+					   intervals[confidenceIdx].getLowerBound() >= frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+					{
+						modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = true;
+						break;
+					}
+				}
+			}
+			if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
+			   frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+			   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null)
+			{
+				for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
+				{
+					ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
+					if(intervals[confidenceIdx].getUpperBound() <= frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
+					   intervals[confidenceIdx].getLowerBound() >= frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+					{
+						modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = true;
+						break;
+					}
+				}
+			}
+			if(frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null &&
+			   frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null &&
+			   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]!= null)
+			{
+				for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE; i++)
+				{
+					if(i == FRAPModel.INDEX_BLEACH_MONITOR_RATE)
+					{
+						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_BLEACH_MONITOR_RATE].getConfidenceIntervals();
+						if(intervals[confidenceIdx].getUpperBound() <= frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getUpperBound() && 
+						   intervals[confidenceIdx].getLowerBound() >= frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getLowerBound())
+						{
+							modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = true;
+							break;
+						}
+					}
+					else if(i == FRAPModel.INDEX_OFF_RATE)
+					{
+						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE][FRAPModel.INDEX_OFF_RATE].getConfidenceIntervals();
+						if(intervals[confidenceIdx].getUpperBound() <= frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getUpperBound() && 
+						   intervals[confidenceIdx].getLowerBound() >= frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters()[FRAPModel.INDEX_OFF_RATE].getLowerBound())
+						{
+							modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = true;
+							break;
+						}
+					}
+				}
+			}
+			//check least error model with significance
+	    	double minError = 1E8;
+	    	double[][] mseSummaryData = frapWorkspace.getWorkingFrapStudy().getAnalysisMSESummaryData();
+	    	if(mseSummaryData != null)
+	    	{
+	    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error
+	    		if(modelSignificance[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] &&
+	    		   modelSignificance[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] == modelSignificance[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS])
+	    		{//if all models' significance are the same, find the least error
+	    			for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+		    		{
+		    			if((minError > mseSummaryData[i][secDimLen - 1]))
+		    			{
+		    				minError = mseSummaryData[i][secDimLen - 1];
+		    				bestModel = i;
+		    			}
+		    		}
 	    		}
-    		}
-    		else
-    		{//if models' significance are different, find the least error with significance
-	    		for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
-	    		{
-	    			if(modelSignificance[i] && (minError > mseSummaryData[i][secDimLen - 1]))
-	    			{
-	    				minError = mseSummaryData[i][secDimLen - 1];
-	    				bestModel = i;
-	    			}
+	    		else
+	    		{//if models' significance are different, find the least error with significance
+		    		for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+		    		{
+		    			if(modelSignificance[i] && (minError > mseSummaryData[i][secDimLen - 1]))
+		    			{
+		    				minError = mseSummaryData[i][secDimLen - 1];
+		    				bestModel = i;
+		    			}
+		    		}
 	    		}
+	    	}
+    	}
+    	else //only one model is selected and the selected model should be the best model 
+    	{
+    		for(int i=0; i< frapWorkspace.getWorkingFrapStudy().getModels().length; i++)
+    		{
+    			if(frapWorkspace.getWorkingFrapStudy().getModels()[i] != null)
+    			{
+    				bestModel = i;
+    				break;
+    			}
     		}
     	}
-		
+    	
 		firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(bestModel));
 	}
 
