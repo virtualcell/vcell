@@ -115,6 +115,13 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	}
 
 	public void setSearchText(String newValue) {
+		if (newValue == searchText) { // takes care of both null
+			return;
+		}
+		if (newValue == null && searchText.length() == 0
+				|| searchText == null && newValue.length() == 0) {
+			return;
+		}
 		String oldValue = searchText;
 		searchText = newValue;
 		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);		

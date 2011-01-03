@@ -82,7 +82,7 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 			String qualifier = ln.getMiriamQualifier().getDescription();
 			if (link != null) {
 				String colorString = (sel)?"white":"blue";
-				toolTipPrefix = "double-click to open link";
+				toolTipPrefix = "double-click to open link " + link;
 				labelText = "<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\"><a href=" + link + ">" + text + "</a></font></html>";
 			}else{
 				String colorString = (sel)?"white":"black";

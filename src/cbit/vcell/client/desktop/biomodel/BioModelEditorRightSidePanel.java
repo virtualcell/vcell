@@ -25,7 +25,7 @@ import cbit.vcell.model.Structure;
 public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	
-	protected JButton newButton = null;
+	protected JButton addNewButton = null;
 	protected JButton deleteButton = null;
 	protected EditorScrollTable table;
 	protected BioModelEditorRightSideTableModel<T> tableModel = null;
@@ -54,7 +54,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == newButton) {
+			if (e.getSource() == addNewButton) {
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
@@ -78,8 +78,8 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 	}
 
 	private void initialize(){
-		newButton = new JButton("New");
-		deleteButton = new JButton("Delete");
+		addNewButton = new JButton("Add New");
+		deleteButton = new JButton("Delete Selected");
 		textFieldSearch = new JTextField(10);
 		table = new EditorScrollTable();
 		tableModel = createTableModel();
@@ -99,7 +99,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 			}			
 		});
 		
-		newButton.addActionListener(eventHandler);
+		addNewButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);

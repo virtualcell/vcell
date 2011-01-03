@@ -5,21 +5,17 @@ package cbit.vcell.mapping.gui;
 ©*/
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JTable;
 
-import loci.formats.in.FEIReader;
-
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.SymbolTable;
 /**
@@ -99,7 +95,7 @@ protected List<DataSymbol> computeData() {
 		}
 	}
 	
-	return (Arrays.asList(simulationContext.getDataContext().getDataSymbols()));
+	return dataSymbolList;
 	
 }
 

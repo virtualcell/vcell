@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -26,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -85,7 +88,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	private JButton newButton = null;
 	private JButton deleteButton = null;
-	private JButton searchButton = null;
 	private JButton showAllButton = null;
 	private EditorScrollTable structuresTable = null;
 	private EditorScrollTable reactionsTable = null;
@@ -106,7 +108,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener, DocumentListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorModelPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
@@ -126,8 +128,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				deleteButtonPressed();
 			} else if (e.getSource() == showAllButton) {
 				showAllButtonPressed();
-			} else if (e.getSource() == textFieldSearch || e.getSource() == searchButton) {
-				searchTable();
 			}
 		}
 
@@ -172,6 +172,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			// TODO Auto-generated method stub
 			
 		}
+
+		public void insertUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void removeUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void changedUpdate(DocumentEvent e) {
+			searchTable();
+		}
 	}
 	
 	public BioModelEditorModelPanel() {
@@ -181,18 +193,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 
 	public void tabbedPaneSelectionChanged() {
+		textFieldSearch.setText(null);
+		reactionTableModel.setSearchText(null);
+		structureTableModel.setSearchText(null);
+		speciesTableModel.setSearchText(null);
+		parametersTableModel.setSearchText(null);
+		
 		Component component = tabbedPane.getSelectedComponent();
 		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()
 				|| component == ModelPanelTab.structure_diagram.getComponent()) {
 			newButton.setEnabled(false);
 			deleteButton.setEnabled(false);
-			searchButton.setEnabled(false);
-			showAllButton.setEnabled(false);
 			textFieldSearch.setEditable(false);
 		} else {
 			newButton.setEnabled(true);
-			showAllButton.setEnabled(true);
-			searchButton.setEnabled(true);
 			textFieldSearch.setEditable(true);
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
@@ -219,48 +233,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
 		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
 		setTableSelections(selectedObjects, parametersTable, parametersTableModel);		
-//		structuresTable.clearSelection();
-//		reactionsTable.clearSelection();
-//		speciesTable.clearSelection();
-//		parametersTable.clearSelection();
-//		for (Object object : selectedObjects) {
-//			if (object instanceof SpeciesContext) {
-//				for (int i = 0; i < speciesTableModel.getDataSize(); i ++) {
-//					if (speciesTableModel.getValueAt(i) == object) {
-//						speciesTable.addRowSelectionInterval(i, i);
-//						break;
-//					}
-//				}
-//			} else 	if (object instanceof Structure) {
-//				for (int i = 0; i < structureTableModel.getDataSize(); i ++) {
-//					if (structureTableModel.getValueAt(i) == object) {
-//						structuresTable.addRowSelectionInterval(i, i);
-//						break;
-//					}
-//				}
-//			} else 	if (object instanceof ReactionStep) {
-//				for (int i = 0; i < reactionTableModel.getDataSize(); i ++) {
-//					if (reactionTableModel.getValueAt(i) == object) {
-//						reactionsTable.addRowSelectionInterval(i, i);
-//						break;
-//					}
-//				}
-//			} else 	if (object instanceof Parameter) {
-//				for (int i = 0; i < parametersTableModel.getDataSize(); i ++) {
-//					if (parametersTableModel.getValueAt(i) == object) {
-//						parametersTable.addRowSelectionInterval(i, i);
-//						break;
-//					}
-//				}
-//			}
-//		} 
 	}
 
 	private void initialize(){
-		newButton = new JButton("New");
-		searchButton = new JButton("Search");
-		showAllButton = new JButton("Show All");
-		deleteButton = new JButton("Delete");
+		newButton = new JButton("Add New");
+		deleteButton = new JButton("Delete Selected");
 		textFieldSearch = new JTextField(15);
 		
 		structuresTable = new EditorScrollTable();
@@ -287,38 +264,30 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		add(new JLabel("Search "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(textFieldSearch, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(searchButton, gbc);
-		
+				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(showAllButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,20,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		newButton.setPreferredSize(deleteButton.getPreferredSize());
 		add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.insets = new Insets(4,4,4,10);
+		gbc.gridx = 4;
+		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(deleteButton, gbc);
@@ -352,8 +321,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		textFieldSearch.addActionListener(eventHandler);
-		searchButton.addActionListener(eventHandler);
-		showAllButton.addActionListener(eventHandler);
+		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
 		reactionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandler);

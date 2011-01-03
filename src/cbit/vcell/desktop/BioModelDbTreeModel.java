@@ -29,7 +29,6 @@ public class BioModelDbTreeModel extends VCDocumentDbTreeModel {
  */
 public BioModelDbTreeModel(JTree tree) {
 	super(tree);
-	rootNode.setUserObject("Biological Models");
 }
 
 /**
@@ -39,6 +38,7 @@ public BioModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	rootNode.setUserObject("Biological Models");
 	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);
 	
 	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();

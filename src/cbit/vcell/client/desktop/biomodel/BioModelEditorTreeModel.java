@@ -77,10 +77,11 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	
 	// first Level
 	private DocumentEditorTreeFolderNode bioModelChildFolderNodes[] = {
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_NODE, "Pathway", true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_NODE, "Biological Model", true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATTIONS_NODE, "Applications", true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, "Scripting", true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODELINFO_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATTIONS_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
 		};
 	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[0], false);
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[1], true);
@@ -97,10 +98,10 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 
 	// Model	
 	private DocumentEditorTreeFolderNode modelChildFolderNodes[] = {			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, "Reactions", true),			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, "Structures", true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, "Species", true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, "Global Parameters", true),			
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, true),			
 		};	
 	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[0], true); 
 	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[1], true); 
@@ -220,9 +221,10 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		annotationNodes.clear();
 		
 		int childIndex = 0;
-		BioModelNode newChild = new BioModelNode(bioModel.getVCMetaData(), false);
-		rootNode.insert(newChild, childIndex ++);
-		annotationNodes.add(newChild);
+		BioModelNode newChild = null;
+//		BioModelNode newChild = new BioModelNode(bioModel.getVCMetaData(), false);
+//		rootNode.insert(newChild, childIndex ++);
+//		annotationNodes.add(newChild);
 
 		Set<MiriamRefGroup> isDescribedByAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_isDescribedBy);
 		for (MiriamRefGroup refGroup : isDescribedByAnnotation){
@@ -435,21 +437,43 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 					bFoundSelected = true;
 					selectedBioModelNode = appNode;
 				}
-	
-				BioModelNode geometryNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.GEOMETRY_NODE, "Geometry"), false);
-				BioModelNode structureMappingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURE_MAPPING_NODE, "Structure Mapping"), false);
-				BioModelNode initialConditionNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE, "Initial Conditions"), true); 
-				BioModelNode reactionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APP_REACTIONS_NODE, "Reactions"), true);
-				BioModelNode eventsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.EVENTS_NODE, "Events"), true);
-				BioModelNode electricalNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE, "Electrical"), false);
-				BioModelNode dataSymbolNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE, "Data Symbols"), true);
-				BioModelNode microscopeMeasurmentNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE, "Microscope Measurements"), true);
-				BioModelNode mathematicsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false);
-				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
-				BioModelNode outputFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, "Output Functions"), true);
-				BioModelNode analysisNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ANALYSIS_NODE, "Parameter Estimation"), true); 
 				
-				BioModelNode[] applicationChildNodes = new BioModelNode[] {
+				Boolean bSelectedInChild = selectedInSimulationContextMap.get(simulationContext.getName());
+				boolean bSelectedInSimulationContext = false; 
+				if (bSelectedInChild != null) {
+					bSelectedInSimulationContext = bSelectedInChild;
+				}
+
+				BioModelNode specificationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, true), true);
+				BioModelNode mathematicsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATHEMATICS_NODE, true), false);
+				BioModelNode tasksNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.TASKS_NODE, true), true);	
+				BioModelNode[] applicationsChildNodes = new BioModelNode[] {
+						specificationsNode,
+						mathematicsNode,
+						tasksNode,
+				};
+				for (BioModelNode node : applicationsChildNodes) {
+					appNode.add(node);
+					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
+						&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
+						bFoundSelected = true;
+						selectedBioModelNode = node;
+					}
+				}
+				
+				BioModelNode geometryNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.GEOMETRY_NODE), false);
+				BioModelNode structureMappingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURE_MAPPING_NODE), false);
+				BioModelNode initialConditionNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE), true); 
+				BioModelNode reactionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APP_REACTIONS_NODE), true);
+				BioModelNode eventsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.EVENTS_NODE), true);
+				BioModelNode electricalNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE), false);
+				BioModelNode dataSymbolNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE), true);
+				BioModelNode microscopeMeasurmentNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE), true);
+				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE), true);
+				BioModelNode outputFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE), true);
+				BioModelNode analysisNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ANALYSIS_NODE), true); 
+				
+				BioModelNode[] specificationsChildNodes = new BioModelNode[] {
 						geometryNode,
 						structureMappingNode,
 						initialConditionNode,
@@ -458,19 +482,32 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 						electricalNode,
 						dataSymbolNode,
 						microscopeMeasurmentNode,
-						mathematicsNode,
+				};
+				
+				BioModelNode[] tasksChildNodes = null;
+				if (simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch()) {
+					tasksChildNodes = new BioModelNode[] {
 						simulationsNode,
 						outputFunctionsNode,
 						analysisNode,
-				};
-				Boolean bSelectedInChild = selectedInSimulationContextMap.get(simulationContext.getName());
-				boolean bSelectedInSimulationContext = false; 
-				if (bSelectedInChild != null) {
-					bSelectedInSimulationContext = bSelectedInChild;
+					};
+				} else {
+					tasksChildNodes = new BioModelNode[] {
+						simulationsNode,
+						outputFunctionsNode,
+					};
 				}
 				
-				for (BioModelNode node : applicationChildNodes) {
-					appNode.add(node);
+				for (BioModelNode node : specificationsChildNodes) {
+					specificationsNode.add(node);
+					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
+							&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
+						bFoundSelected = true;
+						selectedBioModelNode = node;
+					}
+				}
+				for (BioModelNode node : tasksChildNodes) {
+					tasksNode.add(node);
 					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
 							&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
 						bFoundSelected = true;
@@ -533,6 +570,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 		SimulationContext simulationContext = (SimulationContext)appNode.getUserObject();
 		BioModelNode popNode = findApplicationChildNode(appNode, folderClass);
+		if (popNode == null) {
+			return false;
+		}
 		if (!bSelected && selectedBioModelNode != null && popNode.isNodeDescendant(selectedBioModelNode)) {
 			bSelected = true;
 		}
