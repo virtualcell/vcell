@@ -15,16 +15,14 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 
 	public static class DocumentEditorTreeFolderNode {
 		private DocumentEditorTreeFolderClass folderClass;
-		private String name;
 		private boolean bFirstLevel;
 		boolean bSupported = true;
 		
-		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c, String name) {
-			this(c, name, false);
+		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c) {
+			this(c, false);
 		}
-		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c, String name, boolean bFirstLevel) {
+		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c, boolean bFirstLevel) {
 			this.folderClass = c;
-			this.name = name;
 			this.bFirstLevel = bFirstLevel;
 		}		
 		public boolean isSupported() {
@@ -34,7 +32,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			this.bSupported = bSupported;
 		}
 		public final String getName() {
-			return name;
+			return folderClass.name;
 		}
 		public final DocumentEditorTreeFolderClass getFolderClass() {
 			return folderClass;
@@ -45,38 +43,44 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public enum DocumentEditorTreeFolderClass {
-		PATHWAY_NODE,
-		MODEL_NODE,	
-		APPLICATTIONS_NODE,	
-		SCRIPTING_NODE,
+		MODELINFO_NODE("Saved BioModel Info"),
+		PATHWAY_NODE("Pathway"),
+		MODEL_NODE("Biological Model"),	
+		APPLICATTIONS_NODE("Applications"),	
+		SCRIPTING_NODE("Scripting"),
 
-		REACTIONS_NODE,
-		STRUCTURES_NODE,
-		SPECIES_NODE,
-		GLOBAL_PARAMETER_NODE,
+		REACTIONS_NODE("Reactions"),
+		STRUCTURES_NODE("Structures"),
+		SPECIES_NODE("Species"),
+		GLOBAL_PARAMETER_NODE("Global Parameters"),
 		
-		MATHEMATICS_NODE,
-		ANALYSIS_NODE,
+		SPECIFICATIONS_NODE("Specifications"),
+		MATHEMATICS_NODE("Generated Math"),
+		TASKS_NODE("Tasks"),
 		
-		GEOMETRY_NODE,
-		STRUCTURE_MAPPING_NODE,
-		INITIAL_CONDITIONS_NODE,		
-		APP_REACTIONS_NODE,
-		EVENTS_NODE,
-		ELECTRICAL_MAPPING_NODE,
-		DATA_SYMBOLS_NODE,
+		GEOMETRY_NODE("Geometry"),
+		STRUCTURE_MAPPING_NODE("Structure Mapping"),
+		INITIAL_CONDITIONS_NODE("Initial Conditions"),
+		APP_REACTIONS_NODE("Reactions"),
+		EVENTS_NODE("Events"),
+		ELECTRICAL_MAPPING_NODE("Electrical"),
+		DATA_SYMBOLS_NODE("Data Symbols"),
+		MICROSCOPE_MEASUREMENT_NODE("Microscope Measurements"),
 		
-		SIMULATIONS_NODE,
-		OUTPUT_FUNCTIONS_NODE,
+		SIMULATIONS_NODE("Simulations"),
+		OUTPUT_FUNCTIONS_NODE("Output Functions"),
+		ANALYSIS_NODE("Parameter Estimation"),
 		
-		MICROSCOPE_MEASUREMENT_NODE,
+		MATH_ANNOTATION_NODE("Annotation"),
+		MATH_VCML_NODE("VCML Editor"),
+		MATH_GEOMETRY_NODE("Geometry"),
+		MATH_SIMULATIONS_NODE("Simulations"),
+		MATH_OUTPUT_FUNCTIONS_NODE("Output Functions");
 		
-		
-		MATH_ANNOTATION_NODE,
-		MATH_VCML_NODE,
-		MATH_GEOMETRY_NODE,
-		MATH_SIMULATIONS_NODE,
-		MATH_OUTPUT_FUNCTIONS_NODE,
+		private String name = null;
+		DocumentEditorTreeFolderClass(String n) {
+			name = n;
+		}
 	}
 	
 	protected boolean bPopulatingRoot = false;
@@ -152,46 +156,46 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	protected abstract BioModelNode getDefaultSelectionNode();
 	
 	private void onSelectedObjectsChange(Object[] selectedObjects) {
-		if (selectedObjects != null && selectedObjects.length > 0) {
-			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
-			for (Object object : selectedObjects) {
-				BioModelNode node = rootNode.findNodeByUserObject(object);
-				if (node != null) {
-					newPathList.add(new TreePath(node.getPath()));
-				}
-			}
-			if (newPathList.size() > 0) {
-				ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
-				TreePath path = newPathList.get(0);
-				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
-				ownerTree.scrollPathToVisible(path);
-			}
-		} else {
-			restoreTreeSelection();
-		}
-//		boolean bAllSimulationContext = true;
 //		if (selectedObjects != null && selectedObjects.length > 0) {
 //			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
 //			for (Object object : selectedObjects) {
 //				BioModelNode node = rootNode.findNodeByUserObject(object);
 //				if (node != null) {
-//					if (!(node.getUserObject() instanceof SimulationContext)) {
-//						bAllSimulationContext = false;
-//					}
 //					newPathList.add(new TreePath(node.getPath()));
 //				}
 //			}
 //			if (newPathList.size() > 0) {
+//				ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
 //				TreePath path = newPathList.get(0);
 //				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
-//				if (!bAllSimulationContext) {
-//					ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
-//					ownerTree.scrollPathToVisible(path);
-//				}
+//				ownerTree.scrollPathToVisible(path);
 //			}
 //		} else {
 //			restoreTreeSelection();
 //		}
+		boolean bAllSimulationContext = true;
+		if (selectedObjects != null && selectedObjects.length > 0) {
+			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
+			for (Object object : selectedObjects) {
+				BioModelNode node = rootNode.findNodeByUserObject(object);
+				if (node != null) {
+					if (!(node.getUserObject() instanceof SimulationContext)) {
+						bAllSimulationContext = false;
+					}
+					newPathList.add(new TreePath(node.getPath()));
+				}
+			}
+			if (newPathList.size() > 0) {
+				TreePath path = newPathList.get(0);
+				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
+				if (!bAllSimulationContext) {
+					ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
+					ownerTree.scrollPathToVisible(path);
+				}
+			}
+		} else {
+			restoreTreeSelection();
+		}
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {

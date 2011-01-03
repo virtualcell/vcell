@@ -115,6 +115,8 @@ public class BioModelEditor extends DocumentEditor {
 	private EventPanel eventPanel = null;
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
+	private ApplicationSpecificationsPanel applicationSpecificationsPanel = null;
+	private ApplicationTasksPanel applicationTasksPanel = null;
 	
 /**
  * BioModelEditor constructor comment.
@@ -420,6 +422,19 @@ private BioModelsNetPropertiesPanel getBioModelsNetPropertiesPanel() {
 	return bioModelsNetPropertiesPanel;
 }
 
+private ApplicationSpecificationsPanel getApplicationSpecificationsPanel() {
+	if (applicationSpecificationsPanel == null) {
+		applicationSpecificationsPanel = new ApplicationSpecificationsPanel();
+	}
+	return applicationSpecificationsPanel;
+}
+
+private ApplicationTasksPanel getApplicationTasksPanel() {
+	if (applicationTasksPanel == null) {
+		applicationTasksPanel = new ApplicationTasksPanel();
+	}
+	return applicationTasksPanel;
+}
 
 /**
  * Method generated to support the promotion of the userPreferences attribute.
@@ -630,7 +645,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getKineticsTypeTemplatePanel();
 		} else if (singleSelection instanceof BioModelsNetModelInfo) {
 			bShowInDatabaseProperties = true;
-			bottomComponent = getBioModelsNetPropertiesPanel();			
+			bottomComponent = getBioModelsNetPropertiesPanel();
+			rightSplitPane.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = getSimulationSummaryPanel();
 		} else if (singleSelection instanceof DataSymbol) {
@@ -659,6 +675,10 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
 			if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
 				bottomComponent = getSimulationSummaryPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.MODELINFO_NODE) {
+				bottomComponent = bioModelEditorAnnotationPanel;
+			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
+			} else if (folderClass == DocumentEditorTreeFolderClass.TASKS_NODE) {	
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
 				bottomComponent = getApplicationPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
@@ -894,7 +914,7 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		} else if (leafObject instanceof Model) {
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (leafObject instanceof BioModel || leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {
-			dividerLocation = 1.0;
+//			dividerLocation = 1.0;
 			newTopPanel = bioModelPropertiesPanel;
 		}
 	} else {
@@ -904,6 +924,8 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 				|| folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
+		} else if (folderClass == DocumentEditorTreeFolderClass.MODELINFO_NODE) {
+			newTopPanel = bioModelPropertiesPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
@@ -921,6 +943,10 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			newTopPanel = getMathematicsPanel();
 			getMathematicsPanel().setSimulationContext(simulationContext);
 			dividerLocation = 1.0;
+		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
+			newTopPanel = getApplicationSpecificationsPanel();
+		} else if (folderClass == DocumentEditorTreeFolderClass.TASKS_NODE) {
+			newTopPanel = getApplicationTasksPanel();
 		} else if (folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
 			newTopPanel = getParameterEstimationPanel();
 			getParameterEstimationPanel().setSimulationContext(simulationContext);

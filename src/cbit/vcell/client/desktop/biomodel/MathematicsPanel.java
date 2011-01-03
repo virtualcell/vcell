@@ -330,6 +330,7 @@ public class MathematicsPanel extends JPanel {
 			try {
 				getVCMLPanel().setText(simulationContext.getMathDescription().getVCML_database());
 				getVCMLPanel().setCaretPosition(0);
+				getMathDescPanel().setMathDescription(simulationContext.getMathDescription());
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 				getVCMLPanel().setText("error displaying math language: "+e.getMessage());

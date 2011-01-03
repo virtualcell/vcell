@@ -20,7 +20,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.ImageException;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
@@ -91,8 +90,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
         
 	private void initialize() {
-		newButton.setIcon(new DownArrowIcon());
-		newButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		addNewButton.setIcon(new DownArrowIcon());
+		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		moreActionsButton = new JButton("More Actions");
 		moreActionsButton.setIcon(new DownArrowIcon());
 		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -121,7 +120,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(newButton, gbc);
+		add(addNewButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
@@ -175,13 +174,13 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
 	
 	protected void newButtonPressed() {
-		getNewAppPopupMenu().show(newButton, 0, newButton.getHeight());
+		getNewAppPopupMenu().show(addNewButton, 0, addNewButton.getHeight());
 	}
 
 	private void moreActionsButtonPressed() {
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
-			getMoreActionsPopupMenu().show(moreActionsButton, 0, newButton.getHeight());
+			getMoreActionsPopupMenu().show(moreActionsButton, 0, addNewButton.getHeight());
 		}
 	}
 	
@@ -217,8 +216,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 
 	@Override
 	protected void tableSelectionChanged() {
+//		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
+		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
-		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
 			moreActionsButton.setEnabled(true);
 		} else {

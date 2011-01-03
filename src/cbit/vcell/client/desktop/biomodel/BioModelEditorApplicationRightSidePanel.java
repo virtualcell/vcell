@@ -7,6 +7,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -18,17 +20,15 @@ import cbit.vcell.mapping.SimulationContext;
 public abstract class BioModelEditorApplicationRightSidePanel<T> extends DocumentEditorSubPanel {
 	protected static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	
-	protected JButton addButton = null;
+	protected JButton addNewButton = null;
 	protected JButton deleteButton = null;
-	protected JButton searchButton = null;
-	protected JButton showAllButton = null;
 	protected EditorScrollTable table;
 	protected BioModelEditorApplicationRightSideTableModel<T> tableModel = null;
 	protected SimulationContext simulationContext;
 	protected JTextField textFieldSearch = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, DocumentListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorApplicationRightSidePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT)) {
@@ -37,16 +37,10 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == addButton) {
+			if (e.getSource() == addNewButton) {
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
-			} else if (e.getSource() == searchButton || e.getSource() == textFieldSearch) {
-				String text = textFieldSearch.getText();
-				tableModel.setSearchText(text);
-			} else if (e.getSource() == showAllButton) {
-				textFieldSearch.setText(null);
-				tableModel.setSearchText(null);
 			}
 		}
 		
@@ -59,6 +53,18 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 			}
 			
 		}
+
+		public void insertUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void removeUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void changedUpdate(DocumentEvent e) {
+			searchTable();
+		}
 	}
 	
 	public BioModelEditorApplicationRightSidePanel() {
@@ -68,21 +74,17 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 	}
 
 	private void initialize(){
-		addButton = new JButton("New");
-		deleteButton = new JButton("Delete");
-		searchButton = new JButton("Search");
-		showAllButton = new JButton("Show All");
+		addNewButton = new JButton("Add New");
+		deleteButton = new JButton("Delete Selected");
 		textFieldSearch = new JTextField(10);
 		table = new EditorScrollTable();
 		tableModel = createTableModel();
 		table.setModel(tableModel);
 
-		addButton.addActionListener(eventHandler);
+		addNewButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
-		searchButton.addActionListener(eventHandler);
-		showAllButton.addActionListener(eventHandler);
-		textFieldSearch.addActionListener(eventHandler);
+		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 	}
 	
@@ -109,5 +111,10 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, table, tableModel);		
+	}
+
+	private void searchTable() {
+		String text = textFieldSearch.getText();
+		tableModel.setSearchText(text);
 	}
 }

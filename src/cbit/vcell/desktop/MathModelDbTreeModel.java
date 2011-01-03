@@ -29,8 +29,7 @@ public class MathModelDbTreeModel extends VCDocumentDbTreeModel {
  * @param root javax.swing.tree.TreeNode
  */
 public MathModelDbTreeModel(JTree tree) {
-	super(tree);
-	rootNode.setUserObject("Math Models");	
+	super(tree);	
 }
 
 
@@ -41,6 +40,7 @@ public MathModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	rootNode.setUserObject("Math Models");
 	sharedModelsNode.setUserObject(SHARED_MATH_MODELS);
 	
 	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();

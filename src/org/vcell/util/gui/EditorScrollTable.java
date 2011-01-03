@@ -215,7 +215,6 @@ public class EditorScrollTable extends JSortTable {
 		scrollRectToVisible(rect);
 		boolean r = super.editCellAt(row, column, e);
 		if (r) {
-			clearSelection();
 			SwingUtilities.invokeLater(new Runnable() {
 				
 				public void run() {

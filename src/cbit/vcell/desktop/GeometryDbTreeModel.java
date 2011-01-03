@@ -30,7 +30,6 @@ public class GeometryDbTreeModel extends VCDocumentDbTreeModel {
  */
 public GeometryDbTreeModel(JTree tree) {
 	super(tree);
-	rootNode.setUserObject("Geometries");
 }
 
 
@@ -41,7 +40,9 @@ public GeometryDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	rootNode.setUserObject("Geometries");
 	sharedModelsNode.setUserObject(SHARED_GEOMETRIES);
+	
 	GeometryInfo geometryInfos[] = getDocumentManager().getGeometryInfos();
 	//
 	// get list of users (owners)
