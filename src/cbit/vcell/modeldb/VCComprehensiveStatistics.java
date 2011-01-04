@@ -211,7 +211,6 @@ public class VCComprehensiveStatistics {
 			if (statOutputPW != null) {
 				statOutputPW.close();
 			}
-			System.exit(0);
 		}
 	}
 	
