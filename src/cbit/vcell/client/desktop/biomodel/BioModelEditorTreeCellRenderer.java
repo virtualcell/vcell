@@ -12,12 +12,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.desktop.BioModelNode;
  
 @SuppressWarnings("serial")
 public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
-	private BioModel bioModel = null;
+//	private BioModel bioModel = null;
 	private Icon bioModelIcon = null;
 	
 	public BioModelEditorTreeCellRenderer(JTree tree) {
@@ -29,10 +28,6 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 		}
 	}
 
-	public void setBioModel(BioModel bm) {
-		bioModel = bm;
-	}
-	
 	public Component getTreeCellRendererComponent(
                         JTree tree,
                         Object value,
@@ -56,15 +51,15 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		font = boldFont;
 	    		icon = bioModelIcon;
 	    		labelText = ((BioModel)userObj).getName();
-	    	} else if (userObj instanceof VCMetaData) { 	// --- species context
-	    		bChange = true;
-	    		if (bioModel != null) {
-	    			VCMetaData vcMetaData = (VCMetaData)userObj;
-	    			labelText = vcMetaData.getFreeTextAnnotation(bioModel);
-	    		}
-	        	if (labelText == null || labelText.length() == 0) {
-	        		labelText = "(click to edit notes)";
-	        	}
+//	    	} else if (userObj instanceof VCMetaData) {
+//	    		bChange = true;
+//	    		if (bioModel != null) {
+//	    			VCMetaData vcMetaData = (VCMetaData)userObj;
+//	    			labelText = vcMetaData.getFreeTextAnnotation(bioModel);
+//	    		}
+//	        	if (labelText == null || labelText.length() == 0) {
+//	        		labelText = "(click to edit notes)";
+//	        	}
 	        }
 		}
     	if (bChange) {

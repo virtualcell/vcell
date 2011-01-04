@@ -12,7 +12,6 @@ import java.awt.Graphics2D;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 
 public class ReactionContainerShape extends ContainerShape {
@@ -90,12 +89,7 @@ public class ReactionContainerShape extends ContainerShape {
 
 	@Override
 	public void refreshLabel() {
-		if (getStructure() instanceof Membrane){
-			setLabel(getStructure().getName() + " (Voltage=\"" + 
-					((Membrane) getStructure()).getMembraneVoltage().getName() + "\")");
-		} else {
-			setLabel(getStructure().getName());
-		}
+		setLabel(getStructure().getName());
 	}
 
 }

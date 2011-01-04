@@ -1,13 +1,17 @@
 package cbit.vcell.graph;
 
-import cbit.vcell.model.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+
+import cbit.vcell.model.FluxReaction;
 
 public class FluxReactionShape extends ReactionStepShape {
 
 	public FluxReactionShape(FluxReaction fluxReaction, ModelCartoon modelCartoon) {
 		super(fluxReaction, modelCartoon);
-		defaultFGselect = java.awt.Color.red;
 	}
 
 	@Override
@@ -29,7 +33,7 @@ public class FluxReactionShape extends ReactionStepShape {
 
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
-		getSpaceManager().setSizePreferred(65, 25);
+		getSpaceManager().setSizePreferred(25, 25);
 		if(getLabel() != null && getLabel().length() > 0){
 			FontMetrics fontMetrics = g.getFontMetrics();
 			setLabelSize(fontMetrics.stringWidth(getLabel()), 
@@ -39,36 +43,42 @@ public class FluxReactionShape extends ReactionStepShape {
 	}
 
 	@Override
-	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
+	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
 		// draw and fill rounded rectangle
-		int hChannel = getSpaceManager().getSize().height/2;
-		g.setColor(backgroundColor);
-		g.fillRoundRect(absPosX+1, absPosY+1, getSpaceManager().getSize().width-1, getSpaceManager().getSize().height-1, 15, 15);
+		int height = getSpaceManager().getSize().height;
+		int width = getSpaceManager().getSize().width;
+		g2D.setColor(backgroundColor);
+		int roundRectWidth = 16;
+		int roundRectHeight = 12;
+		int offsetX = (width - roundRectWidth)/2;
+		int roundRectX = absPosX + offsetX;
+		int offsetY = (height - roundRectHeight)/2;
+		int roundRectY = absPosY + offsetY;
+		int arcWidth = 10;
+		g2D.fillRoundRect(roundRectX, roundRectY, roundRectWidth, roundRectHeight, arcWidth, arcWidth);
 		//	g.fillRoundRect(absPosX+1,absPosY+1,screenSize.width-1,screenSize.height-1,15,15);
-		g.setColor(forgroundColor);
-		g.drawRoundRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height, 15, 15);
-		g.drawLine(absPosX,absPosY+hChannel/2, absPosX,absPosY+hChannel*3/2);
-		g.drawLine(absPosX + getSpaceManager().getSize().width, absPosY + hChannel/2, absPosX + getSpaceManager().getSize().width,
-				absPosY + hChannel*3/2);
+		g2D.setColor(forgroundColor);
+		g2D.drawRoundRect(roundRectX, roundRectY, roundRectWidth, roundRectHeight, arcWidth, arcWidth);
 		// draw and white out center channel
-		g.setColor(Color.white);
-		g.fillRect(absPosX, absPosY + hChannel/2 - 1, getSpaceManager().getSize().width+1, hChannel+2);
-		g.setColor(forgroundColor);
-		g.drawLine(absPosX, absPosY + hChannel/2-1, absPosX + getSpaceManager().getSize().width, absPosY+hChannel/2 - 1);
-		g.drawLine(absPosX, absPosY + hChannel*3/2 + 1, absPosX + getSpaceManager().getSize().width,
-				absPosY + hChannel*3/2 + 1);
+		g2D.setColor(Color.white);
+		g2D.fillRect(roundRectX - 1, roundRectY + roundRectHeight/3, roundRectWidth + 2, roundRectHeight/3);
+		g2D.setColor(forgroundColor);
+		g2D.drawLine(roundRectX, roundRectY + roundRectHeight/3, roundRectX + roundRectWidth, roundRectY + roundRectHeight/3);
+		g2D.drawLine(roundRectX, roundRectY + roundRectHeight*2/3, roundRectX + roundRectWidth, roundRectY + roundRectHeight*2/3);
+
 		// draw label
-		int textX = absPosX  + getSpaceManager().getSize().width/2 - getLabelSize().width/2;
-		int textY = absPosY + getLabelSize().height;
-		if (getLabel()!=null && getLabel().length()>0){
-			if(isSelected()){
-				drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,
-						getLabelSize().width + 10, getLabelSize().height,
-						g, Color.white, Color.black, Color.black);
+		if (getDisplayLabels() || isSelected()) {
+			g2D.setColor(forgroundColor);
+			int textX = absPosX  + width/2 - getLabelSize().width/2;
+			int textY = absPosY + offsetY - getLabelSize().height / 2;
+			if (getLabel()!=null && getLabel().length()>0){
+				if(isSelected()){
+					drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,
+							getLabelSize().width + 10, getLabelSize().height,
+							g2D, Color.white, Color.black, Color.black);
+					g2D.drawString(getLabel(),textX,textY);
+				}
 			}
-			g.setColor(Color.black);
-			g.drawString(getLabel(),textX,textY);
-			g.setColor(forgroundColor);
 		}
 		return;
 	}

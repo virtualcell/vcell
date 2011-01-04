@@ -72,10 +72,8 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		if (simulationContext == null) {
 			return;
 		}
-		String eventName = simulationContext.getFreeEventName();
 		try {
-			BioEvent bioEvent = new BioEvent(eventName, simulationContext);
-			simulationContext.addBioEvent(bioEvent);
+			simulationContext.createBioEvent();
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());

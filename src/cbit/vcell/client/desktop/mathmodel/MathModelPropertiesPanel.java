@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,14 +12,13 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
+import org.vcell.util.gui.JLabelLikeTextField;
 
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -37,10 +35,11 @@ import cbit.vcell.mathmodel.MathModel;
 public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
 	private MathModel mathModel = null;
 	private EventHandler eventHandler = new EventHandler();
-	private JLabel nameLabel, ownerLabel, lastModifiedLabel, permissionLabel;
+	private JLabelLikeTextField nameLabel, ownerLabel, lastModifiedLabel, permissionLabel;
 	private JButton changePermissionButton;
 	private MathModelWindowManager mathModelWindowManager;
-	private JLabel geometryLabel, detStochLabel;
+	private JLabel geometryLabel, detStochIconLabel;
+	private JLabelLikeTextField detStochLabel;
 	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
 	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
 
@@ -92,16 +91,17 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initialize() {
 	try {		
-		nameLabel = new JLabel();
-		ownerLabel = new JLabel();
-		lastModifiedLabel = new JLabel();
-		permissionLabel = new JLabel();
+		nameLabel = new JLabelLikeTextField();
+		ownerLabel = new JLabelLikeTextField();
+		lastModifiedLabel = new JLabelLikeTextField();
+		permissionLabel = new JLabelLikeTextField();
+		detStochLabel = new JLabelLikeTextField();
 		changePermissionButton = new JButton("Change Permissions...");
 		changePermissionButton.setEnabled(false);
 		geometryLabel = new JLabel();
-		detStochLabel = new JLabel();
+		detStochIconLabel = new JLabel();
 		geometryLabel.setIcon(geometryIcon);
-		detStochLabel.setIcon(appTypeIcon);
+		detStochIconLabel.setIcon(appTypeIcon);
 		
 		setLayout(new GridBagLayout());
 		setBackground(Color.white);
@@ -109,10 +109,10 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 3;
 		gbc.fill = GridBagConstraints.BOTH;		
 		gbc.insets = new Insets(10, 4, 4, 4);
-		JLabel label = new JLabel("File Info");
+		JLabel label = new JLabel("Saved MathModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, gbc);
@@ -129,6 +129,7 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(10, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
@@ -146,6 +147,7 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
@@ -163,6 +165,7 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
@@ -177,18 +180,24 @@ private void initialize() {
 		label = new JLabel("Permissions:");
 		add(label, gbc);
 		
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		panel.setBackground(Color.WHITE);
-		permissionLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
-		panel.add(permissionLabel);
-		panel.add(changePermissionButton);
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(panel, gbc);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;		
+		add(permissionLabel, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;		
+		add(changePermissionButton, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -201,6 +210,15 @@ private void initialize() {
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weighty = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;		
+		add(detStochIconLabel, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2; 
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;

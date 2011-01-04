@@ -419,13 +419,20 @@ public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExcept
 	}
 }
 
-public void addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
-	if (fieldBioEvents==null){
+public BioEvent createBioEvent() throws PropertyVetoException {
+	String eventName = getFreeEventName();
+	BioEvent bioEvent = new BioEvent(eventName, this);
+	return addBioEvent(bioEvent);
+}
+
+public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
+	if (fieldBioEvents == null){
 		setBioEvents(new BioEvent[] { bioEvent });
 	}else{
 		BioEvent[] newBioEvents = (BioEvent[])BeanUtils.addElement(fieldBioEvents, bioEvent);
 		setBioEvents(newBioEvents);
 	}
+	return bioEvent;
 }
 
 /**
@@ -2070,13 +2077,13 @@ public BioEvent getEvent(String name) {
 }
 
 public String getFreeEventName() {	
-	int count=0;
+	int count = 0;
 	while (true) {
-		String eventName = "event"+count;
+		String eventName = "event" + count;
 		if (getEvent(eventName) == null) {
 			return eventName;
 		}
-		count++;
+		count ++;
 	}
 }
 

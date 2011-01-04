@@ -1,26 +1,36 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
-import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
+import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
@@ -230,7 +240,7 @@ public void setMathModel(MathModel newValue) {
 		return;
 	}
 	this.mathModel = newValue;
-	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
+//	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
 	vcmlEditorPanel.setMathModel(mathModel);
 	geometrySummaryViewer.setGeometryOwner(mathModel);
 	mathModelPropertiesPanel.setMathModel(mathModel);
@@ -295,8 +305,93 @@ public boolean hasUnappliedChanges() {
 
 @Override
 protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {
-	// TODO Auto-generated method stub
-	
+	switch (action) {
+	case add_new: 
+		try {
+			Object obj = documentEditorTree.getLastSelectedPathComponent();
+			if (obj == null || !(obj instanceof BioModelNode)) {
+				return;
+			}
+			BioModelNode selectedNode = (BioModelNode) obj;
+			Object userObject = selectedNode.getUserObject();
+			if (userObject instanceof DocumentEditorTreeFolderNode) {
+				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
+				switch (folderClass) {
+				case MATH_SIMULATIONS_NODE:
+					AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							mathModel.refreshMathDescription();
+						}
+					};
+					AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Object newsim = mathModel.addNewSimulation();
+							selectionManager.setSelectedObjects(new Object[]{newsim});
+						}
+					};
+					ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});					
+					break;
+				case MATH_OUTPUT_FUNCTIONS_NODE:
+					break;
+				}				
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+		break;
+	case delete:
+		try {
+			TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+			List<Simulation> simulationList = new ArrayList<Simulation>();
+			List<AnnotatedFunction> outputFunctionList = new ArrayList<AnnotatedFunction>();
+			StringBuilder sb = new StringBuilder();
+			for (TreePath tp : selectedPaths) {
+				Object obj = tp.getLastPathComponent();
+				if (obj == null || !(obj instanceof BioModelNode)) {
+					continue;
+				}				
+				BioModelNode selectedNode = (BioModelNode) obj;
+				Object userObject = selectedNode.getUserObject();
+				if (userObject instanceof Simulation) {
+					Simulation simulation = (Simulation)userObject;
+					simulationList.add(simulation);
+				} else if (userObject instanceof AnnotatedFunction) {
+					AnnotatedFunction annotatedFunction = (AnnotatedFunction)userObject;
+					outputFunctionList.add(annotatedFunction);
+				}
+			}
+			for (Simulation	simulation : simulationList) {
+				sb.append("\t" + simulation.getName() + "\n");
+			}
+			if (outputFunctionList.size() > 0) {
+				sb.append("Output Function(s): \n");
+			}
+			for (AnnotatedFunction annotatedFunction: outputFunctionList) {
+				sb.append("\t" + annotatedFunction.getName() + "\n");
+			}			
+			if (sb.length() > 0) {
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following:\n\n" + sb.toString() + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}				
+				for (Simulation simulation : simulationList) {
+					mathModel.removeSimulation(simulation);
+				}
+				if (outputFunctionList.size() > 0) {
+					for (AnnotatedFunction annotatedFunction: outputFunctionList) {
+						mathModel.getOutputFunctionContext().removeOutputFunction(annotatedFunction);					
+					}
+				}
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+		break;
+	}	
 }
 
 }

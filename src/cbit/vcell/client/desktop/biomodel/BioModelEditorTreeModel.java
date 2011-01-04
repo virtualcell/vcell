@@ -77,7 +77,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	
 	// first Level
 	private DocumentEditorTreeFolderNode bioModelChildFolderNodes[] = {
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODELINFO_NODE, true),
+//			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODELINFO_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATTIONS_NODE, true),
@@ -484,19 +484,11 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 						microscopeMeasurmentNode,
 				};
 				
-				BioModelNode[] tasksChildNodes = null;
-				if (simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch()) {
-					tasksChildNodes = new BioModelNode[] {
-						simulationsNode,
-						outputFunctionsNode,
-						analysisNode,
-					};
-				} else {
-					tasksChildNodes = new BioModelNode[] {
-						simulationsNode,
-						outputFunctionsNode,
-					};
-				}
+				BioModelNode[] tasksChildNodes = new BioModelNode[] {
+					simulationsNode,
+					outputFunctionsNode,
+					analysisNode,
+				};
 				
 				for (BioModelNode node : specificationsChildNodes) {
 					specificationsNode.add(node);
@@ -739,27 +731,36 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		    break;
 		}
 		case ANALYSIS_NODE: {
-			AnalysisTask[] analysisTasks = simulationContext.getAnalysisTasks();
-			if (analysisTasks != null && analysisTasks.length > 0) {
-				analysisTasks = analysisTasks.clone();
-				Arrays.sort(analysisTasks, new Comparator<AnalysisTask>() {
-					public int compare(AnalysisTask o1, AnalysisTask o2) {
-						return o1.getName().compareToIgnoreCase(o2.getName());
-					}
-				});
-				for (AnalysisTask analysisTask : analysisTasks) {
-					BioModelNode node = new BioModelNode(analysisTask, false);
-					popNode.add(node);
-					if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask
-		    				&& ((AnalysisTask)selectedUserObject).getName().equals(analysisTask.getName())) {
-		    			selectedBioModelNode = node;
-		    			bFoundSelected = true;
-		    		}
+			if ((simulationContext.getGeometry().getDimension() > 0) || simulationContext.isStoch()) {
+				BioModelNode parentNode = (BioModelNode) popNode.getParent();
+				if (popNode.isNodeDescendant(selectedBioModelNode)) {
+					selectedBioModelNode = parentNode;
 				}
-			}
-			if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask) {
-				selectedBioModelNode = popNode;
-				bFoundSelected = true;
+				parentNode.remove(popNode);
+				((DocumentEditorTreeFolderNode)popNode.getUserObject()).setSupported(false);
+			} else {
+				AnalysisTask[] analysisTasks = simulationContext.getAnalysisTasks();
+				if (analysisTasks != null && analysisTasks.length > 0) {
+					analysisTasks = analysisTasks.clone();
+					Arrays.sort(analysisTasks, new Comparator<AnalysisTask>() {
+						public int compare(AnalysisTask o1, AnalysisTask o2) {
+							return o1.getName().compareToIgnoreCase(o2.getName());
+						}
+					});
+					for (AnalysisTask analysisTask : analysisTasks) {
+						BioModelNode node = new BioModelNode(analysisTask, false);
+						popNode.add(node);
+						if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask
+			    				&& ((AnalysisTask)selectedUserObject).getName().equals(analysisTask.getName())) {
+			    			selectedBioModelNode = node;
+			    			bFoundSelected = true;
+			    		}
+					}
+				}
+				if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask) {
+					selectedBioModelNode = popNode;
+					bFoundSelected = true;
+				}
 			}
 			break;
 		}

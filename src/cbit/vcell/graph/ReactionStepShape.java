@@ -3,18 +3,17 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
-import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.visualstate.VisualState;
-import cbit.gui.graph.visualstate.imp.MutableVisualState;
-import cbit.vcell.model.ReactionStep;
-
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Area;
+
+import cbit.gui.graph.ElipseShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.MutableVisualState;
+import cbit.vcell.model.ReactionStep;
 
 public abstract class ReactionStepShape extends ElipseShape {
 	ReactionStep reactionStep = null;
@@ -24,8 +23,8 @@ public abstract class ReactionStepShape extends ElipseShape {
 	public ReactionStepShape(ReactionStep reactionStep, GraphModel graphModel) {
 		super(graphModel);
 		this.reactionStep = reactionStep;
-		defaultBG = Color.BLACK;
-		defaultFGselect = Color.BLACK;
+		defaultBG = java.awt.Color.lightGray;
+		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
 	}
 
