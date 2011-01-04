@@ -139,59 +139,59 @@ public class ContainerContainerShape extends ContainerShape {
 			currentX += padding;											
 		}
 		// if the position of the one being dragged is out of place, reorder and do it again once.
-		if (draggedIndex>=0){
-			int insertionIndex = draggedIndex;
-			int dragX = structureContainers.get(draggedIndex).getSpaceManager().getRelPos().x;
-			for (int i = 0; i < structureContainers.size(); i++) {
-				ReactionContainerShape currentShape = structureContainers.get(i);
-				if (i != draggedIndex){
-					if (dragX >= currentShape.getSpaceManager().getRelPos().x && 
-							dragX < 
-							currentShape.getSpaceManager().getRelPos().x + 
-							currentShape.getSpaceManager().getSize().width/2){
-						insertionIndex = Math.min(i, structureContainers.size() - 1);
-						break;
-					}
-					if (dragX >= 
-						currentShape.getSpaceManager().getRelPos().x + 
-						currentShape.getSpaceManager().getSize().width/2 && 
-						dragX <= 
-							currentShape.getSpaceManager().getRelPos().x + 
-							currentShape.getSpaceManager().getSize().width){
-						insertionIndex = Math.min(i + 1, structureContainers.size() - 1);
-						break;
-					}
-				}
-			}
-			if (insertionIndex!=draggedIndex){
-				synchronized (structureContainers) {
-					ListUtil.shiftElement(structureContainers, draggedIndex, insertionIndex);
-					// layout again
-					currentX = 4;
-					currentY = 0;
-					for (int i = 0; i < structureContainers.size(); i++) {
-						if (i != draggedIndex) {
-							structureContainers.get(i).getSpaceManager().setRelPos(currentX, currentY);
-						}
-						currentX += structureContainers.get(i).getSpaceManager().getSize().width;
-						int padding = 8;
-						if(i < structureContainers.size() - 1) {
-							Structure structure1 = structureContainers.get(i).getStructure();
-							Structure structure2 = structureContainers.get(i + 1).getStructure();
-							if(StructureUtil.areAdjacent(structure1, structure2)) {
-								padding = 0;
-							}
-						}
-						currentX += padding;											
-					}
-				}
-			}
-		}
-		for(Shape child : childShapeList) {
-			if (!(child instanceof ReactionContainerShape)){
-				child.refreshLayout();
-			}
-		}	
+//		if (draggedIndex>=0){
+//			int insertionIndex = draggedIndex;
+//			int dragX = structureContainers.get(draggedIndex).getSpaceManager().getRelPos().x;
+//			for (int i = 0; i < structureContainers.size(); i++) {
+//				ReactionContainerShape currentShape = structureContainers.get(i);
+//				if (i != draggedIndex){
+//					if (dragX >= currentShape.getSpaceManager().getRelPos().x && 
+//							dragX < 
+//							currentShape.getSpaceManager().getRelPos().x + 
+//							currentShape.getSpaceManager().getSize().width/2){
+//						insertionIndex = Math.min(i, structureContainers.size() - 1);
+//						break;
+//					}
+//					if (dragX >= 
+//						currentShape.getSpaceManager().getRelPos().x + 
+//						currentShape.getSpaceManager().getSize().width/2 && 
+//						dragX <= 
+//							currentShape.getSpaceManager().getRelPos().x + 
+//							currentShape.getSpaceManager().getSize().width){
+//						insertionIndex = Math.min(i + 1, structureContainers.size() - 1);
+//						break;
+//					}
+//				}
+//			}
+//			if (insertionIndex!=draggedIndex){
+//				synchronized (structureContainers) {
+//					ListUtil.shiftElement(structureContainers, draggedIndex, insertionIndex);
+//					// layout again
+//					currentX = 4;
+//					currentY = 0;
+//					for (int i = 0; i < structureContainers.size(); i++) {
+//						if (i != draggedIndex) {
+//							structureContainers.get(i).getSpaceManager().setRelPos(currentX, currentY);
+//						}
+//						currentX += structureContainers.get(i).getSpaceManager().getSize().width;
+//						int padding = 8;
+//						if(i < structureContainers.size() - 1) {
+//							Structure structure1 = structureContainers.get(i).getStructure();
+//							Structure structure2 = structureContainers.get(i + 1).getStructure();
+//							if(StructureUtil.areAdjacent(structure1, structure2)) {
+//								padding = 0;
+//							}
+//						}
+//						currentX += padding;											
+//					}
+//				}
+//			}
+//		}
+//		for(Shape child : childShapeList) {
+//			if (!(child instanceof ReactionContainerShape)){
+//				child.refreshLayout();
+//			}
+//		}	
 	}
 
 	public void paintSelf (Graphics2D g, int absPosX, int absPosY ) {
