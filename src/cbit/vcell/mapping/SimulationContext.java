@@ -2107,4 +2107,12 @@ public MathMapping createNewMathMapping() {
 	}
 	return mathMapping;
 }
+
+public boolean isSameTypeAs(SimulationContext simulationContext) {
+	if (getGeometry().getDimension() != simulationContext.getGeometry().getDimension()) {
+		return false;
+	}
+		
+	return (isStoch() && simulationContext.isStoch()) || (!isStoch() && !simulationContext.isStoch());
+}
 }

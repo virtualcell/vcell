@@ -81,7 +81,7 @@ public class BioModelEditorModelParameterTableModel extends BioModelEditorRightS
 	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
 	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
-	private boolean bGlobalOnly = false;
+	private boolean bIncludeReactionRates = false;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -89,7 +89,7 @@ public class BioModelEditorModelParameterTableModel extends BioModelEditorRightS
 public BioModelEditorModelParameterTableModel(EditorScrollTable table, boolean bGlobalOnly) {
 	super(table);
 	setColumns(LABELS);
-	this.bGlobalOnly = bGlobalOnly;
+	this.bIncludeReactionRates = bGlobalOnly;
 }
 
 /**
@@ -134,10 +134,18 @@ protected List<Parameter> computeData() {
 	} 
 	ArrayList<Parameter> allParameterList = new ArrayList<Parameter>();
 	allParameterList.addAll(Arrays.asList(getModel().getModelParameters()));
-	if (!bGlobalOnly) {		
-		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
-			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
-			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+	for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+		allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
+		if (bIncludeReactionRates) {
+			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));
+		} else {
+			for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+				int role = kineticsParameter.getRole();
+				if (role != Kinetics.ROLE_ReactionRate
+					&& role != Kinetics.ROLE_LumpedReactionRate) {
+					allParameterList.add(kineticsParameter);
+				}
+			}
 		}
 	}
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
@@ -410,5 +418,13 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			}
 		}
 	}
+}
+
+public final void setIncludeReactionRates(boolean bIncludeReactionRates) {
+	if (this.bIncludeReactionRates == bIncludeReactionRates) {
+		return;
+	}
+	this.bIncludeReactionRates = bIncludeReactionRates;
+	refreshData();
 }
 }

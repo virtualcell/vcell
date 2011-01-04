@@ -97,6 +97,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JSeparator popupMenuSeparator = null;
 	private DocumentEditorTreeCellEditor documentEditorTreeCellEditor;
 	private TreePath mouseClickPath = null;
+	private long mouseClickPathTimeStamp = System.currentTimeMillis();
 	
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -143,14 +144,21 @@ public abstract class DocumentEditor extends JPanel {
 		
 		public void mouseClicked(MouseEvent e) {
 			TreePath oldClickPath = mouseClickPath;
+			long oldClickTimeStamp = mouseClickPathTimeStamp;
+			mouseClickPathTimeStamp = System.currentTimeMillis();
 			mouseClickPath = null;
 			if (e.getClickCount() == 1) {
+				if (mouseClickPathTimeStamp - oldClickTimeStamp > 2000) {
+					return;
+				}
 				TreePath[] newClickPaths = documentEditorTree.getSelectionPaths();
 				if (newClickPaths != null && newClickPaths.length == 1) {
 					mouseClickPath = newClickPaths[0];
 				}
 				if (oldClickPath != null && mouseClickPath != null && oldClickPath.getLastPathComponent() == mouseClickPath.getLastPathComponent()) {
-					documentEditorTree.startEditingAtPath(mouseClickPath);
+					if (isRenamable(mouseClickPath)) {
+						documentEditorTree.startEditingAtPath(mouseClickPath);
+					}
 				}
 			} else if (e.getClickCount() == 2) {
 				Object node = documentEditorTree.getLastSelectedPathComponent();
@@ -383,6 +391,24 @@ protected SimulationContext getSelectedSimulationContext() {
 	return simulationContext;
 }
 
+private boolean isRenamable(TreePath path) {
+	Object obj = path.getLastPathComponent();
+	if (obj != null && (obj instanceof BioModelNode)) {	
+		BioModelNode selectedNode = (BioModelNode) obj;
+		Object userObject = selectedNode.getUserObject();
+		if (userObject instanceof ReactionStep
+				|| userObject instanceof Feature
+				|| userObject instanceof SpeciesContext
+				|| userObject instanceof ModelParameter
+				|| userObject instanceof SimulationContext
+				|| userObject instanceof Simulation
+				|| userObject instanceof Membrane
+				|| userObject instanceof BioEvent) {			
+			return true;
+		}
+	}
+	return false;
+}
 private void construcutPopupMenu() {
 	popupMenu.removeAll();
 	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();

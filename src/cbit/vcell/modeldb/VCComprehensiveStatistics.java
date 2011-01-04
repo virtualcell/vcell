@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,6 +30,7 @@ import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.Simulation;
@@ -74,7 +76,9 @@ public class VCComprehensiveStatistics {
 			
 		}
 	}
-	
+	ModelStat[] bioModelStats = null;
+	ModelStat[] mathModelStats = null;
+
 	VCComprehensiveStatistics() throws Exception {
 		new PropertyLoader();
 		
@@ -118,6 +122,13 @@ public class VCComprehensiveStatistics {
 		internalUsers.add("pavelkr");
 		internalUsers.add("pjmichal");
 		internalUsers.add("falkenbe");
+		
+		bioModelStats = new ModelStat[2];
+		bioModelStats[0] = new ModelStat("Internal users");
+		bioModelStats[1] = new ModelStat("Outside users");
+		mathModelStats = new ModelStat[2];
+		mathModelStats[0] = new ModelStat("Internal users");
+		mathModelStats[1] = new ModelStat("Outside users");
 	}
 	public static void main(String[] args) {
 		try {
@@ -140,14 +151,14 @@ public class VCComprehensiveStatistics {
 			}
 			VCComprehensiveStatistics vcstat = new VCComprehensiveStatistics();
 			vcstat.startStatistics(startDate, endDate);			
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Throwable ex) {
+			ex.printStackTrace(System.out);
 		} finally {
 			System.exit(0);
 		}
 	}
 	
-	public void retrieveUsers() throws DataAccessException {
+	private void retrieveUsers() throws DataAccessException {
 		if (userList.size() == 0) {
 			UserInfo[] allUserInfos = localAdminDbServer.getUserInfos();
 			for (UserInfo userInfo : allUserInfos) {
@@ -156,7 +167,7 @@ public class VCComprehensiveStatistics {
 		}
 	}
 	
-	public void startStatistics(Date startDate, Date endDate) {
+	public void startStatistics(Date startDate, Date endDate) throws DataAccessException, FileNotFoundException, SQLException {
 		try {			
 			long startDateInMs = startDate.getTime();
 			long endDateInMs = endDate.getTime();
@@ -176,8 +187,26 @@ public class VCComprehensiveStatistics {
 			
 			collectBioModelStats(startDateInMs, endDateInMs);
 			collectMathModelStats(startDateInMs, endDateInMs);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+			
+			statOutputPW.println("\nTotal (both internal and outside users");
+			statOutputPW.println("-------------------------------------------------------------------------");
+			statOutputPW.println("total users who used vcell in this period and later: " + userConstraintList.size());
+			int totalBioModels = bioModelStats[0].count_model + bioModelStats[1].count_model;
+			int totalMathModels = mathModelStats[0].count_model + mathModelStats[1].count_model;
+			int totalApplications = bioModelStats[0].count_app_deterministic + bioModelStats[1].count_app_deterministic
+				+ bioModelStats[0].count_app_stochastic + bioModelStats[1].count_app_stochastic;
+			int totalBioModelSimulations = bioModelStats[0].count_sim_deterministic + bioModelStats[1].count_sim_deterministic
+				+ bioModelStats[0].count_sim_stochastic + bioModelStats[1].count_sim_stochastic;
+			int totalMathModelSimulations = mathModelStats[0].count_sim_deterministic + mathModelStats[1].count_sim_deterministic
+				+ mathModelStats[0].count_sim_stochastic + mathModelStats[1].count_sim_stochastic;
+			statOutputPW.println("total BioModels saved : " + totalBioModels);
+			statOutputPW.println("total BioModel Applications saved : " + totalApplications);
+			statOutputPW.println("total BioModel simulations run : " + totalBioModelSimulations);
+			statOutputPW.println("total MathModel saved : " + totalMathModels);
+			statOutputPW.println("total MathModel simulations run : " + totalMathModelSimulations);
+			statOutputPW.println("total BioModels and MathModels : " + totalBioModels + totalMathModels);
+			statOutputPW.println("total simulations run : " + totalBioModelSimulations + totalMathModelSimulations);
+			statOutputPW.flush();			
 		} finally {
 			if (statOutputPW != null) {
 				statOutputPW.close();
@@ -188,15 +217,13 @@ public class VCComprehensiveStatistics {
 	
 	private void collectMathModelStats(long startDateInMs, long endDateInMs) throws DataAccessException {
 		retrieveUsers();
-		ModelStat[] modelStats = new ModelStat[2];
-		modelStats[0] = new ModelStat("Internal users");
-		modelStats[1] = new ModelStat("Outside users");
 		for (User user : userList) {
 			if (!userConstraintList.contains(user.getName())) {
 				continue;
 			}
 			if (!internalDeveloper.contains(user.getName())) {
 				boolean bInternal = internalUsers.contains(user.getName());
+				ModelStat modelStat = mathModelStats[bInternal ? 0 : 1];
 				MathModelInfo mathModelInfos[] = dbServerImpl.getMathModelInfos(user,false);
 				for (MathModelInfo mmi : mathModelInfos){
 					Date createDate = mmi.getVersion().getDate();
@@ -204,7 +231,7 @@ public class VCComprehensiveStatistics {
 					if (t < startDateInMs || t > endDateInMs) {
 						continue;
 					}
-					modelStats[bInternal ? 0 : 1].count_model ++;
+					modelStat.count_model ++;
 					try {
 						BigString mathModelXML = dbServerImpl.getMathModelXML(user, mmi.getVersion().getVersionKey());
 						MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
@@ -220,31 +247,31 @@ public class VCComprehensiveStatistics {
 										bHasCompletedSim = true;
 										long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 										if (elapsed < 2 * MINUTE_IN_MS) {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[0] ++;
+											modelStat.runningTimeHistogram[0] ++;
 										} else if (elapsed < 5 * MINUTE_IN_MS) {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[1] ++;
+											modelStat.runningTimeHistogram[1] ++;
 										} else if (elapsed < 20 * MINUTE_IN_MS) {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[2] ++;
+											modelStat.runningTimeHistogram[2] ++;
 										} else if (elapsed < HOUR_IN_MS) {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[3] ++;
+											modelStat.runningTimeHistogram[3] ++;
 										} else if (elapsed < DAY_IN_MS) {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[4] ++;
+											modelStat.runningTimeHistogram[4] ++;
 										} else {
-											modelStats[bInternal ? 0 : 1].runningTimeHistogram[5] ++;
+											modelStat.runningTimeHistogram[5] ++;
 										}
 									}
 									int dimension = sim.getMathDescription().getGeometry().getDimension();
-									modelStats[bInternal ? 0 : 1].count_geoDimSim[dimension] ++;
+									modelStat.count_geoDimSim[dimension] ++;
 									if (sim.getMathDescription().isNonSpatialStoch()) {
-										modelStats[bInternal ? 0 : 1].count_stochastic ++;
+										modelStat.count_sim_stochastic ++;
 									} else {
-										modelStats[bInternal ? 0 : 1].count_deterministic ++;
+										modelStat.count_sim_deterministic ++;
 									}
 									if (dimension > 0) {
 										if (sim.getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
-											modelStats[bInternal ? 0 : 1].count_semiSim ++;
+											modelStat.count_semiSim ++;
 										} else {
-											modelStats[bInternal ? 0 : 1].count_fullySim ++;
+											modelStat.count_fullySim ++;
 										}
 									}
 								}
@@ -252,7 +279,7 @@ public class VCComprehensiveStatistics {
 							}
 						}
 						if (bHasCompletedSim) {
-							modelStats[bInternal ? 0 : 1].count_model_simcomplete ++;
+							modelStat.count_model_simcomplete ++;
 						}
 					} catch (Exception e2){
 						e2.printStackTrace(System.out);
@@ -264,10 +291,10 @@ public class VCComprehensiveStatistics {
 		statOutputPW.println(itemCount + ". MathModel Statistics ");
 		statOutputPW.println("====================================================");
 				
-		for (ModelStat modelStat : modelStats) {
+		for (ModelStat modelStat : mathModelStats) {
 			statOutputPW.println("\t" + modelStat.title);
 			statOutputPW.println("========================================");
-			statOutputPW.println("number of mathmodels created :\t" + modelStat.count_model);
+			statOutputPW.println("number of mathmodels saved :\t" + modelStat.count_model);
 			statOutputPW.println("number of mathmodels that has at least 1 completed simulation :\t" + modelStat.count_model_simcomplete);
 			statOutputPW.println();
 			
@@ -278,8 +305,8 @@ public class VCComprehensiveStatistics {
 			statOutputPW.println("number of run simulation 3D :\t" + modelStat.count_geoDimSim[3]);
 			statOutputPW.println("number of run simulation Semi-Implicit :\t" + modelStat.count_semiSim);
 			statOutputPW.println("number of run simulation Fully-Implicit :\t" + modelStat.count_fullySim);
-			statOutputPW.println("number of run simulation stochastic :\t" + modelStat.count_stochastic);
-			statOutputPW.println("number of run simulation deterministic :\t" + modelStat.count_deterministic);
+			statOutputPW.println("number of run simulation stochastic :\t" + modelStat.count_sim_stochastic);
+			statOutputPW.println("number of run simulation deterministic :\t" + modelStat.count_sim_deterministic);
 			statOutputPW.println();
 			
 			statOutputPW.println("Running time histogram for completed simulations only:");
@@ -298,12 +325,15 @@ public class VCComprehensiveStatistics {
 	private static class ModelStat {
 		String title;
 		int count_model = 0;
+		int count_geoDimApplications[] = new int[4];
+		int count_app_stochastic = 0;
+		int count_app_deterministic = 0;
 		int count_model_simcomplete = 0;
 		int count_semiSim = 0;
 		int count_fullySim = 0;
 		int count_geoDimSim[] = new int[4];
-		int count_stochastic = 0;
-		int count_deterministic = 0;
+		int count_sim_stochastic = 0;
+		int count_sim_deterministic = 0;
 		int runningTimeHistogram[] = new int[6]; // 0-2,2-5,5-20,20-1hr,1hr-1day,>1day
 		
 		ModelStat(String t) {
@@ -312,16 +342,13 @@ public class VCComprehensiveStatistics {
 	}
 	private void collectBioModelStats(long startDateInMs, long endDateInMs) throws DataAccessException {
 		retrieveUsers();
-		ModelStat[] modelStats = new ModelStat[2];
-		modelStats[0] = new ModelStat("Internal users");
-		modelStats[1] = new ModelStat("Outside users");
-		
 		for (User user : userList) {
 			if (!userConstraintList.contains(user.getName())) {
 				continue;
 			}
 			if (!internalDeveloper.contains(user.getName())) {
 				boolean bInternal = internalUsers.contains(user.getName());
+				ModelStat modelStat = bioModelStats[bInternal ? 0 : 1];
 				BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
 				for (BioModelInfo bmi : bioModelInfos){
 					Date createDate = bmi.getVersion().getDate();
@@ -329,12 +356,20 @@ public class VCComprehensiveStatistics {
 					if (t < startDateInMs || t > endDateInMs) {
 						continue;
 					}
-					modelStats[bInternal ? 0 : 1].count_model ++;
+					modelStat.count_model ++;
 					try {
 						BigString bioModelXML = dbServerImpl.getBioModelXML(user, bmi.getVersion().getVersionKey());
 						BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 						bioModel.refreshDependencies();
 						
+						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+							modelStat.count_geoDimApplications[simContext.getGeometry().getDimension()] ++;
+							if (simContext.isStoch()) {
+								modelStat.count_app_stochastic ++;
+							} else {
+								modelStat.count_app_deterministic ++;
+							}
+						}
 						boolean bHasCompletedSim = false;
 						for (Simulation sim : bioModel.getSimulations()) {
 							SimulationStatus ss = dbServerImpl.getSimulationStatus(sim.getKey());
@@ -346,31 +381,31 @@ public class VCComprehensiveStatistics {
 											bHasCompletedSim = true;
 											long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 											if (elapsed < 2 * MINUTE_IN_MS) {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[0] ++;
+												modelStat.runningTimeHistogram[0] ++;
 											} else if (elapsed < 5 * MINUTE_IN_MS) {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[1] ++;
+												modelStat.runningTimeHistogram[1] ++;
 											} else if (elapsed < 20 * MINUTE_IN_MS) {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[2] ++;
+												modelStat.runningTimeHistogram[2] ++;
 											} else if (elapsed < HOUR_IN_MS) {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[3] ++;
+												modelStat.runningTimeHistogram[3] ++;
 											} else if (elapsed < DAY_IN_MS) {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[4] ++;
+												modelStat.runningTimeHistogram[4] ++;
 											} else {
-												modelStats[bInternal ? 0 : 1].runningTimeHistogram[5] ++;
+												modelStat.runningTimeHistogram[5] ++;
 											}
 										}
 										int dimension = sim.getMathDescription().getGeometry().getDimension();
-										modelStats[bInternal ? 0 : 1].count_geoDimSim[dimension] ++;
-										if (sim.getMathDescription().isNonSpatialStoch()) {
-											modelStats[bInternal ? 0 : 1].count_stochastic ++;
+										modelStat.count_geoDimSim[dimension] ++;
+										if (sim.getMathDescription().isNonSpatialStoch() || sim.getMathDescription().isSpatialStoch()) {
+											modelStat.count_sim_stochastic ++;
 										} else {
-											modelStats[bInternal ? 0 : 1].count_deterministic ++;
+											modelStat.count_sim_deterministic ++;
 										}
 										if (dimension > 0) {
 											if (sim.getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
-												modelStats[bInternal ? 0 : 1].count_semiSim ++;
+												modelStat.count_semiSim ++;
 											} else {
-												modelStats[bInternal ? 0 : 1].count_fullySim ++;
+												modelStat.count_fullySim ++;
 											}
 										}
 									}
@@ -379,7 +414,7 @@ public class VCComprehensiveStatistics {
 							}
 						}
 						if (bHasCompletedSim) {
-							modelStats[bInternal ? 0 : 1].count_model_simcomplete ++;
+							modelStat.count_model_simcomplete ++;
 						}
 					} catch (Exception e2){
 						e2.printStackTrace(System.out);
@@ -391,11 +426,20 @@ public class VCComprehensiveStatistics {
 		statOutputPW.println(itemCount + ". BioModel Statistics ");
 		statOutputPW.println("====================================================");
 				
-		for (ModelStat modelStat : modelStats) {
+		for (ModelStat modelStat : bioModelStats) {
 			statOutputPW.println("\t" + modelStat.title);
 			statOutputPW.println("========================================");
-			statOutputPW.println("number of biomodels created :\t" + modelStat.count_model);
+			statOutputPW.println("number of biomodels saved :\t" + modelStat.count_model);
 			statOutputPW.println("number of biomodels that has at least 1 completed simulation :\t" + modelStat.count_model_simcomplete);
+			statOutputPW.println();
+			
+			statOutputPW.println("Application statistics :");
+			statOutputPW.println("number of application ODE :\t" + modelStat.count_geoDimApplications[0]);
+			statOutputPW.println("number of application 1D :\t" + modelStat.count_geoDimApplications[1]);
+			statOutputPW.println("number of application 2D :\t" + modelStat.count_geoDimApplications[2]);
+			statOutputPW.println("number of application 3D :\t" + modelStat.count_geoDimApplications[3]);
+			statOutputPW.println("number of application stochastic :\t" + modelStat.count_app_stochastic);
+			statOutputPW.println("number of application deterministic :\t" + modelStat.count_app_deterministic);
 			statOutputPW.println();
 			
 			statOutputPW.println("Simulation statistics (including all simulations (stopped, failed, completed) :");
@@ -405,8 +449,8 @@ public class VCComprehensiveStatistics {
 			statOutputPW.println("number of run simulation 3D :\t" + modelStat.count_geoDimSim[3]);
 			statOutputPW.println("number of run simulation Semi-Implicit :\t" + modelStat.count_semiSim);
 			statOutputPW.println("number of run simulation Fully-Implicit :\t" + modelStat.count_fullySim);
-			statOutputPW.println("number of run simulation stochastic :\t" + modelStat.count_stochastic);
-			statOutputPW.println("number of run simulation deterministic :\t" + modelStat.count_deterministic);
+			statOutputPW.println("number of run simulation stochastic :\t" + modelStat.count_sim_stochastic);
+			statOutputPW.println("number of run simulation deterministic :\t" + modelStat.count_sim_deterministic);
 			statOutputPW.println();
 			
 			statOutputPW.println("Running time histogram for completed simulations only:");
@@ -452,22 +496,25 @@ public class VCComprehensiveStatistics {
 			con.close();
 		}
 		
-		int count1mon = 0;
-		int count3mon = 0;
-		int count6mon = 0;
+		int out_count1mon = 0;
+		int out_count3mon = 0;
+		int out_count6mon = 0;
+		int out_countrest = 0;
 		for (UserStat ui : userStatList) {
 			if (!ui.isDeveloper) {
 				if (!ui.isInternal && ui.lastLogin != null) {
 					long t = System.currentTimeMillis() - ui.lastLogin.getTime();
 					if (t < 1 * MONTH_IN_MS) {
-						count1mon ++;
-						count3mon ++;
-						count6mon ++;
+						out_count1mon ++;
+						out_count3mon ++;
+						out_count6mon ++;
 					} else if (t < 3  * MONTH_IN_MS) {
-						count3mon ++;
-						count6mon ++;
+						out_count3mon ++;
+						out_count6mon ++;
 					} else if (t < 6 * MONTH_IN_MS) {
-						count6mon ++;
+						out_count6mon ++;
+					} else {
+						out_countrest ++;
 					}
 				}
 			}
@@ -476,11 +523,12 @@ public class VCComprehensiveStatistics {
 		statOutputPW.println(itemCount + ". User Statistics");
 		statOutputPW.println("====================================================");
 
-		statOutputPW.println("\tOutside users");
+		statOutputPW.println("\tOutside login users");
 		statOutputPW.println("========================================");
-		statOutputPW.println("number of users in last 1 month  :\t" + count1mon);
-		statOutputPW.println("number of users in last 3 months :\t" + count3mon);
-		statOutputPW.println("number of users in last 6 months :\t" + count6mon);
+		statOutputPW.println("number of users in last 1 month  :\t" + out_count1mon);
+		statOutputPW.println("number of users in last 3 months :\t" + out_count3mon);
+		statOutputPW.println("number of users in last 6 months :\t" + out_count6mon);
+		statOutputPW.println("number of users in more than 6 months :\t" + out_countrest);
 		statOutputPW.println();
 		
 		statOutputPW.println("Internal users (totally " + internalUsers.size() + ") are : ");
@@ -492,31 +540,43 @@ public class VCComprehensiveStatistics {
 			}
 		}
 		statOutputPW.println();
-		count1mon = 0;
-		count3mon = 0;
-		count6mon = 0;
+		int in_count1mon = 0;
+		int in_count3mon = 0;
+		int in_count6mon = 0;
+		int in_countrest = 0;
 		for (UserStat ui : userStatList) {
 			if (!ui.isDeveloper) {
 				if (ui.isInternal && ui.lastLogin != null) {
 					long t = System.currentTimeMillis() - ui.lastLogin.getTime();
 					if (t < 1 * MONTH_IN_MS) {
-						count1mon ++;
-						count3mon ++;
-						count6mon ++;
+						in_count1mon ++;
+						in_count3mon ++;
+						in_count6mon ++;
 					} else if (t < 3  * MONTH_IN_MS) {
-						count3mon ++;
-						count6mon ++;
+						in_count3mon ++;
+						in_count6mon ++;
 					} else if (t < 6 * MONTH_IN_MS) {
-						count6mon ++;
+						in_count6mon ++;
+					} else {
+						in_countrest ++;
 					}
 				}
 			}
 		}
-		statOutputPW.println("\tInternal users");
+		statOutputPW.println("\tInternal login users");
 		statOutputPW.println("========================================");		
-		statOutputPW.println("number of users in last 1 month  :\t" + count1mon);
-		statOutputPW.println("number of users in last 3 months :\t" + count3mon);
-		statOutputPW.println("number of users in last 6 months :\t" + count6mon);
+		statOutputPW.println("number of users in last 1 month  :\t" + in_count1mon);
+		statOutputPW.println("number of users in last 3 months :\t" + in_count3mon);
+		statOutputPW.println("number of users in last 6 months :\t" + in_count6mon);
+		statOutputPW.println("number of users in more than 6 months :\t" + in_countrest);
+		statOutputPW.println();
+		
+		statOutputPW.println("\tTotal users (both internal and outside users)");
+		statOutputPW.println("========================================");		
+		statOutputPW.println("number of users in last 1 month  :\t" + in_count1mon + out_count1mon);
+		statOutputPW.println("number of users in last 3 months :\t" + in_count3mon + out_count3mon);
+		statOutputPW.println("number of users in last 6 months :\t" + in_count6mon + out_count6mon);
+		statOutputPW.println("number of users in more than 6 months :\t" + in_countrest + out_countrest);
 		statOutputPW.println();
 		statOutputPW.flush();
 	}

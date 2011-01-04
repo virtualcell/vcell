@@ -12,10 +12,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -222,6 +226,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DocumentWindow() {
 	super();
 	initialize();
+	BufferedImage image = null;
+	try {
+		image = ImageIO.read(getClass().getResource("/icons/vcell.gif"));
+	} catch (IOException e) {
+		e.printStackTrace();	}
+
+	setIconImage(image);
 }
 
 /**
