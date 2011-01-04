@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -64,12 +65,12 @@ import cbit.vcell.parser.NameScope;
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTab {
+		reaction_table("Reactions"),
 		reaction_diagram("Reaction Diagram"),
 		structure_diagram("Structure Diagram"),
-		reaction_table("Reactions"),
 		structure_table("Structures"),
 		species_table("Species"),
-		global_parameter_table("Parameters");
+		parameter_table("Parameters");
 		
 		private String name = null;
 		private JComponent component = null;
@@ -105,6 +106,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
 	private JDesktopPaneEnhanced desktopPane = null;
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;	
+	private JPanel parameterPanel = null;
+	private JCheckBox includeReactionRateCheckBox = null;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
@@ -128,6 +131,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				deleteButtonPressed();
 			} else if (e.getSource() == showAllButton) {
 				showAllButtonPressed();
+			} else if (e.getSource() == includeReactionRateCheckBox) {
+				parametersTableModel.setIncludeReactionRates(includeReactionRateCheckBox.isSelected());
 			}
 		}
 
@@ -292,13 +297,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(deleteButton, gbc);
 		
+		parameterPanel = new JPanel(new BorderLayout());
+		includeReactionRateCheckBox = new JCheckBox("Show Reaction Rates");
+		includeReactionRateCheckBox.addActionListener(eventHandler);
+		parameterPanel.add(includeReactionRateCheckBox, BorderLayout.NORTH);
+		parameterPanel.add(parametersTable.getEnclosingScrollPane(), BorderLayout.CENTER);
+		
 		tabbedPane = new JTabbedPane();
 		ModelPanelTab.reaction_diagram.setComponent(reactionCartoonEditorPanel);
 		ModelPanelTab.structure_diagram.setComponent(cartoonEditorPanel);
 		ModelPanelTab.reaction_table.setComponent(reactionsTable.getEnclosingScrollPane());
 		ModelPanelTab.structure_table.setComponent(structuresTable.getEnclosingScrollPane());
 		ModelPanelTab.species_table.setComponent(speciesTable.getEnclosingScrollPane());
-		ModelPanelTab.global_parameter_table.setComponent(parametersTable.getEnclosingScrollPane());
+		ModelPanelTab.parameter_table.setComponent(parameterPanel);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
 		

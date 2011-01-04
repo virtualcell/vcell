@@ -1,6 +1,7 @@
 package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -78,6 +79,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
 		private AsynchProgressPopup pp = null;
+		private Frame frameParent = JOptionPane.getFrameForComponent(requester);
 		public Object construct() {
 			bInProgress = true;
 			if (bShowProgressPopup) {
@@ -88,7 +90,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					pp.start();
 				}
 			} else {
-				BeanUtils.setCursorThroughout(JOptionPane.getFrameForComponent(requester), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
 			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
@@ -169,7 +171,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			if (pp != null) {
 				pp.stop();
 			} else {
-				BeanUtils.setCursorThroughout(JOptionPane.getFrameForComponent(requester), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong

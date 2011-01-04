@@ -1255,8 +1255,8 @@ roundtripTimer += l2 - l1;
 			if (memorySimulation.getKey()!=null){
 				if (origBioModel!=null){
 					for (int j = 0; j < origBioModel.getNumSimulations(); j++){
-						if (origBioModel.getSimulations(j).getKey().equals(memorySimulation.getKey())){
-							databaseSimulation = origBioModel.getSimulations(j);
+						if (origBioModel.getSimulation(j).getKey().equals(memorySimulation.getKey())){
+							databaseSimulation = origBioModel.getSimulation(j);
 						}
 					}
 				}
@@ -1372,7 +1372,7 @@ roundtripTimer += l2 - l1;
 		}
 		KeyValue simKeys[] = new KeyValue[bioModel.getNumSimulations()];
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
-			simKeys[i] = ((Simulation)memoryToDatabaseHash.get(bioModel.getSimulations(i))).getKey();
+			simKeys[i] = ((Simulation)memoryToDatabaseHash.get(bioModel.getSimulation(i))).getKey();
 		}
 		// @TODO Add VC_METADATA table ... pointed to by VC_BIOMODEL (metadataref on delete cascade)
 		// @TODO Write script to populate VC_METADATA from VC_MIRIAM
@@ -1420,7 +1420,7 @@ roundtripTimer += l2 - l1;
 			updatedBioModel.addSimulationContext((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContext(i)));
 		}
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
-			updatedBioModel.addSimulation((Simulation)memoryToDatabaseHash.get(bioModel.getSimulations(i)));
+			updatedBioModel.addSimulation((Simulation)memoryToDatabaseHash.get(bioModel.getSimulation(i)));
 		}
 		updatedBioModel.setVCMetaData(XmlHelper.xmlToVCMetaData(updatedBioModel.getVCMetaData(), updatedBioModel, vcMetaDataXML));
 

@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -13,13 +14,17 @@ import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
@@ -31,6 +36,8 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
@@ -46,10 +53,13 @@ public class BioModelPropertiesPanel extends JPanel {
 	private JLabelLikeTextField nameLabel, ownerLabel, lastModifiedLabel, permissionLabel;
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
+	private JPanel applicationsPanel = null;
 //	private JTree applicationsTree = null;
 //	private DefaultTreeModel applicationTreeModel = null;
 //	private BioModelNode applicationTreeRootNode = null;
 	private JPanel webLinksPanel = null;
+	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
+	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
@@ -105,17 +115,14 @@ private void initialize() {
 		permissionLabel = new JLabelLikeTextField();
 		changePermissionButton = new JButton("Change Permissions...");
 		changePermissionButton.setEnabled(false);
-//		applicationsTree = new JTree();
-//		applicationTreeModel = new DefaultTreeModel(new BioModelNode("Applications", true), true);
-//		applicationTreeRootNode = (BioModelNode) applicationTreeModel.getRoot();
-//		applicationsTree.setModel(applicationTreeModel);
-//		applicationsTree.setCellRenderer(new BioModelCellRenderer(null));
-//		applicationsTree.setRootVisible(false);
+		applicationsPanel = new JPanel(new GridBagLayout());
+		applicationsPanel.setBackground(Color.white);
 		webLinksPanel = new JPanel();
 		webLinksPanel.setBackground(Color.white);
 		
-		setLayout(new GridBagLayout());
-		setBackground(Color.white);
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new GridBagLayout());
+		mainPanel.setBackground(Color.white);
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -126,7 +133,7 @@ private void initialize() {
 		JLabel label = new JLabel("Saved BioModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -135,7 +142,7 @@ private void initialize() {
 		gbc.insets = new Insets(10, 10, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		label = new JLabel("BioModel Name:");
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -144,7 +151,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(10, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(nameLabel, gbc);
+		mainPanel.add(nameLabel, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -153,7 +160,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		label = new JLabel("Owner:");
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -161,7 +168,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(ownerLabel, gbc);
+		mainPanel.add(ownerLabel, gbc);
 
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -170,7 +177,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		label = new JLabel("Last Modified:");
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -178,7 +185,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(lastModifiedLabel, gbc);
+		mainPanel.add(lastModifiedLabel, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -187,7 +194,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;		
 		label = new JLabel("Web Links:");
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -195,7 +202,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(webLinksPanel, gbc);				
+		mainPanel.add(webLinksPanel, gbc);				
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -204,7 +211,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		label = new JLabel("Permissions:");
-		add(label, gbc);
+		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -212,37 +219,39 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
-		add(permissionLabel, gbc);
+		mainPanel.add(permissionLabel, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-//		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-		add(changePermissionButton, gbc);
+		mainPanel.add(changePermissionButton, gbc);
 
-//		gridy ++;
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 0; 
-//		gbc.gridy = gridy;
-//		gbc.insets = new Insets(4, 4, 4, 4);
-//		gbc.anchor = GridBagConstraints.FIRST_LINE_END;		
-//		label = new JLabel("Applications:");
-//		add(label, gbc);
-//		
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 1; 
-//		gbc.gridy = gridy;
-//		gbc.fill = java.awt.GridBagConstraints.BOTH;
-//		gbc.insets = new Insets(4, 4, 4, 4);
-//		gbc.anchor = GridBagConstraints.LINE_START;	
-//		gbc.weighty = 1.0;
-//		gbc.insets = new Insets(4, 4, 20, 10);
-//		add(new JScrollPane(applicationsTree, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS), gbc);
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;		
+		label = new JLabel("Applications:");
+		mainPanel.add(label, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;	
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.insets = new Insets(4, 4, 20, 10);
+		mainPanel.add(applicationsPanel, gbc);
 
+		setLayout(new BorderLayout());
+		add(new JScrollPane(mainPanel), BorderLayout.CENTER);
 		changePermissionButton.addActionListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -348,31 +357,54 @@ private void updateInterface() {
 		}
 	}	
 	
-//	applicationTreeRootNode.removeAllChildren();
-//	SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
-//	if (simulationContexts != null) {
-//		for (int i = 0; i < bioModel.getNumSimulationContexts(); i ++) {
-//			SimulationContext simContext = bioModel.getSimulationContext(i);
-//			BioModelNode simContextNode = new BioModelNode(simContext, true);
-//						
-//			String typeInfo = simContext.getMathType();			
-//			BioModelNode appTypeNode = new BioModelNode(typeInfo,false);
-//			appTypeNode.setRenderHint("type","AppType");
-//			simContextNode.add(appTypeNode);
-//			
-//			Geometry geometry = simContext.getGeometry();
-//			BioModelNode geometryNode = new BioModelNode(geometry, false);
-//			simContextNode.add(geometryNode);
-//			
-//			for (Simulation simulation : simContext.getSimulations()) {
-//				BioModelNode simNode = new BioModelNode(simulation, false);
-//				simContextNode.add(simNode);
-//			}
-//			applicationTreeRootNode.add(simContextNode);			
-//		}
-//	}
-//	applicationTreeModel.nodeStructureChanged(applicationTreeRootNode);
-//	GuiUtils.treeExpandAll(applicationsTree, applicationTreeRootNode, true);
+	applicationsPanel.removeAll();
+	int gridy = 0;
+	SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+	if (simulationContexts != null) {
+		for (int i = 0; i < simulationContexts.length; i ++) {
+			SimulationContext simContext = simulationContexts[i];
+			JLabel label = new JLabel(simContext.getName());
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy ++;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+			if (i > 0) {
+				gbc.insets = new Insets(4, 0, 0, 0);
+			}
+			applicationsPanel.add(label, gbc);
+
+			Geometry geometry = simContext.getGeometry();
+			String geometryText = "Compartmental geometry";
+			if (geometry != null) {
+				Version geometryVersion = geometry.getVersion();
+				int dimension = geometry.getDimension();
+				if (dimension > 0){
+					String description = geometry.getDimension() + "D " + (geometry.getGeometrySpec().hasImage() ? "image" : "analytic") + " geometry";
+					geometryText = description;
+					if (geometryVersion != null) {
+						geometryText += " - " + geometryVersion.getName() + " ("+geometryVersion.getDate() + ")";
+					}
+				}
+			}
+			JLabel geometryLabel = new JLabel(geometryText);
+			geometryLabel.setIcon(geometryIcon);
+			JLabel detStochLabel = new JLabel((simContext.isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR));
+			detStochLabel.setIcon(appTypeIcon);
+			
+			gbc.insets = new Insets(0, 10, 0, 0);
+			gbc.gridy = gridy ++;
+			applicationsPanel.add(geometryLabel, gbc);
+			gbc.gridy = gridy ++;
+			if (i == simulationContexts.length - 1) {
+				gbc.weighty = 1.0;
+			}
+			applicationsPanel.add(detStochLabel, gbc);
+		}
+	}
 }
 
 }

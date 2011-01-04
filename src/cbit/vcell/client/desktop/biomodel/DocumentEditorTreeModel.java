@@ -195,8 +195,10 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			}
 			if (newPathList.size() > 0) {
 				TreePath path = newPathList.get(0);
-				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
-				if (!bAllSimulationContext) {
+				if (bAllSimulationContext) {
+					selectedBioModelNode = (BioModelNode) path.getParentPath().getLastPathComponent();
+				} else {
+					selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
 					ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
 					ownerTree.scrollPathToVisible(path);
 				}

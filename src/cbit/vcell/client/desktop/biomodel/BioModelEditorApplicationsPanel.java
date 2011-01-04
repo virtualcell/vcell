@@ -92,7 +92,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private void initialize() {
 		addNewButton.setIcon(new DownArrowIcon());
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
-		moreActionsButton = new JButton("More Actions");
+		moreActionsButton = new JButton("More Copy Actions");
 		moreActionsButton.setIcon(new DownArrowIcon());
 		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		
@@ -443,6 +443,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					SimulationContext newSimulationContext = copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
 					newSimulationContext.getGeometry().precomputeAll();
+					if (newSimulationContext.isSameTypeAs(simulationContext)) { 
+						newSimulationContext.refreshMathDescription();
+					}
 					hashTable.put("newSimulationContext", newSimulationContext);
 				}
 			};
@@ -452,11 +455,22 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
 					bioModel.addSimulationContext(newSimulationContext);
-					//bioModelWindowManager.showApplicationFrame(newSimulationContext);
+					if (newSimulationContext.isSameTypeAs(simulationContext)) { 
+						for (Simulation sim : simulationContext.getSimulations()) {
+							Simulation clonedSimulation = new Simulation(sim, false);
+							clonedSimulation.setMathDescription(newSimulationContext.getMathDescription());
+							clonedSimulation.setName(simulationContext.getBioModel().getFreeSimulationName());
+							newSimulationContext.addSimulation(clonedSimulation);
+						}
+					} else {
+						if (simulationContext.getSimulations().length > 0) {
+							DialogUtils.showWarningDialog(BioModelEditorApplicationsPanel.this, "Simulations are not copied because new application is of different type.");
+						}
+					}
 					setSelectedObjects(new Object[]{newSimulationContext});
 				}
 			};
-			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2},  false);
 		} catch (Throwable exc) {
 			exc.printStackTrace(System.out);
 			PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage(), exc);

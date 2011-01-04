@@ -43,6 +43,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 {
 	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
 	public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
+	public final static String SIMULATION_DISPLAY_NAME = "Simulation";
 	private Version fieldVersion = null;
 	private String fieldName = null;
 	protected transient VetoableChangeSupport vetoPropertyChange;
@@ -440,7 +441,7 @@ public Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public Simulation getSimulations(int index) {
+public Simulation getSimulation(int index) {
 	return getSimulations()[index];
 }
 
@@ -995,6 +996,26 @@ public String getFreeSimulationContextName() {
 		}	
 		count++;
 	}
+}
+
+public String getFreeSimulationName() {
+	int count=0;
+	while (true) {
+		String name = SIMULATION_DISPLAY_NAME + count;
+		if (getSimulation(name) == null){
+			return name;
+		}	
+		count++;
+	}
+}
+
+private Simulation getSimulation(String name) {
+	for (Simulation simulation : fieldSimulations){
+		if (simulation.getName().equals(name)) {
+			return simulation;
+		}
+	}
+	return null;
 }
 
 public SimulationContext getSimulationContext(String name) {
