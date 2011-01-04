@@ -151,19 +151,19 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 	
 	public void setValueAt(Object value, int row, int column) {
 		try{
+			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
+				return;
+			}
 			BioEvent bioEvent = null;
 			if (row >= 0 && row < getDataSize()) {
 				bioEvent = getValueAt(row);
 			} else {
-				bioEvent = new BioEvent(simulationContext.getFreeEventName(), simulationContext);
+				bioEvent = simulationContext.createBioEvent();
 			}
 			switch (column) {
 				case COLUMN_EVENT_NAME: {
 					bioEvent.setName((String)value);
 				} 
-			}
-			if (row >= getDataSize()) {
-				simulationContext.addBioEvent(bioEvent);
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);

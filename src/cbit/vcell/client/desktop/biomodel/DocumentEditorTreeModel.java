@@ -6,8 +6,16 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorTreeModel extends DefaultTreeModel
@@ -43,7 +51,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public enum DocumentEditorTreeFolderClass {
-		MODELINFO_NODE("Saved BioModel Info"),
+//		MODELINFO_NODE("Saved BioModel Info"),
 		PATHWAY_NODE("Pathway"),
 		MODEL_NODE("Biological Model"),	
 		APPLICATTIONS_NODE("Applications"),	
@@ -217,24 +225,47 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		return propertyChange;
 	}
 	
-//	public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-//		if (e.getSource() == ownerTree) {
-//			try {
-//				Object node = ownerTree.getLastSelectedPathComponent();;
-//				if (node != null && (node instanceof BioModelNode)) {
-//					selectedBioModelNode = (BioModelNode) node;
-//				}				
-//			} catch (Exception ex){
-//				ex.printStackTrace(System.out);
-//			}
-//		}
-//	}
-	
 	public void setSelectionManager(SelectionManager selectionManager) {
 		this.selectionManager = selectionManager;
 		if (selectionManager != null) {
 			selectionManager.removePropertyChangeListener(this);
 			selectionManager.addPropertyChangeListener(this);
+		}
+	}
+
+	@Override
+	public void valueForPathChanged(TreePath path, Object newValue) {
+		if (!(newValue instanceof String)) {
+			return;
+		}
+		String newName = (String)newValue;
+		try {
+			if (newName == null || newName.length() == 0) {
+				return;
+			}
+			Object obj = path.getLastPathComponent();
+			if (obj == null || !(obj instanceof BioModelNode)) {
+				return;
+			}
+			BioModelNode selectedNode = (BioModelNode) obj;
+			Object userObject = selectedNode.getUserObject();
+			if (userObject instanceof ReactionStep) {
+				((ReactionStep) userObject).setName(newName);
+			} else if (userObject instanceof Structure) {
+				((Structure) userObject).setName(newName);
+			} else if (userObject instanceof SpeciesContext) {
+				((SpeciesContext) userObject).setName(newName);
+			} else if (userObject instanceof ModelParameter) {
+				((ModelParameter) userObject).setName(newName);
+			} else if (userObject instanceof SimulationContext) {
+				((SimulationContext) userObject).setName(newName);
+			} else if (userObject instanceof Simulation) {
+				((Simulation) userObject).setName(newName);
+			} else if (userObject instanceof BioEvent) {
+				((BioEvent) userObject).setName(newName);
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(ownerTree, ex.getMessage());			
 		}
 	}
 }

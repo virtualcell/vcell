@@ -3,6 +3,18 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.util.Map;
+
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphModelPreferences;
@@ -13,14 +25,6 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.model.InUseException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.util.Map;
-
-import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
 public class SpeciesContextShape extends ElipseShape {
 	SpeciesContext speciesContext = null;
@@ -28,6 +32,7 @@ public class SpeciesContextShape extends ElipseShape {
 	public static final int DIAMETER = 2*RADIUS;
 	private static final int SMALL_DIAMETER = DIAMETER-1;
 	private Color darkerBackground = null;
+	private Area icon = null;
 
 	private static final int SCS_LABEL_WIDTHPARM = 3;
 	private static final String SCS_LABEL_TRUCATED = "...";
@@ -110,13 +115,27 @@ public class SpeciesContextShape extends ElipseShape {
 		if(sc.getSpecies().getDBSpecies() != null || bHasPCLink){
 			isBound = true;
 		}
-		// draw elipse
+		
+		int circleDiameter = 14;
+		int shapeHeight = getSpaceManager().getSize().height;
+		int shapeWidth = getSpaceManager().getSize().width;
+		int offsetX = (shapeWidth-circleDiameter) / 2;
+		int offsetY = (shapeHeight-circleDiameter) / 2;
+		Graphics2D g2D = g;
+		if (icon == null) {
+			icon = new Area();
+			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY,circleDiameter,circleDiameter)));
+			//icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
+		}
+		Area movedIcon = icon.createTransformedArea(
+			AffineTransform.getTranslateInstance(absPosX, absPosY));
+
 		g.setColor((!isBound && !isSelected()?darkerBackground:backgroundColor));
-		g.fillOval(absPosX + 1, absPosY + 1 + getLabelPos().y, SMALL_DIAMETER, SMALL_DIAMETER);
+		g2D.fill(movedIcon);
 		g.setColor(forgroundColor);
-		g.drawOval(absPosX, absPosY + getLabelPos().y, DIAMETER, DIAMETER);
+		g2D.draw(movedIcon);
+		
 		// draw label
-		g.setColor(forgroundColor);
 		if (getLabel()!=null && getLabel().length()>0){
 			if(isSelected()){//clear background and outline to make selected label stand out
 				drawRaisedOutline(

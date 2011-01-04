@@ -12,14 +12,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeCellRenderer;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mathmodel.MathModel;
  
 @SuppressWarnings("serial")
 public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
-	private MathModel mathModel = null;
+//	private MathModel mathModel = null;
 	private Icon mathModelIcon = null;
 	
 	public MathModelEditorTreeCellRenderer(JTree tree) {
@@ -31,9 +29,9 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 		}
 	}
 
-	public void setMathModel(MathModel mm) {
-		mathModel = mm;
-	}
+//	public void setMathModel(MathModel mm) {
+//		mathModel = mm;
+//	}
 	
 	public Component getTreeCellRendererComponent(
                         JTree tree,
@@ -58,18 +56,18 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 	    		font = boldFont;
 	    		icon = mathModelIcon;
 	    		labelText = ((MathModel)userObj).getName();
-	        } else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
-	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
-	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
-	    		if (folderClass == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {
-	    			bChange = true;
-	    			String description = mathModel.getDescription();
-	    			if (description == null || description.trim().length() == 0) {	    				
-	    				labelText = "(click to edit notes)";
-	    			} else {
-	    				labelText = description.trim();
-	    			}		    		
-	    		}
+//	        } else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
+//	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
+//	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
+//	    		if (folderClass == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {
+//	    			bChange = true;
+//	    			String description = mathModel.getDescription();
+//	    			if (description == null || description.trim().length() == 0) {
+//	    				labelText = "(click to edit notes)";
+//	    			} else {
+//	    				labelText = description.trim();
+//	    			}
+//	    		}
 	        }
 		}
     	if (bChange) {

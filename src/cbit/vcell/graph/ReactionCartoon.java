@@ -4,6 +4,14 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  */
+import java.awt.Graphics2D;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphPane;
@@ -23,11 +31,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-
-import java.awt.Graphics2D;
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ReactionCartoon extends ModelCartoon {
 
@@ -120,6 +123,15 @@ public class ReactionCartoon extends ModelCartoon {
 		refreshAll();
 	}
 
+	private static Integer getStructureLevel(Structure s) {
+		Structure s0 = s;
+		int level = 0;
+		while (s0 != null) {
+			level += 1;
+			s0 = s0.getParentStructure();
+		}
+		return level;
+	}
 	@Override
 	public void refreshAll() {
 		try {
@@ -132,8 +144,15 @@ public class ReactionCartoon extends ModelCartoon {
 			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
 			List<ReactionContainerShape> reactionContainerShapeList = 
 				new ArrayList<ReactionContainerShape>();
+			List<Structure> structureList = new ArrayList<Structure>(getStructureSuite().getStructures());
+			Collections.sort(structureList, new Comparator<Structure>() {
+
+				public int compare(Structure o1, Structure o2) {
+					 return getStructureLevel(o1).compareTo(getStructureLevel(o2));
+				}
+			});
 			// create all ReactionContainerShapes (one for each Structure)
-			for(Structure structure : getStructureSuite().getStructures()) {
+			for(Structure structure : structureList) {
 				if (structure instanceof Membrane) {
 					Membrane membrane = (Membrane) structure;
 					ReactionContainerShape membraneShape = 

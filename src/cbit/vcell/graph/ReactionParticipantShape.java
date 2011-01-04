@@ -3,18 +3,19 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  */
-import cbit.gui.graph.EdgeShape;
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.Shape;
-import cbit.vcell.model.ReactionParticipant;
-
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
+
+import cbit.gui.graph.EdgeShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.Shape;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReactionParticipant;
 
 public abstract class ReactionParticipantShape extends EdgeShape {
 	protected ReactionParticipant reactionParticipant = null;
@@ -126,7 +127,24 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		} else {
 			g2D.draw(cubicCurve);
 		}
-		if (this instanceof ProductShape || (this instanceof FluxShape && ( cubicCurve.getP1().getX() > cubicCurve.getP2().getX()))) {
+		int arrowDirection = 0;
+		if (this instanceof ProductShape){
+			arrowDirection = 1;
+		}
+		if (this instanceof ReactantShape){
+			arrowDirection = -1;
+		}
+		if (this instanceof FluxShape){
+			FluxShape fluxShape = (FluxShape)this;
+			if (fluxShape.getReactionStepShape() != null && reactionParticipant != null) {
+				if (reactionParticipant.getSpeciesContext().getStructure() == ((Membrane)getReactionStepShape().getReactionStep().getStructure()).getInsideFeature()) {
+					arrowDirection = 1;
+				} else {
+					arrowDirection = -1;
+				}
+			}
+		}
+		if (arrowDirection == 1) {
 			double arcLength = integrateArcLength(cubicCurve, 0.0, 1.0, 10);
 			double centerT = getParameterAtArcLength(cubicCurve, 0.0, 1.0, arcLength/2, 20);
 			Point2D center = evaluate(cubicCurve, centerT);
@@ -134,10 +152,10 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 			Point2D back = evaluate(cubicCurve, backT);
 			double frontT = intersectWithCircle(cubicCurve, centerT, 0.0, center.getX(), center.getY(), 4);
 			Point2D front = evaluate(cubicCurve,frontT);
-			GeneralPath arrow = getArrow(front, back, 8);
+			GeneralPath arrow = getArrow(front, back, 7);
 			g2D.fill(arrow);
 		}
-		if (this instanceof ReactantShape || (this instanceof FluxShape && ( cubicCurve.getP1().getX()< cubicCurve.getP2().getX()))){
+		if (arrowDirection == -1){
 			double arcLength = integrateArcLength(cubicCurve, 0.0, 1.0, 10);
 			double centerT = getParameterAtArcLength(cubicCurve, 0.0, 1.0, arcLength/2, 20);
 			Point2D center = evaluate(cubicCurve, centerT);
@@ -145,7 +163,7 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 			Point2D back = evaluate(cubicCurve, backT);
 			double frontT = intersectWithCircle(cubicCurve, centerT, 1.0, center.getX(), center.getY(), 4);
 			Point2D front = evaluate(cubicCurve,frontT);
-			GeneralPath arrow = getArrow(front,back,7);
+			GeneralPath arrow = getArrow(front,back,6);
 			g2D.fill(arrow);
 		}
 		// draw label

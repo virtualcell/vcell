@@ -160,25 +160,25 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return getReactionCartoonTool().getDocumentManager();
 	}
 
-	private JToolBarToggleButton getFluxButton() {
-		if (fluxButton == null) {
-			try {
-				fluxButton = new JToolBarToggleButton();
-				fluxButton.setName("FluxButton");
-				fluxButton.setToolTipText("Flux Tool");
-				fluxButton.setText("");
-				fluxButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				fluxButton.setActionCommand(Mode.FLUX.getActionCommand());
-				fluxButton.setIcon(new ImageIcon(getClass().getResource("/images/flux.gif")));
-				fluxButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				fluxButton.setEnabled(true);
-				fluxButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return fluxButton;
-	}
+//	private JToolBarToggleButton getFluxButton() {
+//		if (fluxButton == null) {
+//			try {
+//				fluxButton = new JToolBarToggleButton();
+//				fluxButton.setName("FluxButton");
+//				fluxButton.setToolTipText("Flux Tool");
+//				fluxButton.setText("");
+//				fluxButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+//				fluxButton.setActionCommand(Mode.FLUX.getActionCommand());
+//				fluxButton.setIcon(new ImageIcon(getClass().getResource("/images/flux.gif")));
+//				fluxButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+//				fluxButton.setEnabled(true);
+//				fluxButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+//			} catch (Throwable throwable) {
+//				handleException(throwable);
+//			}
+//		}
+//		return fluxButton;
+//	}
 
 	private JButton getGlgLayoutJButton() {
 		if (glgLayoutJButton == null) {
@@ -239,10 +239,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
-				getJToolBar().add(getStepButton(), getStepButton().getName());
-				getJToolBar().add(getFluxButton(), getFluxButton().getName());
-				getJToolBar().add(getLineButton(), getLineButton().getName());
+				//getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
+				//getJToolBar().add(getStepButton(), getStepButton().getName());
+				//getJToolBar().add(getFluxButton(), getFluxButton().getName());
+				//getJToolBar().add(getLineButton(), getLineButton().getName());
 				getJToolBar().add(getLineDirectedButton(), getLineDirectedButton().getName());
 				getJToolBar().add(getLineCatalystButton(), getLineCatalystButton().getName());
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
@@ -281,24 +281,24 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return levellerLayoutButton;
 	}
 
-	private JToolBarToggleButton getLineButton() {
-		if (lineButton == null) {
-			try {
-				lineButton = new JToolBarToggleButton();
-				lineButton.setName("LineButton");
-				lineButton.setToolTipText("RX Connection Tool");
-				lineButton.setText("");
-				lineButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				lineButton.setActionCommand(Mode.LINE.getActionCommand());
-				lineButton.setIcon(new ImageIcon(getClass().getResource("/images/line.gif")));
-				lineButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				lineButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return lineButton;
-	}
+//	private JToolBarToggleButton getLineButton() {
+//		if (lineButton == null) {
+//			try {
+//				lineButton = new JToolBarToggleButton();
+//				lineButton.setName("LineButton");
+//				lineButton.setToolTipText("RX Connection Tool");
+//				lineButton.setText("");
+//				lineButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+//				lineButton.setActionCommand(Mode.LINE.getActionCommand());
+//				lineButton.setIcon(new ImageIcon(getClass().getResource("/images/line.gif")));
+//				lineButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+//				lineButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+//			} catch (Throwable throwable) {
+//				handleException(throwable);
+//			}
+//		}
+//		return lineButton;
+//	}
 
 	private JToolBarToggleButton getLineDirectedButton() {
 		if (lineDirectedButton == null) {
@@ -430,53 +430,53 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if(modeButtons == null) {
 			modeButtons = new ArrayList<JToolBarToggleButton>();
 			modeButtons.add(getSelectButton());
-			modeButtons.add(getSpeciesButton());
-			modeButtons.add(getStepButton());
-			modeButtons.add(getFluxButton());
-			modeButtons.add(getLineButton());
+			//modeButtons.add(getSpeciesButton());
+			//modeButtons.add(getStepButton());
+			//modeButtons.add(getFluxButton());
+			//modeButtons.add(getLineButton());
 			modeButtons.add(getLineDirectedButton());
 			modeButtons.add(getLineCatalystButton());
 		}
 		return modeButtons;
 	}
 
-	private JToolBarToggleButton getSpeciesButton() {
-		if (speciesButton == null) {
-			try {
-				speciesButton = new JToolBarToggleButton();
-				speciesButton.setName("SpeciesButton");
-				speciesButton.setToolTipText("Species Tool");
-				speciesButton.setText("");
-				speciesButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				speciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
-				speciesButton.setIcon(new ImageIcon(getClass().getResource("/images/species.gif")));
-				speciesButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				speciesButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return speciesButton;
-	}
+//	private JToolBarToggleButton getSpeciesButton() {
+//		if (speciesButton == null) {
+//			try {
+//				speciesButton = new JToolBarToggleButton();
+//				speciesButton.setName("SpeciesButton");
+//				speciesButton.setToolTipText("Species Tool");
+//				speciesButton.setText("");
+//				speciesButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+//				speciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
+//				speciesButton.setIcon(new ImageIcon(getClass().getResource("/images/species.gif")));
+//				speciesButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+//				speciesButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+//			} catch (Throwable throwable) {
+//				handleException(throwable);
+//			}
+//		}
+//		return speciesButton;
+//	}
 
-	private JToolBarToggleButton getStepButton() {
-		if (stepButton == null) {
-			try {
-				stepButton = new JToolBarToggleButton();
-				stepButton.setName("StepButton");
-				stepButton.setToolTipText("Reaction Tool");
-				stepButton.setText("");
-				stepButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				stepButton.setActionCommand(Mode.STEP.getActionCommand());
-				stepButton.setIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
-				stepButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				stepButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return stepButton;
-	}
+//	private JToolBarToggleButton getStepButton() {
+//		if (stepButton == null) {
+//			try {
+//				stepButton = new JToolBarToggleButton();
+//				stepButton.setName("StepButton");
+//				stepButton.setToolTipText("Reaction Tool");
+//				stepButton.setText("");
+//				stepButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+//				stepButton.setActionCommand(Mode.STEP.getActionCommand());
+//				stepButton.setIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
+//				stepButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+//				stepButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+//			} catch (Throwable throwable) {
+//				handleException(throwable);
+//			}
+//		}
+//		return stepButton;
+//	}
 
 	private JButton getZoomInButton() {
 		if (zoomInButton == null) {
@@ -592,13 +592,13 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			
 			add(panel, BorderLayout.NORTH);
 			initConnections();
-			getModeButtonGroup().add(getStepButton());
-			getModeButtonGroup().add(getFluxButton());
-			getModeButtonGroup().add(getLineButton());
+			//getModeButtonGroup().add(getStepButton());
+			//getModeButtonGroup().add(getFluxButton());
+			//getModeButtonGroup().add(getLineButton());
 			getModeButtonGroup().add(getLineDirectedButton());
 			getModeButtonGroup().add(getLineCatalystButton());
 			getModeButtonGroup().add(getSelectButton());
-			getModeButtonGroup().add(getSpeciesButton());
+			//getModeButtonGroup().add(getSpeciesButton());
 			getReactionCartoonTool().setReactionCartoon(getReactionCartoon());
 			getReactionCartoonTool().setGraphPane(getGraphPane());
 			getReactionCartoonTool().setButtonGroup(getModeButtonGroup());

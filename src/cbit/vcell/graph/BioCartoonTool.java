@@ -591,7 +591,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				//see if we have SpeciesContext
 				SpeciesContext speciesContext = pasteToModel.getSpeciesContext(newSpecies,preferredToStructure);
 				if(speciesContext == null){ //Has Species but not SpeciesContext
-					pasteToModel.addSpeciesContext(newSpecies,preferredToStructure);
+					speciesContext = pasteToModel.addSpeciesContext(newSpecies,preferredToStructure);
+					speciesContext.setName(newSpecies.getCommonName());
 				}
 			}catch(Exception e){
 				DialogUtils.showErrorDialog(parent, e.getMessage(), e);

@@ -20,19 +20,19 @@ import cbit.vcell.solver.Simulation;
 public class MathModelEditorTreeModel extends DocumentEditorTreeModel {
 	private MathModel mathModel = null;	
 	private DocumentEditorTreeFolderNode mathModelChildFolderNodes[] = {
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE, true),
+//			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_VCML_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, true),
 		};
-	private BioModelNode annotationNode = new BioModelNode(mathModelChildFolderNodes[0], false);
-	private BioModelNode vcmlNode = new BioModelNode(mathModelChildFolderNodes[1], false);
-	private BioModelNode geometryNode = new BioModelNode(mathModelChildFolderNodes[2], false);
-	private BioModelNode simulationsNode = new BioModelNode(mathModelChildFolderNodes[3], true);	
-	private BioModelNode outputFunctionsNode = new BioModelNode(mathModelChildFolderNodes[4], true);	
+//	private BioModelNode annotationNode = new BioModelNode(mathModelChildFolderNodes[0], false);
+	private BioModelNode vcmlNode = new BioModelNode(mathModelChildFolderNodes[0], false);
+	private BioModelNode geometryNode = new BioModelNode(mathModelChildFolderNodes[1], false);
+	private BioModelNode simulationsNode = new BioModelNode(mathModelChildFolderNodes[2], true);	
+	private BioModelNode outputFunctionsNode = new BioModelNode(mathModelChildFolderNodes[3], true);	
 	private BioModelNode  mathModelChildNodes[] = {
-			annotationNode,
+//			annotationNode,
 			vcmlNode,
 			geometryNode,
 			simulationsNode,
