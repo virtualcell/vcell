@@ -38,6 +38,7 @@ public class MicroscopyXMLTags {
     public static final String FrapModelsTag = "FrapModels";
     public static final String DiffustionWithOneComponentModelTag = "DiffustionWithOneComponentModel";
     public static final String DiffustionWithTwoComponentsModelTag = "DiffustionWithTwoComponentsModel";
+    public static final String ReactionDominantOffRateModelTag = "ReactionDominantOffRateModel";
     public static final String DiffustionReactionModelTag = "DiffustionReactionModel";
     public static final String ModelParametersTag = "ModelParameters";
     public static final String ModelDataTag = "ModelData";
@@ -69,6 +70,7 @@ public class MicroscopyXMLTags {
 	//profie data
 	public static final String ListOfProfileData_OneDiffTag = "ListOfProfileData_oneDiffusingComponent";
 	public static final String ListOfProfileData_TwoDiffTag = "ListOfProfileData_twoDiffusingComponents";
+	public static final String ListOfProfileData_ReacOffRateTag = "ListOfProfileData_reactionOffRate";
 	public static final String ProfileDataTag = "ProfileData";
 	public static final String ProfieDataElementTag = "ProfileDataElement";
 	public static final String profileDataElementParameterNameAttrTag = "ParamName";

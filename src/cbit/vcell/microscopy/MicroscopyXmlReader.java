@@ -389,6 +389,11 @@ public class MicroscopyXmlReader {
 		{
 			frapStudy.setProfileData_twoDiffComponents(getProfileDataList(profileData_twoDiffElement));
 		}
+		Element profileData_reacOffRateElement = param.getChild(MicroscopyXMLTags.ListOfProfileData_ReacOffRateTag);
+		if(profileData_reacOffRateElement != null)
+		{
+			frapStudy.setProfileData_reactionOffRate(getProfileDataList(profileData_reacOffRateElement));
+		}
 		return frapStudy;
 	}
 	
@@ -415,6 +420,17 @@ public class MicroscopyXmlReader {
 			if(paramElement != null)
 			{
 				frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
+			}
+		}
+		Element reacOffRateElement = frapModelElement.getChild(MicroscopyXMLTags.ReactionDominantOffRateModelTag);
+		if(reacOffRateElement != null)
+		{
+			String id = reacOffRateElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
+			frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = new FRAPModel(id, null, null, null);
+			Element paramElement = reacOffRateElement.getChild(MicroscopyXMLTags.ModelParametersTag);
+			if(paramElement != null)
+			{
+				frapModels[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_REACTION_OFF_RATE));
 			}
 		}
 //		Element diffReacElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionReactionModelTag);
@@ -509,7 +525,34 @@ public class MicroscopyXmlReader {
 														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 										                secFraction);
 			
-			
+			return params;
+		}
+		else if(modelType ==FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		{ 
+			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE];
+			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
+			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										                FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										                FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+										                bwmRate); 
+			double fittingParam = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag));
+			params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION], 
+										                FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
+										                FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
+										                FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(), 
+										                fittingParam);
+			double offRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag));
+			params[FRAPModel.INDEX_OFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE], 
+										                FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
+										                FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
+										                FRAPModel.REF_REACTION_OFF_RATE.getScale(), 
+										                offRate);
+			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = null;
+			params[FRAPModel.INDEX_PRIMARY_FRACTION] = null;
+			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] =  null;
+			params[FRAPModel.INDEX_SECONDARY_FRACTION] = null;
+			params[FRAPModel.INDEX_ON_RATE] = null;
 			
 			return params;
 		}

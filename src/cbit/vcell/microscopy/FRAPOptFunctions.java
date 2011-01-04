@@ -142,6 +142,7 @@ public class FRAPOptFunctions
 		return weightedError;
 	}
 	
+	//profileData array contains only two profile distribution, one for bleachWhileMonitoringRate and another for reaction off rate
 	public ProfileData[] evaluateParameters(Parameter[] currentParams, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		int totalParamLen = currentParams.length;
