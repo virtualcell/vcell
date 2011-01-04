@@ -423,6 +423,10 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 			{
 				frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]));
 			}
+			if(param.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null)
+			{
+				frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]));
+			}
 			if(param.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
 			{
 				frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING]));
@@ -451,12 +455,16 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 		//Get profile data for one diffusing component (list of profile data, one for each parameter)
 		if(param.getProfileData_oneDiffComponent()!= null)
 		{
-			frapStudyNode.addContent(getXML(param.getProfileData_oneDiffComponent(), true));
+			frapStudyNode.addContent(getXML(param.getProfileData_oneDiffComponent(), MicroscopyXMLTags.ListOfProfileData_OneDiffTag));
 		}
 		if(param.getProfileData_twoDiffComponents()!= null)
 		{
-			frapStudyNode.addContent(getXML(param.getProfileData_twoDiffComponents(), false));
-		}	
+			frapStudyNode.addContent(getXML(param.getProfileData_twoDiffComponents(), MicroscopyXMLTags.ListOfProfileData_TwoDiffTag));
+		}
+		if(param.getProfileData_reactionOffRate()!= null)
+		{
+			frapStudyNode.addContent(getXML(param.getProfileData_reactionOffRate(), MicroscopyXMLTags.ListOfProfileData_ReacOffRateTag));
+		}
 		//Get BioModel
 		if (param.getBioModel()!=null){
 			frapStudyNode.addContent( vcellXMLProducer.getXML(param.getBioModel()) );
@@ -491,6 +499,16 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 				diffTwoModelNode.addContent(getXML(param.getModelParameters()));
 			}
 			return diffTwoModelNode;
+		}
+		else if(param.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]))
+		{
+			Element reacOffRateModelNode = new Element(MicroscopyXMLTags.ReactionDominantOffRateModelTag);
+			reacOffRateModelNode.setAttribute(MicroscopyXMLTags.ModelIdentifierAttTag, param.getModelIdentifer());
+			if(param.getModelParameters() != null)
+			{
+				reacOffRateModelNode.addContent(getXML(param.getModelParameters()));
+			}
+			return reacOffRateModelNode;
 		}
 		else if(param.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING]))
 		{
@@ -533,6 +551,11 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 			parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
 			parametersNode.setAttribute(MicroscopyXMLTags.SecondRateAttrTag, params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
 			parametersNode.setAttribute(MicroscopyXMLTags.SecondFractionAttTag, params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
+		}else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE)
+		{
+			parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+			parametersNode.setAttribute(MicroscopyXMLTags.BindingSiteConcentrationAttTag, params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() + "");
+			parametersNode.setAttribute(MicroscopyXMLTags.ReactionOffRateAttTag, params[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
 		}
 		else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_BINDING)
 		{
@@ -564,17 +587,10 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 		return timePointsNode;
 	}
 
-	private static Element getXML(ProfileData[] profileData, boolean bDiffOne)
+	private static Element getXML(ProfileData[] profileData, String profileDataTag)
 	{
-		Element listProfileData = null;
-		if(bDiffOne)
-		{
-			listProfileData = new Element(MicroscopyXMLTags.ListOfProfileData_OneDiffTag);
-		}
-		else
-		{
-			listProfileData = new Element(MicroscopyXMLTags.ListOfProfileData_TwoDiffTag);
-		}
+		Element listProfileData = new Element(profileDataTag);
+
 		for(int i=0; i<profileData.length; i++)
 		{
 			listProfileData.addContent(getXML(profileData[i]));
@@ -602,7 +618,10 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 		Parameter[] parameters = profileDataElement.getBestParameters();
 		for(int i = 0; i < parameters.length; i++)
 		{
-			profileDataElementNode.addContent(getXML(parameters[i]));
+			if(parameters[i] != null)//some of parameters in reaction off rate model are null.
+			{
+				profileDataElementNode.addContent(getXML(parameters[i]));
+			}
 		}
 		return profileDataElementNode;
 	}
