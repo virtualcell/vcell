@@ -172,7 +172,7 @@ public class VisitProcess {
 	
 	public static void waitNSecs(int n){for (int i=1;i<n;i++) {waitASec();}}
 	
-	public VisitProcess() {
+	public VisitProcess(String visitPath) {
 		String execCommand = "python -i";
 		//String execCommand = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/bin/cli"; 
 		try {
@@ -185,7 +185,8 @@ public class VisitProcess {
 		waitASec();
 		sendCommandAndNoteResponse("import sys\n");
 		sendCommandAndNoteResponse("import os\n");
-		sendCommandAndNoteResponse("sys.path.append(\"/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/\")\n");
+		//sendCommandAndNoteResponse("sys.path.append(\"/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/\")\n");
+		sendCommandAndNoteResponse("sys.path.append(\""+visitPath+"\")\n");
 		sendCommandAndNoteResponse("import visit\n");
 		sendCommandAndNoteResponse("from visit import *\n");
 		//sendCommandAndNoteResponse("visit.AddArgument(\"-gui\"\n");
@@ -220,7 +221,7 @@ public class VisitProcess {
 		//testSend(VisitPythonCommand.OpenMDServer("10.84.11.40"));
 		testSend(VisitPythonCommand.OpenDatabase("/home/VCELL/eboyce/visit2_1_1/data/globe.silo"));
 		testSend(VisitPythonCommand.AddPlot("Pseudocolor","u"));
-		testSend(VisitPythonCommand.Drawplots());
+		testSend(VisitPythonCommand.DrawPlots());
 		
 		
 		//System.out.println("About to execute visit.Launch()");

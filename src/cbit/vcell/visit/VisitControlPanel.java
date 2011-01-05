@@ -23,13 +23,19 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class VisitControlPanel extends JPanel {
-	Origin origin;
-	Extent extent;
-	JComboBox comboBox = new JComboBox();
+	private JSlider slider = new JSlider();
+
+	private Origin origin;
+	private Extent extent;
+	private JComboBox comboBox = new JComboBox();
 	private PDEDataContext pdeDataContext;
 	private JTextField textField;
 	private DataIdentifier dataIdentifier;
@@ -38,13 +44,16 @@ public class VisitControlPanel extends JPanel {
     private JTextArea jTextArea = new JTextArea();
     private String[] commandHistory = new String[2000]; //TODO: replace this with a more intelligent container
     private int commandIndex, maxCommandIndex= 0;
+    private int numberOfOpenPlots=0;
+    private String selectedVariable= null;
+
 	/**
 	 * Create the panel.
 	 */
 	public VisitControlPanel() {
 		commandHistory[0]="";
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{1.0};
 		setLayout(gridBagLayout);
 		
@@ -96,6 +105,11 @@ public class VisitControlPanel extends JPanel {
 				init(dataIdentifier, visitProcess);
 			}
 		});*/
+		comboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				selectedVariable=(String)comboBox.getSelectedItem();
+			}
+		});
 		
 		panel.add(comboBox, gbc_comboBox);
 		
@@ -103,7 +117,9 @@ public class VisitControlPanel extends JPanel {
 		btnClearPlots.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Trying to delete all plots");
-				VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());			}
+				VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());	
+				numberOfOpenPlots=0;
+				}
 		});
 		GridBagConstraints gbc_btnClearPlots = new GridBagConstraints();
 		gbc_btnClearPlots.insets = new Insets(0, 0, 5, 0);
@@ -112,13 +128,84 @@ public class VisitControlPanel extends JPanel {
 		panel.add(btnClearPlots, gbc_btnClearPlots);
 		
 		JButton btnAddPlot = new JButton("Add Plot");
+		btnAddPlot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (selectedVariable != null) {
+					numberOfOpenPlots++;
+					VisitProcess.visitCommand(VisitPythonCommand.AddPlot("Pseudocolor", selectedVariable));
+					VisitProcess.visitCommand(VisitPythonCommand.SetActivePlots(String.valueOf(numberOfOpenPlots-1)));
+					VisitProcess.visitCommand(VisitPythonCommand.AddOperator("Transform"));
+					VisitProcess.visitCommand(VisitPythonCommand.makeTransformAttributes("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
+					VisitProcess.visitCommand("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)+".doTranslate=1");
+					System.out.println("I have"+String.valueOf(numberOfOpenPlots)+" open");
+					switch (numberOfOpenPlots) {
+						case 1: {break;
+						}
+						case 2: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(extent.getX()));
+							break;
+						}
+						case 3: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(2*extent.getX()));
+							break;
+						}	
+						case 4: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(3*extent.getX()));
+							break;
+						}	
+						case 5: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(extent.getY()));
+							break;
+						}
+						case 6: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(extent.getY()));
+							break;
+						}
+						case 7: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(2*extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(extent.getY()));
+							break;
+						}	
+						case 8: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(3*extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(extent.getY()));
+							break;
+						}	
+						case 9: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(2*extent.getY()));
+							break;
+						}
+						case 10: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(2*extent.getY()));
+							break;
+						}
+						case 11: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(2*extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(2*extent.getY()));
+							break;
+						}	
+						case 12: {
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateX="+String.valueOf(3*extent.getX()));
+							VisitProcess.visitCommand(("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1))+".translateY="+String.valueOf(2*extent.getY()));
+							break;
+						}	
+						default: {}
+					}
+					VisitProcess.visitCommand(VisitPythonCommand.SetOperatorOptions("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
+					VisitProcess.visitCommand(VisitPythonCommand.DrawPlots());
+					
+				}
+			}
+		});
 		GridBagConstraints gbc_btnAddPlot = new GridBagConstraints();
 		gbc_btnAddPlot.insets = new Insets(0, 0, 5, 0);
 		gbc_btnAddPlot.gridx = 0;
 		gbc_btnAddPlot.gridy = 4;
 		panel.add(btnAddPlot, gbc_btnAddPlot);
 		
-		JButton btnDrawPlot = new JButton("Draw Plot");
+		JButton btnDrawPlot = new JButton("Draw Plots");
 		GridBagConstraints gbc_btnDrawPlot = new GridBagConstraints();
 		gbc_btnDrawPlot.insets = new Insets(0, 0, 5, 0);
 		gbc_btnDrawPlot.gridx = 0;
@@ -137,13 +224,31 @@ public class VisitControlPanel extends JPanel {
 		gbc_btnShowVisitGui.gridy = 6;
 		panel.add(btnShowVisitGui, gbc_btnShowVisitGui);
 		
+		slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				if (!slider.getValueIsAdjusting()) {
+					System.out.println(arg0);
+				}
+			}
+		});
+		slider.setMajorTickSpacing(10);
+		slider.setPaintLabels(true);
+		slider.setPaintTicks(true);
+		GridBagConstraints gbc_slider = new GridBagConstraints();
+		gbc_slider.weighty = 1.0;
+		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_slider.insets = new Insets(0, 0, 5, 0);
+		gbc_slider.gridx = 0;
+		gbc_slider.gridy = 2;
+		add(slider, gbc_slider);
+		
 		JPanel panel_1 = new JPanel();
 		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
 		gbc_panel_1.weighty = 1.0;
 		gbc_panel_1.weightx = 1.0;
 		gbc_panel_1.fill = GridBagConstraints.BOTH;
 		gbc_panel_1.gridx = 0;
-		gbc_panel_1.gridy = 2;
+		gbc_panel_1.gridy = 3;
 		add(panel_1, gbc_panel_1);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		panel_1.setLayout(gbl_panel_1);
@@ -240,10 +345,17 @@ public class VisitControlPanel extends JPanel {
 	public void setPdeDataContext(PDEDataContext pdeDataContext, Origin origin, Extent extent) {
 		this.origin = origin;
 		this.extent = extent;
+		
 		this.pdeDataContext = pdeDataContext;
 		comboBox.removeAllItems();
 		for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
 			comboBox.addItem(pdeDataContext.getDataIdentifiers()[i].getName());
 		}
+		
+		slider.setMinimum(0);
+		slider.setMaximum(pdeDataContext.getTimePoints().length-1);
+		
+		slider.setMinorTickSpacing(1);
+		slider.setMajorTickSpacing(10);
 	}
 }
