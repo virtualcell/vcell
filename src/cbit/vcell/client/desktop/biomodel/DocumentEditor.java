@@ -144,18 +144,21 @@ public abstract class DocumentEditor extends JPanel {
 		
 		public void mouseClicked(MouseEvent e) {
 			TreePath oldClickPath = mouseClickPath;
-			long oldClickTimeStamp = mouseClickPathTimeStamp;
-			mouseClickPathTimeStamp = System.currentTimeMillis();
+			long oldClickTimeStamp = mouseClickPathTimeStamp;			
 			mouseClickPath = null;
 			if (e.getClickCount() == 1) {
-				if (mouseClickPathTimeStamp - oldClickTimeStamp > 2000) {
+				if (!isClickPathSelected(e)) {
 					return;
 				}
 				TreePath[] newClickPaths = documentEditorTree.getSelectionPaths();
 				if (newClickPaths != null && newClickPaths.length == 1) {
 					mouseClickPath = newClickPaths[0];
+					mouseClickPathTimeStamp = System.currentTimeMillis();
 				}
 				if (oldClickPath != null && mouseClickPath != null && oldClickPath.getLastPathComponent() == mouseClickPath.getLastPathComponent()) {
+					if (mouseClickPathTimeStamp - oldClickTimeStamp > 2000) {
+						return;
+					}
 					if (isRenamable(mouseClickPath)) {
 						documentEditorTree.startEditingAtPath(mouseClickPath);
 					}
@@ -205,32 +208,35 @@ public void onSelectedObjectsChange() {
 	setRightBottomPanelOnSelection(selectedObjects);
 }
 
+private boolean isClickPathSelected(MouseEvent e) {
+	Point mousePoint = e.getPoint();
+	TreePath path = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
+    if (path == null) {
+    	return false; 
+    }
+	Object rightClickNode = path.getLastPathComponent();
+	if (rightClickNode == null || !(rightClickNode instanceof BioModelNode)) {
+		return false;
+	}
+	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
+	if (selectedPaths == null || selectedPaths.length == 0) {
+		return false;
+	} 
+	boolean bFound = false;
+	for (TreePath tp : selectedPaths) {
+		if (tp.equals(path)) {
+			bFound = true;
+			break;
+		}
+	}
+	return bFound;
+}
 private void documentEditorTree_tryPopupTrigger(MouseEvent e) {
 	if (e.isPopupTrigger()) {	
-		Point mousePoint = e.getPoint();
-		TreePath path = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
-	    if (path == null) {
-	    	return; 
-	    }
-		Object rightClickNode = path.getLastPathComponent();
-		if (rightClickNode == null || !(rightClickNode instanceof BioModelNode)) {
-			return;
+		if (isClickPathSelected(e)) {
+			Point mousePoint = e.getPoint();
+			getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
 		}
-		TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
-		if (selectedPaths == null || selectedPaths.length == 0) {
-			return;
-		} 
-		boolean bFound = false;
-		for (TreePath tp : selectedPaths) {
-			if (tp.equals(path)) {
-				bFound = true;
-				break;
-			}
-		}
-		if (!bFound) {
-			return;
-		}
-		getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
 	}
 }	
 

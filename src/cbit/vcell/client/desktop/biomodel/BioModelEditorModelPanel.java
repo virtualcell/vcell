@@ -551,7 +551,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} else if (selectedTabComponent == speciesTable.getEnclosingScrollPane()) {
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
-		} else if (selectedTabComponent == parametersTable.getEnclosingScrollPane()) {
+		} else if (selectedTabComponent == parameterPanel) {
 			currentSelectedTable = parametersTable;
 			currentSelectedTableModel = parametersTableModel;
 		}

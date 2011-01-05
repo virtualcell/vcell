@@ -487,7 +487,7 @@ private class SelectPoint {
 }
 
 private void writeSurfacesAndCompartments() throws SolverException {
-	boolean DEBUG = true;
+	boolean DEBUG = false;
 	
 	PrintWriter tmppw = null;  
 	try {

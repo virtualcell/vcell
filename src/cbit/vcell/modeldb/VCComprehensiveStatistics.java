@@ -204,9 +204,9 @@ public class VCComprehensiveStatistics {
 			statOutputPW.println("total BioModel simulations run : " + totalBioModelSimulations);
 			statOutputPW.println("total MathModel saved : " + totalMathModels);
 			statOutputPW.println("total MathModel simulations run : " + totalMathModelSimulations);
-			statOutputPW.println("total BioModels and MathModels : " + totalBioModels + totalMathModels);
-			statOutputPW.println("total simulations run : " + totalBioModelSimulations + totalMathModelSimulations);
-			statOutputPW.flush();			
+			statOutputPW.println("total BioModels and MathModels : " + (totalBioModels + totalMathModels));
+			statOutputPW.println("total simulations run : " + (totalBioModelSimulations + totalMathModelSimulations));
+			statOutputPW.flush();
 		} finally {
 			if (statOutputPW != null) {
 				statOutputPW.close();
@@ -572,9 +572,9 @@ public class VCComprehensiveStatistics {
 		
 		statOutputPW.println("\tTotal users (both internal and outside users)");
 		statOutputPW.println("========================================");		
-		statOutputPW.println("number of users in last 1 month  :\t" + in_count1mon + out_count1mon);
-		statOutputPW.println("number of users in last 3 months :\t" + in_count3mon + out_count3mon);
-		statOutputPW.println("number of users in last 6 months :\t" + in_count6mon + out_count6mon);
+		statOutputPW.println("number of users in last 1 month  :\t" + (in_count1mon + out_count1mon));
+		statOutputPW.println("number of users in last 3 months :\t" + (in_count3mon + out_count3mon));
+		statOutputPW.println("number of users in last 6 months :\t" + (in_count6mon + out_count6mon));
 		statOutputPW.println("number of users in more than 6 months :\t" + (in_countrest + out_countrest));
 		statOutputPW.println();
 		statOutputPW.flush();
