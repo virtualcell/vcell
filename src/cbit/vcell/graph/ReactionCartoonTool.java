@@ -573,7 +573,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			switch (mode) {
 			case SELECT: {
 				Point worldPoint = screenToWorld(event.getX(), event.getY());
-				if (bMoving &&  !(movingShape instanceof  ReactionContainerShape)) {
+				if (bMoving) {
+					if(movingShape instanceof  ReactionContainerShape)
+					{
+						bMoving = false;
+						return;
+					}
 					List<Shape> selectedShapes = getReactionCartoon().getSelectedShapes();
 					// constrain to stay within the corresponding parent for the
 					// "movingShape" as well as all other selected (hence
@@ -662,31 +667,31 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						movingShape = shape;
 						movingPointWorld = shape.getSpaceManager().getAbsLoc();
 						movingOffsetWorld = new Point(worldPoint.x-movingPointWorld.x,worldPoint.y-movingPointWorld.y);
-//						if (movingShape instanceof ReactionContainerShape){
-//							((ReactionContainerShape)movingShape).isBeingDragged = true;
-//						}
+						if (movingShape instanceof ReactionContainerShape){
+							((ReactionContainerShape)movingShape).isBeingDragged = true;
+						}
 					} 
-//					else if (shape instanceof ReactionContainerShape || bShift || bCntrl){
-//						bRectStretch = true;
-//						endPointWorld = new Point(worldPoint.x + 1,
-//								worldPoint.y + 1);
-//						rectShape = new RubberBandRectShape(worldPoint,
-//								endPointWorld, getReactionCartoon());
-//						rectShape.setEnd(endPointWorld);
-//						if (!(shape instanceof ReactionContainerShape)) {
-//							shape.getParent().addChildShape(rectShape);
-//						} else {
-//							shape.addChildShape(rectShape);
-//						}
-//						Graphics2D g = (Graphics2D) getGraphPane()
-//								.getGraphics();
-//						AffineTransform oldTransform = g.getTransform();
-//						g.scale(0.01 * getReactionCartoon().getZoomPercent(),
-//								0.01 * getReactionCartoon().getZoomPercent());
-//						g.setXORMode(Color.white);
-//						rectShape.paint(g, 0, 0);
-//						g.setTransform(oldTransform);
-//					}
+					else if (shape instanceof ReactionContainerShape || bShift || bCntrl){
+						bRectStretch = true;
+						endPointWorld = new Point(worldPoint.x + 1,
+								worldPoint.y + 1);
+						rectShape = new RubberBandRectShape(worldPoint,
+								endPointWorld, getReactionCartoon());
+						rectShape.setEnd(endPointWorld);
+						if (!(shape instanceof ReactionContainerShape)) {
+							shape.getParent().addChildShape(rectShape);
+						} else {
+							shape.addChildShape(rectShape);
+						}
+						Graphics2D g = (Graphics2D) getGraphPane()
+								.getGraphics();
+						AffineTransform oldTransform = g.getTransform();
+						g.scale(0.01 * getReactionCartoon().getZoomPercent(),
+								0.01 * getReactionCartoon().getZoomPercent());
+						g.setXORMode(Color.white);
+						rectShape.paint(g, 0, 0);
+						g.setTransform(oldTransform);
+					}
 				}
 				break;
 			}
@@ -830,9 +835,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			case SELECT: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				if (bMoving){
-//					if (movingShape instanceof ReactionContainerShape){
-//						((ReactionContainerShape)movingShape).isBeingDragged = false;
-//					}
+					if (movingShape instanceof ReactionContainerShape){
+						((ReactionContainerShape)movingShape).isBeingDragged = false;
+					}
 					getGraphPane().invalidate();
 					((JViewport) getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();
