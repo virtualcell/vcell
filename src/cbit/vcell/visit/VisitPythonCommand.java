@@ -19,6 +19,7 @@ public final class VisitPythonCommand {
 	private static String quote(String s){return("\""+s+"\"");}
 	private static String parenQuote(String s){return("("+quote(s)+")");}
 	private static String parenInt(int i){return("("+String.valueOf(i)+")");}
+	private static String parenStr(String s){return("("+s+")");}
 	private static String str(int i){return(String.valueOf(i));}
 
 	
@@ -74,7 +75,8 @@ public final class VisitPythonCommand {
 	
 	public static String DeleteWindow() {return("visit.DeleteWindow()");}
 	
-	public static String Drawplots() {return("visit.Drawplots()");}
+	public static String DrawPlots() {return("visit.DrawPlots()");}
+	
 
 	public static String GetCallbackNames() {return("visit.GetCallbackNames");}
 	
@@ -82,6 +84,10 @@ public final class VisitPythonCommand {
 
 	public static String GetLocalHostName() {return("visit.GetLocalHostName()");}
 	public static String GetLocalUserName() {return("visit.GetLocalUserName");}
+	
+	
+	public static String GetNumPlots() {return("GetNumPlots()");}
+	
 	public static String LocalNameSpace() {return("visit.LocalNameSpace()");}
 	public static String OpenComputeEngine() {return("OpenComputeEngine()");}
 	public static String OpenComputeEngine(String hostName) {return("visit.OpenComputeEngine"+parenQuote(hostName));}
@@ -100,8 +106,16 @@ public final class VisitPythonCommand {
 	
 	public static String RegisterCallback(String callbackname, String callback) {return("visit.RegisterCallBack("+quote(callbackname)+","+callback+")");} //note that callback, the name of the actual function, is not surrounded by quotes
 	
+	public static String ResetView(){return("visit.ResetView()");}
+	public static String RestoreSession(String filename, int visitDir){return("visit.RestoreSession("+quote(filename)+","+str(visitDir)+")");}
+	public static String ResizeWindow(int win, int w, int h){return("visit.ResizeWindow("+str(win)+","+str(w)+","+str(h)+")");}
 	public static String SaveSession(String filename) {return("visit.SaveSession"+parenQuote(filename));}
-	public static String SetPlotOptions(String atts) {return("visit.SetPlotOptions"+parenQuote(atts));}
+	
+	public static String SetActivePlots(String plots){return("visit.SetActivePlots"+parenStr(plots));} //plots is a tuple of plot numbers starting at 0
+	
+	public static String SetPlotOptions(String atts) {return("visit.SetPlotOptions"+parenStr(atts));}  //Note: atts is the NAME of an attributes object.  Must already be defined in Python
+	public static String SetOperatorOptions(String atts) {return("visit.SetOperatorOptions"+parenStr(atts));}  //Note: atts is the NAME of an attributes object.  Must already be defined in Python
+	
 	public static String SetDefaultPlotOptions(String atts) {return("visit.SetDefaultPlotOptions"+parenQuote(atts));}
 	
 	public static String SetTimeSliderState(int state) {return("visit.SetTimeSliderState("+str(state)+")");}
@@ -111,7 +125,7 @@ public final class VisitPythonCommand {
     //temporary version without bounds checking follows:
 	public static String SupressMessages(int level) {return("visit.SupressMessages("+str(level)+")");}
 
-
+    public static String makeTransformAttributes(String attrObjectName) {return(attrObjectName +"=visit.TransformAttributes()");}  //yields python command {attrObjectName} = TransformAttributes()  which returns an attributes object to attsObjectName
 	
 	private static String callMethod(String methodName){
 		return methodName+"()";

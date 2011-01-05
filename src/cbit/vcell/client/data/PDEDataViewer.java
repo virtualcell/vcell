@@ -146,8 +146,9 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
-	
+	private String libDir;
 	public VisitProcess visitProcess;
+	
 	
 	public static class TimeSeriesDataJobListener implements DataJobListener {
 		private ClientTaskStatusSupport clientTaskStatusSupport = null;
@@ -1726,19 +1727,33 @@ private JButton getJButtonVisit(){
 
 					String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
 					String userName = getSimulation().getVersion().getOwner().getName();
-					visitProcess = new VisitProcess();
+					//if (new File("/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/").exists()) {
+					//	libDir = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/";
+					//}
+					//else {
+					JFileChooser chooser = new JFileChooser();
+					 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+					 chooser.setDialogTitle("Select location of VisIt Python Library.");
+					 int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+					 if(returnVal == JFileChooser.APPROVE_OPTION) {
+					       System.out.println("You chose to open this directory as the Visit Python Library: " +
+					            chooser.getSelectedFile().getAbsolutePath());
+					       libDir = chooser.getSelectedFile().getAbsolutePath();
+					 }
+					//}
+					visitProcess = new VisitProcess(libDir);
 					VisitControlPanel visitControlPanel= new VisitControlPanel();
 					visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
 					visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
 					
 					showComponentInFrame(visitControlPanel, "Visit Control Panel");
-					
-					String s = "visit.OpenDatabase(\""+ "/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
+					visitProcess.sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
+					String s = "visit.OpenDatabase(\""+ "10.84.11.40:/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
 					System.out.println("About to open " + s);
 					visitProcess.sendCommandAndNoteResponse(s);
-					String s2=getPdeDataContext().getVariableName();
-					visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
-					visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
+					//String s2=getPdeDataContext().getVariableName();
+					//visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
+					//visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
 					
 					 //JFileChooser chooser = new JFileChooser();
 					// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
