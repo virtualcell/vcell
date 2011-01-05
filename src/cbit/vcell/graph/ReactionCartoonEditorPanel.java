@@ -44,7 +44,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
 	private GraphPane graphPane = null;
 	private JToolBar toolBar = null;
-//	private JToolBarToggleButton speciesButton = null;
+	private JToolBarToggleButton speciesButton = null;
 //	private JToolBarToggleButton fluxButton = null;
 //	private JToolBarToggleButton lineButton = null;
 	private JToolBarToggleButton lineDirectedButton = null;
@@ -239,7 +239,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				//getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
+				getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
 				//getJToolBar().add(getStepButton(), getStepButton().getName());
 				//getJToolBar().add(getFluxButton(), getFluxButton().getName());
 				//getJToolBar().add(getLineButton(), getLineButton().getName());
@@ -430,7 +430,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if(modeButtons == null) {
 			modeButtons = new ArrayList<JToolBarToggleButton>();
 			modeButtons.add(getSelectButton());
-			//modeButtons.add(getSpeciesButton());
+			modeButtons.add(getSpeciesButton());
 			//modeButtons.add(getStepButton());
 			//modeButtons.add(getFluxButton());
 			//modeButtons.add(getLineButton());
@@ -440,24 +440,24 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return modeButtons;
 	}
 
-//	private JToolBarToggleButton getSpeciesButton() {
-//		if (speciesButton == null) {
-//			try {
-//				speciesButton = new JToolBarToggleButton();
-//				speciesButton.setName("SpeciesButton");
-//				speciesButton.setToolTipText("Species Tool");
-//				speciesButton.setText("");
-//				speciesButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-//				speciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
-//				speciesButton.setIcon(new ImageIcon(getClass().getResource("/images/species.gif")));
-//				speciesButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-//				speciesButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-//			} catch (Throwable throwable) {
-//				handleException(throwable);
-//			}
-//		}
-//		return speciesButton;
-//	}
+	private JToolBarToggleButton getSpeciesButton() {
+		if (speciesButton == null) {
+			try {
+				speciesButton = new JToolBarToggleButton();
+				speciesButton.setName("SpeciesButton");
+				speciesButton.setToolTipText("Species Tool");
+				speciesButton.setText("");
+				speciesButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				speciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
+				speciesButton.setIcon(new ImageIcon(getClass().getResource("/images/species.gif")));
+				speciesButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+				speciesButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return speciesButton;
+	}
 
 //	private JToolBarToggleButton getStepButton() {
 //		if (stepButton == null) {
@@ -598,7 +598,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			getModeButtonGroup().add(getLineDirectedButton());
 			getModeButtonGroup().add(getLineCatalystButton());
 			getModeButtonGroup().add(getSelectButton());
-			//getModeButtonGroup().add(getSpeciesButton());
+			getModeButtonGroup().add(getSpeciesButton());
 			getReactionCartoonTool().setReactionCartoon(getReactionCartoon());
 			getReactionCartoonTool().setGraphPane(getGraphPane());
 			getReactionCartoonTool().setButtonGroup(getModeButtonGroup());

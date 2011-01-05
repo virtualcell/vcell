@@ -1147,7 +1147,22 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										Point startPos = edgeShape.getStart();
 										positionShapeForObject(speciesContext1, startPos);
 										positionShapeForObject(speciesContext2, endPos);
-										positionShapeForObject(reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										//finding correct insertion point for reaction, statements below should be put into a utility if used often
+										int memAbsXmin = endShape.getSpaceManager().getAbsLoc().x;
+										int memAbsXmax = memAbsXmin + endShape.getSpaceManager().getSize().width;
+										int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
+										int reactionAbsX = (startPos.x + endPos.x)/2;
+										if((memAbsXmax - memAbsXmin)<=reactionWidth)
+										{
+											reactionAbsX = memAbsXmin;
+										}
+										else
+										{
+											reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
+											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
+										}
+										
+										positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Membrane)
@@ -1165,7 +1180,22 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										Point startPos = edgeShape.getStart();
 										positionShapeForObject(speciesContext1, startPos);
 										positionShapeForObject(speciesContext2, endPos);
-										positionShapeForObject(reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										//finding correct insertion point for reaction, statements below should be put into a utility if used often
+										int memAbsXmin = startShape.getSpaceManager().getAbsLoc().x;
+										int memAbsXmax = memAbsXmin + startShape.getSpaceManager().getSize().width;
+										int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
+										int reactionAbsX = (startPos.x + endPos.x)/2;
+										if((memAbsXmax - memAbsXmin)<=reactionWidth)
+										{
+											reactionAbsX = memAbsXmin;
+										}
+										else
+										{
+											reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
+											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
+										}
+										
+										positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Feature)
@@ -1196,7 +1226,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										Point startPos = edgeShape.getStart();
 										positionShapeForObject(speciesContext1, startPos);
 										positionShapeForObject(speciesContext2, endPos);
-										positionShapeForObject(flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										//finding correct insertion point for flux, statements below should be put into a utility if used often
+										Shape fluxMemShape =  getGraphModel().getShapeFromModelObject(fluxMem);
+										int memAbsXmin = fluxMemShape.getSpaceManager().getRelX();
+										int memAbsXmax = memAbsXmin + fluxMemShape.getSpaceManager().getSize().width ;
+										int fluxWidth = new FluxReactionShape(flux, getReactionCartoon()).getSpaceManager().getSize().width;
+										int fluxAbsX = Math.max(memAbsXmin, ((memAbsXmax-memAbsXmin)/2-fluxWidth/2));
+										
+										positionShapeForObject(flux, new Point(fluxAbsX, (startPos.y + endPos.y)/2));
 									}
 								}
 							}
