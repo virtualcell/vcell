@@ -54,9 +54,6 @@ public class BioModelPropertiesPanel extends JPanel {
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
 	private JPanel applicationsPanel = null;
-//	private JTree applicationsTree = null;
-//	private DefaultTreeModel applicationTreeModel = null;
-//	private BioModelNode applicationTreeRootNode = null;
 	private JPanel webLinksPanel = null;
 	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
 	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
@@ -386,7 +383,7 @@ private void updateInterface() {
 					String description = geometry.getDimension() + "D " + (geometry.getGeometrySpec().hasImage() ? "image" : "analytic") + " geometry";
 					geometryText = description;
 					if (geometryVersion != null) {
-						geometryText += " - " + geometryVersion.getName() + " ("+geometryVersion.getDate() + ")";
+						geometryText += " - " + geometryVersion.getName()/* + " ("+geometryVersion.getDate() + ")"*/;
 					}
 				}
 			}
@@ -395,14 +392,14 @@ private void updateInterface() {
 			JLabel detStochLabel = new JLabel((simContext.isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR));
 			detStochLabel.setIcon(appTypeIcon);
 			
-			gbc.insets = new Insets(0, 10, 0, 0);
+			gbc.insets = new Insets(2, 20, 2, 2);
 			gbc.gridy = gridy ++;
-			applicationsPanel.add(geometryLabel, gbc);
+			applicationsPanel.add(detStochLabel, gbc);
 			gbc.gridy = gridy ++;
 			if (i == simulationContexts.length - 1) {
 				gbc.weighty = 1.0;
 			}
-			applicationsPanel.add(detStochLabel, gbc);
+			applicationsPanel.add(geometryLabel, gbc);
 		}
 	}
 }

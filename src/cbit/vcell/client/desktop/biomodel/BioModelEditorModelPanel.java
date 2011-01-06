@@ -542,16 +542,16 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		currentSelectedTable = null;
 		currentSelectedTableModel = null;
 		Component selectedTabComponent = tabbedPane.getSelectedComponent();
-		if (selectedTabComponent == reactionsTable.getEnclosingScrollPane()) {
+		if (selectedTabComponent == ModelPanelTab.reaction_table.getComponent()) {
 			currentSelectedTable = reactionsTable;
 			currentSelectedTableModel = reactionTableModel;
-		} else if (selectedTabComponent == structuresTable.getEnclosingScrollPane()) {
+		} else if (selectedTabComponent == ModelPanelTab.structure_table.getComponent()) {
 			currentSelectedTable = structuresTable;
 			currentSelectedTableModel = structureTableModel;
-		} else if (selectedTabComponent == speciesTable.getEnclosingScrollPane()) {
+		} else if (selectedTabComponent == ModelPanelTab.species_table.getComponent()) {
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
-		} else if (selectedTabComponent == parameterPanel) {
+		} else if (selectedTabComponent == ModelPanelTab.parameter_table.getComponent()) {
 			currentSelectedTable = parametersTable;
 			currentSelectedTableModel = parametersTableModel;
 		}

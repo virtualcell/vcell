@@ -110,7 +110,7 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		setTableSelections(selectedObjects, table, tableModel);		
+		setTableSelections(selectedObjects, table, tableModel);
 	}
 
 	private void searchTable() {

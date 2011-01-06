@@ -912,4 +912,8 @@ void prepareToLoad(BioModel doc) throws Exception {
 		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 	}
 }
+
+public boolean hasBlankDocument() {
+	return !getRequestManager().isDifferentFromBlank(VCDocument.BIOMODEL_DOC, getVCDocument());
+}
 }

@@ -17,7 +17,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.NameScope;
@@ -136,16 +135,6 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 			}
 		}
 		deleteButton.setEnabled(false);
-	}
-
-	@Override
-	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-//		setTableSelections(selectedObjects, table, tableModel);		
-		SimulationContext simulationContext = null;
-		if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SimulationContext) {
-			simulationContext = (SimulationContext) selectedObjects[0];
-		}
-		setSimulationContext(simulationContext);
 	}
 
 	@Override

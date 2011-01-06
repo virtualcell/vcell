@@ -451,6 +451,14 @@ public int numberOfJobsDone() {
 	return done;
 }
 
+public boolean isCompleted() {
+	for (int i = 0; i < getJobStatuses().length; i++){
+		if (getJobStatuses()[i] == null || !getJobStatuses()[i].isCompleted()) {
+			return false;
+		}
+	}
+	return true;
+}
 
 /**
  * Insert the method's description here.

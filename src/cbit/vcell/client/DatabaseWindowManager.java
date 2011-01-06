@@ -910,12 +910,16 @@ public void createNewGeometry(){
 
 	createGeometry(null, new AsynchClientTask[] {editSelectTask},TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Create Geometry");
 }
+
+public void openSelected() {
+	openSelected(this, true);
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:49:06 PM)
  */
-public void openSelected() {
-	getRequestManager().openDocument(getPanelSelection(), this, true);
+public void openSelected(TopLevelWindowManager requester, boolean bInNewWindow) {
+	getRequestManager().openDocument(getPanelSelection(), requester, bInNewWindow);
 }
 
 

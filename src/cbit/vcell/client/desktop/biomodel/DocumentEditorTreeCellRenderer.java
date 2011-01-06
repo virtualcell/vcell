@@ -102,10 +102,13 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
-	    		if (folder.isFirstLevel()) {
+	    		if (folder.isFirstLevel()
+	    				||folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
+	    				|| folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE
+	    				|| folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
 	    			font = boldFont;
 	    			toolTipPrefix = folder.getName();
-	    		}
+	    		} 
 	    		labelText = folder.getName();
 	    		switch (folderClass) {
         		case DATA_SYMBOLS_NODE:

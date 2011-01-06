@@ -4,6 +4,7 @@ package cbit.vcell.graph;
  * All rights reserved.
  */
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -17,8 +18,10 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -27,6 +30,7 @@ import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
@@ -39,7 +43,7 @@ import cbit.vcell.model.Model;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
-	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,0);
+	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(10,0);
 	public static final String PROPERTY_NAME_FLOATING = "Floating";
 	private static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
 	private GraphPane graphPane = null;
@@ -67,6 +71,12 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 
 	private boolean bFloatingRequested = false;
 	private JButton floatRequestButton = null;
+	private Icon randomLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/random.gif"));
+	private Icon circleLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/circular.gif"));
+	private Icon annealedLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/annealed.gif"));
+	private Icon levelledLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/levelled.gif"));
+	private Icon relaxedLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/relaxed.gif"));
+
 	
 	public ReactionCartoonEditorPanel() {
 		super();
@@ -108,16 +118,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getAnnealLayoutButton() {
 		if (annealLayoutButton == null) {
 			try {
-				annealLayoutButton = new JButton();
+				annealLayoutButton = createToolBarButton();
 				annealLayoutButton.setName("AnnealLayoutButton");
-				annealLayoutButton.setToolTipText("Layout Annealing");
-				annealLayoutButton.setText("anl");
-				annealLayoutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				annealLayoutButton.setToolTipText("Annealing Layout");
+				annealLayoutButton.setIcon(annealedLayoutIcon);
 				annealLayoutButton.setActionCommand("AnnealLayout");
-				annealLayoutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				annealLayoutButton.setFont(new Font("Arial", 1, 10));
-				annealLayoutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				annealLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -139,16 +144,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getCircleLayoutButton() {
 		if (circleLayoutButton == null) {
 			try {
-				circleLayoutButton = new JButton();
+				circleLayoutButton = createToolBarButton();
 				circleLayoutButton.setName("CircleLayoutButton");
-				circleLayoutButton.setToolTipText("Layout Circular");
-				circleLayoutButton.setText("crc");
-				circleLayoutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				circleLayoutButton.setToolTipText("Circular Layout");
+				circleLayoutButton.setIcon(circleLayoutIcon);
 				circleLayoutButton.setActionCommand("CircleLayout");
-				circleLayoutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				circleLayoutButton.setFont(new Font("Arial", 1, 10));
-				circleLayoutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				circleLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -183,15 +183,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getGlgLayoutJButton() {
 		if (glgLayoutJButton == null) {
 			try {
-				glgLayoutJButton = new JButton();
+				glgLayoutJButton = createToolBarButton();
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
 				glgLayoutJButton.setText("glg");
-				glgLayoutJButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				glgLayoutJButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				glgLayoutJButton.setFont(new Font("Arial", 1, 10));
-				glgLayoutJButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				glgLayoutJButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -248,6 +243,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getZoomInButton(), getZoomInButton().getName());
 				getJToolBar().add(getZoomOutButton(), getZoomOutButton().getName());
+				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getRandomLayoutButton(), getRandomLayoutButton().getName());
 				getJToolBar().add(getCircleLayoutButton(), getCircleLayoutButton().getName());
 				getJToolBar().add(getAnnealLayoutButton(), getAnnealLayoutButton().getName());
@@ -261,19 +257,24 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return toolBar;
 	}
 
+	private JButton createToolBarButton() {
+		JButton button = new JButton();
+		button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+		button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+		button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+		button.setMargin(new Insets(2, 2, 2, 2));
+//		button.setFont(new Font("Arial", 1, 10));
+		button.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+		return button;
+	}
 	private JButton getLevellerLayoutButton() {
 		if (levellerLayoutButton == null) {
 			try {
-				levellerLayoutButton = new JButton();
+				levellerLayoutButton = createToolBarButton();
 				levellerLayoutButton.setName("LevellerLayoutButton");
-				levellerLayoutButton.setToolTipText("Layout Leveler");
-				levellerLayoutButton.setText("lev");
-				levellerLayoutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				levellerLayoutButton.setToolTipText("Leveller Layout");
+				levellerLayoutButton.setIcon(levelledLayoutIcon);
 				levellerLayoutButton.setActionCommand("LevellerLayout");
-				levellerLayoutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				levellerLayoutButton.setFont(new Font("Arial", 1, 10));
-				levellerLayoutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				levellerLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -347,16 +348,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getRandomLayoutButton() {
 		if (randomLayoutButton == null) {
 			try {
-				randomLayoutButton = new JButton();
+				randomLayoutButton = createToolBarButton();
 				randomLayoutButton.setName("RandomLayoutButton");
-				randomLayoutButton.setToolTipText("Layout Random");
-				randomLayoutButton.setText("rnd");
-				randomLayoutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				randomLayoutButton.setToolTipText("Random Layout");
+				randomLayoutButton.setIcon(randomLayoutIcon);
 				randomLayoutButton.setActionCommand("RandomLayout");
-				randomLayoutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				randomLayoutButton.setFont(new Font("Arial", 1, 10));
-				randomLayoutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				randomLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -389,16 +385,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getRelaxerLayoutButton() {
 		if (relaxerLayoutButton == null) {
 			try {
-				relaxerLayoutButton = new JButton();
+				relaxerLayoutButton = createToolBarButton();
 				relaxerLayoutButton.setName("RelaxerLayoutButton");
-				relaxerLayoutButton.setToolTipText("Layout Relaxer");
-				relaxerLayoutButton.setText("rlx");
-				relaxerLayoutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				relaxerLayoutButton.setToolTipText("Relaxer Layou");
+				relaxerLayoutButton.setIcon(relaxedLayoutIcon);
 				relaxerLayoutButton.setActionCommand("RelaxerLayout");
-				relaxerLayoutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				relaxerLayoutButton.setFont(new Font("Arial", 1, 10));
-				relaxerLayoutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				relaxerLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -481,16 +472,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getZoomInButton() {
 		if (zoomInButton == null) {
 			try {
-				zoomInButton = new JButton();
+				zoomInButton = createToolBarButton();
 				zoomInButton.setName("ZoomInButton");
 				zoomInButton.setToolTipText("Zoom In");
-				zoomInButton.setText("");
-				zoomInButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
 				zoomInButton.setActionCommand("ZoomIn");
 				zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
-				zoomInButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				zoomInButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				zoomInButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -520,15 +506,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getZoomOutButton() {
 		if (zoomOutButton == null) {
 			try {
-				zoomOutButton = new JButton();
+				zoomOutButton = createToolBarButton();
 				zoomOutButton.setName("ZoomOutButton");
 				zoomOutButton.setToolTipText("Zoom Out");
-				zoomOutButton.setText("");
-				zoomOutButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
 				zoomOutButton.setActionCommand("ZoomOut");
 				zoomOutButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomout.gif")));
-				zoomOutButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				zoomOutButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}

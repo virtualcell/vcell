@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
+import java.awt.Container;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -12,6 +13,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -337,7 +339,25 @@ public static final String NEW_GEOMETRY = "New Geometry...";
 private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	if (actionCommand.equals("Open") || actionCommand.equals(DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION)) {
-		getDatabaseWindowManager().openSelected();
+		// check to see if open in new or this window
+		BioModelEditor bioModelEditor = null;
+		Container c = this;
+		while (c != null) {
+			if (c instanceof BioModelEditor) {
+				bioModelEditor = (BioModelEditor) c;
+				break;
+			}
+			c = c.getParent();
+		}
+		if (bioModelEditor != null) {
+			if (bioModelEditor.getBioModelWindowManager().hasBlankDocument()) {
+				getDatabaseWindowManager().openSelected(bioModelEditor.getBioModelWindowManager(), false);
+			} else {
+				getDatabaseWindowManager().openSelected(bioModelEditor.getBioModelWindowManager(), true);
+			}
+		} else {
+			getDatabaseWindowManager().openSelected();
+		}
 	} else if (actionCommand.equals("Delete")) {
 		getDatabaseWindowManager().deleteSelected();
 	} else if (actionCommand.equals("Permission")) {

@@ -1,28 +1,44 @@
 package cbit.vcell.client;
 
-import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.field.FieldDataWindow;
-import cbit.vcell.client.server.*;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import cbit.vcell.client.desktop.*;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.GlassPane;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.awt.event.*;
+import cbit.vcell.client.desktop.BNGWindow;
+import cbit.vcell.client.desktop.DatabaseWindow;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.TestingFrameworkWindow;
+import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
+import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.field.FieldDataWindow;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 10:58:42 AM)
  * @author: Ion Moraru
  */
 public class ClientMDIManager implements MDIManager {
+	private static final Dimension JFRAME_SIZE = new Dimension(900, 800);
 	public final static String DATABASE_WINDOW_ID = "DatabaseWindow";
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
@@ -154,7 +170,7 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
 private DocumentWindow createDocumentWindow() {	
 	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
-	documentWindow.setSize(900, 800);
+	documentWindow.setSize(JFRAME_SIZE);
 	BeanUtils.centerOnScreen(documentWindow);
 	Point p = documentWindow.getLocation();
 	int numDocWindow = getWindowsHash().size() - 3;
@@ -222,7 +238,7 @@ void createRecyclableWindows() {
 	if (! getWindowsHash().containsKey(DATABASE_WINDOW_ID)) {
 		// make the window
 		DatabaseWindow databaseWindow = new DatabaseWindow();
-		databaseWindow.setSize(1000, 900);
+		databaseWindow.setSize(JFRAME_SIZE);
 		BeanUtils.centerOnScreen(databaseWindow);
 		// make the manager
 		DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindow.getDatabaseWindowPanel(), getRequestManager());
@@ -247,7 +263,7 @@ void createRecyclableWindows() {
 		TestingFrameworkWindow testingFrameworkWindow = new TestingFrameworkWindow();
 		TestingFrameworkWindowPanel testingFrameworkWindowPanel = new TestingFrameworkWindowPanel();
 		testingFrameworkWindow.setWorkArea(testingFrameworkWindowPanel);
-		testingFrameworkWindow.setSize(1000, 900);
+		testingFrameworkWindow.setSize(JFRAME_SIZE);
 		BeanUtils.centerOnScreen(testingFrameworkWindow);
 		// make the manager
 		TestingFrameworkWindowManager windowManager = new TestingFrameworkWindowManager(testingFrameworkWindowPanel, getRequestManager());
@@ -274,7 +290,7 @@ void createRecyclableWindows() {
 		BNGWindow bngWindow = new BNGWindow();
 		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
 		bngWindow.setWorkArea(bngOutputPanel);
-		bngWindow.setSize(1000, 900);
+		bngWindow.setSize(JFRAME_SIZE);
 		BeanUtils.centerOnScreen(bngWindow);
 		// make the manager
 		BNGWindowManager windowManager = new BNGWindowManager(bngOutputPanel, getRequestManager());
