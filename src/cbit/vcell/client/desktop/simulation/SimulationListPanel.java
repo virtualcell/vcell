@@ -604,7 +604,15 @@ private void runSimulations() {
 			
 			for (int i = 0; i < selections.length; i++){
 				Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];
-
+				if (getSimulationWorkspace().getSimulationStatus(sim).isCompleted()) { // completed
+					String warningMessage =  "Simulation '" + sim.getName() + "' is completed already. "
+						+ "\n\nDo you want to continue anyway?";
+					String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, 
+							new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+					if (result == null || !result.equals(UserMessage.OPTION_OK)) {
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
 					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {

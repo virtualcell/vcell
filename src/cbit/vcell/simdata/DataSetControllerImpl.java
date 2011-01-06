@@ -688,7 +688,7 @@ private SimDataBlock evaluateFunction(
 	Expression exp = new Expression(function.getExpression());
 	exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 	exp.bindExpression(simData);
-	exp = fieldFunctionSubstitution(outputContext, vcdID, function);
+	exp = fieldFunctionSubstitution(outputContext, vcdID, exp);
 	
 	//
 	// get Dependent datasets
@@ -936,11 +936,7 @@ private SimDataBlock evaluateFunction(
 	}
 
 	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(), vcdID.getID(), function.getName(), time, lastModified);
-	if (data != null) {
-		return new SimDataBlock(pdeDataInfo, data, variableType);
-	} else {
-		return null;
-	}
+	return new SimDataBlock(pdeDataInfo, data, variableType);
 }
 
 
@@ -1465,9 +1461,6 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 							fieldDataFileOperationSpec.sourceSimDataKey,
 							fieldDataFileOperationSpec.sourceOwner),
 				fieldDataFileOperationSpec.sourceSimParamScanJobIndex);
-			if(sourceSimDataID == null){
-				throw new Exception("Field Data Op 'INFO' has no data identifier");
-			}
 			fdor.dataIdentifierArr =
 				getDataIdentifiers(null,sourceSimDataID);
 			CartesianMesh mesh = getMesh(sourceSimDataID);
@@ -1684,11 +1677,11 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 }
 
 
-private Expression fieldFunctionSubstitution(OutputContext outputContext,final VCDataIdentifier vcdID,AnnotatedFunction function)
+private Expression fieldFunctionSubstitution(OutputContext outputContext,final VCDataIdentifier vcdID, Expression functionExpression)
 	throws ExpressionException, DataAccessException, IOException, MathException{
 	
 	SimResampleInfoProvider simResampleInfoProvider = null;
-	Expression origExpression = new Expression(function.getExpression());
+	Expression origExpression = new Expression(functionExpression);
 	
 	if(vcdID instanceof VCSimulationDataIdentifier){
 		simResampleInfoProvider = ((VCSimulationDataIdentifier)vcdID);

@@ -339,7 +339,7 @@ private CloseOption checkBeforeClosing(DocumentWindowManager windowManager) {
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private boolean isDifferentFromBlank(int documentType, VCDocument vcDocument) {
+public boolean isDifferentFromBlank(int documentType, VCDocument vcDocument) {
 	// Handle Bio/Math models different from Geometry since createDefaultDoc for Geometry
 	// will bring up the NewGeometryEditor which is unnecessary.
 	// figure out if we come from a blank new document; if so, replace it inside same window

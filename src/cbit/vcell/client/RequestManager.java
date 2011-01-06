@@ -10,7 +10,6 @@ import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -333,4 +332,6 @@ void updateStatusNow();
 void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff comparePanel, String baselineDesc, String modifiedDesc);
 
 void accessPermissions(Component requester, VCDocument vcDocument);
+
+boolean isDifferentFromBlank(int documentType, VCDocument vcDocument);
 }

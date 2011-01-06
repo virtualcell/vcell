@@ -446,11 +446,15 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 
 				BioModelNode specificationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, true), true);
 				BioModelNode mathematicsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MATHEMATICS_NODE, true), false);
-				BioModelNode tasksNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.TASKS_NODE, true), true);	
+				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE), true);
+				BioModelNode outputFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE), true);
+				BioModelNode analysisNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ANALYSIS_NODE), true); 
 				BioModelNode[] applicationsChildNodes = new BioModelNode[] {
 						specificationsNode,
 						mathematicsNode,
-						tasksNode,
+						simulationsNode,
+						outputFunctionsNode,
+						analysisNode,
 				};
 				for (BioModelNode node : applicationsChildNodes) {
 					appNode.add(node);
@@ -469,9 +473,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 				BioModelNode electricalNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE), false);
 				BioModelNode dataSymbolNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE), true);
 				BioModelNode microscopeMeasurmentNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE), true);
-				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE), true);
-				BioModelNode outputFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE), true);
-				BioModelNode analysisNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.ANALYSIS_NODE), true); 
 				
 				BioModelNode[] specificationsChildNodes = new BioModelNode[] {
 						geometryNode,
@@ -483,23 +484,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 						dataSymbolNode,
 						microscopeMeasurmentNode,
 				};
-				
-				BioModelNode[] tasksChildNodes = new BioModelNode[] {
-					simulationsNode,
-					outputFunctionsNode,
-					analysisNode,
-				};
-				
+								
 				for (BioModelNode node : specificationsChildNodes) {
 					specificationsNode.add(node);
-					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
-							&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
-						bFoundSelected = true;
-						selectedBioModelNode = node;
-					}
-				}
-				for (BioModelNode node : tasksChildNodes) {
-					tasksNode.add(node);
 					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
 							&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
 						bFoundSelected = true;

@@ -25,6 +25,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -188,8 +189,9 @@ public abstract class DocumentEditor extends JPanel {
 
 		
 		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-			if (e.getSource() == documentEditorTree)
-				treeSelectionChanged0();
+			if (e.getSource() == documentEditorTree) {
+				treeSelectionChanged0(e);
+			}
 		}
 	};
 
@@ -341,7 +343,7 @@ private void initialize() {
 	}
 }
 
-private void treeSelectionChanged0() {
+private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	try {
 		treeSelectionChanged();
 		TreePath[] paths = documentEditorTree.getSelectionModel().getSelectionPaths();
@@ -354,7 +356,9 @@ private void treeSelectionChanged0() {
 				}
 			}
 		}
-		selectionManager.setSelectedObjects(selectedObjects.toArray());
+		if (selectedObjects.size() > 0) {
+			selectionManager.setSelectedObjects(selectedObjects.toArray());
+		}
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
