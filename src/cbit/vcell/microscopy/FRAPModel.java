@@ -14,7 +14,7 @@ public class FRAPModel implements Matchable
 {
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
-		                                                       "Reaction Dominant Off-Rate",
+		                                                       "Reaction Dominant Off Rate",
 		                                                       "Diffusion plus Binding"};
 	//different model types
 	public static final int NUM_MODEL_TYPES = 4;

@@ -388,7 +388,7 @@ public class NonGUIFRAPTest {
 		FRAPStudy.runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
 			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-			bioModel.getSimulations(0),
+			bioModel.getSimulation(0),
 			imageDatasetExternalDataInfo.getExternalDataIdentifier(),
 			roiExternalDataInfo.getExternalDataIdentifier(),
 			null);

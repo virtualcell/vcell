@@ -99,7 +99,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
 						if(evt.getSource() == reactionDiffusionPanel){
-							FRAPStudy frapStudy = getFrapWorkspace().getWorkingFrapStudy();
+							FRAPStudy frapStudy = new FRAPStudy();//().getWorkingFrapStudy();
 							if((evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS))){
 								activateReacDiffEstPanel();
 							}else if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_EST_BS_CONCENTRATION)){
@@ -635,7 +635,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					FRAPStudy.runFVSolverStandalone(
 						new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 						new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-						bioModel.getSimulations(0),
+						bioModel.getSimulation(0),
 						fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 						fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
 						this.getClientTaskStatusSupport(), false);
@@ -748,4 +748,22 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		ClientTaskDispatcher.dispatch(EstParams_ReacBindingPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask, runSimTask, readDataTask, plotTask}, false);
 	}
 	
+	public static void main(java.lang.String[] args) {
+		try {
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			EstParams_ReacBindingPanel aPanel = new EstParams_ReacBindingPanel();
+			frame.setContentPane(aPanel);
+			frame.pack();
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setVisible(true);
+			
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
+	}
 }

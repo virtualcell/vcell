@@ -252,7 +252,7 @@ public class FRAPOptData {
 			FRAPStudy.runFVSolverStandalone_ref(
 				new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 				new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-				bioModel.getSimulations(0),
+				bioModel.getSimulation(0),
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
 				psfFieldFunc.getExternalDataIdentifier(),
