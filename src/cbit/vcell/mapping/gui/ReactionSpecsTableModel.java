@@ -70,6 +70,14 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
+@Override
+public int getColumnCount() {
+	if (fieldSimulationContext == null || !fieldSimulationContext.isStoch()) {
+		return super.getColumnCount();
+	}
+	return super.getColumnCount() - 1;
+}
+
 /**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @return The simulationContext property value.
@@ -140,6 +148,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("simulationContext")) {
 		refreshData();
+		fireTableStructureChanged();
 	}
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
 		refreshData();
@@ -184,12 +193,11 @@ public void setSimulationContext(SimulationContext simulationContext) {
 }
 
 private void refreshData() {
-	if (getSimulationContext() == null) {
-		setData(null);
-	} else {
-		List<ReactionSpec> rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
-		setData(rslist);
+	List<ReactionSpec> rslist = null;
+	if (getSimulationContext() != null) {
+		rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
 	}
+	setData(rslist);
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {

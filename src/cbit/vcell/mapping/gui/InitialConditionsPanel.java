@@ -7,24 +7,21 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -42,7 +39,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
@@ -51,8 +47,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 @SuppressWarnings("serial")
 public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private SimulationContext fieldSimulationContext = null;
-	private boolean ivjConnPtoP3Aligning = false;
-	private SimulationContext ivjsimulationContext1 = null;
 	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
@@ -66,55 +60,61 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
-	private javax.swing.JMenuItem ivjJMenuItemCheckSelected = null;
-	private javax.swing.JMenuItem ivjJMenuItemUncheckSelected = null;
-	private javax.swing.JTextField ivjSetDiffConstantTextField = null;
-	private JLabel initialConditionLabel;
-	private JLabel clampedLabel;
-	private JLabel wellMixedLabel;
-	private JLabel diffConstantLabel;
-	private int selectedColumn = -1;
-	private JLabel setDiffConstantLabel;
-	private JLabel pressEnterLabel;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+	private class InternalScrollTableActionManager extends DefaultScrollTableActionManager {
+
+		InternalScrollTableActionManager(JTable table) {
+			super(table);
+		}
+
+		@Override
+		protected void constructPopupMenu(ScrollTableCellEditorType editorType) {
+			super.constructPopupMenu(editorType);
+			if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
+				popupMenu.add(new JSeparator());
+				popupMenu.add(getJMenuItemCopy());
+				popupMenu.add(getJMenuItemCopyAll());
+				popupMenu.add(getJMenuItemPaste());
+				popupMenu.add(getJMenuItemPasteAll());
+				
+				Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
+				boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+				boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
+				getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
+				getJMenuItemPasteAll().setEnabled(bPastable);
+				getJMenuItemCopy().setEnabled(bSomethingSelected);
+			}
+		}
+	}
+	
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPaste()) 
-				connEtoC5(e);
+				jMenuItemPaste_ActionPerformed(e);
 			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopy()) 
-				connEtoC6(e);
+				jMenuItemCopy_ActionPerformed(e);
 			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopyAll()) 
-				connEtoC7(e);
+				jMenuItemCopy_ActionPerformed(e);
 			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) 
-				connEtoC8(e);
-			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCheckSelected()) 
-				checkBooleanTableColumn(CheckOption.CheckSelected);
-			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemUncheckSelected()) 
-				checkBooleanTableColumn(CheckOption.UncheckSelected);
-			else if (e.getSource() == InitialConditionsPanel.this.getSetDiffConstantTextField()) 
-				setDiffusionConstant();
+				jMenuItemPaste_ActionPerformed(e);
 			else if (e.getSource() == getAmountRadioButton()) {
 				amountRadioButton_actionPerformed();
 			} else if (e.getSource() == getConcentrationRadioButton()) {
 				concentrationRadioButton_actionPerformed();
 			}
 		};
-		public void mouseClicked(java.awt.event.MouseEvent e) {
-		};
-		public void mouseEntered(java.awt.event.MouseEvent e) {};
-		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
-				connEtoC4(e);
-		};
-		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
-				connEtoC4(e);
-		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == InitialConditionsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
 			{
-				connPtoP3SetTarget();
+				SimulationContext oldValue = (SimulationContext) evt.getOldValue();
+				if (oldValue != null) {
+					oldValue.removePropertyChangeListener(ivjEventHandler);
+				}			
+				SimulationContext newValue = (SimulationContext) evt.getNewValue();
+				if (newValue != null) {
+					newValue.addPropertyChangeListener(ivjEventHandler);
+				}
+				getSpeciesContextSpecsTableModel().setSimulationContext(getSimulationContext());
 				updateTopScrollPanel();
 			}
 			
@@ -137,194 +137,6 @@ public InitialConditionsPanel() {
 }
 
 /**
- * connEtoC4:  (ScrollPaneTable.mouse.mouseReleased(java.awt.event.MouseEvent) --> InitialConditionsPanel.scrollPaneTable_MouseClicked(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.scrollPaneTable_MouseButton(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC5:  (JMenuItemPaste.action.actionPerformed(java.awt.event.ActionEvent) --> InitialConditionsPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (JMenuItemCopy.action.actionPerformed(java.awt.event.ActionEvent) --> InitialConditionsPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (JMenuItemCopyAll.action.actionPerformed(java.awt.event.ActionEvent) --> InitialConditionsPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC8:  (JMenuItemPasteAll.action.actionPerformed(java.awt.event.ActionEvent) --> InitialConditionsPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM2:  (simulationContext1.this --> SpeciesContextSpecsTableModel.simulationContext)
- * @param value cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(SimulationContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getSpeciesContextSpecsTableModel().setSimulationContext(getsimulationContext1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP3SetSource:  (InitialConditionsPanel.simulationContext <--> simulationContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getsimulationContext1() != null)) {
-				this.setSimulationContext(getsimulationContext1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetTarget:  (InitialConditionsPanel.simulationContext <--> simulationContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			setsimulationContext1(this.getSimulationContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetTarget:  (ScrollPaneTable.model <--> model2.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		getScrollPaneTable().setModel(getSpeciesContextSpecsTableModel());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
  */
@@ -340,42 +152,6 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
 		}
 	}
 	return ivjJMenuItemCopy;
-}
-private javax.swing.JMenuItem getJMenuItemCheckSelected() {
-	if (ivjJMenuItemCheckSelected == null) {
-		try {
-			ivjJMenuItemCheckSelected = new javax.swing.JMenuItem();
-			ivjJMenuItemCheckSelected.setText(CheckOption.CheckSelected.getText());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemCheckSelected;
-}
-
-private javax.swing.JMenuItem getJMenuItemUncheckSelected() {
-	if (ivjJMenuItemUncheckSelected == null) {
-		try {
-			ivjJMenuItemUncheckSelected = new javax.swing.JMenuItem();
-			ivjJMenuItemUncheckSelected.setText(CheckOption.UncheckSelected.getText());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemUncheckSelected;
-}
-
-private javax.swing.JTextField getSetDiffConstantTextField() {
-	if (ivjSetDiffConstantTextField == null) {
-		try {
-			ivjSetDiffConstantTextField = new javax.swing.JTextField();
-			ivjSetDiffConstantTextField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(4, 4, 4, 4), ivjSetDiffConstantTextField.getBorder()));
-			ivjSetDiffConstantTextField.setColumns(5);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSetDiffConstantTextField;
 }
 
 /**
@@ -608,6 +384,7 @@ private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new JSortTable();
+			ivjScrollPaneTable.setScrollTableActionManager(new InternalScrollTableActionManager(ivjScrollPaneTable));
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			// user code begin {1}
@@ -628,18 +405,6 @@ private JSortTable getScrollPaneTable() {
  */
 public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
-}
-
-
-/**
- * Return the simulationContext1 property value.
- * @return cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private SimulationContext getsimulationContext1() {
-	// user code begin {1}
-	// user code end
-	return ivjsimulationContext1;
 }
 
 /**
@@ -684,20 +449,16 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
 	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-	getJMenuItemCheckSelected().addActionListener(ivjEventHandler);
-	getJMenuItemUncheckSelected().addActionListener(ivjEventHandler);
-	getSetDiffConstantTextField().addActionListener(ivjEventHandler);
 	getAmountRadioButton().addActionListener(ivjEventHandler);
 	getConcentrationRadioButton().addActionListener(ivjEventHandler);
-	connPtoP3SetTarget();
-	connPtoP4SetTarget();
 	
+	getScrollPaneTable().setModel(getSpeciesContextSpecsTableModel());
+	getScrollPaneTable().createDefaultColumnsFromModel();	
 	DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
@@ -741,7 +502,7 @@ private void initialize() {
 /**
  * Comment
  */
-private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEvent) throws Exception{
+private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
 	if(actionEvent.getSource() == getJMenuItemCopy() || actionEvent.getSource() == getJMenuItemCopyAll()){
 		
@@ -999,106 +760,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
-/**
- * Comment
- */
-private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
-	if(mouseEvent.isPopupTrigger()){
-		selectedColumn = getScrollPaneTable().columnAtPoint(mouseEvent.getPoint());
-		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
-			getJPopupMenuICP().removeAll();
-			getJPopupMenuICP().add(getInitialConditionLabel());
-			getJPopupMenuICP().add(new JSeparator());
-			getJPopupMenuICP().add(getJMenuItemCopy());
-			getJPopupMenuICP().add(getJMenuItemCopyAll());
-			getJPopupMenuICP().add(getJMenuItemPaste());
-			getJPopupMenuICP().add(getJMenuItemPasteAll());
-			
-			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
-			boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
-			boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-			getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
-			getJMenuItemPasteAll().setEnabled(bPastable);
-			getJMenuItemCopy().setEnabled(bSomethingSelected);
-			getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
-		} else {
-			boolean bRowSelected = getScrollPaneTable().getSelectedRow() != -1; 
-			getJMenuItemCheckSelected().setEnabled(bRowSelected);
-			getJMenuItemUncheckSelected().setEnabled(bRowSelected);
-			getSetDiffConstantTextField().setEditable(bRowSelected);
-			if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
-				getJPopupMenuICP().removeAll();
-				getJPopupMenuICP().add(getClampedLabel());
-				getJPopupMenuICP().add(new JSeparator());
-				getJPopupMenuICP().add(getJMenuItemCheckSelected());
-				getJPopupMenuICP().add(getJMenuItemUncheckSelected());
-				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
-			} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
-				getJPopupMenuICP().removeAll();
-				getJPopupMenuICP().add(getWellMixedLabel());
-				getJPopupMenuICP().add(new JSeparator());
-				getJPopupMenuICP().add(getJMenuItemCheckSelected());
-				getJPopupMenuICP().add(getJMenuItemUncheckSelected());
-				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
-			} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_DIFFUSION) {
-				getJPopupMenuICP().removeAll();
-				getJPopupMenuICP().add(getDiffusionConstantLabel());
-				getJPopupMenuICP().add(new JSeparator());
-				getJPopupMenuICP().add(getSetDiffusionConstantLabel());
-				getJPopupMenuICP().add(getSetDiffConstantTextField());
-				getJPopupMenuICP().add(getPressEnterLabel());
-				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
-			}
-		}
-	}
-}
-
-private JLabel getSetDiffusionConstantLabel() {
-	if (setDiffConstantLabel == null) {
-		setDiffConstantLabel = new javax.swing.JLabel("Set Selected to ");		
-	}	
-	return setDiffConstantLabel;
-}
-
-private JLabel getInitialConditionLabel() {
-	if (initialConditionLabel == null) {
-		initialConditionLabel = new JLabel(" Initial Condition ");
-		initialConditionLabel.setFont(initialConditionLabel.getFont().deriveFont(Font.BOLD));
-	}
-	return initialConditionLabel;
-}
-private JLabel getPressEnterLabel() {
-	if (pressEnterLabel == null) {
-		pressEnterLabel = new JLabel(" (Press Enter or Return) ");
-		pressEnterLabel.setFont(pressEnterLabel.getFont().deriveFont(pressEnterLabel.getFont().getSize2D() - 1));
-	}
-	return pressEnterLabel;
-}
-private JLabel getClampedLabel() {
-	if (clampedLabel == null) {
-		clampedLabel = new JLabel(" Clamped ");
-		clampedLabel.setFont(clampedLabel.getFont().deriveFont(Font.BOLD));
-	}
-	return clampedLabel;
-}
-
-private JLabel getWellMixedLabel() {
-	if (wellMixedLabel == null) {
-		wellMixedLabel = new JLabel(" Well Mixed ");
-		wellMixedLabel.setFont(wellMixedLabel.getFont().deriveFont(Font.BOLD));
-	}
-	return wellMixedLabel;
-}
-
-private JLabel getDiffusionConstantLabel() {
-	if (diffConstantLabel == null) {
-		diffConstantLabel = new JLabel("Diffusion Constant ");
-		diffConstantLabel.setFont(diffConstantLabel.getFont().deriveFont(Font.BOLD));
-	}
-	return diffConstantLabel;
-}
-
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
@@ -1108,68 +769,6 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
-}
-
-
-/**
- * Set the simulationContext1 to a new value.
- * @param newValue cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(SimulationContext newValue) {
-	if (ivjsimulationContext1 != newValue) {
-		try {
-			SimulationContext oldValue = getsimulationContext1();
-			if (oldValue != null) {
-				oldValue.removePropertyChangeListener(ivjEventHandler);
-			}			
-			ivjsimulationContext1 = newValue;
-			if (newValue != null) {
-				newValue.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP3SetSource();
-			connEtoM2(ivjsimulationContext1);
-			firePropertyChange("simulationContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-public void checkBooleanTableColumn(CheckOption b) {
-	boolean bCheck = CheckOption.CheckSelected.equals(b);
-	int[] selectedRows = getScrollPaneTable().getSelectedRows();
-	for (int r = 0; r < selectedRows.length; r ++) {
-		SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(selectedRows[r]);
-		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
-			scs.setConstant(bCheck);
-		} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
-			scs.setWellMixed(bCheck);
-		}
-	}
-}
-
-public void setDiffusionConstant() {
-	getJPopupMenuICP().setVisible(false);
-	int[] selectedRows = getScrollPaneTable().getSelectedRows();
-	for (int r = 0; r < selectedRows.length; r ++) {
-		SpeciesContextSpec scs= getSpeciesContextSpecsTableModel().getValueAt(selectedRows[r]);
-		try {
-			scs.getDiffusionParameter().setExpression(new Expression(getSetDiffConstantTextField().getText()));
-		} catch (ExpressionException e) {
-			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this, "Wrong Expression:\n" + e.getMessage());
-		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this, "Wrong Expression:\n" + e.getMessage());
-		}
-	}
 }
 
 @Override

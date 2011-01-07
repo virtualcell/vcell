@@ -186,7 +186,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				glgLayoutJButton = createToolBarButton();
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
-				glgLayoutJButton.setText("glg");
+				glgLayoutJButton.setText("GLG");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
