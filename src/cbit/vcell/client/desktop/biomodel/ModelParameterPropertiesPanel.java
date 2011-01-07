@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,9 +10,9 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DialogUtils;
 
@@ -23,7 +24,7 @@ import cbit.vcell.model.Model.ModelParameter;
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class ModelParameterPropertiesPanel extends JPanel {
+public class ModelParameterPropertiesPanel extends DocumentEditorSubPanel {
 	private ModelParameter modelParameter = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JTextArea annotationTextArea;
@@ -66,9 +67,11 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {
 		nameTextField = new JTextField();
+		nameTextField.setEditable(false);
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setEditable(false);
 
 		setBackground(Color.white);
 		setLayout(new GridBagLayout());
@@ -76,16 +79,28 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		JLabel label = new JLabel("<html><u>Select only one global parameter to edit properties</u></html>");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		JLabel label = new JLabel("Parameter Name");
+		label = new JLabel("Parameter Name");
 		add(label, gbc);
 		
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(nameTextField, gbc);
 		
@@ -157,7 +172,7 @@ private void changeAnnotation() {
  * @param speciesContext The new value for the property.
  * @see #getSpeciesContext
  */
-public void setModelParameter(ModelParameter newValue) {
+void setModelParameter(ModelParameter newValue) {
 	if (newValue == modelParameter) {
 		return;
 	}
@@ -169,12 +184,15 @@ public void setModelParameter(ModelParameter newValue) {
  * Comment
  */
 private void updateInterface() {
-	if (modelParameter == null) {
-		annotationTextArea.setText(null);
-		nameTextField.setText(null);
-	} else {
+	boolean bNonNullModelParameter = modelParameter != null;
+	nameTextField.setEditable(bNonNullModelParameter);
+	annotationTextArea.setEditable(bNonNullModelParameter);
+	if (bNonNullModelParameter) {
 		nameTextField.setText(modelParameter.getName());
 		annotationTextArea.setText(modelParameter.getModelParameterAnnotation());	
+	} else {
+		annotationTextArea.setText(null);
+		nameTextField.setText(null);
 	}
 }
 
@@ -193,5 +211,17 @@ private void changeName() {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(ModelParameterPropertiesPanel.this, e1.getMessage());
 	}
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		return;
+	}
+	if (selectedObjects[0] instanceof ModelParameter) {
+		setModelParameter((ModelParameter) selectedObjects[0]);
+	} else {
+		setModelParameter(null);
+	}	
 }
 }

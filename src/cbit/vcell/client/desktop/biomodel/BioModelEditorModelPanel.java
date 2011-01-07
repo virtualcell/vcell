@@ -64,7 +64,7 @@ import cbit.vcell.parser.NameScope;
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
-	public enum ModelPanelTab {
+	public enum ModelPanelTabID {
 		reaction_table("Reactions"),
 		reaction_diagram("Reaction Diagram"),
 		structure_diagram("Structure Diagram"),
@@ -73,20 +73,31 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		parameter_table("Parameters");
 		
 		private String name = null;
-		private JComponent component = null;
-		ModelPanelTab(String name) {
+		ModelPanelTabID(String name) {
 			this.name = name;
-		}
-		public void setComponent(JComponent c) {
-			component = c;
 		}
 		public final String getName() {
 			return name;
+		}
+	}
+	
+	private class ModelPanelTab {
+		ModelPanelTabID id;
+		JComponent component = null;
+		ModelPanelTab(ModelPanelTabID id, JComponent component) {
+			this.id = id;
+			this.component = component;
+		}
+		public final String getName() {
+			return id.getName();
 		}
 		public final JComponent getComponent() {
 			return component;
 		}
 	}
+	
+	private ModelPanelTab modelPanelTabs[] = new ModelPanelTab[ModelPanelTabID.values().length]; 
+
 	private JButton newButton = null;
 	private JButton deleteButton = null;
 	private JButton showAllButton = null;
@@ -204,9 +215,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTableModel.setSearchText(null);
 		parametersTableModel.setSearchText(null);
 		
-		Component component = tabbedPane.getSelectedComponent();
-		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()
-				|| component == ModelPanelTab.structure_diagram.getComponent()) {
+		if (tabbedPane.getSelectedIndex() == ModelPanelTabID.reaction_diagram.ordinal()
+				|| tabbedPane.getSelectedIndex() == ModelPanelTabID.structure_diagram.ordinal()) {
 			newButton.setEnabled(false);
 			deleteButton.setEnabled(false);
 			textFieldSearch.setEditable(false);
@@ -304,16 +314,16 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		parameterPanel.add(parametersTable.getEnclosingScrollPane(), BorderLayout.CENTER);
 		
 		tabbedPane = new JTabbedPane();
-		ModelPanelTab.reaction_diagram.setComponent(reactionCartoonEditorPanel);
-		ModelPanelTab.structure_diagram.setComponent(cartoonEditorPanel);
-		ModelPanelTab.reaction_table.setComponent(reactionsTable.getEnclosingScrollPane());
-		ModelPanelTab.structure_table.setComponent(structuresTable.getEnclosingScrollPane());
-		ModelPanelTab.species_table.setComponent(speciesTable.getEnclosingScrollPane());
-		ModelPanelTab.parameter_table.setComponent(parameterPanel);
+		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel);
+		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel);
+		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane());
+		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane());
+		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane());
+		modelPanelTabs[ModelPanelTabID.parameter_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.parameter_table, parameterPanel);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
 		
-		for (ModelPanelTab tab : ModelPanelTab.values()) {
+		for (ModelPanelTab tab : modelPanelTabs) {
 			tabbedPane.addTab(tab.getName(), tab.getComponent());
 		}
 		
@@ -541,17 +551,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void computeCurrentSelectedTable() {
 		currentSelectedTable = null;
 		currentSelectedTableModel = null;
-		Component selectedTabComponent = tabbedPane.getSelectedComponent();
-		if (selectedTabComponent == ModelPanelTab.reaction_table.getComponent()) {
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
 			currentSelectedTable = reactionsTable;
 			currentSelectedTableModel = reactionTableModel;
-		} else if (selectedTabComponent == ModelPanelTab.structure_table.getComponent()) {
+		} else if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
 			currentSelectedTable = structuresTable;
 			currentSelectedTableModel = structureTableModel;
-		} else if (selectedTabComponent == ModelPanelTab.species_table.getComponent()) {
+		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
-		} else if (selectedTabComponent == ModelPanelTab.parameter_table.getComponent()) {
+		} else if (selectedIndex == ModelPanelTabID.parameter_table.ordinal()) {
 			currentSelectedTable = parametersTable;
 			currentSelectedTableModel = parametersTableModel;
 		}
@@ -592,8 +602,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void showDiagramView() {
-		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()) {
-			if (tabbedPane.getComponentAt(ModelPanelTab.reaction_diagram.ordinal()) != ModelPanelTab.reaction_diagram.getComponent()) {
+		if (tabbedPane.getSelectedIndex() == ModelPanelTabID.reaction_diagram.ordinal()) {
+			if (tabbedPane.getComponentAt(ModelPanelTabID.reaction_diagram.ordinal()) != modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent()) {
 				try {
 					if (diagramViewInternalFrame != null) {
 						diagramViewInternalFrame.setSelected(true);
@@ -614,7 +624,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (bFloating) {
 			diagramViewInternalFrame = new JInternalFrameEnhanced("Reaction Diagram View");
-			tabbedPane.setComponentAt(0, new JPanel());
+			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), new JPanel());
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -639,8 +649,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
 		} else {
 			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);			
-			tabbedPane.setComponentAt(0, ModelPanelTab.reaction_diagram.getComponent());
-			tabbedPane.setSelectedComponent(ModelPanelTab.reaction_diagram.getComponent());
+			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent());
+			tabbedPane.setSelectedIndex(ModelPanelTabID.reaction_diagram.ordinal());
 		}
+	}
+	
+	public void selectTab(ModelPanelTabID tabid) {		
+		tabbedPane.setSelectedIndex(tabid.ordinal());
 	}
 }

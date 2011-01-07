@@ -2,6 +2,7 @@ package cbit.vcell.model.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -12,14 +13,13 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
-
-import com.sun.org.apache.bcel.internal.generic.BALOAD;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.ReactionSpec;
@@ -175,11 +175,26 @@ private void initialize() {
 		setBackground(Color.white);
 
 		int gridy = 0;
+		
+		if (!bEditable) {
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
+			gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			JLabel label = new JLabel("<html><u>View only. Edit properties in Biological Model</u></html>");
+			label.setHorizontalAlignment(SwingConstants.CENTER);
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			add(label, gbc);
+		}
+		
+		gridy ++;
 		java.awt.GridBagConstraints constraintsKineticTypeTitleLabel = new java.awt.GridBagConstraints();
 		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = gridy;
 		constraintsKineticTypeTitleLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsKineticTypeTitleLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(0, 4, 4, 4);
 		JLabel label = new JLabel("Kinetic type");
 		add(label, constraintsKineticTypeTitleLabel);
 
@@ -187,14 +202,14 @@ private void initialize() {
 		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = gridy;
 		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJComboBox1.weightx = 1.0;
-		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJComboBox1.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getKineticsTypeComboBox(), constraintsJComboBox1);
 		getKineticsTypeComboBox().setEnabled(bEditable);
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
 		gridBagConstraints.gridy = gridy;
-		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
+		gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 10);
 		this.add(getJToggleButton(), gridBagConstraints);
 		getJToggleButton().setEnabled(bEditable);
 		

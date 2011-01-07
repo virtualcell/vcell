@@ -2,6 +2,7 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
@@ -15,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -167,15 +169,19 @@ private void initialize() {
 		reactionElectricalPropertiesPanel.setVisible(false);
 		
 		int gridy = 0;
-		// Annotation
-//		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 0; gbc.gridy = gridy;
-//		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		JLabel label = new JLabel("Annotation");
-//		add(label, gbc);
-		
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 4;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		JLabel label = new JLabel("<html><u>Select only one reaction to edit properties</u></html>");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; gbc.gridy = gridy;
 		gbc.gridwidth = 4;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
@@ -188,20 +194,20 @@ private void initialize() {
 		gbc.gridx = 0; gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.anchor = java.awt.GridBagConstraints.EAST;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(new JLabel("Kinetic type"), gbc);
 
 		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
 		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = gridy;
 		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJComboBox1.weightx = 1.0;
-		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJComboBox1.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getKineticsTypeComboBox(), constraintsJComboBox1);
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
 		gridBagConstraints.gridy = gridy;
-		gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getJToggleButton(), gridBagConstraints);
 		
 		gridy ++;
@@ -477,20 +483,21 @@ private void initKineticChoices() {
 }
 
 protected void updateInterface() {
-	boolean bEnabled = reactionStep != null;
-	getParameterTableModel().setEditable(bEnabled);
-	kineticsTypeComboBox.setEnabled(bEnabled);
-	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bEnabled);
-	jToggleButton.setEnabled(bEnabled);
-	if (!bEnabled) {
-		return;
+	boolean bNonNullReactionStepEnabled = reactionStep != null;
+	getParameterTableModel().setEditable(bNonNullReactionStepEnabled);
+	kineticsTypeComboBox.setEnabled(bNonNullReactionStepEnabled);
+	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStepEnabled);
+	jToggleButton.setEnabled(bNonNullReactionStepEnabled);
+	if (bNonNullReactionStepEnabled) {
+		initKineticChoices();
+		reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
+		reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());
+		getParameterTableModel().setKinetics(reactionStep.getKinetics());
+		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
+		updateToggleButtonLabel();
+	} else {
+		getParameterTableModel().setKinetics(null);
 	}
-	initKineticChoices();
-	reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
-	reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());
-	getParameterTableModel().setKinetics(reactionStep.getKinetics());
-	getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
-	updateToggleButtonLabel();
 }
 
 @Override
@@ -504,6 +511,8 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
 		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
 		setTableSelections(selectedObjects, getScrollPaneTable(), getParameterTableModel());
+	} else {
+		setReactionStep(null);
 	}
 }
 }

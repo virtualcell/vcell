@@ -15,6 +15,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
+import cbit.gui.ReactionEquation;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
@@ -49,8 +50,8 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	protected String searchText = null;
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
-	public static final String ADD_NEW_HERE_REACTION_TEXT = "a+b->c";
-	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b->c</b></font>)</i></html>";
+	public static final String ADD_NEW_HERE_REACTION_TEXT = ReactionEquation.REACTION_GOESTO;
+	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ReactionEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
 	
 	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
 		super(null);
