@@ -14,6 +14,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -25,6 +26,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -148,13 +151,13 @@ public abstract class DocumentEditor extends JPanel {
 		};
 		
 		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() != documentEditorTree) {
+				return;
+			}
 			TreePath oldClickPath = mouseClickPath;
 			long oldClickTimeStamp = mouseClickPathTimeStamp;			
 			mouseClickPath = null;
 			if (e.getClickCount() == 1) {
-				if (!isClickPathSelected(e)) {
-					return;
-				}
 				TreePath[] newClickPaths = documentEditorTree.getSelectionPaths();
 				if (newClickPaths != null && newClickPaths.length == 1) {
 					mouseClickPath = newClickPaths[0];
@@ -214,35 +217,36 @@ public void onSelectedObjectsChange() {
 	setRightBottomPanelOnSelection(selectedObjects);
 }
 
-private boolean isClickPathSelected(MouseEvent e) {
+private void selectClickPath(MouseEvent e) {
 	Point mousePoint = e.getPoint();
-	TreePath path = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
-    if (path == null) {
-    	return false; 
+	TreePath clickPath = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
+    if (clickPath == null) {
+    	return; 
     }
-	Object rightClickNode = path.getLastPathComponent();
+	Object rightClickNode = clickPath.getLastPathComponent();
 	if (rightClickNode == null || !(rightClickNode instanceof BioModelNode)) {
-		return false;
+		return;
 	}
 	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
 	if (selectedPaths == null || selectedPaths.length == 0) {
-		return false;
+		return;
 	} 
 	boolean bFound = false;
 	for (TreePath tp : selectedPaths) {
-		if (tp.equals(path)) {
+		if (tp.equals(clickPath)) {
 			bFound = true;
 			break;
 		}
 	}
-	return bFound;
+	if (!bFound) {
+		documentEditorTree.setSelectionPath(clickPath);
+	}
 }
 private void documentEditorTree_tryPopupTrigger(MouseEvent e) {
-	if (e.isPopupTrigger()) {	
-		if (isClickPathSelected(e)) {
-			Point mousePoint = e.getPoint();
-			getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
-		}
+	if (e.isPopupTrigger()) {
+		selectClickPath(e);
+		Point mousePoint = e.getPoint();
+		getPopupMenu().show(documentEditorTree, mousePoint.x, mousePoint.y);
 	}
 }	
 
@@ -284,14 +288,7 @@ private void initialize() {
 		leftBottomTabbedPane.addTab("VCell Database", databaseWindowPanel);
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
-		JPanel leftTopPanel = new JPanel(new BorderLayout());
-		leftTopPanel.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftTopPanel.add(treePanel, BorderLayout.CENTER);
-		JLabel label = new JLabel("  select and right click to open menu");
-		label.setBorder(new LineBorder(Color.blue));
-		label.setFont(label.getFont().deriveFont(Font.BOLD, label.getFont().getSize2D() - 1));
-		leftTopPanel.add(label, BorderLayout.SOUTH);
-		leftSplitPane.setTopComponent(leftTopPanel);
+		leftSplitPane.setTopComponent(treePanel);
 		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
 		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
 		leftSplitPane.setResizeWeight(0.5);
