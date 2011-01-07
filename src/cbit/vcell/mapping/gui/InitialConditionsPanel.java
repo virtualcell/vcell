@@ -6,7 +6,6 @@ package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -68,22 +67,22 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 		}
 
 		@Override
-		protected void constructPopupMenu(ScrollTableCellEditorType editorType) {
-			super.constructPopupMenu(editorType);
-			if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
-				popupMenu.add(new JSeparator());
-				popupMenu.add(getJMenuItemCopy());
-				popupMenu.add(getJMenuItemCopyAll());
-				popupMenu.add(getJMenuItemPaste());
-				popupMenu.add(getJMenuItemPasteAll());
-				
-				Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
-				boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
-				boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-				getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
-				getJMenuItemPasteAll().setEnabled(bPastable);
-				getJMenuItemCopy().setEnabled(bSomethingSelected);
+		protected void constructPopupMenu() {
+			if (popupMenu == null) {
+				super.constructPopupMenu();
+				int pos = 0;
+				popupMenu.insert(getJMenuItemCopy(), pos ++);
+				popupMenu.insert(getJMenuItemCopyAll(), pos ++);
+				popupMenu.insert(getJMenuItemPaste(), pos ++);
+				popupMenu.insert(getJMenuItemPasteAll(), pos ++);
+				popupMenu.insert(new JSeparator(), pos++);
 			}
+			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
+			boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+			boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
+			getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
+			getJMenuItemPasteAll().setEnabled(bPastable);
+			getJMenuItemCopy().setEnabled(bSomethingSelected);
 		}
 	}
 	
