@@ -25,6 +25,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
@@ -59,6 +60,8 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 @SuppressWarnings("serial")
 public abstract class DocumentEditor extends JPanel {
+	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to show/edit properties.";
+	
 	protected enum DocumentEditorPopupMenuAction {
 		add_new,
 		delete,
@@ -99,6 +102,7 @@ public abstract class DocumentEditor extends JPanel {
 	private DocumentEditorTreeCellEditor documentEditorTreeCellEditor;
 	private TreePath mouseClickPath = null;
 	private long mouseClickPathTimeStamp = System.currentTimeMillis();
+	protected JLabel treeNodeDescriptionLabel;
 	
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -279,9 +283,15 @@ private void initialize() {
 		leftBottomTabbedPane  = new JTabbedPane();
 		leftBottomTabbedPane.addTab("VCell Database", databaseWindowPanel);
 		
-		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);		
-		treePanel.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftSplitPane.setTopComponent(treePanel);
+		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
+		JPanel leftTopPanel = new JPanel(new BorderLayout());
+		leftTopPanel.setMinimumSize(new java.awt.Dimension(198, 148));
+		leftTopPanel.add(treePanel, BorderLayout.CENTER);
+		JLabel label = new JLabel("  select and right click to open menu");
+		label.setBorder(new LineBorder(Color.blue));
+		label.setFont(label.getFont().deriveFont(Font.BOLD, label.getFont().getSize2D() - 1));
+		leftTopPanel.add(label, BorderLayout.SOUTH);
+		leftSplitPane.setTopComponent(leftTopPanel);
 		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
 		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
 		leftSplitPane.setResizeWeight(0.5);
@@ -297,8 +307,7 @@ private void initialize() {
 		
 		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
 		rightBottomEmptyPanel.setBackground(Color.white);
-		JLabel label = new JLabel("Select only one object (e.g. species, reaction, simulation) to show properties.");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		treeNodeDescriptionLabel = new JLabel(generalTreeNodeDescription);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.insets = new Insets(10,10,4,4);
@@ -307,7 +316,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.PAGE_START;
-		rightBottomEmptyPanel.add(label, gbc);
+		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
 		
 		rightBottomTabbedPane = new JTabbedPane();
 		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		

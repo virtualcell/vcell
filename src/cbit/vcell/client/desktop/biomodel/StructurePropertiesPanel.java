@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,9 +10,9 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DialogUtils;
 
@@ -25,7 +26,7 @@ import cbit.vcell.model.Structure;
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class StructurePropertiesPanel extends JPanel {
+public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	private Structure structure = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JTextArea annotationTextArea;
@@ -81,21 +82,34 @@ private void initialize() {
 		setLayout(new GridBagLayout());
 		
 		nameTextField = new JTextField();
+		nameTextField.setEditable(false);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		JLabel label = new JLabel("<html><u>Select only one structure to edit properties</u></html>");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		JLabel label = new JLabel("Structure Name");
+		label = new JLabel("Structure Name");
 		add(label, gbc);
 		
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(nameTextField, gbc);
 		
@@ -110,6 +124,7 @@ private void initialize() {
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setEditable(false);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -176,7 +191,7 @@ public void setModel(Model model) {
  * @param speciesContext The new value for the property.
  * @see #getSpeciesContext
  */
-public void setStructure(Structure newValue) {
+void setStructure(Structure newValue) {
 	if (newValue == structure) {
 		return;
 	}
@@ -188,12 +203,15 @@ public void setStructure(Structure newValue) {
  * Comment
  */
 private void updateInterface() {
-	if (structure == null || fieldModel == null) {
-		annotationTextArea.setText(null);
-		nameTextField.setText(null);
-	} else {
+	boolean bNonNullStructure = structure != null && fieldModel != null;
+	nameTextField.setEditable(bNonNullStructure);
+	annotationTextArea.setEditable(bNonNullStructure);
+	if (bNonNullStructure) {
 		nameTextField.setText(structure.getName());
 		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));	
+	} else {
+		annotationTextArea.setText(null);
+		nameTextField.setText(null);
 	}
 }
 
@@ -212,5 +230,18 @@ private void changeName() {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(StructurePropertiesPanel.this, e1.getMessage());
 	}
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		return;
+	}
+	if (selectedObjects[0] instanceof Structure) {
+		setStructure((Structure) selectedObjects[0]);
+	} else {
+		setStructure(null);
+	}
+	
 }
 }

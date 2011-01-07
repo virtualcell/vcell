@@ -41,7 +41,7 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 	}
 
 	private void initialize(){
-		includeGlobalParametersCheckBox = new JCheckBox("Show Reaction Parameters");
+		includeGlobalParametersCheckBox = new JCheckBox("Show Reaction Parameters (View only. Edit properties in Biological Model)");
 		includeGlobalParametersCheckBox.addActionListener(eventHandler);
 		addNewButton.setText("Add New Global Parameter");
 		

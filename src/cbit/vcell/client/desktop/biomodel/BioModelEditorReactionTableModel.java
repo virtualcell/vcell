@@ -145,6 +145,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				case COLUMN_EQUATION: {
 					String inputValue = ((String)value);
 					inputValue = inputValue.trim();
+					if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
+						return;
+					}
 					ReactionStep reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
 					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
 					for (ReactionParticipant rp : rpArray) {

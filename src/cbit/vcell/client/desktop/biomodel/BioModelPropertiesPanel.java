@@ -57,6 +57,7 @@ public class BioModelPropertiesPanel extends JPanel {
 	private JPanel webLinksPanel = null;
 	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
 	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
+	private Icon simulationContextIcon = new ImageIcon(getClass().getResource("/images/application3_16x16.gif"));
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
@@ -362,6 +363,7 @@ private void updateInterface() {
 			SimulationContext simContext = simulationContexts[i];
 			JLabel label = new JLabel(simContext.getName());
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			label.setIcon(simulationContextIcon);
 			
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 

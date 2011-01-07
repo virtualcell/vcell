@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,10 +20,11 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
@@ -52,7 +54,7 @@ import cbit.vcell.model.SpeciesContext;
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class SpeciesPropertiesPanel extends JPanel {
+public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private SpeciesContext fieldSpeciesContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private Model fieldModel = null;
@@ -72,7 +74,9 @@ public class SpeciesPropertiesPanel extends JPanel {
 					String urnstr = resource.getMiriamURN(); 
 					if (urnstr != null && urnstr.toLowerCase().contains("uniprot")) {
 						String prettyName = UniProtConstants.getNameFromID(urnstr);	
-						miriamManager.setPrettyName(resource, prettyName);
+						if (prettyName != null) {
+							miriamManager.setPrettyName(resource, prettyName);
+						}
 					}
 
 					Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
@@ -229,21 +233,34 @@ private void initialize() {
 		setLayout(new GridBagLayout());
 		
 		speciesNameTextField = new JTextField();
+		speciesNameTextField.setEditable(false);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		JLabel label = new JLabel("<html><u>Select only one species to edit properties</u></html>");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		JLabel label = new JLabel("Species Name");
+		label = new JLabel("Species Name");
 		add(label, gbc);
 		
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(speciesNameTextField, gbc);
 		
@@ -258,6 +275,7 @@ private void initialize() {
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setEditable(false);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -349,7 +367,7 @@ public void setModel(Model model) {
  * @param speciesContext The new value for the property.
  * @see #getSpeciesContext
  */
-public void setSpeciesContext(SpeciesContext speciesContext) {
+void setSpeciesContext(SpeciesContext speciesContext) {
 	if (fieldSpeciesContext == speciesContext) {
 		return;
 	}
@@ -371,14 +389,18 @@ private void showPCKeywordQueryPanel() {
  * Comment
  */
 private void updateInterface() {
-	if (fieldSpeciesContext == null || fieldModel == null) {
-		annotationTextArea.setText(null);
-		getPCLinkValueEditorPane().setText(null);
-		speciesNameTextField.setText(null);
-	} else {
+	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && fieldModel != null;
+	annotationTextArea.setEditable(bNonNullSpeciesContext);
+	speciesNameTextField.setEditable(bNonNullSpeciesContext);
+	pathwayDBJButton.setEnabled(bNonNullSpeciesContext);
+	if (bNonNullSpeciesContext) {
 		speciesNameTextField.setText(getSpeciesContext().getName());
 		annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));	
 		updatePCLink();
+	} else {
+		annotationTextArea.setText(null);
+		getPCLinkValueEditorPane().setText(null);
+		speciesNameTextField.setText(null);
 	}
 }
 
@@ -400,8 +422,7 @@ private JButton getPathwayDBbutton() {
 			PCLinkValueEditorPane = new JEditorPane();
 			PCLinkValueEditorPane.setContentType("text/html");
 			PCLinkValueEditorPane.setEditable(false);
-			PCLinkValueEditorPane.setBackground(Color.white);
-			PCLinkValueEditorPane.setForeground(DefaultScrollTableCellRenderer.uneditableForeground);
+			PCLinkValueEditorPane.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 			PCLinkValueEditorPane.setText(null);
 		}
 		return PCLinkValueEditorPane;
@@ -422,6 +443,18 @@ private JButton getPathwayDBbutton() {
 			e1.printStackTrace();
 			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());
 		}
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		if (selectedObjects == null || selectedObjects.length != 1) {
+			return;
+		}
+		if (selectedObjects[0] instanceof SpeciesContext) {
+			setSpeciesContext((SpeciesContext) selectedObjects[0]);
+		} else {
+			setSpeciesContext(null);
+		}		
 	}
 
 }
