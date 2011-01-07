@@ -109,7 +109,7 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 			selectedRows = ownerTable.getSelectedRows();
 		}
 		constructPopupMenu();
-		if (popupMenu.getComponents().length > 1) {
+		if (popupMenu != null && popupMenu.getComponents().length > 1) {
 			popupMenu.show(ownerTable,mouseEvent.getX(),mouseEvent.getY());
 		}
 	}
