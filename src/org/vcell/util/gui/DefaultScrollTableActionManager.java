@@ -5,13 +5,17 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -28,18 +32,36 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 		jtextfield,
 	}
 	
+	private class ColumnActionComponent {
+		JComponent source = null;
+		int column = -1;
+		boolean booleanValue;
+		ColumnActionComponent(int col, JTextField textField) {
+			column = col;
+			source = textField;
+		}
+		ColumnActionComponent(int col, JMenuItem menuItem, boolean checkedValue) {
+			column = col;
+			source = menuItem;
+			booleanValue = checkedValue;
+		}
+		Object getValue() {
+			if (source instanceof JTextField) {
+				return ((JTextField) source).getText();
+			} 
+			return booleanValue;
+		}
+	}
+	
 	protected JTable ownerTable = null;
-	protected JTextField popupTextField = null;
 	protected JPopupMenu popupMenu = null;
-	protected JLabel popupMenuTitleLabel = null;
 	protected JSeparator popupMenuSeparator = null;
-	protected JMenuItem popupMenuItemCheckSelected = null;
-	protected JMenuItem popupMenuItemUncheckSelected = null;
-	protected JLabel popupLabel1 = null;
-	protected JLabel popupTextFieldLabel2 = null;
+	protected JLabel popupLabel = null;
+	protected JLabel popupTextFieldLabel = null;
 	protected Set<Integer> disabledColumnPopups = new HashSet<Integer>();
+	protected List<ColumnActionComponent> columnActionComponentList = new ArrayList<ColumnActionComponent>();
+	protected JMenu[] columnMenus = null;
 	protected int[] selectedRows = null;
-	protected int selectedColumn = -1;
 
 	protected DefaultScrollTableActionManager(JTable table) {
 		ownerTable = table;
@@ -47,17 +69,17 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 
 	public void actionPerformed(ActionEvent e) {
 		popupMenu.setVisible(false);
-		TableModel dataModel = ownerTable.getModel();
-		for (int row : selectedRows) {
-			Object value = null;
-			if (e.getSource() == popupMenuItemCheckSelected) {
-				value = true;
-			} else if (e.getSource() == popupMenuItemUncheckSelected) {
-				value = false;
-			} else if (e.getSource() == popupTextField) {
-				value = popupTextField.getText();
+		TableModel tableModel = ownerTable.getModel();
+		for (ColumnActionComponent cac : columnActionComponentList) {
+			if (cac.source == e.getSource()) {
+				Object value = cac.getValue();
+				for (int row : selectedRows) {
+					if (tableModel.isCellEditable(row, cac.column)) {
+						tableModel.setValueAt(value, row, cac.column);
+					}
+				}
+				break;
 			}
-			dataModel.setValueAt(value, row, selectedColumn);
 		}		
 	}
 	
@@ -70,7 +92,6 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 			return;
 		}
 		selectedRows = ownerTable.getSelectedRows();
-		TableModel tableModel = ownerTable.getModel();
 		int clickRow = ownerTable.rowAtPoint(mouseEvent.getPoint());
 		boolean bFound = false;
 		if (selectedRows != null) {
@@ -87,39 +108,8 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 			ownerTable.scrollRectToVisible(rect);
 			selectedRows = ownerTable.getSelectedRows();
 		}
-		selectedColumn = ownerTable.columnAtPoint(mouseEvent.getPoint());
-		if (selectedColumn < 0 || selectedColumn >= tableModel.getColumnCount()) {
-			return;
-		}
-		if (disabledColumnPopups.contains(selectedColumn)) {
-			return;
-		}
-		String columnName = tableModel.getColumnName(selectedColumn);
-		if (columnName.equalsIgnoreCase("name")) {
-			return;
-		}
-		int[] uniqueColumns = getUniqueColumns();
-		if (uniqueColumns != null) {
-			for (int c : uniqueColumns) {
-				if (c == selectedColumn) {
-					return;
-				}
-			}
-		}
-		Class<?> columnClass = tableModel.getColumnClass(selectedColumn);
-		Component editorComponent = null;
-		TableCellEditor cellEditor = ownerTable.getColumnModel().getColumn(selectedColumn).getCellEditor();
-		if (cellEditor == null) {
-			cellEditor = ownerTable.getDefaultEditor(columnClass); 
-		}
-		if (cellEditor instanceof DefaultCellEditor) {
-			editorComponent = ((DefaultCellEditor)cellEditor).getComponent();
-		}
-		if (editorComponent == null || !(editorComponent instanceof JCheckBox) && !(editorComponent instanceof JTextField)) {
-			return;
-		}		
-		constructPopupMenu(editorComponent instanceof JCheckBox ? ScrollTableCellEditorType.jcheckbox : ScrollTableCellEditorType.jtextfield);
-		if (popupMenu.getComponents().length > 0) {
+		constructPopupMenu();
+		if (popupMenu.getComponents().length > 1) {
 			popupMenu.show(ownerTable,mouseEvent.getX(),mouseEvent.getY());
 		}
 	}
@@ -128,52 +118,100 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 		return null;
 	}
 
-	protected void constructPopupMenu(ScrollTableCellEditorType editorType) {
+	protected void constructPopupMenu() {
 		TableModel tableModel = ownerTable.getModel();
-		boolean bEditable = false;
-		for (int row : selectedRows) {
-			if (tableModel.isCellEditable(row, selectedColumn)) {
-				bEditable = true;
-				break;
+		int numColumns = tableModel.getColumnCount();
+		boolean[] bEditable = new boolean[numColumns];
+		boolean bTableEditable = false;
+		for (int c = 0; c < numColumns; c ++) {
+			for (int r = 0; r < selectedRows.length; r ++) {
+				if (tableModel.isCellEditable(selectedRows[r], c)) {
+					bEditable[c] = true;
+					bTableEditable = true;
+					break;
+				}
 			}
+		}
+		if (!bTableEditable) {
+			return;
 		}
 		if (popupMenu == null) {
 			popupMenu = new JPopupMenu();
-			popupMenuTitleLabel = new JLabel();
-//			popupMenuTitleLabel.setFont(popupMenuTitleLabel.getFont().deriveFont(Font.BOLD));
-			popupMenuSeparator = new JSeparator();
+			columnMenus = new JMenu[numColumns];
+			popupLabel = new javax.swing.JLabel();
+			popupLabel.setText(" Set Selected");
 		}
-		String columnName = tableModel.getColumnName(selectedColumn);
-		popupMenuTitleLabel.setText(columnName);
 		popupMenu.removeAll();
-		if (popupLabel1 == null) {
-			popupLabel1 = new javax.swing.JLabel();
-		}
-		if (bEditable) {
-			popupLabel1.setText(" Set '" + columnName + "' of selected to");
-			popupMenu.add(popupLabel1);
-			switch (editorType) {
-			case jcheckbox:
-				if (popupMenuItemCheckSelected == null) {
-					popupMenuItemCheckSelected = new JMenuItem("Checked");
-					popupMenuItemCheckSelected.addActionListener(this);
-					popupMenuItemUncheckSelected = new JMenuItem("Unchecked");
-					popupMenuItemUncheckSelected.addActionListener(this);
+		popupMenu.add(popupLabel);
+		int[] uniqueColumns = getUniqueColumns();
+		for (int c = 0; c < numColumns; c ++) {
+			String columnName = tableModel.getColumnName(c);
+			if (disabledColumnPopups.contains(c)) {
+				continue;
+			}
+			if (columnName.equalsIgnoreCase("name")) {
+				continue;
+			}
+			
+			boolean bUnique = false;
+			if (uniqueColumns != null) {
+				for (int uc : uniqueColumns) {
+					if (uc == c) {
+						bUnique = true;
+						break;
+					}
 				}
-				popupMenu.add(popupMenuItemCheckSelected);
-				popupMenu.add(popupMenuItemUncheckSelected);
-				break;
-			case jtextfield:
-				if (popupTextField == null) {
-					popupTextField = new JTextField(5);
-					popupTextField.addActionListener(this);
-					popupTextField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(2, 4, 2, 4), popupTextField.getBorder()));
-					popupTextFieldLabel2 = new JLabel(" (Press Enter or Return) ");
-					popupTextFieldLabel2.setFont(popupTextFieldLabel2.getFont().deriveFont(popupTextFieldLabel2.getFont().getSize2D() - 1));
+			}
+			if (bUnique) {
+				continue;
+			}
+			if (bEditable[c]) {
+				if (columnMenus[c] == null) {
+					Class<?> columnClass = tableModel.getColumnClass(c);
+					Component editorComponent = null;
+					TableCellEditor cellEditor = ownerTable.getColumnModel().getColumn(c).getCellEditor();
+					if (cellEditor == null) {
+						cellEditor = ownerTable.getDefaultEditor(columnClass); 
+					}
+					if (cellEditor instanceof DefaultCellEditor) {
+						editorComponent = ((DefaultCellEditor)cellEditor).getComponent();
+					}
+					if (editorComponent == null || !(editorComponent instanceof JCheckBox) && !(editorComponent instanceof JTextField)) {
+						continue;
+					}
+					ScrollTableCellEditorType editorType = editorComponent instanceof JCheckBox ? ScrollTableCellEditorType.jcheckbox : ScrollTableCellEditorType.jtextfield;
+					columnMenus[c] = new JMenu(columnName);
+					switch (editorType) {
+					case jcheckbox:
+						JMenuItem menuItemCheckSelected = new JMenuItem("Checked");
+						menuItemCheckSelected.addActionListener(this);
+						columnActionComponentList.add(new ColumnActionComponent(c, menuItemCheckSelected, true));
+						JMenuItem menuItemUncheckSelected = new JMenuItem("Unchecked");
+						menuItemUncheckSelected.addActionListener(this);
+						columnActionComponentList.add(new ColumnActionComponent(c, menuItemUncheckSelected, false));
+						columnMenus[c].add(menuItemCheckSelected);
+						columnMenus[c].add(menuItemUncheckSelected);
+						break;
+					case jtextfield:
+						JTextField textField = new JTextField(5);
+						textField.addActionListener(this);
+						textField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(2, 4, 2, 4), textField.getBorder()));
+						columnActionComponentList.add(new ColumnActionComponent(c, textField));
+						JLabel label = new JLabel(" (Press Enter or Return) ");
+						label.setFont(label.getFont().deriveFont(label.getFont().getSize2D() - 1));
+						columnMenus[c].add(textField);
+						columnMenus[c].add(label);
+						break;
+					}
 				}
-				popupMenu.add(popupTextField);
-				popupMenu.add(popupTextFieldLabel2);
-				break;
+				columnMenus[c].setEnabled(true);
+			} else {
+				if (columnMenus[c] != null) {
+					columnMenus[c].setEnabled(false);
+				}
+			}
+			if (columnMenus[c] != null) {
+				popupMenu.add(columnMenus[c]);
 			}
 		}
 	}
