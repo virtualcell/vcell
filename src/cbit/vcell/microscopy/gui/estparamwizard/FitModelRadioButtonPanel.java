@@ -26,7 +26,7 @@ public class FitModelRadioButtonPanel extends JPanel
 
 		diffOneRadioButton = new JRadioButton();
 //		diffOneRadioButton.setBackground(Color.white);
-		diffOneRadioButton.setText("Diffusion with One Diffusing Component");
+		diffOneRadioButton.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -36,7 +36,7 @@ public class FitModelRadioButtonPanel extends JPanel
 
 		diffTwoRadioButton = new JRadioButton();
 //		diffTwoRadioButton.setBackground(Color.white);
-		diffTwoRadioButton.setText("Diffusion with Two Diffusing Components");
+		diffTwoRadioButton.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_1.anchor = GridBagConstraints.WEST;
@@ -55,7 +55,7 @@ public class FitModelRadioButtonPanel extends JPanel
 //		add(diffBindingRadioButton, gridBagConstraints_2);
 		
 		koffRadioButton = new JRadioButton();
-		koffRadioButton.setText("Reaction only Model with Off Rate");
+		koffRadioButton.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]);
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 2;
 		gridBagConstraints_2.gridx = 0;

@@ -3,14 +3,10 @@ package cbit.vcell.microscopy.gui.choosemodelwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -87,7 +83,7 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 				{
 					throw new Exception("At least one model type has to be selected.");
 				}
-				if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE])
+				/*if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE])
 				{
 					if((fStudy.getNumSelectedROIs() > 1) ||
 					   (fStudy.getNumSelectedROIs() == 1) && !fStudy.isROISelectedForErrorCalculation(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()))
@@ -103,7 +99,7 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 					}
-				}
+				}*/
 				//update selected models in FrapStudy
 			    fStudy.refreshModels(models);
 			}

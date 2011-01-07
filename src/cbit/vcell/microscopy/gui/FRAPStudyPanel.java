@@ -344,6 +344,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	   				{
 		  	   				    //set need save flag
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
+	  	   						//set diffusion only parameters to null, an optimization need to be done with newly selected ROIs
+	  	   						//in addition, profile likelihood need to be done with newly selected ROIs too.
+	  	   						if(newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT) != null)
+	  	   						{
+	  	   							newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT).setModelParameters(null);
+	  	   							newFrapStudy.setProfileData_oneDiffComponent(null);
+	  	   						}
+	  	   						if(newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS) != null)
+	  	   						{
+	  	   							newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS).setModelParameters(null);
+	  	   							newFrapStudy.setProfileData_twoDiffComponents(null);
+	  	   						}
 		  	   				}
 		  	   				//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
 	  	   					if(!Compare.isEqualOrNull(lastCellROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())) ||
@@ -1632,7 +1644,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						FRAPStudy.runFVSolverStandalone(
 							new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 							new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-							bioModel.getSimulations(0),
+							bioModel.getSimulation(0),
 							fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 							fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
 							this.getClientTaskStatusSupport(), false);

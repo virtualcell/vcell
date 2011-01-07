@@ -562,7 +562,7 @@ public class FRAPStudy implements Matchable{
 		
 		return bioModel;
 	}
-	
+	//used in EstParams_ReactionOffRatePanel for showing selected ROIs
 	public static boolean[] createSelectedROIsForReactionOffRateModel()
 	{
 		boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
@@ -1675,11 +1675,10 @@ public class FRAPStudy implements Matchable{
 			{
 				for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
 				{
-					
 					if((i == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT || i == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS) &&
 						getFrapModel(i) != null && getFrapModel(i).getData() != null)
 					{
-						sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
+						sumData[i]=calculateMSE_OneModel(expData, getFrapModel(i).getData(), i);
 					}
 				}
 			}
@@ -1687,7 +1686,7 @@ public class FRAPStudy implements Matchable{
 			{
 				if(getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE) != null && getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).getData() != null)
 				{
-					sumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]=calculateMSE_OneParamSet(expData, getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).getData());
+					sumData[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]=calculateMSE_OneModel(expData, getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).getData(), FRAPModel.IDX_MODEL_REACTION_OFF_RATE);
 				}
 			}
 			setAnalysisMSESummaryData(sumData);
@@ -1699,7 +1698,7 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	//called by createAnalysisMSESummaryData, calculate MSE for one frap model
-	private double[] calculateMSE_OneParamSet(double[][] expData, double[][] simData)
+	private double[] calculateMSE_OneModel(double[][] expData, double[][] simData, int modelType)
 	{
 		double[] result = new double[getFrapData().getROILength()-2+1];//len: all ROIS except cellROI and bkgroundROI, plus a sum of error field
 		//fill all elements with 1e8 first
@@ -1719,14 +1718,15 @@ public class FRAPStudy implements Matchable{
 					noSelectedROIs ++;
 				}
 			}
-			else if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7) ||
-					FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8))
+			else if((modelType != FRAPModel.IDX_MODEL_REACTION_OFF_RATE) && 
+					(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7) ||
+					 FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8)))
 			{
 				if(selectedROIS[i])
 				{
@@ -1736,11 +1736,17 @@ public class FRAPStudy implements Matchable{
 				}
 			}
 		}
-		if(noSelectedROIs > 0)
+		if(hasReactionOnlyOffRateModel())//if has reaction off rate model, use error under bleached region to compare
 		{
-			result[result.length -1] = sumError/noSelectedROIs;
+			result[result.length -1] = result[0];
 		}
-		
+		else//if no reaction off rate model involved, use average error to compare
+		{
+			if(noSelectedROIs > 0)
+			{
+				result[result.length -1] = sumError/noSelectedROIs;
+			}
+		}
 		return result;
 	}
 	
