@@ -123,9 +123,11 @@ public class SubPlotPanel extends JPanel
     	//the following paragraph of code is just to get selected color for selected ROIs
 		//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel
 		int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
-		//need to know how many models(1,2,3) are selected to generate color sets, total 1(exp) + number of selected models
-		int numColorSet = frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + 1;
-		Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*numColorSet, getBackground(), new Integer(0));
+		//need to know how many models(1,2,3) are selected to generate color sets, total 1(exp) + number of selected models that 
+		//are using selectedROIsForErrorCalculation (e.g diffusion only models). for reaction off rate model,we only need color for bleahed ROI
+		int numColorSet = frapWorkspace.getWorkingFrapStudy().getNumDiffusionOnlyModels() + 1;
+		int numColorOffRate = (frapWorkspace.getWorkingFrapStudy().hasReactionOnlyOffRateModel())?1:0;
+		Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*numColorSet + numColorOffRate, getBackground(), new Integer(0));
 		boolean[] selectedROIs = frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation();
 		int selectedROICounter = 0;
 		for (int i=0; i<selectedROIs.length; i++)
@@ -135,7 +137,9 @@ public class SubPlotPanel extends JPanel
 				selectedROICounter++;
 			}
 		}
-		Color[] selectedColors = new Color[selectedROICounter*numColorSet];//ROI is a comparison of exp and several opt/sim results, color set should be number of models +1
+		//if there is reaction off rate model, we need to add one color(for its data under bleached region to selectedColors)
+		Color[] selectedColors = new Color[selectedROICounter*numColorSet + numColorOffRate];
+		
 		int selectedColorIdx = 0;
 		for(int i=0; i<selectedROIs.length; i++)
 		{
@@ -156,10 +160,14 @@ public class SubPlotPanel extends JPanel
 				selectedColorIdx++;
 			}
 		}
+		//adding color to display reaction off rate model data which has data under bleached ROI only
+		if(frapWorkspace.getWorkingFrapStudy().hasReactionOnlyOffRateModel())
+		{
+			selectedColors[selectedColorIdx] = fullColors[validROISize*numColorSet];
+		}
     	//above code trying to get selected color for exp plots and multiple opt/sim plots, which corresponding to the colors in 
     	//ChooseModel_RoiForErrorPanel/RoiForErrorPanel. However, since the numColors are different with the colors in ChooseModel_RoiForErrorPanel/RoiForErrorPanel,
     	//we cannot always get the same colors as in those panels. (only when there is a single model selected)
-    	
     	plotPane.setDataSources(argDataSources, selectedColors);
     	plotPane.selectAll();
     }

@@ -21,6 +21,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 	private JCheckBox diffOneCheckBox = null;
 	private JCheckBox diffTwoCheckBox = null;
 	private JCheckBox koffCheckBox = null;
+	private JCheckBox effectiveDiffCheckBox = null;
 //	private JCheckBox diffBindingCheckBox = null;
 	
 	public ChooseModel_ModelTypesPanel() {
@@ -113,6 +114,22 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		gridBagConstraints_10.gridx = 0;
 		add(koffCheckBox, gridBagConstraints_10);
 		
+		/*JLabel effectiveDiffLabel = new JLabel("Effective diffusion model :");
+		reactionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
+		reactionOnlyLabel.setForeground(new Color(0, 0, 128));
+		GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
+		gridBagConstraints_11.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_11.gridy = 21;
+		gridBagConstraints_11.gridx = 0;
+		add(effectiveDiffLabel, gridBagConstraints_11);
+		
+		effectiveDiffCheckBox = new JCheckBox();
+		effectiveDiffCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_EFFECTIVE_DIFFUSION]);
+		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
+		gridBagConstraints_12.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_12.gridy = 22;
+		gridBagConstraints_12.gridx = 0;
+		add(effectiveDiffCheckBox, gridBagConstraints_12);*/
 		/*diffBindingCheckBox = new JCheckBox();
 		diffBindingCheckBox.setText("Diffusion plus Binding");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();

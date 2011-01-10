@@ -15,12 +15,14 @@ public class FRAPModel implements Matchable
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
 		                                                       "Reaction Dominant Off Rate",
+		                                                       /*"Effective Diffusion",*/
 		                                                       "Diffusion plus Binding"};
 	//different model types
 	public static final int NUM_MODEL_TYPES = 4;
 	public static final int IDX_MODEL_DIFF_ONE_COMPONENT = 0;
 	public static final int IDX_MODEL_DIFF_TWO_COMPONENTS = 1;
 	public static final int IDX_MODEL_REACTION_OFF_RATE = 2;
+	/*public static final int IDX_MODEL_EFFECTIVE_DIFFUSION = 3;*/
 	public static final int IDX_MODEL_DIFF_BINDING = 3;
 	
 	//different model parameters

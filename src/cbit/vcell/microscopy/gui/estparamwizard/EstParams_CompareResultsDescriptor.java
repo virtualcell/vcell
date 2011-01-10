@@ -179,7 +179,6 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	//using the same loop, disable the radio button if the model is not included
     	((EstParams_CompareResultsPanel)this.getPanelComponent()).disableAllRadioButtons();//adjust radio buttons
     	ArrayList<Integer> selectedModelIndexes = fStudy.getSelectedModels();
-    	double[] expTimePoints = fStudy.getFrapData().getImageDataset().getImageTimeStamps();
     	
     	for(int i = 0; i<selectedModelIndexes.size(); i++)
     	{
@@ -218,7 +217,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 	    			ODESolverResultSet temSolverResultSet = FRAPOptimizationUtils.doubleArrayToSolverResultSet(temModel.getData(), 
 	    								 truncatedTimes,
 	    					             0,
-	    					             fStudy.getSelectedROIsForErrorCalculation());
+	    					             FRAPStudy.createSelectedROIsForReactionOffRateModel());//for reaction off model, display curve under bleached region only
 	    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("sim_Koff", temSolverResultSet);
     			}
     		}

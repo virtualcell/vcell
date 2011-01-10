@@ -29,7 +29,6 @@ import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VersionFlag;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -1582,6 +1581,20 @@ public class FRAPStudy implements Matchable{
 			return true;
 		}
 		return false;
+	}
+	
+	public int getNumDiffusionOnlyModels()
+	{
+		int numDiffOnlyModels = 0;
+		if(getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
+		{
+			numDiffOnlyModels ++;
+		}
+		if(getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
+		{
+			numDiffOnlyModels ++;
+		}
+		return numDiffOnlyModels;
 	}
 	
 	public boolean hasReactionOnlyOffRateModel()
