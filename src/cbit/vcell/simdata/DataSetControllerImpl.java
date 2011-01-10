@@ -912,7 +912,7 @@ private SimDataBlock evaluateFunction(
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE)){
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[i];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){
-					int memRegionIndex = mesh.getMembraneRegionIndex(i);
+					int memRegionIndex = i;
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[memRegionIndex];
 				}
 			}
