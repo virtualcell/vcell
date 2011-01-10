@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 import javax.swing.table.AbstractTableModel;
 
 import org.vcell.optimization.ConfidenceInterval;
-import org.vcell.optimization.ProfileDataElement;
 import org.vcell.optimization.ProfileSummaryData;
 
 import cbit.vcell.microscopy.FRAPModel;

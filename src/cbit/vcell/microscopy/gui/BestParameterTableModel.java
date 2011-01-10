@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.help.plaf.basic.BasicFavoritesNavigatorUI.RemoveAction;
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;

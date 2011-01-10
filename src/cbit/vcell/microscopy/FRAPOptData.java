@@ -1,20 +1,14 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.vcell.optimization.ConfidenceInterval;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
-import org.vcell.optimization.ProfileSummaryData;
-import org.vcell.util.DescriptiveStatistics;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.plot.Plot2D;
-import cbit.plot.PlotData;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
@@ -67,7 +61,6 @@ public class FRAPOptData {
 	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
 	//second dimension time, total time length - starting index for recovery 
 	private double[][] measurementErrors = null;
-	private ProfileSummaryData[][] allProfileSummaryData = null;
 	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			ClientTaskStatusSupport progressListener) throws Exception
