@@ -2478,20 +2478,26 @@ private void updateDataValueSurfaceViewer() {
 		return;
 	}
 	//SurfaceColors and DataValues
-	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
-	cbit.image.DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
+	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
+	DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
 	final int[][] surfaceColors = new int[surfaceCollection.getSurfaceCount()][];
 	final double[][] surfaceDataValues = new double[surfaceCollection.getSurfaceCount()][];
+	boolean bMembraneVariable = getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE);
 	for(int i=0;i<surfaceCollection.getSurfaceCount();i+= 1){
-		cbit.vcell.geometry.surface.Surface surface = surfaceCollection.getSurfaces(i);
+		Surface surface = surfaceCollection.getSurfaces(i);
 		surfaceColors[i] = new int[surface.getPolygonCount()];
 		surfaceDataValues[i] = new double[surface.getPolygonCount()];
 		for(int j=0;j<surface.getPolygonCount();j+= 1){
-			surfaceDataValues[i][j] = getPdeDataContext().getDataValues()[meshRegionSurfaces.getMembraneIndexForPolygon(i,j)];
+			int membraneIndexForPolygon = meshRegionSurfaces.getMembraneIndexForPolygon(i,j);
+			if (bMembraneVariable) {
+				surfaceDataValues[i][j] = getPdeDataContext().getDataValues()[membraneIndexForPolygon];
+			} else {
+				// get membrane region index from membrane index
+				surfaceDataValues[i][j] = getPdeDataContext().getDataValues()[getPdeDataContext().getCartesianMesh().getMembraneRegionIndex(membraneIndexForPolygon)];
+			}
 			surfaceColors[i][j] = das.getColorFromValue(surfaceDataValues[i][j]);
 		}
 	}
-	
 
 	DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider svdp = new DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider(){
 		private DisplayAdapterService updatedDAS = new DisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
