@@ -110,7 +110,7 @@ public KineticsTypeTemplatePanel(boolean editable) {
  * Creation date: (8/9/2006 10:10:52 PM)
  */
 public void cleanupOnClose() {
-	getParameterTableModel().setKinetics(null);
+	getParameterTableModel().setReactionStep(null);
 }
 
 
@@ -263,7 +263,7 @@ public void setReactionStep(ReactionStep newValue) {
 		return;
 	}
 	reactionStep = newValue;
-	getParameterTableModel().setKinetics(getKinetics());
+	getParameterTableModel().setReactionStep(newValue);
 	getKineticsTypeComboBox().setSelectedItem(getKineticType(getKinetics()));
 	updateToggleButtonLabel();	
 }

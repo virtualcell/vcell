@@ -19,6 +19,7 @@ import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
@@ -40,7 +41,7 @@ public class ParameterTableModel extends DefaultSortTableModel<Parameter> implem
 	public final static int COLUMN_VALUE = 3;
 	public final static int COLUMN_UNITS = 4;
 	private String LABELS[] = { "Name", "Description", "Global", "Expression", "Units" };
-	private Kinetics fieldKinetics = null;
+	private ReactionStep reactionStep = null;
 	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private boolean bEditable = true;
@@ -83,37 +84,29 @@ public Class<?> getColumnClass(int column) {
 }
 
 /**
- * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
- * @return The geometry property value.
- * @see #setGeometry
- */
-public Kinetics getKinetics() {
-	return fieldKinetics;
-}
-/**
  * getValueAt method comment.
  */
 private void refreshData() {
-	List<Parameter> parameterList = new ArrayList<Parameter>();
-	if (getKinetics() == null) {
-		setData(null);
-	} else {
-		parameterList.addAll(Arrays.asList(getKinetics().getKineticsParameters()));
-		parameterList.addAll(Arrays.asList(getKinetics().getProxyParameters()));
-		parameterList.addAll(Arrays.asList(getKinetics().getUnresolvedParameters()));
-		setData(parameterList);
+	List<Parameter> parameterList = null;
+	if (reactionStep != null) {
+		parameterList = new ArrayList<Parameter>();
+		parameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));
+		parameterList.addAll(Arrays.asList(reactionStep.getKinetics().getProxyParameters()));
+		parameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
 	}
+	setData(parameterList);
 }
 
 /**
  * getRowCount method comment.
  */
 public int getRowCount() {
-	if (getKinetics()==null){
+	if (reactionStep == null){
 		return 0;
-	}else{
-		return getKinetics().getKineticsParameters().length + getKinetics().getUnresolvedParameters().length + getKinetics().getProxyParameters().length;
 	}
+	
+	return reactionStep.getKinetics().getKineticsParameters().length + reactionStep.getKinetics().getUnresolvedParameters().length + reactionStep.getKinetics().getProxyParameters().length;
+	
 }
 
 public Object getValueAt(int row, int col) {
@@ -121,7 +114,7 @@ public Object getValueAt(int row, int col) {
 		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
-				return new Expression(parameter, getKinetics().getReactionStep().getNameScope()).infix();
+				return new Expression(parameter, reactionStep.getKinetics().getReactionStep().getNameScope()).infix();
 				//return parameter.getName();
 			}
 			case COLUMN_UNITS:{
@@ -205,25 +198,51 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && evt.getPropertyName().equals("kinetics")) {
-		Kinetics oldKinetics = (Kinetics)evt.getOldValue();
-		Kinetics newKinetics = (Kinetics)evt.getNewValue();
-		if (oldKinetics != null){
-			oldKinetics.removePropertyChangeListener(this);
-			for (int i = 0; i < oldKinetics.getKineticsParameters().length; i++){
-				oldKinetics.getKineticsParameters()[i].removePropertyChangeListener(this);
+	if (evt.getSource() == this && evt.getPropertyName().equals("reactionStep")) {
+		ReactionStep oldValue = (ReactionStep)evt.getOldValue();
+		if (oldValue != null){
+			oldValue.removePropertyChangeListener(this);
+			oldValue.getKinetics().removePropertyChangeListener(this);
+			for (int i = 0; i < oldValue.getKinetics().getKineticsParameters().length; i++){
+				oldValue.getKinetics().getKineticsParameters()[i].removePropertyChangeListener(this);
 			}
-			for (int i = 0; i < oldKinetics.getProxyParameters().length; i++){
-				oldKinetics.getProxyParameters()[i].removePropertyChangeListener(this);
+			for (int i = 0; i < oldValue.getKinetics().getProxyParameters().length; i++){
+				oldValue.getKinetics().getProxyParameters()[i].removePropertyChangeListener(this);
 			}
 		}
-		if (newKinetics != null){
-			newKinetics.addPropertyChangeListener(this);
-			for (int i = 0; i < newKinetics.getKineticsParameters().length; i++){
-				newKinetics.getKineticsParameters()[i].addPropertyChangeListener(this);
+		ReactionStep newValue = (ReactionStep)evt.getNewValue();
+		if (newValue != null){
+			newValue.addPropertyChangeListener(this);
+			newValue.getKinetics().addPropertyChangeListener(this);
+			for (int i = 0; i < newValue.getKinetics().getKineticsParameters().length; i++){
+				newValue.getKinetics().getKineticsParameters()[i].addPropertyChangeListener(this);
 			}
-			for (int i = 0; i < newKinetics.getProxyParameters().length; i++){
-				newKinetics.getProxyParameters()[i].addPropertyChangeListener(this);
+			for (int i = 0; i < newValue.getKinetics().getProxyParameters().length; i++){
+				newValue.getKinetics().getProxyParameters()[i].addPropertyChangeListener(this);
+			}
+			autoCompleteSymbolFilter = reactionStep.getAutoCompleteSymbolFilter();
+		}
+		refreshData();
+	}
+	if (evt.getSource() == reactionStep && evt.getPropertyName().equals(ReactionStep.PROPERTY_NAME_KINETICS)) {
+		Kinetics oldValue = (Kinetics)evt.getOldValue();		
+		if (oldValue != null){
+			oldValue.removePropertyChangeListener(this);
+			for (int i = 0; i < oldValue.getKineticsParameters().length; i++){
+				oldValue.getKineticsParameters()[i].removePropertyChangeListener(this);
+			}
+			for (int i = 0; i < oldValue.getProxyParameters().length; i++){
+				oldValue.getProxyParameters()[i].removePropertyChangeListener(this);
+			}
+		}
+		Kinetics newValue = (Kinetics)evt.getNewValue();
+		if (newValue != null){
+			newValue.addPropertyChangeListener(this);
+			for (int i = 0; i < newValue.getKineticsParameters().length; i++){
+				newValue.getKineticsParameters()[i].addPropertyChangeListener(this);
+			}
+			for (int i = 0; i < newValue.getProxyParameters().length; i++){
+				newValue.getProxyParameters()[i].addPropertyChangeListener(this);
 			}
 		}
 		refreshData();
@@ -250,13 +269,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setKinetics(Kinetics kinetics) {
-	Kinetics oldValue = fieldKinetics;
-	fieldKinetics = kinetics;
-	if (kinetics != null) {
-		autoCompleteSymbolFilter = kinetics.getReactionStep().getAutoCompleteSymbolFilter();
-	}
-	firePropertyChange("kinetics", oldValue, kinetics);
+public void setReactionStep(ReactionStep newValue) {
+	ReactionStep oldValue = reactionStep;
+	reactionStep = newValue;
+	firePropertyChange("reactionStep", oldValue, newValue);
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -269,7 +285,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newName = (String)aValue;
 						if (!parameter.getName().equals(newName)){
 							if (parameter instanceof Kinetics.KineticsParameter){
-								getKinetics().renameParameter(parameter.getName(),newName);
+								reactionStep.getKinetics().renameParameter(parameter.getName(),newName);
 							}else if (parameter instanceof Kinetics.KineticsProxyParameter){
 								parameter.setName(newName);
 							}
@@ -295,7 +311,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
 					} else {
 						try {
-							getKinetics().convertParameterType(parameter, false);
+							reactionStep.getKinetics().convertParameterType(parameter, false);
 						} catch (PropertyVetoException pve) {
 							pve.printStackTrace(System.out);
 							PopupGenerator.showErrorDialog(fieldParentComponentTable, "Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
@@ -309,7 +325,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if ( (parameter instanceof KineticsParameter) && (((KineticsParameter)parameter).getRole() != Kinetics.ROLE_UserDefined) ) {
 						PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter : \'" + parameter.getName() + "\' is a pre-defined kinetics parameter (not user-defined); cannot convert it to a model level (global) parameter.");
 					} else {
-						ModelParameter mp = getKinetics().getReactionStep().getModel().getModelParameter(parameter.getName());
+						ModelParameter mp = reactionStep.getKinetics().getReactionStep().getModel().getModelParameter(parameter.getName());
 						// model already had the model parameter 'param', but check if 'param' value is different from 
 						// model parameter with same name. If it is, the local value will be overridden by global (model) param
 						// value, and user should be warned.
@@ -330,14 +346,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 								if (!parameter.getExpression().isNumeric()) {
 									String[] symbols = parameter.getExpression().getSymbols();
 									for (int i = 0; i < symbols.length; i++) {
-										if (getKinetics().getKineticsParameter(symbols[i]) != null) {
+										if (reactionStep.getKinetics().getKineticsParameter(symbols[i]) != null) {
 											PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter \'" + parameter.getName() + "\' contains other local kinetic parameters; Cannot convert it to global until the referenced parameters are global.");
 											bPromoteable = false;
 										}
 									}
 								}
 								if (bPromoteable) {
-									getKinetics().convertParameterType(parameter, true);
+									reactionStep.getKinetics().convertParameterType(parameter, true);
 								}
 							} catch (PropertyVetoException pve) {
 								pve.printStackTrace(System.out);
@@ -365,12 +381,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof Kinetics.KineticsParameter){
-							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,new Expression(newExpressionString));
+							reactionStep.getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,new Expression(newExpressionString));
 						}else if (parameter instanceof Kinetics.KineticsProxyParameter){
 							parameter.setExpression(new Expression(newExpressionString));
 						}
 					}
-					getKinetics().resolveUndefinedUnits();
+					reactionStep.getKinetics().resolveUndefinedUnits();
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
@@ -388,7 +404,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						Kinetics.KineticsParameter kineticsParm = (Kinetics.KineticsParameter)parameter;
 						if (!kineticsParm.getUnitDefinition().getSymbol().equals(newUnitString)){
 							kineticsParm.setUnitDefinition(VCUnitDefinition.getInstance(newUnitString));
-							getKinetics().resolveUndefinedUnits();
+							reactionStep.getKinetics().resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

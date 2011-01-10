@@ -21,11 +21,15 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	private JTable thisTable = null;
 	private boolean bValidateBinding = false;
 	
-	public TableCellEditorAutoCompletion(JTable table, boolean arg_bValidateBinding) {		
-		super(new TextFieldAutoCompletion());
-		textFieldAutoCompletion = (TextFieldAutoCompletion)getComponent();
-		thisTable = table;	
-		bValidateBinding = arg_bValidateBinding;
+	public TableCellEditorAutoCompletion(JTable table, boolean bValidateBinding) {		
+		this(new TextFieldAutoCompletion(), table, bValidateBinding);
+	}
+	
+	public TableCellEditorAutoCompletion(TextFieldAutoCompletion textField, JTable table, boolean bValidateBinding) {		
+		super(textField);
+		this.textFieldAutoCompletion = (TextFieldAutoCompletion)getComponent();
+		this.thisTable = table;	
+		this.bValidateBinding = bValidateBinding;
 	}
 	
 	@Override
