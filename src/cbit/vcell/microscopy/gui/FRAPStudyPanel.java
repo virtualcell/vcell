@@ -1815,7 +1815,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		if(modelTypeWizard == null)
 		{
 			modelTypeWizard = new Wizard(JOptionPane.getFrameForComponent(this));
-			modelTypeWizard.getDialog().setTitle("Choose Model Type");
+			modelTypeWizard.getDialog().setTitle("Choose Models");
 	        
 			ChooseModel_ModelTypesDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
 	        modelTypeWizard.registerWizardPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);

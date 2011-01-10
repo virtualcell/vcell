@@ -26,12 +26,14 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 	
 	public ChooseModel_ModelTypesPanel() {
 		super();
-		setLayout(new GridBagLayout());
+		final GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.rowHeights = new int[] {0,0,0,0,7,7,7,7,0,0,0,0,0,7,0,0,0,0,0,0,7};
+		setLayout(gridBagLayout);
 
 		final JLabel choosePossibleModelLabel = new JLabel();
 		choosePossibleModelLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
 		choosePossibleModelLabel.setForeground(new Color(0, 0, 128));
-		choosePossibleModelLabel.setText("Choose Possible Model Types");
+		choosePossibleModelLabel.setText("Choose Possible Models");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.gridy = 0;
@@ -39,10 +41,10 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(choosePossibleModelLabel, gridBagConstraints);
 
 		final JLabel chooseOneOrLabel = new JLabel();
-		chooseOneOrLabel.setText("Choose one or more possible model types that may fit your data. A comparison of the ");
+		chooseOneOrLabel.setText("Choose one or more possible models that may fit your data. A comparison of the ");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_1.gridy = 4;
+		gridBagConstraints_1.gridy = 7;
 		gridBagConstraints_1.gridx = 0;
 		add(chooseOneOrLabel, gridBagConstraints_1);
 
@@ -50,7 +52,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		selectedModelsWillLabel.setText("selected models will be given after  'Parameter Estimation'.  The possible models are");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_2.gridy = 5;
+		gridBagConstraints_2.gridy = 8;
 		gridBagConstraints_2.gridx = 0;
 		add(selectedModelsWillLabel, gridBagConstraints_2);
 
@@ -58,7 +60,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		diffusionWithOneLabel.setText("listed below :");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_3.gridy = 6;
+		gridBagConstraints_3.gridy = 9;
 		gridBagConstraints_3.gridx = 0;
 		add(diffusionWithOneLabel, gridBagConstraints_3);
 
@@ -67,16 +69,16 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		separator.setBorder(BorderFactory.createCompoundBorder(new EtchedBorder(EtchedBorder.RAISED),new EtchedBorder(EtchedBorder.LOWERED)));
 		GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.gridy = 8;
+		gridBagConstraints_8.gridy = 12;
 		gridBagConstraints_8.gridx = 0;
 		add(separator, gridBagConstraints_8);
 		
-		JLabel diffustionOnlyLabel = new JLabel("Diffusion only models :");
+		JLabel diffustionOnlyLabel = new JLabel("Diffusion Dominant Models :");
 		diffustionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
 		diffustionOnlyLabel.setForeground(new Color(0, 0, 128));
 		GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_7.gridy = 13;
+		gridBagConstraints_7.gridy = 18;
 		gridBagConstraints_7.gridx = 0;
 		add(diffustionOnlyLabel, gridBagConstraints_7);
 		
@@ -85,7 +87,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		diffOneCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_5.gridy = 14;
+		gridBagConstraints_5.gridy = 19;
 		gridBagConstraints_5.gridx = 0;
 		add(diffOneCheckBox, gridBagConstraints_5);
 
@@ -93,16 +95,16 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		diffTwoCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_6.gridy = 15;
+		gridBagConstraints_6.gridy = 20;
 		gridBagConstraints_6.gridx = 0;
 		add(diffTwoCheckBox, gridBagConstraints_6);
 		
-		JLabel reactionOnlyLabel = new JLabel("Reaction only models :");
+		JLabel reactionOnlyLabel = new JLabel("Reaction Dominant Models :");
 		reactionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
 		reactionOnlyLabel.setForeground(new Color(0, 0, 128));
 		GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_9.gridy = 19;
+		gridBagConstraints_9.gridy = 25;
 		gridBagConstraints_9.gridx = 0;
 		add(reactionOnlyLabel, gridBagConstraints_9);
 		
@@ -110,7 +112,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		koffCheckBox.setText(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]);
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_10.gridy = 20;
+		gridBagConstraints_10.gridy = 26;
 		gridBagConstraints_10.gridx = 0;
 		add(koffCheckBox, gridBagConstraints_10);
 		
