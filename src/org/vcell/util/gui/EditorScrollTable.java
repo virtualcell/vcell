@@ -19,11 +19,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.gui.TextFieldAutoCompletion;
 
 /**
  * EditorScrollTable extends ScrollTable and enables the user to keep editing using key from one cell to another.
@@ -68,12 +72,53 @@ public class EditorScrollTable extends JSortTable {
 		}
 	}
 	
+	static class ReactionEquationTextFieldAutoCompletion extends TextFieldAutoCompletion {
+		public ReactionEquationTextFieldAutoCompletion() {
+			super();
+			getDocument().addDocumentListener(new DocumentListener() {
+				
+				public void removeUpdate(DocumentEvent e) {
+				}
+				
+				public void insertUpdate(DocumentEvent e) {	
+					if (e.getLength() > 1) {
+						return;
+					}
+					final int caretPos = getCaretPosition();
+					final String text = getText();					
+					final int len = text.length();
+					if (len < 1) {
+						return;
+					}
+					SwingUtilities.invokeLater(new Runnable() {						
+						public void run() {
+							try {
+								Document doc = getDocument();
+								if (text.charAt(caretPos) == '-' && (caretPos + 1 >= len || text.charAt(caretPos + 1) != '>')) {
+									doc.insertString(caretPos + 1, ">", null);
+									setCaretPosition(caretPos + 2);
+								}
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							} finally {				
+							}							
+						}
+					});
+				}
+				
+				public void changedUpdate(DocumentEvent e) {					
+				}
+			});
+		}
+		
+	}
+	
 	protected class DefaultScrollTableAutoCompleteCellEditor extends TableCellEditorAutoCompletion {
 		public DefaultScrollTableAutoCompleteCellEditor(JTable table) {
-			this(table, false);
+			this(new TextFieldAutoCompletion(), table);
 		}
-		public DefaultScrollTableAutoCompleteCellEditor(JTable table, boolean arg_bValidateBinding) {
-			super(table, arg_bValidateBinding);
+		public DefaultScrollTableAutoCompleteCellEditor(TextFieldAutoCompletion textField, JTable table) {
+			super(textField, table, false);
 			textFieldAutoCompletion.addActionListener(new ActionListener() {				
 				public void actionPerformed(ActionEvent e) {
 					if (textFieldAutoCompletion.getSelectedIndex() < 0) {
@@ -177,7 +222,7 @@ public class EditorScrollTable extends JSortTable {
 	@Override
 	public void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
 		super.setValidateExpressionBinding(bValidateExpressionBinding);
-		setDefaultEditor(ReactionEquation.class,new DefaultScrollTableAutoCompleteCellEditor(this, bValidateExpressionBinding));
+		setDefaultEditor(ReactionEquation.class,new DefaultScrollTableAutoCompleteCellEditor(new ReactionEquationTextFieldAutoCompletion(), this));
 	}
 	
 	@Override

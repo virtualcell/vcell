@@ -42,7 +42,6 @@ import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
 @SuppressWarnings("serial")
 public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
-	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;
 	private JButton jToggleButton = null;
@@ -69,15 +68,10 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.Nernst
 	};
 	
-class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener, ListSelectionListener {
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ReactionPropertiesPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
-				updateInterface();
-			}			
-		}
+	private class IvjEventHandler implements ActionListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) 
-				updateKineticChoice((KineticsDescription)getKineticsTypeComboBox().getSelectedItem());
+				updateKineticChoice();
 		}
 		public void valueChanged(ListSelectionEvent e) {
 			tableSelectionChanged();			
@@ -110,7 +104,7 @@ private void tableSelectionChanged() {
  * Creation date: (8/9/2006 10:10:52 PM)
  */
 public void cleanupOnClose() {
-	getParameterTableModel().setKinetics(null);
+	getParameterTableModel().setReactionStep(null);
 }
 
 private ScrollTable getScrollPaneTable() {
@@ -147,17 +141,6 @@ private void handleException(java.lang.Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	 exception.printStackTrace(System.out);
-}
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
-	getKineticsTypeComboBox().addActionListener(ivjEventHandler);
 }
 
 private void initialize() {
@@ -242,7 +225,8 @@ private void initialize() {
 		add(collapsiblePanel, gbc);
 		
 		setBackground(Color.white);
-		initConnections();
+		
+		getKineticsTypeComboBox().addActionListener(ivjEventHandler);
 		initKineticChoices();
 		
 		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
@@ -282,9 +266,12 @@ public static void main(java.lang.String[] args) {
  * @see #getKinetics
  */
 private void setReactionStep(ReactionStep newValue) {
-	ReactionStep oldValue = reactionStep;
+	if (reactionStep == newValue) {
+		return;
+	}
 	reactionStep = newValue;
-	firePropertyChange(PROPERTY_NAME_REACTION_STEP, oldValue, newValue);
+	getParameterTableModel().setReactionStep(reactionStep);
+	updateInterface();
 }
 
 private javax.swing.JComboBox getKineticsTypeComboBox() {
@@ -367,7 +354,14 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 	return kineticsTypeComboBox;
 }
 
-private void updateKineticChoice(KineticsDescription newKineticChoice) {
+private void updateKineticChoice() {
+	KineticsDescription newKineticChoice = (KineticsDescription)getKineticsTypeComboBox().getSelectedItem();
+	//
+	// if same as current kinetics, don't create new one
+	//
+	if (reactionStep == null || reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
+		return;
+	}
 	boolean bFoundKineticType = false;
 	KineticsDescription[] kineticTypes = reactionStep instanceof SimpleReaction ? Simple_Reaction_Kinetic_Types : Flux_Reaction_KineticTypes;
 	for (int i=0;i<kineticTypes.length;i++){
@@ -379,23 +373,11 @@ private void updateKineticChoice(KineticsDescription newKineticChoice) {
 	if (!bFoundKineticType){
 		return;
 	}
-	//
-	// if same as current kinetics, don't create new one
-	//
-	if (reactionStep!=null && reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
-		return;
-	}
-	if (!getKineticsTypeComboBox().getSelectedItem().equals(newKineticChoice)) {
-		getKineticsTypeComboBox().setSelectedItem(newKineticChoice);
-	}
-	if (reactionStep != null) {
-		try {
-			if (!reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
-				reactionStep.setKinetics(newKineticChoice.createKinetics(reactionStep));
-			}
-		} catch (Exception exc) {
-			handleException(exc);
-		}
+	
+	try {
+		reactionStep.setKinetics(newKineticChoice.createKinetics(reactionStep));
+	} catch (Exception exc) {
+		handleException(exc);
 	}
 }
 
@@ -492,11 +474,8 @@ protected void updateInterface() {
 		initKineticChoices();
 		reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
 		reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());
-		getParameterTableModel().setKinetics(reactionStep.getKinetics());
 		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 		updateToggleButtonLabel();
-	} else {
-		getParameterTableModel().setKinetics(null);
 	}
 }
 

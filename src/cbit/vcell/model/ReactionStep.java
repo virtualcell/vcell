@@ -50,6 +50,8 @@ public abstract class ReactionStep
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
 {
 
+	public static final String PROPERTY_NAME_KINETICS = "kinetics";
+	
 	private String annotation = null;
 	
 	
@@ -672,7 +674,7 @@ public void setKinetics(Kinetics kinetics) {
 		e.printStackTrace(System.out);
 	}	
 	
-	firePropertyChange("kinetics", oldValue, kinetics);
+	firePropertyChange(PROPERTY_NAME_KINETICS, oldValue, kinetics);
 }
 /**
  * Insert the method's description here.
