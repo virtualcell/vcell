@@ -193,7 +193,7 @@ public class VisitProcess {
 		waitASec();
 		sendCommandAndNoteResponse("Launch()\n");	
 		waitNSecs(10);
-		sendCommandAndNoteResponse("isCLI = True\n");
+		//sendCommandAndNoteResponse("isCLI = True\n");
 	}
 
 	public static void main(String[] args){

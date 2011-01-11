@@ -78,7 +78,8 @@ public final class VisitPythonCommand {
 	public static String DrawPlots() {return("visit.DrawPlots()");}
 	
 
-	public static String GetCallbackNames() {return("visit.GetCallbackNames");}
+	public static String GetCallbackNames() {return("visit.GetCallbackNames()");}
+	public static String GetGlobalAttributes() {return("visit.GetGlobalAttributes()");}
 	
 	public static String GetLastError() {return("visit.GetLastError()");}
 
