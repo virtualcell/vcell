@@ -55,6 +55,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionStep;
@@ -72,35 +73,6 @@ import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
  */
 @SuppressWarnings("serial")
 public class BioModelEditor extends DocumentEditor {
-//	protected static final String modelNodeDescription = "<html>To specify reactions, structures (compartments), " +
-//		"species and global parameters, select one of the tab in the right top panel:  " +
-//		"type in <b>" + BioModelEditorModelPanel.ModelPanelTab.reaction_table.getName() + "</b>, <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.structure_table.getName() + "</b>, <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.species_table.getName() + "</b> and <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.reaction_table.getName() + "</b>, or draw in <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.reaction_diagram.getName() + "</b> and <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.structure_diagram.getName() + "</b>." 
-//		 + "<br><br>" +  generalTreeNodeDescription + "</html>";
-//	protected static final String reactionsNodeDescription = "<html>To specify reactions, select one of the tabs in the right top panel: " +
-//		"type in <b>" + BioModelEditorModelPanel.ModelPanelTab.reaction_table.getName() + "</b> or draw in <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.reaction_diagram.getName() + "</b>." +
-//		"<br><br>" +  generalTreeNodeDescription + "</html>";
-//	protected static final String speciesNodeDescription = "<html>To specify species, select one of the tabs in the right top panel: " +
-//		"type in <b>" + BioModelEditorModelPanel.ModelPanelTab.species_table.getName() + "</b> or draw in <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.reaction_diagram.getName() + "</b> or <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.structure_diagram.getName() + "</b>. Species specified in <b>"		
-//		 + BioModelEditorModelPanel.ModelPanelTab.reaction_diagram.getName() + "</b> or <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.structure_diagram.getName() + "</b> will automatically appear in <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.species_table.getName() + "</b> tab." +
-//		"<br><br>" +  generalTreeNodeDescription + "</html>";
-//	protected static final String structuresNodeDescription = "<html>To specify structures, select one of the tabs in the right top panel: " +
-//		"type in <b>" + BioModelEditorModelPanel.ModelPanelTab.structure_table.getName() + "</b> or place compartments in <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.structure_diagram.getName() + "</b>." +
-//		"<br><br>" +  generalTreeNodeDescription + "</html>";
-//	protected static final String globalParametersNodeDescription = "<html>To specify global parameters, select <b>"
-//		 + BioModelEditorModelPanel.ModelPanelTab.parameter_table.getName() + "</b> tab in the right top panel." +
-//		"<br><br>" +  generalTreeNodeDescription + "</html>";
-
 	private BioModelWindowManager bioModelWindowManager = null;
 	private BioModel bioModel = new BioModel(null);
 	
@@ -135,7 +107,7 @@ public class BioModelEditor extends DocumentEditor {
 	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
 	private StructurePropertiesPanel structurePropertiesPanel = null;
-	private ModelParameterPropertiesPanel modelParameterPropertiesPanel = null;
+	private ParameterPropertiesPanel parameterPropertiesPanel = null;
 	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
 	private ApplicationPropertiesPanel applicationPropertiesPanel = null;
 	private SpeciesContextSpecPanel speciesContextSpecPanel = null;
@@ -571,11 +543,11 @@ private StructurePropertiesPanel getStructurePropertiesPanel() {
 	}
 	return structurePropertiesPanel;
 }
-private ModelParameterPropertiesPanel getModelParameterPropertiesPanel() {
-	if (modelParameterPropertiesPanel == null) {
-		modelParameterPropertiesPanel = new ModelParameterPropertiesPanel();
+private ParameterPropertiesPanel getParameterPropertiesPanel() {
+	if (parameterPropertiesPanel == null) {
+		parameterPropertiesPanel = new ParameterPropertiesPanel();
 	}
-	return modelParameterPropertiesPanel;
+	return parameterPropertiesPanel;
 }
 private ApplicationsPropertiesPanel getApplicationsPropertiesPanel() {
 	if (applicationsPropertiesPanel == null) {
@@ -647,7 +619,7 @@ private void initialize() {
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
-		getModelParameterPropertiesPanel().setSelectionManager(selectionManager);
+		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -672,10 +644,10 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof Structure) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
-		} else if (singleSelection instanceof ModelParameter) {
-			bottomComponent = getModelParameterPropertiesPanel();
 		} else if (singleSelection instanceof KineticsParameter) {
 			bottomComponent = getReactionPropertiesPanel();
+		} else if (singleSelection instanceof Parameter) {
+			bottomComponent = getParameterPropertiesPanel();
 		} else if (singleSelection instanceof SimulationContext) {
 			bottomComponent = getApplicationPropertiesPanel();
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
@@ -730,12 +702,13 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
-				bottomComponent = getModelParameterPropertiesPanel();
+				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
 					bottomComponent = getSimulationSummaryPanel();
 //			} else if (folderClass == DocumentEditorTreeFolderClass.MODELINFO_NODE) {
 //				bottomComponent = bioModelEditorAnnotationPanel;
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
+				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
 				bottomComponent = getApplicationsPropertiesPanel();
 				getApplicationsPropertiesPanel().setBioModel(bioModel);

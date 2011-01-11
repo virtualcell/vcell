@@ -23,10 +23,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -37,10 +37,13 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,6 +67,7 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
@@ -107,8 +111,8 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -125,9 +129,9 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -235,8 +239,8 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
 	//
 	private PDEDataContext fieldPdeDataContext = null;
-	private JButton ivjJButtonSpatial = null;
-	private JButton ivjJButtonTime = null;
+//	private JButton ivjJButtonSpatial = null;
+//	private JButton ivjJButtonTime = null;
 	private PDEDataContextPanel ivjPDEDataContextPanel1 = null;
 	private PDEPlotControlPanel ivjPDEPlotControlPanel1 = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -253,31 +257,51 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	private boolean ivjConnPtoP7Aligning = false;
 	private NewPDEExportPanel ivjPDEExportPanel1 = null;
 	private ExportMonitorPanel ivjExportMonitorPanel1 = null;
-	private JButton ivjKymographJButton = null;
+//	private JButton ivjKymographJButton = null;
 	private boolean ivjConnPtoP9Aligning = false;
 	private JButton ivjJButtonSurfaces = null;
 	private boolean ivjConnPtoP10Aligning = false;
 	private PDEDataContext ivjpdeDataContext1 = null;
-	private JButton ivjJButtonSnapshotROI = null;
+//	private JButton ivjJButtonSnapshotROI = null;
 	private BitSet volumeSnapshotROI;
 	private String volumeSnapshotROIDescription;
 	private BitSet membraneSnapshotROI;
 	private String membraneSnapshotROIDescription;
+	private JButton plotButton = null;
+	private JPopupMenu plotPopupMenu = null;
+	private JMenuItem spatialPlotMenuItem;
+	private JMenuItem timePlotMenuItem;
+	private JMenuItem kymographMenuItem;
+//	private JMenuItem visitMenuItem;
+	
+	private JButton roiButton = null;
+	private JPopupMenu roiPopupMenu = null;
+	private JMenuItem statisticsMenuItem;
+	private JMenuItem snapShotMenuItem;
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
 	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == PDEDataViewer.this.getJButtonSpatial()) 
+			if (e.getSource() == getPlotButton()) {	
+				getPlotPopupMenu().show(getPlotButton(), 0, getPlotButton().getHeight());
+			} else if (e.getSource() == getROIButton()) {
+				getROIPopupMenu().show(getROIButton(), 0, getROIButton().getHeight());
+			} else if (e.getSource() == spatialPlotMenuItem) { 
 				connEtoC2(e);
-			if (e.getSource() == PDEDataViewer.this.getJButtonTime()) 
+			} else if (e.getSource() == timePlotMenuItem) { 
 				connEtoC3(e);
-			if (e.getSource() == PDEDataViewer.this.getKymographJButton()) 
+			} else if (e.getSource() == kymographMenuItem) { 
 				connEtoC4(e);
-			if (e.getSource() == PDEDataViewer.this.getJButtonSurfaces()) 
+			} else if (e.getSource() == PDEDataViewer.this.getJButtonSurfaces()) { 
 				connEtoC6(e);
-			if (e.getSource() == PDEDataViewer.this.getJButtonStatistics()) 
+			} else if (e.getSource() == statisticsMenuItem) { 
 				connEtoC9(e);
+			} else if (e.getSource() == snapShotMenuItem) {
+				snapshotROI();
+			} else if (e.getSource() == getJButtonVisit()) {
+				openInVisit();
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == PDEDataViewer.this &&
@@ -399,7 +423,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		}
 	}
 
-	private JButton ivjJButtonStatistics = null;
+//	private JButton ivjJButtonStatistics = null;
 	private Simulation fieldSimulation = null;
 
 public PDEDataViewer() {
@@ -1654,22 +1678,22 @@ private ExportMonitorPanel getExportMonitorPanel1() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonSpatial() {
-	if (ivjJButtonSpatial == null) {
-		try {
-			ivjJButtonSpatial = new JButton();
-			ivjJButtonSpatial.setName("JButtonSpatial");
-			ivjJButtonSpatial.setText("Show Spatial Plot");
-			// user code begin {1}
-			// user code end
-		} catch (Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonSpatial;
-}
+//private javax.swing.JButton getJButtonSpatial() {
+//	if (ivjJButtonSpatial == null) {
+//		try {
+//			ivjJButtonSpatial = new JButton();
+//			ivjJButtonSpatial.setName("JButtonSpatial");
+//			ivjJButtonSpatial.setText("Show Spatial Plot");
+//			// user code begin {1}
+//			// user code end
+//		} catch (Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJButtonSpatial;
+//}
 
 
 /**
@@ -1677,21 +1701,106 @@ private javax.swing.JButton getJButtonSpatial() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonStatistics() {
-	if (ivjJButtonStatistics == null) {
-		try {
-			ivjJButtonStatistics = new javax.swing.JButton();
-			ivjJButtonStatistics.setName("JButtonStatistics");
-			ivjJButtonStatistics.setText("Statistics");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+//private javax.swing.JButton getJButtonStatistics() {
+//	if (ivjJButtonStatistics == null) {
+//		try {
+//			ivjJButtonStatistics = new javax.swing.JButton();
+//			ivjJButtonStatistics.setName("JButtonStatistics");
+//			ivjJButtonStatistics.setText("Statistics");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJButtonStatistics;
+//}
+
+private void openInVisit() {
+	try{
+		 /*
+		 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
+		 if vcDId instanceOf VCSim
+		 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
+		 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
+		KeyValue fieldDataKey = null;
+		int jobIndex = 0;
+		boolean isOldStyle = false;
+		VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
+		if(vcdid instanceof VCSimulationDataIdentifier){
+			fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
+			jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
 		}
+		else if(vcdid instanceof VCSimulationDataIdentifierOldStyle){
+			isOldStyle = true;
+			fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
+			jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
+		}else{
+			throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
+		}
+
+		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
+		String userName = getSimulation().getVersion().getOwner().getName();
+		//if (new File("/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/").exists()) {
+		//	libDir = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/";
+		//}
+		//else {
+		JFileChooser chooser = new JFileChooser();
+		 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+		 chooser.setDialogTitle("Select location of VisIt Python Library.");
+		 int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+		 if(returnVal == JFileChooser.APPROVE_OPTION) {
+		       System.out.println("You chose to open this directory as the Visit Python Library: " +
+		            chooser.getSelectedFile().getAbsolutePath());
+		       libDir = chooser.getSelectedFile().getAbsolutePath();
+		 }
+		//}
+		visitProcess = new VisitProcess(libDir);
+		VisitControlPanel visitControlPanel= new VisitControlPanel();
+		visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
+		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
+		
+		showComponentInFrame(visitControlPanel, "Visit Control Panel");
+		visitProcess.sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
+		String s = "visit.OpenDatabase(\""+ "10.84.11.40:/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
+		System.out.println("About to open " + s);
+		visitProcess.sendCommandAndNoteResponse(s);
+		//String s2=getPdeDataContext().getVariableName();
+		//visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
+		//visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
+		
+		 //JFileChooser chooser = new JFileChooser();
+		// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+		 //chooser.setDialogTitle("Select location of RAID filesystem mount");
+		// int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+		 //if(returnVal == JFileChooser.APPROVE_OPTION) {
+		  //     System.out.println("You chose to open this file: " +
+		  //          chooser.getSelectedFile().getName());
+//		       if (System.getProperties().getProperty("os.arch").contains("MacOS")) {
+//		    	   //Assume, FOR THE MOMENT, that if we're running MacOSX, we're running on Ed Boyce's machine
+//		    	   String execCommand = "/Users/edboyce/visit/bin/visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+		       	   //String execCommand = "/Users/edboyce/visit/bin/visit -cli";
+		       	   
+		    	   
+		    	   //					    	   Runtime.getRuntime().exec(execCommand);
+//		       }
+//		       if (System.getProperties().getProperty("os.arch").contains("Linux")) {
+//		    	   //Assume on Linux that the visit command is in the path.
+//			       String execCommand = "bash visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+				   
+		       	   //ProcessInfo  pi = VisitProcess.spawnProcess(execCommand);
+		     
+//			   }
+		 }
+
+		 
+	
+	
+	catch(Exception e1) {
+		e1.printStackTrace();
 	}
-	return ivjJButtonStatistics;
 }
 
 private JButton ivjButtonVisit;
@@ -1700,175 +1809,238 @@ private JButton getJButtonVisit(){
 		ivjButtonVisit = new javax.swing.JButton();
 		ivjButtonVisit.setName("JButtonVisit");
 		ivjButtonVisit.setText("Open in VisIt");
-		ivjButtonVisit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				
-				try{
-					 /*
-					 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
-					 if vcDId instanceOf VCSim
-					 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
-					 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
-					KeyValue fieldDataKey = null;
-					int jobIndex = 0;
-					boolean isOldStyle = false;
-					VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
-					if(vcdid instanceof VCSimulationDataIdentifier){
-						fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
-						jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
-					}
-					else if(vcdid instanceof VCSimulationDataIdentifierOldStyle){
-						isOldStyle = true;
-						fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
-						jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
-					}else{
-						throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
-					}
-
-					String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-					String userName = getSimulation().getVersion().getOwner().getName();
-					//if (new File("/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/").exists()) {
-					//	libDir = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/";
-					//}
-					//else {
-					JFileChooser chooser = new JFileChooser();
-					 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
-					 chooser.setDialogTitle("Select location of VisIt Python Library.");
-					 int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
-					 if(returnVal == JFileChooser.APPROVE_OPTION) {
-					       System.out.println("You chose to open this directory as the Visit Python Library: " +
-					            chooser.getSelectedFile().getAbsolutePath());
-					       libDir = chooser.getSelectedFile().getAbsolutePath();
-					 }
-					//}
-					visitProcess = new VisitProcess(libDir);
-					VisitControlPanel visitControlPanel= new VisitControlPanel();
-					visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
-					visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
-					
-					showComponentInFrame(visitControlPanel, "Visit Control Panel");
-					visitProcess.sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
-					String s = "visit.OpenDatabase(\""+ "10.84.11.40:/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
-					System.out.println("About to open " + s);
-					visitProcess.sendCommandAndNoteResponse(s);
-					//String s2=getPdeDataContext().getVariableName();
-					//visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
-					//visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
-					
-					 //JFileChooser chooser = new JFileChooser();
-					// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
-					 //chooser.setDialogTitle("Select location of RAID filesystem mount");
-					// int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
-					 //if(returnVal == JFileChooser.APPROVE_OPTION) {
-					  //     System.out.println("You chose to open this file: " +
-					  //          chooser.getSelectedFile().getName());
-//					       if (System.getProperties().getProperty("os.arch").contains("MacOS")) {
-//					    	   //Assume, FOR THE MOMENT, that if we're running MacOSX, we're running on Ed Boyce's machine
-//					    	   String execCommand = "/Users/edboyce/visit/bin/visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
-					       	   //String execCommand = "/Users/edboyce/visit/bin/visit -cli";
-					       	   
-					    	   
-					    	   //					    	   Runtime.getRuntime().exec(execCommand);
-//					       }
-//					       if (System.getProperties().getProperty("os.arch").contains("Linux")) {
-//					    	   //Assume on Linux that the visit command is in the path.
-			//			       String execCommand = "bash visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
-							   
-					       	   //ProcessInfo  pi = VisitProcess.spawnProcess(execCommand);
-					     
-//						   }
-					 }
-
-					 
-				
-				
-				catch(Exception e1) {
-					e1.printStackTrace();
-				}
-				
-				}
-		});
+		ivjButtonVisit.addActionListener(ivjEventHandler);
+//		ivjButtonVisit.addActionListener(new ActionListener(){
+//			public void actionPerformed(ActionEvent e) {
+//				
+//				try{
+//					 /*
+//					 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
+//					 if vcDId instanceOf VCSim
+//					 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
+//					 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
+//					KeyValue fieldDataKey = null;
+//					int jobIndex = 0;
+//					boolean isOldStyle = false;
+//					VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
+//					if(vcdid instanceof VCSimulationDataIdentifier){
+//						fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
+//						jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
+//					}
+//					else if(vcdid instanceof VCSimulationDataIdentifierOldStyle){
+//						isOldStyle = true;
+//						fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
+//						jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
+//					}else{
+//						throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
+//					}
+//
+//					String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
+//					String userName = getSimulation().getVersion().getOwner().getName();
+//					//if (new File("/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/").exists()) {
+//					//	libDir = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/";
+//					//}
+//					//else {
+//					JFileChooser chooser = new JFileChooser();
+//					 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+//					 chooser.setDialogTitle("Select location of VisIt Python Library.");
+//					 int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+//					 if(returnVal == JFileChooser.APPROVE_OPTION) {
+//					       System.out.println("You chose to open this directory as the Visit Python Library: " +
+//					            chooser.getSelectedFile().getAbsolutePath());
+//					       libDir = chooser.getSelectedFile().getAbsolutePath();
+//					 }
+//					//}
+//					visitProcess = new VisitProcess(libDir);
+//					VisitControlPanel visitControlPanel= new VisitControlPanel();
+//					visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
+//					visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
+//					
+//					showComponentInFrame(visitControlPanel, "Visit Control Panel");
+//					visitProcess.sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
+//					String s = "visit.OpenDatabase(\""+ "10.84.11.40:/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
+//					System.out.println("About to open " + s);
+//					visitProcess.sendCommandAndNoteResponse(s);
+//					//String s2=getPdeDataContext().getVariableName();
+//					//visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
+//					//visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
+//					
+//					 //JFileChooser chooser = new JFileChooser();
+//					// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+//					 //chooser.setDialogTitle("Select location of RAID filesystem mount");
+//					// int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+//					 //if(returnVal == JFileChooser.APPROVE_OPTION) {
+//					  //     System.out.println("You chose to open this file: " +
+//					  //          chooser.getSelectedFile().getName());
+////					       if (System.getProperties().getProperty("os.arch").contains("MacOS")) {
+////					    	   //Assume, FOR THE MOMENT, that if we're running MacOSX, we're running on Ed Boyce's machine
+////					    	   String execCommand = "/Users/edboyce/visit/bin/visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+//					       	   //String execCommand = "/Users/edboyce/visit/bin/visit -cli";
+//					       	   
+//					    	   
+//					    	   //					    	   Runtime.getRuntime().exec(execCommand);
+////					       }
+////					       if (System.getProperties().getProperty("os.arch").contains("Linux")) {
+////					    	   //Assume on Linux that the visit command is in the path.
+//			//			       String execCommand = "bash visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+//							   
+//					       	   //ProcessInfo  pi = VisitProcess.spawnProcess(execCommand);
+//					     
+////						   }
+//					 }
+//
+//					 
+//				
+//				
+//				catch(Exception e1) {
+//					e1.printStackTrace();
+//				}
+//				
+//				}
+//		});
 	}
 	return ivjButtonVisit;
 	
 }
-private javax.swing.JButton getJButtonSnapshotROI() {
-	if (ivjJButtonSnapshotROI == null) {
-		try {
-			ivjJButtonSnapshotROI = new javax.swing.JButton();
-			ivjJButtonSnapshotROI.setName("JButtonSnapshotROI");
-			ivjJButtonSnapshotROI.setText("Snapshot ROI");
-			ivjJButtonSnapshotROI.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e) {
-					final AsynchClientTask createSnapshotTask = new AsynchClientTask("Creating Snapshot...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							if(getClientTaskStatusSupport() != null){
-								getClientTaskStatusSupport().setMessage("Waiting for data to refresh...");
-							}
-							getPdeDataContext().waitWhileBusy();
-							if(getClientTaskStatusSupport() != null){
-								getClientTaskStatusSupport().setMessage("Creating Snapshot...");
-							}
-							final double[] dataValues = getPdeDataContext().getDataValues();
-							final VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
-							final boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
-							final BitSet snapshotROI = new BitSet(dataValues.length);
-							for (int i = 0; i < dataValues.length; i++) {
-								boolean bInDomain = (getPDEDataContextPanel1().getDataInfoProvider()==null?true:getPDEDataContextPanel1().getDataInfoProvider().isDefined(i));
-								snapshotROI.set(i,bInDomain && (dataValues[i] == 1.0));
-							}
-							final String variableName = getPdeDataContext().getVariableName();
-							final double timePoint = getPdeDataContext().getTimePoint();
-							//Do the following so the 'progress' spinner will go away (if showing) when the message is displayed.
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									if(snapshotROI.cardinality() == 0){
-										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
-												"No data values for variable '"+variableName+"'\n"+
-												"at time '"+timePoint+"' have values equal to 1.0."+
-												"  Add a function that evaluates to 1 at the points to be included in the ROI (user defined funtions can be added from the 'Simulation' panel), "+
-												" then choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again."
-												,new String[] {"OK"},"OK");
-										return;
-									}else{
-										if(isVolumeType){
-											volumeSnapshotROI = snapshotROI;
-											volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
-										}else{
-											membraneSnapshotROI = snapshotROI;
-											membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
-										}
-										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI updated using "+
-												"Variable '"+variableName+"' at "+"Time '"+timePoint+"' (where values = 1.0).\n"+
-												"ROI includes "+snapshotROI.cardinality()+" points.  (total size= "+dataValues.length+")\n"+
-												"Snapshot ROI is available for use by choosing a variable/function name and pressing 'Statistics'."
-												,new String[] {"OK"},"OK");						
-									}
-								}
-							});
-						}
-					};
-					if(getPdeDataContext().isBusy()){
-						//Show wait dialog
-						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
-								new AsynchClientTask[] {createSnapshotTask}, false, false, null, true);
+
+private void snapshotROI() {
+	final AsynchClientTask createSnapshotTask = new AsynchClientTask("Creating Snapshot...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getClientTaskStatusSupport() != null){
+				getClientTaskStatusSupport().setMessage("Waiting for data to refresh...");
+			}
+			getPdeDataContext().waitWhileBusy();
+			if(getClientTaskStatusSupport() != null){
+				getClientTaskStatusSupport().setMessage("Creating Snapshot...");
+			}
+			final double[] dataValues = getPdeDataContext().getDataValues();
+			final VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+			final boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
+			final BitSet snapshotROI = new BitSet(dataValues.length);
+			for (int i = 0; i < dataValues.length; i++) {
+				boolean bInDomain = (getPDEDataContextPanel1().getDataInfoProvider()==null?true:getPDEDataContextPanel1().getDataInfoProvider().isDefined(i));
+				snapshotROI.set(i,bInDomain && (dataValues[i] == 1.0));
+			}
+			final String variableName = getPdeDataContext().getVariableName();
+			final double timePoint = getPdeDataContext().getTimePoint();
+			//Do the following so the 'progress' spinner will go away (if showing) when the message is displayed.
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					if(snapshotROI.cardinality() == 0){
+						PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
+								"No data values for variable '"+variableName+"'\n"+
+								"at time '"+timePoint+"' have values equal to 1.0."+
+								"  Add a function that evaluates to 1 at the points to be included in the ROI (user defined funtions can be added from the 'Simulation' panel), "+
+								" then choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again."
+								,new String[] {"OK"},"OK");
+						return;
 					}else{
-						//Not show wait dialog
-						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
-								new AsynchClientTask[] {createSnapshotTask});
+						if(isVolumeType){
+							volumeSnapshotROI = snapshotROI;
+							volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+						}else{
+							membraneSnapshotROI = snapshotROI;
+							membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+						}
+						PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI updated using "+
+								"Variable '"+variableName+"' at "+"Time '"+timePoint+"' (where values = 1.0).\n"+
+								"ROI includes "+snapshotROI.cardinality()+" points.  (total size= "+dataValues.length+")\n"+
+								"Snapshot ROI is available for use by choosing a variable/function name and pressing 'Statistics'."
+								,new String[] {"OK"},"OK");						
 					}
-				}});
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+				}
+			});
 		}
+	};
+	if(getPdeDataContext().isBusy()){
+		//Show wait dialog
+		ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {createSnapshotTask}, false, false, null, true);
+	}else{
+		//Not show wait dialog
+		ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {createSnapshotTask});
 	}
-	return ivjJButtonSnapshotROI;
 }
+
+//private javax.swing.JButton getJButtonSnapshotROI() {
+//	if (ivjJButtonSnapshotROI == null) {
+//		try {
+//			ivjJButtonSnapshotROI = new javax.swing.JButton();
+//			ivjJButtonSnapshotROI.setName("JButtonSnapshotROI");
+//			ivjJButtonSnapshotROI.setText("Snapshot ROI");
+//			ivjJButtonSnapshotROI.addActionListener(new ActionListener(){
+//				public void actionPerformed(ActionEvent e) {
+//					final AsynchClientTask createSnapshotTask = new AsynchClientTask("Creating Snapshot...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//						@Override
+//						public void run(Hashtable<String, Object> hashTable) throws Exception {
+//							if(getClientTaskStatusSupport() != null){
+//								getClientTaskStatusSupport().setMessage("Waiting for data to refresh...");
+//							}
+//							getPdeDataContext().waitWhileBusy();
+//							if(getClientTaskStatusSupport() != null){
+//								getClientTaskStatusSupport().setMessage("Creating Snapshot...");
+//							}
+//							final double[] dataValues = getPdeDataContext().getDataValues();
+//							final VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+//							final boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
+//							final BitSet snapshotROI = new BitSet(dataValues.length);
+//							for (int i = 0; i < dataValues.length; i++) {
+//								boolean bInDomain = (getPDEDataContextPanel1().getDataInfoProvider()==null?true:getPDEDataContextPanel1().getDataInfoProvider().isDefined(i));
+//								snapshotROI.set(i,bInDomain && (dataValues[i] == 1.0));
+//							}
+//							final String variableName = getPdeDataContext().getVariableName();
+//							final double timePoint = getPdeDataContext().getTimePoint();
+//							//Do the following so the 'progress' spinner will go away (if showing) when the message is displayed.
+//							SwingUtilities.invokeLater(new Runnable() {
+//								public void run() {
+//									if(snapshotROI.cardinality() == 0){
+//										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
+//												"No data values for variable '"+variableName+"'\n"+
+//												"at time '"+timePoint+"' have values equal to 1.0."+
+//												"  Add a function that evaluates to 1 at the points to be included in the ROI (user defined funtions can be added from the 'Simulation' panel), "+
+//												" then choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again."
+//												,new String[] {"OK"},"OK");
+//										return;
+//									}else{
+//										if(isVolumeType){
+//											volumeSnapshotROI = snapshotROI;
+//											volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+//										}else{
+//											membraneSnapshotROI = snapshotROI;
+//											membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+//										}
+//										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI updated using "+
+//												"Variable '"+variableName+"' at "+"Time '"+timePoint+"' (where values = 1.0).\n"+
+//												"ROI includes "+snapshotROI.cardinality()+" points.  (total size= "+dataValues.length+")\n"+
+//												"Snapshot ROI is available for use by choosing a variable/function name and pressing 'Statistics'."
+//												,new String[] {"OK"},"OK");						
+//									}
+//								}
+//							});
+//						}
+//					};
+//					if(getPdeDataContext().isBusy()){
+//						//Show wait dialog
+//						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+//								new AsynchClientTask[] {createSnapshotTask}, false, false, null, true);
+//					}else{
+//						//Not show wait dialog
+//						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+//								new AsynchClientTask[] {createSnapshotTask});
+//					}
+//				}});
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJButtonSnapshotROI;
+//}
 
 /**
  * Return the JButtonSurfaces property value.
@@ -1898,22 +2070,22 @@ private javax.swing.JButton getJButtonSurfaces() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonTime() {
-	if (ivjJButtonTime == null) {
-		try {
-			ivjJButtonTime = new javax.swing.JButton();
-			ivjJButtonTime.setName("JButtonTime");
-			ivjJButtonTime.setText("Show Time Plot");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonTime;
-}
+//private javax.swing.JButton getJButtonTime() {
+//	if (ivjJButtonTime == null) {
+//		try {
+//			ivjJButtonTime = new javax.swing.JButton();
+//			ivjJButtonTime.setName("JButtonTime");
+//			ivjJButtonTime.setText("Show Time Plot");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJButtonTime;
+//}
 
 
 /**
@@ -1926,42 +2098,47 @@ private javax.swing.JPanel getJPanelButtons() {
 		try {
 			ivjJPanelButtons = new javax.swing.JPanel();
 			ivjJPanelButtons.setName("JPanelButtons");
-			ivjJPanelButtons.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsJButtonSpatial = new java.awt.GridBagConstraints();
-			constraintsJButtonSpatial.gridx = 0; constraintsJButtonSpatial.gridy = 0;
-			constraintsJButtonSpatial.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonSpatial(), constraintsJButtonSpatial);
-
-			java.awt.GridBagConstraints constraintsJButtonTime = new java.awt.GridBagConstraints();
-			constraintsJButtonTime.gridx = 1; constraintsJButtonTime.gridy = 0;
-			constraintsJButtonTime.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonTime(), constraintsJButtonTime);
-
-			java.awt.GridBagConstraints constraintsKymographJButton = new java.awt.GridBagConstraints();
-			constraintsKymographJButton.gridx = 2; constraintsKymographJButton.gridy = 0;
-			constraintsKymographJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getKymographJButton(), constraintsKymographJButton);
-
-			java.awt.GridBagConstraints constraintsJButtonSurfaces = new java.awt.GridBagConstraints();
-			constraintsJButtonSurfaces.gridx = 3; constraintsJButtonSurfaces.gridy = 0;
-			constraintsJButtonSurfaces.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonSurfaces(), constraintsJButtonSurfaces);
-
-			java.awt.GridBagConstraints constraintsJButtonStatistics = new java.awt.GridBagConstraints();
-			constraintsJButtonStatistics.gridx = 4; constraintsJButtonStatistics.gridy = 0;
-			constraintsJButtonStatistics.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonStatistics(), constraintsJButtonStatistics);
+			ivjJPanelButtons.add(getPlotButton());
+			ivjJPanelButtons.add(getJButtonSurfaces());
+			ivjJPanelButtons.add(getROIButton());
+			ivjJPanelButtons.add(getJButtonVisit());
 			
-			java.awt.GridBagConstraints constraintsJButtonSnapshotROI = new java.awt.GridBagConstraints();
-			constraintsJButtonSnapshotROI.gridx = 5; constraintsJButtonSnapshotROI.gridy = 0;
-			constraintsJButtonSnapshotROI.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonSnapshotROI()/*getJPanelSnapshotROI()*/, constraintsJButtonSnapshotROI);
-			
-			java.awt.GridBagConstraints constraintsJButtonJButtonVisit = new java.awt.GridBagConstraints();
-			constraintsJButtonJButtonVisit.gridx = 6; constraintsJButtonSnapshotROI.gridy = 0;
-			constraintsJButtonJButtonVisit.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelButtons().add(getJButtonVisit(), constraintsJButtonJButtonVisit);
+//			ivjJPanelButtons.setLayout(new java.awt.GridBagLayout());
+//
+//			java.awt.GridBagConstraints constraintsJButtonSpatial = new java.awt.GridBagConstraints();
+//			constraintsJButtonSpatial.gridx = 0; constraintsJButtonSpatial.gridy = 0;
+//			constraintsJButtonSpatial.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonSpatial(), constraintsJButtonSpatial);
+//
+//			java.awt.GridBagConstraints constraintsJButtonTime = new java.awt.GridBagConstraints();
+//			constraintsJButtonTime.gridx = 1; constraintsJButtonTime.gridy = 0;
+//			constraintsJButtonTime.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonTime(), constraintsJButtonTime);
+//
+//			java.awt.GridBagConstraints constraintsKymographJButton = new java.awt.GridBagConstraints();
+//			constraintsKymographJButton.gridx = 2; constraintsKymographJButton.gridy = 0;
+//			constraintsKymographJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getKymographJButton(), constraintsKymographJButton);
+//
+//			java.awt.GridBagConstraints constraintsJButtonSurfaces = new java.awt.GridBagConstraints();
+//			constraintsJButtonSurfaces.gridx = 3; constraintsJButtonSurfaces.gridy = 0;
+//			constraintsJButtonSurfaces.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonSurfaces(), constraintsJButtonSurfaces);
+//
+//			java.awt.GridBagConstraints constraintsJButtonStatistics = new java.awt.GridBagConstraints();
+//			constraintsJButtonStatistics.gridx = 4; constraintsJButtonStatistics.gridy = 0;
+//			constraintsJButtonStatistics.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonStatistics(), constraintsJButtonStatistics);
+//			
+//			java.awt.GridBagConstraints constraintsJButtonSnapshotROI = new java.awt.GridBagConstraints();
+//			constraintsJButtonSnapshotROI.gridx = 5; constraintsJButtonSnapshotROI.gridy = 0;
+//			constraintsJButtonSnapshotROI.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonSnapshotROI()/*getJPanelSnapshotROI()*/, constraintsJButtonSnapshotROI);
+//			
+//			java.awt.GridBagConstraints constraintsJButtonJButtonVisit = new java.awt.GridBagConstraints();
+//			constraintsJButtonJButtonVisit.gridx = 6; constraintsJButtonSnapshotROI.gridy = 0;
+//			constraintsJButtonJButtonVisit.insets = new java.awt.Insets(4, 4, 4, 4);
+//			getJPanelButtons().add(getJButtonVisit(), constraintsJButtonJButtonVisit);
 			
 			// user code begin {1}
 			// user code end
@@ -2016,23 +2193,109 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getKymographJButton() {
-	if (ivjKymographJButton == null) {
+//private javax.swing.JButton getKymographJButton() {
+//	if (ivjKymographJButton == null) {
+//		try {
+//			ivjKymographJButton = new javax.swing.JButton();
+//			ivjKymographJButton.setName("KymographJButton");
+//			ivjKymographJButton.setText("Show Kymograph");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjKymographJButton;
+//}
+
+private javax.swing.JButton getPlotButton() {
+	if (plotButton == null) {
 		try {
-			ivjKymographJButton = new javax.swing.JButton();
-			ivjKymographJButton.setName("KymographJButton");
-			ivjKymographJButton.setText("Show Kymograph");
-			// user code begin {1}
-			// user code end
+			plotButton = new javax.swing.JButton("Plot");
+			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
+			plotButton.setIcon(new DownArrowIcon());
+			plotButton.addActionListener(ivjEventHandler);
+			plotButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjKymographJButton;
+	return plotButton;
 }
 
+private javax.swing.JButton getROIButton() {
+	if (roiButton == null) {
+		try {
+			roiButton = new javax.swing.JButton("ROI");
+			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
+			roiButton.setIcon(new DownArrowIcon());
+			roiButton.addActionListener(ivjEventHandler);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return roiButton;
+}
+
+private javax.swing.JPopupMenu getROIPopupMenu() {
+	if (roiPopupMenu == null) {
+		try {
+			roiPopupMenu = new JPopupMenu();
+			snapShotMenuItem = new JMenuItem("Snapshot ROI");
+			snapShotMenuItem.addActionListener(ivjEventHandler);
+			statisticsMenuItem = new JMenuItem("Statistics");
+			statisticsMenuItem.addActionListener(ivjEventHandler);
+			roiPopupMenu.add(snapShotMenuItem);
+			roiPopupMenu.add(statisticsMenuItem);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return roiPopupMenu;
+}
+
+private JMenuItem getSpatialPlotMenuItem() {
+	if (spatialPlotMenuItem == null) {
+		spatialPlotMenuItem = new JMenuItem("Spatial");
+		spatialPlotMenuItem.addActionListener(ivjEventHandler);
+		spatialPlotMenuItem.setEnabled(false);
+	}
+	return spatialPlotMenuItem;
+}
+private JMenuItem getTimePlotMenuItem() {
+	if (timePlotMenuItem == null) {
+		timePlotMenuItem = new JMenuItem("Time");
+		timePlotMenuItem.addActionListener(ivjEventHandler);
+		timePlotMenuItem.setEnabled(false);
+	}
+	return timePlotMenuItem;
+}
+private JMenuItem getKymographMenuItem() {
+	if (kymographMenuItem == null) {
+		kymographMenuItem = new JMenuItem("Kymograph");		
+		kymographMenuItem.addActionListener(ivjEventHandler);
+		kymographMenuItem.setEnabled(false);
+	}
+	return kymographMenuItem;
+}
+private javax.swing.JPopupMenu getPlotPopupMenu() {
+	if (plotPopupMenu == null) {
+		try {
+			plotPopupMenu = new JPopupMenu();
+//			visitMenuItem = new JMenuItem("Open in VisIt");
+//			visitMenuItem.addActionListener(ivjEventHandler);
+			plotPopupMenu.add(getTimePlotMenuItem());
+			plotPopupMenu.add(getSpatialPlotMenuItem());
+			plotPopupMenu.add(getKymographMenuItem());
+//			plotPopupMenu.add(visitMenuItem);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return plotPopupMenu;
+}
 
 /**
  * Gets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
@@ -2181,12 +2444,12 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getPDEDataContextPanel1().addPropertyChangeListener(ivjEventHandler);
 	getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
-	getJButtonSpatial().addActionListener(ivjEventHandler);
-	getJButtonTime().addActionListener(ivjEventHandler);
+//	getJButtonSpatial().addActionListener(ivjEventHandler);
+//	getJButtonTime().addActionListener(ivjEventHandler);
 	getPDEExportPanel1().addPropertyChangeListener(ivjEventHandler);
-	getKymographJButton().addActionListener(ivjEventHandler);
+//	getKymographJButton().addActionListener(ivjEventHandler);
 	getJButtonSurfaces().addActionListener(ivjEventHandler);
-	getJButtonStatistics().addActionListener(ivjEventHandler);
+//	getJButtonStatistics().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
@@ -2624,11 +2887,15 @@ private void showTimePlot() {
 private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyChangeEvent) {
 	//
 	if(propertyChangeEvent.getPropertyName().equals("timeDataSamplers")){
-		getJButtonTime().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
+		boolean shouldEnablePlot = ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue();
+		getTimePlotMenuItem().setEnabled(shouldEnablePlot);
 	}else if(propertyChangeEvent.getPropertyName().equals("spatialDataSamplers")){
-		getJButtonSpatial().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
-		getKymographJButton().setEnabled((getPdeDataContext().getTimePoints().length > 1) && ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
+		boolean shouldEnablePlot = ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue();
+		getSpatialPlotMenuItem().setEnabled(shouldEnablePlot);
+		getKymographMenuItem().setEnabled((getPdeDataContext().getTimePoints().length > 1) && shouldEnablePlot);
 	}
+	getPlotButton().setEnabled(getSpatialPlotMenuItem().isEnabled() || getTimePlotMenuItem().isEnabled() || getKymographMenuItem().isEnabled());
+	
 }
 
 
