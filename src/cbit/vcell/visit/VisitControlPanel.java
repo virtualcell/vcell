@@ -53,7 +53,7 @@ public class VisitControlPanel extends JPanel {
 	public VisitControlPanel() {
 		commandHistory[0]="";
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 0.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{1.0};
 		setLayout(gridBagLayout);
 		
@@ -74,9 +74,9 @@ public class VisitControlPanel extends JPanel {
 		add(panel, gbc_panel);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{0, 0};
-		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
 		JLabel lblSelectVariable = new JLabel("Select variable");
@@ -127,7 +127,7 @@ public class VisitControlPanel extends JPanel {
 		gbc_btnClearPlots.gridy = 3;
 		panel.add(btnClearPlots, gbc_btnClearPlots);
 		
-		JButton btnAddPlot = new JButton("Add Plot");
+		JButton btnAddPlot = new JButton("Add Pseudocolor Plot");
 		btnAddPlot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (selectedVariable != null) {
@@ -220,17 +220,58 @@ public class VisitControlPanel extends JPanel {
 			}
 		});
 		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
+		gbc_btnShowVisitGui.insets = new Insets(0, 0, 5, 0);
 		gbc_btnShowVisitGui.gridx = 0;
 		gbc_btnShowVisitGui.gridy = 6;
 		panel.add(btnShowVisitGui, gbc_btnShowVisitGui);
+		
+		JButton btnTestGetglobalattributes = new JButton("Test - GetGlobalAttributes");
+		btnTestGetglobalattributes.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VisitProcess.visitCommand(VisitPythonCommand.GetGlobalAttributes());
+			}
+		});
+		GridBagConstraints gbc_btnTestGetglobalattributes = new GridBagConstraints();
+		gbc_btnTestGetglobalattributes.gridx = 0;
+		gbc_btnTestGetglobalattributes.gridy = 7;
+		panel.add(btnTestGetglobalattributes, gbc_btnTestGetglobalattributes);
 		
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
 				if (!slider.getValueIsAdjusting()) {
 					System.out.println(arg0);
+					VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
+					
 				}
 			}
 		});
+		
+		JPanel panel_2 = new JPanel();
+		GridBagConstraints gbc_panel_2 = new GridBagConstraints();
+		gbc_panel_2.insets = new Insets(0, 0, 5, 0);
+		gbc_panel_2.fill = GridBagConstraints.BOTH;
+		gbc_panel_2.gridx = 0;
+		gbc_panel_2.gridy = 2;
+		add(panel_2, gbc_panel_2);
+		GridBagLayout gbl_panel_2 = new GridBagLayout();
+		gbl_panel_2.columnWidths = new int[]{0, 0, 0};
+		gbl_panel_2.rowHeights = new int[]{0, 0};
+		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_2.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panel_2.setLayout(gbl_panel_2);
+		
+		JButton button = new JButton("New button");
+		GridBagConstraints gbc_button = new GridBagConstraints();
+		gbc_button.insets = new Insets(0, 0, 0, 5);
+		gbc_button.gridx = 0;
+		gbc_button.gridy = 0;
+		panel_2.add(button, gbc_button);
+		
+		JButton button_1 = new JButton("New button");
+		GridBagConstraints gbc_button_1 = new GridBagConstraints();
+		gbc_button_1.gridx = 1;
+		gbc_button_1.gridy = 0;
+		panel_2.add(button_1, gbc_button_1);
 		slider.setMajorTickSpacing(10);
 		slider.setPaintLabels(true);
 		slider.setPaintTicks(true);
@@ -239,7 +280,7 @@ public class VisitControlPanel extends JPanel {
 		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider.insets = new Insets(0, 0, 5, 0);
 		gbc_slider.gridx = 0;
-		gbc_slider.gridy = 2;
+		gbc_slider.gridy = 3;
 		add(slider, gbc_slider);
 		
 		JPanel panel_1 = new JPanel();
@@ -248,7 +289,7 @@ public class VisitControlPanel extends JPanel {
 		gbc_panel_1.weightx = 1.0;
 		gbc_panel_1.fill = GridBagConstraints.BOTH;
 		gbc_panel_1.gridx = 0;
-		gbc_panel_1.gridy = 3;
+		gbc_panel_1.gridy = 4;
 		add(panel_1, gbc_panel_1);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		panel_1.setLayout(gbl_panel_1);
