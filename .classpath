@@ -23,7 +23,7 @@
 	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
-	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
+	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
 	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20080421.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
@@ -36,6 +36,9 @@
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
 	<classpathentry kind="lib" path="oracle_classes12.jar"/>
 	<classpathentry kind="lib" path="copasi_build30.jar"/>
+	<classpathentry kind="lib" path="js.jar"/>
+	<classpathentry kind="lib" path="script-api.jar"/>
+	<classpathentry kind="lib" path="script-js.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

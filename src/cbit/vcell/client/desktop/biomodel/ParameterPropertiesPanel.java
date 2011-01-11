@@ -13,22 +13,25 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Parameter;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class ModelParameterPropertiesPanel extends DocumentEditorSubPanel {
-	private ModelParameter modelParameter = null;
+public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
+	private Parameter parameter = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JTextArea annotationTextArea;
 	private JTextField nameTextField = null;
+	private JTextField descriptionTextField = null;
 
 	private class IvjEventHandler implements FocusListener {
 		public void focusGained(FocusEvent e) {
@@ -45,7 +48,7 @@ public class ModelParameterPropertiesPanel extends DocumentEditorSubPanel {
 /**
  * EditSpeciesDialog constructor comment.
  */
-public ModelParameterPropertiesPanel() {
+public ParameterPropertiesPanel() {
 	super();
 	initialize();
 }
@@ -68,10 +71,13 @@ private void initialize() {
 	try {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
+		descriptionTextField = new JTextField();
+		descriptionTextField.setEditable(false);
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
 		annotationTextArea.setEditable(false);
+		annotationTextArea.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 
 		setBackground(Color.white);
 		setLayout(new GridBagLayout());
@@ -82,7 +88,7 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		JLabel label = new JLabel("<html><u>Select only one global parameter to edit properties</u></html>");
+		JLabel label = new JLabel("<html><u>Select only one parameter to view/edit properties</u></html>");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, gbc);
@@ -103,6 +109,23 @@ private void initialize() {
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(nameTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("Description");
+		add(label, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(descriptionTextField, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -137,7 +160,7 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ModelParameterPropertiesPanel aEditSpeciesPanel = new ModelParameterPropertiesPanel();
+		ParameterPropertiesPanel aEditSpeciesPanel = new ParameterPropertiesPanel();
 		frame.add(aEditSpeciesPanel);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
@@ -157,10 +180,15 @@ public static void main(java.lang.String[] args) {
  */
 private void changeAnnotation() {
 	try{
-		if (modelParameter == null) {
+		if (parameter == null) {
 			return;
 		}
-		modelParameter.setModelParameterAnnotation(annotationTextArea.getText());
+		String text = annotationTextArea.getText();
+		if (parameter instanceof ModelParameter) {
+			((ModelParameter)parameter).setModelParameterAnnotation(text);
+		} else {
+			parameter.setDescription(text);
+		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
@@ -172,11 +200,11 @@ private void changeAnnotation() {
  * @param speciesContext The new value for the property.
  * @see #getSpeciesContext
  */
-void setModelParameter(ModelParameter newValue) {
-	if (newValue == modelParameter) {
+void setParameter(Parameter newValue) {
+	if (newValue == parameter) {
 		return;
 	}
-	modelParameter = newValue;
+	parameter = newValue;
 	updateInterface();
 }
 
@@ -184,32 +212,39 @@ void setModelParameter(ModelParameter newValue) {
  * Comment
  */
 private void updateInterface() {
-	boolean bNonNullModelParameter = modelParameter != null;
-	nameTextField.setEditable(bNonNullModelParameter);
-	annotationTextArea.setEditable(bNonNullModelParameter);
-	if (bNonNullModelParameter) {
-		nameTextField.setText(modelParameter.getName());
-		annotationTextArea.setText(modelParameter.getModelParameterAnnotation());	
+	boolean bNonNullParameter = parameter != null;
+	nameTextField.setEditable(bNonNullParameter && (parameter instanceof ModelParameter || parameter.isNameEditable()));
+	descriptionTextField.setEditable(bNonNullParameter && parameter.isDescriptionEditable());
+	boolean bAnnotationEditable = bNonNullParameter && parameter instanceof ModelParameter;
+	annotationTextArea.setEditable(bAnnotationEditable);
+	annotationTextArea.setBackground(bAnnotationEditable ? UIManager.getColor("TextField.background") : UIManager.getColor("TextField.inactiveBackground"));		
+	if (bNonNullParameter) {
+		nameTextField.setText(parameter.getName());
+		descriptionTextField.setText(parameter.getDescription());
+		if (parameter instanceof ModelParameter) {
+			annotationTextArea.setText(((ModelParameter)parameter).getModelParameterAnnotation());
+		}
 	} else {
 		annotationTextArea.setText(null);
 		nameTextField.setText(null);
+		descriptionTextField.setText(null);
 	}
 }
 
 private void changeName() {
-	if (modelParameter == null) {
+	if (parameter == null) {
 		return;
 	}
 	String newName = nameTextField.getText();
 	if (newName == null || newName.length() == 0) {
-		nameTextField.setText(modelParameter.getName());
+		nameTextField.setText(parameter.getName());
 		return;
 	}
 	try {
-		modelParameter.setName(nameTextField.getText());
+		parameter.setName(nameTextField.getText());
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
-		DialogUtils.showErrorDialog(ModelParameterPropertiesPanel.this, e1.getMessage());
+		DialogUtils.showErrorDialog(ParameterPropertiesPanel.this, e1.getMessage());
 	}
 }
 
@@ -218,10 +253,10 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length != 1) {
 		return;
 	}
-	if (selectedObjects[0] instanceof ModelParameter) {
-		setModelParameter((ModelParameter) selectedObjects[0]);
+	if (selectedObjects[0] instanceof Parameter) {
+		setParameter((Parameter) selectedObjects[0]);
 	} else {
-		setModelParameter(null);
+		setParameter(null);
 	}	
 }
 }

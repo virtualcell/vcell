@@ -1,6 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -47,7 +50,20 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 		
 		setLayout(new GridBagLayout());
 		int gridy = 0;
-		GridBagConstraints gbc = new GridBagConstraints();
+		GridBagConstraints  gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 6;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		JLabel label = new JLabel("<html><u>Application Parameters</u></html>");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		add(label, gbc);
+
+		gridy ++;
+		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
@@ -77,7 +93,7 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(deleteButton, gbc);
-
+		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -121,6 +137,7 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 	
 	@Override
 	protected void tableSelectionChanged() {
+		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
 		if (rows == null) {
 			return;

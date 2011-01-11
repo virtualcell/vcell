@@ -42,7 +42,7 @@ public class ApplicationParameterTableMode extends BioModelEditorApplicationRigh
 	public static final int COLUMN_EXPRESSION = 3;
 	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
-	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
+	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units"/* , "Annotation" */};
 	private boolean bIncludeReactionParameters = false;
 	
 /**
@@ -52,6 +52,11 @@ public ApplicationParameterTableMode(ScrollTable table, boolean bIncludeReaction
 	super(table);
 	setColumns(LABELS);
 	this.bIncludeReactionParameters = bIncludeReactionParameters;
+}
+
+@Override
+public int getRowCount() {
+	return getDataSize();
 }
 
 /**
@@ -118,7 +123,8 @@ protected List<Parameter> computeData() {
 			parameterList.add(parameter);
 		} else {
 			String lowerCaseSearchText = searchText.toLowerCase();		
-			if (parameter.getName().toLowerCase().contains(lowerCaseSearchText)
+			if (parameter.getNameScope().getConextDescription().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)) {
 				parameterList.add(parameter);
@@ -201,20 +207,18 @@ public boolean isCellEditable(int row, int column) {
 		if (parameter instanceof KineticsParameter || parameter instanceof UnresolvedParameter) {
 			return false;
 		}
-		if (column == COLUMN_SCOPE || column == COLUMN_DESCRIPTION){
+		switch (column) {
+		case COLUMN_SCOPE:
 			return false;
-		}
-		if (column == COLUMN_NAME) {
+		case COLUMN_NAME:
 			return parameter.isNameEditable();
-		}
-		
-		if (column == COLUMN_EXPRESSION) {
+		case COLUMN_DESCRIPTION:
+			return parameter.isDescriptionEditable();
+		case COLUMN_EXPRESSION:
 			return parameter.isExpressionEditable();
-		}
-		if (column == COLUMN_UNIT){
+		case COLUMN_UNIT:
 			return parameter.isUnitEditable();
-		}
-		if (column == COLUMN_ANNOTATION) {
+		case COLUMN_ANNOTATION:
 			return parameter instanceof ModelParameter;
 		}
 		return false;

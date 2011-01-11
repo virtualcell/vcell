@@ -215,13 +215,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTableModel.setSearchText(null);
 		parametersTableModel.setSearchText(null);
 		
-		if (tabbedPane.getSelectedIndex() == ModelPanelTabID.reaction_diagram.ordinal()
-				|| tabbedPane.getSelectedIndex() == ModelPanelTabID.structure_diagram.ordinal()) {
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()
+				|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
 			newButton.setEnabled(false);
 			deleteButton.setEnabled(false);
 			textFieldSearch.setEditable(false);
 		} else {
 			newButton.setEnabled(true);
+			if (selectedIndex == ModelPanelTabID.parameter_table.ordinal()) {
+				newButton.setText("Add New Global Parameter");
+			} else {
+				newButton.setText("Add New");
+			}
 			textFieldSearch.setEditable(true);
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
