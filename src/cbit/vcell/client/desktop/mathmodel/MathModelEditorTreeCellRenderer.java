@@ -56,6 +56,7 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 	    		font = boldFont;
 	    		icon = mathModelIcon;
 	    		labelText = ((MathModel)userObj).getName();
+	    		toolTipPrefix = "MathModel: ";
 //	        } else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 //	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 //	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
@@ -74,6 +75,9 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 	    	setIcon(icon);
 	    	setFont(font);
 	    	setText(labelText);
+	    	if (toolTipSuffix.length() == 0) {
+				toolTipSuffix = labelText;
+			}
 	    	setToolTipText(toolTipPrefix + toolTipSuffix);
     	}
         return this;

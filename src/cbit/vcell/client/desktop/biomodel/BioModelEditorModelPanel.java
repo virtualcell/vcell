@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -64,19 +65,22 @@ import cbit.vcell.parser.NameScope;
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+	private static Icon tableIcon = new ImageIcon(BioModelEditorModelPanel.class.getResource("/icons/table_icon.gif"));
+	private static Icon diagramIcon = new ImageIcon(BioModelEditorModelPanel.class.getResource("/icons/diagram_icon.gif"));
+
 	public enum ModelPanelTabID {
 		reaction_table("Reactions"),
-		reaction_diagram("Reaction Diagram"),
-		structure_diagram("Structure Diagram"),
 		structure_table("Structures"),
 		species_table("Species"),
-		parameter_table("Parameters");
+		parameter_table("Parameters"),
+		reaction_diagram("Reaction Diagram"),
+		structure_diagram("Structure Diagram");
 		
 		private String name = null;
 		ModelPanelTabID(String name) {
 			this.name = name;
 		}
-		public final String getName() {
+		final String getName() {
 			return name;
 		}
 	}
@@ -84,15 +88,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private class ModelPanelTab {
 		ModelPanelTabID id;
 		JComponent component = null;
-		ModelPanelTab(ModelPanelTabID id, JComponent component) {
+		Icon icon = null;
+		ModelPanelTab(ModelPanelTabID id, JComponent component, Icon icon) {
 			this.id = id;
 			this.component = component;
+			this.icon = icon;
 		}
-		public final String getName() {
+		final String getName() {
 			return id.getName();
 		}
-		public final JComponent getComponent() {
+		final JComponent getComponent() {
 			return component;
+		}
+		final Icon getIcon() {
+			return icon;
 		}
 	}
 	
@@ -168,25 +177,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				showDiagramView();
 			}			
 		}
-
 		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
 		}
-
 		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
 		}
-
 		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
 		}
-
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
 		}
 
 		public void insertUpdate(DocumentEvent e) {
@@ -320,17 +317,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		parameterPanel.add(parametersTable.getEnclosingScrollPane(), BorderLayout.CENTER);
 		
 		tabbedPane = new JTabbedPane();
-		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel);
-		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel);
-		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane());
-		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane());
-		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane());
-		modelPanelTabs[ModelPanelTabID.parameter_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.parameter_table, parameterPanel);
+		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, diagramIcon);
+		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, diagramIcon);
+		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), tableIcon);
+		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), tableIcon);
+		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), tableIcon);
+		modelPanelTabs[ModelPanelTabID.parameter_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.parameter_table, parameterPanel, tableIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
 		
 		for (ModelPanelTab tab : modelPanelTabs) {
-			tabbedPane.addTab(tab.getName(), tab.getComponent());
+			tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
 		}
 		
 		gridy ++;
