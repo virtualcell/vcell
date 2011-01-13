@@ -35,6 +35,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
@@ -202,13 +203,14 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 		String paramStr = "Average parameter values among datasets:\n\n";
 		for(int i = 0 ; i < BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
 		{
-			if(batchRunWorkspace.getSelectedModel()==FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+			if(statData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] == FRAPOptimizationUtils.largeNumber)
 			{
-				if(BatchRunResultsParamTableModel.COL_LABELS[i+1].equals(BatchRunResultsParamTableModel.COL_LABELS[BatchRunResultsParamTableModel.COLUMN_SEC_DIFF_RATE])||
-				   BatchRunResultsParamTableModel.COL_LABELS[i+1].equals(BatchRunResultsParamTableModel.COL_LABELS[BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION]))
-				{
-					continue;
-				}
+				continue;
+			}
+			else if(batchRunWorkspace.getSelectedModel() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE &&
+					BatchRunResultsParamTableModel.COL_LABELS[i+1].equals(BatchRunResultsParamTableModel.COL_LABELS[BatchRunResultsParamTableModel.COLUMN_BS_CONCENTRATION]))
+			{
+				continue;
 			}
 			paramStr = paramStr + BatchRunResultsParamTableModel.COL_LABELS[i+1] + ": "
 				      + statData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] + "\n";
