@@ -1,6 +1,7 @@
 package cbit.vcell.field;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -105,13 +106,12 @@ public class FieldUtilities {
 			Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
 			) throws MathException, ExpressionException{
 	
-		Set<Map.Entry<FieldFunctionArguments, Vector<Expression>>> set = fieldFuncArgsExpHash.entrySet();
-		Iterator<Entry<FieldFunctionArguments, Vector<Expression>>> iter = set.iterator();
+		Enumeration<FieldFunctionArguments> keyEnum = fieldFuncArgsExpHash.keys();
 		FunctionFilter functionFilter = new FieldFunctionFilter();
-		while(iter.hasNext()){
-			Entry<FieldFunctionArguments, Vector<Expression>> entry = iter.next();
-			for(int i=0;i<entry.getValue().size();i+= 1){
-				Expression exp = entry.getValue().elementAt(i);
+		while(keyEnum.hasMoreElements()){
+			Vector<Expression> value = fieldFuncArgsExpHash.get(keyEnum.nextElement());
+			for(int i=0;i<value.size();i++){
+				Expression exp = value.elementAt(i);
 				FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(functionFilter);
 				for (int j = 0; j < functionInvocations.length; j++) {
 					Expression[] arguments = functionInvocations[j].getArguments();
