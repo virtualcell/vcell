@@ -4,7 +4,6 @@ package cbit.vcell.graph;
  * All rights reserved.
  */
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -18,7 +17,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
@@ -30,7 +28,6 @@ import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
@@ -71,11 +68,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 
 	private boolean bFloatingRequested = false;
 	private JButton floatRequestButton = null;
-	private Icon randomLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/random.gif"));
-	private Icon circleLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/circular.gif"));
-	private Icon annealedLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/annealed.gif"));
-	private Icon levelledLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/levelled.gif"));
-	private Icon relaxedLayoutIcon = new ImageIcon(getClass().getResource("/sybil/images/layout/relaxed.gif"));
+	private static Icon randomLayoutIcon = new ImageIcon(ReactionCartoonEditorPanel.class.getResource("/sybil/images/layout/random.gif"));
+	private static Icon circleLayoutIcon = new ImageIcon(ReactionCartoonEditorPanel.class.getResource("/sybil/images/layout/circular.gif"));
+	private static Icon annealedLayoutIcon = new ImageIcon(ReactionCartoonEditorPanel.class.getResource("/sybil/images/layout/annealed.gif"));
+	private static Icon levelledLayoutIcon = new ImageIcon(ReactionCartoonEditorPanel.class.getResource("/sybil/images/layout/levelled.gif"));
+	private static Icon relaxedLayoutIcon = new ImageIcon(ReactionCartoonEditorPanel.class.getResource("/sybil/images/layout/relaxed.gif"));
 
 	
 	public ReactionCartoonEditorPanel() {

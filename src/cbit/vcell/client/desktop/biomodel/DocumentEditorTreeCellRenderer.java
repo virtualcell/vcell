@@ -43,18 +43,13 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	protected Font boldFont = null;
 	
 	private JTree ownerTree;
-	Icon outputFunctionIcon = null;
+	private static Icon outputFunctionIcon = new ImageIcon(DocumentEditorTreeCellRenderer.class.getResource("/icons/function_icon.png"));
 	
 	public DocumentEditorTreeCellRenderer(JTree tree) {
 		super();
 		ownerTree = tree;
 		setPreferredSize(new Dimension(150,30));
 		setBorder(new EmptyBorder(0, 2, 0, 0));
-		try {
-		    outputFunctionIcon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-		}
 	}
 	
 	public Component getTreeCellRendererComponent(
@@ -98,7 +93,6 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    		font = boldFont;
 	    		labelText = ((SimulationContext)userObj).getName();
 	    		toolTipPrefix = "Application: ";
-	    		toolTipSuffix = labelText;
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
@@ -107,43 +101,30 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    				|| folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE
 	    				|| folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
 	    			font = boldFont;
-	    			toolTipPrefix = folder.getName();
 	    		} 
 	    		labelText = folder.getName();
-	    		switch (folderClass) {
-        		case DATA_SYMBOLS_NODE:
-    	        	toolTipPrefix = "Data Symbols: ";
-					toolTipSuffix = labelText;
-        			break;
-	        	}
 	    	} else if (userObj instanceof SpeciesContext) { 	// --- species context
 	    		labelText = ((SpeciesContext)userObj).getName();
 	    		toolTipPrefix = "Species: ";
-	    		toolTipSuffix = labelText;
 	    	} else if (userObj instanceof SpeciesContextSpec) { 	// --- species context
 	    		labelText = ((SpeciesContextSpec)userObj).getSpeciesContext().getName();
 	    		toolTipPrefix = "Species Parameters: ";
-	    		toolTipSuffix = labelText;
 	        } else if (userObj instanceof ModelParameter) {		// --- global parameter
 	        	labelText = ((ModelParameter)userObj).getName();
 	        	toolTipPrefix = "Global Parameter: ";
-				toolTipSuffix = labelText;
 	        } else if (userObj instanceof SimpleReaction) {		// --- simple reaction
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Simple Reaction: ";
-				toolTipSuffix = labelText;
 	        } else if (userObj instanceof FluxReaction) {		// --- flux reaction
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Flux Reaction: ";
-				toolTipSuffix = labelText;
 	        } else if (userObj instanceof ReactionSpec) {
 	        	labelText = ((ReactionSpec)userObj).getReactionStep().getName();
 	        	toolTipPrefix = "Reaction Settings: ";
-	        	toolTipSuffix = labelText;
 	        } else if (userObj instanceof DataSymbol) {			// --- field data
 	        	labelText = ((DataSymbol)userObj).getName();
-	        	toolTipPrefix = "Dataset: " + ((FieldDataSymbol)userObj).getExternalDataIdentifier().getName();
-				toolTipSuffix = "";
+	        	toolTipPrefix = "Dataset: ";
+				toolTipSuffix = ((FieldDataSymbol)userObj).getExternalDataIdentifier().getName();
 	        } else if (userObj instanceof BioEvent) {			// --- event
 	        	BioEvent bioEvent = (BioEvent)userObj;
 	        	SimulationContext simulationContext = bioEvent.getSimulationContext();
@@ -154,30 +135,28 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 				} else {
 					labelText = bioEvent.getName();
 					toolTipPrefix = "Event: ";
-					toolTipSuffix = labelText;
 				}
 	    	} else if (userObj instanceof Simulation) {
 	        	labelText = ((Simulation)userObj).getName();
 	        	toolTipPrefix = "Simulation: ";
-	        	toolTipSuffix = labelText;
 	    	} else if (userObj instanceof AnalysisTask) {
 	    		labelText = ((AnalysisTask)userObj).getName();
 	    		toolTipPrefix = "Analysis Task: ";
-	    		toolTipSuffix = labelText;
 	        } else if (userObj instanceof AnnotatedFunction) {
 	        	labelText = ((AnnotatedFunction)userObj).getName();
 	        	toolTipPrefix = "Output Function: ";
-	        	toolTipSuffix = labelText;
 	        	icon = outputFunctionIcon;
 	        } else if (userObj instanceof Structure) {
 	        	labelText = ((Structure)userObj).getName();
 	        	toolTipPrefix = ((Structure)userObj).getTypeName() + ": ";
-	        	toolTipSuffix = labelText;
 	        }
 		}
 		setIcon(icon);
 		setFont(font);
 		setText(labelText);
+		if (toolTipSuffix.length() == 0) {
+			toolTipSuffix = labelText;
+		}
 		setToolTipText(toolTipPrefix + toolTipSuffix);
         return this;
     }

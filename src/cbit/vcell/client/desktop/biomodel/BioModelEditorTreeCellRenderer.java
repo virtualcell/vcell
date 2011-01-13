@@ -51,6 +51,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		font = boldFont;
 	    		icon = bioModelIcon;
 	    		labelText = ((BioModel)userObj).getName();
+	    		toolTipPrefix = "BioModel: ";
 //	    	} else if (userObj instanceof VCMetaData) {
 //	    		bChange = true;
 //	    		if (bioModel != null) {
@@ -66,6 +67,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    	setIcon(icon);
 	    	setFont(font);
 	    	setText(labelText);
+	    	if (toolTipSuffix.length() == 0) {
+				toolTipSuffix = labelText;
+			}
 	    	setToolTipText(toolTipPrefix + toolTipSuffix);
     	}
         return this;
