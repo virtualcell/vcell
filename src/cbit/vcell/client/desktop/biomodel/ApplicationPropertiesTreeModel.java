@@ -142,9 +142,10 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  * @see #getBioModel
  */
 public void setSimulationContext(SimulationContext newValue) {
-//	SimulationContext oldValue = simulationContext;
+	if (simulationContext == newValue) {
+		return;
+	}
 	simulationContext = newValue;
-//	firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXT, oldValue, newValue);
 	populateRootNode();
 }
 }
