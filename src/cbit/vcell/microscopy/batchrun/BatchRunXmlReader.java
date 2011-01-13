@@ -92,6 +92,33 @@ public class BatchRunXmlReader {
 															FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 											                secFraction);
 			}
+			else if(selectedModelIndex ==FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+			{
+				params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE];
+				double bwmRate = Double.parseDouble(averageParametersElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
+				params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+															FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+															FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+															FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+											                bwmRate);
+				double fittingParam = Double.parseDouble(averageParametersElement.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag));
+				params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
+															FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
+															FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
+															FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(), 
+															fittingParam);
+				double offRate = Double.parseDouble(averageParametersElement.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag));
+				params[FRAPModel.INDEX_OFF_RATE]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE],
+															FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
+															FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
+															FRAPModel.REF_REACTION_OFF_RATE.getScale(),
+															offRate);
+				params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = null;
+				params[FRAPModel.INDEX_PRIMARY_FRACTION] = null;
+				params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = null;
+				params[FRAPModel.INDEX_SECONDARY_FRACTION]= null;
+				params[FRAPModel.INDEX_ON_RATE]= null;
+			}
 			tempBatchRunWorkspace.setAverageParameters(params);
 		}
 		

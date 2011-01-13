@@ -266,8 +266,14 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		int studySize = getFrapStudies().size();
 		//get parameters array (column-name and column-details should be excluded)
 		//parameterVals[0] primaryDiffRates, parameterVals[1] primaryMobiles,parameterVals[2]bwmRates
-		//parameterVals[3] secDiffRates,parameterVals[4] secMobiles,parameterVals[5]immobiles
+		//parameterVals[3] secDiffRates,parameterVals[4] secMobiles,parameterVals[5] bs_concentration
+		//parameterVals[6] reaction on rate, parameterVals[7] reacton off rate, parameterVals[8] immobile
 		double[][] parameterVals = new double[BatchRunResultsParamTableModel.NUM_COLUMNS-2][studySize];
+		for(int i=0; i<(BatchRunResultsParamTableModel.NUM_COLUMNS-2); i++)
+		{
+			//fill all elements with 1e8 first
+			Arrays.fill(parameterVals[i], FRAPOptimizationUtils.largeNumber);
+		}
 		
 		for(int i=0; i<studySize; i++)
 		{
@@ -290,6 +296,13 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 				parameterVals[4][i] = fModel.getModelParameters()[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
 				parameterVals[5][i] = Math.max(0, (1 - parameterVals[1][i] - parameterVals[4][i]));
 			}
+			else if (selectedModel == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+			{
+				FRAPModel fModel = fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE];
+				parameterVals[2][i] = fModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
+				parameterVals[5][i] = fModel.getModelParameters()[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess();
+				parameterVals[7][i] = fModel.getModelParameters()[FRAPModel.INDEX_OFF_RATE].getInitialGuess();
+			}
 		}
 		
 		double[][] oldStatData = statisticsData;
@@ -304,13 +317,16 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		
 		for(int i=0; i<BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
 		{
-			//statistics for primary diffusion rate
-			DescriptiveStatistics stat = DescriptiveStatistics.CreateBasicStatistics(parameterVals[i]);
-			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] = stat.getMean();
-			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_STD][i] = stat.getStandardDeviation();
-			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MEDIAN][i] = stat.getMedian();
-			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MIN][i] = stat.getMin();
-			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MAX][i] = stat.getMax();
+			//statistics for parameters exist(which is not saved as 1e8)
+			if(parameterVals[i][0] != FRAPOptimizationUtils.largeNumber)
+			{
+				DescriptiveStatistics stat = DescriptiveStatistics.CreateBasicStatistics(parameterVals[i]);
+				statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] = stat.getMean();
+				statisticsData[BatchRunResultsStatTableModel.ROW_IDX_STD][i] = stat.getStandardDeviation();
+				statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MEDIAN][i] = stat.getMedian();
+				statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MIN][i] = stat.getMin();
+				statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MAX][i] = stat.getMax();
+			}
 		}
 		updateAverageParameters();
 		firePropertyChange(PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS, oldStatData, statisticsData);
@@ -371,7 +387,27 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			oldParameters = getAverageParameters();
 			setAverageParameters(new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate, secDiffRate, secMobileFrac});
 		}
-		
+		else if (selectedModel == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+		{
+			Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+					            statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
+			Parameter fittingParam = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION], 
+								FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
+								FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
+								FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(), 
+					            statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BS_CONCENTRATION-1]);
+			Parameter offRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE],
+								FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
+								FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
+								FRAPModel.REF_REACTION_OFF_RATE.getScale(),
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_OFF_RATE-1]);
+			//get old parameters
+			oldParameters = getAverageParameters();
+			setAverageParameters(new Parameter[]{null, null, bleachWhileMonitoringRate,null, null, fittingParam, null,offRate});
+		}
 		//check to see if we need to set save flag
 		if(!Compare.isEqualOrNull(oldParameters, getAverageParameters()))
 		{
@@ -432,6 +468,37 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 
 	public void setSaveNeeded(boolean bNeedSave) {
 		this.bSaveNeeded = bNeedSave;
+	}
+	
+	//If users select reaction off rate model for batch run, the only ROI applied must be bleached ROI
+	public void setSelectedROIForReactionOffRate()
+	{
+		ArrayList<FRAPStudy> frapStudies = this.getFrapStudies();
+		boolean[] selectedROIs = FRAPStudy.createSelectedROIsForReactionOffRateModel();
+		for(FRAPStudy fStudy : frapStudies)
+		{
+			fStudy.setSelectedROIsForErrorCalculation(selectedROIs);
+		}
+	}
+	
+	public boolean isROISelectedApplicableToReactionOffRateModel()
+	{
+		ArrayList<FRAPStudy> frapStudies = this.getFrapStudies();
+		for(FRAPStudy fStudy : frapStudies)
+		{
+			if(fStudy.getNumSelectedROIs() != 1)
+			{
+				return false;
+			}
+			else
+			{	//selected ROI is not bleached.
+				if(!fStudy.getSelectedROIsForErrorCalculation()[0])
+				{
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	/*used when opening a vfrap batch file. Batch run is read into a 

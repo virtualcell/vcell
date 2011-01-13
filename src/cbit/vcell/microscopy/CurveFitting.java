@@ -50,7 +50,7 @@ public class CurveFitting {
 		modelExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 		modelExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellFirstPostBleach));
 		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
-		Parameter parameters[] = new Parameter[] {new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
+		Parameter parameters[] = new Parameter[] {new Parameter(FRAPOptFunctions.SYMBOL_BWM_RATE,
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
@@ -207,13 +207,13 @@ public class CurveFitting {
 		double iniBleachedIntensity = inputparam[0];
 		double bleachWhileMonitoringRate = inputparam[1];
 		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(iniBleachedIntensity));
-		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]), new Expression(bleachWhileMonitoringRate));
+		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(bleachWhileMonitoringRate));
 		if(offRate != null)
 		{
-			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]), new Expression(offRate));
+			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(offRate));
 		}
 		
-		Parameter koffParam = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE],
+		Parameter koffParam = new Parameter(FRAPOptFunctions.SYMBOL_KOFF,
 											FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
 											FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
 											FRAPModel.REF_REACTION_OFF_RATE.getScale(),

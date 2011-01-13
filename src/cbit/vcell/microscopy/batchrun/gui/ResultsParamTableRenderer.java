@@ -8,6 +8,7 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.DescriptiveStatistics;
@@ -16,9 +17,12 @@ import org.vcell.util.DescriptiveStatistics;
 @SuppressWarnings("serial")
 public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 {
-	private JButton button = new JButton("Details...");
+	private JButton button = null;
 	public ResultsParamTableRenderer()
 	{
+		button = new JButton("Details...");
+		button.setVerticalTextPosition(SwingConstants.CENTER); 
+		button.setHorizontalTextPosition(SwingConstants.LEFT);
 		button.setBorderPainted(false);
         setFont(new Font("Arial", Font.PLAIN, 11));
 	}
@@ -35,7 +39,15 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 			}
 			else if(value instanceof File)
 			{
-				setText(((File)value).getName());
+				String fileName = ((File)value).getName();
+				if(fileName.indexOf(".") > 0)
+				{
+					setText(fileName.substring(0,fileName.indexOf(".")));
+				}
+				else
+				{
+					setText(fileName);
+				}
 			}
 			if(value != null)
 	        {

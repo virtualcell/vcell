@@ -523,7 +523,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 			Expression[] expressions = new Expression[] { new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT), new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY)};
 			String[] suffixes = new String[] { "", "" };
 			expressionCanvas1.setExpressions(expressions,prefixes,suffixes);
-			expressionCanvas2.setStrings(new String[]{"k_off : Reaction off rate.", /*"I_init : First post bleach average intensity.", */"beta : Bleaching while monitoring rate."});
+			expressionCanvas2.setStrings(new String[]{"k_off : Reaction off rate.  A : Fitting parameter.   ", /*"I_init : First post bleach average intensity.", */"beta : Bleach while monitoring rate."});
 		}catch (ExpressionException e2){
 			e2.printStackTrace(System.out);
 		}		

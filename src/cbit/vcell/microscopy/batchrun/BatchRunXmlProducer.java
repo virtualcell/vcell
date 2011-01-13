@@ -65,6 +65,12 @@ public class BatchRunXmlProducer
 				parametersNode.setAttribute(MicroscopyXMLTags.SecondRateAttrTag, avgParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
 				parametersNode.setAttribute(MicroscopyXMLTags.SecondFractionAttTag, avgParams[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
 			}
+			else if(param.getSelectedModel() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE && avgParams.length == FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE)
+			{
+				parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, avgParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+				parametersNode.setAttribute(MicroscopyXMLTags.BindingSiteConcentrationAttTag, avgParams[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() + "");
+				parametersNode.setAttribute(MicroscopyXMLTags.ReactionOffRateAttTag, avgParams[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
+			}
 		}
 		batchRunNode.addContent(parametersNode);
 		

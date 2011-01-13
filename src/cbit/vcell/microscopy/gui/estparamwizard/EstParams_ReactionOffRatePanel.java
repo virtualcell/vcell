@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,9 +23,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptFunctions;
-import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
@@ -247,14 +243,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			//Analytic - bleach region average intensity with bleach while monitoring rate
 			ODESolverResultSet koffFitOdeSolverResultSet = new ODESolverResultSet();
 			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedSymbol.TIME.getName()));
-			Expression bleachedAvgExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
-			// substitute parameter values 
-			bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachRegionData[startIndexRecovery]));
-			bleachedAvgExp.substituteInPlace(new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getName()), new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()));
-			bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(currentParams[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()));
-			bleachedAvgExp.substituteInPlace(new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getName()), new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getInitialGuess()));
-			// time shift
-			bleachedAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
+			Expression bleachedAvgExp = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getRecoveryExpressionWithCurrentParameters(currentParams); 
 			try {
 				koffFitOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
@@ -270,40 +259,11 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 				koffFitOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
 				truncatedTimes[i-startIndexRecovery] = frapDataTimeStamps[i];
 			}
-			setCurrentEstimationResults(createCurrentEstimationResults(bleachedAvgExp.flatten(), truncatedTimes));
+			setCurrentEstimationResults(frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().createData(bleachedAvgExp.flatten(), truncatedTimes));
 			DataSource koffFitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", koffFitOdeSolverResultSet);
 			multisourcePlotPane.setDataSources(new DataSource[] {expBleachDataSource, koffFitDataSource /*, expCellAvgDataSource , bleachWhileMonitorDataSource*/} );
 			multisourcePlotPane.selectAll();		
 		}
-	}
-	
-	//with all rois in first dimension and reduced time points in second dimension.
-	public double[][] createCurrentEstimationResults(Expression bleachedAvgExp, double[] time) throws DivideByZeroException, ExpressionException
-	{
-		double[][] result = null;
-		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
-		int roiLen = frapData.getROILength();
-		result = new double[roiLen][time.length];
-		
-		for(int i=0; i< FRAPData.VFRAP_ROI_ENUM.values().length; i++)
-		{
-			if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
-			{
-				for(int j=0; j<time.length; j++)
-				{
-					Expression tempExp = new Expression(bleachedAvgExp);
-					double tempData;
-					tempExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[j]));
-					tempData = tempExp.evaluateConstant();
-					result[i][j] = tempData;
-				}
-			}
-			else
-			{
-				Arrays.fill(result[i], FRAPOptimizationUtils.largeNumber);
-			}
-		}
-		return result;
 	}
 	
 	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)

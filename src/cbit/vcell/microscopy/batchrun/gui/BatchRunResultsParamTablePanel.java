@@ -32,6 +32,7 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReactionOffRatePanel;
 
 @SuppressWarnings("serial")
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
@@ -48,8 +49,9 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
     private EstParams_OneDiffComponentPanel oneDiffComponentPanel = null;
 	private EstParams_TwoDiffComponentPanel twoDiffComponentPanel = null;
+	private EstParams_ReactionOffRatePanel offRatePanel = null;
    
-    public BatchRunResultsParamTablePanel(BatchRunResultsParameterPanel arg_parent) 
+	public BatchRunResultsParamTablePanel(BatchRunResultsParameterPanel arg_parent) 
     {
     	this.parent = arg_parent;
         final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -267,7 +269,20 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 	public void setTwoDiffComponentPanel(EstParams_TwoDiffComponentPanel twoDiffComponentPanel) {
 		this.twoDiffComponentPanel = twoDiffComponentPanel;
 	}
+	
+	public EstParams_ReactionOffRatePanel getOffRatePanel() {
+		if(offRatePanel == null)
+		{
+			offRatePanel = new EstParams_ReactionOffRatePanel();
+			offRatePanel.setPreferredSize(new Dimension(980,680));
+		}
+		return offRatePanel;
+	}
 
+	public void setOffRatePanel(EstParams_ReactionOffRatePanel offRatePanel) {
+		this.offRatePanel = offRatePanel;
+	}
+	
 	public void updateTableData()
 	{
 		resultsTableModel.fireTableDataChanged();
@@ -280,7 +295,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 		{
 			int rowNum = ((Integer)evt.getNewValue()).intValue();
 			String fileName = ((File)table_param.getValueAt(rowNum, BatchRunResultsParamTableModel.COLUMN_FILE_NAME)).getAbsolutePath();
-			System.out.println("FileName---" + fileName);
+//			System.out.println("FileName---" + fileName);
 			FRAPStudy selectedFrapStudy = batchRunWorkspace.getFRAPStudy(fileName);
 			//display estimation result for each selected frapStudy based on model type
 			if(batchRunWorkspace.getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
@@ -322,6 +337,25 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 				if(choice == JOptionPane.OK_OPTION)
 				{
 					selectedFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS).setModelParameters(getTwoDiffComponentPanel().getCurrentParameters());
+					batchRunWorkspace.refreshStatisticsData();
+				}
+			}
+			else if(batchRunWorkspace.getSelectedModel() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+			{
+				try {
+					batchRunWorkspace.getWorkingSingleWorkspace().setFrapStudy(selectedFrapStudy, false, true);
+					getOffRatePanel().setFrapWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
+					getOffRatePanel().setData(selectedFrapStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters(),
+											  selectedFrapStudy.getFrapData(),
+							                  selectedFrapStudy.getStartingIndexForRecovery());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int choice = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(BatchRunResultsParamTablePanel.this), getOffRatePanel(), "Estimation Details for "+selectedFrapStudy.getXmlFilename());
+				if(choice == JOptionPane.OK_OPTION)
+				{
+					selectedFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_REACTION_OFF_RATE).setModelParameters(getOffRatePanel().getCurrentParameters());
 					batchRunWorkspace.refreshStatisticsData();
 				}
 			}

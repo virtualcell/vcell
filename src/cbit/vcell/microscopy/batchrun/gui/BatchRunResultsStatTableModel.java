@@ -6,7 +6,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.vcell.util.DescriptiveStatistics;
 
-import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
@@ -14,7 +13,7 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 @SuppressWarnings("serial")
 public class BatchRunResultsStatTableModel extends AbstractTableModel 
 {
-	public final static int NUM_COLUMNS = 7;
+	public final static int NUM_COLUMNS = 10;
 	public final static int NUM_STATISTICS = 5;
 	public final static int ROW_IDX_AVERAGE = 0;
 	public final static int ROW_IDX_STD = 1;
@@ -28,11 +27,15 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
 	public final static int COLUMN_BMR = 3;
 	public final static int COLUMN_SEC_DIFF_RATE = 4;
 	public final static int COLUMN_SEC_MOBILE_FRACTION = 5;
-	public final static int COLUMN_IMMOBILE_FRACTION = 6;
+	public final static int COLUMN_BS_CONCENTRATION = 6;
+	public final static int COLUMN_ON_RATE = 7;
+	public final static int COLUMN_OFF_RATE = 8;
+	public final static int COLUMN_IMMOBILE_FRACTION = 9;
 	
 	public final static String COL_LABELS[] = { "Statistics", "Primary Diff Rate", "Primary Mobile Fraction",
 												"Bleach Monitor Rate", "Secondary Mobile Fraction",
-												"Secondary Diff Rate", "Immobile Fraction"};
+												"Secondary Diff Rate", "Binding site concentration",
+												"Reaction on rate", "Reaction off rate", "Immobile Fraction"};
 	
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private ArrayList<FRAPStudy> frapStudys = null;
@@ -85,7 +88,9 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     			return DescriptiveStatistics.MAX_NAME;
     		}
     	}
-    	else if(col == COLUMN_PRI_DIFF_RATE)
+    	else if((col == COLUMN_PRI_DIFF_RATE)||(col == COLUMN_PRI_MOBILE_FRACTION)||(col == COLUMN_SEC_DIFF_RATE)||
+    	       (col == COLUMN_SEC_MOBILE_FRACTION)||(col == COLUMN_BMR)||
+    	       (col == COLUMN_ON_RATE) || (col == COLUMN_OFF_RATE) || (col == COLUMN_IMMOBILE_FRACTION))
     	{
     		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
     		{
@@ -95,63 +100,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     			}
     		}
     	}
-    	else if(col == COLUMN_PRI_MOBILE_FRACTION)
-    	{
-    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
-    		{
-    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
-    			{
-    				return stat[row][col-1];//stat array doesn't have name at the first column
-    			}
-    		}
-    	}
-    	else if(col == COLUMN_SEC_DIFF_RATE)
-    	{
-    		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
-    		{
-	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
-	    		{
-	    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
-	    			{
-	    				return stat[row][col-1];//stat array doesn't have name at the first column
-	    			}
-	    		}
-    		}
-    	}
-    	else if(col == COLUMN_SEC_MOBILE_FRACTION)
-    	{
-    		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
-    		{
-    		
-	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
-	    		{
-	    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
-	    			{
-	    				return stat[row][col-1];//stat array doesn't have name at the first column
-	    			}
-	    		}
-    		}
-    	}
-    	else if(col == COLUMN_BMR)
-    	{
-    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
-    		{
-    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
-    			{
-    				return stat[row][col-1];//stat array doesn't have name at the first column
-    			}
-    		}
-    	}
-    	else if(col == COLUMN_IMMOBILE_FRACTION)
-    	{
-    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
-    		{
-    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
-    			{
-    				return stat[row][col-1];//stat array doesn't have name at the first column
-    			}
-    		}
-    	}
+
     	return null;
     }
 
@@ -160,22 +109,10 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     		case COLUMN_STAT_NAME:{
     			return String.class;
     		}
-    		case COLUMN_PRI_DIFF_RATE:{
-    			return Double.class;
-    		}
-    		case COLUMN_PRI_MOBILE_FRACTION: {
-    			return Double.class;
-    		}
-    		case COLUMN_SEC_DIFF_RATE: {
-    			return Double.class;
-    		}
-    		case COLUMN_SEC_MOBILE_FRACTION: {
-    			return Double.class;
-    		}
-    		case COLUMN_BMR: {
-    			return Double.class;
-    		}
-    		case COLUMN_IMMOBILE_FRACTION: {
+    		case COLUMN_PRI_DIFF_RATE: case COLUMN_PRI_MOBILE_FRACTION: case COLUMN_SEC_DIFF_RATE:
+    		case COLUMN_SEC_MOBILE_FRACTION: case COLUMN_BMR: case COLUMN_BS_CONCENTRATION:
+    		case COLUMN_ON_RATE: case COLUMN_OFF_RATE: case COLUMN_IMMOBILE_FRACTION:
+    		{
     			return Double.class;
     		}
     		
