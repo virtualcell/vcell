@@ -3162,7 +3162,7 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			}
 			MediaTrack videoTrack = new MediaTrack(chunks);
 			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
-			newMovie.addUserDataEntry(new UserDataEntry("cpy", "�" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
+			newMovie.addUserDataEntry(new UserDataEntry("cpy", "\u00A9" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
 			newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
 			newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + timePoints[beginTimeIndex] + " - " + timePoints[endTimeIndex]));
 			for (int k = 0; k < varNames.length; k ++) {
@@ -3180,6 +3180,11 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 		}
 	};
 	ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
+}
+
+public void setVisItButtonVisible(boolean bVisible)
+{
+	getJButtonVisit().setVisible(bVisible);
 }
 
 public void addDataJobListener(DataJobListener listener) {
