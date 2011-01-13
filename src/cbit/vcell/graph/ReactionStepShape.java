@@ -23,7 +23,7 @@ public abstract class ReactionStepShape extends ElipseShape {
 	public ReactionStepShape(ReactionStep reactionStep, GraphModel graphModel) {
 		super(graphModel);
 		this.reactionStep = reactionStep;
-		defaultBG = java.awt.Color.lightGray;
+		defaultBG = java.awt.Color.yellow;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
 	}

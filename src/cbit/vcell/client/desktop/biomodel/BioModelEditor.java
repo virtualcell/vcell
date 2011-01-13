@@ -941,16 +941,24 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
 		if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			bioModelEditorModelPanel.selectTab(ModelPanelTabID.structure_table);
+			if (leafObject == null) {
+				bioModelEditorModelPanel.selectTab(ModelPanelTabID.structure_table);
+			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			bioModelEditorModelPanel.selectTab(ModelPanelTabID.species_table);			
+			if (leafObject == null) {
+				bioModelEditorModelPanel.selectTab(ModelPanelTabID.species_table);
+			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			bioModelEditorModelPanel.selectTab(ModelPanelTabID.parameter_table);
+			if (leafObject == null) {
+				bioModelEditorModelPanel.selectTab(ModelPanelTabID.parameter_table);
+			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			bioModelEditorModelPanel.selectTab(ModelPanelTabID.reaction_table);
+			if (leafObject == null) {
+				bioModelEditorModelPanel.selectTab(ModelPanelTabID.reaction_table);
+			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);

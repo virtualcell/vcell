@@ -35,7 +35,6 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;

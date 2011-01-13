@@ -32,14 +32,13 @@ public class ApplicationsPropertiesPanel extends JPanel {
 	private BioModel bioModel = null;
 	private EventHandler eventHandler = new EventHandler();
 	private JPanel applicationsPanel = null;
-	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
-	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
-	private Icon simulationContextIcon = new ImageIcon(getClass().getResource("/images/application3_16x16.gif"));
+	private static Icon geometryIcon = new ImageIcon(ApplicationsPropertiesPanel.class.getResource("/images/geometry2_16x16.gif"));
+	private static Icon appTypeIcon = new ImageIcon(ApplicationsPropertiesPanel.class.getResource("/images/type.gif"));
+	private static Icon simulationContextIcon = new ImageIcon(ApplicationsPropertiesPanel.class.getResource("/images/application3_16x16.gif"));
 	
 	private class EventHandler implements PropertyChangeListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			// TODO Auto-generated method stub
 			if (evt.getSource() == bioModel && evt.getPropertyName().equals(BioModel.PROPERTY_NAME_SIMULATION_CONTEXTS)) {
 				updateInterface();
 			}
@@ -77,28 +76,6 @@ private void initialize() {
 		add(new JScrollPane(applicationsPanel), BorderLayout.CENTER);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
-	}
-}
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ApplicationsPropertiesPanel aEditSpeciesPanel = new ApplicationsPropertiesPanel();
-		frame.add(aEditSpeciesPanel);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.pack();
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of cbit.gui.JInternalFrameEnhanced");
-		exception.printStackTrace(System.out);
 	}
 }
 

@@ -55,9 +55,9 @@ public class BioModelPropertiesPanel extends JPanel {
 	private BioModelWindowManager bioModelWindowManager;
 	private JPanel applicationsPanel = null;
 	private JPanel webLinksPanel = null;
-	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
-	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
-	private Icon simulationContextIcon = new ImageIcon(getClass().getResource("/images/application3_16x16.gif"));
+	private static Icon geometryIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/geometry2_16x16.gif"));
+	private static Icon appTypeIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/type.gif"));
+	private static Icon simulationContextIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/application3_16x16.gif"));
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
