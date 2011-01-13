@@ -16,6 +16,7 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -284,7 +285,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 				parameterVals[0][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
 				parameterVals[1][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
 				parameterVals[2][i] = fModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
-				parameterVals[5][i] = Math.max(0, (1 - parameterVals[1][i]));
+				parameterVals[8][i] = Math.max(0, (1 - parameterVals[1][i]));//immobile fraction
 			}
 			else if (selectedModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 			{
@@ -294,7 +295,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 				parameterVals[2][i] = fModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
 				parameterVals[3][i] = fModel.getModelParameters()[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
 				parameterVals[4][i] = fModel.getModelParameters()[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-				parameterVals[5][i] = Math.max(0, (1 - parameterVals[1][i] - parameterVals[4][i]));
+				parameterVals[8][i] = Math.max(0, (1 - parameterVals[1][i] - parameterVals[4][i]));//immobile fraction
 			}
 			else if (selectedModel == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
 			{
@@ -409,10 +410,26 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			setAverageParameters(new Parameter[]{null, null, bleachWhileMonitoringRate,null, null, fittingParam, null,offRate});
 		}
 		//check to see if we need to set save flag
-		if(!Compare.isEqualOrNull(oldParameters, getAverageParameters()))
+		boolean bSaveNeeded = true;
+		if(oldParameters != null && getAverageParameters() != null)
 		{
-			setSaveNeeded(true);
+			if(oldParameters.length != getAverageParameters().length)
+			{
+				bSaveNeeded = false;
+			}
+			for(int i = 0; i < oldParameters.length; i++)
+			{
+				if(!Compare.isEqualOrNull(oldParameters[i], getAverageParameters()[i]))
+				{
+					bSaveNeeded = false;
+				}
+			}
 		}
+		else if(oldParameters == null && getAverageParameters() == null)
+		{
+			bSaveNeeded = false;
+		}
+		setSaveNeeded(bSaveNeeded);
 	}
 
 	public double[][] getStatisticsData()
@@ -620,11 +637,19 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 							//optimization was done but data wasn't save with file, need to restore data
 							if(frapModel.getModelParameters() != null && frapModel.getModelParameters().length > 0 && frapModel.getData() == null)
 							{
-								FRAPOptData optData = new FRAPOptData(newFRAPStudy, frapModel.getModelParameters().length, localWorkspace, newFRAPStudy.getStoredRefData());
-								newFRAPStudy.setFrapOptData(optData);
-								frapModel.setData(optData.getFitData(frapModel.getModelParameters()));
+								if(frapModel.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]))
+								{
+									FRAPOptFunctions frapOptFunc = new FRAPOptFunctions(newFRAPStudy);
+									newFRAPStudy.setFrapOptFunc(frapOptFunc);
+									frapModel.setData(frapOptFunc.getFitData(frapModel.getModelParameters()));
+								}
+								else 
+								{
+									FRAPOptData optData = new FRAPOptData(newFRAPStudy, frapModel.getModelParameters().length, localWorkspace, newFRAPStudy.getStoredRefData());
+									newFRAPStudy.setFrapOptData(optData);
+									frapModel.setData(optData.getFitData(frapModel.getModelParameters()));
+								}
 							}
-	
 							tempBatchRunWorkspace.getFrapStudies().remove(i);
 							tempBatchRunWorkspace.getFrapStudies().add(i, newFRAPStudy);
 						}
