@@ -3,9 +3,12 @@ package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -52,10 +55,10 @@ public class ModelTypesDescriptor extends WizardPanelDescriptor {
 			{
 				modelTypesPanel.setDiffTwoSelected(true);
 			}
-//			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-//			{
-//				modelTypesPanel.setDiffBindingSelected(true);
-//			}
+			if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null)
+			{
+				modelTypesPanel.setReactionOffRateSelected(true);
+			}
     	}
     	else //new frap document
     	{
@@ -86,6 +89,23 @@ public class ModelTypesDescriptor extends WizardPanelDescriptor {
 					}
 					if(isOneSelected)
 					{
+						if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] && !batchRunWorkspace.isBatchRunResultsAvailable())
+						{
+							String choice = DialogUtils.showWarningDialog(modelTypesPanel, "Reaction dominant off rate model can be estimated under bleached region only. \n" +
+									"There is at least one document didn't select bleached region as the only ROI.\n" +
+									"Two solutions are listed below:\n\n" +
+									"Select 'Continue' to automatically change selected ROI to bleached region for each document or\n" +
+									"Select 'Cancel' to change selected model.", new String[]{UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CONTINUE);
+							if(choice.equals(UserMessage.OPTION_CONTINUE))
+							{
+								batchRunWorkspace.setSelectedROIForReactionOffRate();
+							}
+							else
+							{
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+							
 			    		//update selected models in batchRunWorkspace and all frapStudies in the BatchRun
 						batchRunWorkspace.refreshModels(models);
 					}

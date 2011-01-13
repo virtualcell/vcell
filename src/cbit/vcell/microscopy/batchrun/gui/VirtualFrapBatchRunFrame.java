@@ -47,6 +47,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -483,16 +484,18 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
 						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
-//						
-						//reference data is null, it is not stored, we have to run ref simulation then
-						//check external data info
-						if(!FRAPWorkspace.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+					
+						if(fStudy.hasDiffusionOnlyModel())
 						{
-							//if external files are missing/currupt or ROIs are changed, create keys and save them
-							fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
-							fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
-							fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
-							fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+							//check external data info. If not existing,  we have to run ref simulation.
+							if(!FRAPWorkspace.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+							{
+								//if external files are missing/currupt or ROIs are changed, create keys and save them
+								fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
+								fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
+								fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+								fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+							}
 						}
 					}
 				};
@@ -501,8 +504,18 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						MessagePanel msgPanel = appendJobStatus("Running reference simulation ...", true);
-						hashTable.put("runRefStatus", msgPanel);
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
+						
+						if(fStudy.hasDiffusionOnlyModel())
+						{ 
+							MessagePanel msgPanel = appendJobStatus("Running reference simulation ...", true);
+							hashTable.put("runRefStatus", msgPanel);
+						}
+						else if(fStudy.hasReactionOnlyOffRateModel())
+						{
+//							MessagePanel msgPanel = appendJobStatus("...", true);
+//							hashTable.put("runRefStatus", msgPanel);
+						}
 					}
 				};
 				
@@ -511,15 +524,25 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
 						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
-						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
-						//run ref sim
-						if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
+						if(fStudy.hasDiffusionOnlyModel())
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, fStudy.getStoredRefData()));
+							MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
+							//run ref sim
+							if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
+							{
+								fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, fStudy.getStoredRefData()));
+							}
+							else
+							{
+								fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, msgPanel));
+							}
 						}
-						else
+						else if(fStudy.hasReactionOnlyOffRateModel())
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, msgPanel));
+							if(fStudy.getFrapOptFunc() == null)
+							{
+								fStudy.setFrapOptFunc(new FRAPOptFunctions(fStudy));
+							}
 						}
 					}
 				};
@@ -528,9 +551,12 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
-						msgPanel.setProgressCompleted();
-						
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
+						if(fStudy.hasDiffusionOnlyModel())
+						{
+							MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
+							msgPanel.setProgressCompleted();
+						}
 						MessagePanel msgPanel1 = appendJobStatus("Running optimization ...", true);
 						hashTable.put("optimizationStatus", msgPanel1);
 					}
@@ -575,6 +601,13 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setData(fitData);
 //										}
+									}
+									else if(model == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+									{
+										Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData(), null, true);
+										double[][] fitData = fStudy.getFrapOptFunc().getFitData(bestParameters);
+										fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].setModelParameters(bestParameters);
+										fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].setData(fitData);
 									}
 								}
 								else{
@@ -629,6 +662,14 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 										{
 											ProfileData[] profileData = fStudy.getFrapOptData().evaluateParameters(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters(), msgPanel);
 											fStudy.setProfileData_twoDiffComponents(profileData);
+										}
+									}
+									else if(model == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+									{
+										if(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters() != null)
+										{
+											ProfileData[] profileData = fStudy.getFrapOptFunc().evaluateParameters(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE].getModelParameters(), msgPanel);
+											fStudy.setProfileData_reactionOffRate(profileData);
 										}
 									}
 								}

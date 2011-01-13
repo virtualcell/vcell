@@ -34,7 +34,7 @@ public class EstParams_ReactionOffRateDescriptor extends WizardPanelDescriptor
     	}catch(Exception ex)
     	{
     		ex.printStackTrace(System.out);
-    		DialogUtils.showErrorDialog((getPanelComponent()), "Error getting parameters for diffusion with one diffusing component model.");
+    		DialogUtils.showErrorDialog((getPanelComponent()), "Error getting parameters for reaction dominant off rate model.");
     	}
 	}
     

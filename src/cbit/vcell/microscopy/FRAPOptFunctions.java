@@ -1,5 +1,7 @@
 package cbit.vcell.microscopy;
 
+import java.util.Arrays;
+
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.UserCancelException;
@@ -7,14 +9,15 @@ import org.vcell.util.UserCancelException;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
 public class FRAPOptFunctions 
 {
 	public static String SYMBOL_A = "A";
-	public static String SYMBOL_KOFF = FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE];
-	public static String SYMBOL_BWM_RATE = FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+	public static String SYMBOL_KOFF = "k_off";
+	public static String SYMBOL_BWM_RATE = "beta";
 	public static String SYMBOL_I_inibleached = "I_inibleached";
 	public static String FUNC_RECOVERY_BLEACH_REACTION_DOMINANT = SYMBOL_I_inibleached + "+" +SYMBOL_A + "*(1-exp(-1*"+SYMBOL_KOFF+"*"+ReservedSymbol.TIME.getName()+"))" + "*exp(-1*"+ SYMBOL_BWM_RATE+"*"+ ReservedSymbol.TIME.getName() +")";
 	public static String SYMBOL_I_inicell = "I_inicell";
@@ -140,6 +143,70 @@ public class FRAPOptFunctions
 		}
 		
 		return weightedError;
+	}
+	
+	public Expression getRecoveryExpressionWithCurrentParameters(Parameter[] currentParams) throws ExpressionException
+	{
+		FRAPData frapData = getExpFrapStudy().getFrapData();
+		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
+		//Experiment - Cell ROI Average
+		double[] temp_background = frapData.getAvgBackGroundIntensity();
+		int startIndexRecovery = getExpFrapStudy().getStartingIndexForRecovery();
+		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
+		double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
+		Expression bleachedAvgExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+		// substitute parameter values 
+		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachRegionData[startIndexRecovery]));
+		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()));
+		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(currentParams[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()));
+		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getInitialGuess()));
+		// time shift
+		bleachedAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
+		
+		return bleachedAvgExp;
+	}
+	
+	//with all rois in first dimension and reduced time points in second dimension.
+	public double[][] createData(Expression bleachedAvgExp, double[] time) throws DivideByZeroException, ExpressionException
+	{
+		double[][] result = null;
+		FRAPData frapData = getExpFrapStudy().getFrapData();
+		int roiLen = frapData.getROILength();
+		result = new double[roiLen][time.length];
+		
+		for(int i=0; i< FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			{
+				for(int j=0; j<time.length; j++)
+				{
+					Expression tempExp = new Expression(bleachedAvgExp);
+					double tempData;
+					tempExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[j]));
+					tempData = tempExp.evaluateConstant();
+					result[i][j] = tempData;
+				}
+			}
+			else
+			{
+				Arrays.fill(result[i], FRAPOptimizationUtils.largeNumber);
+			}
+		}
+		return result;
+	}
+	
+	//fitExp contains time parameter only, all other parameter are substituted with parameter values.
+	public double[][] getFitData(Parameter[] currentParams) throws DivideByZeroException, ExpressionException
+	{
+		Expression fitExp = getRecoveryExpressionWithCurrentParameters(currentParams);
+		double[] frapDataTimeStamps = getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
+		int startIndexRecovery = getExpFrapStudy().getStartingIndexForRecovery();
+		double[] truncatedTimes = new double[frapDataTimeStamps.length - startIndexRecovery];
+		for (int i = startIndexRecovery; i < frapDataTimeStamps.length; i++) 
+		{
+			truncatedTimes[i-startIndexRecovery] = frapDataTimeStamps[i];
+		}
+		return createData(fitExp.flatten(), truncatedTimes);
 	}
 	
 	//profileData array contains only two profile distribution, one for bleachWhileMonitoringRate and another for reaction off rate

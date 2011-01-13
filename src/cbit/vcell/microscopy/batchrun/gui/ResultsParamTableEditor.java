@@ -10,6 +10,7 @@ import java.util.EventObject;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.DescriptiveStatistics;
@@ -20,13 +21,18 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 public class ResultsParamTableEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
 
 {
-	private JButton button = new JButton("Details...");
+	private JButton button = null;
 	private JTable table;
 	private PropertyChangeSupport propertyChangeSupport;
 	
 	public ResultsParamTableEditor(JTable table) {
 		super();
 		this.table = table;
+		//create button
+		button = new JButton("Details...");
+		button.setVerticalTextPosition(SwingConstants.CENTER); 
+		button.setHorizontalTextPosition(SwingConstants.LEFT);
+		button.setBorderPainted(false);
 	    button.addActionListener(this);
 	    propertyChangeSupport = new PropertyChangeSupport(this);
 	}

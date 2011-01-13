@@ -21,7 +21,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 	private JCheckBox diffOneCheckBox = null;
 	private JCheckBox diffTwoCheckBox = null;
 	private JCheckBox koffCheckBox = null;
-	private JCheckBox effectiveDiffCheckBox = null;
+//	private JCheckBox effectiveDiffCheckBox = null;
 //	private JCheckBox diffBindingCheckBox = null;
 	
 	public ChooseModel_ModelTypesPanel() {
