@@ -62,7 +62,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
 	private JEditorPane PCLinkValueEditorPane = null;
-	private JTextField speciesNameTextField = null;
+	private JTextField nameTextField = null;
 	
 	public void saveSelectedXRef(final XRef selectedXRef, final MIRIAMQualifier miriamQualifier) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving metadata", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -154,8 +154,11 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	private class EventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getPathwayDBbutton()) 
+			if (e.getSource() == getPathwayDBbutton()) { 
 				showPCKeywordQueryPanel();
+			} else if (e.getSource() == nameTextField) {
+				changeName();
+			}
 		};
 		// @Override
 		public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -171,7 +174,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
-			} else if (e.getSource() == speciesNameTextField) {
+			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
 		}
@@ -225,7 +228,7 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
-	speciesNameTextField.addFocusListener(eventHandler);
+	nameTextField.addFocusListener(eventHandler);
 	getPathwayDBbutton().addActionListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
@@ -238,8 +241,9 @@ private void initialize() {
 		setName("SpeciesEditorPanel");
 		setLayout(new GridBagLayout());
 		
-		speciesNameTextField = new JTextField();
-		speciesNameTextField.setEditable(false);
+		nameTextField = new JTextField();
+		nameTextField.setEditable(false);
+		nameTextField.addActionListener(eventHandler);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -268,7 +272,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		add(speciesNameTextField, gbc);
+		add(nameTextField, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -385,16 +389,16 @@ private void showPCKeywordQueryPanel() {
 private void updateInterface() {
 	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && fieldModel != null;
 	annotationTextArea.setEditable(bNonNullSpeciesContext);
-	speciesNameTextField.setEditable(bNonNullSpeciesContext);
+	nameTextField.setEditable(bNonNullSpeciesContext);
 	pathwayDBJButton.setEnabled(bNonNullSpeciesContext);
 	if (bNonNullSpeciesContext) {
-		speciesNameTextField.setText(getSpeciesContext().getName());
+		nameTextField.setText(getSpeciesContext().getName());
 		annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));	
 		updatePCLink();
 	} else {
 		annotationTextArea.setText(null);
 		getPCLinkValueEditorPane().setText(null);
-		speciesNameTextField.setText(null);
+		nameTextField.setText(null);
 	}
 }
 
@@ -426,9 +430,9 @@ private JButton getPathwayDBbutton() {
 		if (fieldSpeciesContext == null) {
 			return;
 		}
-		String newName = speciesNameTextField.getText();
+		String newName = nameTextField.getText();
 		if (newName == null || newName.length() == 0) {
-			speciesNameTextField.setText(getSpeciesContext().getName());
+			nameTextField.setText(getSpeciesContext().getName());
 			return;
 		}
 		if (newName.equals(fieldSpeciesContext.getName())) {

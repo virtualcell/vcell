@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -36,7 +38,7 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField nameTextField = null;
 	private Model fieldModel = null;
 
-	private class EventHandler implements FocusListener, PropertyChangeListener {
+	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -50,6 +52,11 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == structure) {
 				updateInterface();
 			}
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == nameTextField) {
+				changeName();
+			}		
 		}
 	}
 
@@ -91,6 +98,7 @@ private void initialize() {
 		
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
+		nameTextField.addActionListener(eventHandler);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
