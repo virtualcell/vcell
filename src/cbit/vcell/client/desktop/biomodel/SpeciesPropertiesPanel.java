@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,7 +57,7 @@ import cbit.vcell.model.SpeciesContext;
 @SuppressWarnings("serial")
 public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private SpeciesContext fieldSpeciesContext = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private EventHandler eventHandler = new EventHandler();
 	private Model fieldModel = null;
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
@@ -150,7 +152,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	}
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener {
+	private class EventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getPathwayDBbutton()) 
 				showPCKeywordQueryPanel();
@@ -172,8 +174,13 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == speciesNameTextField) {
 				changeName();
 			}
-		};
-	};
+		}
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == fieldSpeciesContext) {
+				updateInterface();
+			}
+		}
+	}
 
 /**
  * EditSpeciesDialog constructor comment.
@@ -217,10 +224,10 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	annotationTextArea.addFocusListener(ivjEventHandler);
-	speciesNameTextField.addFocusListener(ivjEventHandler);
-	getPathwayDBbutton().addActionListener(ivjEventHandler);
-	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
+	annotationTextArea.addFocusListener(eventHandler);
+	speciesNameTextField.addFocusListener(eventHandler);
+	getPathwayDBbutton().addActionListener(eventHandler);
+	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
 
 /**
@@ -314,28 +321,6 @@ private void initialize() {
 }
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		SpeciesPropertiesPanel aEditSpeciesPanel = new SpeciesPropertiesPanel();
-		frame.add(aEditSpeciesPanel);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.pack();
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of cbit.gui.JInternalFrameEnhanced");
-		exception.printStackTrace(System.out);
-	}
-}
-
-/**
  * Comment
  */
 private void changeFreeTextAnnotation() {
@@ -363,14 +348,24 @@ public void setModel(Model model) {
 
 /**
  * Sets the speciesContext property (cbit.vcell.model.SpeciesContext) value.
- * @param speciesContext The new value for the property.
+ * @param newValue The new value for the property.
  * @see #getSpeciesContext
  */
-void setSpeciesContext(SpeciesContext speciesContext) {
-	if (fieldSpeciesContext == speciesContext) {
+void setSpeciesContext(SpeciesContext newValue) {
+	if (fieldSpeciesContext == newValue) {
 		return;
 	}
-	fieldSpeciesContext = speciesContext;
+	SpeciesContext oldValue = fieldSpeciesContext;
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(eventHandler);
+	}
+	// commit the changes before switch to another species
+	changeName();
+	changeFreeTextAnnotation();
+	fieldSpeciesContext = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(eventHandler);
+	}
 	updateInterface();
 }
 
@@ -436,8 +431,11 @@ private JButton getPathwayDBbutton() {
 			speciesNameTextField.setText(getSpeciesContext().getName());
 			return;
 		}
+		if (newName.equals(fieldSpeciesContext.getName())) {
+			return;
+		}
 		try {
-			getSpeciesContext().setName(speciesNameTextField.getText());
+			getSpeciesContext().setName(newName);
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace();
 			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());

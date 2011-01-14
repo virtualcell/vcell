@@ -197,7 +197,7 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 						textField.addActionListener(this);
 						textField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(2, 4, 2, 4), textField.getBorder()));
 						columnActionComponentList.add(new ColumnActionComponent(c, textField));
-						JLabel label = new JLabel(" (Press Enter or Return) ");
+						JLabel label = new JLabel(" (Press Enter to commit) ");
 						label.setFont(label.getFont().deriveFont(label.getFont().getSize2D() - 1));
 						columnMenus[c].add(textField);
 						columnMenus[c].add(label);

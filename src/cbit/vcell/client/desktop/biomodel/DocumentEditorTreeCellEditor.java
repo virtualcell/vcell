@@ -1,10 +1,14 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultTreeCellEditor;
 
 import cbit.vcell.desktop.BioModelNode;
@@ -20,6 +24,20 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 
 	public DocumentEditorTreeCellEditor(JTree tree) {
 		super(tree, null, new DefaultCellEditor(new JTextField()));
+		DefaultCellEditor editor = (DefaultCellEditor) realEditor;
+		final JTextField textField = (JTextField) editor.getComponent();
+		textField.setToolTipText("Press Enter to commit");
+		textField.addFocusListener(new FocusListener() {			
+			public void focusLost(FocusEvent e) {
+//				stopCellEditing();
+			}
+			
+			public void focusGained(FocusEvent e) {
+				ToolTipManager.sharedInstance().mouseMoved(
+				        new MouseEvent(textField, 0, 0, 0,
+				                0, 0, 0, false));
+			}
+		});
 	}
 
 	@Override

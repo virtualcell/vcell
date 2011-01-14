@@ -7,8 +7,10 @@ import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -161,7 +163,13 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			refreshData();
 			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
-			fireTableDataChanged();
+			int[] selectedRows = ownerTable.getSelectedRows();
+			Structure structure = (Structure) evt.getSource();
+			int changeRow = getRowIndex(structure);
+			if (changeRow >= 0) {
+				fireTableRowsUpdated(changeRow, changeRow);
+				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
+			}
 		}
 	}
 
@@ -318,5 +326,18 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
 		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
 		updateStructureComboBox();
+		
+		BioModel oldValue = (BioModel)evt.getOldValue();
+		if (oldValue != null) {
+			for (Structure s : oldValue.getModel().getStructures()) {
+				s.removePropertyChangeListener(this);
+			}
+		}
+		BioModel newValue = (BioModel)evt.getNewValue();
+		if (newValue != null) {
+			for (Structure s : newValue.getModel().getStructures()) {
+				s.addPropertyChangeListener(this);
+			}
+		}
 	}
 }

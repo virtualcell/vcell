@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -206,15 +207,6 @@ public Object getValueAt(int row, int col) {
 					if (parameter instanceof ModelParameter) {
 						String modelParameterAnnotation = ((ModelParameter)parameter).getModelParameterAnnotation();
 						return (modelParameterAnnotation != null ? modelParameterAnnotation	: "");
-					} else {
-						ReactionStep rxStep = getEditableAnnotationReactionStep(row);
-						if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
-							KineticsParameter param = (KineticsParameter)parameter;
-							if (param.getKinetics().getAuthoritativeParameter() == param){
-								VCMetaData vcMetaData = rxStep.getModel().getVcMetaData();
-								return (vcMetaData != null ? vcMetaData.getFreeTextAnnotation(rxStep) : "");
-							}
-						}
 					}
 					break;
 				}
@@ -238,7 +230,7 @@ public Object getValueAt(int row, int col) {
 public boolean isCellEditable(int row, int column) {
 	if (row < getDataSize()) {
 		Parameter parameter = getValueAt(row);
-		if (parameter instanceof KineticsParameter || parameter instanceof UnresolvedParameter) {
+		if (parameter instanceof UnresolvedParameter) {
 			return false;
 		}
 		switch (column) {
@@ -260,19 +252,6 @@ public boolean isCellEditable(int row, int column) {
 	return column == COLUMN_NAME;
 }
 
-
-public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
-
-	Parameter sortedParameter = getValueAt(rowIndex);
-	if(sortedParameter instanceof Kinetics.KineticsParameter){
-		KineticsParameter param = (KineticsParameter)sortedParameter;
-		if (param.getKinetics().getAuthoritativeParameter() == param){
-			return param.getKinetics().getReactionStep();
-		}
-	}
-	return null;
-}
-
 /**
  * isSortable method comment.
  */
@@ -285,9 +264,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);
 	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
 		refreshData();
-	}
-	if (evt.getSource() instanceof Parameter) {
-		fireTableDataChanged();
+	} else if (evt.getSource() instanceof Parameter) {
+		int[] selectedRows = ownerTable.getSelectedRows();
+		Parameter parameter = (Parameter) evt.getSource();
+		int changeRow = getRowIndex(parameter);
+		if (changeRow >= 0) {
+			fireTableRowsUpdated(changeRow, changeRow);
+			GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
+		}
 	}
 }
 

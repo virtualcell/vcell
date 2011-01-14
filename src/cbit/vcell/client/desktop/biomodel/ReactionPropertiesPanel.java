@@ -86,17 +86,15 @@ public ReactionPropertiesPanel() {
 private void tableSelectionChanged() {
 	int[] rows = getScrollPaneTable().getSelectedRows();
 	List<Object> selectedObjects = new ArrayList<Object>();
-	if (rows != null) {
-		for (int i = 0; i < rows.length; i++) {
-			Parameter object = getParameterTableModel().getValueAt(rows[i]);
-			if (!(object instanceof Kinetics.KineticsProxyParameter)) {
-				selectedObjects.add(object);
-			}
-		}
-		if (selectedObjects.size() > 0 || rows.length == 0) {
-			setSelectedObjects(selectedObjects.toArray());
+	for (int i = 0; i < rows.length; i++) {
+		Parameter object = getParameterTableModel().getValueAt(rows[i]);
+		if (!(object instanceof Kinetics.KineticsProxyParameter)) {
+			selectedObjects.add(object);
 		}
 	}
+	if (selectedObjects.size() > 0 || rows.length == 0) {
+		setSelectedObjects(selectedObjects.toArray());
+	}	
 }
 
 /**
@@ -465,12 +463,12 @@ private void initKineticChoices() {
 }
 
 protected void updateInterface() {
-	boolean bNonNullReactionStepEnabled = reactionStep != null;
-	getParameterTableModel().setEditable(bNonNullReactionStepEnabled);
-	kineticsTypeComboBox.setEnabled(bNonNullReactionStepEnabled);
-	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStepEnabled);
-	jToggleButton.setEnabled(bNonNullReactionStepEnabled);
-	if (bNonNullReactionStepEnabled) {
+	boolean bNonNullReactionStep = reactionStep != null;
+	getParameterTableModel().setEditable(bNonNullReactionStep);
+	kineticsTypeComboBox.setEnabled(bNonNullReactionStep);
+	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
+	jToggleButton.setEnabled(bNonNullReactionStep);
+	if (bNonNullReactionStep) {
 		initKineticChoices();
 		reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
 		reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());

@@ -1,5 +1,10 @@
 package org.vcell.util.gui;
 
+import java.awt.Rectangle;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -31,5 +36,31 @@ public class GuiUtils {
 		for (int row = 0; row < tree.getRowCount(); row ++){
 			tree.expandRow(row);
 		}
+	}
+	
+	public static void tableSetSelectedRows(JTable table, int[] rows) {
+		Set<Integer> oldSelectionSet = new HashSet<Integer>();
+		for (int row : table.getSelectedRows()) {
+			oldSelectionSet.add(row);
+		}
+		Set<Integer> newSelectionSet = new HashSet<Integer>();
+		if (rows != null) {
+			for (int row : rows) {
+				newSelectionSet.add(row);
+			}
+		}
+		
+		Set<Integer> removeSet = new HashSet<Integer>(oldSelectionSet);
+		removeSet.removeAll(newSelectionSet);
+		Set<Integer> addSet = new HashSet<Integer>(newSelectionSet);
+		addSet.removeAll(oldSelectionSet);
+		for (int row : removeSet) {
+			table.removeRowSelectionInterval(row, row);
+		}
+		for (int row : addSet) {
+			table.addRowSelectionInterval(row, row);
+		}
+		Rectangle r = table.getCellRect(table.getSelectedRow(), 0, true);
+		table.scrollRectToVisible(r);
 	}
 }
