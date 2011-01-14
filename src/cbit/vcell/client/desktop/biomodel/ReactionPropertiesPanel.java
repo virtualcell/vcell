@@ -6,6 +6,11 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +20,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.sbml.libsbml.Reaction;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -37,6 +44,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
@@ -47,9 +55,11 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JButton jToggleButton = null;
 	private ParameterTableModel ivjParameterTableModel = null;
 	private ScrollTable ivjScrollPaneTable = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private EventHandler eventHandler = new EventHandler();
 	private ReactionElectricalPropertiesPanel reactionElectricalPropertiesPanel;
 	private JTextArea annotationTextArea = null;
+	private JTextField nameTextField = null;
+	private JLabel electricalPropertiesLabel;
 	
 	private final static KineticsDescription[] Simple_Reaction_Kinetic_Types = {
 		KineticsDescription.MassAction,
@@ -68,13 +78,28 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.Nernst
 	};
 	
-	private class IvjEventHandler implements ActionListener, ListSelectionListener {
+	private class EventHandler implements ActionListener, ListSelectionListener, FocusListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getKineticsTypeComboBox()) 
+			if (e.getSource() == getKineticsTypeComboBox()) { 
 				updateKineticChoice();
+			} else if (e.getSource() == nameTextField) {
+				changeName();
+			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
 			tableSelectionChanged();			
+		}
+		public void focusGained(FocusEvent e) {
+		}
+		public void focusLost(FocusEvent e) {
+			if (e.getSource() == nameTextField) {
+				changeName();
+			}
+		}
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == reactionStep) {
+				updateInterface();
+			}			
 		}
 	}
 	
@@ -146,6 +171,14 @@ private void initialize() {
 		setName("KineticsTypeTemplatePanel");
 		setLayout(new java.awt.GridBagLayout());
 		
+		nameTextField = new JTextField();
+		nameTextField.setEditable(false);
+		nameTextField.addFocusListener(eventHandler);
+		nameTextField.addActionListener(eventHandler);
+		
+		electricalPropertiesLabel = new JLabel("Electrical Properties");
+		electricalPropertiesLabel.setVisible(false);
+
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
 		reactionElectricalPropertiesPanel.setVisible(false);
 		
@@ -153,7 +186,7 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = 3;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JLabel label = new JLabel("<html><u>Select only one reaction to edit properties</u></html>");
@@ -163,43 +196,69 @@ private void initialize() {
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
-		gbc.gridwidth = 4;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(new JLabel("Reaction Name"), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		add(nameTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);		
+		add(electricalPropertiesLabel, gbc);
+			
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(reactionElectricalPropertiesPanel, gbc);
 		
 		gridy ++;		
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.anchor = java.awt.GridBagConstraints.EAST;
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
-		add(new JLabel("Kinetic type"), gbc);
+		add(new JLabel("Kinetic Type"), gbc);
 
-		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
-		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = gridy;
-		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJComboBox1.weightx = 1.0;
-		constraintsJComboBox1.insets = new java.awt.Insets(0, 4, 4, 4);
-		add(getKineticsTypeComboBox(), constraintsJComboBox1);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		add(getKineticsTypeComboBox(), gbc);
 		
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = gridy;
-		gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
-		add(getJToggleButton(), gridBagConstraints);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		add(getJToggleButton(), gbc);
 		
 		gridy ++;
-		java.awt.GridBagConstraints constraintsParameterPanel = new java.awt.GridBagConstraints();
-		constraintsParameterPanel.gridx = 0; 
-		constraintsParameterPanel.gridy = gridy;
-		constraintsParameterPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsParameterPanel.weightx = 1.0;
-		constraintsParameterPanel.weighty = 1.0;
-		constraintsParameterPanel.gridwidth = 3;
-		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsParameterPanel);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 3;
+		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
 		gridy ++;
 		annotationTextArea = new javax.swing.JTextArea(2,20);
@@ -216,18 +275,20 @@ private void initialize() {
 		collapsiblePanel.add(jsp, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
 		gbc.gridwidth = 3;
 		gbc.weightx = 1.0;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(collapsiblePanel, gbc);
 		
 		setBackground(Color.white);
 		
-		getKineticsTypeComboBox().addActionListener(ivjEventHandler);
+		getKineticsTypeComboBox().addActionListener(eventHandler);
+		getKineticsTypeComboBox().setEnabled(false);
 		initKineticChoices();
 		
-		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+		getScrollPaneTable().getSelectionModel().addListSelectionListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -267,7 +328,16 @@ private void setReactionStep(ReactionStep newValue) {
 	if (reactionStep == newValue) {
 		return;
 	}
+	ReactionStep oldValue = reactionStep;
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(eventHandler);
+	}
+	// commit the changes before switch to another reaction step
+	changeName();
 	reactionStep = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(eventHandler);
+	}
 	getParameterTableModel().setReactionStep(reactionStep);
 	updateInterface();
 }
@@ -464,16 +534,25 @@ private void initKineticChoices() {
 
 protected void updateInterface() {
 	boolean bNonNullReactionStep = reactionStep != null;
+	nameTextField.setEditable(bNonNullReactionStep);
 	getParameterTableModel().setEditable(bNonNullReactionStep);
 	kineticsTypeComboBox.setEnabled(bNonNullReactionStep);
 	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
 	jToggleButton.setEnabled(bNonNullReactionStep);
 	if (bNonNullReactionStep) {
 		initKineticChoices();
-		reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
+		boolean bMembrane = reactionStep.getStructure() instanceof Membrane;
+		electricalPropertiesLabel.setVisible(bMembrane);
+		reactionElectricalPropertiesPanel.setVisible(bMembrane);		
 		reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());
 		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 		updateToggleButtonLabel();
+		nameTextField.setText(reactionStep.getName());
+	} else {
+		nameTextField.setText(null);
+		electricalPropertiesLabel.setVisible(false);
+		reactionElectricalPropertiesPanel.setVisible(false);
+
 	}
 }
 
@@ -492,4 +571,25 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setReactionStep(null);
 	}
 }
+
+private void changeName() {
+	if (reactionStep == null) {
+		return;
+	}
+	String newName = nameTextField.getText();
+	if (newName == null || newName.length() == 0) {
+		nameTextField.setText(reactionStep.getName());
+		return;
+	}
+	if (newName.equals(reactionStep.getName())) {
+		return;
+	}
+	try {
+		reactionStep.setName(newName);
+	} catch (PropertyVetoException e1) {
+		e1.printStackTrace();
+		DialogUtils.showErrorDialog(this, e1.getMessage());
+	}
+}
+
 }
