@@ -1,6 +1,7 @@
 package cbit.vcell.model.gui;
 
 import java.awt.Color;
+import java.awt.Insets;
 
 import javax.swing.JLabel;
 
@@ -506,18 +507,12 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 0;
-		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("<html>Electrical<br>Properties</html>"), gbc);
-		
-		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_START;
 		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(0,4,0,0);
 		add(getMolecularCheckbox(), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -525,13 +520,11 @@ private void initialize() {
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getCurrentCheckbox(), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 3; 
 		gbc.gridy = 0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getChargeValenceTitleLabel(), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -539,7 +532,6 @@ private void initialize() {
 		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getChargeValenceComboBox(), gbc);
 		
 		setBackground(Color.white);
