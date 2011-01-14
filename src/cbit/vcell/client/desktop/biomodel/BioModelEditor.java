@@ -646,7 +646,11 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
 		} else if (singleSelection instanceof KineticsParameter) {
-			bottomComponent = getReactionPropertiesPanel();
+			if (getSelectedSimulationContext() != null) {
+				bottomComponent = getKineticsTypeTemplatePanel();
+			} else {
+				bottomComponent = getReactionPropertiesPanel();
+			}
 		} else if (singleSelection instanceof Parameter) {
 			bottomComponent = getParameterPropertiesPanel();
 		} else if (singleSelection instanceof SimulationContext) {

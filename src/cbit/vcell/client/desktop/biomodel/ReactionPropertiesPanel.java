@@ -26,7 +26,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.sbml.libsbml.Reaction;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -44,7 +43,6 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
