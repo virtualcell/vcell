@@ -67,10 +67,10 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					String lowerCaseSearchText = searchText.toLowerCase();	
 					if (s.getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getTypeName().toLowerCase().contains(lowerCaseSearchText)
-							|| s.getParentStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+							|| s.getParentStructure() != null && s.getParentStructure().getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getStructureSize().getName().toLowerCase().contains(lowerCaseSearchText)
-							|| (s instanceof Membrane && ((Membrane)s).getInsideFeature().getName().toLowerCase().contains(lowerCaseSearchText)
-									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText))) {
+							|| (s instanceof Membrane && (((Membrane)s).getInsideFeature().getName().toLowerCase().contains(lowerCaseSearchText)
+									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText)))) {
 						structureList.add(s);
 					}
 				}
