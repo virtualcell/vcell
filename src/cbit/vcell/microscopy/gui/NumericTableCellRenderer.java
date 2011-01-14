@@ -19,7 +19,10 @@ import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsParamTableModel;
 public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 	
 	private NumberFormat format;
-    
+    private static final int DEFAULT_PRECISION = 6;
+	public NumericTableCellRenderer() {
+		this(DEFAULT_PRECISION);
+	}
     public NumericTableCellRenderer(int precision) {
         super();
         setFont(new Font("Arial", Font.PLAIN, 11));

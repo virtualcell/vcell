@@ -92,7 +92,7 @@ public class ModelTypesDescriptor extends WizardPanelDescriptor {
 						if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] && !batchRunWorkspace.isBatchRunResultsAvailable())
 						{
 							String choice = DialogUtils.showWarningDialog(modelTypesPanel, "Reaction dominant off rate model can be estimated under bleached region only. \n" +
-									"There is at least one document didn't select bleached region as the only ROI.\n" +
+									"There is at least one document that didn't select bleached region as the only ROI.\n" +
 									"Two solutions are listed below:\n\n" +
 									"Select 'Continue' to automatically change selected ROI to bleached region for each document or\n" +
 									"Select 'Cancel' to change selected model.", new String[]{UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CONTINUE);

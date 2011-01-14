@@ -129,7 +129,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
 
         TableColumn nameCol = table.getColumnModel().getColumn(BatchRunMSETableModel.COLUMN_FILE_NAME);
         nameCol.setCellRenderer(new ResultsParamTableRenderer());
-        TableCellRenderer mseRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
+        TableCellRenderer mseRenderer = new  NumericTableCellRenderer();//double precision 6 digits
         for (int i = 1; i < table.getColumnCount(); i++) {
         	TableColumn col = table.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
