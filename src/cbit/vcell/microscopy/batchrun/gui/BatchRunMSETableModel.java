@@ -12,7 +12,7 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 @SuppressWarnings("serial")
 public class BatchRunMSETableModel extends AbstractTableModel{
 	
-	public final static String COL_LABELS[] = { "File Name", "ROI_Bleached", "ROI_Ring1", "ROI_Ring2", "ROI_Ring3",
+	public final static String COL_LABELS[] = { "Document", "ROI_Bleached", "ROI_Ring1", "ROI_Ring2", "ROI_Ring3",
 			"ROI_Ring4", "ROI_Ring5", "ROI_Ring6", "ROI_Ring7", "ROI_Ring8", "Comparable Err"};
 	public final static int NUM_COLUMNS = COL_LABELS.length;
 	public final static int COLUMN_FILE_NAME = 0;

@@ -175,16 +175,20 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         
         //apply table renderer for name column
         TableColumn nameCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
-        nameCol.setCellRenderer(new ResultsParamTableRenderer());
+        ResultsParamTableRenderer resultsParamTableRenderer = new ResultsParamTableRenderer();
+		nameCol.setCellRenderer(resultsParamTableRenderer);
+		nameCol.setPreferredWidth(75);
         //apply table renderer and table editor for details column
         TableColumn detailsCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
-        detailsCol.setCellRenderer(new ResultsParamTableRenderer());
+        detailsCol.setCellRenderer(resultsParamTableRenderer);
+        detailsCol.setPreferredWidth(35);
         //apply table renderer to the rest numeric columns
-        TableCellRenderer resultsRanderer = new NumericTableCellRenderer(8); //double precision 8 digits
+        TableCellRenderer resultsRanderer = new NumericTableCellRenderer(); //double precision 6 digits
+        table_param.setDefaultRenderer(Double.class, resultsRanderer);
+        
         for (int i = 1; i < table_param.getColumnCount()-1; i++) {
         	TableColumn col = table_param.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
-        	col.setCellRenderer(resultsRanderer);
         }
         
         ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table_param);
@@ -215,7 +219,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         TableColumn nameCol = table_stat.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
         nameCol.setCellRenderer(new ResultsParamTableRenderer());
         //set the numeric columns' renders
-        TableCellRenderer statRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
+        TableCellRenderer statRenderer = new  NumericTableCellRenderer();//double precision 6 digits
         for (int i = 1; i < table_stat.getColumnCount(); i++) {
         	TableColumn col = table_stat.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);

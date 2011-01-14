@@ -292,7 +292,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			table.setCellSelectionEnabled(true);
 			table.addMouseListener(evtHandler);
 			//set table renderer
-			TableCellRenderer tableRenderer = new NumericTableCellRenderer(8); //double precision 8 digits
+			TableCellRenderer tableRenderer = new NumericTableCellRenderer(); //double precision 6 digits
 			for(int i=0; i<tableModel.getColumnCount(); i++)
 			{
 				TableColumn column=table.getColumnModel().getColumn(i);

@@ -2,6 +2,7 @@ package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 
@@ -23,7 +24,7 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 		button = new JButton("Details...");
 		button.setVerticalTextPosition(SwingConstants.CENTER); 
 		button.setHorizontalTextPosition(SwingConstants.LEFT);
-		button.setBorderPainted(false);
+//		button.setBorderPainted(false);
         setFont(new Font("Arial", Font.PLAIN, 11));
 	}
 	public Component getTableCellRendererComponent(JTable table, Object value,
@@ -40,14 +41,15 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 			else if(value instanceof File)
 			{
 				String fileName = ((File)value).getName();
-				if(fileName.indexOf(".") > 0)
-				{
-					setText(fileName.substring(0,fileName.indexOf(".")));
-				}
-				else
-				{
-					setText(fileName);
-				}
+				setText(fileName);
+//				if(fileName.indexOf(".") > 0)
+//				{
+//					setText(fileName.substring(0,fileName.indexOf(".")));
+//				}
+//				else
+//				{
+//					setText(fileName);
+//				}
 			}
 			if(value != null)
 	        {
@@ -68,7 +70,6 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 			}
 			else
 			{
-				button.setBorderPainted(false);
 				return button;
 			}
 		}
