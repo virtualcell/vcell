@@ -37,17 +37,15 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 	protected <T> void setSelectedObjectsFromTable(JTable table, DefaultSortTableModel<T> tableModel) {
 		int[] rows = table.getSelectedRows();
 		Object[] selectedObjects = null;
-		if (rows != null) {
-			selectedObjects = new Object[rows.length];
-			for (int i = 0; i < rows.length; i++) {
-				if (rows[i] < tableModel.getDataSize()) {
-					selectedObjects[i] = tableModel.getValueAt(rows[i]);
-				}
+		selectedObjects = new Object[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			if (rows[i] < tableModel.getDataSize()) {
+				selectedObjects[i] = tableModel.getValueAt(rows[i]);
 			}
 		}
 		setSelectedObjects(selectedObjects);
 	}
-	protected <T> void setTableSelections(Object[] selectedObjects, JTable table, DefaultSortTableModel<T> tableModel) {
+	protected static <T> void setTableSelections(Object[] selectedObjects, JTable table, DefaultSortTableModel<T> tableModel) {
 		if (selectedObjects == null || selectedObjects.length == 0) {
 			table.clearSelection();
 			return;

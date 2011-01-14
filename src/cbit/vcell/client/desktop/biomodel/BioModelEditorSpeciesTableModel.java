@@ -8,8 +8,10 @@ import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -98,6 +100,14 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		super.propertyChange(evt);
 		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			updateStructureComboBox();
+		} else if (evt.getSource() instanceof SpeciesContext) {
+			int[] selectedRows = ownerTable.getSelectedRows();
+			SpeciesContext speciesContext = (SpeciesContext) evt.getSource();
+			int changeRow = getRowIndex(speciesContext);
+			if (changeRow >= 0) {
+				fireTableRowsUpdated(changeRow, changeRow);
+				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
+			}
 		}
 	}
 	
@@ -213,6 +223,18 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		super.bioModelChange(evt);
 		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
 		updateStructureComboBox();
-//		Model model = evt.getOldValue().
+		
+		BioModel oldValue = (BioModel)evt.getOldValue();
+		if (oldValue != null) {
+			for (SpeciesContext sc : oldValue.getModel().getSpeciesContexts()) {
+				sc.removePropertyChangeListener(this);
+			}
+		}
+		BioModel newValue = (BioModel)evt.getNewValue();
+		if (newValue != null) {
+			for (SpeciesContext sc : newValue.getModel().getSpeciesContexts()) {
+				sc.addPropertyChangeListener(this);
+			}
+		}
 	}
 }

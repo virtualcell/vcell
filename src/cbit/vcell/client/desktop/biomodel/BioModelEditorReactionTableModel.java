@@ -8,9 +8,11 @@ import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -104,6 +106,14 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		super.propertyChange(evt);
 		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			updateStructureComboBox();
+		} else if (evt.getSource() instanceof ReactionStep) {
+			int[] selectedRows = ownerTable.getSelectedRows();
+			ReactionStep reactionStep = (ReactionStep) evt.getSource();
+			int changeRow = getRowIndex(reactionStep);
+			if (changeRow >= 0) {
+				fireTableRowsUpdated(changeRow, changeRow);
+				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
+			}
 		}
 	}
 	
@@ -245,5 +255,18 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		super.bioModelChange(evt);
 		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
 		updateStructureComboBox();
+		
+		BioModel oldValue = (BioModel)evt.getOldValue();
+		if (oldValue != null) {
+			for (ReactionStep rs : oldValue.getModel().getReactionSteps()) {
+				rs.removePropertyChangeListener(this);
+			}
+		}
+		BioModel newValue = (BioModel)evt.getNewValue();
+		if (newValue != null) {
+			for (ReactionStep rs : newValue.getModel().getReactionSteps()) {
+				rs.addPropertyChangeListener(this);
+			}
+		}
 	}
 }

@@ -620,6 +620,7 @@ private void initialize() {
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
+		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

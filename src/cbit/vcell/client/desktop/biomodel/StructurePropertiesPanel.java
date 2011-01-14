@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JLabel;
@@ -18,6 +20,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 /**
@@ -28,12 +31,12 @@ import cbit.vcell.model.Structure;
 @SuppressWarnings("serial")
 public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	private Structure structure = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private EventHandler eventHandler = new EventHandler();
 	private JTextArea annotationTextArea;
 	private JTextField nameTextField = null;
 	private Model fieldModel = null;
 
-	private class IvjEventHandler implements FocusListener {
+	private class EventHandler implements FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -42,8 +45,13 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
-		};
-	};
+		}
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == structure) {
+				updateInterface();
+			}
+		}
+	}
 
 /**
  * EditSpeciesDialog constructor comment.
@@ -69,8 +77,8 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	annotationTextArea.addFocusListener(ivjEventHandler);
-	nameTextField.addFocusListener(ivjEventHandler);
+	annotationTextArea.addFocusListener(eventHandler);
+	nameTextField.addFocusListener(eventHandler);
 }
 
 /**
@@ -145,28 +153,6 @@ private void initialize() {
 }
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		StructurePropertiesPanel aEditSpeciesPanel = new StructurePropertiesPanel();
-		frame.add(aEditSpeciesPanel);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.pack();
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of cbit.gui.JInternalFrameEnhanced");
-		exception.printStackTrace(System.out);
-	}
-}
-
-/**
  * Comment
  */
 private void changeAnnotation() {
@@ -195,7 +181,17 @@ void setStructure(Structure newValue) {
 	if (newValue == structure) {
 		return;
 	}
+	Structure oldValue = structure;
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(eventHandler);
+	}
+	// commit the changes before switch to another structure
+	changeName();
+	changeAnnotation();
 	structure = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(eventHandler);
+	}
 	updateInterface();
 }
 
@@ -224,8 +220,15 @@ private void changeName() {
 		nameTextField.setText(structure.getName());
 		return;
 	}
+	if (newName.equals(structure.getName())) {
+		return;
+	}
 	try {
-		structure.setName(nameTextField.getText());
+		structure.setName(newName);
+		structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(newName));
+		if (structure instanceof Membrane) {
+			((Membrane)structure).getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(newName));
+		}
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(StructurePropertiesPanel.this, e1.getMessage());

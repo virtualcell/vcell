@@ -159,7 +159,7 @@ public abstract class DocumentEditor extends JPanel {
 					mouseClickPathTimeStamp = System.currentTimeMillis();
 				}
 				if (oldClickPath != null && mouseClickPath != null && oldClickPath.getLastPathComponent() == mouseClickPath.getLastPathComponent()) {
-					if (mouseClickPathTimeStamp - oldClickTimeStamp > 2000) {
+					if (mouseClickPathTimeStamp - oldClickTimeStamp > 1000) {
 						return;
 					}
 					if (isRenamable(mouseClickPath)) {

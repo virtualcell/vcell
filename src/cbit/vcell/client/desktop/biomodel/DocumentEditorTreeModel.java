@@ -14,6 +14,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -247,7 +248,12 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			if (userObject instanceof ReactionStep) {
 				((ReactionStep) userObject).setName(newName);
 			} else if (userObject instanceof Structure) {
-				((Structure) userObject).setName(newName);
+				Structure structure = (Structure) userObject;
+				structure.setName(newName);
+				structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(newName));
+				if (structure instanceof Membrane) {
+					((Membrane)structure).getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(newName));
+				}
 			} else if (userObject instanceof SpeciesContext) {
 				((SpeciesContext) userObject).setName(newName);
 			} else if (userObject instanceof ModelParameter) {

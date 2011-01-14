@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JLabel;
@@ -28,12 +30,12 @@ import cbit.vcell.model.Parameter;
 @SuppressWarnings("serial")
 public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 	private Parameter parameter = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private EventHandler eventHandler = new EventHandler();
 	private JTextArea annotationTextArea;
 	private JTextField nameTextField = null;
 	private JTextField descriptionTextField = null;
 
-	private class IvjEventHandler implements FocusListener {
+	private class EventHandler implements FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -42,7 +44,12 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
-		};
+		}
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == parameter) {
+				updateInterface();
+			}
+		}
 	};
 
 /**
@@ -146,32 +153,10 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(jsp, gbc);		
 		
-		annotationTextArea.addFocusListener(ivjEventHandler);
-		nameTextField.addFocusListener(ivjEventHandler);
+		annotationTextArea.addFocusListener(eventHandler);
+		nameTextField.addFocusListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
-	}
-}
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ParameterPropertiesPanel aEditSpeciesPanel = new ParameterPropertiesPanel();
-		frame.add(aEditSpeciesPanel);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.pack();
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of cbit.gui.JInternalFrameEnhanced");
-		exception.printStackTrace(System.out);
 	}
 }
 
@@ -186,8 +171,6 @@ private void changeAnnotation() {
 		String text = annotationTextArea.getText();
 		if (parameter instanceof ModelParameter) {
 			((ModelParameter)parameter).setModelParameterAnnotation(text);
-		} else {
-			parameter.setDescription(text);
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
@@ -204,7 +187,17 @@ void setParameter(Parameter newValue) {
 	if (newValue == parameter) {
 		return;
 	}
+	Parameter oldValue = parameter;
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(eventHandler);
+	}
+//	// commit the changes before switch to another parameter
+//	changeName();
+//	changeAnnotation();
 	parameter = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(eventHandler);
+	}
 	updateInterface();
 }
 
@@ -240,8 +233,11 @@ private void changeName() {
 		nameTextField.setText(parameter.getName());
 		return;
 	}
+	if (newName.equals(parameter.getName())) {
+		return;
+	}
 	try {
-		parameter.setName(nameTextField.getText());
+		parameter.setName(newName);
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(ParameterPropertiesPanel.this, e1.getMessage());

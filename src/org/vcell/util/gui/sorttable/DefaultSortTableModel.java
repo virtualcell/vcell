@@ -40,6 +40,14 @@ public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  impl
 		return getDataSize();
 	}
 
+	public int getRowIndex(T rowObject) {
+		for (int i = 0; i < rows.size(); i ++) {
+			if (rows.get(i) == rowObject) {
+				return i;
+			}
+		}
+		return -1;
+	}
 
 	/**
 	 * getValueAt method comment.
