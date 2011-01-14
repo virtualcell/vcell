@@ -11,4 +11,8 @@ public class CovalentBindingFeature extends BindingFeatureImpl implements Modifi
 		this.modificationType = modificationType;
 	}
 	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printObject(sb,"modificationType",modificationType,level);
+	}
 }

@@ -10,4 +10,10 @@ public class PhenotypeVocabulary extends ControlledVocabulary {
 	public void setPatoData(String patoData) {
 		this.patoData = patoData;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printString(sb, "patoData",patoData,level);
+	}
+
 }

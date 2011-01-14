@@ -33,6 +33,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.sybil.rdf.JenaIOUtil;
@@ -54,9 +56,11 @@ import org.vcell.util.gui.DialogUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.xml.XmlHelper;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -75,30 +79,20 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
 	private static final String uniport = "uniprot";
 	public static class PathwayData {
-		private Model model;
-		private Pathway pathway;
-		private SBBox sbbox;
 		private String xml;
+		private PathwayModel pathwayModel;
 		
-		private PathwayData(Pathway pathway, Model model, SBBox box, String xml) {
+		private PathwayData(String xml, PathwayModel pathwayModel) {
 			super();
-			this.pathway = pathway;
-			this.model = model;
-			this.sbbox = box;
 			this.xml = xml;
-		}
-		public final SBBox getSBBox() {
-			return sbbox;
+			this.pathwayModel = pathwayModel;
 		}
 		public final String getXml() {
 			return xml;
 		}
-		public final Pathway getPathway() {
-			return pathway;
+		public PathwayModel getPathwayModel() {
+			return pathwayModel;
 		}
-		public final Model getModel() {
-			return model;
-		}		
 	}
 	enum PathwayCommonsKeyword {
 		cmd,
@@ -358,9 +352,12 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
 				
 				URLConnection connection = url.openConnection();
-				String text = StringUtil.textFromInputStream(connection.getInputStream()); 
-				Model model = JenaIOUtil.modelFromText(text, "");				
-				PathwayData pathwayData =  new PathwayData(pathway, model, SBBoxFactory.create(model), text);
+				String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
+				PathwayReader pathwayReader = new PathwayReader();
+				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText,null);
+				PathwayModel pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
+				pathwayModel.reconcileReferences();
+				PathwayData pathwayData = new PathwayData(xmlText, pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 			}
 		};

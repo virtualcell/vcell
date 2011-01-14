@@ -2,16 +2,13 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+
 public class Complex extends PhysicalEntity {
-	private ArrayList<PhysicalEntity> component;
-	private ArrayList<Stoichiometry> componentStoichiometry;
+	private ArrayList<PhysicalEntity> component = new ArrayList<PhysicalEntity>();
+	private ArrayList<Stoichiometry> componentStoichiometry = new ArrayList<Stoichiometry>();
 	
 	
-	public Complex(String name) {
-		super(name);
-	}
-
-
 	public ArrayList<PhysicalEntity> getComponent() {
 		return component;
 	}
@@ -32,5 +29,19 @@ public class Complex extends PhysicalEntity {
 		this.componentStoichiometry = componentStoichiometry;
 	}
 	
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		for (int i=0;i<component.size();i++){
+			PhysicalEntity participant = component.get(i);
+			if (participant == objectProxy){
+				component.set(i, (PhysicalEntity)concreteObject);
+			}
+		}
+	}
+
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printObjects(sb,"component",component,level);
+		printObjects(sb,"componentStoichiometry",componentStoichiometry,level);
+	}
 
 }

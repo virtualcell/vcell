@@ -1,10 +1,11 @@
 package org.vcell.pathway;
 
-public class Xref implements UtilityClass {
+public class Xref extends BioPaxObjectImpl implements UtilityClass {
 	private String db;
 	private String dbVersion;
 	private String id;
 	private String idVersion;
+	
 	public String getDb() {
 		return db;
 	}
@@ -28,5 +29,13 @@ public class Xref implements UtilityClass {
 	}
 	public void setIdVersion(String idVersion) {
 		this.idVersion = idVersion;
+	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printString(sb, "db",db,level);
+		printString(sb, "dbVersion",dbVersion,level);
+		printString(sb, "id",id,level);
+		printString(sb, "idVersion",idVersion,level);
 	}
 }

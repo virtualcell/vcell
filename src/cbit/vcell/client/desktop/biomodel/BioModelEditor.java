@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
 
+import org.vcell.pathway.Pathway;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -690,7 +691,12 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 					break;
 				}
 			}
-			String tabTitle = "Pathway " + pathwayData.getPathway().primaryId();
+			Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
+			String pathwayName = "ID = "+topLevelPathway.getID();
+			if (topLevelPathway.getName().size()>0){
+				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
+			}
+			String tabTitle = "Pathway " + pathwayName;
 			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
 				rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
 			} else {

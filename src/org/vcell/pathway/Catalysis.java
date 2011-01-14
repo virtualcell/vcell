@@ -6,11 +6,6 @@ public class Catalysis extends Control {
 	private String catalysisDirection;
 	private ArrayList<PhysicalEntity> cofactors;
 
-	public Catalysis(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
 	public String getCatalysisDirection() {
 		return catalysisDirection;
 	}
@@ -27,5 +22,10 @@ public class Catalysis extends Control {
 		this.cofactors = cofactors;
 	}
 	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printString(sb,"catalysisDirection",catalysisDirection,level);
+		printObjects(sb,"cofactors",cofactors,level);
+	}
 
 }

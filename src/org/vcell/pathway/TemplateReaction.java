@@ -4,20 +4,15 @@ import java.util.ArrayList;
 
 public class TemplateReaction extends InteractionImpl {
 	
-	private ArrayList<Dna> productDna;
-	private ArrayList<Protein> productProtein;
-	private ArrayList<Rna> productRna;
+	private ArrayList<Dna> productDna = new ArrayList<Dna>();
+	private ArrayList<Protein> productProtein = new ArrayList<Protein>();
+	private ArrayList<Rna> productRna = new ArrayList<Rna>();
 	private String templateDirection;
 	private Dna templateDna;
 	private DnaRegion templateDnaRegion;
 	private Rna templateRna;
 	private RnaRegion templateRnaRegion;
 	
-	public TemplateReaction(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
 	public ArrayList<Dna> getProductDna() {
 		return productDna;
 	}
@@ -81,5 +76,18 @@ public class TemplateReaction extends InteractionImpl {
 	public void setTemplateRnaRegion(RnaRegion templateRnaRegion) {
 		this.templateRnaRegion = templateRnaRegion;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObjects(sb, "productDna",productDna,level);
+		printObjects(sb, "productProtein",productProtein,level);
+		printObjects(sb, "productRna",productRna,level);
+		printString(sb, "templateDirection",templateDirection,level);
+		printObject(sb, "templateDna",templateDna,level);
+		printObject(sb, "templateDnaRegion",templateDnaRegion,level);
+		printObject(sb, "templateRna",templateRna,level);
+		printObject(sb, "templateRnaRegion",templateRnaRegion,level);
+	}
+
 
 }

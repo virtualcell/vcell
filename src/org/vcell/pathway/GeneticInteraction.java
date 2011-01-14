@@ -8,11 +8,6 @@ public class GeneticInteraction extends InteractionImpl {
 
 	private PhenotypeVocabulary phenotype;
 
-	public GeneticInteraction(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
 	public ArrayList<Score> getInteractionScore() {
 		return interactionScore;
 	}
@@ -26,6 +21,12 @@ public class GeneticInteraction extends InteractionImpl {
 	
 	public void setPhenotype(PhenotypeVocabulary phenotype) {
 		this.phenotype = phenotype;
+	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObjects(sb, "interactionScore",interactionScore,level);
+		printObject(sb, "phenoType",phenotype,level);
 	}
 
 }
