@@ -1,11 +1,12 @@
 package org.vcell.pathway;
 
-public class DeltaG implements UtilityClass {
+public class DeltaG extends BioPaxObjectImpl implements UtilityClass {
 	private Double deltaGPrime0;
 	private Double ionicStrength;
 	private Double ph;
 	private Double pMg;
 	private Double temperature;
+	
 	public Double getDeltaGPrime0() {
 		return deltaGPrime0;
 	}
@@ -35,6 +36,14 @@ public class DeltaG implements UtilityClass {
 	}
 	public void setTemperature(Double temperature) {
 		this.temperature = temperature;
+	}
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printDouble(sb,"deltaGPrime0",deltaGPrime0,level);
+		printDouble(sb,"ionicStrength",ionicStrength,level);
+		printDouble(sb,"pH",ph,level);
+		printDouble(sb,"pMg",pMg,level);
+		printDouble(sb,"temperature",temperature,level);
 	}
 
 }

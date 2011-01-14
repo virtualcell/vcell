@@ -2,11 +2,12 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
-public class ExperimentalForm implements UtilityClass {
-	private ArrayList<EntityFeature> experimentalFeature;
-	private ArrayList<ExperimentalFormVocabulary> experimentalFormDescription;
-	private ArrayList<Gene> experimentalFormGene;
-	private ArrayList<PhysicalEntity> experimentalFormPhysicalEntity;
+public class ExperimentalForm extends BioPaxObjectImpl implements UtilityClass {
+	private ArrayList<EntityFeature> experimentalFeature = new ArrayList<EntityFeature>();
+	private ArrayList<ExperimentalFormVocabulary> experimentalFormDescription = new ArrayList<ExperimentalFormVocabulary>();
+	private ArrayList<Gene> experimentalFormGene = new ArrayList<Gene>();
+	private ArrayList<PhysicalEntity> experimentalFormPhysicalEntity = new ArrayList<PhysicalEntity>();
+	
 	public ArrayList<EntityFeature> getExperimentalFeature() {
 		return experimentalFeature;
 	}
@@ -33,4 +34,13 @@ public class ExperimentalForm implements UtilityClass {
 			ArrayList<PhysicalEntity> experimentalFormPhysicalEntity) {
 		this.experimentalFormPhysicalEntity = experimentalFormPhysicalEntity;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObjects(sb, "experimentalFeature",experimentalFeature,level);
+		printObjects(sb, "experimentalFormDescription",experimentalFormDescription,level);
+		printObjects(sb, "experimentalFormGene",experimentalFormGene,level);
+		printObjects(sb, "experimentalFormPhysicalEntity",experimentalFormPhysicalEntity,level);
+	}
+
 }

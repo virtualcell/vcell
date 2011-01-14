@@ -4,15 +4,11 @@ import java.util.ArrayList;
 
 public class PhysicalEntity extends EntityImpl {
 	private CellularLocationVocabulary cellularLocation;
-	private ArrayList<EntityFeature> feature;
+	private ArrayList<EntityFeature> feature = new ArrayList<EntityFeature>();
 
-	private ArrayList<PhysicalEntity> memberPhysicalEntity;
+	private ArrayList<PhysicalEntity> memberPhysicalEntity = new ArrayList<PhysicalEntity>();
 
-	private ArrayList<EntityFeature> notFeature;
-
-	public PhysicalEntity(String name) {
-		super(name);
-	}
+	private ArrayList<EntityFeature> notFeature = new ArrayList<EntityFeature>();
 
 	public CellularLocationVocabulary getCellularLocation() {
 		return cellularLocation;
@@ -29,7 +25,7 @@ public class PhysicalEntity extends EntityImpl {
 	public ArrayList<EntityFeature> getNotFeature() {
 		return notFeature;
 	}
-
+	
 	public void setCellularLocation(CellularLocationVocabulary cellularLocation) {
 		this.cellularLocation = cellularLocation;
 	}
@@ -44,4 +40,13 @@ public class PhysicalEntity extends EntityImpl {
 	public void setNotFeature(ArrayList<EntityFeature> notFeature) {
 		this.notFeature = notFeature;
 	}
+
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObject(sb, "cellularLocation",cellularLocation,level);
+		printObjects(sb, "feature",feature,level);
+		printObjects(sb, "memberPhysicalEntity",memberPhysicalEntity,level);
+		printObjects(sb, "notFeature",notFeature,level);
+	}
+
 }

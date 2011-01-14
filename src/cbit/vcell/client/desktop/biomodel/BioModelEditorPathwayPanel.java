@@ -6,6 +6,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,13 +20,16 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.vcell.sybil.gui.bpimport.EntitySelectionTableRow;
-import org.vcell.sybil.models.io.selection.ModelSelector;
-import org.vcell.sybil.models.io.selection.ModelSelectorSimple;
-import org.vcell.sybil.rdf.smelt.BioPAX2Smelter;
+import org.jdom.Document;
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.persistence.PathwayReader;
+import cbit.vcell.client.desktop.biomodel.EntitySelectionTableRow;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 
 import com.hp.hpl.jena.rdf.model.Model;
@@ -87,18 +93,18 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	}
 	
 	public void importPathway() {
-		Set<Resource> selectedResources = new HashSet<Resource>();
+		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
 		for (int i = 0; i < table.getRowCount(); i ++) {
 			EntitySelectionTableRow entitySelectionTableRow = tableModel.getValueAt(i);
 			if (entitySelectionTableRow.selected()) { 
-				selectedResources.add(entitySelectionTableRow.thing().resource()); 
+				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}
 		}
-		Model model = pathwayData.getModel();
-		model = new BioPAX2Smelter().smelt(model);
-		ModelSelector selector = new ModelSelectorSimple();
-		Model modelSelection = selector.createSelection(model, selectedResources);
-		bioModel.getVCMetaData().addPathwayModel(bioModel, modelSelection);
+		PathwayModel selectedPathwayModel = new PathwayModel();
+		for (BioPaxObject bpObject : selectedBioPaxObjects){
+			selectedPathwayModel.add(bpObject);
+		}
+		bioModel.getPathwayModel().merge(selectedPathwayModel);
 	}
 
 	private void initialize() {
@@ -207,7 +213,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		if (pathwayData == null) {
 			return;
 		}
-		tableModel.setSBBox(pathwayData.getSBBox());
+		tableModel.setPathwayModel(pathwayData.getPathwayModel());
 		
 		int rowCount = table.getRowCount();
 		int colCount = table.getColumnCount();

@@ -3,10 +3,6 @@ package org.vcell.pathway;
 public class Dna extends PhysicalEntity {
 	private EntityReference entityReference;	
 	
-	public Dna(String name) {
-		super(name);
-	}
-
 	public EntityReference getEntityReference() {
 		return entityReference;
 	}
@@ -15,5 +11,9 @@ public class Dna extends PhysicalEntity {
 		this.entityReference = entityReference;
 	}
 	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printObject(sb,"entityReference",entityReference,level);
+	}
 
 }

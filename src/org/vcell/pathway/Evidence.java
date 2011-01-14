@@ -2,10 +2,11 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
-public class Evidence implements UtilityClass {
-	private ArrayList<Score> confidence;
-	private ArrayList<EvidenceCodeVocabulary> evidenceCode;
-	private ArrayList<ExperimentalForm> experimentalForm;
+public class Evidence extends BioPaxObjectImpl implements UtilityClass {
+	private ArrayList<Score> confidence = new ArrayList<Score>();
+	private ArrayList<EvidenceCodeVocabulary> evidenceCode = new ArrayList<EvidenceCodeVocabulary>();
+	private ArrayList<ExperimentalForm> experimentalForm = new ArrayList<ExperimentalForm>();
+	
 	public ArrayList<Score> getConfidence() {
 		return confidence;
 	}
@@ -24,4 +25,12 @@ public class Evidence implements UtilityClass {
 	public void setExperimentalForm(ArrayList<ExperimentalForm> experimentalForm) {
 		this.experimentalForm = experimentalForm;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObjects(sb, "confidence",confidence,level);
+		printObjects(sb, "evidenceCode",evidenceCode,level);
+		printObjects(sb, "experimentalForm",experimentalForm,level);
+	}
+
 }

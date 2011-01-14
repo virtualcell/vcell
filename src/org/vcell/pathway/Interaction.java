@@ -6,9 +6,9 @@ public interface Interaction extends Entity {
 	
 	public InteractionVocabulary getInteractionType();
 
-	public ArrayList<EntityImpl> getParticipants();
+	public ArrayList<Entity> getParticipants();
 	
 	public void setInteractionType(InteractionVocabulary interactionType);
 	
-	public void setParticipants(ArrayList<EntityImpl> participants);
+	public void setParticipants(ArrayList<Entity> participants);
 }

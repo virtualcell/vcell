@@ -4,13 +4,9 @@ import java.util.ArrayList;
 
 public class Pathway extends EntityImpl {
 	private BioSource organism;
-	private ArrayList<Interaction> pathwayComponentInteraction;
-	private ArrayList<Pathway> pathwayComponentPathway;
-	private ArrayList<PathwayStep> pathwayOrder;
-
-	public Pathway(String name) {
-		super(name);
-	}
+	private ArrayList<Interaction> pathwayComponentInteraction = new ArrayList<Interaction>();
+	private ArrayList<Pathway> pathwayComponentPathway = new ArrayList<Pathway>();
+	private ArrayList<PathwayStep> pathwayOrder = new ArrayList<PathwayStep>();
 
 	public BioSource getOrganism() {
 		return organism;
@@ -45,4 +41,14 @@ public class Pathway extends EntityImpl {
 	public void setPathwayOrder(ArrayList<PathwayStep> pathwayOrder) {
 		this.pathwayOrder = pathwayOrder;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObject(sb, "organism",organism,level);
+		printObjects(sb, "pathwayComponentInteraction",pathwayComponentInteraction,level);
+		printObjects(sb, "pathwayComponentPathway",pathwayComponentPathway,level);
+		printObjects(sb, "pathwayOrder",pathwayOrder,level);
+	}
+
+
 }

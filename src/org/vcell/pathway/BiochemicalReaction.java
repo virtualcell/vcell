@@ -4,24 +4,24 @@ import java.util.ArrayList;
 
 public interface BiochemicalReaction extends Conversion {
 
-	public ArrayList<DeltaG> getDeltaGs();
+	public ArrayList<DeltaG> getDeltaG();
 
 	public ArrayList<Double> getDeltaH();
 
 	public ArrayList<Double> getDeltaS();
 
-	public ArrayList<String> getECNumbers();
+	public ArrayList<String> getECNumber();
 
-	public ArrayList<KPrime> getkEQs();
+	public ArrayList<KPrime> getkEQ();
 	
-	public void setDeltaGs(ArrayList<DeltaG> deltaGs);
+	public void setDeltaG(ArrayList<DeltaG> deltaG);
 	
 	public void setDeltaH(ArrayList<Double> deltaH);
 	
 	public void setDeltaS(ArrayList<Double> deltaS);
 	
-	public void setECNumbers(ArrayList<String> eCNumbers);
+	public void setECNumber(ArrayList<String> eCNumber);
 	
-	public void setkEQs(ArrayList<KPrime> kEQs);
+	public void setkEQ(ArrayList<KPrime> kEQ);
 
 }

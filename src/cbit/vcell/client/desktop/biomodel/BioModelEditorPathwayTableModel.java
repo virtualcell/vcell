@@ -6,16 +6,12 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.vcell.sybil.gui.bpimport.EntitySelectionTableRow;
-import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.models.sbbox.SBBox.RDFType;
-import org.vcell.sybil.models.sbbox.factories.ThingFactory;
-import org.vcell.sybil.models.sbbox.factories.ThingFactory.ThingWithType;
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Conversion;
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.PhysicalEntity;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 @SuppressWarnings("serial")
@@ -33,48 +29,29 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	protected List<EntitySelectionTableRow> rowList = null;
 	//done
 
-	private SBBox sbbox;
+	private PathwayModel pathwayModel;
 
 	public BioModelEditorPathwayTableModel() {
 		super(new String[] {"Select", "Entity Name", "Type"});
 	}
 	
-	public void setSBBox(SBBox sbbox) {
-		if (this.sbbox == sbbox) {
+	public void setPathwayModel(PathwayModel pathwayModel){
+		if (this.pathwayModel == pathwayModel){
 			return;
 		}
-		this.sbbox = sbbox;
-		if (sbbox == null) {
+		this.pathwayModel = pathwayModel;
+		if (pathwayModel == null) {
 			setData(null);
 		} else {
-//wei			List<EntitySelectionTableRow> rowList = addRows(sbbox.factories().processFactory());
-			rowList = addRows(sbbox.factories().processFactory());
-			rowList.addAll(addRows(sbbox.factories().substanceFactory()));
+			rowList = addRows(pathwayModel);
 			setData(rowList);
 		}
 	}
-	protected  <T extends NamedThing> List<EntitySelectionTableRow> addRows(ThingFactory<T> factory) {
-		Map<T, ThingWithType<? extends T>> thingMap = new HashMap<T, ThingWithType<? extends T>>();
-		Map<RDFType, Integer> typeToRank = new HashMap<RDFType, Integer>();
-		for(ThingWithType<? extends T> thingWithType : factory.openThingsWithTypes()) {
-			T thing = thingWithType.thing();
-			RDFType type = thingWithType.type();
-			int typeRank = thingWithType.typeRank();
-			typeToRank.put(type, new Integer(typeRank));
-			ThingWithType<? extends T> thingWithType2 = thingMap.get(thing);
-			if(thingWithType2 != null) {
-				int typeRank2 = thingWithType2.typeRank();
-				if(typeRank > typeRank2) { thingMap.put(thing, thingWithType); }
-			} else {
-				thingMap.put(thing, thingWithType);				
-			}
-		}
+	protected  List<EntitySelectionTableRow> addRows(PathwayModel pathwayModel) {
 		List<EntitySelectionTableRow> rowList = new ArrayList<EntitySelectionTableRow>();
-		for(T thing: thingMap.keySet()) {
-			ThingWithType<? extends T> thingWithType = thingMap.get(thing);
-			if(thingWithType != null) {
-				RDFType type = thingWithType.type();
-				rowList.add(new EntitySelectionTableRow(thing, type));				
+		for (BioPaxObject bpObject : pathwayModel.getBiopaxObjects()){
+			if (bpObject instanceof PhysicalEntity || bpObject instanceof Conversion){
+				rowList.add(new EntitySelectionTableRow(bpObject));
 			}
 		}
 		return rowList;
@@ -85,22 +62,22 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		else { return String.class; }
 	}
 	
-//	public String getColumnName(int iCol) {
-//		switch(iCol) {
-//		case iColSelected: return "Get?";
-//		case iColEntity: return "Entity Name";
-//		case iColType: return "Type";
-//		default: return null;
-//		}
-//	}
-	
 	public Object getValueAt(int iRow, int iCol) {
 		EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+		BioPaxObject bpObject = entitySelectionTableRow.getBioPaxObject();
 		switch(iCol) {		
-		case iColSelected: return entitySelectionTableRow.selected();
-		case iColEntity: return entitySelectionTableRow.thing().label();
-		case iColType: return entitySelectionTableRow.type().label();
-		default: return null;
+			case iColSelected:{
+				return entitySelectionTableRow.selected();
+			}
+			case iColEntity:{
+				return getLabel(bpObject);
+			}
+			case iColType:{
+				return getType(bpObject);
+			}
+			default:{
+				return null;
+			}
 		}
 	}
 	
@@ -125,18 +102,42 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		    	} else 
 
 		    	if (col == iColEntity) {// only sortable on entity column
-		    		int c  = o1.thing().label().compareToIgnoreCase(o2.thing().label());
+		    		int c  = getLabel(o1.getBioPaxObject()).compareToIgnoreCase(getLabel(o2.getBioPaxObject()));
 		    		return ascending ? c : -c;
 		    	} else 
 		    		
 		    	if (col == iColType) {
-		    		int c  = o1.type().label().compareTo(o2.type().label());
+		    		int c  = getType(o1.getBioPaxObject()).compareToIgnoreCase(getType(o2.getBioPaxObject()));
 		    		return ascending ? c : -c;
 		    	}
 
 		    	return 0;
 		    }
 		};
+	}
+	
+	private String getType(BioPaxObject bpObject){
+		return bpObject.getTypeLabel();
+	}
+	
+	private String getLabel(BioPaxObject bpObject){
+		if (bpObject instanceof Conversion){
+			Conversion conversion =(Conversion)bpObject;
+			if (conversion.getName().size()>0){
+				return conversion.getName().get(0);
+			}else{
+				return "unnamed";
+			}
+		}else if (bpObject instanceof PhysicalEntity){
+			PhysicalEntity physicalEntity =(PhysicalEntity)bpObject;
+			if (physicalEntity.getName().size()>0){
+				return physicalEntity.getName().get(0);
+			}else{
+				return "unnamed";
+			}
+		}else{
+			return bpObject.getID();
+		}
 	}
 	
 	// filtering functions
@@ -156,8 +157,9 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		ArrayList<EntitySelectionTableRow> reactionStepList = new ArrayList<EntitySelectionTableRow>();
 		if (rowList != null){
 			for (EntitySelectionTableRow rs : rowList){
-				if (searchText == null || searchText.length() == 0 || rs.thing().label().indexOf(searchText) >= 0
-						|| rs.type().label().indexOf(searchText) >= 0) {
+				BioPaxObject bpObject = rs.getBioPaxObject();
+				if (searchText == null || searchText.length() == 0 || getLabel(bpObject).indexOf(searchText) >= 0
+						|| getType(bpObject).indexOf(searchText) >= 0) {
 					reactionStepList.add(rs);
 				}
 			}

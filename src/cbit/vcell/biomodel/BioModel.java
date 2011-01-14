@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
+import org.vcell.pathway.PathwayModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -53,6 +54,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private String fieldDescription = new String();
 	private VCMetaData vcMetaData = null;
+	
+	private final PathwayModel pathwayModel = new PathwayModel();
 
 	/**
 	 * BioModel constructor comment.
@@ -72,8 +75,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-
-/**
+	
+	/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
  * @param simulationContext cbit.vcell.mapping.SimulationContext
@@ -1025,5 +1028,9 @@ public SimulationContext getSimulationContext(String name) {
 		}
 	}
 	return null;
+}
+
+public PathwayModel getPathwayModel() {
+	return pathwayModel;
 }
 }

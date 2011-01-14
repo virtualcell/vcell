@@ -1,8 +1,9 @@
 package org.vcell.pathway;
 
-public class Stoichiometry implements UtilityClass {
+public class Stoichiometry extends BioPaxObjectImpl implements UtilityClass {
 	private PhysicalEntity physicalEntity;
 	private Double stoichiometricCoefficient;
+	
 	public PhysicalEntity getPhysicalEntity() {
 		return physicalEntity;
 	}
@@ -15,4 +16,11 @@ public class Stoichiometry implements UtilityClass {
 	public void setStoichiometricCoefficient(Double stoichiometricCoefficient) {
 		this.stoichiometricCoefficient = stoichiometricCoefficient;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObject(sb, "physicalEntity",physicalEntity,level);
+		printDouble(sb, "stoichiometricCoefficient",stoichiometricCoefficient,level);
+	}
+
 }

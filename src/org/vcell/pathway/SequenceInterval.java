@@ -3,6 +3,7 @@ package org.vcell.pathway;
 public class SequenceInterval extends SequenceLocation {
 	private SequenceSite sequenceIntervalBegin;
 	private SequenceSite sequenceIntervalEnd;
+	
 	public SequenceSite getSequenceIntervalBegin() {
 		return sequenceIntervalBegin;
 	}
@@ -14,5 +15,11 @@ public class SequenceInterval extends SequenceLocation {
 	}
 	public void setSequenceIntervalEnd(SequenceSite sequenceIntervalEnd) {
 		this.sequenceIntervalEnd = sequenceIntervalEnd;
+	}
+
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObject(sb, "sequenceIntervalBegin",sequenceIntervalBegin,level);
+		printObject(sb, "sequenceIntervalEnd",sequenceIntervalEnd,level);
 	}
 }

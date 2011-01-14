@@ -1,5 +1,5 @@
 package org.vcell.pathway;
 
-public class SequenceLocation implements UtilityClass {
+public class SequenceLocation extends BioPaxObjectImpl implements UtilityClass {
 	
 }

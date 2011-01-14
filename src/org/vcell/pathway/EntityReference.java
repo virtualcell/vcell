@@ -2,12 +2,20 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
-public class EntityReference implements UtilityClass {
+public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 	
-	private ArrayList<EntityFeature> entityFeature;
+	private ArrayList<EntityFeature> entityFeature = new ArrayList<EntityFeature>();
 	private EntityReferenceTypeVocabulary entityReferenceType;
-	private ArrayList<EntityReference> memberEntityReference;
-	private ArrayList<String> name;
+	private ArrayList<EntityReference> memberEntityReference = new ArrayList<EntityReference>();
+	private ArrayList<String> name = new ArrayList<String>();
+	private ArrayList<Xref> xRef = new ArrayList<Xref>();
+	
+	public ArrayList<Xref> getxRef() {
+		return xRef;
+	}
+	public void setxRef(ArrayList<Xref> xRef) {
+		this.xRef = xRef;
+	}
 	public ArrayList<EntityFeature> getEntityFeature() {
 		return entityFeature;
 	}
@@ -35,4 +43,12 @@ public class EntityReference implements UtilityClass {
 		this.name = name;
 	}
 
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printObjects(sb, "entityFeature",entityFeature,level);
+		printObject(sb, "entityReferenceType",entityReferenceType,level);
+		printObjects(sb, "memberEntityReference",memberEntityReference,level);
+		printStrings(sb, "name",name,level);
+		printObjects(sb, "xRef",xRef,level);
+	}
 }

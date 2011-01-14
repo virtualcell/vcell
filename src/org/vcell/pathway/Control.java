@@ -2,24 +2,21 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+
 public class Control extends InteractionImpl {
 
-	private InteractionImpl controlledInteraction;
+	private Interaction controlledInteraction;
 
 	private Pathway controlledPathway;
 
 	private String controlType;
 
-	private ArrayList<Pathway> pathwayControllers;
+	private ArrayList<Pathway> pathwayControllers = new ArrayList<Pathway>();
 
-	private ArrayList<PhysicalEntity> physicalControllers;
+	private ArrayList<PhysicalEntity> physicalControllers = new ArrayList<PhysicalEntity>();
 
-	public Control(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
-	public InteractionImpl getControlledInteraction() {
+	public Interaction getControlledInteraction() {
 		return controlledInteraction;
 	}
 
@@ -38,7 +35,7 @@ public class Control extends InteractionImpl {
 	public ArrayList<PhysicalEntity> getPhysicalControllers() {
 		return physicalControllers;
 	}
-	public void setControlledInteraction(InteractionImpl controlledInteraction) {
+	public void setControlledInteraction(Interaction controlledInteraction) {
 		this.controlledInteraction = controlledInteraction;
 	}
 	public void setControlledPathway(Pathway controlledPathway) {
@@ -53,6 +50,31 @@ public class Control extends InteractionImpl {
 	
 	public void setPhysicalControllers(ArrayList<PhysicalEntity> physicalControllers) {
 		this.physicalControllers = physicalControllers;
+	}
+	
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy,concreteObject);
+		for (int i=0;i<physicalControllers.size();i++){
+			PhysicalEntity participant = physicalControllers.get(i);
+			if (participant == objectProxy){
+				physicalControllers.set(i, (PhysicalEntity)concreteObject);
+			}
+		}
+		for (int i=0;i<pathwayControllers.size();i++){
+			Pathway pathway = pathwayControllers.get(i);
+			if (pathway == objectProxy){
+				pathwayControllers.set(i, (Pathway)concreteObject);
+			}
+		}
+	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb,level);
+		printObject(sb,"controlledInteraction",controlledInteraction,level);
+		printObject(sb,"controlledPathway",controlledPathway,level);
+		printString(sb,"controlType",controlType,level);
+		printObjects(sb,"pathwayControllers",pathwayControllers,level);
+		printObjects(sb,"physicalControllers",physicalControllers,level);
 	}
 
 }

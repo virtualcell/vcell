@@ -1,11 +1,12 @@
 package org.vcell.pathway;
 
-public class KPrime implements UtilityClass {
+public class KPrime extends BioPaxObjectImpl implements UtilityClass {
 	private Double ionicStrength;
 	private Double kPrime;
 	private Double ph;
 	private Double pMg;
-	private Double temperature ;
+	private Double temperature;
+	
 	public Double getIonicStrength() {
 		return ionicStrength;
 	}
@@ -36,4 +37,14 @@ public class KPrime implements UtilityClass {
 	public void setTemperature(Double temperature) {
 		this.temperature = temperature;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printDouble(sb, "ionicStrength",ionicStrength,level);
+		printDouble(sb, "kPrime",kPrime,level);
+		printDouble(sb, "ph",ph,level);
+		printDouble(sb, "pMg",pMg,level);
+		printDouble(sb, "temperature",temperature,level);
+	}
+
 }

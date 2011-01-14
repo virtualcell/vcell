@@ -3,17 +3,14 @@ package org.vcell.pathway;
 import java.util.ArrayList;
 
 public class PublicationXref extends Xref {
-	private ArrayList<String> author;
-	private ArrayList<String> comment;
-	private ArrayList<String> source;
+	private ArrayList<String> author = new ArrayList<String>();
+	private ArrayList<String> source = new ArrayList<String>();
 	private String title;
-	private ArrayList<String> url;
+	private ArrayList<String> url = new ArrayList<String>();
 	private Integer year;
+	
 	public ArrayList<String> getAuthor() {
 		return author;
-	}
-	public ArrayList<String> getComment() {
-		return comment;
 	}
 	public ArrayList<String> getSource() {
 		return source;
@@ -30,9 +27,6 @@ public class PublicationXref extends Xref {
 	public void setAuthor(ArrayList<String> author) {
 		this.author = author;
 	}
-	public void setComment(ArrayList<String> comment) {
-		this.comment = comment;
-	}
 	public void setSource(ArrayList<String> source) {
 		this.source = source;
 	}
@@ -45,4 +39,14 @@ public class PublicationXref extends Xref {
 	public void setYear(Integer year) {
 		this.year = year;
 	}
+	
+	public void showChildren(StringBuffer sb, int level){
+		super.showChildren(sb, level);
+		printStrings(sb, "author",author,level);
+		printStrings(sb, "source",source,level);
+		printString(sb, "title",title,level);
+		printStrings(sb, "url",url,level);
+		printInteger(sb, "year",year,level);
+	}
+
 }

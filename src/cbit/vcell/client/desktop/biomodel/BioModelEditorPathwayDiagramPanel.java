@@ -17,29 +17,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.jdom.Element;
-import org.vcell.sybil.gui.graph.Graph;
-import org.vcell.sybil.gui.graph.GraphPane;
-import org.vcell.sybil.gui.graph.Shape;
-import org.vcell.sybil.gui.graph.SybilGraphTool;
-import org.vcell.sybil.models.annotate.Model2JDOM;
-import org.vcell.sybil.models.graph.GraphCreationMethod;
-import org.vcell.sybil.models.graph.GraphModelSelectionInfo;
-import org.vcell.sybil.models.graph.manipulator.GraphManipulationException;
-import org.vcell.sybil.models.graph.manipulator.categorizer.GraphGrouper;
-import org.vcell.sybil.models.graph.manipulator.categorizer.ReactionsManipulator;
-import org.vcell.sybil.models.graphcomponents.tag.RDFGraphCompTagCreator;
-import org.vcell.sybil.models.io.FileManager;
-import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.imp.SBWrapper;
-import org.vcell.sybil.util.graphlayout.LayoutType;
-import org.vcell.sybil.util.gui.ButtonFormatter;
+import org.vcell.pathway.PathwayEvent;
+import org.vcell.pathway.PathwayListener;
+import org.vcell.pathway.PathwayModel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.GraphPane;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -48,16 +38,14 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
+public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel implements PathwayListener {
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	private GraphPane graphPane;
-	private SybilGraphTool graphCartoonTool;
-	protected GraphModelSelectionInfo dataRelations;
+	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
-	private FileManager fileManager = null;
 	
 	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener {
 
@@ -77,7 +65,6 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
 	
 	private JButton createToolBarButton(String[] attributes) {
 		JButton button = new JButton();
-		ButtonFormatter.format(button);
 		button.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 		button.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 		button.setMinimumSize(TOOLBAR_BUTTON_SIZE);
@@ -131,7 +118,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
 		JToolBar nodesToolBar = createToolBar(interactions, javax.swing.SwingConstants.HORIZONTAL);
 		sourceTextArea = new JTextArea();		
 		graphPane =  new GraphPane();
-		graphCartoonTool = new SybilGraphTool();
+		graphCartoonTool = new PathwayGraphTool();
 		graphCartoonTool.setGraphPane(graphPane);	
 		
 		JPanel graphTabPanel = new JPanel(new BorderLayout());
@@ -154,46 +141,17 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
 
-	private void createGraph(Graph graph, SBBox sbbox) throws InterruptedException, GraphManipulationException {
-		Model model = sbbox.getData();
-		StmtIterator stmtIter = model.listStatements();
-		RDFGraphCompTagCreator<Shape, Graph> tag = new RDFGraphCompTagCreator<Shape, Graph>(model, graph, 
-				new GraphCreationMethod("Sybil Graph Factory"));
-		while(stmtIter.hasNext()) {
-			Statement statement = stmtIter.nextStatement();
-			RDFNode theObject = statement.getObject();
-			if(theObject.isResource()) {
-				Resource subject = statement.getSubject();
-				Resource object = (Resource) theObject;
-				graph.addEdge(sbbox, new SBWrapper(sbbox, subject), new SBWrapper(sbbox, object), statement, tag);									
-			}
-		}
-		GraphGrouper<Shape, Graph> grouper = new GraphGrouper<Shape, Graph>(fileManager.evaluator());
-		grouper.applyToGraph(graph);
-		ReactionsManipulator<Shape, Graph> manip = new ReactionsManipulator<Shape, Graph>(fileManager.evaluator());
-		manip.setCollapseParticipants(true);
-		System.err.println("BioModelEditorPathwayDiagramPanel : applyToGraph needs to fixed");
-//		manip.applyToGraph(graph);
-		graph.layoutGraph(LayoutType.Randomizer);
-		graph.layoutGraph(LayoutType.Annealer);
-		graph.updateView();
-	}
 
 	private void refreshInterface() {
 		if (bioModel == null) {
 			return;
 		}
 		try {
-			VCMetaData vcMetaData = bioModel.getVCMetaData();
-			SBBox sbbox = vcMetaData.getSBbox();
-			Graph graph = new Graph(sbbox);
-			graphPane.setGraph(graph);
-			createGraph(graph, sbbox);
-			
-			Model2JDOM model2jdom = new Model2JDOM();
-			model2jdom.addModel(vcMetaData.getSBbox().getRdf(), vcMetaData.getBaseURI());
-			Element root = model2jdom.root();
-			sourceTextArea.setText(XmlUtil.xmlToString(root));
+			PathwayModel pathwayModel = bioModel.getPathwayModel();
+			PathwayGraphModel pathwayGraphModel = new PathwayGraphModel();
+			graphPane.setGraphModel(pathwayGraphModel);
+			pathwayGraphModel.setPathwayModel(pathwayModel);
+			sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(this, ex.getMessage());
@@ -204,9 +162,22 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel {
 		if (this.bioModel == bioModel) {
 			return;
 		}
+		if (bioModel!=null){
+			bioModel.getPathwayModel().removePathwayListener(this);
+		}
 		this.bioModel = bioModel;
-		fileManager = new FileManager(bioModel);
-		bioModel.getVCMetaData().addAnnotationEventListener(eventHandler);
+		if (this.bioModel!=null){
+			this.bioModel.getPathwayModel().addPathwayListener(this);
+		}
 		refreshInterface();
+	}
+
+	public void pathwayChanged(PathwayEvent event) {
+		if (bioModel==null){
+			sourceTextArea.setText("");
+		}else{
+			PathwayModel pathwayModel = bioModel.getPathwayModel();
+			sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");
+		}
 	}
 }
