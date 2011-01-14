@@ -1332,6 +1332,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				if(fStudy.getMovieURLString() != null && fStudy.getMovieFileString() != null)
 				{
+					hashTable.put("FrapStudy", fStudy);
 					return;
 				}
 				//create export specs
