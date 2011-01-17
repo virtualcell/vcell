@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -122,7 +123,10 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		graphCartoonTool.setGraphPane(graphPane);	
 		
 		JPanel graphTabPanel = new JPanel(new BorderLayout());
-		graphTabPanel.add(new JScrollPane(graphPane), BorderLayout.CENTER);
+		JScrollPane graphScrollPane = new JScrollPane(graphPane);
+		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		graphScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		graphTabPanel.add(graphScrollPane, BorderLayout.CENTER);
 		graphTabPanel.add(layoutToolBar, BorderLayout.WEST);
 		graphTabPanel.add(nodesToolBar, BorderLayout.NORTH);
 		
@@ -131,7 +135,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("Diagram", graphTabPanel);
-		tabbedPane.addTab("BioPax Source", sourceTabPanel);
+		tabbedPane.addTab("BioPAX Source", sourceTabPanel);
 		
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
