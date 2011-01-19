@@ -9,13 +9,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Entity;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.ShapeSpaceManager;
 
-public class BioPaxObjectShape extends BioPaxShape {
-	private static final int RADIUS = 8;
+public class BioPaxConversionShape extends BioPaxShape {
+	private static final int RADIUS = 5;
 	public static final int DIAMETER = 2*RADIUS;
 	private Color darkerBackground = null;
 	private Area icon = null;
@@ -28,14 +28,18 @@ public class BioPaxObjectShape extends BioPaxShape {
 
 	private boolean bTruncateLabelName = true;
 
-	public BioPaxObjectShape(BioPaxObject bioPaxObject, GraphModel graphModel) {
-		super(bioPaxObject, graphModel);
-		defaultBG = Color.pink;
+	public BioPaxConversionShape(Conversion conversion, GraphModel graphModel) {
+		super(conversion, graphModel);
+		defaultBG = Color.yellow;
 		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
 	}
-
+	
+	public Conversion getConversion() {
+		return (Conversion) getModelObject();
+	}
+	
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();

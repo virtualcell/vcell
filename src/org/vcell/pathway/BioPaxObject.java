@@ -1,7 +1,5 @@
 package org.vcell.pathway;
 
-import java.util.Map;
-
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
 import cbit.vcell.biomodel.meta.Identifiable;
