@@ -10,7 +10,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.io.FileOutputStream;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
@@ -18,8 +17,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.DialogUtils;
@@ -951,9 +948,9 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		}
 		// bMoving = false;
 		// movingShape = null;
-		if (getStructureCartoon() != null) {
-			getStructureCartoon().clearSelection();
-		}
+//		if (getStructureCartoon() != null) {
+//			getStructureCartoon().clearSelection();
+//		}
 		this.mode = newMode;
 		if (getGraphPane() != null) {
 			switch (mode) {
