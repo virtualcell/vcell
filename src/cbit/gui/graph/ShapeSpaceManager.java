@@ -1,7 +1,7 @@
 package cbit.gui.graph;
 
 /*  Manage available space for a shape and its children
- *  September 2010
+ *  Last Change: January 2011 by Oliver
  */
 
 import java.awt.Dimension;
@@ -68,4 +68,8 @@ public class ShapeSpaceManager {
 	
 	public Dimension getSizePreferred() { return sizePreferred; }
 	
+	public Point getAbsCenter() {
+		Point absLoc = getAbsLoc();
+		return new Point(absLoc.x + size.width/2, absLoc.y + size.height/2);
+	}
 }
