@@ -2,6 +2,7 @@ package cbit.gui.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,7 @@ import edu.rpi.graphdrawing.Relaxer;
 import edu.rpi.graphdrawing.Stabilizer;
 
 /*  Graph embedding (aka Layout, i.e. placement of nodes)
- *  September 2010
+ *  Last change: January 2011 by Oliver
  */
 
 public class GraphEmbeddingManager {
@@ -46,12 +47,26 @@ public class GraphEmbeddingManager {
 	public static final String LEVELLER = "Leveller";
 	public static final String RANDOMIZER = "Randomizer";
 	public static final String RELAXER = "Relaxer";
-	public static final String STABILIZER = "Stabilizer";	
+	public static final String STABILIZER = "Stabilizer";		
+	public static final String GLG = "GLG";
+	
+	public static final List<String> LAYOUTS_RPI = Arrays.asList(ANNEALER, CIRCULARIZER, CYCLEIZER,
+			FORCEDIRECT, LEVELLER, RANDOMIZER, RELAXER, STABILIZER);
 		
 	protected final GraphView graphView;
 	
 	public GraphEmbeddingManager(GraphView graphView) {
 		this.graphView = graphView;
+	}
+	
+	public void layout(String layoutName) throws Exception {
+		if(LAYOUTS_RPI.contains(layoutName)) {
+			layoutRPI(layoutName);
+		} else if(GLG.equals(layoutName)) {
+			layoutGLG();
+		} else {
+			throw new Exception("Unsupported Layout " + layoutName);
+		}
 	}
 	
 	public void layoutRPI(String layoutName) throws Exception {
