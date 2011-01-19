@@ -29,7 +29,7 @@ public class StructureCartoon extends ModelCartoon{
 	@Override
 	public void refreshAll() {
 		try {
-			clearAllShapes();
+			objectShapeMap.clear();
 			if(getModel() != null){
 				// create all StructureShapes
 				Structure structures[] = getModel().getStructures();
