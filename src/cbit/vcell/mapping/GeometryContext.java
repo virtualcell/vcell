@@ -69,6 +69,11 @@ GeometryContext(GeometryContext geometryContext, SimulationContext simulationCon
 			throw new RuntimeException("unexpected structureMapping = "+geometryContext.fieldStructureMappings[i]);
 		}
 	}
+	try {
+		refreshStructureMappings();
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
 	refreshDependencies();
 }
 /**
