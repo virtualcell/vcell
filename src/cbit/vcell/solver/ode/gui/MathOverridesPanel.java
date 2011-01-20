@@ -950,9 +950,6 @@ private void updateEditableMode(boolean editable) {
 	getJLabelTitle().setVisible(editable);
 	getJTableFixed().setRequestFocusEnabled(editable);
 	getJTableFixed().setCellSelectionEnabled(editable);
-	getJTableFixed().setShowGrid(editable);
-	getJTableFixed().setBackground(editable ? javax.swing.UIManager.getColor("JTable.background") : javax.swing.UIManager.getColor("ScrollPane.background"));
-	getJTableFixed().setForeground(editable ? javax.swing.UIManager.getColor("JTable.foreground") : java.awt.Color.blue);
 	getMathOverridesTableModel().setEditable(editable);
 	setMathOverrides(getMathOverrides()); // re-initializes keys
 }

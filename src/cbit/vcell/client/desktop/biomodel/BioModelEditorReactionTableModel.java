@@ -13,6 +13,7 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -25,9 +26,10 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public final static int COLUMN_EQUATION = 0;
 	public final static int COLUMN_NAME = 1;
 	public final static int COLUMN_STRUCTURE = 2;
+	public final static int COLUMN_KINETICS = 3;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Equation", "Name", "Structure"};
+	private static String[] columnNames = new String[] {"Equation", "Name", "Structure", "Kinetics"};
 
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
@@ -45,6 +47,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			case COLUMN_STRUCTURE:{
 				return Structure.class;
 			}
+			case COLUMN_KINETICS:
+				return Kinetics.class;
 		}
 		return Object.class;
 	}
@@ -58,7 +62,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				} else {
 					String lowerCaseSearchText = searchText.toLowerCase();	
 					if (rs.getName().toLowerCase().contains(lowerCaseSearchText)
-						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)) {
+						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)
+						|| rs.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+						|| rs.getKinetics().getKineticsDescription().getDescription().toLowerCase().contains(lowerCaseSearchText)) {
 						reactionStepList.add(rs);
 					}
 				}
@@ -84,6 +90,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					case COLUMN_STRUCTURE: {
 						return reactionStep.getStructure();
 					} 
+					case COLUMN_KINETICS:
+						return reactionStep.getKinetics();
 				}
 			} else {
 				if (column == COLUMN_EQUATION) {
@@ -98,7 +106,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 
 	public boolean isCellEditable(int row, int column) {
-		return row < getDataSize() || column == COLUMN_EQUATION;
+		return (column != COLUMN_KINETICS) && (row < getDataSize() || column == COLUMN_EQUATION);
 	}
 	
 	@Override

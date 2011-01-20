@@ -481,27 +481,6 @@ private void connEtoC19(VersionInfo value) {
 	}
 }
 
-
-/**
- * connEtoC2:  (DocumentManager.this --> BioModelDbTreePanel.expandTreeToOwner()V)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.expandTreeToOwner();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC20:  (selectedVersionInfo1.this --> MathModelDbTreePanel.previousEditionMenuItemEnable(Lcbit.sql.VersionInfo;)V)
  * @param value cbit.sql.VersionInfo
@@ -988,26 +967,6 @@ private void documentManager_DatabaseUpdate(DatabaseEvent event) {
  */
 private void enableToolTips(JTree tree) {
 	ToolTipManager.sharedInstance().registerComponent(tree);
-}
-
-
-/**
- * 
- * @exception org.vcell.util.DataAccessException The exception description.
- */
-private void expandTreeToOwner() throws DataAccessException {
-	//
-	// expand tree up to and including the "Owner" subtree's first children
-	//
-	if (getDocumentManager()==null){
-		return;
-	}
-	User currentUser = getDocumentManager().getUser();
-	BioModelNode rootNode = (BioModelNode)getMathModelDbTreeModel().getRoot();
-	BioModelNode currentUserNode = (BioModelNode)rootNode.findNodeByUserObject(currentUser);
-	if (currentUserNode!=null){
-		getJTree1().expandPath(new TreePath(getMathModelDbTreeModel().getPathToRoot(currentUserNode)));
-	}
 }
 
 
@@ -1884,7 +1843,6 @@ private void refireActionPerformed(ActionEvent e) {
 
 public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessException{
 	getMathModelDbTreeModel().refreshTree(newFilterList);
-	expandTreeToOwner();
 }
 
 /**
@@ -1894,7 +1852,6 @@ public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessE
 private void refresh() throws DataAccessException{
 	getMathModelDbTreeModel().refreshTree();
 	getJTree1().setCellRenderer(this.getMathModelCellRenderer());
-	expandTreeToOwner();
 }
 
 
@@ -1924,7 +1881,6 @@ public void setDocumentManager(DocumentManager newValue) {
 			}
 			connPtoP2SetSource();
 			connPtoP3SetTarget();
-			connEtoC2(ivjDocumentManager);
 			getJTree1().setCellRenderer(this.getMathModelCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}

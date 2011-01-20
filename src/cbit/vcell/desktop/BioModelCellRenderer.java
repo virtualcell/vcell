@@ -107,10 +107,14 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				VCDocumentInfoNode infonode = (VCDocumentInfoNode)userObject;
 				User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();
 				String modelName = infonode.getVCDocumentInfo().getVersion().getName();
-				if (nodeUser.compareEqual(sessionUser)) {
+				String username = nodeUser.getName();
+				if (nodeUser.compareEqual(sessionUser)
+						|| username.equals(VCDocumentDbTreeModel.USER_tutorial)
+						|| username.equals(VCDocumentDbTreeModel.USER_Education)
+						|| username.equals(VCDocumentDbTreeModel.USER_CellMLRep)) {
 					component.setText(modelName);
 				} else {
-					component.setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+					component.setText("<html><b>" + username + " </b> : " + modelName + "</html>");
 				}
 			}
 		}
