@@ -349,7 +349,7 @@ private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 			}
 			c = c.getParent();
 		}
-		if (bioModelEditor != null) {
+		if (bioModelEditor != null && getSelectedDocumentInfo() instanceof BioModelInfo) {
 			if (bioModelEditor.getBioModelWindowManager().hasBlankDocument()) {
 				getDatabaseWindowManager().openSelected(bioModelEditor.getBioModelWindowManager(), false);
 			} else {

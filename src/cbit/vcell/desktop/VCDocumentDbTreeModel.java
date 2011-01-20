@@ -7,7 +7,6 @@ package cbit.vcell.desktop;
 import java.util.ArrayList;
 
 import javax.swing.JTree;
-import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocumentInfo;
@@ -31,6 +30,15 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 	protected BioModelNode sharedModelsNode = null;
 	private JTree ownerTree = null;
 	
+	public static final String USER_tutorial = "tutorial";
+	public static final String USER_Education = "Education";
+	public static final String USER_CellMLRep = "CellMLRep";
+	
+	protected BioModelNode tutorialModelsNode = null;
+	protected BioModelNode educationModelsNode = null;
+	protected BioModelNode cellMLModelsNode = null;
+	protected BioModelNode publicModelsNode = null;
+
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -39,6 +47,8 @@ public VCDocumentDbTreeModel(JTree tree) {
 	super(new BioModelNode("not connected", true),true);
 	ownerTree = tree;
 	rootNode = (BioModelNode)root;
+	myModelsNode = new BioModelNode("My Models", true);
+	sharedModelsNode = new BioModelNode("Shared Models", true);
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -109,12 +119,6 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 
 public void refreshTree() {
 	if (getDocumentManager() != null && getDocumentManager().getUser() != null){
-		if (rootNode.getChildCount() == 0) {
-			myModelsNode = new BioModelNode("My Models", true);
-			sharedModelsNode = new BioModelNode("Shared Models", true);
-			rootNode.add(myModelsNode);
-			rootNode.add(sharedModelsNode);
-		}
 		try {
 			createBaseTree();
 		}catch (DataAccessException e){
@@ -125,9 +129,6 @@ public void refreshTree() {
 		rootNode.removeAllChildren();
 	}
 	nodeStructureChanged(rootNode);
-	if (myModelsNode != null && rootNode.isNodeDescendant(myModelsNode)) {
-		ownerTree.expandPath(new TreePath(myModelsNode.getPath()));
-	}
 }
 /**
  * Insert the method's description here.

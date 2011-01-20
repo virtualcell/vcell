@@ -275,27 +275,6 @@ private void connEtoC11() {
 	}
 }
 
-
-/**
- * connEtoC12:  (DocumentManager.this --> GeometryTreePanel.expandTreeToUser()V)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.expandTreeToUser();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC13:  (DocumentManager.database.databaseDelete(cbit.vcell.clientdb.DatabaseEvent) --> GeometryTreePanel.documentManager_DatabaseDelete(Lcbit.vcell.clientdb.DatabaseEvent;)V)
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
@@ -809,25 +788,6 @@ private void documentManager_DatabaseUpdate(DatabaseEvent event) {
  */
 private void enableToolTips(JTree tree) {
 	ToolTipManager.sharedInstance().registerComponent(tree);
-}
-
-
-/**
- * Comment
- */
-private void expandTreeToUser() {
-	//
-	// expand tree up to and including the "Owner" subtree's first children
-	//
-	if (getDocumentManager()==null){
-		return;
-	}
-	User currentUser = getDocumentManager().getUser();
-	BioModelNode rootNode = (BioModelNode)getGeometryDbTreeModel().getRoot();
-	BioModelNode currentUserNode = (BioModelNode)rootNode.findNodeByUserObject(currentUser);
-	if (currentUserNode!=null){
-		getJTree1().expandPath(new TreePath(((DefaultTreeModel)getGeometryDbTreeModel()).getPathToRoot(currentUserNode)));
-	}
 }
 
 
@@ -1439,7 +1399,6 @@ private void refireActionPerformed(ActionEvent e) {
 
 public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessException{
 	getGeometryDbTreeModel().refreshTree(newFilterList);
-	expandTreeToUser();
 }
 
 /**
@@ -1449,7 +1408,6 @@ public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessE
 private void refresh() throws DataAccessException {
 	getGeometryDbTreeModel().refreshTree();
 	getJTree1().setCellRenderer(getGeometryCellRenderer());
-	expandTreeToUser();
 }
 
 
@@ -1480,7 +1438,6 @@ public void setDocumentManager(DocumentManager newValue) {
 			connPtoP2SetSource();
 			connEtoM1(ivjDocumentManager);
 			connEtoM3(ivjDocumentManager);
-			connEtoC12(ivjDocumentManager);
 			getJTree1().setCellRenderer(getGeometryCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}

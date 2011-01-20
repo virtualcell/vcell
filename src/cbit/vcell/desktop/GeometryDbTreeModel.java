@@ -40,6 +40,10 @@ public GeometryDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	if (rootNode.getChildCount() == 0) {
+		rootNode.add(myModelsNode);
+		rootNode.add(sharedModelsNode);
+	}
 	rootNode.setUserObject("Geometries");
 	sharedModelsNode.setUserObject(SHARED_GEOMETRIES);
 	
@@ -72,6 +76,7 @@ protected void createBaseTree() throws DataAccessException {
 	//
 	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName().toLowerCase());
 	myModelsNode.removeAllChildren();
+	myModelsNode.setUserObject(loginUser);
 	for (int c = 0; c < ownerNode.getChildCount();) {
 		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
 		myModelsNode.add(childNode);

@@ -53,6 +53,7 @@ import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
@@ -213,6 +214,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		parametersTableModel.setSearchText(null);
 		
 		int selectedIndex = tabbedPane.getSelectedIndex();
+		ModelPanelTabID[] tabIdValues = ModelPanelTabID.values();
+		tabbedPane.setTitleAt(selectedIndex, "<html><b>"+ tabIdValues[selectedIndex].name + "</b></html>");
+		for (int i = 0; i < tabbedPane.getTabCount(); i ++) {
+			if (i != selectedIndex) {
+				tabbedPane.setTitleAt(i, tabIdValues[i].name);
+			}
+		}
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()
 				|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
 			newButton.setEnabled(false);
@@ -350,7 +358,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandler);
 		parametersTable.getSelectionModel().addListSelectionListener(eventHandler);
-		DefaultScrollTableCellRenderer structureRenderer = new DefaultScrollTableCellRenderer(){
+		DefaultScrollTableCellRenderer tableRenderer = new DefaultScrollTableCellRenderer(){
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -360,13 +368,16 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						row, column);
 				if (value instanceof Structure) {
 					setText(((Structure)value).getName());
+				} else if (value instanceof Kinetics) {
+					setText(((Kinetics) value).getKineticsDescription().getDescription());
 				}
 				return this;
 			}			
 		};
-		structuresTable.setDefaultRenderer(Structure.class, structureRenderer);
-		speciesTable.setDefaultRenderer(Structure.class, structureRenderer);
-		reactionsTable.setDefaultRenderer(Structure.class, structureRenderer);
+		structuresTable.setDefaultRenderer(Structure.class, tableRenderer);
+		speciesTable.setDefaultRenderer(Structure.class, tableRenderer);
+		reactionsTable.setDefaultRenderer(Structure.class, tableRenderer);
+		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		
 		parametersTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
 

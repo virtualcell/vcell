@@ -4,6 +4,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.math.BigDecimal;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -11,7 +12,9 @@ import javax.swing.JTree;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
 
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
@@ -23,12 +26,17 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 @SuppressWarnings("serial")
 public class BioModelDbTreeModel extends VCDocumentDbTreeModel {
 	private static final String SHARED_BIO_MODELS = "Shared BioModels";
+		 
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
 public BioModelDbTreeModel(JTree tree) {
 	super(tree);
+	tutorialModelsNode = new BioModelNode("Tutorials", true);
+	educationModelsNode = new BioModelNode("Education", true);
+	cellMLModelsNode = new BioModelNode("CellML Repository", true);
+	publicModelsNode = new BioModelNode("Public BioModels", true);
 }
 
 /**
@@ -38,6 +46,14 @@ public BioModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	if (rootNode.getChildCount() == 0) {
+		rootNode.add(myModelsNode);
+		rootNode.add(sharedModelsNode);
+		rootNode.add(publicModelsNode);
+		rootNode.add(tutorialModelsNode);
+		rootNode.add(educationModelsNode);
+		rootNode.add(cellMLModelsNode);
+	}
 	rootNode.setUserObject("Biological Models");
 	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);
 	
@@ -63,7 +79,7 @@ protected void createBaseTree() throws DataAccessException {
 		User owner = (User)userList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createUserSubTree(owner);
 		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
-			treeMap.put(owner.getName().toLowerCase(),ownerNode);
+			treeMap.put(owner.getName(), ownerNode);
 		}
 	}
 	//
@@ -76,13 +92,39 @@ protected void createBaseTree() throws DataAccessException {
 		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
 		myModelsNode.add(childNode);
 	}	
-	
 	sharedModelsNode.removeAllChildren();
-	for (BioModelNode userNode : treeMap.values()) {
+	tutorialModelsNode.removeAllChildren();
+	educationModelsNode.removeAllChildren();
+	cellMLModelsNode.removeAllChildren();
+	publicModelsNode.removeAllChildren();
+	for (String username : treeMap.keySet()) {
+		BioModelNode userNode = treeMap.get(username);
+		BioModelNode parentNode = sharedModelsNode;
+		boolean bSpecificUser = true;
+		if (username.equals(USER_tutorial)) {
+			parentNode = tutorialModelsNode;
+		} else if (username.equals(USER_Education)) {
+			parentNode = educationModelsNode;
+		} else if (username.equals(USER_CellMLRep)) {
+			parentNode = cellMLModelsNode;
+		} else {
+			bSpecificUser = false;
+		}
 		for (int c = 0; c < userNode.getChildCount();) {
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
-			// when added to otherUserNode, this childNode was removed from userNode
-			sharedModelsNode.add(childNode);
+			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+			if (!bSpecificUser) {
+				BigDecimal groupid = GroupAccess.GROUPACCESS_NONE;
+				Version version = vcdDocumentInfoNode.getVCDocumentInfo().getVersion();
+				if (version != null && version.getGroupAccess() != null) {
+					groupid = version.getGroupAccess().getGroupid();
+				}
+				if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+					parentNode = publicModelsNode;
+				}
+			}
+			// when added to other node, this childNode was removed from userNode
+			parentNode.add(childNode);
 		}
 	}
 }
