@@ -1,12 +1,17 @@
 package org.vcell.util.gui;
 
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -53,6 +58,7 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 public class ScrollTable extends JTable {
 	private static final Border tableCellHeaderBorder = (UIManager.getBorder("TableHeader.cellBorder"));
 	private static final Color tableHeaderColor = new Color(0xb9c9fe);
+	private static final String javaVersion = System.getProperty("java.version");
 	
 	private JScrollPane enclosingScrollPane = null;
 	private boolean bValidateExpressionBinding = true;
@@ -187,6 +193,33 @@ public class ScrollTable extends JTable {
 		getTableHeader().setDefaultRenderer(defaultTableHeaderRenderer);
 		
 		MouseAdapter mouseListener = new MouseAdapter() {
+		
+			@Override
+			public void mouseClicked(final MouseEvent e) {
+				if (!javaVersion.startsWith("1.5")) {
+					if (!hasFocus()) {
+						if (e.getButton() == MouseEvent.BUTTON1) {
+							addFocusListener(new FocusListener() {
+								public void focusLost(FocusEvent e) {
+								}
+								public void focusGained(FocusEvent e) {
+									removeFocusListener(this);
+									Robot robot;
+									try {
+										robot = new Robot();
+										robot.mousePress(InputEvent.BUTTON1_MASK);
+										robot.mouseRelease(InputEvent.BUTTON1_MASK);
+									} catch (AWTException ex) {
+										ex.printStackTrace();
+									}
+								}
+							});
+						}
+						requestFocusInWindow();
+					}
+				}
+			}
+		
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
