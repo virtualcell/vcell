@@ -3,11 +3,14 @@ package org.vcell.util.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.EventObject;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
@@ -58,12 +61,46 @@ public class ScrollTable extends JTable {
 	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
 	private ScrollTableActionManager scrollTableActionManager = null;
 	
-	static class ScrollTableBooleanEditor extends DefaultCellEditor {
+	class ScrollTableBooleanEditor extends DefaultCellEditor {
+		static final int CHECKBOX_WIDTH = 10;
+		static final int CHECKBOX_HEIGHT = 10;
 		public ScrollTableBooleanEditor() {
 		    super(new JCheckBox());
-		    JCheckBox checkBox = (JCheckBox)getComponent();
+		    final JCheckBox checkBox = (JCheckBox)getComponent();
 		    checkBox.setHorizontalAlignment(JCheckBox.CENTER);
-		    clickCountToStart = 2;
+		    delegate = new EditorDelegate() {
+	            public void setValue(Object value) { 
+	            	boolean selected = false; 
+					if (value instanceof Boolean) {
+					    selected = ((Boolean)value).booleanValue();
+					} else if (value instanceof String) {
+					    selected = value.equals("true");
+					}
+					checkBox.setSelected(selected);
+	            }		
+				public Object getCellEditorValue() {
+					return Boolean.valueOf(checkBox.isSelected());
+				}	 
+	            public boolean isCellEditable(EventObject anEvent) {
+	        	    boolean b = super.isCellEditable(anEvent);
+	        	    if (!b) {
+	        	    	return false; 
+	        	    }
+	        	    if (anEvent instanceof MouseEvent) { 
+	        	    	MouseEvent mouseEvent = (MouseEvent)anEvent;
+	        	    	Point mousePoint = mouseEvent.getPoint();
+	        	    	int column = ScrollTable.this.columnAtPoint(mousePoint);
+	        	    	int row = ScrollTable.this.rowAtPoint(mousePoint);
+	        	    	Rectangle bounds = ScrollTable.this.getCellRect(row, column, false);
+	        	    	Rectangle checkBoxBounds = new Rectangle(bounds.x + (bounds.width - CHECKBOX_WIDTH)/2, bounds.y + (bounds.height - CHECKBOX_HEIGHT) / 2, 
+	        	    			CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
+						if (checkBoxBounds.contains(mouseEvent.getPoint())) {
+	        	    		return true;
+	        	    	}
+	        	    }
+	        	    return false;
+	            }	            
+	        };
 		}
 	}
 	
