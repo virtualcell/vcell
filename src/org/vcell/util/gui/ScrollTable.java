@@ -62,8 +62,8 @@ public class ScrollTable extends JTable {
 	private ScrollTableActionManager scrollTableActionManager = null;
 	
 	class ScrollTableBooleanEditor extends DefaultCellEditor {
-		static final int CHECKBOX_WIDTH = 10;
-		static final int CHECKBOX_HEIGHT = 10;
+		static final int CHECKBOX_WIDTH = 20;
+		static final int CHECKBOX_HEIGHT = 20;
 		public ScrollTableBooleanEditor() {
 		    super(new JCheckBox());
 		    final JCheckBox checkBox = (JCheckBox)getComponent();
