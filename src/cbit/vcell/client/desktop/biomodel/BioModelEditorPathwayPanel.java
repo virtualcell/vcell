@@ -100,6 +100,19 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}
 		}
+		HashSet<BioPaxObject> selectedSet = new HashSet<BioPaxObject> ();
+		for (BioPaxObject bpObject : selectedBioPaxObjects){
+			ArrayList<BioPaxObject> parents = pathwayData.getPathwayModel().getParents(bpObject);
+			if(parents != null){
+				for(BioPaxObject bp : parents){
+					selectedSet.add(bp);
+				}
+			}
+		}
+		// add the selectedSet to selectedBioPaxObjects
+		for(BioPaxObject bp : selectedSet){
+			selectedBioPaxObjects.add((BioPaxObject)bp);
+		}
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		for (BioPaxObject bpObject : selectedBioPaxObjects){
 			selectedPathwayModel.add(bpObject);
