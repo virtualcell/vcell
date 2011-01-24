@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+
 public class Pathway extends EntityImpl {
 	private BioSource organism;
 	private ArrayList<Interaction> pathwayComponentInteraction = new ArrayList<Interaction>();
@@ -40,6 +42,30 @@ public class Pathway extends EntityImpl {
 
 	public void setPathwayOrder(ArrayList<PathwayStep> pathwayOrder) {
 		this.pathwayOrder = pathwayOrder;
+	}
+	
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		if(organism == objectProxy) {
+			organism = (BioSource) concreteObject;
+		}
+		for (int i=0;i<pathwayComponentInteraction.size();i++){
+			Interaction interaction = pathwayComponentInteraction.get(i);
+			if (interaction == objectProxy){
+				pathwayComponentInteraction.set(i, (Interaction)concreteObject);
+			}
+		}
+		for (int i=0;i<pathwayComponentPathway.size();i++){
+			Pathway pathway = pathwayComponentPathway.get(i);
+			if (pathway == objectProxy){
+				pathwayComponentPathway.set(i, (Pathway)concreteObject);
+			}
+		}
+		for (int i=0;i<pathwayOrder.size();i++){
+			PathwayStep step = pathwayOrder.get(i);
+			if (step == objectProxy){
+				pathwayOrder.set(i, (PathwayStep) concreteObject);
+			}
+		}
 	}
 	
 	public void showChildren(StringBuffer sb, int level){

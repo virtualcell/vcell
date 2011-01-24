@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
-import sun.security.action.GetLongAction;
-
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                        ";
