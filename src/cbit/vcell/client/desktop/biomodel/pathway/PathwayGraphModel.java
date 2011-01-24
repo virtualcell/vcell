@@ -15,6 +15,12 @@ import org.vcell.pathway.PhysicalEntity;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionEdgeShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxObjectShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxPhysicalEntityShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
 
 public class PathwayGraphModel extends GraphModel implements PathwayListener {
 	

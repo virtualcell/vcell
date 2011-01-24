@@ -1,4 +1,4 @@
-package cbit.vcell.client.desktop.biomodel.pathway;
+package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -9,6 +9,8 @@ import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.DefaultEdgeVisualState;
+import cbit.vcell.client.desktop.biomodel.pathway.BioPaxConversionEdge;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class BioPaxConversionEdgeShape extends Shape implements EdgeVisualState.Owner {
 

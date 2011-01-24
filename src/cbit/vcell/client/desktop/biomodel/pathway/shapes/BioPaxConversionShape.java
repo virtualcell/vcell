@@ -1,4 +1,4 @@
-package cbit.vcell.client.desktop.biomodel.pathway;
+package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import java.awt.Color;
 import java.awt.Dimension;
