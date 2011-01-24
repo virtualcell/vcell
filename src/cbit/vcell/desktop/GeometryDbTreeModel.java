@@ -68,13 +68,13 @@ protected void createBaseTree() throws DataAccessException {
 		User owner = (User)ownerList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createOwnerSubTree(owner);
 		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
-			treeMap.put(owner.getName().toLowerCase(),ownerNode);
+			treeMap.put(owner.getName(),ownerNode);
 		}
 	}
 	//
 	// create final tree
 	//
-	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName().toLowerCase());
+	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
 	myModelsNode.removeAllChildren();
 	myModelsNode.setUserObject(loginUser);
 	for (int c = 0; c < ownerNode.getChildCount();) {

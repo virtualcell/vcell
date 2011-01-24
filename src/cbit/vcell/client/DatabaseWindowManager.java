@@ -102,9 +102,7 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
 	setDatabaseWindowPanel(databaseWindowPanel);
 	getBioModelDbTreePanel().setPopupMenuDisabled(true);
 	getMathModelDbTreePanel().setPopupMenuDisabled(true);
-	getMathModelDbTreePanel().setMetadataPanelPopupDisabled(true);
 	getGeometryTreePanel().setPopupMenuDisabled(true);
-	getGeometryTreePanel().setMetadataPanelPopupDisabled(true);
 
 }
 
@@ -1020,7 +1018,7 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
 	accessPermissionDialog.setMessage("");
 	accessPermissionDialog.setMessage(aclEditor);
 	accessPermissionDialog.setValue(null);
-	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
+	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	ZEnforcer.showModalDialogOnTop(d,requester);
 	return accessPermissionDialog.getValue();

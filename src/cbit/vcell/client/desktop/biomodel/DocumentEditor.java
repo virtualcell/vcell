@@ -37,6 +37,7 @@ import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.GeometryMetaDataPanel;
@@ -540,4 +541,7 @@ private JPopupMenu getPopupMenu() {
 	return popupMenu;
 }
 
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	databaseWindowPanel.updateConnectionStatus(connStatus);
+}
 }

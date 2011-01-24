@@ -27,6 +27,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JLabelLikeTextField;
 
@@ -40,11 +41,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
-/**
- * Insert the type's description here.
- * Creation date: (2/3/2003 2:07:01 PM)
- * @author: Frank Morgan
- */
+
 @SuppressWarnings("serial")
 public class BioModelPropertiesPanel extends JPanel {
 	
@@ -72,7 +69,14 @@ public class BioModelPropertiesPanel extends JPanel {
 		public void databaseRefresh(DatabaseEvent event) {
 		}
 		public void databaseUpdate(DatabaseEvent event) {
-			updateInterface();			
+			if (bioModel == null || bioModel.getVersion() == null) {
+				return;
+			}
+			VersionInfo newVersionInfo = event.getNewVersionInfo();
+			if (newVersionInfo instanceof BioModelInfo
+					&& newVersionInfo.getVersion().getVersionKey().equals(bioModel.getVersion().getVersionKey())) {
+				updateInterface();
+			}
 		}
 	}
 

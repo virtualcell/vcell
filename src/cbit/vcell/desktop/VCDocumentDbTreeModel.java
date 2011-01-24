@@ -12,6 +12,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 /**
@@ -32,11 +33,9 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 	
 	public static final String USER_tutorial = "tutorial";
 	public static final String USER_Education = "Education";
-	public static final String USER_CellMLRep = "CellMLRep";
 	
 	protected BioModelNode tutorialModelsNode = null;
 	protected BioModelNode educationModelsNode = null;
-	protected BioModelNode cellMLModelsNode = null;
 	protected BioModelNode publicModelsNode = null;
 
 /**
@@ -177,6 +176,29 @@ public void setLatestOnly(boolean latestOnly) {
 	firePropertyChange("latestOnly", new Boolean(oldValue), new Boolean(latestOnly));
 	if (latestOnly != oldValue){
 		refreshTree();
+	}
+}
+
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	switch (connStatus.getStatus()) {
+		case ConnectionStatus.NOT_CONNECTED: {
+			rootNode.removeAllChildren();
+			rootNode.setUserObject("not connected");
+			nodeStructureChanged(rootNode);
+			break;
+		}
+		case ConnectionStatus.INITIALIZING: {
+			rootNode.removeAllChildren();
+			rootNode.setUserObject("connecting...");
+			nodeStructureChanged(rootNode);
+			break;
+		}
+		case ConnectionStatus.DISCONNECTED: {
+			rootNode.removeAllChildren();
+			rootNode.setUserObject("disconnected");
+			nodeStructureChanged(rootNode);
+			break;
+		}
 	}
 }
 }

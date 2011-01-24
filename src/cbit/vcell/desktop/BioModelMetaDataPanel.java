@@ -9,7 +9,6 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.clientdb.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -30,7 +29,6 @@ public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 	}
 	private JTree ivjJTree1 = null;
 	private BioModelInfoCellRenderer ivjbioModelInfoCellRenderer = null;
-	private DocumentManager fieldDocumentManager = null;
 	private BioModelInfoTreeModel ivjbioModelInfoTreeModel = null;
 	private BioModelInfo fieldBioModelInfo = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -143,14 +141,6 @@ private BioModelInfoTreeModel getbioModelInfoTreeModel() {
 	}
 	return ivjbioModelInfoTreeModel;
 }
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
-}
 
 /**
  * Return the JTree1 property value.
@@ -260,16 +250,6 @@ public void setBioModelInfo(BioModelInfo bioModelInfo) {
 	BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
-}
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
 }
 
 @Override

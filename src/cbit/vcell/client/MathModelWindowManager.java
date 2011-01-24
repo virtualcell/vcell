@@ -27,6 +27,7 @@ import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
@@ -498,6 +499,11 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 
 public final SimulationWorkspace getSimulationWorkspace() {
 	return simulationWorkspace;
+}
+
+@Override
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	mathModelEditor.updateConnectionStatus(connStatus);	
 }
 
 }

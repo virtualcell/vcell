@@ -1,10 +1,10 @@
 package cbit.vcell.client.desktop;
 
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JLabel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.GroupAccess;
@@ -21,6 +21,7 @@ import cbit.vcell.client.PopupGenerator;
  * Creation date: (6/21/2004 5:16:25 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class ACLEditor extends javax.swing.JPanel {
 
 	// ACL State class
@@ -79,11 +80,9 @@ public class ACLEditor extends javax.swing.JPanel {
 	private javax.swing.JList ivjJListACL = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JTextField ivjJTextFieldACLUser = null;
-	private javax.swing.JLabel ivjUserNameLabel = null;
-	private javax.swing.JLabel ivjCurrentUsersLabel = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ACLEditor.this.getJButtonAddACLUser()) 
 				connEtoC6(e);
@@ -293,22 +292,7 @@ private javax.swing.JRadioButton getACLRadioButton() {
 public ACLState getACLState() {
 	return fieldACLState;
 }
-/**
- * Return the CurrentUsersLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getCurrentUsersLabel() {
-	if (ivjCurrentUsersLabel == null) {
-		try {
-			ivjCurrentUsersLabel = new javax.swing.JLabel();
-			ivjCurrentUsersLabel.setName("CurrentUsersLabel");
-			ivjCurrentUsersLabel.setText("Users Granted Access");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjCurrentUsersLabel;
-}
+
 /**
  * Return the JPanel property value.
  * @return javax.swing.JPanel
@@ -326,20 +310,44 @@ private javax.swing.JPanel getGrantAccessJPanel() {
 			gbc.anchor = java.awt.GridBagConstraints.WEST;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			ivjGrantAccessJPanel.add(getVCellSupportCheckBox(), gbc);
+			
+			java.awt.GridBagConstraints constraintsCurrentUsersLabel = new java.awt.GridBagConstraints();
+			constraintsCurrentUsersLabel.gridx = 0; constraintsCurrentUsersLabel.gridy = 1;
+			constraintsCurrentUsersLabel.anchor = java.awt.GridBagConstraints.LINE_START;
+			constraintsCurrentUsersLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsCurrentUsersLabel.gridwidth = 2;
+			constraintsCurrentUsersLabel.weightx = 1.0;
+			constraintsCurrentUsersLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			getGrantAccessJPanel().add(new JLabel("Users Granted Access"), constraintsCurrentUsersLabel);
+
+			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
+			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 2;
+			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsJScrollPane1.weightx = 1.0;
+			constraintsJScrollPane1.weighty = 1.0;
+			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsJScrollPane1.anchor = GridBagConstraints.LINE_START;
+			getGrantAccessJPanel().add(getJScrollPane1(), constraintsJScrollPane1);
 
 			java.awt.GridBagConstraints constraintsJButtonRemoveACLUser = new java.awt.GridBagConstraints();
 			constraintsJButtonRemoveACLUser.gridx = 1; constraintsJButtonRemoveACLUser.gridy = 2;
 			constraintsJButtonRemoveACLUser.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonRemoveACLUser.anchor = java.awt.GridBagConstraints.NORTHWEST;
+			constraintsJButtonRemoveACLUser.anchor = java.awt.GridBagConstraints.PAGE_START;
 			constraintsJButtonRemoveACLUser.insets = new java.awt.Insets(5, 3, 5, 7);
 			getGrantAccessJPanel().add(getJButtonRemoveACLUser(), constraintsJButtonRemoveACLUser);
+
+			java.awt.GridBagConstraints constraintsUserNameLabel = new java.awt.GridBagConstraints();
+			constraintsUserNameLabel.gridx = 0; constraintsUserNameLabel.gridy = 3;
+			constraintsUserNameLabel.anchor = java.awt.GridBagConstraints.LINE_START;
+			constraintsUserNameLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+			getGrantAccessJPanel().add(new JLabel("Enter User"), constraintsUserNameLabel);
 
 			java.awt.GridBagConstraints constraintsJTextFieldACLUser = new java.awt.GridBagConstraints();
 			constraintsJTextFieldACLUser.gridx = 0; constraintsJTextFieldACLUser.gridy = 4;
 			constraintsJTextFieldACLUser.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJTextFieldACLUser.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJTextFieldACLUser.anchor = java.awt.GridBagConstraints.LINE_START;
 			constraintsJTextFieldACLUser.weightx = 1.0;
-			constraintsJTextFieldACLUser.insets = new java.awt.Insets(5, 5, 5, 0);
+			constraintsJTextFieldACLUser.insets = new java.awt.Insets(4, 4, 4, 4);
 			getGrantAccessJPanel().add(getJTextFieldACLUser(), constraintsJTextFieldACLUser);
 
 			java.awt.GridBagConstraints constraintsJButtonAddACLUser = new java.awt.GridBagConstraints();
@@ -349,25 +357,6 @@ private javax.swing.JPanel getGrantAccessJPanel() {
 			constraintsJButtonAddACLUser.insets = new java.awt.Insets(5, 5, 5, 5);
 			getGrantAccessJPanel().add(getJButtonAddACLUser(), constraintsJButtonAddACLUser);
 
-			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 2;
-			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJScrollPane1.weightx = 1.0;
-			constraintsJScrollPane1.weighty = 1.0;
-			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getGrantAccessJPanel().add(getJScrollPane1(), constraintsJScrollPane1);
-
-			java.awt.GridBagConstraints constraintsUserNameLabel = new java.awt.GridBagConstraints();
-			constraintsUserNameLabel.gridx = 0; constraintsUserNameLabel.gridy = 3;
-			constraintsUserNameLabel.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsUserNameLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getGrantAccessJPanel().add(getUserNameLabel(), constraintsUserNameLabel);
-
-			java.awt.GridBagConstraints constraintsCurrentUsersLabel = new java.awt.GridBagConstraints();
-			constraintsCurrentUsersLabel.gridx = 0; constraintsCurrentUsersLabel.gridy = 1;
-			constraintsCurrentUsersLabel.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsCurrentUsersLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getGrantAccessJPanel().add(getCurrentUsersLabel(), constraintsCurrentUsersLabel);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -502,22 +491,6 @@ private javax.swing.JCheckBox getVCellSupportCheckBox() {
 	return vcellSupportCheckBox;
 }
 
-/**
- * Return the UserNameLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getUserNameLabel() {
-	if (ivjUserNameLabel == null) {
-		try {
-			ivjUserNameLabel = new javax.swing.JLabel();
-			ivjUserNameLabel.setName("UserNameLabel");
-			ivjUserNameLabel.setText("Enter User");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjUserNameLabel;
-}
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -659,7 +632,7 @@ private void updateInterface() {
 		if(!getACLRadioButton().isSelected()){
 			getACLRadioButton().setSelected(true);
 		}
-		if(!getCurrentUsersLabel().isEnabled()){
+		if(!getJTextFieldACLUser().isEnabled()){
 			BeanUtils.enableComponents(getGrantAccessJPanel(),true);
 		}
 	}

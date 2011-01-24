@@ -3,15 +3,9 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-
 import org.vcell.util.document.BioModelInfo;
 
-import cbit.vcell.mapping.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.server.*;
+import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 1:14:05 PM)
@@ -38,8 +32,6 @@ public static void main(String[] args) {
 
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args,"BioModelTreeDbPanelTest",frame);
 		DocumentManager docManager = managerManager.getDocumentManager();
-		aBioModelMetaDataPanel.setDocumentManager(docManager);
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

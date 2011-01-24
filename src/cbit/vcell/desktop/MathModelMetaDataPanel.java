@@ -10,7 +10,6 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.clientdb.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -25,10 +24,8 @@ public class MathModelMetaDataPanel extends DocumentEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
-	private DocumentManager fieldDocumentManager = null;
-	private boolean fieldPopupMenuDisabled = false;
 	private MathModelInfo fieldMathModelInfo = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
 	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -44,15 +41,6 @@ public class MathModelMetaDataPanel extends DocumentEditorSubPanel {
 public MathModelMetaDataPanel() {
 	super();
 	initialize();
-}
-
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
 }
 
 /**
@@ -127,14 +115,6 @@ private MathModelMetaDataTreeModel getmathModelMetaDataTreeModel() {
 	return ivjmathModelMetaDataTreeModel;
 }
 /**
- * Gets the popupMenuDisabled property (boolean) value.
- * @return The popupMenuDisabled property value.
- * @see #setPopupMenuDisabled
- */
-public boolean getPopupMenuDisabled() {
-	return fieldPopupMenuDisabled;
-}
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -202,16 +182,7 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
-}
+
 /**
  * Sets the mathModelInfo property (cbit.vcell.mathmodel.MathModelInfo) value.
  * @param mathModelInfo The new value for the property.
@@ -223,16 +194,6 @@ public void setMathModelInfo(MathModelInfo mathModelInfo) {
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
 }
 
-/**
- * Sets the popupMenuDisabled property (boolean) value.
- * @param popupMenuDisabled The new value for the property.
- * @see #getPopupMenuDisabled
- */
-public void setPopupMenuDisabled(boolean popupMenuDisabled) {
-	boolean oldValue = fieldPopupMenuDisabled;
-	fieldPopupMenuDisabled = popupMenuDisabled;
-	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
-}
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length != 1) {

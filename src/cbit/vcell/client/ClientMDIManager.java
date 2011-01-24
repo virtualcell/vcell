@@ -582,6 +582,13 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 		TopLevelWindow window = windows.nextElement();
 		window.updateConnectionStatus(connectionStatus);
 	}
+	Enumeration<TopLevelWindowManager> managers = getWindowManagers();
+	while (managers.hasMoreElements()) {
+		TopLevelWindowManager topLevelWindowManager = managers.nextElement();
+		if (topLevelWindowManager instanceof DocumentWindowManager) {
+			((DocumentWindowManager) topLevelWindowManager).updateConnectionStatus(connectionStatus);
+		}
+	}
 }
 
 

@@ -16,6 +16,7 @@ import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
@@ -641,4 +642,9 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	
 }
 
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	getBioModelDbTreePanel1().updateConnectionStatus(connStatus);
+	getMathModelDbTreePanel1().updateConnectionStatus(connStatus);
+	getGeometryTreePanel1().updateConnectionStatus(connStatus);
+}
 }

@@ -266,8 +266,6 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	DocumentManager documentManager = mathModelWindowManager.getRequestManager().getDocumentManager();
 	databaseWindowPanel.setDocumentManager(documentManager);
 	
-	bioModelMetaDataPanel.setDocumentManager(documentManager);
-	mathModelMetaDataPanel.setDocumentManager(documentManager);
 	geometryMetaDataPanel.setDocumentManager(documentManager);
 }
 
