@@ -154,9 +154,10 @@ public abstract class DocumentEditor extends JPanel {
 			long oldClickTimeStamp = mouseClickPathTimeStamp;			
 			mouseClickPath = null;
 			if (e.getClickCount() == 1) {
-				TreePath[] newClickPaths = documentEditorTree.getSelectionPaths();
-				if (newClickPaths != null && newClickPaths.length == 1) {
-					mouseClickPath = newClickPaths[0];
+				Point mousePoint = e.getPoint();
+				TreePath clickPath = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
+				if (clickPath != null) {
+					mouseClickPath = clickPath;
 					mouseClickPathTimeStamp = System.currentTimeMillis();
 				}
 				if (oldClickPath != null && mouseClickPath != null && oldClickPath.getLastPathComponent() == mouseClickPath.getLastPathComponent()) {
