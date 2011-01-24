@@ -11,17 +11,18 @@ import org.vcell.util.document.User;
 import cbit.vcell.geometry.GeometryInfo;
  
 @SuppressWarnings("serial")
-public class GeometryCellRenderer extends VCellBasicCellRenderer {
-	private User sessionUser = null;
+public class GeometryCellRenderer extends VCDocumentDbCellRenderer {
 
 /**
  * MyRenderer constructor comment.
  */
 public GeometryCellRenderer(User argSessionUser) {
-	super();
-	this.sessionUser = argSessionUser;
+	super(argSessionUser);
 }
 
+public GeometryCellRenderer() {
+	this(null);
+}
 
 /**
  * Insert the method's description here.
@@ -35,11 +36,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
-			if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof GeometryInfo){
-				//
-				// Check if node is a User, with at least one child which is a string (Geometry name)
-				// and if the child's child is a BioModelInfo node
-				//
+			if (userObject instanceof User){
 				String label = null;
 				if (sessionUser != null && sessionUser.compareEqual((User)userObject)) {
 					label = "My Geometries ("+((User)userObject).getName()+")";

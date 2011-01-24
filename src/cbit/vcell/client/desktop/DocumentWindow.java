@@ -19,7 +19,6 @@ import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -76,7 +75,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjExitMenuItem = null;
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
-	private JSeparator ivjJSeparator1 = null;
 	private JSeparator ivjJSeparator2 = null;
 	private JSeparator ivjJSeparator3 = null;
 	private JSeparator ivjJSeparator4 = null;
@@ -1613,28 +1611,6 @@ private javax.swing.JProgressBar getJProgressBarMemory() {
 	}
 	return ivjJProgressBarMemory;
 }
-
-/**
- * Return the JSeparator1 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator1() {
-	if (ivjJSeparator1 == null) {
-		try {
-			ivjJSeparator1 = new javax.swing.JSeparator();
-			ivjJSeparator1.setName("JSeparator1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator1;
-}
-
 
 /**
  * Return the JSeparator2 property value.

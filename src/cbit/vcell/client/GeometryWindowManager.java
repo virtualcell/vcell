@@ -14,6 +14,7 @@ import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.desktop.geometry.GeometryEditor;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -357,5 +358,12 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
  */
 public void surfaceViewerButtonPressed(boolean bSurfaceViewerButtonSelected) {
 	showSurfaceViewer(bSurfaceViewerButtonSelected);
+}
+
+
+@Override
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	// TODO Auto-generated method stub
+	
 }
 }

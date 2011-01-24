@@ -1117,8 +1117,6 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	databaseWindowPanel.setDocumentManager(documentManager);
 	bioModelEditorModelPanel.setDocumentManager(documentManager);
 	
-	bioModelMetaDataPanel.setDocumentManager(documentManager);
-	mathModelMetaDataPanel.setDocumentManager(documentManager);
 	geometryMetaDataPanel.setDocumentManager(documentManager);
 	
 	getoptTestPanel().setOptimizationService(bioModelWindowManager.getOptimizationService());

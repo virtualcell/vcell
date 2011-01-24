@@ -10,17 +10,18 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
  
 @SuppressWarnings("serial")
-public class MathModelCellRenderer extends VCellBasicCellRenderer {
-	private User sessionUser = null;
+public class MathModelCellRenderer extends VCDocumentDbCellRenderer {
 
 /**
  * MyRenderer constructor comment.
  */
 public MathModelCellRenderer(User argSessionUser) {
-	super();
-	this.sessionUser = argSessionUser;
+	super(argSessionUser);
 }
 
+public MathModelCellRenderer() {
+	this(null);
+}
 
 /**
  * Insert the method's description here.
@@ -34,11 +35,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
-			if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof MathModelInfo){
-				//
-				// Check if node is a User, with at least one child which is a string (BioModel name)
-				// and if the child's child is a BioModelInfo node
-				//
+			if (userObject instanceof User) {
 				String label = null;
 				if (sessionUser != null && sessionUser.compareEqual((User)userObject)) {
 					label = "My MathModels ("+((User)userObject).getName()+")";
@@ -61,8 +58,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String username = nodeUser.getName();
 				if (nodeUser.compareEqual(sessionUser)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial)
-						|| username.equals(VCDocumentDbTreeModel.USER_Education)
-						|| username.equals(VCDocumentDbTreeModel.USER_CellMLRep)) {
+						|| username.equals(VCDocumentDbTreeModel.USER_Education)) {
 					setText(modelName);
 				} else {
 					setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
@@ -124,4 +120,5 @@ protected void setComponentProperties(JLabel component, MathModelInfo mathModelI
 		//component.setText(component.getText()+" ("+cbit.vcell.numericstest.TestSuiteInfo.TESTSUITE_TAG_DONT_CHANGE+" "+tsInfo.getVersion()+")");
 	//}
 }
+
 }

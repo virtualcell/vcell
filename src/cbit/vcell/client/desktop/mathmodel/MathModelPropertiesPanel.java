@@ -18,6 +18,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.JLabelLikeTextField;
 
 import cbit.vcell.client.MathModelWindowManager;
@@ -26,11 +27,7 @@ import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-/**
- * Insert the type's description here.
- * Creation date: (2/3/2003 2:07:01 PM)
- * @author: Frank Morgan
- */
+
 @SuppressWarnings("serial")
 public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
 	private MathModel mathModel = null;
@@ -56,7 +53,14 @@ public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
 		public void databaseRefresh(DatabaseEvent event) {
 		}
 		public void databaseUpdate(DatabaseEvent event) {
-			updateInterface();			
+			if (mathModel == null || mathModel.getVersion() == null) {
+				return;
+			}
+			VersionInfo newVersionInfo = event.getNewVersionInfo();
+			if (newVersionInfo instanceof MathModelInfo
+					&& newVersionInfo.getVersion().getVersionKey().equals(mathModel.getVersion().getVersionKey())) {
+				updateInterface();
+			}
 		}
 	}
 

@@ -37,6 +37,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
@@ -916,4 +917,10 @@ void prepareToLoad(BioModel doc) throws Exception {
 public boolean hasBlankDocument() {
 	return !getRequestManager().isDifferentFromBlank(VCDocument.BIOMODEL_DOC, getVCDocument());
 }
+
+@Override
+public void updateConnectionStatus(ConnectionStatus connStatus) {
+	bioModelEditor.updateConnectionStatus(connStatus);	
+}
+
 }

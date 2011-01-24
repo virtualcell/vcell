@@ -33,7 +33,6 @@ public class MathModelDbTreeModel extends VCDocumentDbTreeModel {
 public MathModelDbTreeModel(JTree tree) {
 	super(tree);
 	educationModelsNode = new BioModelNode("Education", true);
-	cellMLModelsNode = new BioModelNode("CellML Repository", true);
 	publicModelsNode = new BioModelNode("Public MathModels", true);	
 }
 
@@ -50,7 +49,6 @@ protected void createBaseTree() throws DataAccessException {
 		rootNode.add(sharedModelsNode);
 		rootNode.add(publicModelsNode);
 		rootNode.add(educationModelsNode);
-		rootNode.add(cellMLModelsNode);
 	}
 	rootNode.setUserObject("Math Models");
 	sharedModelsNode.setUserObject(SHARED_MATH_MODELS);
@@ -82,7 +80,7 @@ protected void createBaseTree() throws DataAccessException {
 	//
 	// create final tree
 	//
-	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName().toLowerCase());
+	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
 	myModelsNode.removeAllChildren();
 	myModelsNode.setUserObject(loginUser);
 	for (int c = 0; c < ownerNode.getChildCount();) {
@@ -91,7 +89,6 @@ protected void createBaseTree() throws DataAccessException {
 	}
 	sharedModelsNode.removeAllChildren();
 	educationModelsNode.removeAllChildren();
-	cellMLModelsNode.removeAllChildren();
 	publicModelsNode.removeAllChildren();
 	for (String username : treeMap.keySet()) {
 		BioModelNode userNode = treeMap.get(username);
@@ -99,8 +96,6 @@ protected void createBaseTree() throws DataAccessException {
 		boolean bSpecificUser = true;
 		if (username.equals(USER_Education)) {
 			parentNode = educationModelsNode;
-		} else if (username.equals(USER_CellMLRep)) {
-			parentNode = cellMLModelsNode;
 		} else {
 			bSpecificUser = false;
 		}
@@ -108,6 +103,7 @@ protected void createBaseTree() throws DataAccessException {
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
 			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
 			if (!bSpecificUser) {
+				parentNode = sharedModelsNode;
 				BigDecimal groupid = GroupAccess.GROUPACCESS_NONE;
 				Version version = vcdDocumentInfoNode.getVCDocumentInfo().getVersion();
 				if (version != null && version.getGroupAccess() != null) {

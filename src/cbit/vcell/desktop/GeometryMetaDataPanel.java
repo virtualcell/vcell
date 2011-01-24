@@ -27,7 +27,6 @@ public class GeometryMetaDataPanel extends DocumentEditorSubPanel {
 	private GeometryMetaDataTreeModel ivjgeometryMetaDataTreeModel = null;
 	private DocumentManager fieldDocumentManager = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private boolean fieldPopupMenuDisabled = false;
 
 	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -135,16 +134,6 @@ private JTree getJTree1() {
 }
 
 /**
- * Gets the popupMenuDisabled property (boolean) value.
- * @return The popupMenuDisabled property value.
- * @see #setPopupMenuDisabled
- */
-public boolean getPopupMenuDisabled() {
-	return fieldPopupMenuDisabled;
-}
-
-
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -237,17 +226,6 @@ public void setGeometryInfo(GeometryInfo geometryInfo) {
 	GeometryInfo oldValue = fieldGeometryInfo;
 	fieldGeometryInfo = geometryInfo;
 	firePropertyChange("geometryInfo", oldValue, geometryInfo);
-}
-
-/**
- * Sets the popupMenuDisabled property (boolean) value.
- * @param popupMenuDisabled The new value for the property.
- * @see #getPopupMenuDisabled
- */
-public void setPopupMenuDisabled(boolean popupMenuDisabled) {
-	boolean oldValue = fieldPopupMenuDisabled;
-	fieldPopupMenuDisabled = popupMenuDisabled;
-	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
 }
 
 @Override

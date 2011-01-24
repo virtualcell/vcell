@@ -17,16 +17,17 @@ import cbit.vcell.xml.gui.MiriamTreeModel.DateNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
 @SuppressWarnings("serial")
-public class BioModelCellRenderer extends VCellBasicCellRenderer {
+public class BioModelCellRenderer extends VCDocumentDbCellRenderer {
 	
-	private User sessionUser = null;
-
 /**
  * MyRenderer constructor comment.
  */
 public BioModelCellRenderer(User argSessionUser) {
-	super();
-	this.sessionUser = argSessionUser;
+	super(argSessionUser);
+}
+
+public BioModelCellRenderer() {
+	this(null);
 }
 
 /**
@@ -62,14 +63,10 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
-			if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
-				//
-				// Check if node is a User, with at least one child which is a string (BioModel name)
-				// and if the child's child is a BioModelInfo node
-				//
+			if (userObject instanceof User){
 				String label = null;
 				if ( sessionUser != null && sessionUser.compareEqual((User)userObject)){
-					label = "My Models ("+((User)userObject).getName()+")";
+					label = "My BioModels ("+((User)userObject).getName()+")";
 				} else {
 					label = ((User)userObject).getName()+"                        ";
 				}
@@ -110,8 +107,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String username = nodeUser.getName();
 				if (nodeUser.compareEqual(sessionUser)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial)
-						|| username.equals(VCDocumentDbTreeModel.USER_Education)
-						|| username.equals(VCDocumentDbTreeModel.USER_CellMLRep)) {
+						|| username.equals(VCDocumentDbTreeModel.USER_Education)) {
 					component.setText(modelName);
 				} else {
 					component.setText("<html><b>" + username + " </b> : " + modelName + "</html>");
@@ -160,4 +156,5 @@ protected boolean isLoaded(SimulationContext simulationContext) {
 protected boolean isLoaded(User user) {
 	return false;
 }
+
 }
