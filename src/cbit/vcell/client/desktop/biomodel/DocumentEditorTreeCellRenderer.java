@@ -1,9 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
- ©*/
+ ï¿½*/
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -172,6 +173,7 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 				int startY = 0; //You probably have some vertical offset to add here.
 				int length = metrics.stringWidth(text);
 				int height = ownerTree.getRowHeight();
+				g.setColor(Color.white);
 				g.fillRect(startX + length + 1, startY, getWidth() - length - startX, height);
 			}
 		}
