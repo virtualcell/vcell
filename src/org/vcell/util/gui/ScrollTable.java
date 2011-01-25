@@ -115,7 +115,6 @@ public class ScrollTable extends JTable {
 			super();
 			setHorizontalAlignment(JLabel.CENTER);
 			setBorderPainted(true);
-			setToolTipText("Double click to check or uncheck");
 		}
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row,  int column) {
