@@ -10,9 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class ResourceUtil {
-	public final static boolean bWindows = System.getProperty("os.name").indexOf("Windows") >= 0 ? true : false;
-	public final static boolean bMac = System.getProperty("os.name").indexOf("Mac") >= 0 ? true : false;
-	public final static boolean bLinux = System.getProperty("os.name").indexOf("Linux") >= 0 ? true : false;
+	private static final String system_osname = System.getProperty("os.name");
+	public final static boolean bWindows = system_osname.contains("Windows");
+	public final static boolean bMac = system_osname.contains("Mac");
+	public final static boolean bLinux = system_osname.contains("Linux");
 	public static String osname = null;
 	static {
 		if (bWindows) {
@@ -22,7 +23,7 @@ public class ResourceUtil {
 		} else if (bLinux) {
 			osname = "linux";
 		} else {
-			throw new RuntimeException(System.getProperty("os.name") + " is not supported by the Virtual Cell.");
+			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
 	}
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
@@ -127,15 +128,7 @@ public class ResourceUtil {
 		try {
 	        System.loadLibrary("NativeSolvers");
 	    } catch (Throwable ex1) {
-	    	if (bMac) {
-				try {
-					System.loadLibrary("NativeSolversG5");
-				} catch (Throwable ex2){					
-					throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex2.getMessage());					
-				}
-	    	} else {
-	    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex1.getMessage());
-	    	}
+    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex1.getMessage());
 		}
 	}
 	
@@ -147,27 +140,7 @@ public class ResourceUtil {
 			System.loadLibrary("sbml-spatial");
 			System.loadLibrary("sbmlj");
 		} catch (Throwable ex1){
-			if (bMac) { // try again for Mac, 10.6 or G5
-				try {
-					System.loadLibrary("expat_10_6");
-					System.loadLibrary("sbml_10_6");
-					System.loadLibrary("sbml-requiredElements_10_6");
-					System.loadLibrary("sbml-spatial_10_6");
-					System.loadLibrary("sbmlj_10_6");
-				} catch (Throwable ex0) {
-					try {
-						System.loadLibrary("expatG5");
-						System.loadLibrary("sbmlG5");
-						System.loadLibrary("sbml-requiredElementsG5");
-						System.loadLibrary("sbml-spatialG5");
-						System.loadLibrary("sbmljG5");
-					} catch (Throwable ex2){
-						throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries on Mac");
-					}
-				}
-			} else {
-				throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
-			}
+			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
 		}
 	}
 }
