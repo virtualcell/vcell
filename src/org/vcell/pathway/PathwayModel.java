@@ -1,9 +1,12 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
@@ -12,7 +15,7 @@ public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
 	protected transient ArrayList<PathwayListener> aPathwayListeners = new ArrayList<PathwayListener>();
 
-	protected Hashtable<BioPaxObject, HashSet<BioPaxObject>> parentHashtable = 
+	protected Map<BioPaxObject, HashSet<BioPaxObject>> parentMap = 
 		new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
 	
 	public Set<BioPaxObject> getBiopaxObjects(){
@@ -139,112 +142,110 @@ public class PathwayModel {
 		return null;
 	}
 	
-	public Hashtable<BioPaxObject, HashSet<BioPaxObject>> getParentHashtable(){
-		return parentHashtable;
+	public Map<BioPaxObject, HashSet<BioPaxObject>> getParentHashtable(){
+		return parentMap;
 	}
 	
-	public void refreshParentHashtable(){
-		parentHashtable =  new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
+	public void refreshParentMap(){
+		parentMap =  new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
 		for (BioPaxObject bpObject : biopaxObjects){
 			// only build the parent hashtable for Entity
-			if (bpObject instanceof PhysicalEntity){ // for PhysicalEntity
-				System.out.println("PhysicalEntity ...");
-				if(((PhysicalEntity) bpObject).getMemberPhysicalEntity() != null)
-					addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((PhysicalEntity) bpObject).getMemberPhysicalEntity()));
-				if(bpObject instanceof Complex){// for Complex
-					System.out.println("Complex ...");
-					if(((Complex) bpObject).getComponent() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Complex) bpObject).getComponent()));
+			if (bpObject instanceof PhysicalEntity){
+				PhysicalEntity physicalEntity = (PhysicalEntity) bpObject;
+				if(physicalEntity.getMemberPhysicalEntity() != null)
+					addToParentMap(bpObject, physicalEntity.getMemberPhysicalEntity());
+				if(bpObject instanceof Complex){
+					Complex complex = (Complex) bpObject;
+					if(complex.getComponents() != null)
+						addToParentMap(bpObject, complex.getComponents());
 				}
-			}else if(bpObject instanceof InteractionImpl){// for Interaction
-				System.out.println("Interaction ..");
-				if(((InteractionImpl) bpObject).getParticipants() != null)
-					addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((InteractionImpl) bpObject).getParticipants()));
+			}else if(bpObject instanceof InteractionImpl){
+				List<InteractionParticipant> participants = ((Interaction) bpObject).getParticipants();
+				if(participants != null) {
+					Set<BioPaxObject> physicalEntities = new HashSet<BioPaxObject>();
+					for(InteractionParticipant participant : participants) {
+						physicalEntities.add(participant.getPhysicalEntity());
+						addToParentMap(bpObject, participant.getPhysicalEntity());
+					}
+				}
 				if(bpObject instanceof Control){// for Control
 					System.out.println("Control ..");
-					if(((Control) bpObject).getPathwayControllers() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Control) bpObject).getPathwayControllers()));
-					if(((Control) bpObject).getPhysicalControllers() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Control) bpObject).getPhysicalControllers()));
-					ArrayList<BioPaxObject> controled = new ArrayList<BioPaxObject>();
-					if(((Control) bpObject).getControlledInteraction() != null)
-						controled.add(((BioPaxObject)((Control) bpObject).getControlledInteraction()));
+					ArrayList<Pathway> pathwayControllers = ((Control) bpObject).getPathwayControllers();
+					if(pathwayControllers != null)
+						addToParentMap(bpObject, new ArrayList<BioPaxObject>(pathwayControllers));
+					ArrayList<BioPaxObject> controlled = new ArrayList<BioPaxObject>();
+					Interaction controlledInteraction = ((Control) bpObject).getControlledInteraction();
+					if(controlledInteraction != null)
+						controlled.add(((BioPaxObject)controlledInteraction));
 					if(((Control) bpObject).getControlledPathway() != null)
-						controled.add(((BioPaxObject)((Control) bpObject).getControlledPathway()));
-					addToParentHashtable(bpObject, controled);
+						controlled.add(((BioPaxObject)((Control) bpObject).getControlledPathway()));
+					addToParentMap(bpObject, controlled);
 					if(bpObject instanceof Catalysis){// for Catalysis
 						System.out.println("Catalysis ..");
-						if(((Catalysis) bpObject).getCofactors() != null)
-							addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Catalysis) bpObject).getCofactors()));
 					}
 				}else if(bpObject instanceof Conversion){// for Conversion
 					System.out.println("Conversion ..");
-					if(((Conversion) bpObject).getLeftSide() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Conversion) bpObject).getLeftSide()));
-					if(((Conversion) bpObject).getRightSide() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Conversion) bpObject).getRightSide()));
 				}else if(bpObject instanceof TemplateReaction){// for TemplateReaction
 					System.out.println("TemplateReaction ..");
-					if(((TemplateReaction) bpObject).getProductDna() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((TemplateReaction) bpObject).getProductDna()));
-					if(((TemplateReaction) bpObject).getProductProtein() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((TemplateReaction) bpObject).getProductProtein()));
-					if(((TemplateReaction) bpObject).getProductRna() != null)
-						addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((TemplateReaction) bpObject).getProductRna()));
+					TemplateReaction templateReaction = (TemplateReaction) bpObject;
+					if(templateReaction.getProductDna() != null)
+						addToParentMap(bpObject, templateReaction.getProductDna());
+					if(templateReaction.getProductProtein() != null)
+						addToParentMap(bpObject, templateReaction.getProductProtein());
+					if(templateReaction.getProductRna() != null)
+						addToParentMap(bpObject, templateReaction.getProductRna());
 					ArrayList<BioPaxObject> template = new ArrayList<BioPaxObject>();
-					if(((TemplateReaction) bpObject).getTemplateDna() != null)
-						template.add(((BioPaxObject)((TemplateReaction) bpObject).getTemplateDna()));
-					if(((TemplateReaction) bpObject).getTemplateDnaRegion() != null)
-						template.add(((BioPaxObject)((TemplateReaction) bpObject).getTemplateDnaRegion()));
-					if(((TemplateReaction) bpObject).getTemplateRna() != null)
-						template.add(((BioPaxObject)((TemplateReaction) bpObject).getTemplateRna()));
-					if(((TemplateReaction) bpObject).getTemplateRnaRegion() != null)
-						template.add(((BioPaxObject)((TemplateReaction) bpObject).getTemplateRnaRegion()));
-					addToParentHashtable(bpObject, template);
+					if(templateReaction.getTemplateDna() != null)
+						template.add(templateReaction.getTemplateDna());
+					if(templateReaction.getTemplateDnaRegion() != null)
+						template.add(templateReaction.getTemplateDnaRegion());
+					if(templateReaction.getTemplateRna() != null)
+						template.add(templateReaction.getTemplateRna());
+					if(templateReaction.getTemplateRnaRegion() != null)
+						template.add(templateReaction.getTemplateRnaRegion());
+					addToParentMap(bpObject, template);
 				}
 			}else if(bpObject instanceof Pathway){// for Pathway
 				System.out.println("Pathway ..");
-				if(((Pathway) bpObject).getPathwayComponentInteraction() != null)
-					addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Pathway) bpObject).getPathwayComponentInteraction()));
-				if(((Pathway) bpObject).getPathwayComponentPathway() != null)
-				addToParentHashtable(bpObject, new ArrayList<BioPaxObject>(((Pathway) bpObject).getPathwayComponentPathway()));
+				Pathway pathway = (Pathway) bpObject;
+				if(pathway.getPathwayComponentInteraction() != null)
+					addToParentMap(bpObject, pathway.getPathwayComponentInteraction());
+				if(pathway.getPathwayComponentPathway() != null)
+				addToParentMap(bpObject, pathway.getPathwayComponentPathway());
 			}else{ // for Gene
 			}
 		}		
 		// print out the hashtable
-		System.out.println("ParentHashtable size is "+ parentHashtable.size());
-		for(BioPaxObject bp : parentHashtable.keySet()){
+		System.out.println("ParentHashtable size is "+ parentMap.size());
+		for(BioPaxObject bp : parentMap.keySet()){
 			System.out.println(bp);
-			for (BioPaxObject vbp : parentHashtable.get(bp)){
+			for (BioPaxObject vbp : parentMap.get(bp)){
 				System.out.println("=> "+ vbp);
 			}
 		}
 	}
-	// add elements to hash table. 
-	private void addToParentHashtable(BioPaxObject parent, ArrayList<BioPaxObject> children){
-//		System.out.println("Adding...");
+
+	private void addToParentMap(BioPaxObject parent, Collection<? extends BioPaxObject> children){
 		if(children.size() != 0){
 			for(BioPaxObject bpObject : children){
-				if (!parentHashtable.containsKey(bpObject)){
-					parentHashtable.put(bpObject, new HashSet<BioPaxObject>());
-//					System.err.println("create key "+bpObject.getID()+" to hash");
-				}
-					parentHashtable.get(bpObject).add(parent);
-//					System.err.println("add "+bpObject.getID()+" to hash");
-//					if(parent instanceof Entity && bpObject instanceof Entity) {
-//						Entity parentEntity = (Entity) parent;
-//						Entity childEntity = (Entity) bpObject;
-//						System.out.println("Parent " + parentEntity.getName() + " - child " + 
-//								childEntity.getName());
-//					}
+				addToParentMap(parent, bpObject);
 			}
 		}
 	}
-	
+
+	private void addToParentMap(BioPaxObject parent, BioPaxObject bpObject) {
+		HashSet<BioPaxObject> childrenSet = parentMap.get(bpObject);
+		if (childrenSet == null){
+			childrenSet = new HashSet<BioPaxObject>();
+			parentMap.put(bpObject, childrenSet);
+		}
+		childrenSet.add(parent);
+	}
+
 	// get parents list for one Biopax object
 	public ArrayList<BioPaxObject> getParents(BioPaxObject bpObject){
 		ArrayList<BioPaxObject> parentObjects = new ArrayList<BioPaxObject>();
-		HashSet<BioPaxObject> parentSet = parentHashtable.get(bpObject);
+		HashSet<BioPaxObject> parentSet = parentMap.get(bpObject);
 		if(parentSet == null){
 			return null;
 		}else{

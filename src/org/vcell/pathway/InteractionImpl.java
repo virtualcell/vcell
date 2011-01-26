@@ -1,27 +1,40 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
 public class InteractionImpl extends EntityImpl implements Interaction {
 
 	private InteractionVocabulary interactionType;
 
-	private ArrayList<Entity> participants = new ArrayList<Entity>();
+	private List<InteractionParticipant> participants = new ArrayList<InteractionParticipant>();
 
 	public InteractionVocabulary getInteractionType() {
 		return interactionType;
 	}
 
-	public ArrayList<Entity> getParticipants() {
+	public List<InteractionParticipant> getParticipants() {
 		return participants;
 	}
+
+	public List<InteractionParticipant> getParticipants(Type type) {
+		List<InteractionParticipant> participantsOfType = new ArrayList<InteractionParticipant>();
+		for(InteractionParticipant participant : participants) {
+			if(participant.getType().hasSuperType(type)) {
+				participantsOfType.add(participant);
+			}
+		}
+		return participantsOfType;
+	}
+
 	public void setInteractionType(InteractionVocabulary interactionType) {
 		this.interactionType = interactionType;
 	}
 	
-	public void setParticipants(ArrayList<Entity> participants) {
+	public void setParticipants(List<InteractionParticipant> participants) {
 		this.participants = participants;
 	}
 	
@@ -30,11 +43,22 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 		printObject(sb, "interactionType",interactionType,level);
 	}
 	
+	public void addParticipant(InteractionParticipant participant) {
+		participants.add(participant);
+	}
+
+	public void addEntityAsParticipant(PhysicalEntity entity, Type type) {
+		participants.add(new InteractionParticipant(this, entity, type));
+	}
+
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		for (int i=0;i<participants.size();i++){
-			Entity participant = participants.get(i);
-			if (participant == objectProxy){
-				participants.set(i, (Entity)concreteObject);
+			InteractionParticipant participant = participants.get(i);
+			if (participant.getPhysicalEntity() == objectProxy){
+				InteractionParticipant participantNew = 
+					new InteractionParticipant(participant.getInteraction(), (PhysicalEntity) concreteObject,
+							participant.getType());
+				participants.set(i, participantNew);
 			}
 		}
 	}

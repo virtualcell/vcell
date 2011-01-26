@@ -14,8 +14,6 @@ public class Control extends InteractionImpl {
 
 	private ArrayList<Pathway> pathwayControllers = new ArrayList<Pathway>();
 
-	private ArrayList<PhysicalEntity> physicalControllers = new ArrayList<PhysicalEntity>();
-
 	public Interaction getControlledInteraction() {
 		return controlledInteraction;
 	}
@@ -32,9 +30,6 @@ public class Control extends InteractionImpl {
 		return pathwayControllers;
 	}
 
-	public ArrayList<PhysicalEntity> getPhysicalControllers() {
-		return physicalControllers;
-	}
 	public void setControlledInteraction(Interaction controlledInteraction) {
 		this.controlledInteraction = controlledInteraction;
 	}
@@ -48,18 +43,8 @@ public class Control extends InteractionImpl {
 		this.pathwayControllers = pathwayControllers;
 	}
 	
-	public void setPhysicalControllers(ArrayList<PhysicalEntity> physicalControllers) {
-		this.physicalControllers = physicalControllers;
-	}
-	
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy,concreteObject);
-		for (int i=0;i<physicalControllers.size();i++){
-			PhysicalEntity participant = physicalControllers.get(i);
-			if (participant == objectProxy){
-				physicalControllers.set(i, (PhysicalEntity)concreteObject);
-			}
-		}
 		for (int i=0;i<pathwayControllers.size();i++){
 			Pathway pathway = pathwayControllers.get(i);
 			if (pathway == objectProxy){
@@ -74,7 +59,7 @@ public class Control extends InteractionImpl {
 		printObject(sb,"controlledPathway",controlledPathway,level);
 		printString(sb,"controlType",controlType,level);
 		printObjects(sb,"pathwayControllers",pathwayControllers,level);
-		printObjects(sb,"physicalControllers",physicalControllers,level);
+//		printObjects(sb,"physicalControllers",physicalControllers,level);
 	}
 
 }
