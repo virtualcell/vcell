@@ -94,7 +94,10 @@ public abstract class GraphModel {
 		
 		selectedObjects = selectedNew;
 		for (Object object : selectedOld) {
-			objectShapeMap.get(object).notifyUnselected();
+			Shape shape = objectShapeMap.get(object);
+			if (shape != null) {
+				shape.notifyUnselected();
+			}
 		}
 		for (Object object : selectedNew) {
 			objectShapeMap.get(object).notifySelected();

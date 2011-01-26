@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -16,7 +18,21 @@ import cbit.vcell.model.ReactionParticipant;
 public class ReactionParticipantPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField stoichiometryTextField = new JTextField();
 	private ReactionParticipant reactionParticipant;
+	private EventHandler eventHandler = new EventHandler();
 
+	private class EventHandler implements ActionListener, FocusListener {
+		public void focusLost(FocusEvent e) {
+			commitChange();
+		}
+		
+		public void focusGained(FocusEvent e) {
+			
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			commitChange();			
+		}
+	}
 	public ReactionParticipantPropertiesPanel() {
 		super();
 		initialize();
@@ -46,25 +62,18 @@ public class ReactionParticipantPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weighty = 1.0;
 		gbc.insets = new Insets(20, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(stoichiometryTextField, gbc);
-		stoichiometryTextField.addFocusListener(new FocusListener() {
-			
-			public void focusLost(FocusEvent e) {
-				commitChange();
-			}
-			
-			public void focusGained(FocusEvent e) {
-				
-			}
-		});
+		stoichiometryTextField.addActionListener(eventHandler);
+		stoichiometryTextField.addFocusListener(eventHandler);
 	}
 	
 	private void commitChange() {
 		if (reactionParticipant != null) {
 			try {
 				int stoi = Integer.parseInt(stoichiometryTextField.getText());
-				reactionParticipant.setStoichiometry(stoi);
+				if (stoi != reactionParticipant.getStoichiometry()) {
+					reactionParticipant.setStoichiometry(stoi);
+				}
 			} catch (NumberFormatException ex) {
 				
 			}
