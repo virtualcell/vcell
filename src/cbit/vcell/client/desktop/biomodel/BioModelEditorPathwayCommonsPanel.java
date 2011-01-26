@@ -359,7 +359,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				pathwayModel.reconcileReferences();
 				PathwayData pathwayData = new PathwayData(xmlText, pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
-				pathwayModel.refreshParentHashtable();
+				pathwayModel.refreshParentMap();
 			}
 		};
 		

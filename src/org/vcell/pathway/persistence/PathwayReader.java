@@ -2,9 +2,6 @@ package org.vcell.pathway.persistence;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -47,6 +44,7 @@ import org.vcell.pathway.Gene;
 import org.vcell.pathway.GeneticInteraction;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionImpl;
+import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
 import org.vcell.pathway.KPrime;
 import org.vcell.pathway.ModificationFeature;
@@ -811,7 +809,7 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						complex.getComponent().add(physicalEntityProxy);
+						complex.getComponents().add(physicalEntityProxy);
 						return true;
 					}
 				}
@@ -824,7 +822,7 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						complex.getComponent().add(physicalEntityProxy);
+						complex.getComponents().add(physicalEntityProxy);
 						return true;
 					}
 				}
@@ -953,7 +951,8 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						interaction.getParticipants().add(physicalEntityProxy);
+						interaction.addEntityAsParticipant(physicalEntityProxy, 
+								InteractionParticipant.Type.PARTICIPANT);
 						return true;
 					}
 				}
@@ -1021,7 +1020,8 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						control.getPhysicalControllers().add(physicalEntityProxy);
+						control.addEntityAsParticipant(physicalEntityProxy, 
+								InteractionParticipant.Type.PHYSICAL_CONTROLLER);
 						return true;
 					}
 				}
@@ -1034,7 +1034,8 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						control.getPhysicalControllers().add(physicalEntityProxy);
+						control.addEntityAsParticipant(physicalEntityProxy, 
+								InteractionParticipant.Type.PHYSICAL_CONTROLLER);
 						return true;
 					}
 				}
@@ -1096,9 +1097,11 @@ public class PathwayReader {
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
 						if (childElement.getName().equals("LEFT")){
-							conversion.getLeftSide().add(physicalEntityProxy);
+							conversion.addEntityAsParticipant(physicalEntityProxy, 
+									InteractionParticipant.Type.LEFT);
 						}else{
-							conversion.getRightSide().add(physicalEntityProxy);
+							conversion.addEntityAsParticipant(physicalEntityProxy, 
+									InteractionParticipant.Type.RIGHT);
 						}
 						return true;
 					}
@@ -1113,9 +1116,11 @@ public class PathwayReader {
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
 						if (childElement.getName().equals("LEFT")){
-							conversion.getLeftSide().add(physicalEntityProxy);
+							conversion.addEntityAsParticipant(physicalEntityProxy, 
+									InteractionParticipant.Type.LEFT);
 						}else{
-							conversion.getRightSide().add(physicalEntityProxy);
+							conversion.addEntityAsParticipant(physicalEntityProxy, 
+									InteractionParticipant.Type.RIGHT);
 						}
 						return true;
 					}

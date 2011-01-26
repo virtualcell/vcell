@@ -8,6 +8,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Interaction;
+import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
@@ -15,8 +16,8 @@ import org.vcell.pathway.PhysicalEntity;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
-import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionEdgeShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionParticipantShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxObjectShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxPhysicalEntityShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
@@ -75,22 +76,14 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 				Conversion conversion = (Conversion) bpObject;
 				BioPaxConversionShape conversionShape = 
 					(BioPaxConversionShape) getShapeFromModelObject(conversion);
-				for(PhysicalEntity physicalEntity : conversion.getLeftSide()) {
+				for(InteractionParticipant participant : conversion.getParticipants()) {
+					PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 					Shape shape = getShapeFromModelObject(physicalEntity);
 					if(shape instanceof BioPaxPhysicalEntityShape) {
 						BioPaxPhysicalEntityShape physicalEntityShape = (BioPaxPhysicalEntityShape) shape;
-						BioPaxConversionEdgeShape edgeShape = 
-							new BioPaxConversionEdgeShape(conversionShape, physicalEntityShape, this);
-						pathwayContainerShape.addChildShape(edgeShape);
-						addShape(edgeShape);
-					}
-				}
-				for(PhysicalEntity physicalEntity : conversion.getRightSide()) {
-					Shape shape = getShapeFromModelObject(physicalEntity);
-					if(shape instanceof BioPaxPhysicalEntityShape) {
-						BioPaxPhysicalEntityShape physicalEntityShape = (BioPaxPhysicalEntityShape) shape;
-						BioPaxConversionEdgeShape edgeShape = 
-							new BioPaxConversionEdgeShape(conversionShape, physicalEntityShape, this);
+						BioPaxInteractionParticipantShape edgeShape = 
+							new BioPaxInteractionParticipantShape(conversionShape, physicalEntityShape, 
+									participant.getType(), this);
 						pathwayContainerShape.addChildShape(edgeShape);
 						addShape(edgeShape);
 					}
@@ -99,20 +92,21 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 				Control control = (Control) bpObject;
 				Interaction controlledInteraction = control.getControlledInteraction();
 				if(controlledInteraction instanceof Conversion) {
-					List<PhysicalEntity> physicalControllers = control.getPhysicalControllers();
+					List<InteractionParticipant> physicalControllers = control.getParticipants();
 					if(physicalControllers != null) {
 						Conversion conversion = (Conversion) controlledInteraction;
 						BioPaxConversionShape conversionShape = 
 							(BioPaxConversionShape) getShapeFromModelObject(conversion);
 						if(conversionShape instanceof BioPaxConversionShape) {
-							for(PhysicalEntity physicalEntity : physicalControllers) {
+							for(InteractionParticipant participant : physicalControllers) {
+								PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 								Shape shape = getShapeFromModelObject(physicalEntity);
 								if(shape instanceof BioPaxPhysicalEntityShape) {
 									BioPaxPhysicalEntityShape physicalEntityShape = 
 										(BioPaxPhysicalEntityShape) shape;
-									BioPaxConversionEdgeShape edgeShape = 
-										new BioPaxConversionEdgeShape(conversionShape, 
-												physicalEntityShape, this);
+									BioPaxInteractionParticipantShape edgeShape = 
+										new BioPaxInteractionParticipantShape(conversionShape, 
+												physicalEntityShape, participant.getType(), this);
 									pathwayContainerShape.addChildShape(edgeShape);
 									addShape(edgeShape);
 								}

@@ -9,7 +9,7 @@ public class Complex extends PhysicalEntity {
 	private ArrayList<Stoichiometry> componentStoichiometry = new ArrayList<Stoichiometry>();
 	
 	
-	public ArrayList<PhysicalEntity> getComponent() {
+	public ArrayList<PhysicalEntity> getComponents() {
 		return component;
 	}
 
