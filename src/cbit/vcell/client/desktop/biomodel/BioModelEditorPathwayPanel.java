@@ -6,12 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.StringBufferInputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -20,20 +15,15 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.jdom.Document;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
-import org.vcell.pathway.persistence.PathwayReader;
+import org.vcell.pathway.PathwaySelectionExpander;
+
 import cbit.vcell.client.desktop.biomodel.EntitySelectionTableRow;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
@@ -100,19 +90,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}
 		}
-		HashSet<BioPaxObject> selectedSet = new HashSet<BioPaxObject> ();
-		for (BioPaxObject bpObject : selectedBioPaxObjects){
-			ArrayList<BioPaxObject> parents = pathwayData.getPathwayModel().getParents(bpObject);
-			if(parents != null){
-				for(BioPaxObject bp : parents){
-					selectedSet.add(bp);
-				}
-			}
-		}
-		// add the selectedSet to selectedBioPaxObjects
-		for(BioPaxObject bp : selectedSet){
-			selectedBioPaxObjects.add((BioPaxObject)bp);
-		}
+		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
+		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects);
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		for (BioPaxObject bpObject : selectedBioPaxObjects){
 			selectedPathwayModel.add(bpObject);
