@@ -1,32 +1,39 @@
 package cbit.vcell.export.server;
 
-import cbit.vcell.solver.SimulationInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solvers.CartesianMesh;
-import java.util.*;
-import cbit.vcell.geometry.Curve;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-
-import cbit.vcell.geometry.gui.CurveRenderer;
-
-import cbit.vcell.simdata.*;
-import cbit.image.*;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.simdata.gui.*;
-import java.awt.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Hashtable;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.Range;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.server.*;
+import cbit.image.DisplayAdapterService;
+import cbit.image.ImagePaneModel;
+import cbit.image.SourceDataInfo;
+import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.ServerPDEDataContext;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.DisplayPreferences;
+import cbit.vcell.simdata.gui.MeshDisplayAdapter;
+import cbit.vcell.solvers.CartesianMesh;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/1/2001 11:37:38 PM)
@@ -37,34 +44,37 @@ public class PDEOffscreenRenderer {
 	private DisplayAdapterService displayAdapterService = new DisplayAdapterService();
 	private int slice = 0;
 	private int normalAxis = 0;
-	private java.util.Hashtable membranesAndValues = null;
 	private boolean bHideMembraneOutline = true;
-	boolean bNeedsDefaultScaling;
+	private BitSet domainValid;
+
 
 	
-private void setDefaultScaling(){
+private Range calculateValueDomain(){
 	double[] values = getServerPDEDataContext().getDataValues();
-	double min=values[0];
-	double max=min;
+	double min=Double.POSITIVE_INFINITY;
+	double max=Double.NEGATIVE_INFINITY;
 	for (int i = 0; i < values.length; i++) {
+		if((domainValid == null || domainValid.get(i)) && !Double.isNaN(values[i]) && !Double.isInfinite(values[i])){
 		if(values[i] < min){min = values[i];}
 		if(values[i] > max){max = values[i];}
+		}
 	}
-	getDisplayAdapterService().setActiveScaleRange(new Range(min,max));
+	return new Range(min,max);
 }
 /**
  * Insert the method's description here.
  * Creation date: (10/26/00 4:49:39 PM)
  */
-private int[] getCurveColors(java.util.Hashtable curvesAndMembraneIndexes, Curve curve,MeshDisplayAdapter meshDisplayAdapter) {
-	//
+private int[] getCurveColors(Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes, Curve curve,MeshDisplayAdapter meshDisplayAdapter) {
+
 	int[] membraneIndexes = (int[]) curvesAndMembraneIndexes.get(curve);
 	double[] membraneValues = meshDisplayAdapter.getDataValuesForMembraneIndexes(membraneIndexes,getServerPDEDataContext().getDataValues(),getServerPDEDataContext().getDataIdentifier().getVariableType());
+	int notInDomainColor = getDisplayAdapterService().getSpecialColors()[DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET];
 	if(membraneValues != null){
-		if(bNeedsDefaultScaling){setDefaultScaling();}
 		int[] valueColors = new int[membraneValues.length];
 		for (int i = 0; i < membraneValues.length; i += 1) {
-			valueColors[i] = getDisplayAdapterService().getColorFromValue(membraneValues[i]);
+			int valueColor = getDisplayAdapterService().getColorFromValue(membraneValues[i]);
+			valueColors[i] = (domainValid!=null?(domainValid.get(membraneIndexes[i])?valueColor:notInDomainColor):valueColor);
 		}
 		return valueColors;
 	}
@@ -134,12 +144,13 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
 	int height = (int)getImageDimensionUnscaled().getHeight();
 	double[] volumeData = new double[width*height];
 	if(!bBackground){
+		//if(bNeedsDefaultScaling){setDefaultScaling();}
+		double notInDomainValue = getDisplayAdapterService().getValueDomain().getMin()-1.0;
 		double values[] = getServerPDEDataContext().getDataValues();
 		int dataIndices[] = getServerPDEDataContext().getCartesianMesh().getVolumeSliceIndices(getNormalAxis(),getSlice());
 		for (int i = 0; i < dataIndices.length; i++) {
-			volumeData[i] = values[dataIndices[i]];
+			volumeData[i] = (domainValid!=null?(domainValid.get(dataIndices[i])?values[dataIndices[i]]:notInDomainValue):values[dataIndices[i]]);
 		}
-		if(bNeedsDefaultScaling){setDefaultScaling();}
 	}
 	
 	SourceDataInfo sourceDataInfo =
@@ -163,37 +174,6 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
 		Arrays.fill(internalBuffer, getDisplayAdapterService().getSpecialColors()[DisplayAdapterService.NULL_COLOR_OFFSET]);
 	}
 	return imagePaneModel.getViewPortImage();
-	
-//	int width = (int)getImageDimension().getWidth();
-//	int height = (int)getImageDimension().getHeight();
-//
-//	if(bBackground){
-//		BufferedImage bufferedImage = new BufferedImage(width*imageScale,height*imageScale,BufferedImage.TYPE_INT_ARGB);
-////		bufferedImage.setRGB(0,0,width,height,rgbArray,0,width);
-//		return bufferedImage;
-//	}
-//	double data[] = getServerPDEDataContext().getDataValues();
-//	int dataIndices[] = getServerPDEDataContext().getCartesianMesh().getVolumeSliceIndices(getNormalAxis(),getSlice());
-//	int rgbArray[] = new int[dataIndices.length*imageScale*imageScale];
-//	int index = 0;
-//	int scaledWidth = width*imageScale;
-//	for(int y=0;y<height;y++){
-//		int scaledIndex = y*imageScale*scaledWidth;
-//		for(int x=0;x<width;x++){
-//			int pixelColor = getDisplayAdapterService().getColorFromValue(data[dataIndices[index]]);
-//			for(int subY=0;subY<imageScale;subY++){
-//				int subScaledIndex = scaledIndex + subY*scaledWidth + x*imageScale;
-//				for(int subX=0;subX<imageScale;subX++){
-//					rgbArray[subScaledIndex+subX] = pixelColor;
-//				}
-//			}
-//			index++;
-//			scaledIndex+= imageScale;
-//		}
-//	}
-//	BufferedImage bufferedImage = new BufferedImage(width*imageScale,height*imageScale,BufferedImage.TYPE_INT_ARGB);
-//	bufferedImage.setRGB(0,0,width,height,rgbArray,0,width);
-//	return bufferedImage;
 }
 /**
  * Insert the method's description here.
@@ -202,21 +182,8 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
  */
 public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 	if (getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME)) {
-//		int width = (int)getImageDimension().getWidth();
-//		int height = (int)getImageDimension().getHeight();
-//		BufferedImage bufferedImage = new BufferedImage(width,height,BufferedImage.TYPE_3BYTE_BGR);
-//		double data[] = getServerPDEDataContext().getDataValues();
-//		int startX = 0;
-//		int startY = 0;
-//		int offset = 0;
 		CartesianMesh mesh = getServerPDEDataContext().getCartesianMesh();
 		MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
-//		int dataIndices[] = mesh.getVolumeSliceIndices(getNormalAxis(),getSlice());
-//		int rgbArray[] = new int[dataIndices.length];
-//		for (int i=0;i<rgbArray.length;i++){
-//			rgbArray[i] = getDisplayAdapterService().getColorFromValue(data[dataIndices[i]]);
-//		}
-//		bufferedImage.setRGB(startX,startY,width,height,rgbArray,offset,width);
 		BufferedImage bufferedImage = getScaledRGBVolume(mesh,meshMode,imageScale,false);
 		//
 		// apply curve renderer
@@ -229,21 +196,14 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 			org.vcell.util.Origin origin = mesh.getOrigin();
 			org.vcell.util.Extent extent = mesh.getExtent();
 			curveRenderer.setWorldOrigin(new org.vcell.util.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
-//			double pixelScaleX = extent.getX()/mesh.getSizeX();
-//			double pixelScaleY = extent.getY()/mesh.getSizeY();
-//			double pixelScaleZ = extent.getZ()/mesh.getSizeZ();
 			Coordinate pixeldelta = getPixelDelta(extent, mesh, meshMode,imageScale);
 			curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(),pixeldelta.getY(),pixeldelta.getZ()));
-			//int numMembraneElements = getServerPDEDataContext().getCartesianMesh().getDataLength(VariableType.MEMBRANE);
-			//double membraneValues[] = new double[numMembraneElements];
-			//membraneValues = null;
-			//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneValues);
-			Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
+			Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 			if (curvesAndMembraneIndexes!=null){
 				Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 				for (int i=0;curves!=null && i<curves.length;i++){
 					curveRenderer.addCurve(curves[i]);
-					curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter));
+					curveRenderer.renderPropertySegmentColors(curves[i],null/*getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter)*/);
 					curveRenderer.renderPropertyLineWidthMultiplier(curves[i],membrScale);
 				}
 				Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
@@ -252,23 +212,9 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 			}
 		}
 		return ((DataBufferInt)bufferedImage.getData().getDataBuffer()).getData();
-//		return bufferedImage.getRGB(startX,startY,width,height,rgbArray,offset,width);
 	} else if (getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE)) {
-//		int width = (int)getImageDimension().getWidth();
-//		int height = (int)getImageDimension().getHeight();
-//		BufferedImage bufferedImage = new BufferedImage(width,height,BufferedImage.TYPE_3BYTE_BGR);
-//		double membraneData[] = getServerPDEDataContext().getDataValues();
-//		int startX = 0;
-//		int startY = 0;
-//		int offset = 0;
 		CartesianMesh mesh = getServerPDEDataContext().getCartesianMesh();
 		MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
-//		int dataIndices[] = mesh.getVolumeSliceIndices(getNormalAxis(),getSlice());
-//		int rgbArray[] = new int[dataIndices.length];
-//		for (int i=0;i<rgbArray.length;i++){
-//			rgbArray[i] = Color.black.getRGB();
-//		}
-//		bufferedImage.setRGB(startX,startY,width,height,rgbArray,offset,width);
 		BufferedImage bufferedImage = getScaledRGBVolume(mesh,meshMode,imageScale,true);
 		//
 		// apply curve renderer
@@ -280,15 +226,9 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 		org.vcell.util.Origin origin = mesh.getOrigin();
 		org.vcell.util.Extent extent = mesh.getExtent();
 		curveRenderer.setWorldOrigin(new org.vcell.util.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
-		//following caluclations assume "mesh mode" from ImagePaneModel.getScaledLength(...)
-//		double pixelScaleX = extent.getX()/imageScale * 2 * (mesh.getSizeX() - 1);
-//		double pixelScaleY = extent.getY()/imageScale * 2 * (mesh.getSizeY() - 1);
-//		double pixelScaleZ = extent.getZ()/imageScale * 2 * (mesh.getSizeZ() - 1);
 		Coordinate pixeldelta = getPixelDelta(extent, mesh,meshMode, imageScale);
 		curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(),pixeldelta.getY(),pixeldelta.getZ()));
-		//int numMembraneElements = getServerPDEDataContext().getCartesianMesh().getDataLength(VariableType.MEMBRANE);
-		//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneData);
-		Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
+		Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 		if (curvesAndMembraneIndexes!=null){
 			Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 			for (int i=0;curves!=null && i<curves.length;i++){
@@ -301,7 +241,6 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 			curveRenderer.draw(g);
 		}
 		return ((DataBufferInt)bufferedImage.getData().getDataBuffer()).getData();
-//		return bufferedImage.getRGB(startX,startY,width,height,rgbArray,offset,width);
 	} else {
 		throw new RuntimeException("unsupported VariableType "+getServerPDEDataContext().getDataIdentifier().getVariableType());
 	}
@@ -333,16 +272,7 @@ private cbit.vcell.simdata.ServerPDEDataContext getServerPDEDataContext() {
 private int getSlice() {
 	return slice;
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/1/2001 11:59:11 PM)
- * @param displayPreferences cbit.vcell.simdata.gui.DisplayPreferences
- */
-public void setDisplayPreferences(DisplayPreferences displayPreferences) {
-	bNeedsDefaultScaling = displayPreferences.scaleIsDefault();
-	getDisplayAdapterService().setActiveScaleRange(displayPreferences.getScaleSettings());
-	getDisplayAdapterService().setActiveColorModelID(displayPreferences.getColorMode());
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/17/01 11:16:37 AM)
@@ -376,23 +306,24 @@ private void setServerPDEDataContext(cbit.vcell.simdata.ServerPDEDataContext new
 public void setSlice(int newSlice) {
 	slice = newSlice;
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 1:19:20 AM)
- * @param timepoint double
- */
-public void setTimepoint(double timepoint) throws Exception {
-	getServerPDEDataContext().setTimePoint(timepoint);
-}
-/**
- * Insert the method's description here.
- * Creation date: (3/1/2001 11:57:27 PM)
- * @param variableName java.lang.String
- */
-public void setVariable(String variableName) throws Exception {
-	getServerPDEDataContext().setVariableName(variableName);
-}
 
+public void setVarAndTimeAndDisplay(String varName,double timepoint,DisplayPreferences displayPreferences) throws DataAccessException{
+	getServerPDEDataContext().setVariableName(varName);
+	getServerPDEDataContext().setTimePoint(timepoint);
+	domainValid = (displayPreferences==null?null:(displayPreferences.getDomainValid()==null?null:displayPreferences.getDomainValid()));
+	Range valueDomain = calculateValueDomain();
+	getDisplayAdapterService().setValueDomain(valueDomain);
+
+	Range activeScaleRange = (displayPreferences==null?valueDomain:(displayPreferences.getScaleSettings()==null?valueDomain:displayPreferences.getScaleSettings()));
+	getDisplayAdapterService().setActiveScaleRange(activeScaleRange);
+	
+	String colorMode = (displayPreferences==null?"BlueRed":(displayPreferences.getColorMode()==null?"BlueRed":displayPreferences.getColorMode()));
+	getDisplayAdapterService().setActiveColorModelID(colorMode);
+	
+	int[] specialColors = (displayPreferences==null?getDisplayAdapterService().getSpecialColors():(displayPreferences.getSpecialColors()==null?getDisplayAdapterService().getSpecialColors():displayPreferences.getSpecialColors()));
+	System.arraycopy(specialColors, 0, getDisplayAdapterService().getSpecialColors(), 0,specialColors.length);
+	
+}
 /**
  * Insert the method's description here.
  * Creation date: (3/2/2001 1:08:22 AM)

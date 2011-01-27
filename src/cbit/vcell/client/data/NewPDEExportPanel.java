@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.TreeSet;
 
@@ -27,8 +28,10 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
@@ -36,6 +39,7 @@ import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.data.PDEDataViewer.DataInfoProvider;
 import cbit.vcell.export.ExportSettings;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
@@ -50,6 +54,7 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
  */
@@ -106,6 +111,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
 	private static final String EXPORT_GIF_IMAGES = "GIF89a image files (*.gif)";
+	private static final String EXPORT_JPEG_IMAGES = "JPEG image files (*.jpg)";
 	private static final String EXPORT_GIF_ANIM = "Animated GIF files (*.gif)";
 	private static final String EXPORT_NRRD = "Nearly raw raster data (*.nrrd)";
 	private static final String EXPORT_UCD = "UCD (*.ucd)";
@@ -1924,6 +1930,7 @@ private void initFormatChoices_0(/*boolean bMembrane*/){
 	getJComboBox1().addItem(EXPORT_QT_MOVIE);
 	getJComboBox1().addItem(EXPORT_GIF_IMAGES);
 	getJComboBox1().addItem(EXPORT_GIF_ANIM);
+	getJComboBox1().addItem(EXPORT_JPEG_IMAGES);
 	getJComboBox1().addItem(EXPORT_NRRD);
 	
 	getJComboBox1().addItem(EXPORT_UCD);
@@ -2199,14 +2206,24 @@ private void setTimeFromTextField(JTextField textField, JSlider slider) {
 }
 
 
+private PDEDataViewer.DataInfoProvider dataInfoProvider;
+public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider){
+	this.dataInfoProvider = dataInfoProvider;
+}
 /**
  * Comment
  */
 private void startExport() {
+	if(getExportSettings1().getSelectedFormat() == ExportConstants.FORMAT_QUICKTIME &&
+		getJSlider1().getValue() == getJSlider2().getValue()){
+		DialogUtils.showWarningDialog(this, "User selected 'begin' and 'end' export times are the same.  'Movie' export format 'begin' and 'end' times must be different");
+		return;
+	}
 	DisplayPreferences[] displayPreferences = null;
 	switch (getExportSettings1().getSelectedFormat()) {
 		case ExportConstants.FORMAT_QUICKTIME:
 		case ExportConstants.FORMAT_GIF:
+		case ExportConstants.FORMAT_JPEG:
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
 			Object[] variableSelections = getJListVariables().getSelectedValues();
 			displayPreferences = new DisplayPreferences[variableSelections.length];
@@ -2238,7 +2255,35 @@ private void startExport() {
 			
 			StringBuffer noScaleInfoNames = new StringBuffer();
 			for (int i = 0; i < displayPreferences.length; i++) {
-				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
+				BitSet domainValid = null;
+				try {
+					if(dataInfoProvider != null){
+						DataIdentifier varSelectionDataIdnetDataIdentifier = null;
+						for (int j = 0; j < dataInfoProvider.getPDEDataContext().getDataIdentifiers().length; j++) {
+							if(dataInfoProvider.getPDEDataContext().getDataIdentifiers()[j].getName().equals(variableSelections[i])){
+								varSelectionDataIdnetDataIdentifier = dataInfoProvider.getPDEDataContext().getDataIdentifiers()[j];
+							}
+						}
+						if(varSelectionDataIdnetDataIdentifier != null){
+							CartesianMesh cartesianMesh = dataInfoProvider.getPDEDataContext().getCartesianMesh();
+							int dataLength = cartesianMesh.getDataLength(varSelectionDataIdnetDataIdentifier.getVariableType());
+							domainValid = new BitSet(dataLength);
+							domainValid.clear();
+							for (int j = 0; j < dataLength; j++) {
+								if(dataInfoProvider.isDefined(varSelectionDataIdnetDataIdentifier,j)){
+									domainValid.set(j);
+								}
+							}
+						}else{
+							throw new Exception("No DataIdentifer found for variable name '"+variableSelections[i]+"'");
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(this, "Error during domain evaluation:\n"+e.getMessage());
+					return;
+				}
+				displayPreferences[i] = new DisplayPreferences(getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]), domainValid);
 				if(!getDisplayAdapterService().hasStateID((String)variableSelections[i])){
 					noScaleInfoNames.append("--- "+(String)variableSelections[i]+"\n");
 				}
@@ -2317,6 +2362,7 @@ private void startExport() {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 	getExportSettings1().setDisplayPreferences(displayPreferences);
+	getExportSettings1().setSingleMovieOnly(getJRadioButtonFull().isSelected());
 	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this));
 			
 	if (!okToExport) {
@@ -2398,10 +2444,11 @@ private void updateExportFormat(int exportFormat) {
 		}
 		case ExportConstants.FORMAT_QUICKTIME:
 		case ExportConstants.FORMAT_GIF:
+		case ExportConstants.FORMAT_JPEG:
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(true);
-			getJRadioButtonFull().setEnabled(false);
+			getJRadioButtonFull().setEnabled((exportFormat==ExportConstants.FORMAT_QUICKTIME?true:false));
 			break;
 		}
 		case ExportConstants.FORMAT_NRRD: {
@@ -2483,7 +2530,8 @@ private void updateInterface() {
 	getMembVarRadioButton().setEnabled(true);
 	if(getJComboBox1().getSelectedItem().equals(EXPORT_QT_MOVIE) ||
 			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_IMAGES) ||
-			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_ANIM)){
+			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_ANIM) ||
+			getJComboBox1().getSelectedItem().equals(EXPORT_JPEG_IMAGES)){
 		
 		if(!getBothVarRadioButton().isSelected()){
 			getBothVarRadioButton().doClick();

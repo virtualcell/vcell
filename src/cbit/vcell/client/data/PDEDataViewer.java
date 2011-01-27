@@ -23,10 +23,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -93,13 +93,13 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.ExportMonitorPanel;
-import cbit.vcell.export.quicktime.MediaMethods;
-import cbit.vcell.export.quicktime.MediaMovie;
-import cbit.vcell.export.quicktime.MediaSample;
-import cbit.vcell.export.quicktime.MediaTrack;
-import cbit.vcell.export.quicktime.VideoMediaChunk;
-import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
-import cbit.vcell.export.quicktime.atoms.UserDataEntry;
+import cbit.vcell.export.gloworm.atoms.UserDataEntry;
+import cbit.vcell.export.gloworm.quicktime.MediaMethods;
+import cbit.vcell.export.gloworm.quicktime.MediaMovie;
+import cbit.vcell.export.gloworm.quicktime.MediaTrack;
+import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
+import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
+import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
@@ -111,8 +111,8 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -129,9 +129,9 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -308,8 +308,10 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 					(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
 				if (getPdeDataContext() != null && getSimulationModelInfo() != null){
 					getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+					getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 				} else {
 					getPDEDataContextPanel1().setDataInfoProvider(null);
+					getPDEExportPanel1().setDataInfoProvider(null);
 				}
 			}
 			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
@@ -393,12 +395,15 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
 		public boolean isDefined(int dataIndex){
+			return isDefined(pdeDataContext.getDataIdentifier(),dataIndex);
+		}
+		public boolean isDefined(DataIdentifier dataIdentifier,int dataIndex){
 			try {
-				Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
+				Domain varDomain = dataIdentifier.getDomain();
 				if (varDomain == null) {
 					return true;
 				}
-				VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
+				VariableType varType = dataIdentifier.getVariableType();
 				if(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
 					if (simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
@@ -3105,13 +3110,14 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			BufferedImage bufferedImage = new BufferedImage(surfaceWidth, surfaceHeight,BufferedImage.TYPE_3BYTE_BGR);
 			Graphics2D g2D = bufferedImage.createGraphics();
 			VideoMediaChunk[] chunks = new VideoMediaChunk[tsJobResultsNoStats.getTimes().length];	
-			VideoMediaSampleRaw sample;
+			VideoMediaSample sample;
 			int sampleDuration = 0;
 			int timeScale = smsp.getFramesPerSecond();
 			int bitsPerPixel = 32;
 			boolean isGrayscale = false;
 			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
+			DataInfoProvider dataInfoProvider = getPDEDataContextPanel1().getDataInfoProvider();
 			try {
 				for (int t = 0; t < tsJobResultsNoStats.getTimes().length; t++) {
 					getClientTaskStatusSupport().setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)t/(double)tsJobResultsNoStats.getTimes().length),3)+"%");
@@ -3120,7 +3126,7 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 					double max = Double.NEGATIVE_INFINITY;
 					for (int index = 1; index < timeSeries.length; index++) {
 						double v = timeSeries[index][t];
-						if(!Double.isNaN(v) && !Double.isInfinite(v)){
+						if((dataInfoProvider == null || dataInfoProvider.isDefined(index-1)) && !Double.isNaN(v) && !Double.isInfinite(v)){
 							min = Math.min(min, v);
 							max = Math.max(max, v);
 						}
@@ -3151,9 +3157,9 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 					}
 					sampleData.close();
 					byte[] bytes = sampleBytes.toByteArray();
-					sample = new VideoMediaSampleRaw(surfaceWidth, surfaceHeight * varNames.length, sampleDuration,
-							new MediaSample.MediaSampleStream(bytes),bytes.length,
-							bitsPerPixel, isGrayscale);
+					sample =
+						FormatSpecificSpecs.getVideoMediaSample(
+							surfaceWidth, surfaceHeight * varNames.length, sampleDuration, bitsPerPixel, isGrayscale, FormatSpecificSpecs.CODEC_JPEG, 1.0f, bytes);
 					chunks[t] = new VideoMediaChunk(sample);
 				}
 			}finally{

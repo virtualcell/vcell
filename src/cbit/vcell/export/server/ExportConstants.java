@@ -13,10 +13,11 @@ public interface ExportConstants {
 	public static final int FORMAT_QUICKTIME = 1;
 	public static final int FORMAT_GIF = 2;
 	public static final int FORMAT_ANIMATED_GIF = 3;
-	public static final int FORMAT_NRRD = 4;
-	public static final int FORMAT_UCD = 5;
-	public static final int FORMAT_VTK_UNSTRUCT = 6;
-	public static final int FORMAT_VTK_IMAGE = 7;
+	public static final int FORMAT_JPEG = 4;
+	public static final int FORMAT_NRRD = 5;
+	public static final int FORMAT_UCD = 6;
+	public static final int FORMAT_VTK_UNSTRUCT = 7;
+	public static final int FORMAT_VTK_IMAGE = 8;
 
 	// image mirroring types
 	public final static int NO_MIRRORING = 0;
@@ -40,6 +41,7 @@ public interface ExportConstants {
 	public final static int UNCOMPRESSED = 0;
 	public final static int COMPRESSED_GIF_DEFAULT = 1;
 	public final static int COMPRESSED_LZW = 2;
+	public final static int COMPRESSED_JPEG_DEFAULT = 3;
 
 	// ascii file formats
 	public final static int CSV = 0;

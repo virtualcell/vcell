@@ -21,6 +21,9 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private int membraneScaling;
 	private int meshMode;
 	private int viewZoom;
+	private int compressionType;
+	private float compressionQuality;
+
 
 /**
  * This method was created in VisualAge.
@@ -32,7 +35,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
 		int mirroringType, boolean hideMembraneOutline,
-		int imageScaling,int membraneScaling,int meshMode) {
+		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
@@ -42,6 +45,15 @@ public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] dis
 	this.imageScaling = imageScaling;
 	this.membraneScaling = membraneScaling;
 	this.meshMode = meshMode;
+	this.compressionType = compressionType;
+	this.compressionQuality = compressionQuality;
+}
+
+public float getcompressionQuality(){
+	return compressionQuality;
+}
+public int getCompressionType(){
+	return compressionType;
 }
 public void setViewZoom(int viewZoom){
 	this.viewZoom = viewZoom;
@@ -64,7 +76,9 @@ public boolean equals(java.lang.Object object) {
 			displayPreferences.length == movieSpecs.getDisplayPreferences().length &&
 			imageScaling == movieSpecs.imageScaling &&
 			membraneScaling == movieSpecs.membraneScaling &&
-			meshMode == movieSpecs.meshMode
+			meshMode == movieSpecs.meshMode &&
+			compressionType == movieSpecs.compressionType &&
+			compressionQuality == movieSpecs.compressionQuality
 		) {
 			for (int i = 0; i < displayPreferences.length; i++){
 				if (! displayPreferences[i].equals(movieSpecs.getDisplayPreferences()[i])) {
@@ -128,6 +142,8 @@ public boolean isHideMembraneOutline() {
 public java.lang.String toString() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("MovieSpecs [");
+	buf.append("compressionType: " + compressionType + ", ");
+	buf.append("compressionQual: " + compressionQuality + ", ");
 	buf.append("overlayMode: " + overlayMode + ", ");
 	buf.append("encodingFormat: " + encodingFormat + ", ");
 	buf.append("mirroringType: " + mirroringType + ", ");

@@ -3,9 +3,14 @@ package cbit.vcell.simdata.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Comparator;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.Range;
 
-import cbit.image.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/28/2001 10:06:01 AM)
@@ -14,7 +19,8 @@ import cbit.image.*;
 public class DisplayPreferences implements java.io.Serializable {
 	private String colorMode;
 	private org.vcell.util.Range scaleSettings;
-	private boolean isDefaultScale;
+	private int[] specialColors;
+	BitSet domainValid;
 
 /**
  * Insert the method's description here.
@@ -22,12 +28,22 @@ public class DisplayPreferences implements java.io.Serializable {
  * @param colorMode java.lang.String
  * @param scaleSettingd cbit.image.Range
  */
-public DisplayPreferences(String colorMode, Range scaleSettings, boolean isDefaultScale) {
+public DisplayPreferences(String colorMode, Range scaleSettings,int[] specialColors) {
 	this.colorMode = colorMode;
 	this.scaleSettings = scaleSettings;
-	this.isDefaultScale = isDefaultScale;
+	this.specialColors = specialColors;
 }
 
+public DisplayPreferences(DisplayPreferences displayPreferences,BitSet domainValid){
+	this(displayPreferences.colorMode,displayPreferences.scaleSettings,displayPreferences.specialColors);
+	this.domainValid = domainValid;
+}
+public BitSet getDomainValid(){
+	return domainValid;
+}
+public int[] getSpecialColors(){
+	return specialColors;
+}
 
 /**
  * Insert the method's description here.
@@ -40,7 +56,9 @@ public boolean equals(Object object) {
 		DisplayPreferences displayPreferences = (DisplayPreferences)object;
 		if (
 			colorMode.equals(displayPreferences.getColorMode()) &&
-			scaleSettings.equals(displayPreferences.getScaleSettings())
+			Compare.isEqualOrNull(scaleSettings, displayPreferences.getScaleSettings()) &&
+			Arrays.equals(specialColors, displayPreferences.getSpecialColors()) &&
+			((domainValid == null && displayPreferences.getDomainValid() == null) || domainValid.equals(displayPreferences.getDomainValid()))
 		) {
 			return true;
 		}
@@ -77,17 +95,6 @@ public Range getScaleSettings() {
 public int hashCode() {
 	return toString().hashCode();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/17/2001 1:24:09 PM)
- * @return boolean
- */
-public boolean scaleIsDefault() {
-	return isDefaultScale;
-}
-
 
 /**
  * Insert the method's description here.

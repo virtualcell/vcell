@@ -22,6 +22,8 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private int membraneScaling;
 	private int meshMode;
 	private int viewZoom;
+	private float compressionQuality;
+
 /**
  * Insert the method's description here.
  * Creation date: (3/1/2001 12:13:46 PM)
@@ -35,7 +37,7 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
 		int compression, int mirroringType,
 		double duration, int loopingMode, boolean hideMembraneOutline,
-		int imageScaling,int membraneScaling,int meshMode) {
+		int imageScaling,int membraneScaling,int meshMode,float compressionQuality) {
 	this.displayPreferences = displayPreferences;
 	this.format = format;
 	this.compression = compression;
@@ -46,7 +48,13 @@ public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
 	this.imageScaling = imageScaling;
 	this.membraneScaling = membraneScaling;
 	this.meshMode = meshMode;
+	this.compressionQuality = compressionQuality;
 }
+public float getcompressionQuality(){
+	return compressionQuality;
+}
+
+
 public void setViewZoom(int viewZoom){
 	this.viewZoom = viewZoom;
 }
@@ -69,7 +77,8 @@ public boolean equals(java.lang.Object object) {
 			displayPreferences.length == imageSpecs.getDisplayPreferences().length &&
 			imageScaling == imageSpecs.imageScaling &&
 			membraneScaling == imageSpecs.membraneScaling &&
-			meshMode == imageSpecs.meshMode
+			meshMode == imageSpecs.meshMode &&
+			compressionQuality == imageSpecs.compressionQuality
 		) {
 			for (int i = 0; i < displayPreferences.length; i++){
 				if (! displayPreferences[i].equals(imageSpecs.getDisplayPreferences()[i])) {
@@ -142,6 +151,7 @@ public java.lang.String toString() {
 	buf.append("ImageSpecs [");
 	buf.append("format: " + format + ", ");
 	buf.append("compression: " + compression + ", ");
+	buf.append("compressionQual: " + compressionQuality + ", ");
 	buf.append("mirroringType: " + mirroringType + ", ");
 	buf.append("duration: " + duration + ", ");
 	buf.append("loopingMode: " + loopingMode + ", ");

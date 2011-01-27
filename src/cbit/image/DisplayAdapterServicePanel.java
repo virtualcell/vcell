@@ -1,7 +1,24 @@
 package cbit.image;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Arrays;
+
+import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 import org.vcell.util.Range;
 /*©
@@ -1059,9 +1076,9 @@ private javax.swing.JLabel getSCIllegalJLabel() {
 		try {
 			ivjSCIllegalJLabel = new javax.swing.JLabel();
 			ivjSCIllegalJLabel.setName("SCIllegalJLabel");
-			ivjSCIllegalJLabel.setToolTipText("Illegal Value Color");
+			ivjSCIllegalJLabel.setToolTipText("Not In Domain Color");
 			ivjSCIllegalJLabel.setOpaque(true);
-			ivjSCIllegalJLabel.setText("IL");
+			ivjSCIllegalJLabel.setText("ND");
 			ivjSCIllegalJLabel.setBackground(java.awt.Color.black);
 			ivjSCIllegalJLabel.setForeground(java.awt.Color.lightGray);
 			ivjSCIllegalJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1212,7 +1229,72 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
+JPopupMenu specialColorPopup;
+private MouseAdapter mouseAdapter = new MouseAdapter() {
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		super.mouseClicked(e);
+		if(e.isPopupTrigger()){
+			specialColorPopup.show((JLabel)e.getSource(), e.getX(), e.getY());
+		}
+	}
+	@Override
+	public void mousePressed(MouseEvent e) {
+		super.mousePressed(e);
+		if(e.isPopupTrigger()){
+			specialColorPopup.show((JLabel)e.getSource(), e.getX(), e.getY());
+		}
+	}
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		super.mouseReleased(e);
+		if(e.isPopupTrigger()){
+			specialColorPopup.show((JLabel)e.getSource(), e.getX(), e.getY());
+		}
+	}
+	
+};
 
+
+private void changeSpecialColor(ActionEvent e){
+	
+	if(e.getActionCommand().equals("DF")){
+		if(Arrays.equals(getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createBlueRedColorModel())){
+			getDisplayAdapterService().addColorModelForValues(
+					getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), getDisplayAdapterService().getActiveColorModelID());
+		}else{
+			getDisplayAdapterService().addColorModelForValues(
+					getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createGraySpecialColors(), getDisplayAdapterService().getActiveColorModelID());
+		}
+		return;
+	}
+	Color newSpecialColor = JColorChooser.showDialog(this, "Choose Special Color", Color.black);
+	if(newSpecialColor != null){
+		String activeColorModelID = getDisplayAdapterService().getActiveColorModelID();
+		int[] activecolorModelArr = getDisplayAdapterService().getActiveColorModel();
+		int[] specialColorsArr = getDisplayAdapterService().getSpecialColors().clone();
+
+		if(e.getActionCommand().equals("BM")){
+			specialColorsArr[DisplayAdapterService.BELOW_MIN_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("AM")){
+			specialColorsArr[DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("NN")){
+			specialColorsArr[DisplayAdapterService.NAN_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("ND")){
+			specialColorsArr[DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("NR")){
+			specialColorsArr[DisplayAdapterService.NO_RANGE_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("FH")){
+			specialColorsArr[DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("FN")){
+			specialColorsArr[DisplayAdapterService.FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}else if(e.getActionCommand().equals("MB")){
+			specialColorsArr[DisplayAdapterService.NULL_COLOR_OFFSET] = newSpecialColor.getRGB();
+		}
+		
+		getDisplayAdapterService().addColorModelForValues(activecolorModelArr, specialColorsArr, activeColorModelID);
+	}
+}
 /**
  * Initializes connections
  * @exception java.lang.Exception The exception description.
@@ -1229,6 +1311,88 @@ private void initConnections() throws java.lang.Exception {
 	getMaxTextField().addFocusListener(ivjEventHandler);
 	getMinTextField().addActionListener(ivjEventHandler);
 	getMinTextField().addFocusListener(ivjEventHandler);
+	
+	specialColorPopup = new JPopupMenu();
+	JMenuItem changeSpecialColorMenuItem0 = new JMenuItem("Change 'Below Min' Color...");
+	changeSpecialColorMenuItem0.setActionCommand("BM");
+	changeSpecialColorMenuItem0.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem1 = new JMenuItem("Change 'Above Max' Color...");
+	changeSpecialColorMenuItem1.setActionCommand("AM");
+	changeSpecialColorMenuItem1.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem2 = new JMenuItem("Change 'NAN' Color...");
+	changeSpecialColorMenuItem2.setActionCommand("NN");
+	changeSpecialColorMenuItem2.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem3 = new JMenuItem("Change 'Not In Domain' Color...");
+	changeSpecialColorMenuItem3.setActionCommand("ND");
+	changeSpecialColorMenuItem3.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem4 = new JMenuItem("Change 'No Range' Color...");
+	changeSpecialColorMenuItem4.setActionCommand("NR");
+	changeSpecialColorMenuItem4.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem5 = new JMenuItem("Change 'Foreground Hilite' Color...");
+	changeSpecialColorMenuItem5.setActionCommand("FH");
+	changeSpecialColorMenuItem5.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem6 = new JMenuItem("Change 'Foreground NonHilite' Color...");
+	changeSpecialColorMenuItem6.setActionCommand("FN");
+	changeSpecialColorMenuItem6.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItem7 = new JMenuItem("Change 'Membrane Background' Color...");
+	changeSpecialColorMenuItem7.setActionCommand("MB");
+	changeSpecialColorMenuItem7.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+	JMenuItem changeSpecialColorMenuItemReset = new JMenuItem("Default Colors");
+	changeSpecialColorMenuItemReset.setActionCommand("DF");
+	changeSpecialColorMenuItemReset.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
+
+	specialColorPopup.add(changeSpecialColorMenuItem0);
+	specialColorPopup.add(changeSpecialColorMenuItem1);
+	specialColorPopup.add(changeSpecialColorMenuItem2);
+	specialColorPopup.add(changeSpecialColorMenuItem3);
+	specialColorPopup.add(changeSpecialColorMenuItem4);
+	specialColorPopup.add(changeSpecialColorMenuItem5);
+	specialColorPopup.add(changeSpecialColorMenuItem6);
+	specialColorPopup.add(changeSpecialColorMenuItem7);
+	specialColorPopup.add(changeSpecialColorMenuItemReset);
+	
+	getSCBelowMinJLabel().addMouseListener(mouseAdapter);
+	getSCAboveMaxJLabel().addMouseListener(mouseAdapter);
+	getSCNANJLabel().addMouseListener(mouseAdapter);
+	getSCIllegalJLabel().addMouseListener(mouseAdapter);
+	getSCNoRangeJLabel().addMouseListener(mouseAdapter);
+
 }
 
 /**
@@ -1446,7 +1610,7 @@ private void updateColorMapDisplay() {
 					getSCNANJLabel().setBackground(specialColor);
 					getSCNANJLabel().setForeground(contrast);
 					break;
-				case DisplayAdapterService.ILLEGAL_COLOR_OFFSET:
+				case DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET:
 					getSCIllegalJLabel().setBackground(specialColor);
 					getSCIllegalJLabel().setForeground(contrast);
 					break;

@@ -1096,7 +1096,9 @@ public void setSimDataType(int simDataType) {
 	firePropertyChange("simDataType", new Integer(oldValue), new Integer(simDataType));
 }
 
-
+public void setSingleMovieOnly(boolean bSingleMovieOnly){
+	getMovieSettingsPanel1().setSingleMovieOnly(bSingleMovieOnly);
+}
 /**
  * Comment
  */
@@ -1112,6 +1114,7 @@ public boolean showFormatSpecificDialog(Frame reference) {
 			break;
 		case FORMAT_GIF:
 		case FORMAT_ANIMATED_GIF:
+		case FORMAT_JPEG:
 			dialogToShow = getJDialogImageSettings(reference);
 			break;
 		case FORMAT_NRRD:
