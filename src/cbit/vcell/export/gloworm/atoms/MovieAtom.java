@@ -4,7 +4,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -20,33 +20,33 @@ public class MovieAtom extends Atoms {
 	
 /**
  * This method was created in VisualAge.
- * @param mvhd cbit.vcell.export.quicktime.atoms.MovieHeader
- * @param clip cbit.vcell.export.quicktime.atoms.ClippingAtom
- * @param traks cbit.vcell.export.quicktime.atoms.TrackAtom[]
- * @param udta cbit.vcell.export.quicktime.atoms.UserData
- * @param ctab cbit.vcell.export.quicktime.atoms.ColorTable
+ * @param mvhd MovieHeader
+ * @param clip ClippingAtom
+ * @param traks TrackAtom[]
+ * @param udta UserData
+ * @param ctab ColorTable
  */
 public MovieAtom(MovieHeader mvhd, TrackAtom[] traks) {
 	this(mvhd, null, traks, null, null);
 }
 /**
  * This method was created in VisualAge.
- * @param mvhd cbit.vcell.export.quicktime.atoms.MovieHeader
- * @param clip cbit.vcell.export.quicktime.atoms.ClippingAtom
- * @param traks cbit.vcell.export.quicktime.atoms.TrackAtom[]
- * @param udta cbit.vcell.export.quicktime.atoms.UserData
- * @param ctab cbit.vcell.export.quicktime.atoms.ColorTable
+ * @param mvhd MovieHeader
+ * @param clip ClippingAtom
+ * @param traks TrackAtom[]
+ * @param udta UserData
+ * @param ctab ColorTable
  */
 public MovieAtom(MovieHeader mvhd, TrackAtom[] traks, UserData udta) {
 	this(mvhd, null, traks, udta, null);
 }
 /**
  * This method was created in VisualAge.
- * @param mvhd cbit.vcell.export.quicktime.atoms.MovieHeader
- * @param clip cbit.vcell.export.quicktime.atoms.ClippingAtom
- * @param traks cbit.vcell.export.quicktime.atoms.TrackAtom[]
- * @param udta cbit.vcell.export.quicktime.atoms.UserData
- * @param ctab cbit.vcell.export.quicktime.atoms.ColorTable
+ * @param mvhd MovieHeader
+ * @param clip ClippingAtom
+ * @param traks TrackAtom[]
+ * @param udta UserData
+ * @param ctab ColorTable
  */
 public MovieAtom(MovieHeader mvhd, ClippingAtom clip, TrackAtom[] traks, UserData udta, ColorTable ctab) {
 	movieHeader = mvhd;

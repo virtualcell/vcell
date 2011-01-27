@@ -56,7 +56,7 @@ public abstract boolean getIsGrayscale();
 public abstract String getMediaType();
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.SampleDescriptionEntry
+ * @return SampleDescriptionEntry
  */
 public abstract SampleDescriptionEntry getSampleDescriptionEntry();
 /**

@@ -119,7 +119,7 @@ public MediaTrack(MediaChunk[] mediaChunks) throws DataFormatException {
 
 /**
  * This method was created in VisualAge.
- * @param mediaChunk cbit.vcell.export.quicktime.MediaChunk
+ * @param mediaChunk MediaChunk
  */
 public MediaTrack(MediaChunk mediaChunk) throws DataFormatException {
 	this(new MediaChunk[] {mediaChunk});
@@ -128,7 +128,7 @@ public MediaTrack(MediaChunk mediaChunk) throws DataFormatException {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.ChunkID[]
+ * @return ChunkID[]
  */
 public ChunkID[] getChunkIDs() {
 	return chunkIDs;
@@ -148,7 +148,7 @@ public int[] getChunkOffsets() {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.MediaChunk[]
+ * @return MediaChunk[]
  */
 public MediaChunk[] getChunks() {
 	return chunks;
@@ -193,7 +193,7 @@ public int getDuration() {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.Edit[]
+ * @return Edit[]
  */
 public Edit[] getEdits() {
 	return edits;
@@ -238,7 +238,7 @@ public int getNumberOfSamples() {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.SampleDescriptionEntry[]
+ * @return SampleDescriptionEntry[]
  */
 public SampleDescriptionEntry[] getSampleDescriptionEntries() {
 	return sampleDescriptionEntries;
@@ -274,7 +274,7 @@ public int getWidth() {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.ChunkID[]
+ * @param newValue ChunkID[]
  */
 private void setChunkIDs(ChunkID[] newValue) {
 	this.chunkIDs = newValue;
@@ -283,7 +283,7 @@ private void setChunkIDs(ChunkID[] newValue) {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.MediaChunk[]
+ * @param newValue MediaChunk[]
  */
 private void setChunks(MediaChunk[] newValue) {
 	this.chunks = newValue;
@@ -328,7 +328,7 @@ public void setDuration(int newValue) {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.Edit[]
+ * @param newValue Edit[]
  */
 public void setEdits(Edit[] newValue) {
 	this.edits = newValue;
@@ -373,7 +373,7 @@ private void setNumberOfSamples(int newValue) {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.atoms.SampleDescriptionEntry[]
+ * @param newValue SampleDescriptionEntry[]
  */
 private void setSampleDescriptionEntries(SampleDescriptionEntry[] newValue) {
 	this.sampleDescriptionEntries = newValue;

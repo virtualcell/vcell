@@ -24,8 +24,8 @@ public static final int getMacintoshTime() {
 }
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.TrackAtom
- * @param track cbit.vcell.export.quicktime.Track
+ * @return TrackAtom
+ * @param track Track
  */
 private final static MediaInformation makeMediaInformation(MediaTrack track) throws DataFormatException {
 	SampleTableDescription stsd = new SampleTableDescription(track.getSampleDescriptionEntries());
@@ -54,9 +54,9 @@ private final static MediaInformation makeMediaInformation(MediaTrack track) thr
 }
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.TrackAtom
- * @param movie cbit.vcell.export.quicktime.Movie
- * @param track cbit.vcell.export.quicktime.Track
+ * @return TrackAtom
+ * @param movie Movie
+ * @param track Track
  */
 private final static TrackAtom makeTrackAtom(MediaMovie movie, int trackIndex) throws DataFormatException {
 	if ((0 <= trackIndex) && (trackIndex < movie.getTracks().length)) {

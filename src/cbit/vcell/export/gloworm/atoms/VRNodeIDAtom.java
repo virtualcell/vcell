@@ -10,7 +10,7 @@ public class VRNodeIDAtom extends VRAtom {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 8:57:15 PM)
- * @param idAtoms cbit.vcell.export.quicktime.atoms.VRNodeLocationAtom[]
+ * @param idAtoms VRNodeLocationAtom[]
  */
 public VRNodeIDAtom(VRNodeLocationAtom[] locationAtoms) {
 	this.locationAtoms = locationAtoms;

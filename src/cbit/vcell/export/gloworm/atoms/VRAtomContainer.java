@@ -11,7 +11,7 @@ public class VRAtomContainer extends VRAtom {
 /**
  * Insert the method's description here.
  * Creation date: (11/7/2005 10:17:12 PM)
- * @param childAtoms cbit.vcell.export.quicktime.atoms.VRAtom[]
+ * @param childAtoms VRAtom[]
  */
 public VRAtomContainer(VRAtom[] childAtoms) {
 	this.childAToms = childAtoms;

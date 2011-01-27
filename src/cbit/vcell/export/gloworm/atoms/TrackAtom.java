@@ -4,7 +4,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -24,7 +24,7 @@ public class TrackAtom extends Atoms {
 	
 /**
  * This method was created in VisualAge.
- * @param dReference cbit.vcell.export.quicktime.DataReference
+ * @param dReference DataReference
  */
 public TrackAtom(TrackHeader tkhd, ClippingAtom clip, TrackMatte matt, EditAtom edts, TrackReference tref, TrackLoadSettings load, TrackInputMap imap, MediaAtom mdia, UserData udta) {
 	trackHeader = tkhd;
@@ -47,14 +47,14 @@ public TrackAtom(TrackHeader tkhd, ClippingAtom clip, TrackMatte matt, EditAtom 
 }
 /**
  * This method was created in VisualAge.
- * @param dReference cbit.vcell.export.quicktime.DataReference
+ * @param dReference DataReference
  */
 public TrackAtom(TrackHeader tkhd, EditAtom edts, MediaAtom mdia) {
 	this(tkhd, null, null, edts, null, null, null, mdia, null);
 }
 /**
  * This method was created in VisualAge.
- * @param dReference cbit.vcell.export.quicktime.DataReference
+ * @param dReference DataReference
  */
 public TrackAtom(TrackHeader tkhd, MediaAtom mdia) {
 	this(tkhd, null, null, null, null, null, null, mdia, null);

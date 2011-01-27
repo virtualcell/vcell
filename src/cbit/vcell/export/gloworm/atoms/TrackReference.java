@@ -3,7 +3,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -16,7 +16,7 @@ public class TrackReference extends Atoms {
 /**
  * Insert the method's description here.
  * Creation date: (11/9/2005 2:18:37 AM)
- * @param refs cbit.vcell.export.quicktime.atoms.TrackReferenceType[]
+ * @param refs TrackReferenceType[]
  */
 public TrackReference(TrackReferenceType[] refs) {
 	this.refs = refs;

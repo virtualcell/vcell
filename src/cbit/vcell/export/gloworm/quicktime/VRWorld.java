@@ -38,7 +38,7 @@ private VRWorld() {}
 /**
  * Insert the method's description here.
  * Creation date: (11/9/2005 1:05:22 AM)
- * @return cbit.vcell.export.quicktime.VRWorld
+ * @return VRWorld
  * @param columns int
  * @param rows int
  * @param defaultViewCenterH float
@@ -98,7 +98,7 @@ public int[] getObjectNodeIndices() {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 10:26:23 PM)
- * @return cbit.vcell.export.quicktime.atoms.VRAtomContainer
+ * @return VRAtomContainer
  */
 public VRAtomContainer getVRNodeInfoContainer(int nodeIndex) {
 	VRNodeHeaderAtom nodeHeader = new VRNodeHeaderAtom(nodes[nodeIndex].getNodeType());
@@ -109,7 +109,7 @@ public VRAtomContainer getVRNodeInfoContainer(int nodeIndex) {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 10:26:23 PM)
- * @return cbit.vcell.export.quicktime.atoms.VRAtomContainer
+ * @return VRAtomContainer
  */
 public VRAtomContainer getVRObjectInfoContainer(int nodeIndex) {
 	return new VRAtomContainer(new VRAtom[] {getVRObjectSampleAtom(nodeIndex)});
@@ -119,7 +119,7 @@ public VRAtomContainer getVRObjectInfoContainer(int nodeIndex) {
 /**
  * Insert the method's description here.
  * Creation date: (11/28/2005 6:02:25 PM)
- * @return cbit.vcell.export.quicktime.atoms.VRObjectSampleAtom
+ * @return VRObjectSampleAtom
  * @param nodeIndex int
  */
 public VRObjectSampleAtom getVRObjectSampleAtom(int nodeIndex) {
@@ -131,7 +131,7 @@ public VRObjectSampleAtom getVRObjectSampleAtom(int nodeIndex) {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 10:26:23 PM)
- * @return cbit.vcell.export.quicktime.atoms.VRAtomContainer
+ * @return VRAtomContainer
  */
 public VRAtomContainer getVRWorldContainer() {
 	VRNodeIDAtom[] nodeIDs = new VRNodeIDAtom[getNumberOfNodes()];

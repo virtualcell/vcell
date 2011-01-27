@@ -3,7 +3,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -15,7 +15,7 @@ public class BaseMediaHeader extends Atoms {
 	
 /**
  * This method was created in VisualAge.
- * @param baseMediaInfo cbit.vcell.export.quicktime.BaseMediaInfo
+ * @param baseMediaInfo BaseMediaInfo
  */
 public BaseMediaHeader(BaseMediaInfo baseMediaInfo) {
 	this.baseMediaInfo = baseMediaInfo;

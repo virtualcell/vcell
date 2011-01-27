@@ -24,7 +24,7 @@ public class MediaMovie extends MediaMethods {
 	private Vector userData = new Vector();
 /**
  * This method was created in VisualAge.
- * @param tracks cbit.vcell.export.quicktime.Track[]
+ * @param tracks Track[]
  * @param duration int
  */
 public MediaMovie(MediaTrack[] tracks, int duration) {
@@ -32,7 +32,7 @@ public MediaMovie(MediaTrack[] tracks, int duration) {
 }
 /**
  * This method was created in VisualAge.
- * @param tracks cbit.vcell.export.quicktime.Track[]
+ * @param tracks Track[]
  * @param duration int
  */
 public MediaMovie(MediaTrack[] tracks, int duration, int timeScale) {
@@ -51,7 +51,7 @@ public MediaMovie(MediaTrack[] tracks, int duration, int timeScale) {
 }
 /**
  * This method was created in VisualAge.
- * @param tracks cbit.vcell.export.quicktime.Track[]
+ * @param tracks Track[]
  * @param duration int
  */
 public MediaMovie(MediaTrack track, int duration) {
@@ -59,7 +59,7 @@ public MediaMovie(MediaTrack track, int duration) {
 }
 /**
  * This method was created in VisualAge.
- * @param tracks cbit.vcell.export.quicktime.Track[]
+ * @param tracks Track[]
  * @param duration int
  */
 public MediaMovie(MediaTrack track, int duration, int timeScale) {
@@ -102,7 +102,7 @@ public short getPreferredVolume() {
 }
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.MediaChunk
+ * @return MediaChunk
  */
 public MediaChunk[] getSelfreferencedChunks() {
 	return (MediaChunk[])BeanUtils.getArray(selfreferencedChunks, MediaChunk.class);
@@ -116,7 +116,7 @@ public int getTimeScale() {
 }
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.Track[]
+ * @return Track[]
  */
 public MediaTrack[] getTracks() {
 	return tracks;
@@ -173,7 +173,7 @@ public void setTimeScale(int newValue) {
 }
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.Track[]
+ * @param newValue Track[]
  */
 private void setTracks(MediaTrack[] newValue) {
 	this.tracks = newValue;
