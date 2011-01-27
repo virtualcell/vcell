@@ -110,7 +110,7 @@ public final String getMediaType() {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.VideoSampleDescriptionEntry
+ * @return VideoSampleDescriptionEntry
  */
 public SampleDescriptionEntry getSampleDescriptionEntry() {
 	return sampleDescriptionEntry;
@@ -189,7 +189,7 @@ private void setIsGrayscale(boolean newValue) {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.atoms.VideoSampleDescriptionEntry
+ * @param newValue VideoSampleDescriptionEntry
  */
 private void setSampleDescriptionEntry(VideoSampleDescriptionEntryJPEG newValue) {
 	this.sampleDescriptionEntry = newValue;

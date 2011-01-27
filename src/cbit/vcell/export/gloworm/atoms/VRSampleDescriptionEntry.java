@@ -10,7 +10,7 @@ public class VRSampleDescriptionEntry extends SampleDescriptionEntry {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 7:34:28 PM)
- * @param vrWorldContainer cbit.vcell.export.quicktime.atoms.VRAtomContainer
+ * @param vrWorldContainer VRAtomContainer
  */
 public VRSampleDescriptionEntry(VRAtomContainer vrWorldContainer) {
 	this.vrWorldContainer = vrWorldContainer;

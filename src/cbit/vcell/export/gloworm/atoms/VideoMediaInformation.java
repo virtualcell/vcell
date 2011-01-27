@@ -4,7 +4,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -18,10 +18,10 @@ public class VideoMediaInformation extends MediaInformation {
 	
 /**
  * This method was created in VisualAge.
- * @param vmhd cbit.vcell.export.quicktime.atoms.VideoMediaInformationHeader
- * @param hdlr cbit.vcell.export.quicktime.atoms.HandlerReference
- * @param dinf cbit.vcell.export.quicktime.atoms.DataInformation
- * @param stbl cbit.vcell.export.quicktime.atoms.SampleTable
+ * @param vmhd VideoMediaInformationHeader
+ * @param hdlr HandlerReference
+ * @param dinf DataInformation
+ * @param stbl SampleTable
  */
 public VideoMediaInformation(VideoMediaInformationHeader vmhd, HandlerReference hdlr, DataInformation dinf, SampleTable stbl) {
 	videoMediaInformationHeader = vmhd;

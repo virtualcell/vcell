@@ -15,7 +15,7 @@ public class ObjectMediaChunk implements MediaChunk {
 /**
  * Insert the method's description here.
  * Creation date: (11/8/2005 10:58:05 PM)
- * @param vrWorld cbit.vcell.export.quicktime.VRWorld
+ * @param vrWorld VRWorld
  */
 public ObjectMediaChunk(VRWorld vrWorld) {
 	samples = new ObjectMediaSample[vrWorld.getObjectNodeIndices().length];

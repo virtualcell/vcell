@@ -5,7 +5,7 @@ package cbit.vcell.export.gloworm.atoms;
  * All rights reserved.
 ©*/
 import cbit.vcell.export.gloworm.quicktime.ChunkID;
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 import java.util.*;
 /**

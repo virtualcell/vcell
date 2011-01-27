@@ -3,7 +3,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 import java.util.zip.*;
 /**

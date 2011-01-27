@@ -13,7 +13,7 @@ import cbit.vcell.export.gloworm.atoms.VRAtom;
 public class VRMediaMovie extends MediaMovie {
 /**
  * VRMediaMovie constructor comment.
- * @param tracks cbit.vcell.export.quicktime.MediaTrack[]
+ * @param tracks MediaTrack[]
  * @param duration int
  * @param timeScale int
  */
@@ -25,10 +25,10 @@ private VRMediaMovie(MediaTrack[] allTracks, int duration, int timeScale) {
 /**
  * Insert the method's description here.
  * Creation date: (11/9/2005 4:13:47 AM)
- * @return cbit.vcell.export.quicktime.VRMediaMovie
- * @param qtvrTrack cbit.vcell.export.quicktime.MediaTrack
- * @param objectTrack cbit.vcell.export.quicktime.MediaTrack
- * @param otherTracks cbit.vcell.export.quicktime.MediaTrack[]
+ * @return VRMediaMovie
+ * @param qtvrTrack MediaTrack
+ * @param objectTrack MediaTrack
+ * @param otherTracks MediaTrack[]
  * @param duration int
  * @param timescale int
  */
@@ -51,7 +51,7 @@ public static VRMediaMovie createVRMediaMovie(MediaTrack qtvrTrack, MediaTrack o
 /**
  * Insert the method's description here.
  * Creation date: (11/9/2005 4:24:15 AM)
- * @return cbit.vcell.export.quicktime.atoms.TrackReference
+ * @return TrackReference
  * @param trackIndex int
  */
 public TrackReference getTrackReference(int trackIndex) {

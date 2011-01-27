@@ -19,7 +19,7 @@ public class MediaData extends Atoms {
 	
 /**
  * This method was created in VisualAge.
- * @param dReference cbit.vcell.export.quicktime.DataReference
+ * @param dReference DataReference
  */
 public MediaData(MediaChunk[] chunks) {
 	mediaChunks = chunks;

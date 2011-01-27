@@ -289,7 +289,7 @@ public int getOffset() {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.export.quicktime.atoms.SampleDescriptionEntry
+ * @return SampleDescriptionEntry
  */
 public SampleDescriptionEntry getSampleDescriptionEntry() {
 	return sampleDescriptionEntry;
@@ -399,7 +399,7 @@ public void setOffset(int newValue) {
 
 /**
  * This method was created in VisualAge.
- * @param newValue cbit.vcell.export.quicktime.atoms.SampleDescriptionEntry
+ * @param newValue SampleDescriptionEntry
  */
 private void setSampleDescriptionEntry(SampleDescriptionEntry newValue) {
 	this.sampleDescriptionEntry = newValue;

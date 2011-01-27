@@ -4,7 +4,7 @@ package cbit.vcell.export.gloworm.atoms;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.quicktime.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.
@@ -21,7 +21,7 @@ public class SampleTable extends Atoms {
 	
 /**
  * This method was created in VisualAge.
- * @param dReference cbit.vcell.export.quicktime.DataReference
+ * @param dReference DataReference
  */
 public SampleTable(SampleTableDescription stsd, TimeToSample stts, SyncSample stss, SampleToChunk stsc, SampleSize stsz, ChunkOffset stco) {
 	sampleTableDescription = stsd;
