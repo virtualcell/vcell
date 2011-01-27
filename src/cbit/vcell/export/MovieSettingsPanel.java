@@ -1,9 +1,9 @@
 package cbit.vcell.export;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -24,8 +24,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 
 import org.vcell.util.gui.DialogUtils;
-
-import com.sun.jmx.snmp.Enumerated;
 /**
  * This type was created in VisualAge.
  */
