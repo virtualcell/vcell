@@ -1050,21 +1050,10 @@ public class PathwayReader {
 		}else if (childElement.getName().equals("CONTROLLED")){
 			Attribute resourceAttribute = childElement.getAttribute("resource",rdf);
 			if (resourceAttribute!=null){
-				BioPaxObject controlledObject = pathwayModel.getObjectByResource(resourceAttribute.getValue());
-				if (controlledObject instanceof Interaction){
-					control.setControlledInteraction((Interaction)controlledObject);
-					return true;
-				}
-				if (controlledObject instanceof Pathway){
-					control.setControlledPathway((Pathway)controlledObject);
-					return true;
-				}
-				//
-				// assuming this is an interaction ... reconcile later???
-				//
-				Interaction interaction = new InteractionImpl();
-				interaction.setResource(resourceAttribute.getValue());
-				control.setControlledInteraction((Interaction)controlledObject);
+				InteractionOrPathwayProxy controlledEntityProxy = new InteractionOrPathwayProxy();
+				control.setControlledInteraction(controlledEntityProxy);
+				pathwayModel.add(controlledEntityProxy);
+				controlledEntityProxy.setResource(resourceAttribute.getValue());
 				return true;
 			}
 			return false;

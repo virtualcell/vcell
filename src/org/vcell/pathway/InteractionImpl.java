@@ -41,6 +41,9 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printObject(sb, "interactionType",interactionType,level);
+		for(InteractionParticipant participant : participants) {
+			printObject(sb, participant.getType().name(), participant.getPhysicalEntity(), level);
+		}
 	}
 	
 	public void addParticipant(InteractionParticipant participant) {
