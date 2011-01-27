@@ -3,6 +3,7 @@ package org.vcell.pathway;
 import java.util.ArrayList;
 
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+import org.vcell.sybil.util.text.StringUtil;
 
 public class Control extends InteractionImpl {
 
@@ -58,6 +59,33 @@ public class Control extends InteractionImpl {
 				pathwayControllers.set(i, (Pathway)concreteObject);
 			}
 		}
+		if(controlledInteraction == objectProxy) {
+			if(concreteObject instanceof Interaction) {
+				controlledInteraction = (Interaction) concreteObject;
+			} else if(concreteObject instanceof Pathway) {
+				controlledInteraction = null;
+				controlledPathway = (Pathway) concreteObject;
+			} else {
+				throwObjectNeitherInteractionNorPathwayException(concreteObject);
+			}
+		}
+	}
+
+	protected void throwObjectNeitherInteractionNorPathwayException(BioPaxObject concreteObject) {
+		String thisName = toString();
+		if(getName() != null && getName().size() > 0) {
+			thisName = "[" + StringUtil.concat(getName(), ";");
+		}
+		String controlledObjectName = concreteObject.toString();
+		if(concreteObject instanceof Entity) {
+			Entity controlledEntity = (Entity) concreteObject;
+			if(controlledEntity.getName() != null && controlledEntity.getName().size() > 0) {
+				controlledObjectName = "[" + StringUtil.concat(controlledEntity.getName(), ";");
+			}
+		}
+		throw new RuntimeException("For conversion " + thisName +
+				", the controlled object " + controlledObjectName + 
+				" fails to be either Interaction or Pathway");
 	}
 	
 	public void showChildren(StringBuffer sb, int level){

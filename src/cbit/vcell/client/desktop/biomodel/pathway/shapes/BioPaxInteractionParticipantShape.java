@@ -23,7 +23,7 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 	public static final float ARROW_WIDTH = 7f;
 	
 	public static final Stroke CATALYST_STROKE = new BasicStroke(1f, BasicStroke.CAP_ROUND,
-			BasicStroke.JOIN_ROUND, 1f, new float[]{1f, 1f}, 0f);
+			BasicStroke.JOIN_ROUND, 1f, new float[]{2f, 2f}, 0f);
 	
 	protected final InteractionParticipant participant;
 	protected final BioPaxConversionShape conversionShape;
@@ -69,8 +69,7 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 		// TODO Auto-generated method stub
 		Point startPos = conversionShape.getSpaceManager().getAbsCenter();
 		Point endPos = physicalEntityShape.getSpaceManager().getAbsCenter();
-		if(participant.getType().equals(Type.PHYSICAL_CONTROLLER) || 
-				participant.getType().equals(Type.COFACTOR)) {
+		if(participant.getType().hasSuperType(Type.PHYSICAL_CONTROLLER)) {
 			Stroke previousStroke = g2d.getStroke();
 			g2d.setStroke(CATALYST_STROKE);
 			g2d.drawLine(startPos.x, startPos.y, endPos.x, endPos.y);			
