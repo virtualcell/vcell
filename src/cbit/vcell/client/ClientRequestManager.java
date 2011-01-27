@@ -1598,15 +1598,25 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
 			final VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
-			fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
-			fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
 		    String name = evt.getVCDataIdentifier().getID();
-		    String suffix = "_exported.zip";
+		    String suffix = null;
+		    if(evt.getLocation().toLowerCase().endsWith(".mov")){
+				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MOV);
+				fileChooser.setFileFilter(FileFilters.FILE_FILTER_MOV);
+
+		    	suffix = "_exported.mov";
+		    }else{
+				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
+				fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
+
+		    	suffix = "_exported.zip";
+		    }
 		    File file = new File(name + suffix);
 		    if (file.exists()) {
 			    int count = 0;
 			    do {
 			    	file = new File(name + "_" + count + suffix);
+			    	count++;
 			    } while (file.exists());
 		    }
 

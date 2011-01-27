@@ -444,7 +444,8 @@ public ImageSpecs getImageSpecs() {
 		getJCheckBoxHideMembraneOutline().isSelected(),
 		imageScale,
 		Integer.valueOf(getMembrScaleComboBox().getSelectedItem().toString()),
-		scaleMode);
+		scaleMode,
+		(float)getJSliderQuality().getValue()/10.0f);
 }
 /**
  * Return the JButtonOK property value.
@@ -908,10 +909,10 @@ private javax.swing.JSlider getJSliderQuality() {
 			ivjJSliderQuality.setPaintLabels(false);
 			ivjJSliderQuality.setBackground(new java.awt.Color(204,204,204));
 			ivjJSliderQuality.setPaintTicks(true);
-			ivjJSliderQuality.setValue(6);
 			ivjJSliderQuality.setMajorTickSpacing(1);
 			ivjJSliderQuality.setMaximum(10);
 			ivjJSliderQuality.setEnabled(true);
+			ivjJSliderQuality.setValue(10);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -973,7 +974,7 @@ private javax.swing.JTextField getJTextFieldInput() {
  * @return The loopingMode property value.
  * @see #setLoopingMode
  */
-public int getLoopingMode() {
+private int getLoopingMode() {
 	return fieldLoopingMode;
 }
 /**
@@ -981,7 +982,7 @@ public int getLoopingMode() {
  * @return The selectedDuration property value.
  * @see #setSelectedDuration
  */
-public int getSelectedDuration() {
+private int getSelectedDuration() {
 	return fieldSelectedDuration;
 }
 /**
@@ -1072,7 +1073,7 @@ private void initialize() {
 /**
  * Comment
  */
-public void initMirrorChoices() {
+private void initMirrorChoices() {
 	getJComboBox1().addItem("No mirroring");
 	getJComboBox1().addItem("Mirror left");
 	getJComboBox1().addItem("Mirror top");
@@ -1195,7 +1196,7 @@ private void setImageFormat(int imageFormat) {
 /**
  * Comment
  */
-public void setLoop() {
+private void setLoop() {
 	if (getJCheckBoxLoop().isSelected()) setLoopingMode(0);
 	else setLoopingMode(1);
 	return;
@@ -1219,7 +1220,7 @@ private void setSelectedDuration(int selectedDuration) {
 /**
  * Comment
  */
-public void updateFormatSpecificSettings() {
+private void updateFormatSpecificSettings() {
 	for (int i=0;i<getJTabbedPane1().getTabCount();i++) getJTabbedPane1().setEnabledAt(i, false);
 	switch(getExportFormat()) {
 		case FORMAT_GIF:
@@ -1248,15 +1249,18 @@ public void updateFormatSpecificSettings() {
 			getJTabbedPane1().setSelectedIndex(1);
 			getJTabbedPane1().setEnabledAt(1, true);
 			break;
+*/
 		case FORMAT_JPEG:
+			setImageFormat(JPEG);
+			setCompression(COMPRESSED_JPEG_DEFAULT);
 			getJTabbedPane1().setSelectedIndex(2);
-			getJTabbedPane1().setEnabledAt(1, true);
+			getJTabbedPane1().setEnabledAt(2, true);
 			getJRadioButtonCompressed().setSelected(true);
-			getJRadioButtonCompressed().setText("Compressed (lossy)");
+			getJRadioButtonCompressed().setText("Compressed");
 			getJRadioButtonCompressed().setEnabled(true);
 			getJRadioButtonUncompressed().setEnabled(false);
 			break;
-*/	}
+	}
 	return;
 }
 	private JPanel getPanel() {

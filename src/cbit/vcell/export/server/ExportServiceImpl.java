@@ -21,8 +21,8 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.*;
 import cbit.rmi.event.*;
 import cbit.vcell.simdata.gui.*;
-import cbit.vcell.export.quicktime.*;
-import cbit.vcell.export.quicktime.atoms.*;
+
+
 import java.util.*;
 
 import org.vcell.util.DataAccessException;
@@ -197,6 +197,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		case FORMAT_ANIMATED_GIF:
 			fileFormat = "GIF";
 			break;
+		case FORMAT_JPEG:
+			fileFormat = "JPEG";
+			break;
 		case FORMAT_NRRD:
 			fileFormat = "NRRD";
 			break;
@@ -250,7 +253,13 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_QUICKTIME:
 				exportOutputs = qtExporter.makeMovieData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, clientTaskStatusSupport);
-				if(bSaveAsZip)
+				boolean bJPEG = false;
+				if(exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+					bJPEG = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getCompressionType() == FormatSpecificSpecs.CODEC_JPEG;
+				}
+				boolean bOverrideZip = exportOutputs.length == 1 && bJPEG;
+				
+				if(bSaveAsZip && !bOverrideZip)
 				{
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 				}
@@ -259,8 +268,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 				}
 			case FORMAT_GIF:
-				exportOutputs = imgExporter.makeImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+			case FORMAT_JPEG:
 			case FORMAT_ANIMATED_GIF:
 				exportOutputs = imgExporter.makeImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);

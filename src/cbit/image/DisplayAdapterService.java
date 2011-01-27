@@ -4,6 +4,8 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.Color;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.vcell.util.Range;
 
@@ -18,20 +20,23 @@ public class DisplayAdapterService implements org.vcell.util.Stateful, java.bean
 	//
 	public class DisplayAdapterServiceState {
 		private Range customScaleRange;
-		public DisplayAdapterServiceState(Range customScaleRange) {
-			//
+//		private int[] customSpecialColors;
+		public DisplayAdapterServiceState(Range customScaleRange/*,int[] customSpecialColors*/) {
 			this.customScaleRange = customScaleRange;
-			//
+//			this.customSpecialColors = customSpecialColors;
 		}
 		public Range getCustomScaleRange() {
 			return customScaleRange;
 		}
+//		public int[] getCustomSpecialColors(){
+//			return customSpecialColors;
+//		}
 	}
-	private java.util.Hashtable states = new java.util.Hashtable();
+	private java.util.Hashtable<String, DisplayAdapterServiceState> states = new java.util.Hashtable<String, DisplayAdapterServiceState>();
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	//
-	private java.util.Hashtable colorModels = new java.util.Hashtable();
-	private java.util.Hashtable specialColors = new java.util.Hashtable();
+	private java.util.Hashtable<String, int[]> colorModels = new java.util.Hashtable<String, int[]>();
+	private java.util.Hashtable<String, int[]> specialColors = new java.util.Hashtable<String, int[]>();
 	private java.lang.String fieldActiveColorModelID = null;
 	private Range fieldActiveScaleRange = null;
 	private Range fieldValueDomain = null;
@@ -44,7 +49,7 @@ public class DisplayAdapterService implements org.vcell.util.Stateful, java.bean
 	public static final int BELOW_MIN_COLOR_OFFSET = 0;
 	public static final int ABOVE_MAX_COLOR_OFFSET = 1;
 	public static final int NAN_COLOR_OFFSET = 2;
-	public static final int ILLEGAL_COLOR_OFFSET = 3;
+	public static final int NOT_IN_DOMAIN_COLOR_OFFSET = 3;
 	public static final int NO_RANGE_COLOR_OFFSET = 4;
 	public static final int FOREGROUND_HIGHLIGHT_COLOR_OFFSET = 5;
 	public static final int FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET = 6;
@@ -74,10 +79,10 @@ public DisplayAdapterService(DisplayAdapterService argDAS) {
 	super();
 	addPropertyChangeListener(this);
 
-	states = (java.util.Hashtable)argDAS.states.clone();
+	states = (Hashtable<String, DisplayAdapterServiceState>)argDAS.states.clone();
 	fieldColorModelIDs = (String[])argDAS.fieldColorModelIDs.clone();
 
-	java.util.Enumeration enum1 = argDAS.colorModels.keys();
+	java.util.Enumeration<String> enum1 = argDAS.colorModels.keys();
 	while(enum1.hasMoreElements()){
 		String s = (String)enum1.nextElement();
 		colorModels.put(s,((int[])argDAS.colorModels.get(s)).clone());
@@ -112,6 +117,7 @@ public void activateMarkedState(java.lang.String stateID) {
 
 	if (hasStateID(stateID)) {
 		DisplayAdapterServiceState newState = (DisplayAdapterServiceState) states.get(stateID);
+//		setSpecialColors(newState.getCustomSpecialColors().clone());
 		setCustomScaleRange(newState.getCustomScaleRange());
 	}else{
 		setCustomScaleRange(null);
@@ -239,7 +245,7 @@ public final static int[] createBlueRedSpecialColors() {
 	blueRedSpecialColors[BELOW_MIN_COLOR_OFFSET] 				= Color.black.getRGB();// 0
 	blueRedSpecialColors[ABOVE_MAX_COLOR_OFFSET]				= Color.white.getRGB();// 255
 	blueRedSpecialColors[NAN_COLOR_OFFSET]						= Color.lightGray.getRGB();// 196
-	blueRedSpecialColors[ILLEGAL_COLOR_OFFSET]					= Color.darkGray.getRGB();// 64
+	blueRedSpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET]					= Color.darkGray.getRGB();// 64
 	blueRedSpecialColors[NO_RANGE_COLOR_OFFSET]					= Color.gray.getRGB();// 128
 	blueRedSpecialColors[FOREGROUND_HIGHLIGHT_COLOR_OFFSET]		= new Color(176,176,176).getRGB();
 	blueRedSpecialColors[FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET]	= new Color(140,140,140).getRGB();
@@ -291,7 +297,7 @@ public final static int[] createGraySpecialColors() {
 	graySpecialColors[BELOW_MIN_COLOR_OFFSET] 					= Color.blue.getRGB();
 	graySpecialColors[ABOVE_MAX_COLOR_OFFSET]					= Color.red.getRGB();
 	graySpecialColors[NAN_COLOR_OFFSET]							= Color.yellow.getRGB();
-	graySpecialColors[ILLEGAL_COLOR_OFFSET]						= Color.cyan.getRGB();
+	graySpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET]						= Color.cyan.getRGB();
 	graySpecialColors[NO_RANGE_COLOR_OFFSET]					= Color.magenta.getRGB();
 	graySpecialColors[FOREGROUND_HIGHLIGHT_COLOR_OFFSET]		= new Color(0,192,192).getRGB();
 	graySpecialColors[FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET]		= new Color(0,160,160).getRGB();
@@ -320,10 +326,10 @@ public int[] fetchColorModel(String colorModelID) {
 private String[] fetchColorModelIDs() {
     if (colorModels.size() != 0) {
         String[] colorModelIDs = new String[colorModels.size()];
-        java.util.Enumeration enum1 = colorModels.keys();
+        Enumeration<String> enum1 = colorModels.keys();
         int c = 0;
         while (enum1.hasMoreElements()) {
-            colorModelIDs[c] = (String) enum1.nextElement();
+            colorModelIDs[c] = enum1.nextElement();
             c += 1;
         }
         return colorModelIDs;
@@ -449,9 +455,9 @@ public int getColorFromValue(double dataValue) {
 	//
 	if (getValueDomain() != null) {
 		if (dataValue < getValueDomain().getMin()) {
-			return fieldSpecialColors[ILLEGAL_COLOR_OFFSET];
+			return fieldSpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET];
 		} else if (dataValue > getValueDomain().getMax()) {
-			return fieldSpecialColors[ILLEGAL_COLOR_OFFSET];
+			return fieldSpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET];
 		}
 	}
 	//
@@ -520,13 +526,9 @@ public Range getCustomScaleRange() {
 public DisplayPreferences getDisplayPreferences(String stateID) {
     if (hasStateID(stateID)) {
         DisplayAdapterServiceState storedState = (DisplayAdapterServiceState) states.get(stateID);
-        if (storedState.getCustomScaleRange() == null) {
-	        return new DisplayPreferences(getActiveColorModelID(), getValueDomain(), true);
-        } else {
-	        return new DisplayPreferences(getActiveColorModelID(), storedState.getCustomScaleRange(), false);
-        }
+        return new DisplayPreferences(getActiveColorModelID(), storedState.getCustomScaleRange(),getSpecialColors()/*storedState.getCustomSpecialColors()*/);
     } else {
-        return new DisplayPreferences(getActiveColorModelID(), getActiveScaleRange(), (getCustomScaleRange() == null));
+        return new DisplayPreferences(getActiveColorModelID(), null,getSpecialColors());
     }
 }
 
@@ -598,7 +600,7 @@ public boolean hasStateID(java.lang.String stateID) {
  */
 public void markCurrentState(java.lang.String stateID) {
 	if(fieldActiveColorModelID != null && getActiveScaleRange() != null){
-		states.put(stateID, new DisplayAdapterServiceState(getCustomScaleRange()));
+		states.put(stateID, new DisplayAdapterServiceState(getCustomScaleRange()/*,fetchSpecialColors(getActiveColorModelID())*/));
 	}
 }
 
@@ -740,19 +742,6 @@ private void setColorModelIDs(java.lang.String[] colorModelIDs) {
 	fieldColorModelIDs = colorModelIDs;
 	firePropertyChange("colorModelIDs", oldValue, colorModelIDs);
 }
-
-
-/**
- * Sets the currentStateID property (java.lang.String) value.
- * @param currentStateID The new value for the property.
- * @see #getCurrentStateID
- */
-public void setCurrentStateID(java.lang.String currentStateID) {
-	String oldValue = fieldCurrentStateID;
-	fieldCurrentStateID = currentStateID;
-	firePropertyChange("currentStateID", oldValue, currentStateID);
-}
-
 
 /**
  * Sets the customScaleRange property (cbit.image.Range) value.

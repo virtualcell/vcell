@@ -7,6 +7,11 @@ package cbit.vcell.export;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -16,12 +21,16 @@ import javax.swing.JPanel;
 import cbit.vcell.export.server.*;
 import cbit.image.*;
 import javax.swing.JCheckBox;
+import javax.swing.JSlider;
+
+import org.vcell.util.gui.DialogUtils;
+
+import com.sun.jmx.snmp.Enumerated;
 /**
  * This type was created in VisualAge.
  */
 public class MovieSettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener {
 	private javax.swing.JLabel ivjJLabelDataFormat = null;
-	private javax.swing.JButton ivjJButtonSet = null;
 	private int selectedDuration = 10000; // milliseconds
 	private javax.swing.JTextField ivjJTextFieldInput = null;
 	protected transient cbit.vcell.export.MovieSettingsPanelListener fieldMovieSettingsPanelListenerEventMulticaster = null;
@@ -90,10 +99,6 @@ public MovieSettingsPanel(boolean isDoubleBuffered) {
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	// user code begin {1}
 	// user code end
-	if (e.getSource() == getJTextFieldInput()) 
-		connEtoC1(e);
-	if (e.getSource() == getJButtonSet()) 
-		connEtoC2(e);
 	if (e.getSource() == getJButtonOK()) 
 		connEtoC3(e);
 	if (e.getSource() == getCancelJButton()) 
@@ -109,42 +114,7 @@ public void addMovieSettingsPanelListener(cbit.vcell.export.MovieSettingsPanelLi
 	fieldMovieSettingsPanelListenerEventMulticaster = cbit.vcell.export.MovieSettingsPanelListenerEventMulticaster.add(fieldMovieSettingsPanelListenerEventMulticaster, newListener);
 	return;
 }
-/**
- * connEtoC1:  (JTextFieldInput.action.actionPerformed(java.awt.event.ActionEvent) --> MovieSettingsPanel.setFramesPerImageFromInput()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setDuration();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC2:  (JButtonSet.action.actionPerformed(java.awt.event.ActionEvent) --> MovieSettingsPanel.setFramesPerImageFromInput()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setDuration();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoC3:  (JButtonOK.action.actionPerformed(java.awt.event.ActionEvent) --> MovieSettingsPanel.fireJButtonOKAction_actionPerformed(Ljava.util.EventObject;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -154,6 +124,16 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
+		try {
+			setDuration();
+		} catch (Exception e) {
+			e.printStackTrace();
+			//reset value to last good
+			DialogUtils.showErrorDialog(this,"'Duration' value error: ('"+getJTextFieldInput().getText()+
+					"')\nRe-enter a 'Duration' value between "+Double.toString(MOVIE_DURATION_MIN_SECONDS)+" and "+Double.toString(MOVIE_DURATION_MAX_SECONDS));
+			//Do not continue with OK operation
+			return;
+		}
 		this.fireJButtonOKAction_actionPerformed(new java.util.EventObject(this));
 		// user code begin {2}
 		// user code end
@@ -385,30 +365,7 @@ private javax.swing.JButton getJButtonOK() {
 	}
 	return ivjJButtonOK;
 }
-/**
- * Return the JButton1 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonSet() {
-	if (ivjJButtonSet == null) {
-		try {
-			ivjJButtonSet = new javax.swing.JButton();
-			ivjJButtonSet.setName("JButtonSet");
-			ivjJButtonSet.setPreferredSize(new java.awt.Dimension(60, 27));
-			ivjJButtonSet.setText("Set");
-			ivjJButtonSet.setMinimumSize(new java.awt.Dimension(25, 25));
-			ivjJButtonSet.setMaximumSize(new java.awt.Dimension(300, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonSet;
-}
+
 /**
  * Return the JComboBox1 property value.
  * @return javax.swing.JComboBox
@@ -562,8 +519,13 @@ private javax.swing.JRadioButton getJRadioButtonCompressed() {
 		try {
 			ivjJRadioButtonCompressed = new javax.swing.JRadioButton();
 			ivjJRadioButtonCompressed.setName("JRadioButtonCompressed");
-			ivjJRadioButtonCompressed.setText("Compressed (many formats)");
-			ivjJRadioButtonCompressed.setEnabled(false);
+			ivjJRadioButtonCompressed.setText("Compression");
+			ivjJRadioButtonCompressed.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					compressionSliderEnable(e.getStateChange() == ItemEvent.SELECTED);
+					//getJSliderCompression().setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+				}
+			});
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -688,6 +650,7 @@ private javax.swing.JTextField getJTextFieldInput() {
  * @return cbit.vcell.export.server.MovieSpecs
  */
 private static final String MESH_MODE_TEXT = "from 'View Data' zoom";
+private JSlider jSliderCompression;
 public MovieSpecs getMovieSpecs() {
 	int imageScale = 0;
 	int scaleMode = ImagePaneModel.MESH_MODE;
@@ -704,7 +667,10 @@ public MovieSpecs getMovieSpecs() {
 		getJCheckBoxHideMembraneOutlines().isSelected(),
 		imageScale,
 		Integer.valueOf(getMembrScaleComboBox().getSelectedItem().toString()),
-		scaleMode
+		scaleMode,
+		(getJRadioButtonCompressed().isSelected()?FormatSpecificSpecs.CODEC_JPEG:FormatSpecificSpecs.CODEC_NONE),
+		(getJRadioButtonCompressed().isSelected()?(float)getJSliderCompression().getValue()/(float)getJSliderCompression().getMaximum():1.0f)
+		
 	);
 }
 /**
@@ -732,7 +698,6 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getJTextFieldInput().addActionListener(this);
-	getJButtonSet().addActionListener(this);
 	getJButtonOK().addActionListener(this);
 	getCancelJButton().addActionListener(this);
 }
@@ -747,9 +712,9 @@ private void initialize() {
 		setName("MovieSettingsPanel");
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0};
+		gridBagLayout.columnWeights = new double[]{1.0, 1.0};
 		setLayout(gridBagLayout);
-		setSize(235, 444);
+		setSize(291, 471);
 
 		java.awt.GridBagConstraints constraintsJLabelDataFormat = new java.awt.GridBagConstraints();
 		constraintsJLabelDataFormat.gridx = 0; constraintsJLabelDataFormat.gridy = 0;
@@ -757,6 +722,12 @@ private void initialize() {
 		constraintsJLabelDataFormat.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelDataFormat.insets = new Insets(10, 5, 5, 0);
 		add(getJLabelDataFormat(), constraintsJLabelDataFormat);
+		GridBagConstraints gbc_jSliderCompression = new GridBagConstraints();
+		gbc_jSliderCompression.fill = GridBagConstraints.HORIZONTAL;
+		gbc_jSliderCompression.insets = new Insets(0, 0, 5, 0);
+		gbc_jSliderCompression.gridx = 1;
+		gbc_jSliderCompression.gridy = 2;
+		add(getJSliderCompression(), gbc_jSliderCompression);
 
 		java.awt.GridBagConstraints constraintsJLabelDuration = new java.awt.GridBagConstraints();
 		constraintsJLabelDuration.gridx = 0; constraintsJLabelDuration.gridy = 3;
@@ -764,13 +735,6 @@ private void initialize() {
 		constraintsJLabelDuration.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelDuration.insets = new Insets(10, 5, 5, 0);
 		add(getJLabelDuration(), constraintsJLabelDuration);
-
-		java.awt.GridBagConstraints constraintsJButtonSet = new java.awt.GridBagConstraints();
-		constraintsJButtonSet.gridx = 1; constraintsJButtonSet.gridy = 4;
-		constraintsJButtonSet.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJButtonSet.weightx = 0.5;
-		constraintsJButtonSet.insets = new Insets(5, 5, 5, 80);
-		add(getJButtonSet(), constraintsJButtonSet);
 
 		java.awt.GridBagConstraints constraintsJTextFieldInput = new java.awt.GridBagConstraints();
 		constraintsJTextFieldInput.gridx = 0; constraintsJTextFieldInput.gridy = 4;
@@ -788,9 +752,8 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJRadioButtonCompressed = new java.awt.GridBagConstraints();
 		constraintsJRadioButtonCompressed.gridx = 0; constraintsJRadioButtonCompressed.gridy = 2;
-		constraintsJRadioButtonCompressed.gridwidth = 2;
 		constraintsJRadioButtonCompressed.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJRadioButtonCompressed.insets = new Insets(0, 10, 5, 0);
+		constraintsJRadioButtonCompressed.insets = new Insets(0, 10, 5, 5);
 		add(getJRadioButtonCompressed(), constraintsJRadioButtonCompressed);
 
 		java.awt.GridBagConstraints constraintsJLabelComposition = new java.awt.GridBagConstraints();
@@ -829,14 +792,14 @@ private void initialize() {
 		add(getJComboBox1(), constraintsJComboBox1);
 
 		java.awt.GridBagConstraints constraintsJRadioButtonHideMembraneOutlines = new java.awt.GridBagConstraints();
-		constraintsJRadioButtonHideMembraneOutlines.gridx = 0; constraintsJRadioButtonHideMembraneOutlines.gridy = 8;
 		constraintsJRadioButtonHideMembraneOutlines.gridwidth = 2;
-		constraintsJRadioButtonHideMembraneOutlines.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJRadioButtonHideMembraneOutlines.insets = new Insets(15, 10, 5, 0);
+		constraintsJRadioButtonHideMembraneOutlines.anchor = GridBagConstraints.WEST;
+		constraintsJRadioButtonHideMembraneOutlines.gridx = 0; constraintsJRadioButtonHideMembraneOutlines.gridy = 8;
+		constraintsJRadioButtonHideMembraneOutlines.insets = new Insets(15, 4, 4, 4);
 		add(getJCheckBoxHideMembraneOutlines(), constraintsJRadioButtonHideMembraneOutlines);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(0, 0, 5, 5);
+		gbc.insets = new Insets(0, 0, 5, 0);
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.gridx = 0;
 		gbc.gridy = 11;
@@ -919,32 +882,20 @@ public void setDisplayPreferences(cbit.vcell.simdata.gui.DisplayPreferences[] di
 /**
  * Comment
  */
+private static final double MOVIE_DURATION_MIN_SECONDS = .1;
+private static final double MOVIE_DURATION_MAX_SECONDS = 1000.0;
 public void setDuration() {
 	double seconds;
 	String typed = getJTextFieldInput().getText();
-	try {
 		seconds = new Double(typed).doubleValue();
-		if (seconds < 0.1) seconds = 0.1;
-		if (seconds > 1000) seconds = 1000;
+		if (seconds < MOVIE_DURATION_MIN_SECONDS) seconds = MOVIE_DURATION_MIN_SECONDS;
+		if (seconds > MOVIE_DURATION_MAX_SECONDS) seconds = MOVIE_DURATION_MAX_SECONDS;
 		int milliseconds = (int)(seconds * 1000);
 		seconds = (double) milliseconds / 1000;
 		getJTextFieldInput().setText(Double.toString(seconds));
 		setSelectedDuration(milliseconds);
-	} catch (NumberFormatException e) {
-		// if typedTime is crap, put back old value
-		seconds = getSelectedDuration() / 1000;
-		getJTextFieldInput().setText(Double.toString(seconds));
-	}
-	return;
 }
-/**
- * Sets the encodingFormat property (int) value.
- * @param encodingFormat The new value for the property.
- * @see #getEncodingFormat
- */
-private void setEncodingFormat(int encodingFormat) {
-	fieldEncodingFormat = encodingFormat;
-}
+
 /**
  * This method was created in VisualAge.
  * @param newValue int
@@ -1012,5 +963,42 @@ private void setSelectedDuration(int newValue) {
 			membrScaleComboBox = new JComboBox();
 		}
 		return membrScaleComboBox;
+	}
+	
+	
+	public void setSingleMovieOnly(boolean bSingleMovieOnly){
+		if(bSingleMovieOnly){
+			getJRadioButtonOverlay().setSelected(true);
+			getJRadioButtonSeparate().setEnabled(false);
+		}else{
+			getJRadioButtonSeparate().setEnabled(true);
+		}
+	}
+	private JSlider getJSliderCompression() {
+		if (jSliderCompression == null) {
+			jSliderCompression = new JSlider();
+			jSliderCompression.setValue(10);
+			jSliderCompression.setMajorTickSpacing(1);
+			jSliderCompression.setMaximum(10);
+			jSliderCompression.setPaintTicks(true);
+			Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+			labelTable.put( new Integer( 0 ), new JLabel("high") );
+			labelTable.put( new Integer( jSliderCompression.getMaximum()/2 ), new JLabel("medium") );
+			labelTable.put( new Integer( jSliderCompression.getMaximum() ), new JLabel("lossless") );
+			jSliderCompression.setLabelTable( labelTable );
+			jSliderCompression.setPaintLabels(true);
+			jSliderCompression.setEnabled(false);
+			compressionSliderEnable(false);
+		}
+		return jSliderCompression;
+	}
+	private void compressionSliderEnable(boolean bEnable){
+		getJSliderCompression().setEnabled(bEnable);
+		Dictionary<Integer, JLabel> labeltable = getJSliderCompression().getLabelTable();
+		Enumeration<JLabel> jLabelEnum = labeltable.elements();
+		while(jLabelEnum.hasMoreElements()){
+			jLabelEnum.nextElement().setEnabled(bEnable);
+		}
+		getJSliderCompression().repaint();
 	}
 }
