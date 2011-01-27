@@ -13,6 +13,7 @@ public class Control extends InteractionImpl {
 	private String controlType;
 
 	private ArrayList<Pathway> pathwayControllers = new ArrayList<Pathway>();
+	private ArrayList<PhysicalEntity> physicalControllers = new ArrayList<PhysicalEntity>();
 
 	public Interaction getControlledInteraction() {
 		return controlledInteraction;
@@ -29,6 +30,9 @@ public class Control extends InteractionImpl {
 	public ArrayList<Pathway> getPathwayControllers() {
 		return pathwayControllers;
 	}
+	public ArrayList<PhysicalEntity> getPhysicalControllers() {
+		return physicalControllers;
+	}
 
 	public void setControlledInteraction(Interaction controlledInteraction) {
 		this.controlledInteraction = controlledInteraction;
@@ -41,6 +45,9 @@ public class Control extends InteractionImpl {
 	}
 	public void setPathwayControllers(ArrayList<Pathway> pathwayControllers) {
 		this.pathwayControllers = pathwayControllers;
+	}
+	public void setPhysicalControllers(ArrayList<PhysicalEntity> physicalControllers) {
+		this.physicalControllers = physicalControllers;
 	}
 	
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
@@ -59,7 +66,7 @@ public class Control extends InteractionImpl {
 		printObject(sb,"controlledPathway",controlledPathway,level);
 		printString(sb,"controlType",controlType,level);
 		printObjects(sb,"pathwayControllers",pathwayControllers,level);
-//		printObjects(sb,"physicalControllers",physicalControllers,level);
+		printObjects(sb,"physicalControllers",physicalControllers,level);
 	}
 
 }

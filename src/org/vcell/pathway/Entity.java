@@ -6,6 +6,9 @@ public interface Entity extends BioPaxObject {
 	public ArrayList<String> getName();
 	public void setName(ArrayList<String> name);
 
+	public ArrayList<String> getAvailability();
+	public void setAvailability(ArrayList<String> availability);
+
 	public ArrayList<Xref> getxRef();
 	public void setxRef(ArrayList<Xref> xRef);
 
