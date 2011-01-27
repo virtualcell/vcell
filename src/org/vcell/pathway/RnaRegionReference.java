@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class RnaRegionReference extends EntityReference {
 	private SequenceLocation absoluteRegion;
-	private ArrayList<RnaRegionReference> dnaSubRegion = new ArrayList<RnaRegionReference>();
+	private ArrayList<DnaRegionReference> dnaSubRegion = new ArrayList<DnaRegionReference>();
 	private BioSource organism;
 	private SequenceRegionVocabulary regionType;
 	private ArrayList<RnaRegionReference> rnaSubRegion = new ArrayList<RnaRegionReference>();
@@ -13,7 +13,7 @@ public class RnaRegionReference extends EntityReference {
 	public SequenceLocation getAbsoluteRegion() {
 		return absoluteRegion;
 	}
-	public ArrayList<RnaRegionReference> getDnaSubRegion() {
+	public ArrayList<DnaRegionReference> getDnaSubRegion() {
 		return dnaSubRegion;
 	}
 	public BioSource getOrganism() {
@@ -31,7 +31,7 @@ public class RnaRegionReference extends EntityReference {
 	public void setAbsoluteRegion(SequenceLocation absoluteRegion) {
 		this.absoluteRegion = absoluteRegion;
 	}
-	public void setDnaSubRegion(ArrayList<RnaRegionReference> dnaSubRegion) {
+	public void setDnaSubRegion(ArrayList<DnaRegionReference> dnaSubRegion) {
 		this.dnaSubRegion = dnaSubRegion;
 	}
 	public void setOrganism(BioSource organism) {
@@ -55,6 +55,7 @@ public class RnaRegionReference extends EntityReference {
 		printObject(sb, "regionType",regionType,level);
 		printObjects(sb, "rnaSubRegion",rnaSubRegion,level);
 		printString(sb, "sequence",sequence,level);
+		printObjects(sb, "dnaSubRegion",dnaSubRegion,level);
 	}
 
 }

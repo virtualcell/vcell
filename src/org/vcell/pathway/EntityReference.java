@@ -9,12 +9,19 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 	private ArrayList<EntityReference> memberEntityReference = new ArrayList<EntityReference>();
 	private ArrayList<String> name = new ArrayList<String>();
 	private ArrayList<Xref> xRef = new ArrayList<Xref>();
+	private ArrayList<Evidence> evidence = new ArrayList<Evidence>();
 	
 	public ArrayList<Xref> getxRef() {
 		return xRef;
 	}
 	public void setxRef(ArrayList<Xref> xRef) {
 		this.xRef = xRef;
+	}
+	public ArrayList<Evidence> getEvidence() {
+		return evidence;
+	}
+	public void setEvidence(ArrayList<Evidence> evidence) {
+		this.evidence = evidence;
 	}
 	public ArrayList<EntityFeature> getEntityFeature() {
 		return entityFeature;
@@ -50,5 +57,6 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 		printObjects(sb, "memberEntityReference",memberEntityReference,level);
 		printStrings(sb, "name",name,level);
 		printObjects(sb, "xRef",xRef,level);
+		printObjects(sb, "evidence",evidence,level);
 	}
 }

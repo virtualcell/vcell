@@ -6,6 +6,15 @@ public class Evidence extends BioPaxObjectImpl implements UtilityClass {
 	private ArrayList<Score> confidence = new ArrayList<Score>();
 	private ArrayList<EvidenceCodeVocabulary> evidenceCode = new ArrayList<EvidenceCodeVocabulary>();
 	private ArrayList<ExperimentalForm> experimentalForm = new ArrayList<ExperimentalForm>();
+	private ArrayList<Xref> xRef = new ArrayList<Xref>();
+
+	public ArrayList<Xref> getxRef() {
+		return xRef;
+	}
+
+	public void setxRef(ArrayList<Xref> xRef) {
+		this.xRef = xRef;
+	}
 	
 	public ArrayList<Score> getConfidence() {
 		return confidence;
@@ -31,6 +40,7 @@ public class Evidence extends BioPaxObjectImpl implements UtilityClass {
 		printObjects(sb, "confidence",confidence,level);
 		printObjects(sb, "evidenceCode",evidenceCode,level);
 		printObjects(sb, "experimentalForm",experimentalForm,level);
+		printObjects(sb, "xRef",xRef,level);
 	}
 
 }
