@@ -3,10 +3,13 @@ package cbit.vcell.client.desktop.testingframework;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.numericstest.*;
+import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
+import cbit.vcell.solver.SimulationInfo;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 1:55:07 PM)
@@ -20,24 +23,24 @@ public class EditTestCriteriaPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjRefSimLabel = null;
 	private javax.swing.JLabel ivjRelErrLabel = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextField ivjAbsErrTextField = null;
 	private javax.swing.JTextField ivjRelErrTextField = null;
-	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
+	private TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private java.lang.String fieldSolutionType = null;
-	private cbit.vcell.numericstest.TestCriteriaNew fieldExistingTestCriteria = null;
-	private cbit.vcell.numericstest.TestCriteriaNew fieldNewTestCriteria = null;  //  @jve:decl-index=0:
-	private cbit.vcell.solver.SimulationInfo fieldReferenceSimInfo = null;
-	private org.vcell.util.document.MathModelInfo fieldReferenceMathModelInfo = null;
+	private TestCriteriaNew fieldExistingTestCriteria = null;
+	private TestCriteriaNew fieldNewTestCriteria = null;  //  @jve:decl-index=0:
+	private SimulationInfo fieldReferenceSimInfo = null;
+	private MathModelInfo fieldReferenceMathModelInfo = null;
 	private javax.swing.JButton ivjSelectRefBMAppJButton = null;
 	private javax.swing.JButton ivjSelectRefSimJButton = null;
-	private org.vcell.util.document.BioModelInfo ivjbioModelInfo = null;
+	private BioModelInfo ivjbioModelInfo = null;
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
-	private cbit.vcell.solver.SimulationInfo ivjbmAppSimInfo = null;
+	private SimulationInfo ivjbmAppSimInfo = null;
 	private javax.swing.JLabel ivjBmAppSimLabel = null;
 	private String ivjappName = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == EditTestCriteriaPanel.this.getRefMathModelButton()) 
 				connEtoC1(e);
@@ -305,7 +308,7 @@ private javax.swing.JLabel getBmAppSimLabel() {
  * @return The existingTestCriteria property value.
  * @see #setExistingTestCriteria
  */
-public cbit.vcell.numericstest.TestCriteriaNew getExistingTestCriteria() {
+private TestCriteriaNew getExistingTestCriteria() {
 	return fieldExistingTestCriteria;
 }
 /**
@@ -402,7 +405,7 @@ private javax.swing.JPanel getJPanel1() {
  * @return The newTestCriteria property value.
  * @see #setNewTestCriteria
  */
-public cbit.vcell.numericstest.TestCriteriaNew getNewTestCriteria() {
+public TestCriteriaNew getNewTestCriteria() {
 	applyTestCriteriaInfo();
 	return fieldNewTestCriteria;
 }
@@ -411,7 +414,7 @@ public cbit.vcell.numericstest.TestCriteriaNew getNewTestCriteria() {
  * @return The referenceMathModelInfo property value.
  * @see #setReferenceMathModelInfo
  */
-public org.vcell.util.document.MathModelInfo getReferenceMathModelInfo() {
+private MathModelInfo getReferenceMathModelInfo() {
 	return fieldReferenceMathModelInfo;
 }
 /**
@@ -419,7 +422,7 @@ public org.vcell.util.document.MathModelInfo getReferenceMathModelInfo() {
  * @return The referenceSimInfo property value.
  * @see #setReferenceSimInfo
  */
-public cbit.vcell.solver.SimulationInfo getReferenceSimInfo() {
+private SimulationInfo getReferenceSimInfo() {
 	return fieldReferenceSimInfo;
 }
 /**
@@ -594,7 +597,7 @@ private javax.swing.JButton getSelectRefSimJButton() {
  * @return The solutionType property value.
  * @see #setSolutionType
  */
-public java.lang.String getSolutionType() {
+private java.lang.String getSolutionType() {
 	return fieldSolutionType;
 }
 /**
@@ -602,7 +605,7 @@ public java.lang.String getSolutionType() {
  * @return The testingFrameworkWindowManager property value.
  * @see #setTestingFrameworkWindowManager
  */
-public cbit.vcell.client.TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
+private TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
 	return fieldTestingFrameworkWindowManager;
 }
 /**
@@ -743,8 +746,8 @@ public void resetTextFields() {
 				}
 				setReferenceMathModelInfo(refMMInfo);
 				setReferenceSimInfo(refSimInfo);
-				getRefMathModelLabel().setText(refMMInfo.getVersion().getName()+" (MathModelKey="+refMMInfo.getVersion().getVersionKey()+") "+refMMInfo.getVersion().getDate());
-				getRefSimLabel().setText(refSimInfo.getVersion().getName()+" (SimulationKey:"+refSimInfo.getVersion().getVersionKey()+")");
+				getRefMathModelLabel().setText("<html>" + refMMInfo.getVersion().getName()+"<br>(MathModelKey="+refMMInfo.getVersion().getVersionKey()+")<br>"+refMMInfo.getVersion().getDate() + "<html>");
+				getRefSimLabel().setText("<html>" + refSimInfo.getVersion().getName()+"<br>(SimulationKey:"+refSimInfo.getVersion().getVersionKey()+")</html>");
 			}else if(getExistingTestCriteria() instanceof TestCriteriaNewBioModel){
 				BioModelInfo refBMInfo =
 					((TestCriteriaNewBioModel)getExistingTestCriteria()).getRegressionBioModelInfo();
@@ -759,8 +762,8 @@ public void resetTextFields() {
 				setbioModelInfo(refBMInfo);
 				setbmAppSimInfo(refSimInfo);
 				setappName(((TestCriteriaNewBioModel)getExistingTestCriteria()).getRegressionApplicationName());
-				getBioModelAppLabel().setText(refBMInfo.getVersion().getName()+"/"+getappName()+" (BioModelKey="+refBMInfo.getVersion().getVersionKey()+") "+refBMInfo.getVersion().getDate());
-				getBmAppSimLabel().setText(refSimInfo.getVersion().getName()+" (SimulationKey:"+refSimInfo.getVersion().getVersionKey()+")");
+				getBioModelAppLabel().setText("<html>" + refBMInfo.getVersion().getName()+"/"+getappName()+"<br>(BioModelKey="+refBMInfo.getVersion().getVersionKey()+")<br>"+refBMInfo.getVersion().getDate() + "</html>");
+				getBmAppSimLabel().setText("<html>" + refSimInfo.getVersion().getName()+"<br>(SimulationKey:"+refSimInfo.getVersion().getVersionKey()+")</html>");
 			}
 		} else {
 			setReferenceMathModelInfo(null);
@@ -780,7 +783,7 @@ public void resetTextFields() {
  * Comment
  */
 private void selectBMApp() {
-	org.vcell.util.document.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
+	BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
 	if (bmInfo != null) {
 		//getRefMathModelLabel().setText(null);
 		//getRefSimLabel().setText(null);
@@ -792,11 +795,11 @@ private void selectBMApp() {
 			setappName(selection);
 			setbmAppSimInfo(null);
 			getBmAppSimLabel().setText(null);
-			getBioModelAppLabel().setText(
+			getBioModelAppLabel().setText("<html>" + 
 				getbioModelInfo().getVersion().getName()+
-				"/"+getappName()+" (BioModelKey="+
-				getbioModelInfo().getVersion().getVersionKey()+") "+
-				getbioModelInfo().getVersion().getDate());
+				"/"+getappName()+"<br>(BioModelKey="+
+				getbioModelInfo().getVersion().getVersionKey()+")<br>"+
+				getbioModelInfo().getVersion().getDate() + "</html>");
 			//getBioModelAppLabel().setText(bmInfo.getVersion().getName()+"/"+getappName());
 			//setReferenceMathModelInfo(null);
 			//setReferenceSimInfo(null);
@@ -813,8 +816,8 @@ private void selectBMAppSim() {
 		if (bmAppNameAndSimInfo != null) {
 			setbmAppSimInfo((SimulationInfo)bmAppNameAndSimInfo[1]);
 			setappName((String)bmAppNameAndSimInfo[0]);
-			getBmAppSimLabel().setText(getbmAppSimInfo().getVersion().getName()+" (SimulationKey:"+getbmAppSimInfo().getVersion().getVersionKey()+")");
-			getBioModelAppLabel().setText(getbioModelInfo().getVersion().getName()+"/"+getappName()+" (BioModelKey="+getbioModelInfo().getVersion().getVersionKey()+") "+getbioModelInfo().getVersion().getDate());
+			getBmAppSimLabel().setText("<html>" + getbmAppSimInfo().getVersion().getName()+"<br>(SimulationKey:"+getbmAppSimInfo().getVersion().getVersionKey()+")</html>");
+			getBioModelAppLabel().setText("<html>" + getbioModelInfo().getVersion().getName()+"/"+getappName()+"<br>(BioModelKey="+getbioModelInfo().getVersion().getVersionKey()+")<br>"+getbioModelInfo().getVersion().getDate() + "</html>");
 		} else {
 			PopupGenerator.showErrorDialog(this, "Reference BMAppSimInfo not selected!");
 		}
@@ -828,7 +831,7 @@ private void selectBMAppSim() {
 private void selectRefMathModel(java.awt.event.ActionEvent actionEvent) {
 	MathModelInfo mmInfo = getTestingFrameworkWindowManager().selectMathModelInfo();
 	if (mmInfo != null) {
-		getRefMathModelLabel().setText(mmInfo.getVersion().getName()+" (MathModelKey="+mmInfo.getVersion().getVersionKey()+") "+mmInfo.getVersion().getDate());
+		getRefMathModelLabel().setText("<html>" + mmInfo.getVersion().getName()+"<br>(MathModelKey="+mmInfo.getVersion().getVersionKey()+")<br>"+mmInfo.getVersion().getDate() + "</html>");
 		setReferenceSimInfo(null);
 		getRefSimLabel().setText(null);
 		setReferenceMathModelInfo(mmInfo);
@@ -844,7 +847,7 @@ private void selectRefSimInfo(java.awt.event.ActionEvent actionEvent) {
 	SimulationInfo simInfo = getTestingFrameworkWindowManager().selectRefSimInfo(getReferenceMathModelInfo());
 	if (simInfo != null) {
 		setReferenceSimInfo(simInfo);
-		getRefSimLabel().setText(simInfo.getVersion().getName()+" (SimulationKey:"+simInfo.getVersion().getVersionKey()+")");
+		getRefSimLabel().setText("<html>" + simInfo.getVersion().getName()+"<br>(SimulationKey:"+simInfo.getVersion().getVersionKey()+")</html>");
 	} else {
 		PopupGenerator.showErrorDialog(this, "Reference SimInfo not selected!");
 	}
@@ -876,7 +879,7 @@ private void setappName(java.lang.String newValue) {
  * @param newValue cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbioModelInfo(org.vcell.util.document.BioModelInfo newValue) {
+private void setbioModelInfo(BioModelInfo newValue) {
 	if (ivjbioModelInfo != newValue) {
 		try {
 			ivjbioModelInfo = newValue;
@@ -896,10 +899,10 @@ private void setbioModelInfo(org.vcell.util.document.BioModelInfo newValue) {
  * @param newValue cbit.vcell.solver.SimulationInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbmAppSimInfo(cbit.vcell.solver.SimulationInfo newValue) {
+private void setbmAppSimInfo(SimulationInfo newValue) {
 	if (ivjbmAppSimInfo != newValue) {
 		try {
-			cbit.vcell.solver.SimulationInfo oldValue = getbmAppSimInfo();
+			SimulationInfo oldValue = getbmAppSimInfo();
 			ivjbmAppSimInfo = newValue;
 			firePropertyChange("referenceSimInfo", oldValue, newValue);
 			// user code begin {1}
@@ -918,8 +921,8 @@ private void setbmAppSimInfo(cbit.vcell.solver.SimulationInfo newValue) {
  * @param existingTestCriteria The new value for the property.
  * @see #getExistingTestCriteria
  */
-public void setExistingTestCriteria(cbit.vcell.numericstest.TestCriteriaNew existingTestCriteria) {
-	cbit.vcell.numericstest.TestCriteriaNew oldValue = fieldExistingTestCriteria;
+public void setExistingTestCriteria(TestCriteriaNew existingTestCriteria) {
+	TestCriteriaNew oldValue = fieldExistingTestCriteria;
 	fieldExistingTestCriteria = existingTestCriteria;
 	firePropertyChange("existingTestCriteria", oldValue, existingTestCriteria);
 }
@@ -928,8 +931,8 @@ public void setExistingTestCriteria(cbit.vcell.numericstest.TestCriteriaNew exis
  * @param newTestCriteria The new value for the property.
  * @see #getNewTestCriteria
  */
-public void setNewTestCriteria(cbit.vcell.numericstest.TestCriteriaNew newTestCriteria) {
-	cbit.vcell.numericstest.TestCriteriaNew oldValue = fieldNewTestCriteria;
+public void setNewTestCriteria(TestCriteriaNew newTestCriteria) {
+	TestCriteriaNew oldValue = fieldNewTestCriteria;
 	fieldNewTestCriteria = newTestCriteria;
 	firePropertyChange("newTestCriteria", oldValue, newTestCriteria);
 }
@@ -938,8 +941,8 @@ public void setNewTestCriteria(cbit.vcell.numericstest.TestCriteriaNew newTestCr
  * @param referenceMathModelInfo The new value for the property.
  * @see #getReferenceMathModelInfo
  */
-public void setReferenceMathModelInfo(org.vcell.util.document.MathModelInfo referenceMathModelInfo) {
-	org.vcell.util.document.MathModelInfo oldValue = fieldReferenceMathModelInfo;
+public void setReferenceMathModelInfo(MathModelInfo referenceMathModelInfo) {
+	MathModelInfo oldValue = fieldReferenceMathModelInfo;
 	fieldReferenceMathModelInfo = referenceMathModelInfo;
 	firePropertyChange("referenceMathModelInfo", oldValue, referenceMathModelInfo);
 }
@@ -948,8 +951,8 @@ public void setReferenceMathModelInfo(org.vcell.util.document.MathModelInfo refe
  * @param referenceSimInfo The new value for the property.
  * @see #getReferenceSimInfo
  */
-public void setReferenceSimInfo(cbit.vcell.solver.SimulationInfo referenceSimInfo) {
-	cbit.vcell.solver.SimulationInfo oldValue = fieldReferenceSimInfo;
+public void setReferenceSimInfo(SimulationInfo referenceSimInfo) {
+	SimulationInfo oldValue = fieldReferenceSimInfo;
 	fieldReferenceSimInfo = referenceSimInfo;
 	firePropertyChange("referenceSimInfo", oldValue, referenceSimInfo);
 }
@@ -968,8 +971,8 @@ public void setSolutionType(java.lang.String solutionType) {
  * @param testingFrameworkWindowManager The new value for the property.
  * @see #getTestingFrameworkWindowManager
  */
-public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkWindowManager testingFrameworkWindowManager) {
-	cbit.vcell.client.TestingFrameworkWindowManager oldValue = fieldTestingFrameworkWindowManager;
+public void setTestingFrameworkWindowManager(TestingFrameworkWindowManager testingFrameworkWindowManager) {
+	TestingFrameworkWindowManager oldValue = fieldTestingFrameworkWindowManager;
 	fieldTestingFrameworkWindowManager = testingFrameworkWindowManager;
 	firePropertyChange("testingFrameworkWindowManager", oldValue, testingFrameworkWindowManager);
 }

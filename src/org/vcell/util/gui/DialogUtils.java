@@ -869,7 +869,7 @@ protected static void showReportDialog(final Component requester, final String r
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			JTextArea textArea = new JTextArea(reportText);
 			scroller.setViewportView(textArea);
-			scroller.getViewport().setPreferredSize(new Dimension(600, 800));
+			scroller.getViewport().setPreferredSize(new Dimension(600, 400));
 			panel.add(scroller, BorderLayout.CENTER);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION); 
 			final JDialog dialog = pane.createDialog(requester, "Complete Report");
