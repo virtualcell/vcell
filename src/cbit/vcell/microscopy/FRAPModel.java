@@ -15,14 +15,14 @@ public class FRAPModel implements Matchable
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
 		                                                       "Reaction Dominant Off Rate",
-		                                                       /*"Effective Diffusion",*/
+//		                                                       "Effective Diffusion",
 		                                                       "Diffusion plus Binding"};
 	//different model types
 	public static final int NUM_MODEL_TYPES = 4;
 	public static final int IDX_MODEL_DIFF_ONE_COMPONENT = 0;
 	public static final int IDX_MODEL_DIFF_TWO_COMPONENTS = 1;
 	public static final int IDX_MODEL_REACTION_OFF_RATE = 2;
-	/*public static final int IDX_MODEL_EFFECTIVE_DIFFUSION = 3;*/
+//	public static final int IDX_MODEL_EFFECTIVE_DIFFUSION = 3;
 	public static final int IDX_MODEL_DIFF_BINDING = 3;
 	
 	//different model parameters
@@ -203,59 +203,6 @@ public class FRAPModel implements Matchable
 			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secDiffRate;
 			params[FRAPModel.INDEX_SECONDARY_FRACTION] = secMobileFrac;
 		}
-		else if(modelIdentifier.equals(MODEL_TYPE_ARRAY[IDX_MODEL_DIFF_BINDING]))
-		{
-			Parameter primaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE],
-			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    REF_DIFFUSION_RATE_PARAM.getScale(),
-			                    analysisResults.getRecoveryDiffusionRate());
-			Parameter primaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION],
-			                    REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    REF_MOBILE_FRACTION_PARAM.getScale(),
-			                    analysisResults.getMobilefraction());
-			Parameter bleachWhileMonitoringRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE],
-			                    REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-			                    REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-			                    REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
-			                    analysisResults.getBleachWhileMonitoringTau());
-			Parameter secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
-			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    REF_DIFFUSION_RATE_PARAM.getScale(), 
-			                    0);
-			Parameter secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-								REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    REF_MOBILE_FRACTION_PARAM.getScale(), 
-			                    0);
-			Parameter bsConcentration = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BINDING_SITE_CONCENTRATION],
-			                    0,
-			                    1,
-			                    1, 
-			                    0);
-			Parameter onReacRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_ON_RATE], 
-			                    0,
-			                    1e6,
-			                    1, 
-			                    0);
-			Parameter offReacRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_OFF_RATE], 
-				                 0,
-				                 1e6,
-				                 1, 
-				                 0);
-			
-			params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_BINDING];
-			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryDiff;
-			params[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac;
-			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bleachWhileMonitoringRate;
-			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryDiff;
-			params[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac;
-			params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = bsConcentration;
-			params[FRAPModel.INDEX_ON_RATE] = onReacRate;
-			params[FRAPModel.INDEX_OFF_RATE] = offReacRate;
-		}
 		
 		return params;
 	}
@@ -339,19 +286,23 @@ public class FRAPModel implements Matchable
 				return false;
 			}
 			//there are modelparameters null, so we cannot directly use Compare.isEqualOrNull(Machable[] v1, Machable[] v2)
-//			if(!Compare.isEqualOrNull(modelParameters, frapModel.getModelParameters()))
-//			{
-//				return false;
-//			}
-			if(modelParameters.length != frapModel.getModelParameters().length)
+			if((modelParameters == null && frapModel.getModelParameters() != null)
+			   ||(modelParameters != null && frapModel.getModelParameters() == null))
 			{
 				return false;
 			}
-			for(int i = 0; i < modelParameters.length; i++)
+			if(modelParameters != null && frapModel.getModelParameters() != null)
 			{
-				if(!Compare.isEqualOrNull(modelParameters[i], frapModel.getModelParameters()[i]))
+				if(modelParameters.length != frapModel.getModelParameters().length)
 				{
 					return false;
+				}
+				for(int i = 0; i < modelParameters.length; i++)
+				{
+					if(!Compare.isEqualOrNull(modelParameters[i], frapModel.getModelParameters()[i]))
+					{
+						return false;
+					}
 				}
 			}
 			if(!Compare.isEqualOrNull(timepoints, frapModel.getTimepoints()))

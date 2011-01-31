@@ -34,6 +34,7 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.gui.DiffRateHelpPanel;
 import cbit.vcell.opt.Parameter;
 
 @SuppressWarnings("serial")
@@ -50,7 +51,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 	private final JButton diffusionRateSetButton;
 	private final JButton mobileFractionSetButton;
 	private final JButton bleachWhileMonitorSetButton;
-	
+	private DiffRateHelpPanel diffRateHelpPanel = null;
 	private FRAPOptData frapOptData;
 	private FRAPSingleWorkspace frapWorkspace;
 
@@ -289,9 +290,21 @@ public class FRAPDiffOneParamPanel extends JPanel
 			}
 		});
 		
+		JButton effDiffAnalysisButton = new JButton();
+		effDiffAnalysisButton.setText("Analyze Effective Diffusion");
+		effDiffAnalysisButton.setToolTipText("If the estimated diffusion rate is smaller than expected, please try effective diffusion analysis.");
+		effDiffAnalysisButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				showEffectiveDiffusionAnalysis();
+			}
+		});
+		
 		buttonPanel.add(optimalButton);
 		buttonPanel.add(new JLabel("   "));
 		buttonPanel.add(evaluationButton);
+		buttonPanel.add(new JLabel("   "));
+		buttonPanel.add(effDiffAnalysisButton);
+		
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 1;
 		gridBagConstraints_8.weighty = 1;
@@ -605,6 +618,29 @@ public class FRAPDiffOneParamPanel extends JPanel
 		};
 		//dispatch
 		ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false, false, null, true); 
+	}
+	
+	public DiffRateHelpPanel getDiffRateHelpPanel()
+	{
+		if(diffRateHelpPanel == null)
+		{
+			diffRateHelpPanel = new DiffRateHelpPanel();
+		}
+		return diffRateHelpPanel;
+	}
+	
+	public void showEffectiveDiffusionAnalysis()
+	{
+		try{
+			double effDiff = Double.parseDouble(diffusionRateTextField.getText());
+			getDiffRateHelpPanel().setEffectiveDiffRate(effDiff);
+			
+			DialogUtils.showComponentCloseDialog(this, diffRateHelpPanel, "Effective Diffusion Analysis");
+		}catch(NumberFormatException e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Estimated diffusion rate is empty or in illegal form, effective diffusion analysis is unable to proceed." + e.getMessage());
+		}
 	}
 	
 	public void setData(FRAPOptData frapOptData, Parameter[] modelParameters) throws Exception

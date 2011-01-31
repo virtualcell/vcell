@@ -410,7 +410,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 			bleachWhileMonitorSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
 			bleachWhileMonitorSlider.setLabelTable(bleachWhileMonitorSliderLabelTable);
 			//initialize expression canvas
-			initializedExpression();
+			initializeExpression();
 		}finally{
 			offRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 			bleachWhileMonitorSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
@@ -516,7 +516,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		this.frapWorkspace = frapWorkspace;
 	}
 
-	private void initializedExpression() 
+	private void initializeExpression() 
 	{
 		try{
 			String[] prefixes = new String[] { "I_bleached(t) = ", "I_cell(t)= " };
