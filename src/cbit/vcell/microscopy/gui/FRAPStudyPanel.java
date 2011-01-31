@@ -1845,7 +1845,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				diffOneDescriptor.setFrapWorkspace(getFrapWorkspace());
 				diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
 				diffTwoDescriptor.setFrapWorkspace(getFrapWorkspace());
-				
 				offRateDescriptor = new EstParams_ReactionOffRateDescriptor();
 				offRateDescriptor.setFrapWorkspace(getFrapWorkspace());
 				compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
@@ -1863,7 +1862,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				{
 					estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
 					diffOneDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
-					if(i > 0) //not the first wizard page
+					if(lastDescriptor != null) //not the first wizard page
 					{
 						lastDescriptor.setNextPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
 					}
@@ -1873,7 +1872,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				{
 			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
 			        diffTwoDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
-			        if(i > 0)
+			        if(lastDescriptor != null)
 			        {
 			        	lastDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
 			        }
@@ -1883,7 +1882,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				{
 			        estimateParamWizard.registerWizardPanel(EstParams_ReactionOffRateDescriptor.IDENTIFIER, offRateDescriptor);
 			        offRateDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
-			        if(i > 0)
+			        if(lastDescriptor != null)
 			        {
 			        	lastDescriptor.setNextPanelDescriptorID(EstParams_ReactionOffRateDescriptor.IDENTIFIER);
 			        }
