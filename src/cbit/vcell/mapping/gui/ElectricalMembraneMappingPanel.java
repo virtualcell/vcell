@@ -371,7 +371,7 @@ private void initialize() {
 		constraintsElectricalStimuliPanel.gridx = 0; constraintsElectricalStimuliPanel.gridy = 3;
 		constraintsElectricalStimuliPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsElectricalStimuliPanel.weightx = 1.0;
-		constraintsElectricalStimuliPanel.weighty = 1.0;
+		constraintsElectricalStimuliPanel.weighty = 0.5;
 		constraintsElectricalStimuliPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getElectricalStimuliPanel(), constraintsElectricalStimuliPanel);
 

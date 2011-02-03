@@ -11,9 +11,13 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+
 @SuppressWarnings("serial")
-public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener {
+public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener, IssueEventListener {
 	private SelectionManager selectionManager = null;
+	protected IssueManager issueManager = null;
 	
 	public DocumentEditorSubPanel() {
 		super();
@@ -27,6 +31,14 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		}
 	}
 
+	public void setIssueManager(IssueManager issueManager) {
+		this.issueManager = issueManager;
+		if (issueManager != null) {
+			issueManager.removeIssueEventListener(this);
+			issueManager.addIssueEventListener(this);
+		}
+	}
+	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == selectionManager && evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
 			onSelectedObjectsChange(selectionManager.getSelectedObjects());
@@ -81,5 +93,8 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		if (selectionManager != null) {
 			selectionManager.setSelectedObjects(selectedObjects);
 		}
+	}
+	
+	public void issueChange(IssueEvent issueEvent) {
 	}
 }

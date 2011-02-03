@@ -17,12 +17,11 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -55,10 +54,6 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static String GTK_AssumedCompartmentSize_oldname = "assumed compartment size";
 	public static String GTK_ReactionRate_oldname = "reaction rate";
 	public static String GTK_CurrentDensity_oldname = "inward current density";
-
-
-	public static final String ISSUECATEGORY_KineticsApplicability = "KineticsApplicablity";
-	public static final String ISSUECATEGORY_ParameterLoop = "ParameterLoop";
 
 	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
@@ -1114,7 +1109,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 	// for each user unresolved parameter, make an issue
 	//
 	for (int i = 0; fieldUnresolvedParameters!=null && i < fieldUnresolvedParameters.length; i++){
-		issueList.add(new Issue(fieldUnresolvedParameters[i],"Unresolved Parameter","Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(fieldUnresolvedParameters[i],IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for each user defined parameter, see if it is used, if not make an issue
@@ -1123,12 +1118,12 @@ public void gatherIssues(Vector<Issue> issueList) {
 		if (fieldKineticsParameters[i].getRole()==ROLE_UserDefined){
 			try {
 				if (!isReferenced(fieldKineticsParameters[i],0)){
-					issueList.add(new Issue(fieldKineticsParameters[i],"Unreferenced Kinetic Parameter","Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
 				}
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],"Error resolving parameter","error resolving expression for parameter '"+fieldKineticsParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ModelException e){
-				issueList.add(new Issue(this,ISSUECATEGORY_ParameterLoop,"there is a loop in the parameter definitions for parameter '"+fieldKineticsParameters[i].getName()+"'",Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this,IssueCategory.CyclicDependency,"cyclic dependency in the parameter definitions", Issue.SEVERITY_ERROR));
 			}
 		}
 	}
@@ -1138,16 +1133,16 @@ public void gatherIssues(Vector<Issue> issueList) {
 	//
 	for (int i = 0; fieldKineticsParameters!=null && i < fieldKineticsParameters.length; i++){
 		if (fieldKineticsParameters[i].getExpression()==null){
-			issueList.add(new Issue(fieldKineticsParameters[i],"Expression","expression for parameter '"+fieldKineticsParameters[i].getName()+"' is missing",Issue.SEVERITY_INFO));
+			issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
 		}else{
 			Expression exp = fieldKineticsParameters[i].getExpression();
 			String symbols[] = exp.getSymbols();
 			for (int j = 0; symbols!=null && j < symbols.length; j++){
 				SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
 				if (ste instanceof SpeciesContext && reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
-					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionNonParticipantSymbol, "references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 				}else if (ste == null){
-					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionUndefinedSymbol, "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 				}
 			}
 		}
@@ -1158,27 +1153,26 @@ public void gatherIssues(Vector<Issue> issueList) {
 		// determine unit consistency for each expression
 		//
 		for (int i = 0; i < fieldKineticsParameters.length; i++){
-			String parmName = reactionStep.getNameScope().getName()+"."+fieldKineticsParameters[i].getName();
 			try {
 				VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": defined unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD()){
-					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": has undefined unit [tbd]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + VCUnitDefinition.TBD_SYMBOL,Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": computed unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
-					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],"Units","parameter "+parmName+": "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],"Units","parameter "+parmName+": "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,"Units","unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 
 	//

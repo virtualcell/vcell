@@ -302,7 +302,7 @@ public boolean hasUnappliedChanges() {
 }
 
 @Override
-protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {
+protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, String actionCommand) {
 	switch (action) {
 	case add_new: 
 		try {

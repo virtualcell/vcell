@@ -22,6 +22,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorModelPanel.ModelPanelTabID;
@@ -128,7 +129,7 @@ public BioModelEditor() {
 }
 
 @Override
-protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {	
+protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, String actionCommand) {	
 	Model model = bioModel.getModel();
 	final SimulationContext selectedSimulationContext = getSelectedSimulationContext();
 	switch (action) {
@@ -360,7 +361,60 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action) {
 		tasks[newApplicationTasks.length] = task;
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 		break;
+	case copy_app:
+		if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
+			copyApplication();
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
+			copyApplication(false, true);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
+			copyApplication(false, false);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
+			copyApplication(false, false);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
+			copyApplication(false, true);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
+			copyApplication(true, false);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
+			copyApplication(true, true);
+		}
+		break;
 	}
+}
+
+private void copyApplication() {
+	SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch());
+}
+
+private void copyApplication(final boolean bSpatial, final boolean bStochastic) {		
+	final SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+	if (bStochastic) {
+		//check validity if copy to stochastic application
+		String message = bioModel.getModel().isValidForStochApp();
+		if (!message.equals("")) {
+			PopupGenerator.showErrorDialog(this, message);
+			return;
+		}
+	}
+	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic);
+	AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
+	System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
+	allTasks[allTasks.length - 1] = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+			selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);
 }
 
 /**
@@ -634,7 +688,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
 	int destComponentIndex = RIGHT_BOTTOM_TAB_PROPERTIES_INDEX;
-	boolean bShowBottom = true;
 	boolean bShowInDatabaseProperties = false;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
@@ -674,7 +727,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof BioModelsNetModelInfo) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = getBioModelsNetPropertiesPanel();
-			rightSplitPane.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = getSimulationSummaryPanel();
 		} else if (singleSelection instanceof DataSymbol) {
@@ -702,22 +754,19 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} else {
 				rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
 			}
-			rightSplitPane.setDividerLocation(0.5);
 		} else if (singleSelection instanceof Model) {
 		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
 			if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
 				bottomComponent = getReactionPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE) {
-					bottomComponent = getStructurePropertiesPanel();
+				bottomComponent = getStructurePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
 				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
-					bottomComponent = getSimulationSummaryPanel();
-//			} else if (folderClass == DocumentEditorTreeFolderClass.MODELINFO_NODE) {
-//				bottomComponent = bioModelEditorAnnotationPanel;
+				bottomComponent = getSimulationSummaryPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
 				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
@@ -731,35 +780,24 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = getEventPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
 				bottomComponent = getDataSymbolsSpecPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE 
-					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
-			} else {
-				bShowBottom = false;
-			}
-		} else {
-			bShowBottom = false;
+			} 
 		}
 	}
-	if (bShowBottom) {
-		if (bShowInDatabaseProperties) {
-			for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
-				if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
-					break;
-				}
-			}
-			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
-				rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
+	if (bShowInDatabaseProperties) {
+		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
+			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
+				break;
 			}
 		}
-		if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
-			rightSplitPane.setBottomComponent(rightBottomTabbedPane);
-		}	
-		if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
-			rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
-			rightBottomTabbedPane.repaint();
+		if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
 		}
+	}
+	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
+		rightBottomTabbedPane.repaint();
+	}
+	if (rightBottomTabbedPane.getSelectedComponent() != bottomComponent) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 	}
 }
@@ -938,14 +976,13 @@ protected void treeSelectionChanged() {
 
 private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object leafObject, SimulationContext simulationContext) {
 	JComponent newTopPanel = emptyPanel;
-	double dividerLocation = DEFAULT_DIVIDER_LOCATION;
+	int dividerLocation = rightSplitPane.getDividerLocation();//DEFAULT_DIVIDER_LOCATION;
 	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
 		if (leafObject instanceof Model) {
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (leafObject instanceof Model) {
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (leafObject instanceof BioModel || leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {
-//			dividerLocation = 1.0;
 			newTopPanel = bioModelPropertiesPanel;
 		}
 	} else {
@@ -973,7 +1010,6 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
 			if (leafObject == null) {
 				newTopPanel = getBioModelEditorApplicationsPanel();
@@ -983,25 +1019,20 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATHEMATICS_NODE) {
 			newTopPanel = getMathematicsPanel();
 			getMathematicsPanel().setSimulationContext(simulationContext);
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
 		} else if (folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
 			newTopPanel = getParameterEstimationPanel();
 			getParameterEstimationPanel().setSimulationContext(simulationContext);
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE) {
 			newTopPanel = getGeometrySummaryViewer();
 			getGeometrySummaryViewer().setGeometryOwner(simulationContext);
-			dividerLocation = 1.0;
 		} else if(folderClass == DocumentEditorTreeFolderClass.STRUCTURE_MAPPING_NODE) {
 			newTopPanel = getStructureMappingCartoonPanel();
-			dividerLocation = 1.0;
 			getStructureMappingCartoonPanel().setSimulationContext(simulationContext);
 		} else if(folderClass == DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
 			newTopPanel = getInitialConditionsPanel();
@@ -1011,29 +1042,23 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			getReactionSpecsPanel().setSimulationContext(simulationContext);
 		} else if(folderClass == DocumentEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE) {
 			newTopPanel = getElectricalMembraneMappingPanel();
-			dividerLocation = 1.0;
 			getElectricalMembraneMappingPanel().setSimulationContext(simulationContext);
 		} else if(folderClass == DocumentEditorTreeFolderClass.EVENTS_NODE) {
 			newTopPanel = getEventsDisplayPanel();
-			dividerLocation = 0.4;
 			getEventsDisplayPanel().setSimulationContext(simulationContext);
 		} else if(folderClass == DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
 			newTopPanel = getDataSymbolsPanel();
 			getDataSymbolsPanel().setSimulationContext(simulationContext);
-			dividerLocation = 0.4;
 		} else if(folderClass == DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE) {
 			newTopPanel = getMicroscopeMeasurementPanel();
 			getMicroscopeMeasurementPanel().setSimulationContext(simulationContext);
-			dividerLocation = 1.0;
 		} else if(folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE || folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
 			ApplicationComponents applicationComponents = bioModelWindowManager.getApplicationComponents(simulationContext);
 			SimulationWorkspace simulationWorkspace = applicationComponents.getSimulationWorkspace();
 			if(folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
 				newTopPanel = getSimulationListPanel();
-				dividerLocation = 0.4;
 				getSimulationListPanel().setSimulationWorkspace(simulationWorkspace);
 			} else if(folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
-				dividerLocation = 1.0;
 				newTopPanel = getOutputFunctionsPanel();
 				getOutputFunctionsPanel().setSimulationWorkspace(simulationWorkspace);
 			}
@@ -1043,12 +1068,7 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 	if (rightTopComponent != newTopPanel) {
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
-	if (dividerLocation < 1.0) {
-		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
-		rightSplitPane.setDividerLocation(dividerLocation);
-	} else {
-		rightSplitPane.setBottomComponent(null);
-	}
+	rightSplitPane.setDividerLocation(dividerLocation);
 }
 
 private OutputFunctionsPanel getOutputFunctionsPanel() {
@@ -1093,6 +1113,7 @@ public void setBioModel(BioModel bioModel) {
 	bioModelPropertiesPanel.setBioModel(bioModel);
 	bioModelEditorTreeModel.setBioModel(bioModel);
 	bioModelEditorAnnotationPanel.setBioModel(bioModel);
+	issueManager.setVCDocument(bioModel);
 }
 
 /**

@@ -4,6 +4,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
@@ -77,7 +78,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 //			((Constraint)constraintList.elementAt(i)).gatherIssues(issueList);
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,"Constraint","unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 	
 	try {
@@ -87,14 +88,14 @@ public void gatherIssues(Vector<Issue> issueList) {
 		for (int i = 0; i < this.parameterList.size(); i++){
 			Parameter parameter = (Parameter)parameterList.elementAt(i);
 			if (parameter.getLowerBound()>parameter.getUpperBound()){
-				issueList.add(new Issue(parameter, "Parameter","lower bound is higher than upper bound for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(parameter, IssueCategory.ParameterEstimationBoundsError,"lower bound is higher than upper bound for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
 			}
 			if (parameter.getInitialGuess()<parameter.getLowerBound() || parameter.getInitialGuess()>parameter.getUpperBound()){
-				issueList.add(new Issue(parameter, "Parameter","initial guess is outside of bounds for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(parameter, IssueCategory.ParameterEstimationBoundsViolation,"initial guess is outside of bounds for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,"Parameter","unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 	//
 	// check for validity of objective function
@@ -105,7 +106,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 	// check that there is at least one parameter to optimize
 	//
 	if (parameterList.size()==0){
-		issueList.add(new Issue(this,"Parameter","No parameters are selected for optimization. Please select parameters " +
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization. Please select parameters " +
 				"by checking \"optimize\" in \"Parameters\" table.",Issue.SEVERITY_ERROR));
 	}
 }

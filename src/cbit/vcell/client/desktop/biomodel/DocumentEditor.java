@@ -33,6 +33,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -76,6 +77,7 @@ public abstract class DocumentEditor extends JPanel {
 	
 	protected JTree documentEditorTree = null;
 	protected SelectionManager selectionManager = new SelectionManager();
+	protected IssueManager issueManager = new IssueManager();
 
 	protected JPanel emptyPanel = new JPanel();
 	private JPopupMenu popupMenu = null;
@@ -102,7 +104,20 @@ public abstract class DocumentEditor extends JPanel {
 	private TreePath mouseClickPath = null;
 	private long mouseClickPathTimeStamp = System.currentTimeMillis();
 	protected JLabel treeNodeDescriptionLabel;
+	protected IssuePanel issuePanel;
 	
+	private JMenuItem menuItemAppCopy = null;
+	private JMenu menuAppCopyAs = null;
+	private JMenuItem menuItemNonSpatialCopyStochastic = null;
+	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
+	
+	private JMenu menuSpatialCopyAsNonSpatial = null;
+	private JMenuItem menuItemSpatialCopyAsNonSpatialStochastic = null;
+	private JMenuItem menuItemSpatialCopyAsNonSpatialDeterministic = null;
+	private JMenu menuSpatialCopyAsSpatial = null;
+	private JMenuItem menuItemSpatialCopyAsSpatialStochastic = null;
+	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
+
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == expandAllMenuItem) {
@@ -129,15 +144,23 @@ public abstract class DocumentEditor extends JPanel {
 					}
 				}
 			} else if (e.getSource() == addNewMenuItem) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new);
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new, e.getActionCommand());
 			} else if (e.getSource() == deleteMenuItem) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete);
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete, e.getActionCommand());
 			} else if (e.getSource() == renameMenuItem) {
 				documentEditorTree.startEditingAtPath(documentEditorTree.getSelectionPath());
 			} else if (e.getSource() == addNewAppDeterministicMenuItem) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic);
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic, e.getActionCommand());
 			} else if (e.getSource() == addNewAppStochasticMenuItem) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_stochastic);
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_stochastic, e.getActionCommand());
+			} else if (e.getSource() == menuItemAppCopy
+						|| e.getSource() == menuItemNonSpatialCopyStochastic
+						|| e.getSource() == menuItemNonSpatialCopyDeterministic
+						|| e.getSource() == menuItemSpatialCopyAsNonSpatialDeterministic
+						|| e.getSource() == menuItemSpatialCopyAsNonSpatialStochastic
+						|| e.getSource() == menuItemSpatialCopyAsSpatialDeterministic
+						|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());	
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -207,7 +230,7 @@ public DocumentEditor() {
 	initialize();
 }
 
-protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction action);
+protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, String actionCommand);
 
 public void onSelectedObjectsChange() {
 	Object[] selectedObjects = selectionManager.getSelectedObjects();
@@ -295,7 +318,7 @@ private void initialize() {
 
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		rightSplitPane.setResizeWeight(0.7);
-		rightSplitPane.setDividerLocation(550);
+		rightSplitPane.setDividerLocation(400);
 		rightSplitPane.setDividerSize(8);
 		rightSplitPane.setOneTouchExpandable(true);
 		
@@ -312,8 +335,10 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.PAGE_START;
 		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
 		
+		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPane();
 		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
+		rightBottomTabbedPane.addTab("Problems", issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
@@ -340,7 +365,8 @@ private void initialize() {
 		mathModelMetaDataPanel.setSelectionManager(selectionManager);
 		geometryMetaDataPanel = new GeometryMetaDataPanel();
 		geometryMetaDataPanel.setSelectionManager(selectionManager);
-
+		issuePanel.setSelectionManager(selectionManager);
+		issuePanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -430,6 +456,7 @@ private void construcutPopupMenu() {
 	boolean bExpand = true;
 	boolean bAddNew = false;
 	boolean bAddNewApp = false;
+	boolean bCopyApp = false;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -462,11 +489,14 @@ private void construcutPopupMenu() {
 				|| userObject instanceof Feature
 				|| userObject instanceof SpeciesContext
 				|| userObject instanceof ModelParameter
-				|| userObject instanceof SimulationContext
 				|| userObject instanceof Simulation
 			) {			
 			bDelete = true;
 			bRename = true;
+		} else if (userObject instanceof SimulationContext) {			
+			bDelete = true;
+			bRename = true;
+			bCopyApp = true;
 		} else if (userObject instanceof Membrane) {
 			bDelete = false;
 			bRename = true;
@@ -487,9 +517,9 @@ private void construcutPopupMenu() {
 	if (bAddNewApp) {
 		if (addNewAppMenu == null) {
 			addNewAppMenu = new JMenu("Add New");
-			addNewAppDeterministicMenuItem = new JMenuItem(BioModelEditorApplicationsPanel.MENU_TEXT_DETERMINISTIC_APPLICATION);
+			addNewAppDeterministicMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 			addNewAppDeterministicMenuItem.addActionListener(eventHandler);
-			addNewAppStochasticMenuItem = new JMenuItem(BioModelEditorApplicationsPanel.MENU_TEXT_STOCHASTIC_APPLICATION);
+			addNewAppStochasticMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 			addNewAppStochasticMenuItem.addActionListener(eventHandler);
 			addNewAppMenu.add(addNewAppDeterministicMenuItem);
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
@@ -516,8 +546,63 @@ private void construcutPopupMenu() {
 			deleteMenuItem.addActionListener(eventHandler);
 		}
 		popupMenu.add(deleteMenuItem);
+	}	
+	if (bCopyApp) {
+		if (menuItemAppCopy == null) {
+			menuItemAppCopy = new JMenuItem(GuiConstants.MENU_TEXT_APP_COPY);
+			menuItemAppCopy.addActionListener(eventHandler);
+			menuItemAppCopy.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
+		}		
+		if (menuAppCopyAs == null) {
+			menuAppCopyAs = new JMenu(GuiConstants.MENU_TEXT_APP_COPYAS);
+		}
+		menuAppCopyAs.removeAll();
+		SimulationContext selectedSimContext = getSelectedSimulationContext();
+		if (selectedSimContext != null) {
+			if (selectedSimContext.getGeometry().getDimension() == 0) {		
+				if (menuItemNonSpatialCopyDeterministic == null) {
+					menuItemNonSpatialCopyStochastic=new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
+					menuItemNonSpatialCopyStochastic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION);
+					menuItemNonSpatialCopyStochastic.addActionListener(eventHandler);
+					
+					menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
+					menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
+					menuItemNonSpatialCopyDeterministic.addActionListener(eventHandler); 
+				}
+				menuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
+				menuAppCopyAs.add(menuItemNonSpatialCopyStochastic);
+			} else {
+				if (menuSpatialCopyAsNonSpatial == null) {
+					menuSpatialCopyAsNonSpatial = new JMenu(GuiConstants.MENU_TEXT_NON_SPATIAL_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialDeterministic.addActionListener(eventHandler);
+					menuItemSpatialCopyAsNonSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialStochastic.addActionListener(eventHandler);
+					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialDeterministic);
+					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialStochastic);
+					
+					menuSpatialCopyAsSpatial = new JMenu(GuiConstants.MENU_TEXT_SPATIAL_APPLICATION);
+					menuItemSpatialCopyAsSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
+					menuItemSpatialCopyAsSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION);
+					menuItemSpatialCopyAsSpatialDeterministic.addActionListener(eventHandler);
+					menuItemSpatialCopyAsSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
+					menuItemSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
+					menuItemSpatialCopyAsSpatialStochastic.addActionListener(eventHandler);
+					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialDeterministic);
+					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialStochastic);
+				}
+				menuAppCopyAs.add(menuSpatialCopyAsNonSpatial);
+				menuAppCopyAs.add(menuSpatialCopyAsSpatial);
+			}
+		}
+		if (popupMenu.getComponents().length > 0) {
+			popupMenu.add(new JSeparator());
+		}
+		popupMenu.add(menuItemAppCopy);
+		popupMenu.add(menuAppCopyAs);
 	}
-	
 	if (bExpand) {
 		if (expandAllMenuItem == null) {
 			popupMenuSeparator = new JSeparator();
@@ -526,7 +611,7 @@ private void construcutPopupMenu() {
 			expandAllMenuItem.addActionListener(eventHandler);
 			collapseAllMenuItem.addActionListener(eventHandler);
 		}
-		if (bAddNew || bDelete || bAddNewApp || bRename) {
+		if (popupMenu.getComponents().length > 0) {
 			popupMenu.add(popupMenuSeparator);
 		}
 		popupMenu.add(expandAllMenuItem);

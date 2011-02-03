@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -69,7 +70,7 @@ public void gatherIssues(Vector<Issue> issueList){
 	super.gatherIssues(issueList);
 	
 	if (getReactionStep() instanceof SimpleReaction){
-		issueList.add(new Issue(this,ISSUECATEGORY_KineticsApplicability,"General Current Kinetics expected within a flux reaction only",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"General Current Kinetics expected within a flux reaction only",Issue.SEVERITY_ERROR));
 	}
 }
 

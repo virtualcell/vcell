@@ -17,6 +17,7 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -646,7 +647,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 		for (int i=0;i<fieldModelParameters.length;i++){
 			if (fieldModelParameters[i].getUnitDefinition()==null){
 			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
-				issueList.add(new Issue(fieldModelParameters[i], "Units","unit is undefined (TBD) for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + VCUnitDefinition.TBD_SYMBOL + ")",Issue.SEVERITY_WARNING));
 			}
 		}
 		//
@@ -657,20 +658,20 @@ public void gatherIssues(Vector<Issue> issueList) {
 				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], "Units","defined unit is null for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], "Units","computed unit is null for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
-					issueList.add(new Issue(fieldModelParameters[i], "Units","unit mismatch for parameter '"+fieldModelParameters[i].getName()+"' computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,"Units","unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	
 	//
@@ -691,7 +692,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 		SymbolTableEntry ste = iter.next();
 		SymbolTableEntry existingSTE = symbolHashtable.get(ste.getName());
 		if (existingSTE!=null){
-			issueList.add(new Issue(this,"Identifiers", "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,IssueCategory.Identifiers, "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
 		}else{
 			symbolHashtable.put(ste.getName(),ste);
 		}

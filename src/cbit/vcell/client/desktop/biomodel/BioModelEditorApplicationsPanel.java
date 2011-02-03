@@ -19,37 +19,23 @@ import javax.swing.UIManager;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
-import cbit.image.ImageException;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePanel<SimulationContext> {
-	public static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial";
-	public static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial";
-	public static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
-	public static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
-
 	private JButton moreActionsButton = null;
 	// application popup menu items
-	private JPopupMenu ivjAppsPopupMenu = null;
+	private JPopupMenu appsPopupMenu = null;
 	private JPopupMenu ivjMoreActionsPopupMenu = null;
 	
-	private JMenu ivjJMenuAppCopyAs = null;
+	private JMenu menuAppCopyAs = null;
 	private JMenuItem menuItemAppNonSpatialCopyStochastic = null;
 	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
 	
@@ -246,27 +232,23 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
 
 	private javax.swing.JPopupMenu getNewAppPopupMenu() {
-		if (ivjAppsPopupMenu == null) {
+		if (appsPopupMenu == null) {
 			try {
-				ivjAppsPopupMenu = new javax.swing.JPopupMenu();
-				ivjAppsPopupMenu.setName("AppPopupMenu");
+				appsPopupMenu = new javax.swing.JPopupMenu();
+				appsPopupMenu.setName("AppPopupMenu");
 				
 				//Menu items in Menu-New
-				appNewStochApp=new JMenuItem();
-				appNewStochApp.setName("JMenuItemStochApp");
-				appNewStochApp.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
+				appNewStochApp=new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 				appNewStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
 				appNewStochApp.addActionListener(eventHandler);
 				
-				appNewDeterministicApp = new javax.swing.JMenuItem();
-				appNewDeterministicApp.setName("JMenuItemNonStochApp");
-				appNewDeterministicApp.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
-				appNewDeterministicApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
+				appNewDeterministicApp = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
+				appNewDeterministicApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION);
 				appNewDeterministicApp.addActionListener(eventHandler);
 				
 				//add menu items to menu
-				ivjAppsPopupMenu.add(appNewDeterministicApp);
-				ivjAppsPopupMenu.add(appNewStochApp);
+				appsPopupMenu.add(appNewDeterministicApp);
+				appsPopupMenu.add(appNewStochApp);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -275,7 +257,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				handleException(ivjExc);
 			}
 		}
-		return ivjAppsPopupMenu;
+		return appsPopupMenu;
 	}
 
 	/**
@@ -284,70 +266,62 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
 	private javax.swing.JMenu getJMenuAppCopyAs() {
-		if (ivjJMenuAppCopyAs == null) {
+		if (menuAppCopyAs == null) {
 			try {
-				ivjJMenuAppCopyAs = new javax.swing.JMenu();
-				ivjJMenuAppCopyAs.setName("JMenuCopy");
-				ivjJMenuAppCopyAs.setText("Copy As");
-				//Menu items in Menu-Copy
-				menuItemAppNonSpatialCopyStochastic=new JMenuItem();
-				menuItemAppNonSpatialCopyStochastic.setName("JMenuItemToStochApp");
-				menuItemAppNonSpatialCopyStochastic.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
+				menuAppCopyAs = new javax.swing.JMenu(GuiConstants.MENU_TEXT_APP_COPYAS);
+
+				menuItemAppNonSpatialCopyStochastic=new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 				menuItemAppNonSpatialCopyStochastic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION);
 				menuItemAppNonSpatialCopyStochastic.addActionListener(eventHandler);
 				
-				menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem();
-				menuItemNonSpatialCopyDeterministic.setName("JMenuItemToNonStochApp");
-				menuItemNonSpatialCopyDeterministic.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
+				menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 				menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
 				menuItemNonSpatialCopyDeterministic.addActionListener(eventHandler);				
 				
-				menuAppSpatialCopyAsNonSpatial = new JMenu(MENU_TEXT_NON_SPATIAL_APPLICATION);
-				menuItemAppSpatialCopyAsNonSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+				menuAppSpatialCopyAsNonSpatial = new JMenu(GuiConstants.MENU_TEXT_NON_SPATIAL_APPLICATION);
+				menuItemAppSpatialCopyAsNonSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialDeterministic.addActionListener(eventHandler);
-				menuItemAppSpatialCopyAsNonSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+				menuItemAppSpatialCopyAsNonSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialStochastic.addActionListener(eventHandler);
 				menuAppSpatialCopyAsNonSpatial.add(menuItemAppSpatialCopyAsNonSpatialDeterministic);
 				menuAppSpatialCopyAsNonSpatial.add(menuItemAppSpatialCopyAsNonSpatialStochastic);
 				
-				menuAppSpatialCopyAsSpatial = new JMenu(MENU_TEXT_SPATIAL_APPLICATION);
-				menuItemAppSpatialCopyAsSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+				menuAppSpatialCopyAsSpatial = new JMenu(GuiConstants.MENU_TEXT_SPATIAL_APPLICATION);
+				menuItemAppSpatialCopyAsSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialDeterministic.addActionListener(eventHandler);
-				menuItemAppSpatialCopyAsSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+				menuItemAppSpatialCopyAsSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialStochastic.addActionListener(eventHandler);
 				menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialDeterministic);
 				menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialStochastic);
 	
 			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
 				handleException(ivjExc);
 			}
 		}
-		ivjJMenuAppCopyAs.removeAll();
+		menuAppCopyAs.removeAll();
 		SimulationContext selectedSimContext = getSelectedSimulationContext();
-		if (selectedSimContext != null && selectedSimContext.getGeometry().getDimension() == 0) {
-			//add menu items to menu
-			ivjJMenuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
-			ivjJMenuAppCopyAs.add(menuItemAppNonSpatialCopyStochastic);
-		} else {
-			ivjJMenuAppCopyAs.add(menuAppSpatialCopyAsNonSpatial);
-			ivjJMenuAppCopyAs.add(menuAppSpatialCopyAsSpatial);
+		if (selectedSimContext != null) {
+			if (selectedSimContext.getGeometry().getDimension() == 0) {
+				menuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
+				menuAppCopyAs.add(menuItemAppNonSpatialCopyStochastic);
+			} else {
+				menuAppCopyAs.add(menuAppSpatialCopyAsNonSpatial);
+				menuAppCopyAs.add(menuAppSpatialCopyAsSpatial);
+			}
 		}
-		return ivjJMenuAppCopyAs;
+		return menuAppCopyAs;
 	}
 
 	private javax.swing.JMenuItem getJMenuItemAppCopy() {
 		if (ivjJMenuItemAppCopy == null) {
 			try {
-				ivjJMenuItemAppCopy = new javax.swing.JMenuItem();
+				ivjJMenuItemAppCopy = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_APP_COPY);
 				ivjJMenuItemAppCopy.setName("JMenuItemCopy");
 				ivjJMenuItemAppCopy.setMnemonic('c');
-				ivjJMenuItemAppCopy.setText("Copy");
 				ivjJMenuItemAppCopy.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
 			} catch (java.lang.Throwable ivjExc) {
 				// user code begin {2}
@@ -367,10 +341,10 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	
 	public void applicationMenuItem_ActionPerformed(java.awt.event.ActionEvent e) {
 		String actionCommand = e.getActionCommand();
-		if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION)) {
-			newApplication(e);
+		if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION)) {
+			newApplication(e, false);
 		}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
-			newApplication(e);
+			newApplication(e, true);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
 			copyApplication();
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
@@ -385,8 +359,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			copyApplication(true, false);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
 			copyApplication(true, true);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NEW_APPLICATION)) {
-			newApplication(e);
 		} 
 	}
 	
@@ -413,126 +385,38 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			PopupGenerator.showErrorDialog(this, "Please select an application.");
 			return;
 		}
-
-		try {			
-			if (bStochastic) {
-				//check validity if copy to stochastic application
-				String message = bioModel.getModel().isValidForStochApp();
-				if(!message.equals(""))
-				{
-					throw new Exception(message);
-				}
-			}
-			
-			//get valid application name
-			String newApplicationName = null;
-			newApplicationName = "Copy of " + simulationContext.getName();
-			int count = 0;
-			while (true) {
-				if (bioModel.getSimulationContext(newApplicationName) == null) {
-					break;
-				}
-				count ++;
-				newApplicationName += " " + count;
-			}
-			
-			final String newName = newApplicationName;
-			AsynchClientTask task1 = new AsynchClientTask("copying", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					SimulationContext newSimulationContext = copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
-					newSimulationContext.getGeometry().precomputeAll();
-					if (newSimulationContext.isSameTypeAs(simulationContext)) { 
-						newSimulationContext.refreshMathDescription();
-					}
-					hashTable.put("newSimulationContext", newSimulationContext);
-				}
-			};
-			AsynchClientTask task2 = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-				
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-					bioModel.addSimulationContext(newSimulationContext);
-					if (newSimulationContext.isSameTypeAs(simulationContext)) { 
-						for (Simulation sim : simulationContext.getSimulations()) {
-							Simulation clonedSimulation = new Simulation(sim, false);
-							clonedSimulation.setMathDescription(newSimulationContext.getMathDescription());
-							clonedSimulation.setName(simulationContext.getBioModel().getFreeSimulationName());
-							newSimulationContext.addSimulation(clonedSimulation);
-						}
-					} else {
-						if (simulationContext.getSimulations().length > 0) {
-							DialogUtils.showWarningDialog(BioModelEditorApplicationsPanel.this, "Simulations are not copied because new application is of different type.");
-						}
-					}
-					setSelectedObjects(new Object[]{newSimulationContext});
-				}
-			};
-			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2},  false);
-		} catch (Throwable exc) {
-			exc.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage(), exc);
-		}
-	}
-
-	private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
-		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
-		newClonedGeometry.precomputeAll();
-		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
-		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
-		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);
-		if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
-		{
-			try {
-				destSimContext.convertSpeciesIniCondition(true);
-			} catch (MappingException e) {
-				e.printStackTrace();
-				throw new java.beans.PropertyVetoException(e.getMessage(), null);
-			}
-		}
-		if (srcSimContext.getGeometry().getDimension() > 0 && !bSpatial) { // copy the size over
-			destSimContext.setGeometry(new Geometry("nonspatial", 0));
-			StructureMapping srcStructureMappings[] = srcSimContext.getGeometryContext().getStructureMappings();
-			StructureMapping destStructureMappings[] = destSimContext.getGeometryContext().getStructureMappings();
-			for (StructureMapping destStructureMapping : destStructureMappings) {
-				for (StructureMapping srcStructureMapping : srcStructureMappings) {
-					if (destStructureMapping.getStructure() == srcStructureMapping.getStructure()) {
-						if (srcStructureMapping.getUnitSizeParameter() != null) {
-							Expression sizeRatio = srcStructureMapping.getUnitSizeParameter().getExpression();
-							GeometryClass srcGeometryClass = srcStructureMapping.getGeometryClass();
-							GeometricRegion[] srcGeometricRegions = srcSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
-							if (srcGeometricRegions != null) {
-								double size = 0;
-								for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
-									size += srcGeometricRegion.getSize();
-								}
-								destStructureMapping.getSizeParameter().setExpression(Expression.mult(sizeRatio, new Expression(size)));
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
-		destSimContext.setName(newSimulationContextName);	
-		return destSimContext;
-	}
-	
-	private void newApplication(java.awt.event.ActionEvent event) {
-		boolean isStoch = false;
-		if (event.getActionCommand().equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION))
-		{
-			isStoch = true;
+		if (bStochastic) {
+			//check validity if copy to stochastic application
 			String message = bioModel.getModel().isValidForStochApp();
-			if(!message.equals(""))
-			{
-				PopupGenerator.showErrorDialog(this, "Error creating stochastic application:\n" + message);
+			if (!message.equals("")) {
+				PopupGenerator.showErrorDialog(this, message);
 				return;
 			}
 		}
-		AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic);
+		AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
+		System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
+		allTasks[allTasks.length - 1] = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+				setSelectedObjects(new Object[]{newSimulationContext});
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);
+	}
+	private void newApplication(java.awt.event.ActionEvent event, boolean bStoch) {
+		if (bStoch) {
+			String message = bioModel.getModel().isValidForStochApp();
+			if (!message.equals("")) {
+				PopupGenerator.showErrorDialog(this, message);
+				return;
+			}
+		}
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, bStoch);
+		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
+		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
+		tasks[newApplicationTasks.length] = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -540,10 +424,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				setSelectedObjects(new Object[]{newSimulationContext});
 			}
 		};
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, isStoch);
-		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
-		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
-		tasks[newApplicationTasks.length] = task;
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 	}
 

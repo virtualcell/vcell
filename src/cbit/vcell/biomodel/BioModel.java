@@ -300,6 +300,9 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  */
 public void gatherIssues(Vector<Issue> issueList) {
 	getModel().gatherIssues(issueList);
+	for (SimulationContext simulationContext : fieldSimulationContexts) {
+		simulationContext.gatherIssues(issueList);
+	}
 }
 
 

@@ -2,12 +2,14 @@ package cbit.vcell.opt;
 import java.io.File;
 import java.util.Vector;
 
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.util.RowColumnResultSet;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)
@@ -44,7 +46,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 	// check for a data column named "t"
 	//
 	if (referenceData.findVariable("t")<0){
-		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNoTime,"missing time data column with name 't'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for those columns that are not "t", check for a corresponding math description Function or VolumeVariable
@@ -54,17 +56,13 @@ public void gatherIssues(Vector<Issue> issueList) {
 		if (variableNames[i].equals("t")){
 			continue;
 		}
-		cbit.vcell.math.Variable mathVar = mathDescription.getVariable(variableNames[i]);
+		Variable mathVar = mathDescription.getVariable(variableNames[i]);
 		if (mathVar==null){
-			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not found in math model",org.vcell.util.Issue.SEVERITY_ERROR));
-		}else if (!(mathVar instanceof cbit.vcell.math.VolVariable) && !(mathVar instanceof cbit.vcell.math.Function)){
-			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not a variable or function in math model",org.vcell.util.Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"variable '"+variableNames[i]+"' not found in math model",Issue.SEVERITY_ERROR));
+		}else if (!(mathVar instanceof VolVariable) && !(mathVar instanceof Function)){
+			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataMappedImproperly,"variable '"+variableNames[i]+"' not a variable or function in math model",Issue.SEVERITY_ERROR));
 		}
-	}
-	if (referenceData.findVariable("t")<0){
-		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time variable with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
-	}
-	
+	}	
 }
 
 

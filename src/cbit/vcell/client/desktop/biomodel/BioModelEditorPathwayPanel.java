@@ -1,25 +1,21 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
 import javax.swing.JButton;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwaySelectionExpander;
-
-import cbit.vcell.client.desktop.biomodel.EntitySelectionTableRow;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -101,7 +97,6 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		table = new JSortTable();
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		tableModel = new BioModelEditorPathwayTableModel();
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
@@ -207,32 +202,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		}
 		tableModel.setPathwayModel(pathwayData.getPathwayModel());
 		
-		int rowCount = table.getRowCount();
-		int colCount = table.getColumnCount();
-		final int[] maxColumnWidths = new int[colCount];
-		java.util.Arrays.fill(maxColumnWidths,0);
-		for(int iCol = 0; iCol < colCount; iCol++) {
-			TableColumn column = table.getColumnModel().getColumn(iCol);
-			TableCellRenderer headerRenderer = column.getHeaderRenderer();
-			if (headerRenderer == null) {
-				headerRenderer = table.getTableHeader().getDefaultRenderer();
-			}
-			if (headerRenderer != null) {
-				Component comp = headerRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, iCol); 
-				maxColumnWidths[iCol] = Math.max(maxColumnWidths[iCol],comp.getPreferredSize().width);
-			}
-			for(int iRow = 0; iRow < rowCount; iRow++) {
-				TableCellRenderer cellRenderer = table.getCellRenderer(iRow,iCol);
-				if (cellRenderer == null) {
-					continue;
-				}
-				Component comp = cellRenderer.getTableCellRendererComponent(table, table.getValueAt(iRow, iCol), false, false, iRow, iCol);
-				maxColumnWidths[iCol] = Math.max(maxColumnWidths[iCol], comp.getPreferredSize().width);
-			}
-		}
-		for(int iCol = 0; iCol < colCount; iCol++) {
-			table.getColumnModel().getColumn(iCol).setPreferredWidth(maxColumnWidths[iCol]);
-		}
+		GuiUtils.flexResizeTableColumns(table);
 	}
 
 	public void setBioModel(BioModel bioModel) {

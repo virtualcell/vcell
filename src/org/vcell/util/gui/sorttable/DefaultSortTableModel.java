@@ -159,5 +159,5 @@ public void setSortPreference(SortPreference sortPreference) {
 	firePropertyChange(PROPERTY_NAME_SORT_PREFERENCE, oldValue, sortPreference);
 }
 
-protected abstract Comparator<T> getComparator(int col, boolean ascending);
+protected abstract Comparator<T> getComparator(final int col, final boolean ascending);
 }

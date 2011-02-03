@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -164,19 +165,22 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 
 	@Override
 	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		if (getForeground() == getTextSelectionColor()) {
 			String text = getText();
 			if (text != null) {
 				FontMetrics metrics = getFontMetrics(getFont());
-				// empty border 2
-				int startX = 2 + (getIcon() == null ? 0 : getIcon().getIconWidth() + getIconTextGap());
-				int startY = 0; //You probably have some vertical offset to add here.
-				int length = metrics.stringWidth(text);
-				int height = ownerTree.getRowHeight();
-				g.setColor(Color.white);
-				g.fillRect(startX + length + 1, startY, getWidth() - length - startX, height);
+				int textLength = metrics.stringWidth(text);
+				int extraLength = getWidth() - textLength;
+				if (extraLength > 3) {
+					// empty border 2
+					int startX = 2 + (getIcon() == null ? 0 : getIcon().getIconWidth() + getIconTextGap());
+					int startY = 0; //You probably have some vertical offset to add here.
+					int height = ownerTree.getRowHeight();
+					g.setColor(Color.white);
+					g.fillRect(startX + textLength + extraLength/3, startY, extraLength*2/3, height);
+				}
 			}
 		}
-		super.paintComponent(g);
 	}
 }
