@@ -13,6 +13,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
@@ -353,7 +354,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 											newSC = pasteSpecies(parent, oldSC.getSpecies(), pasteToModel, toRxnStruct, bNew, /*bUseDBSpecies,*/speciesHash,
 													UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, oldSC));
 											speciesContextHash.put(oldSC, newSC);
-											Issue issue = new Issue(oldSC, "Species Context",
+											Issue issue = new Issue(oldSC, IssueCategory.CopyPaste,
 													"SpeciesContext '" + oldSC.getSpecies().getCommonName() + "' was not found in compartment '" +
 													oldSC.getStructure().getName() + "' in the model; the species was added to the compartment '" +
 													toRxnStruct.getName() + "' where the reaction was pasted.",
@@ -450,7 +451,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 								}
 								// if a non-numeric parameter was encountered in the old model, it was added as a numeric (0.0), warn user of change.
 								if (bNonNumeric) {
-									Issue issue = new Issue(oldMp, "Global Parameters",
+									Issue issue = new Issue(oldMp, IssueCategory.CopyPaste,
 											"Global parameter '" + oldMp.getName() + "' was non-numeric; it has been added " +
 											"as global parameter '" + newMpName + "' in the new model with value = 0.0. " +
 											"Please update its value, if required, before using it.",

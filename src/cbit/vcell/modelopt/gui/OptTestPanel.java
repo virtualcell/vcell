@@ -42,16 +42,13 @@ import cbit.vcell.parser.SymbolTableEntry;
 public class OptTestPanel extends javax.swing.JPanel {
 	private ParameterMappingPanel ivjparameterMappingPanel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private javax.swing.JPanel ivjJPanel3 = null;
 	private ReferenceDataPanel ivjreferenceDataPanel = null;
 	private javax.swing.JTextPane ivjOptimizeResultsTextPane = null;
 	private OptimizationService fieldOptimizationService = null;
 	private javax.swing.JPanel ivjJPanel4 = null;
-	private javax.swing.JPanel ivjJPanel5 = null;
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
-	private javax.swing.JLabel ivjJLabel1 = null;
 	private javax.swing.JPanel ivjJPanel6 = null;
 	private javax.swing.JComboBox ivjSolverTypeComboBox = null;
 	private javax.swing.JButton ivjPlotButton = null;
@@ -1386,6 +1383,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 			try {
 				ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 				ivjJTabbedPane1.setName("JTabbedPane1");
+				ivjJTabbedPane1.addTab("Parameters", getparameterMappingPanel());
 				ivjJTabbedPane1.addTab("Reference Data", getJPanel2());
 				ivjJTabbedPane1.addTab("Optimization", getJPanel3());
 				ivjJTabbedPane1.addTab("Annotation", getAnnotationPanel());
@@ -1923,7 +1921,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 			//setMinimumSize(new java.awt.Dimension(700, 700));
 
 			setLayout(new BorderLayout());
-			add(getJSplitPane1(), BorderLayout.CENTER);
+			add(getJTabbedPane1(), BorderLayout.CENTER);
 			
 			initConnections();
 			connEtoC7();

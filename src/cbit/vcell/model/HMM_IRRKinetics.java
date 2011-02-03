@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
@@ -83,7 +84,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,ISSUECATEGORY_KineticsApplicability,"HMM_IRRKinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"HMM_IRRKinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 }
 /**

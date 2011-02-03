@@ -11,6 +11,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -35,6 +36,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
+@SuppressWarnings("serial")
 public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable {
 	
 	public class StructureMappingNameScope extends BioNameScope {
@@ -61,6 +63,11 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return StructureMapping.this;
 		}
+		
+		public StructureMapping getStructureMapping(){
+			return StructureMapping.this;
+		}
+		
 		@Override
 		public String getConextDescription() {
 			return getStructure().getTypeName() + ": " + getStructure().getName();
@@ -181,7 +188,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		public NameScope getNameScope(){
 			return StructureMapping.this.getNameScope();
 		}
-
+		
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = fieldParameterName;
 			super.fireVetoableChange("name", oldValue, name);
@@ -395,7 +402,7 @@ public void gatherIssues(Vector<Issue> issueVector) {
 		try{
 			double val = getSizeParameter().getExpression().evaluateConstant();
 			if(val <= 0)
-				issueVector.add(new Issue(getSizeParameter(), "parameter not set", "Size parameter of "+ getNameScope().getName() +" is compulsory and must be a positive value. \nPlease change it in StructureMapping tab.",Issue.SEVERITY_ERROR));
+				issueVector.add(new Issue(getSizeParameter(), IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
 		}catch (ExpressionException e)
 		{
 			e.printStackTrace();

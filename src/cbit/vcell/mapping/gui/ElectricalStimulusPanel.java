@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
@@ -9,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -44,12 +44,13 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (10/26/2004 9:58:14 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private JSortTable ivjScrollPaneTable = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ElectricalStimulus ivjelectricalStimulus = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext ivjsimulationContext1 = null;
 	private ElectricalStimulusParameterTableModel ivjelectricalStimulusParameterTableModel = null;
 	private javax.swing.JRadioButton ivjTotalCurrentClampRadioButton = null;
@@ -68,7 +69,7 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private TimeFunctionPanel timeFunctionPanel = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
 
-class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == ElectricalStimulusPanel.this.getNoClampRadioButton()) {
 				try {
@@ -826,29 +827,11 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsNoClampRadioButton = new java.awt.GridBagConstraints();
-			constraintsNoClampRadioButton.gridx = 1; constraintsNoClampRadioButton.gridy = 1;
-			constraintsNoClampRadioButton.insets = new java.awt.Insets(0, 2, 0, 2);
-			getJPanel1().add(getNoClampRadioButton(), constraintsNoClampRadioButton);
-
-			java.awt.GridBagConstraints constraintsVoltageClampRadioButton = new java.awt.GridBagConstraints();
-			constraintsVoltageClampRadioButton.gridx = 2; constraintsVoltageClampRadioButton.gridy = 1;
-			constraintsVoltageClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
-			getJPanel1().add(getVoltageClampRadioButton(), constraintsVoltageClampRadioButton);
-
-			java.awt.GridBagConstraints constraintsTotalCurrentClampRadioButton = new java.awt.GridBagConstraints();
-			constraintsTotalCurrentClampRadioButton.gridx = 3; constraintsTotalCurrentClampRadioButton.gridy = 1;
-			constraintsTotalCurrentClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
-			getJPanel1().add(getTotalCurrentClampRadioButton(), constraintsTotalCurrentClampRadioButton);
-
-			java.awt.GridBagConstraints constraintsCurrentDensityClampRadioButton = new java.awt.GridBagConstraints();
-			constraintsCurrentDensityClampRadioButton.gridx = 4; constraintsCurrentDensityClampRadioButton.gridy = 1;
-			constraintsCurrentDensityClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
-			getJPanel1().add(getCurrentDensityClampRadioButton(), constraintsCurrentDensityClampRadioButton);
-			// user code begin {1}
-			// user code end
+			ivjJPanel1.setLayout(new FlowLayout());
+			ivjJPanel1.add(getNoClampRadioButton());
+			ivjJPanel1.add(getVoltageClampRadioButton());
+			ivjJPanel1.add(getTotalCurrentClampRadioButton());
+			ivjJPanel1.add(getCurrentDensityClampRadioButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -874,26 +857,28 @@ private javax.swing.JPanel getJPanel2() {
 			panel1.setLayout(new GridLayout(2,1));
 			panel1.add(getpatchElectrodeLabel());
 			panel1.add(getpatchElectrodePanel());
-			panel1.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4), getScrollPaneTable().getEnclosingScrollPane().getBorder()));
+			panel1.setBorder(getScrollPaneTable().getEnclosingScrollPane().getBorder());
 
 			JPanel panel2 = new JPanel();
 			panel2.setLayout(new GridLayout(2,1));
 			panel2.add(getgroundElectrodeLabel());
 			panel2.add(getgroundElectrodePanel());
-			panel2.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4), getScrollPaneTable().getEnclosingScrollPane().getBorder()));
+			panel2.setBorder(getScrollPaneTable().getEnclosingScrollPane().getBorder());
 			
 			java.awt.GridBagConstraints constraintspatchElectrodeLabel = new java.awt.GridBagConstraints();
 			constraintspatchElectrodeLabel.gridx = 0; constraintspatchElectrodeLabel.gridy = 0;
 			constraintspatchElectrodeLabel.fill = GridBagConstraints.BOTH;
 			constraintspatchElectrodeLabel.weightx = 1.0;
-			constraintspatchElectrodeLabel.weighty = 0.5;
+//			constraintspatchElectrodeLabel.weighty = 0.5;
+			constraintspatchElectrodeLabel.insets = new Insets(0, 4, 0, 4);
 			ivjJPanel2.add(panel1, constraintspatchElectrodeLabel);
 
 			java.awt.GridBagConstraints constraintsgroundElectrodeLabel = new java.awt.GridBagConstraints();
 			constraintsgroundElectrodeLabel.gridx = 1; constraintsgroundElectrodeLabel.gridy = 0;
 			constraintsgroundElectrodeLabel.fill = GridBagConstraints.BOTH;
 			constraintsgroundElectrodeLabel.weightx = 1.0;
-			constraintsgroundElectrodeLabel.weighty = 0.5;
+//			constraintsgroundElectrodeLabel.weighty = 0.5;
+			constraintsgroundElectrodeLabel.insets = new Insets(0, 4, 0, 4);
 			ivjJPanel2.add(panel2, constraintsgroundElectrodeLabel);
 			 
 			GridBagConstraints gbc_btnGraphElectricalStimulus = new GridBagConstraints();
@@ -1139,10 +1124,10 @@ private void initialize() {
 		add(getJLabel2(), constraintsJLabel2);
 		
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;
+		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 0;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 8, 4);
+		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel1(), constraintsJPanel1);
 
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
@@ -1150,6 +1135,7 @@ private void initialize() {
 		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel2.weightx = 1.0;
 		constraintsJPanel2.weighty = 1.0;
+		constraintsJPanel2.gridwidth = 2;
 		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel2(), constraintsJPanel2);
 		initConnections();

@@ -1,9 +1,12 @@
 package cbit.vcell.opt;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.util.RowColumnResultSet;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)
@@ -80,7 +83,7 @@ public void gatherIssues(java.util.Vector<Issue> issueList) {
 	// check for a data column named "t"
 	//
 	if (simpleReferenceData.findColumn("t")<0){
-		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNoTime,"missing time data column with name 't'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for those columns that are not "t", check for a corresponding math description Function or VolumeVariable
@@ -90,15 +93,12 @@ public void gatherIssues(java.util.Vector<Issue> issueList) {
 		if (columnNames[i].equals("t")){
 			continue;
 		}
-		cbit.vcell.math.Variable mathVar = mathDescription.getVariable(columnNames[i]);
+		Variable mathVar = mathDescription.getVariable(columnNames[i]);
 		if (mathVar==null){
-			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not found in math model",org.vcell.util.Issue.SEVERITY_ERROR));
-		}else if (!(mathVar instanceof cbit.vcell.math.VolVariable) && !(mathVar instanceof cbit.vcell.math.Function)){
-			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not a variable or function in math model",org.vcell.util.Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"data column '"+columnNames[i]+"' not found in math model",Issue.SEVERITY_ERROR));
+		}else if (!(mathVar instanceof VolVariable) && !(mathVar instanceof Function)){
+			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataMappedImproperly,"data column '"+columnNames[i]+"' not a variable or function in math model",Issue.SEVERITY_ERROR));
 		}
-	}
-	if (simpleReferenceData.findColumn("t")<0){
-		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
 	}
 	
 }

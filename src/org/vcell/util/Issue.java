@@ -1,15 +1,30 @@
 package org.vcell.util;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
+import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.NameScope;
+
 
 /**
  * Insert the type's description here.
  * Creation date: (4/1/2004 10:12:47 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class Issue implements java.io.Serializable, Matchable {
 	private java.util.Date date = new java.util.Date();
 	private String message = null;
-	private String category = null;
+	private IssueCategory category = null;
 	private Object source = null;
 	private int severity = -1;
 
@@ -21,6 +36,30 @@ public class Issue implements java.io.Serializable, Matchable {
 	private static final int MAX_SEVERITY = 4;
 
 	private final static String severityName[] = { "info", "tip", "constraint", "warning", "error" };
+	
+	public enum IssueCategory {
+		Units,
+		Identifiers,
+		CopyPaste,
+		UnresolvedParameter,
+		KineticsUnreferencedParameter,
+		KineticsApplicability,
+		CyclicDependency,
+		KineticsExpressionError,
+		KineticsExpressionMissing,
+		KineticsExpressionNonParticipantSymbol,
+		KineticsExpressionUndefinedSymbol,
+		StructureMappingSizeParameterNotPositive,
+		
+		InternalError,
+		ParameterBoundsDefinition,
+		ParameterEstimationBoundsError,
+		ParameterEstimationBoundsViolation,
+		ParameterEstimationNoParameterSelected,
+		ParameterEstimationRefereceDataNoTime,
+		ParameterEstimationRefereceDataNotMapped,
+		ParameterEstimationRefereceDataMappedImproperly,
+	}
 
 	//
 	// categories
@@ -32,7 +71,7 @@ public class Issue implements java.io.Serializable, Matchable {
 /**
  * AbstractIssue constructor comment.
  */
-public Issue(Object argSource, String argCategory, String argMessage, int argSeverity) {
+public Issue(Object argSource, IssueCategory argCategory, String argMessage, int argSeverity) {
 	super();
 	if (argSeverity<0 || argSeverity>MAX_SEVERITY){
 		throw new IllegalArgumentException("unexpected severity="+argSeverity);
@@ -109,7 +148,7 @@ public boolean equal(Object object) {
  * Creation date: (4/1/2004 11:11:07 AM)
  * @return java.lang.String
  */
-public java.lang.String getCategory() {
+public IssueCategory getCategory() {
 	return category;
 }
 
@@ -161,6 +200,53 @@ public String getSeverityName() {
  */
 public Object getSource() {
 	return source;
+}
+
+public String getSourceDescription() {
+	String description = null;
+	if (source instanceof ModelParameter) {
+		description = ((ModelParameter)source).getName();
+	} else if (source instanceof KineticsParameter) {
+		description =  ((KineticsParameter)source).getName();
+	} else if (source instanceof SimpleReaction) {
+		description = ((SimpleReaction)source).getName();
+	} else if (source instanceof FluxReaction) {
+		description = ((FluxReaction)source).getName();
+	} else if (source instanceof SpeciesContext) {
+		description = ((SpeciesContext)source).getName();
+	} else if (source instanceof Feature) {
+		description = ((Feature)source).getName();
+	} else if (source instanceof Membrane) {
+		description = ((Membrane)source).getName();
+	} else if (source instanceof StructureMappingParameter) {
+		description = ((StructureMappingParameter) source).getDescription() + " '" + ((StructureMappingParameter) source).getName() + "'";
+	}
+	return description;
+}
+
+public String getSourceContextDescription() {
+	String description = null;
+	if (source instanceof ModelParameter) {
+		description = "Global Parameter";
+	} else if (source instanceof KineticsParameter) {
+		description = "Reaction " + ((KineticsParameter)source).getKinetics().getReactionStep().getName();
+	} else if (source instanceof SimpleReaction) {
+		description = "Reaction";
+	} else if (source instanceof FluxReaction) {
+		description = "Flux";
+	} else if (source instanceof SpeciesContext) {
+		description = "Species";
+	} else if (source instanceof Feature) {
+		description = Structure.TYPE_NAME_FEATURE;
+	} else if (source instanceof Membrane) {
+		description = Structure.TYPE_NAME_MEMBRANE;
+	} else if (source instanceof StructureMappingParameter) {
+		StructureMappingNameScope nameScope = (StructureMappingNameScope)(((StructureMappingParameter)source).getNameScope());
+		SimulationContextNameScope parentNameScope = (SimulationContextNameScope)nameScope.getParent();
+		description = BioModel.SIMULATION_CONTEXT_DISPLAY_NAME + " '" + parentNameScope.getSimulationContext().getName() 
+			+ "': Structure Mapping: '" + nameScope.getStructureMapping().getStructure().getName() + "'";
+	}
+	return description;
 }
 
 

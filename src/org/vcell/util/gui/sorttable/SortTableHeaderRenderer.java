@@ -68,15 +68,17 @@ public Component getTableCellRendererComponent(JTable table, Object value, boole
 		JSortTable sortTable = (JSortTable) table;
 		SortPreference sortPreference = ((SortTableModel)sortTable.getModel()).getSortPreference();
 		int modelIndex = sortPreference.getSortedColumnIndex();
-		for (int i = 0; i < table.getColumnModel().getColumnCount(); i ++) {
-			if (table.getColumnModel().getColumn(i).getModelIndex() == modelIndex) {
-				columnIndex = i;
-				break;
+		if (modelIndex >= 0) {
+			for (int i = 0; i < table.getColumnModel().getColumnCount(); i ++) {
+				if (table.getColumnModel().getColumn(i).getModelIndex() == modelIndex) {
+					columnIndex = i;
+					break;
+				}
 			}
-		}
-		ascending = sortPreference.isSortedColumnAscending();
-		if (col == columnIndex) {
-			icon = ascending ? ASCENDING_ICON : DECENDING_ICON;
+			ascending = sortPreference.isSortedColumnAscending();
+			if (col == columnIndex) {
+				icon = ascending ? ASCENDING_ICON : DECENDING_ICON;
+			}
 		}
 	}
 	label.setHorizontalTextPosition(JLabel.LEFT);

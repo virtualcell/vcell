@@ -114,6 +114,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return SimulationContext.this;
 		}
+		public SimulationContext getSimulationContext() {
+			return SimulationContext.this;
+		}
 		public boolean isPeer(NameScope nameScope){
 			if (super.isPeer(nameScope)){
 				return true;
@@ -819,6 +822,11 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
 public void gatherIssues(Vector<Issue> issueVector) {
 	getReactionContext().gatherIssues(issueVector);
 	getGeometryContext().gatherIssues(issueVector);
+	if (fieldAnalysisTasks != null) {
+		for (AnalysisTask analysisTask : fieldAnalysisTasks) {
+			analysisTask.gatherIssues(issueVector);
+		}
+	}
 }
 
 

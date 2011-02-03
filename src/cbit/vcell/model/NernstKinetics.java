@@ -1,6 +1,7 @@
 package cbit.vcell.model;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -70,23 +71,23 @@ public void gatherIssues(java.util.Vector issueList) {
 		if (reactionParticipants[i] instanceof Flux && 
 			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getInsideFeature())){
 			if (reactionParticipants[i].getStructure()!=((Membrane)getReactionStep().getStructure()).getInsideFeature()){
-				issueList.add(new Issue(this,"ASSERTION","multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this,IssueCategory.InternalError,"multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
 			}
 			reactantCount++;
 		}
 		if (reactionParticipants[i] instanceof Flux && 
 			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getOutsideFeature())){
 			if (reactionParticipants[i].getStructure()!=((Membrane)getReactionStep().getStructure()).getOutsideFeature()){
-				issueList.add(new Issue(this,"ASSERTION","multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this,IssueCategory.InternalError,"multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
 			}
 			productCount++;
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,ISSUECATEGORY_KineticsApplicability,"Nernst Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"Nernst Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 	if (productCount!=1){
-		issueList.add(new Issue(this,ISSUECATEGORY_KineticsApplicability,"Nernst Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"Nernst Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
 	}
 }
 /**

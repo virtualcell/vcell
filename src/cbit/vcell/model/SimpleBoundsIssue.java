@@ -19,7 +19,7 @@ public class SimpleBoundsIssue extends Issue {
  * @param argSeverity int
  */
 public SimpleBoundsIssue(Parameter argParameter, RealInterval argBounds, String argMessage) {
-	super(argParameter, "Parameter Bounds", argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
+	super(argParameter, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
 	if (argBounds==null){
 		throw new IllegalArgumentException("parameter bounds cannot be null");
 	}

@@ -1090,7 +1090,7 @@ private javax.swing.JMenu getJMenuNew() {
 			newNonStochApp = new javax.swing.JMenuItem();
 			newNonStochApp.setName("JMenuItemNonStochApp");
 			newNonStochApp.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
-			newNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
+			newNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION);
 			//add menu items to menu
 			ivjJMenuNew.add(newStochApp);
 			ivjJMenuNew.add(newNonStochApp);
@@ -1293,7 +1293,7 @@ private javax.swing.JMenuItem getNewApplnMenuItem() {
 			ivjNewApplnMenuItem = new javax.swing.JMenuItem();
 			ivjNewApplnMenuItem.setName("NewApplnMenuItem");
 			ivjNewApplnMenuItem.setText("Create Deterministic Application");
-			ivjNewApplnMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
+			ivjNewApplnMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
