@@ -49,8 +49,8 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	prop.setProperty("MinLimit", "1");
 	prop.setProperty("MaxLimit", "20");
 //		prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
-	prop.setProperty("InactivityTimeout", "300");    //  seconds
-	prop.setProperty("TimeToLiveTimeout", "300");    //  seconds
+//	prop.setProperty("InactivityTimeout", "300");    //  seconds
+//	prop.setProperty("TimeToLiveTimeout", "300");    //  seconds
 	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
 	prop.setProperty("ValidateConnection", "true");
 	oracleDataSource.setConnectionCacheProperties (prop);
