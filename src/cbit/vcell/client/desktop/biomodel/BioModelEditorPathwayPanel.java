@@ -8,7 +8,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -28,39 +31,21 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private JSortTable table;
 	private BioModelEditorPathwayTableModel tableModel = null;
 	private JButton importButton = null;
-	
-	// wei's code filter
-	private JButton filterNameButton = null;
-
-	private JButton showAllButton = null;
-	private JTextField filterText = null;
-	
+	private JTextField textFieldSearch = null;
 	
 	private void searchTable() {
-		String searchText = filterText.getText();
+		String searchText = textFieldSearch.getText();
 		tableModel.setSearchText(searchText);
 	}
-	private void showAllButtonPressed() {
-		if (filterText.getText() == null || filterText.getText().length() == 0) {
-			return;
-		}
-		filterText.setText(null);
-		tableModel.setSearchText(null);
-	}
-	//done
 	
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	
-	private class EventHandler implements ActionListener, ListSelectionListener {
+	private class EventHandler implements ActionListener, ListSelectionListener, DocumentListener  {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == importButton) {
 				importPathway();
-			}else if (e.getSource() == showAllButton) {
-				showAllButtonPressed();
-			} else if (e.getSource() == filterText || e.getSource() == filterNameButton){
-					searchTable();// filtering 
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -70,6 +55,15 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			if (e.getSource() == table.getSelectionModel()) {
 				importButton.setEnabled(table.getSelectedRowCount() > 0);
 			}
+		}
+		public void insertUpdate(DocumentEvent e) {
+			searchTable();
+		}
+		public void removeUpdate(DocumentEvent e) {
+			searchTable();
+		}
+		public void changedUpdate(DocumentEvent e) {
+			searchTable();
 		}
 	}
 	
@@ -116,65 +110,35 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		add(table.getEnclosingScrollPane(), gbc);
 		
-
-		
-		// wei's code
-		// table filtering
-		
-		filterText = new JTextField(15);
-		filterNameButton = new JButton("Search");
-		showAllButton = new JButton("Show All");
-		
-		
-		gridy ++;
+		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(filterText, gbc);
-		
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		add(filterNameButton, gbc);
+		add(new JLabel("Search "), gbc);
+
+		textFieldSearch = new JTextField(15);
+		textFieldSearch.addActionListener(eventHandler);
+		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.weighty = 0;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		add(textFieldSearch, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(showAllButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,20,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		importButton.setPreferredSize(importButton.getPreferredSize());
 		add(importButton, gbc);
-		
-		filterNameButton.addActionListener(eventHandler);
-		showAllButton.addActionListener(eventHandler);
-		
-		//done
-		
-		
-// wei		gridy ++;
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-//		gbc.insets = new Insets(4,0,4,0);
-//done		add(importButton, gbc);
-		
-		
 	}
 
 	@Override
