@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.pathway.PathwayModel;
+import org.vcell.relationship.RelationshipModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -56,6 +57,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	private VCMetaData vcMetaData = null;
 	
 	private final PathwayModel pathwayModel = new PathwayModel();
+	private final RelationshipModel relationshipModel = new RelationshipModel();
 
 	/**
 	 * BioModel constructor comment.
@@ -1033,7 +1035,11 @@ public SimulationContext getSimulationContext(String name) {
 	return null;
 }
 
-public PathwayModel getPathwayModel() {
-	return pathwayModel;
-}
+	public PathwayModel getPathwayModel() {
+		return pathwayModel;
+	}
+	
+	public RelationshipModel getRelationshipModel(){
+		return relationshipModel;
+	}
 }

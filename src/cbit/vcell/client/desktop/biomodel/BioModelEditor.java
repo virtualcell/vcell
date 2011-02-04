@@ -695,7 +695,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getReactionPropertiesPanel();
 		} else if (singleSelection instanceof SpeciesContext) {
 			bottomComponent = getSpeciesPropertiesPanel();
-			getSpeciesPropertiesPanel().setModel(bioModel.getModel());
+			getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code
 		} else if (singleSelection instanceof Structure) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
