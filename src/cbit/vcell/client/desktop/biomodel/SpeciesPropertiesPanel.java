@@ -1,10 +1,12 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -23,14 +25,26 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.PhysicalEntity;
+import org.vcell.relationship.RelationshipModel;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.sybil.gui.pcsearch.test.PCKeywordQueryPanel;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
@@ -38,8 +52,11 @@ import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
@@ -47,7 +64,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 /**
  * Insert the type's description here.
@@ -58,9 +74,16 @@ import cbit.vcell.model.SpeciesContext;
 public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private SpeciesContext fieldSpeciesContext = null;
 	private EventHandler eventHandler = new EventHandler();
-	private Model fieldModel = null;
+	private BioModel bioModel = null;
+	private BioModelEditorPathwayTableModel tableModel = null; 
+	
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
+	private JSortTable table; 
+	private JLabel pathwayLinkLabel = null; 
+	private JTextArea pathwayLinkTextArea = null; 
+	private JButton pathwayObjectJButton = null; 
+	private JTextField textFieldSearch = null;
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField nameTextField = null;
 	
@@ -70,7 +93,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				String urn = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
 				try {
-					MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+					MiriamManager miriamManager = bioModel.getModel().getVcMetaData().getMiriamManager();
 					MiriamResource resource = miriamManager.createMiriamResource(urn);
 					String urnstr = resource.getMiriamURN(); 
 					if (urnstr != null && urnstr.toLowerCase().contains("uniprot")) {
@@ -119,7 +142,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private void updatePCLink() {
 		try {
 			StringBuffer buffer = new StringBuffer("<html>");
-			MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+			MiriamManager miriamManager = bioModel.getModel().getVcMetaData().getMiriamManager();
 			Map<MiriamRefGroup,MIRIAMQualifier> refGroups = miriamManager.getAllMiriamRefGroups(getSpeciesContext().getSpecies());
 			if (refGroups != null && refGroups.size()>0) {
 				for (MiriamRefGroup refGroup : refGroups.keySet()){
@@ -152,10 +175,20 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	}
 
-	private class EventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener {
+	private class EventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener, ListSelectionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getPathwayDBbutton()) { 
 				showPCKeywordQueryPanel();
+			} else if (e.getSource() == getPathwayObjectbutton()) {
+				
+				if(bioModel.getPathwayModel() == null){
+					changeFreeTextPathwayLink();
+					changeFreeTextAnnotation();
+				}else{
+					changeFreeTextAnnotation();
+					changeFreeTextPathwayLink();
+					linkToBioPaxObjects();
+				}
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
@@ -174,6 +207,8 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
+			} else if (e.getSource() == pathwayLinkTextArea) {
+				changeFreeTextPathwayLink();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
@@ -181,7 +216,25 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSpeciesContext) {
 				updateInterface();
+				changeFreeTextPathwayLink();
 			}
+		}
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
+			if (e.getSource() == table.getSelectionModel()) {
+				getPathwayObjectbutton().setEnabled(table.getSelectedRowCount() > 0);
+			}
+		}
+		public void insertUpdate(DocumentEvent e) {
+			searchTable();
+		}
+		public void removeUpdate(DocumentEvent e) {
+			searchTable();
+		}
+		public void changedUpdate(DocumentEvent e) {
+			searchTable();
 		}
 	}
 
@@ -193,13 +246,8 @@ public SpeciesPropertiesPanel() {
 	initialize();
 }
 
-/**
- * Gets the model property (cbit.vcell.model.Model) value.
- * @return The model property value.
- * @see #setModel
- */
-private Model getModel() {
-	return fieldModel;
+private BioModel getBioModel() {
+	return bioModel;
 }
 
 /**
@@ -229,6 +277,8 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
+	pathwayLinkTextArea.addFocusListener(eventHandler);
+	getPathwayObjectbutton().addActionListener(eventHandler);
 	getPathwayDBbutton().addActionListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
@@ -249,7 +299,7 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 4;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JLabel label = new JLabel("<html><u>Select only one species to edit properties</u></html>");
@@ -269,6 +319,7 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 3;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
@@ -293,10 +344,41 @@ private void initialize() {
 		gbc.weighty = 0.2;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(jsp, gbc);
+
+		gridy ++;
+		pathwayLinkLabel = new JLabel();
+		pathwayLinkLabel.setName("pathwayLinkLabel");
+		pathwayLinkLabel.setText("<html><center>Associated<br>BioPax<br>Objects</center></html>");
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(pathwayLinkLabel, gbc);
+		
+		
+		pathwayLinkTextArea = new javax.swing.JTextArea("", 1, 30);
+		pathwayLinkTextArea.setLineWrap(false);
+		pathwayLinkTextArea.setWrapStyleWord(true);
+		pathwayLinkTextArea.setEditable(false);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.2;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		JScrollPane pathwayLinkScollPane = new JScrollPane(pathwayLinkTextArea);
+		add(pathwayLinkScollPane, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -304,19 +386,48 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		add(getPathwayDBbutton(), gbc);
+		add(getPathwayObjectbutton(), gbc);
+	
+		table = new JSortTable();
+		tableModel = new BioModelEditorPathwayTableModel();
+		table.setModel(tableModel);
+		table.disableUneditableForeground();
+		table.getSelectionModel().addListSelectionListener(eventHandler);
 		
 		gbc = new GridBagConstraints();
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.WEST;
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.2;
+		gbc.gridwidth = 3;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		JScrollPane scollPane = new JScrollPane(getPCLinkValueEditorPane());
-		add(scollPane, gbc);
+		add(table.getEnclosingScrollPane(), gbc);
 		
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		add(new JLabel("Search "), gbc);
+
+		textFieldSearch = new JTextField(15);
+		textFieldSearch.addActionListener(eventHandler);
+		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.weighty = 0;
+		gbc.gridx = 2; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 1;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		add(textFieldSearch, gbc);
+	
 		setBackground(Color.white);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -333,21 +444,27 @@ private void changeFreeTextAnnotation() {
 			return;
 		}
 		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-		VCMetaData vcMetaData = getModel().getVcMetaData();
-		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());				
+		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+			vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());	
+		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
 	}
 }
 
-/**
- * Sets the model property (cbit.vcell.model.Model) value.
- * @param model The new value for the property.
- * @see #getModel
- */
-public void setModel(Model model) {
-	fieldModel = model;
+public synchronized void addActionListener(ActionListener l) {
+    listenerList.add(ActionListener.class, l);
+}
+
+private void searchTable() {
+	String searchText = textFieldSearch.getText();
+	tableModel.setSearchText(searchText);
+}
+
+public void setBioModel(BioModel model) {
+	bioModel = model;
 }
 
 /**
@@ -366,6 +483,8 @@ void setSpeciesContext(SpeciesContext newValue) {
 	// commit the changes before switch to another species
 	changeName();
 	changeFreeTextAnnotation();
+	changeFreeTextPathwayLink(); 
+	
 	fieldSpeciesContext = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
@@ -382,25 +501,78 @@ private void showPCKeywordQueryPanel() {
 	 }
 }
 
+private void refreshImportBioPaxObjectTable() {
+	if (bioModel.getPathwayModel() == null) {
+		return;
+	}
+	PathwayModel selectedPhysicalEntities = selectedPhysicalEntities(bioModel.getPathwayModel());
+	tableModel.setPathwayModel(selectedPhysicalEntities);
+	GuiUtils.flexResizeTableColumns(table);
+}
+
+private PathwayModel selectedPhysicalEntities(PathwayModel pathwayModel) {
+	PathwayModel pModel = new PathwayModel();
+	for(BioPaxObject bpObject : pathwayModel.getBiopaxObjects()){
+		if(bpObject instanceof PhysicalEntity){
+			pModel.add(bpObject);
+		}
+	}
+	return pModel;
+}
+
+// link the selected BioPax Objects to the Vcell species
+private void linkToBioPaxObjects(){
+	if (fieldSpeciesContext == null){
+		return;
+	}else{
+		for (int i = 0; i < table.getRowCount(); i ++) {
+			EntitySelectionTableRow entitySelectionTableRow = tableModel.getValueAt(i);
+			if (entitySelectionTableRow.selected()) { 
+				RelationshipObject reObject = new RelationshipObject();
+				reObject.setBioPaxObjecte(entitySelectionTableRow.getBioPaxObject());
+				reObject.setSpecies(fieldSpeciesContext.getSpecies());
+				bioModel.getRelationshipModel().addRelationshipObject(reObject);
+			}
+		}
+		changeFreeTextAnnotation();
+		changeFreeTextPathwayLink(); 
+	}
+}
 
 /**
  * Comment
  */
 private void updateInterface() {
-	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && fieldModel != null;
+	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && bioModel != null;
 	annotationTextArea.setEditable(bNonNullSpeciesContext);
 	nameTextField.setEditable(bNonNullSpeciesContext);
 	pathwayDBJButton.setEnabled(bNonNullSpeciesContext);
+	pathwayObjectJButton.setEnabled(bNonNullSpeciesContext && (table.getSelectedRowCount() > 0));
 	if (bNonNullSpeciesContext) {
 		nameTextField.setText(getSpeciesContext().getName());
-		annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));	
-		updatePCLink();
+		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
+		changeFreeTextPathwayLink();
+		updatePCLink();		
 	} else {
 		annotationTextArea.setText(null);
 		getPCLinkValueEditorPane().setText(null);
 		nameTextField.setText(null);
 	}
 }
+
+	// add relationship to BioPax objects
+	private JButton getPathwayObjectbutton() {
+		if (pathwayObjectJButton == null) {
+			try {
+				pathwayObjectJButton = new javax.swing.JButton();
+				pathwayObjectJButton.setName("pathwayObjectJButton");
+				pathwayObjectJButton.setText("<html><center>Add Links to<br>BioPax Objects</center></html>");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return pathwayObjectJButton;
+	}
 
 private JButton getPathwayDBbutton() {
 	if (pathwayDBJButton == null) {
@@ -446,6 +618,55 @@ private JButton getPathwayDBbutton() {
 		}
 	}
 
+	// display linked biopax objects in JTextArea
+	private void changeFreeTextPathwayLink() {
+		bioModel = getBioModel();
+		if(bioModel == null){
+			pathwayLinkTextArea.setText("BioModel is null!");
+		}else{
+			String linkedBioPaxObjects = showLinkedBioPaxObjects();
+			if(linkedBioPaxObjects == null)linkedBioPaxObjects = "None";
+			pathwayLinkTextArea.setText(linkedBioPaxObjects);
+			if(bioModel.getPathwayModel().size() == 0){
+				pathwayLinkTextArea.setToolTipText("Import selected pathway objects first before adding links!");
+				textFieldSearch.setText(null);
+				textFieldSearch.setEditable(false);
+			}else{
+				pathwayLinkTextArea.setToolTipText("Select Biopax objects to link from the table.");
+				textFieldSearch.setEditable(true);
+			}
+		}
+	}
+
+	// display the linked biopax objects 
+	public String showLinkedBioPaxObjects(){
+		bioModel = getBioModel();
+		String linkedBioPaxObjectContext = null;
+		if(bioModel != null){
+  			if(fieldSpeciesContext != null){
+  				if(fieldSpeciesContext.getSpecies() != null && bioModel.getRelationshipModel() != null 
+  						&& bioModel.getRelationshipModel().getRelationshipObjects(fieldSpeciesContext.getSpecies()) != null){
+  					if(bioModel.getRelationshipModel().getRelationshipObjects(fieldSpeciesContext.getSpecies()).size() >0){
+						linkedBioPaxObjectContext = "";
+						for(RelationshipObject reObject : bioModel.getRelationshipModel().getRelationshipObjects(fieldSpeciesContext.getSpecies())){
+							if(((PhysicalEntity)reObject.getBioPaxObject()).getName().size() > 0){
+								linkedBioPaxObjectContext += "\n- "+((PhysicalEntity)reObject.getBioPaxObject()).getName().get(0);
+							}else if(((PhysicalEntity)reObject.getBioPaxObject()).getID() != null){
+								linkedBioPaxObjectContext += "\n- "+((PhysicalEntity)reObject.getBioPaxObject()).getID();
+							}else{
+								linkedBioPaxObjectContext += "\n- Unnamed BioPax Object";
+							}
+						}
+					}
+				}
+			}
+		}
+		if(linkedBioPaxObjectContext != null){
+			linkedBioPaxObjectContext = linkedBioPaxObjectContext.substring(1);
+		}
+		return linkedBioPaxObjectContext;
+	}
+
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		if (selectedObjects == null || selectedObjects.length != 1) {
@@ -453,6 +674,7 @@ private JButton getPathwayDBbutton() {
 		}
 		if (selectedObjects[0] instanceof SpeciesContext) {
 			setSpeciesContext((SpeciesContext) selectedObjects[0]);
+			refreshImportBioPaxObjectTable();
 		} else {
 			setSpeciesContext(null);
 		}		

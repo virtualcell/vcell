@@ -64,7 +64,7 @@ public class PathwayModel {
 			throw new RuntimeException("added a null object to pathway model");
 		}
 		getBiopaxObjects().add(bioPaxObject);
-		System.err.println("add all BioPaxObject children of this object to pathwayModel");
+//		System.err.println("add all BioPaxObject children of this object to pathwayModel");
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		return bioPaxObject;
 	}
@@ -169,7 +169,6 @@ public class PathwayModel {
 					}
 				}
 				if(bpObject instanceof Control){// for Control
-					System.out.println("Control ..");
 					ArrayList<Pathway> pathwayControllers = ((Control) bpObject).getPathwayControllers();
 					if(pathwayControllers != null)
 						addToParentMap(bpObject, new ArrayList<BioPaxObject>(pathwayControllers));
@@ -181,12 +180,9 @@ public class PathwayModel {
 						controlled.add(((BioPaxObject)((Control) bpObject).getControlledPathway()));
 					addToParentMap(bpObject, controlled);
 					if(bpObject instanceof Catalysis){// for Catalysis
-						System.out.println("Catalysis ..");
 					}
 				}else if(bpObject instanceof Conversion){// for Conversion
-					System.out.println("Conversion ..");
 				}else if(bpObject instanceof TemplateReaction){// for TemplateReaction
-					System.out.println("TemplateReaction ..");
 					TemplateReaction templateReaction = (TemplateReaction) bpObject;
 					if(templateReaction.getProductDna() != null)
 						addToParentMap(bpObject, templateReaction.getProductDna());
@@ -206,7 +202,6 @@ public class PathwayModel {
 					addToParentMap(bpObject, template);
 				}
 			}else if(bpObject instanceof Pathway){// for Pathway
-				System.out.println("Pathway ..");
 				Pathway pathway = (Pathway) bpObject;
 				if(pathway.getPathwayComponentInteraction() != null)
 					addToParentMap(bpObject, pathway.getPathwayComponentInteraction());
@@ -216,6 +211,7 @@ public class PathwayModel {
 			}
 		}		
 		// print out the hashtable
+		/*
 		System.out.println("ParentHashtable size is "+ parentMap.size());
 		for(BioPaxObject bp : parentMap.keySet()){
 			System.out.println(bp);
@@ -223,6 +219,7 @@ public class PathwayModel {
 				System.out.println("=> "+ vbp);
 			}
 		}
+		*/
 	}
 
 	private void addToParentMap(BioPaxObject parent, Collection<? extends BioPaxObject> children){
@@ -256,4 +253,8 @@ public class PathwayModel {
 		return parentObjects;
 	}
 	
+	public int size(){
+		return biopaxObjects.size();
+	}
+
 }

@@ -154,18 +154,19 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	}
 	
 	protected ArrayList<EntitySelectionTableRow> computeData() {
-		ArrayList<EntitySelectionTableRow> reactionStepList = new ArrayList<EntitySelectionTableRow>();
+		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
 		if (rowList != null){
 			for (EntitySelectionTableRow rs : rowList){
 				BioPaxObject bpObject = rs.getBioPaxObject();
-				if (searchText == null || searchText.length() == 0 || getLabel(bpObject).indexOf(searchText) >= 0
-						|| getType(bpObject).indexOf(searchText) >= 0) {
-					reactionStepList.add(rs);
+				if (searchText == null || searchText.length() == 0 
+						|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
+						|| getType(bpObject).toLowerCase().contains(searchText.toLowerCase()) ) {
+					pathwayObjectList.add(rs);
 				}
 			}
 			
 		}
-		return reactionStepList;
+		return pathwayObjectList;
 	}
 	// done
 
