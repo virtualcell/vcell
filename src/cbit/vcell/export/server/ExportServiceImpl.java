@@ -3,27 +3,19 @@ package cbit.vcell.export.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.simdata.gui.*;
-import cbit.vcell.math.*;
-import cbit.plot.*;
-import cbit.vcell.geometry.*;
-import java.beans.*;
-import cbit.vcell.solver.ode.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.server.*;
-import java.rmi.*;
-import java.io.*;
-import GIFUtils.*;
-import java.util.zip.*;
-import java.net.*;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.export.*;
-import cbit.rmi.event.*;
-import cbit.vcell.simdata.gui.*;
-
-
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Hashtable;
+import java.util.zip.DataFormatException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -32,10 +24,12 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.util.*;
-import cbit.vcell.solver.ode.*;
-import cbit.vcell.simdata.*;
-import cbit.vcell.export.nrrd.*;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
+import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.simdata.DataServerImpl;
 
 /**
  * This type was created in VisualAge.
@@ -44,13 +38,11 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 	
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 
-	private Hashtable jobRequestIDs = new Hashtable();
-	private Hashtable completedExportRequests = new Hashtable();
-	private Random random = new Random();
+	private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
+	private Hashtable<ExportSpecs, JobRequest> completedExportRequests = new Hashtable<ExportSpecs, JobRequest>();
 	
 	private ASCIIExporter asciiExporter = new ASCIIExporter(this);
 	private IMGExporter imgExporter = new IMGExporter(this);
-	private QTExporter qtExporter = new QTExporter(this);
 	private RasterExporter rrExporter = new RasterExporter(this);
 
 	private SessionLog log = null;
@@ -175,8 +167,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 {
 	return makeRemoteFile(outputContext, user, dataServerImpl, exportSpecs, bSaveAsZip, null);
 }
-	
-//amended Sept. 2010 to include clientTaskStatusSupport which can display progress and make task cancellable work.	
+
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport) throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
@@ -252,26 +243,20 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_QUICKTIME:
-				exportOutputs = qtExporter.makeMovieData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, clientTaskStatusSupport);
+			case FORMAT_GIF:
+			case FORMAT_JPEG:
+			case FORMAT_ANIMATED_GIF:
+				exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport);
 				boolean bJPEG = false;
 				if(exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
 					bJPEG = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getCompressionType() == FormatSpecificSpecs.CODEC_JPEG;
 				}
 				boolean bOverrideZip = exportOutputs.length == 1 && bJPEG;
-				
-				if(bSaveAsZip && !bOverrideZip)
-				{
+				if(bSaveAsZip && !bOverrideZip){
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-				}
-				else
-				{
+				}else{
 					return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 				}
-			case FORMAT_GIF:
-			case FORMAT_JPEG:
-			case FORMAT_ANIMATED_GIF:
-				exportOutputs = imgExporter.makeImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_NRRD:
 				NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);

@@ -28,6 +28,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
@@ -2362,7 +2363,7 @@ private void startExport() {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 	getExportSettings1().setDisplayPreferences(displayPreferences);
-	getExportSettings1().setSingleMovieOnly(getJRadioButtonFull().isSelected());
+	getExportSettings1().setSliceCount(getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
 	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this));
 			
 	if (!okToExport) {
@@ -2371,6 +2372,31 @@ private void startExport() {
 	// pass the request down the line; non-blocking call
 	getDataViewerManager().startExport(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext(),getExportSpecs());
 }
+
+
+	private static int getSliceCount(boolean bAllSlices,int normalAxis,CartesianMesh mesh){
+		if (!bAllSlices){
+			return 1;
+		}
+		switch (normalAxis){
+			case Coordinate.X_AXIS:{
+				// YZ plane
+				return mesh.getSizeX();
+			}
+			case Coordinate.Y_AXIS:{
+				// ZX plane
+				return mesh.getSizeY();
+			}
+			case Coordinate.Z_AXIS:{
+				// XY plane
+				return mesh.getSizeZ();
+
+			}
+			default:{
+				throw new IllegalArgumentException("unexpected normal axis "+normalAxis);
+			}
+		}
+	}
 
 
 /**
@@ -2448,7 +2474,7 @@ private void updateExportFormat(int exportFormat) {
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(true);
-			getJRadioButtonFull().setEnabled((exportFormat==ExportConstants.FORMAT_QUICKTIME?true:false));
+			getJRadioButtonFull().setEnabled(true);
 			break;
 		}
 		case ExportConstants.FORMAT_NRRD: {
