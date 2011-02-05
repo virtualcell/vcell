@@ -1096,8 +1096,8 @@ public void setSimDataType(int simDataType) {
 	firePropertyChange("simDataType", new Integer(oldValue), new Integer(simDataType));
 }
 
-public void setSingleMovieOnly(boolean bSingleMovieOnly){
-	getMovieSettingsPanel1().setSingleMovieOnly(bSingleMovieOnly);
+public void setSliceCount(int sliceCount){
+	getMovieSettingsPanel1().setSliceCount(sliceCount);
 }
 /**
  * Comment

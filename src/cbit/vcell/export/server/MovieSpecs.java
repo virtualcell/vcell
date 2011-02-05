@@ -23,6 +23,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private int viewZoom;
 	private int compressionType;
 	private float compressionQuality;
+	private boolean bQTVR;
 
 
 /**
@@ -35,7 +36,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
 		int mirroringType, boolean hideMembraneOutline,
-		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality) {
+		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
@@ -47,8 +48,12 @@ public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] dis
 	this.meshMode = meshMode;
 	this.compressionType = compressionType;
 	this.compressionQuality = compressionQuality;
+	this.bQTVR = bQTVR;
 }
 
+public boolean isQTVR(){
+	return bQTVR;
+}
 public float getcompressionQuality(){
 	return compressionQuality;
 }
@@ -78,7 +83,8 @@ public boolean equals(java.lang.Object object) {
 			membraneScaling == movieSpecs.membraneScaling &&
 			meshMode == movieSpecs.meshMode &&
 			compressionType == movieSpecs.compressionType &&
-			compressionQuality == movieSpecs.compressionQuality
+			compressionQuality == movieSpecs.compressionQuality &&
+			bQTVR == movieSpecs.bQTVR
 		) {
 			for (int i = 0; i < displayPreferences.length; i++){
 				if (! displayPreferences[i].equals(movieSpecs.getDisplayPreferences()[i])) {
@@ -142,6 +148,7 @@ public boolean isHideMembraneOutline() {
 public java.lang.String toString() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("MovieSpecs [");
+	buf.append("quicktimeVR: " + bQTVR + ", ");
 	buf.append("compressionType: " + compressionType + ", ");
 	buf.append("compressionQual: " + compressionQuality + ", ");
 	buf.append("overlayMode: " + overlayMode + ", ");

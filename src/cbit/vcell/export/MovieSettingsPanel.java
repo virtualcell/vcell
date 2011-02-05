@@ -23,7 +23,9 @@ import cbit.image.*;
 import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+
 /**
  * This type was created in VisualAge.
  */
@@ -524,6 +526,7 @@ private javax.swing.JRadioButton getJRadioButtonCompressed() {
 					//getJSliderCompression().setEnabled(e.getStateChange() == ItemEvent.SELECTED);
 				}
 			});
+			ivjJRadioButtonCompressed.setSelected(true);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -565,7 +568,7 @@ private javax.swing.JRadioButton getJRadioButtonOverlay() {
 		try {
 			ivjJRadioButtonOverlay = new javax.swing.JRadioButton();
 			ivjJRadioButtonOverlay.setName("JRadioButtonOverlay");
-			ivjJRadioButtonOverlay.setText("Multiple variables (single movie)");
+			ivjJRadioButtonOverlay.setText("Multiple variables (1 movie per slice -or- qtVR)");
 			ivjJRadioButtonOverlay.setEnabled(true);
 			// user code begin {1}
 			// user code end
@@ -609,7 +612,7 @@ private javax.swing.JRadioButton getJRadioButtonUncompressed() {
 		try {
 			ivjJRadioButtonUncompressed = new javax.swing.JRadioButton();
 			ivjJRadioButtonUncompressed.setName("JRadioButtonUncompressed");
-			ivjJRadioButtonUncompressed.setSelected(true);
+//			ivjJRadioButtonUncompressed.setSelected(true);
 			ivjJRadioButtonUncompressed.setText("Uncompressed (32 bit RGB)");
 			// user code begin {1}
 			// user code end
@@ -656,6 +659,13 @@ public MovieSpecs getMovieSpecs() {
 		imageScale = Integer.valueOf(getImageScaleComboBox().getSelectedItem().toString());
 		scaleMode = ImagePaneModel.NORMAL_MODE;
 	}
+	String qtvrAnswer = "Conventional";
+	if(getJRadioButtonOverlay().isSelected() && sliceCount > 1){
+		qtvrAnswer = DialogUtils.showWarningDialog(this, "Create a QuicktimeVR movie including all slices (1 '.mov' file)\n-or-\nCreate a conventional QuickTime movie for each slice ("+sliceCount+" '.mov' files packaged in a '.zip' file)?", new String[] {"Conventional","QTVR","Cancel"}, "Regular");
+		if(qtvrAnswer == null ||qtvrAnswer.equals("Cancel")){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+	}
 	return new MovieSpecs(
 		getSelectedDuration(),
 		getJRadioButtonOverlay().isSelected(),
@@ -667,8 +677,8 @@ public MovieSpecs getMovieSpecs() {
 		Integer.valueOf(getMembrScaleComboBox().getSelectedItem().toString()),
 		scaleMode,
 		(getJRadioButtonCompressed().isSelected()?FormatSpecificSpecs.CODEC_JPEG:FormatSpecificSpecs.CODEC_NONE),
-		(getJRadioButtonCompressed().isSelected()?(float)getJSliderCompression().getValue()/(float)getJSliderCompression().getMaximum():1.0f)
-		
+		(getJRadioButtonCompressed().isSelected()?(float)getJSliderCompression().getValue()/(float)getJSliderCompression().getMaximum():1.0f),
+		(qtvrAnswer.equals("QTVR")?true:false)
 	);
 }
 /**
@@ -963,14 +973,9 @@ private void setSelectedDuration(int newValue) {
 		return membrScaleComboBox;
 	}
 	
-	
-	public void setSingleMovieOnly(boolean bSingleMovieOnly){
-		if(bSingleMovieOnly){
-			getJRadioButtonOverlay().setSelected(true);
-			getJRadioButtonSeparate().setEnabled(false);
-		}else{
-			getJRadioButtonSeparate().setEnabled(true);
-		}
+	private int sliceCount = 1;
+	public void setSliceCount(int sliceCount){
+		this.sliceCount = sliceCount;
 	}
 	private JSlider getJSliderCompression() {
 		if (jSliderCompression == null) {
