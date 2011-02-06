@@ -303,6 +303,13 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		boolean bBeginTime,boolean bEndTime,boolean bSingleTimePoint,String[] varNameArr,DisplayPreferences[] displayPreferencesArr,
 		MovieHolder movieHolder,int[] pixels,int mirrorWidth,int mirrorHeight) throws Exception{
 	
+	boolean isGrayScale = true;
+	for (int i = 0; i < displayPreferencesArr.length; i++) {
+		if(!displayPreferencesArr[i].isGrayScale()){
+			isGrayScale = false;
+			break;
+		}
+	}
 	FormatSpecificSpecs formatSpecificSpecs = exportSpecs.getFormatSpecificSpecs();
 	if(exportSpecs.getFormat() == ExportConstants.FORMAT_GIF && 
 		formatSpecificSpecs instanceof ImageSpecs &&
@@ -317,12 +324,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_JPEG && 
 			formatSpecificSpecs instanceof ImageSpecs &&
 			((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.JPEG){
-		BufferedImage bufferedImage = new BufferedImage(mirrorWidth, mirrorHeight, BufferedImage.TYPE_INT_RGB);
-		int[] bufferData = ((DataBufferInt)bufferedImage.getRaster().getDataBuffer()).getData();
-		System.arraycopy(pixels, 0, bufferData, 0, pixels.length);
-		byte[] data =
-			FormatSpecificSpecs.encodeJPEG(bufferedImage, ((ImageSpecs)formatSpecificSpecs).getcompressionQuality(), mirrorWidth, mirrorHeight, 1, 32, false).getDataBytes();
-		exportOutputV.add(new ExportOutput(true, ".jpg", vcdID.getID(), dataID, data));
+		VideoMediaSample jpegEncodedVideoMediaSample = 
+			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, 1, isGrayScale,FormatSpecificSpecs.CODEC_JPEG, ((ImageSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
+		exportOutputV.add(new ExportOutput(true, ".jpg", vcdID.getID(), dataID, jpegEncodedVideoMediaSample.getDataBytes()));
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_ANIMATED_GIF && 
 			formatSpecificSpecs instanceof ImageSpecs &&
 			((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.ANIMATED_GIF){
@@ -352,13 +356,8 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		final int TIMESCALE = 1000;//number of units per second in movie
 		boolean bQTVR = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isQTVR();
 		int sampleDuration = (bQTVR?TIMESCALE:(int)(TIMESCALE*movieHolder.getSampleDurationSeconds()));
-		ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
-		DataOutputStream sampleData = new DataOutputStream(sampleBytes);
-		for (int j=0;j<pixels.length;j++) sampleData.writeInt(pixels[j]);
-		sampleData.close();
-		byte[] bytes = sampleBytes.toByteArray();
 		VideoMediaSample videoMediaSample =
-			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, sampleDuration, Integer.SIZE, false, FormatSpecificSpecs.CODEC_JPEG,1.0f, bytes);
+			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, sampleDuration, isGrayScale, FormatSpecificSpecs.CODEC_JPEG,((MovieSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
 		if (bBeginTime && (!bQTVR || movieHolder.getVideMediaChunkV() == null)) {
 			movieHolder.setVideMediaChunkV(new Vector<VideoMediaChunk>());
 		}

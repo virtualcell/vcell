@@ -2232,14 +2232,10 @@ private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
  */
 private void kymograph_Initialize() {
 	
-	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
-	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
-	getDisplayAdapterService1().setActiveColorModelID("BlueRed");
+	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
+	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
+	getDisplayAdapterService1().setActiveColorModelID(DisplayAdapterService.BLUERED);
 
-	//int[] sc = getDisplayAdapterService1().fetchSpecialColors("BlueRed");
-	//sc[DisplayAdapterService.BELOW_MIN_COLOR_OFFSET] = java.awt.Color.darkGray.getRGB();
-	//sc[DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET] = java.awt.Color.lightGray.getRGB();
-	//getDisplayAdapterService1().updateSpecialColors("BlueRed",sc);
 	updateColorMapDisplay();
 	
 	getImagePaneScroller1().getImagePaneModel().setMode(cbit.image.ImagePaneModel.MESH_MODE);
@@ -2467,9 +2463,9 @@ private JCheckBox getJCheckBoxColor() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				JCheckBox jCheckBox = (JCheckBox)e.getSource();
 				if(jCheckBox.isSelected()){
-					getDisplayAdapterService1().setActiveColorModelID("Gray");
+					getDisplayAdapterService1().setActiveColorModelID(DisplayAdapterService.GRAY);
 				}else{
-					getDisplayAdapterService1().setActiveColorModelID("BlueRed");
+					getDisplayAdapterService1().setActiveColorModelID(DisplayAdapterService.BLUERED);
 				}
 				cmapImageIcon = null;
 				updateColorMapDisplay();

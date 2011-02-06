@@ -160,14 +160,14 @@ public static void main(java.lang.String[] args) {
 		das = new DisplayAdapterService();
 		das.setActiveScaleRange(new Range(0, 450));
 		das.setValueDomain(new Range(-50, 550));
-		das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
-		das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
-		das.setActiveColorModelID("Gray");
+		das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
+		das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
+		das.setActiveColorModelID(DisplayAdapterService.GRAY);
 	} else if (type.equals("index")) {
 		das = new DisplayAdapterService();
-		das.addColorModelForIndexes(DisplayAdapterService.createGrayColorModel(), "Gray");
-		das.addColorModelForIndexes(DisplayAdapterService.createBlueRedColorModel(), "BlueRed");
-		das.setActiveColorModelID("Gray");
+		das.addColorModelForIndexes(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.GRAY);
+		das.addColorModelForIndexes(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.BLUERED);
+		das.setActiveColorModelID(DisplayAdapterService.GRAY);
 	}
 	//
 

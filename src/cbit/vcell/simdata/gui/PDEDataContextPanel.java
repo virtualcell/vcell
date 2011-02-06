@@ -1105,12 +1105,12 @@ private void initDisplayAdapterService(DisplayAdapterService das) {
 	das.addColorModelForValues(
 		DisplayAdapterService.createGrayColorModel(), 
 		DisplayAdapterService.createGraySpecialColors(),
-		"Gray");
+		DisplayAdapterService.GRAY);
 	das.addColorModelForValues(
 		DisplayAdapterService.createBlueRedColorModel(),
 		DisplayAdapterService.createBlueRedSpecialColors(),
-		"BlueRed");
-	das.setActiveColorModelID("BlueRed");
+		DisplayAdapterService.BLUERED);
+	das.setActiveColorModelID(DisplayAdapterService.BLUERED);
 }
 /**
  * Initialize the class.

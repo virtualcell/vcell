@@ -1268,31 +1268,39 @@ private void changeSpecialColor(ActionEvent e){
 		}
 		return;
 	}
-	Color newSpecialColor = JColorChooser.showDialog(this, "Choose Special Color", Color.black);
-	if(newSpecialColor != null){
-		String activeColorModelID = getDisplayAdapterService().getActiveColorModelID();
-		int[] activecolorModelArr = getDisplayAdapterService().getActiveColorModel();
-		int[] specialColorsArr = getDisplayAdapterService().getSpecialColors().clone();
+	String activeColorModelID = getDisplayAdapterService().getActiveColorModelID();
+	int[] activecolorModelArr = getDisplayAdapterService().getActiveColorModel();
+	int[] specialColorsArr = getDisplayAdapterService().getSpecialColors().clone();
 
-		if(e.getActionCommand().equals("BM")){
-			specialColorsArr[DisplayAdapterService.BELOW_MIN_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("AM")){
-			specialColorsArr[DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("NN")){
-			specialColorsArr[DisplayAdapterService.NAN_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("ND")){
-			specialColorsArr[DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("NR")){
-			specialColorsArr[DisplayAdapterService.NO_RANGE_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("FH")){
-			specialColorsArr[DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("FN")){
-			specialColorsArr[DisplayAdapterService.FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
-		}else if(e.getActionCommand().equals("MB")){
-			specialColorsArr[DisplayAdapterService.NULL_COLOR_OFFSET] = newSpecialColor.getRGB();
+	if(e.getActionCommand().equals("GS")){
+		for (int i = 0; i < specialColorsArr.length; i++) {
+			specialColorsArr[i] = Color.black.getRGB();
 		}
-		
+		specialColorsArr[DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET] = Color.white.getRGB();
+		specialColorsArr[DisplayAdapterService.FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = Color.gray.getRGB();
 		getDisplayAdapterService().addColorModelForValues(activecolorModelArr, specialColorsArr, activeColorModelID);
+	}else{
+		Color newSpecialColor = JColorChooser.showDialog(this, "Choose Special Color", Color.black);
+		if(newSpecialColor != null){
+			if(e.getActionCommand().equals("BM")){
+				specialColorsArr[DisplayAdapterService.BELOW_MIN_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("AM")){
+				specialColorsArr[DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("NN")){
+				specialColorsArr[DisplayAdapterService.NAN_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("ND")){
+				specialColorsArr[DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("NR")){
+				specialColorsArr[DisplayAdapterService.NO_RANGE_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("FH")){
+				specialColorsArr[DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("FN")){
+				specialColorsArr[DisplayAdapterService.FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}else if(e.getActionCommand().equals("MB")){
+				specialColorsArr[DisplayAdapterService.NULL_COLOR_OFFSET] = newSpecialColor.getRGB();
+			}
+			getDisplayAdapterService().addColorModelForValues(activecolorModelArr, specialColorsArr, activeColorModelID);
+		}
 	}
 }
 /**
@@ -1376,7 +1384,16 @@ private void initConnections() throws java.lang.Exception {
 			changeSpecialColor(e);
 		}
 	});
+	JMenuItem changeSpecialColorMenuItemGray = new JMenuItem("GrayScale Colors");
+	changeSpecialColorMenuItemGray.setActionCommand("GS");
+	changeSpecialColorMenuItemGray.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			changeSpecialColor(e);
+		}
+	});
 
+	specialColorPopup.add(changeSpecialColorMenuItemReset);
+	specialColorPopup.add(changeSpecialColorMenuItemGray);
 	specialColorPopup.add(changeSpecialColorMenuItem0);
 	specialColorPopup.add(changeSpecialColorMenuItem1);
 	specialColorPopup.add(changeSpecialColorMenuItem2);
@@ -1385,7 +1402,6 @@ private void initConnections() throws java.lang.Exception {
 	specialColorPopup.add(changeSpecialColorMenuItem5);
 	specialColorPopup.add(changeSpecialColorMenuItem6);
 	specialColorPopup.add(changeSpecialColorMenuItem7);
-	specialColorPopup.add(changeSpecialColorMenuItemReset);
 	
 	getSCBelowMinJLabel().addMouseListener(mouseAdapter);
 	getSCAboveMaxJLabel().addMouseListener(mouseAdapter);

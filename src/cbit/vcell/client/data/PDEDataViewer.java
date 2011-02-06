@@ -3114,7 +3114,6 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			int sampleDuration = 0;
 			int timeScale = smsp.getFramesPerSecond();
 			int bitsPerPixel = 32;
-			boolean isGrayscale = false;
 			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
 			DataInfoProvider dataInfoProvider = getPDEDataContextPanel1().getDataInfoProvider();
@@ -3150,16 +3149,9 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 					surfaceCanvas.paint(g2D);
 					bufferedImage.getRGB(0, 0, surfaceWidth, surfaceHeight, singleFrame, 0, surfaceWidth);
 					sampleDuration = 1;
-					ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
-					DataOutputStream sampleData = new DataOutputStream(sampleBytes);
-					for (int j=0;j<singleFrame.length;j++){
-						sampleData.writeInt(singleFrame[j]);
-					}
-					sampleData.close();
-					byte[] bytes = sampleBytes.toByteArray();
 					sample =
 						FormatSpecificSpecs.getVideoMediaSample(
-							surfaceWidth, surfaceHeight * varNames.length, sampleDuration, bitsPerPixel, isGrayscale, FormatSpecificSpecs.CODEC_JPEG, 1.0f, bytes);
+							surfaceWidth, surfaceHeight * varNames.length, sampleDuration, false, FormatSpecificSpecs.CODEC_JPEG, 1.0f, singleFrame);
 					chunks[t] = new VideoMediaChunk(sample);
 				}
 			}finally{

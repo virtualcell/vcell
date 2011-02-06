@@ -6,6 +6,7 @@ package cbit.vcell.export.server;
 ©*/
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.io.*;
 import java.util.zip.DataFormatException;
 
@@ -19,29 +20,47 @@ public abstract class FormatSpecificSpecs implements Serializable {
 	public final static int CODEC_NONE = 0;
 	public final static int CODEC_JPEG = 1;
 
-	public static VideoMediaSample getVideoMediaSample(
-			int width,int height,int sampleDuration,int bitsPerPixel,boolean isGrayscale,int compressionType,float compressionQuality,byte[] bytes) throws Exception{
+	public static boolean isGrayScale(int[] argbData){
+		for (int i = 0; i < argbData.length; i++) {
+			if((argbData[i]&0x000000FF) != ((argbData[i]>>8)&0x000000FF) ||
+				(argbData[i]&0x000000FF) != ((argbData[i]>>16)&0x000000FF)){
+				return false;
+			}
 			
+		}
+		return true;
+	}
+	public static VideoMediaSample getVideoMediaSample(
+			int width,int height,int sampleDuration,boolean isGrayScale,int compressionType,float compressionQuality,int[] argbData) throws Exception{
+			
+			if(isGrayScale){
+				//convert 32bit to 8bit
+				BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+				byte[] buffer = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
+
+				for (int i = 0; i < buffer.length; i++) {
+					buffer[i] = (byte)(argbData[i]&0x000000FF);
+				}
+				if(compressionType == FormatSpecificSpecs.CODEC_JPEG){
+					return FormatSpecificSpecs.encodeJPEG(bufferedImage, compressionQuality, width, height, sampleDuration, Byte.SIZE, true);
+				}else{
+					return new VideoMediaSampleRaw(width, height, sampleDuration,buffer,8, true);
+				}
+			}
 			if(compressionType == FormatSpecificSpecs.CODEC_JPEG){
 				BufferedImage bufferedImage = null;
-				if(bitsPerPixel == 8){
-					bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-					byte[] buffer = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
-					System.arraycopy(bytes, 0, buffer, 0, bytes.length);
-				}else if(bitsPerPixel == 32){
-					bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-					DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
-					for (int y = 0; y < height; y++) {
-						for (int x = 0; x < width; x++) {
-							bufferedImage.setRGB(x, y, dataInputStream.readInt());
-						}
-					}
-				}else{
-					throw new DataFormatException("JPEG only implement 8 and 32 bits.");
-				}
-				return FormatSpecificSpecs.encodeJPEG(bufferedImage, compressionQuality, width, height, sampleDuration, bitsPerPixel, isGrayscale);
+				bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				System.arraycopy(argbData, 0, ((DataBufferInt)bufferedImage.getRaster().getDataBuffer()).getData(), 0, argbData.length);
+				return FormatSpecificSpecs.encodeJPEG(bufferedImage, compressionQuality, width, height, sampleDuration, Integer.SIZE,false);
 			}else{
-				return new VideoMediaSampleRaw(width, height, sampleDuration,bytes,bitsPerPixel, isGrayscale);
+				ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
+				DataOutputStream sampleData = new DataOutputStream(sampleBytes);
+				for (int j=0;j<argbData.length;j++){
+					sampleData.writeInt(argbData[j]);
+				}
+				sampleData.close();
+				byte[] bytes = sampleBytes.toByteArray();
+				return new VideoMediaSampleRaw(width, height, sampleDuration,bytes,Integer.SIZE, false);
 			}
 		}
 

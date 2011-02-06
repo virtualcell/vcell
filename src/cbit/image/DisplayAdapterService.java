@@ -4,6 +4,7 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -17,7 +18,9 @@ import cbit.vcell.simdata.gui.DisplayPreferences;
  */
 public class DisplayAdapterService implements org.vcell.util.Stateful, java.beans.PropertyChangeListener {
 
-	//
+	public static final String BLUERED = "BlueRed";
+	public static final String GRAY = "Gray";
+	
 	public class DisplayAdapterServiceState {
 		private Range customScaleRange;
 //		private int[] customSpecialColors;
@@ -136,6 +139,11 @@ public void activateMarkedState(java.lang.String stateID) {
 private void addColorModel(int[] colorModel, int[] argSpecialColors, String id) {
 	if (colorModel == null) {
 		return;
+	}
+	if(id.equals(BLUERED) && !Arrays.equals(colorModel, createBlueRedColorModel())){
+		throw new IllegalArgumentException(BLUERED+" color model id must match 'DisplayAdapterService.createBluRedColorModel()'");
+	}else if(id.equals(GRAY) && !Arrays.equals(colorModel, createGrayColorModel())){
+		throw new IllegalArgumentException(GRAY+" color model id must match 'DisplayAdapterService.createGrayColorModel()'");
 	}
 	colorModels.put(id, colorModel);
 	if (argSpecialColors != null) {
