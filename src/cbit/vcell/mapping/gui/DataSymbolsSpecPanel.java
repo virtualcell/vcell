@@ -296,11 +296,6 @@ public void setDataSymbol(Object object) {
 	int h = Integer.valueOf(20).intValue() + 3*(countH%7);
 	String type = "double";
 	System.out.println("  " + w + ", " + h);
-//	DisplayAdapterService das = getImagePlaneManagerPanel().getDisplayAdapterServicePanel().getDisplayAdapterService();
-//	das.setValueDomain(new Range(-50, 550));
-//	das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
-//	das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
-//	das.setActiveColorModelID("Gray");
 	SourceDataInfo sdi = ImagePaneScrollerTest.getExampleSDI(type, w, h);
 	getImagePlaneManagerPanel().setSourceDataInfo(sdi);
 

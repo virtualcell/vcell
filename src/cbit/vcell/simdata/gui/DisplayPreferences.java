@@ -11,6 +11,9 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
 
+import cbit.image.DisplayAdapterService;
+import cbit.vcell.export.server.FormatSpecificSpecs;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/28/2001 10:06:01 AM)
@@ -44,7 +47,12 @@ public BitSet getDomainValid(){
 public int[] getSpecialColors(){
 	return specialColors;
 }
-
+public boolean isGrayScale(){
+	if(colorMode.equals(DisplayAdapterService.GRAY) && (specialColors == null || FormatSpecificSpecs.isGrayScale(specialColors))){
+		return true;
+	}
+	return false;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 1:26:25 AM)

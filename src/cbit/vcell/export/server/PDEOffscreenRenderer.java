@@ -317,7 +317,7 @@ public void setVarAndTimeAndDisplay(String varName,double timepoint,DisplayPrefe
 	Range activeScaleRange = (displayPreferences==null?valueDomain:(displayPreferences.getScaleSettings()==null?valueDomain:displayPreferences.getScaleSettings()));
 	getDisplayAdapterService().setActiveScaleRange(activeScaleRange);
 	
-	String colorMode = (displayPreferences==null?"BlueRed":(displayPreferences.getColorMode()==null?"BlueRed":displayPreferences.getColorMode()));
+	String colorMode = (displayPreferences==null?DisplayAdapterService.BLUERED:(displayPreferences.getColorMode()==null?DisplayAdapterService.BLUERED:displayPreferences.getColorMode()));
 	getDisplayAdapterService().setActiveColorModelID(colorMode);
 	
 	int[] specialColors = (displayPreferences==null?getDisplayAdapterService().getSpecialColors():(displayPreferences.getSpecialColors()==null?getDisplayAdapterService().getSpecialColors():displayPreferences.getSpecialColors()));
@@ -332,7 +332,7 @@ public void setVarAndTimeAndDisplay(String varName,double timepoint,DisplayPrefe
  */
 public PDEOffscreenRenderer(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
 	setServerPDEDataContext(new ServerPDEDataContext(outputContext,user, dataServerImpl, vcdID));
-	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
-	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
+	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
+	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
 }
 }
