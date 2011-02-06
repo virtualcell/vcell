@@ -51,6 +51,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
 import cbit.image.ImagePaneModel;
 import cbit.rmi.event.ExportEvent;
@@ -69,6 +70,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
@@ -1370,8 +1372,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
 				
 				double duration = 10000; //10s
-				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),false);
-				DisplayPreferences pref2 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),false);
+				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors());
+				DisplayPreferences pref2 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors());
 				DisplayPreferences[] displayPref = new DisplayPreferences[]{pref1, pref2};
 				int imageScale = 1;
 				int membraneScale = 1;
@@ -1385,7 +1387,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 												 false,
 												 imageScale,
 												 membraneScale,
-												 scaleMode);
+												 scaleMode,
+												 FormatSpecificSpecs.CODEC_JPEG,
+												 1.0f/*lossless*/,
+												 false);
 				mSpec.setViewZoom(1);
 				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 				// pass the request
