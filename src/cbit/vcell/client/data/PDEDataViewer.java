@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -53,6 +54,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import llnl.visit.ViewerMethods;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -86,6 +89,7 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.DataManager;
@@ -137,8 +141,10 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.visit.VisitConnectionInfo;
 import cbit.vcell.visit.VisitControlPanel;
-import cbit.vcell.visit.VisitProcess;
+//import cbit.vcell.visit.VisitProcess;
+import cbit.vcell.visit.VisitSession;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -151,7 +157,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
 	private String libDir;
-	public VisitProcess visitProcess;
+//	public VisitProcess visitProcess;
 	
 	
 	public static class TimeSeriesDataJobListener implements DataJobListener {
@@ -1724,7 +1730,7 @@ private ExportMonitorPanel getExportMonitorPanel1() {
 //}
 
 private void openInVisit() {
-	try{
+	try {
 		 /*
 		 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
 		 if vcDId instanceOf VCSim
@@ -1734,11 +1740,10 @@ private void openInVisit() {
 		int jobIndex = 0;
 		boolean isOldStyle = false;
 		VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
-		if(vcdid instanceof VCSimulationDataIdentifier){
+		if (vcdid instanceof VCSimulationDataIdentifier){
 			fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
 			jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
-		}
-		else if(vcdid instanceof VCSimulationDataIdentifierOldStyle){
+		}else if (vcdid instanceof VCSimulationDataIdentifierOldStyle){
 			isOldStyle = true;
 			fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
 			jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
@@ -1747,63 +1752,30 @@ private void openInVisit() {
 		}
 
 		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-		String userName = getSimulation().getVersion().getOwner().getName();
-		//if (new File("/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/").exists()) {
-		//	libDir = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/";
-		//}
-		//else {
-		JFileChooser chooser = new JFileChooser();
-		 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
-		 chooser.setDialogTitle("Select location of VisIt Python Library.");
-		 int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
-		 if(returnVal == JFileChooser.APPROVE_OPTION) {
-		       System.out.println("You chose to open this directory as the Visit Python Library: " +
-		            chooser.getSelectedFile().getAbsolutePath());
-		       libDir = chooser.getSelectedFile().getAbsolutePath();
-		 }
-		//}
-		visitProcess = new VisitProcess(libDir);
+		
+		final VisitSession visitSession = getDataViewerManager().getRequestManager().createNewVisitSession();
+		
+		visitSession.openDatabase(getSimulation().getVersion().getOwner(), simlogname);
+		
+		//String varName = getPdeDataContext().getVariableName();
+		String varName = "s0";
+		visitSession.addAndDrawPseudocolorPlot(varName);
+
 		VisitControlPanel visitControlPanel= new VisitControlPanel();
 		visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
-		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
+		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitSession);
 		
 		showComponentInFrame(visitControlPanel, "Visit Control Panel");
-		visitProcess.sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
-		String s = "visit.OpenDatabase(\""+ "10.84.11.40:/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
-		System.out.println("About to open " + s);
-		visitProcess.sendCommandAndNoteResponse(s);
-		//String s2=getPdeDataContext().getVariableName();
-		//visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
-		//visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
 		
-		 //JFileChooser chooser = new JFileChooser();
-		// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
-		 //chooser.setDialogTitle("Select location of RAID filesystem mount");
-		// int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
-		 //if(returnVal == JFileChooser.APPROVE_OPTION) {
-		  //     System.out.println("You chose to open this file: " +
-		  //          chooser.getSelectedFile().getName());
-//		       if (System.getProperties().getProperty("os.arch").contains("MacOS")) {
-//		    	   //Assume, FOR THE MOMENT, that if we're running MacOSX, we're running on Ed Boyce's machine
-//		    	   String execCommand = "/Users/edboyce/visit/bin/visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
-		       	   //String execCommand = "/Users/edboyce/visit/bin/visit -cli";
-		       	   
-		    	   
-		    	   //					    	   Runtime.getRuntime().exec(execCommand);
-//		       }
-//		       if (System.getProperties().getProperty("os.arch").contains("Linux")) {
-//		    	   //Assume on Linux that the visit command is in the path.
-//			       String execCommand = "bash visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
-				   
-		       	   //ProcessInfo  pi = VisitProcess.spawnProcess(execCommand);
-		     
-//			   }
-		 }
+		Runnable eventLoopWorker = new Runnable(){
+			public void run(){
+				visitSession.runEventLoop();
+			}
+		};
+		Thread thread = new Thread(eventLoopWorker,"VisitEventLoop");
+		thread.start();
 
-		 
-	
-	
-	catch(Exception e1) {
+	} catch(Exception e1) {
 		e1.printStackTrace();
 	}
 }

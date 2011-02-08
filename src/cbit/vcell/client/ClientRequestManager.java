@@ -39,6 +39,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelChildSummary;
@@ -138,6 +139,8 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.visit.VisitConnectionInfo;
+import cbit.vcell.visit.VisitSession;
 import cbit.vcell.xml.XMLInfo;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
@@ -3138,4 +3141,20 @@ public void accessPermissions(Component requester, VCDocument vcDoc) {
 	getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo);
 	
 }
+
+
+public VisitSession createNewVisitSession() throws DataAccessException {
+	VisitConnectionInfo visitConnInfo = getClientServerManager().createNewVisitConnection();
+	final VisitSession visitSession = new VisitSession(this,PropertyLoader.getRequiredProperty("vcell.visit.installexe"),visitConnInfo);
+	visitSession.initViewerProxyOpenWindows();
+	visitSession.openMDServer(visitSession.getVisitConnectionInfo().getIPAddress());
+	
+	Runnable eventLoopWorker = new Runnable(){
+		public void run(){
+			visitSession.runEventLoop();
+		}
+	};
+	return visitSession;
+}
+
 }

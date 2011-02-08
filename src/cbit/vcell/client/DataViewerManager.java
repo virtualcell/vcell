@@ -25,6 +25,8 @@ public UserPreferences getUserPreferences();
 
 public User getUser();
 
+public RequestManager getRequestManager();
+
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.
  */

@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.server;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -30,6 +30,7 @@ import cbit.vcell.server.URLFinder;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.visit.VisitConnectionInfo;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -199,6 +200,10 @@ public URLFinder getURLFinder() {
 	}
 }
 
+public VisitConnectionInfo createNewVisitConnection() {
+	VisitConnectionInfo visitConnectionInfo = VisitConnectionInfo.createHardCodedVisitConnectionInfo(getUserLoginInfo().getUser());
+	return visitConnectionInfo;
+}
 
 /**
  * This method was created by a SmartGuide.

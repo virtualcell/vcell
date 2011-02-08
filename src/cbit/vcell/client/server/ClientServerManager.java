@@ -1,5 +1,6 @@
 package cbit.vcell.client.server;
 import java.lang.reflect.Constructor;
+import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -25,6 +26,7 @@ import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:31:18 PM)
@@ -747,5 +749,28 @@ public void sendErrorReport(Throwable exception) {
 		ex.printStackTrace(System.out);
 	}
 	
+}
+
+public VisitConnectionInfo createNewVisitConnection() throws DataAccessException {
+	VCellThreadChecker.checkRemoteInvocation();
+	VisitConnectionInfo visitConnectionInfo = null;
+	if (getVcellConnection()==null){
+		throw new RuntimeException("cannot get Visualization Server, no VCell Connection\ntry Server->Reconnect");
+	}else{
+		try {
+			visitConnectionInfo = getVcellConnection().createNewVisitConnection();
+			return visitConnectionInfo;
+		} catch (java.rmi.RemoteException rexc) {
+			rexc.printStackTrace(System.out);
+			try {
+				// one more time before we fail../
+				visitConnectionInfo = getVcellConnection().createNewVisitConnection();
+				return visitConnectionInfo;
+			} catch (java.rmi.RemoteException rexc2) {
+				rexc.printStackTrace(System.out);
+				throw new DataAccessException("RemoteException: "+rexc2.getMessage());
+			}
+		}
+	}
 }
 }
