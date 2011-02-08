@@ -3,7 +3,6 @@ package cbit.vcell.client;
 import java.awt.Color;
 
 import javax.swing.BorderFactory;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
@@ -59,5 +58,5 @@ public class GuiConstants {
 	public static final String PROPERTY_NAME_SIMULATIONS = "simulations";
 	public static final String PROPERTY_NAME_SIMULATION_OWNER = "simulationOwner";
 	public static final String PROPERTY_NAME_NAME = "name";
-	public static final Border TAB_PANEL_BORDER = UIManager.getBorder("ScrollPane.border");
+	public static final Border TAB_PANEL_BORDER = new LineBorder(new Color(127, 157,185));
 }
