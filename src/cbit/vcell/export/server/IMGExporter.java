@@ -7,7 +7,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.Hashtable;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
@@ -130,6 +133,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 	int timeIndex0 = beginTimeIndex;
 	int[] overLayPixels = null;
 	movieHolder.setSampleDurationSeconds(duration);//set default time if only 1 timepoint
+	boolean bEndslice = sliceNumber == (startSlice+sliceCount-1);
 	while(true){
 		if(clientTaskStatusSupport != null){
 			clientTaskStatusSupport.setProgress((int)(progress*100));
@@ -163,14 +167,13 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 			movieHolder.setSampleDurationSeconds(movieHolder.getSampleDurationSeconds());
 		}
 		//Index var and time properly
-		boolean bEndslice = sliceNumber == (startSlice+sliceCount-1);
 		boolean bBegintime = timeIndex0==beginTimeIndex;
 		boolean bEndTime = timeIndex0==endTimeIndex;
 		if(bOverLay){
 			varNameIndex0++;
 			if(varNameIndex0==varNames.length){
 				String dataID = createDataID(exportSpecs, sliceNumber, "overlay", timeIndex0);
-				createMedia(exportOutputV, vcdID, dataID, exportSpecs,bEndslice,bBegintime,bEndTime, bSingleTimePoint, varNames,displayPreferences,movieHolder, overLayPixels, currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight()*varNames.length);
+				createMedia(exportOutputV, vcdID, dataID, exportSpecs,true,bEndslice,bBegintime,bEndTime, bSingleTimePoint, varNames,displayPreferences,movieHolder, overLayPixels, currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight()*varNames.length);
 				varNameIndex0 = 0;
 				timeIndex0++;
 				if(timeIndex0>endTimeIndex){
@@ -179,7 +182,8 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 			}
 		}else{
 			String dataID = createDataID(exportSpecs, sliceNumber, varNames[varNameIndex0], timeIndex0);
-			createMedia(exportOutputV, vcdID, dataID, exportSpecs,bEndslice,bBegintime, bEndTime, bSingleTimePoint, new String[] {varNames[varNameIndex0]},new DisplayPreferences[] {displayPreferences[varNameIndex0]},movieHolder, currentSliceTimeMirrorInfo.getPixels(), currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight());
+			boolean bEndVars = varNameIndex0 == varNames.length-1;
+			createMedia(exportOutputV, vcdID, dataID, exportSpecs,bEndVars,bEndslice,bBegintime, bEndTime, bSingleTimePoint, new String[] {varNames[varNameIndex0]},new DisplayPreferences[] {displayPreferences[varNameIndex0]},movieHolder, currentSliceTimeMirrorInfo.getPixels(), currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight());
 			timeIndex0++;
 			if(timeIndex0>endTimeIndex){
 				timeIndex0 = beginTimeIndex;
@@ -275,7 +279,8 @@ private static String createDataID(ExportSpecs exportSpecs,int sliceNumber,Strin
 
 }
 private static class MovieHolder{
-	private Vector<VideoMediaChunk> videMediaChunkV;
+	private Hashtable<String, Vector<VideoMediaChunk>> varNameVideoMediaChunkHash = new Hashtable<String, Vector<VideoMediaChunk>>();
+	private Hashtable<String, String> varNameDataIDHash = new Hashtable<String, String>();
 	private GIFImage gifImage;
 	private double sampleDurationSeconds;
 	public void setSampleDurationSeconds(double sampleDurationSeconds){
@@ -290,16 +295,16 @@ private static class MovieHolder{
 	public GIFImage getGifImage(){
 		return gifImage;
 	}
-	public Vector<VideoMediaChunk> getVideMediaChunkV() {
-		return videMediaChunkV;
+	public Hashtable<String, Vector<VideoMediaChunk>> getVarNameVideoMediaChunkHash(){
+		return varNameVideoMediaChunkHash;
 	}
-	public void setVideMediaChunkV(Vector<VideoMediaChunk> videMediaChunkV) {
-		this.videMediaChunkV = videMediaChunkV;
+	public Hashtable<String, String> getVarNameDataIDHash(){
+		return varNameDataIDHash;
 	}
-}
+ }
 
 private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentifier vcdID,String dataID,
-		ExportSpecs exportSpecs,boolean bEndSlice,
+		ExportSpecs exportSpecs,boolean bEndVars,boolean bEndSlice,
 		boolean bBeginTime,boolean bEndTime,boolean bSingleTimePoint,String[] varNameArr,DisplayPreferences[] displayPreferencesArr,
 		MovieHolder movieHolder,int[] pixels,int mirrorWidth,int mirrorHeight) throws Exception{
 	
@@ -353,21 +358,23 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_QUICKTIME && 
 			formatSpecificSpecs instanceof MovieSpecs){
+		String VIDEOMEDIACHUNKID = (varNameArr.length==1?varNameArr[0]:"OVERLAY");
 		final int TIMESCALE = 1000;//number of units per second in movie
 		boolean bQTVR = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isQTVR();
 		int sampleDuration = (bQTVR?TIMESCALE:(int)(TIMESCALE*movieHolder.getSampleDurationSeconds()));
 		VideoMediaSample videoMediaSample =
 			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, sampleDuration, isGrayScale, FormatSpecificSpecs.CODEC_JPEG,((MovieSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
-		if (bBeginTime && (!bQTVR || movieHolder.getVideMediaChunkV() == null)) {
-			movieHolder.setVideMediaChunkV(new Vector<VideoMediaChunk>());
+		if (bBeginTime && (!bQTVR || movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID) == null)) {
+			movieHolder.getVarNameVideoMediaChunkHash().put(VIDEOMEDIACHUNKID,new Vector<VideoMediaChunk>());
+			movieHolder.getVarNameDataIDHash().put(VIDEOMEDIACHUNKID, dataID);
 		}
-		movieHolder.getVideMediaChunkV().add(new VideoMediaChunk(videoMediaSample));
+		movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID).add(new VideoMediaChunk(videoMediaSample));
 		if(bEndTime && !bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
 			double[] allTimes = exportSpecs.getTimeSpecs().getAllTimes();
 			int beginTimeIndex = exportSpecs.getTimeSpecs().getBeginTimeIndex();
 			int endTimeIndex = exportSpecs.getTimeSpecs().getEndTimeIndex();
-			VideoMediaChunk[] videoMediaChunkArr = movieHolder.getVideMediaChunkV().toArray(new VideoMediaChunk[0]);
+			VideoMediaChunk[] videoMediaChunkArr = movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID).toArray(new VideoMediaChunk[0]);
 			MediaTrack videoTrack = new MediaTrack(videoMediaChunkArr);
 			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), TIMESCALE);
 			newMovie.addUserDataEntry(new UserDataEntry("cpy", "©" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
@@ -386,18 +393,27 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			movieOutput.close();
 			byte[] finalMovieBytes = bytesOut.toByteArray();
 			exportOutputV.add(new ExportOutput(true, ".mov", simID, dataID, finalMovieBytes));
-		}else if(bEndTime && bEndSlice && bQTVR){
+			movieHolder.getVarNameVideoMediaChunkHash().clear();
+			movieHolder.getVarNameDataIDHash().clear();
+		}else if(bEndVars && bEndTime && bEndSlice && bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
-			VideoMediaChunk[] videoMediaChunkArr = movieHolder.getVideMediaChunkV().toArray(new VideoMediaChunk[0]);
-			int beginTimeIndex = exportSpecs.getTimeSpecs().getBeginTimeIndex();
-			int endTimeIndex = exportSpecs.getTimeSpecs().getEndTimeIndex();
-			int numTimes = endTimeIndex-beginTimeIndex+1;
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream movieOutputStream = new DataOutputStream(baos);
-			writeQTVRWorker(movieOutputStream, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);
-			movieOutputStream.close();
-			byte[] finalMovieBytes = baos.toByteArray();
-			exportOutputV.add(new ExportOutput(true, ".mov", simID, dataID, finalMovieBytes));
+			Enumeration<String> allStoredVarNamesEnum = movieHolder.getVarNameVideoMediaChunkHash().keys();
+			while(allStoredVarNamesEnum.hasMoreElements()){
+				String varName = allStoredVarNamesEnum.nextElement();
+				String storedDataID = movieHolder.getVarNameDataIDHash().get(varName);
+				VideoMediaChunk[] videoMediaChunkArr = movieHolder.getVarNameVideoMediaChunkHash().get(varName).toArray(new VideoMediaChunk[0]);
+				int beginTimeIndex = exportSpecs.getTimeSpecs().getBeginTimeIndex();
+				int endTimeIndex = exportSpecs.getTimeSpecs().getEndTimeIndex();
+				int numTimes = endTimeIndex-beginTimeIndex+1;
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutputStream movieOutputStream = new DataOutputStream(baos);
+				writeQTVRWorker(movieOutputStream, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);
+				movieOutputStream.close();
+				byte[] finalMovieBytes = baos.toByteArray();
+				exportOutputV.add(new ExportOutput(true, ".mov", simID, storedDataID, finalMovieBytes));					
+			}
+			movieHolder.getVarNameVideoMediaChunkHash().clear();
+			movieHolder.getVarNameDataIDHash().clear();
 		}
 	}
 

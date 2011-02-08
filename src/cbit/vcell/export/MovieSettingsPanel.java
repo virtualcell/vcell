@@ -568,7 +568,7 @@ private javax.swing.JRadioButton getJRadioButtonOverlay() {
 		try {
 			ivjJRadioButtonOverlay = new javax.swing.JRadioButton();
 			ivjJRadioButtonOverlay.setName("JRadioButtonOverlay");
-			ivjJRadioButtonOverlay.setText("Multiple variables (1 movie per slice -or- qtVR)");
+			ivjJRadioButtonOverlay.setText("Composite variables (1 movie per slice -or- QTVR)");
 			ivjJRadioButtonOverlay.setEnabled(true);
 			// user code begin {1}
 			// user code end
@@ -591,7 +591,7 @@ private javax.swing.JRadioButton getJRadioButtonSeparate() {
 			ivjJRadioButtonSeparate = new javax.swing.JRadioButton();
 			ivjJRadioButtonSeparate.setName("JRadioButtonSeparate");
 			ivjJRadioButtonSeparate.setSelected(true);
-			ivjJRadioButtonSeparate.setText("One movie for each variable");
+			ivjJRadioButtonSeparate.setText("Separate variables (1 movie per var,slice -or- QTVR)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -660,8 +660,8 @@ public MovieSpecs getMovieSpecs() {
 		scaleMode = ImagePaneModel.NORMAL_MODE;
 	}
 	String qtvrAnswer = "Conventional";
-	if(getJRadioButtonOverlay().isSelected() && sliceCount > 1){
-		qtvrAnswer = DialogUtils.showWarningDialog(this, "Create a QuicktimeVR movie including all slices (1 '.mov' file)\n-or-\nCreate a conventional QuickTime movie for each slice ("+sliceCount+" '.mov' files packaged in a '.zip' file)?", new String[] {"Conventional","QTVR","Cancel"}, "Regular");
+	if(sliceCount > 1){
+		qtvrAnswer = DialogUtils.showWarningDialog(this, "Create a QuicktimeVR movie including all slices (1 '.mov' file"+(!getJRadioButtonOverlay().isSelected()?"for each variable":"")+")\n-or-\nCreate a conventional QuickTime movie for each slice ("+sliceCount+" '.mov' files packaged in a '.zip' file)?", new String[] {"Conventional","QTVR","Cancel"}, "Regular");
 		if(qtvrAnswer == null ||qtvrAnswer.equals("Cancel")){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
