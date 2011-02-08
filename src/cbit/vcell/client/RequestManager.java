@@ -24,6 +24,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.visit.VisitSession;
 import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
 /**
@@ -334,4 +335,7 @@ void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff compareP
 void accessPermissions(Component requester, VCDocument vcDocument);
 
 boolean isDifferentFromBlank(int documentType, VCDocument vcDocument);
+
+public VisitSession createNewVisitSession() throws DataAccessException;
+
 }

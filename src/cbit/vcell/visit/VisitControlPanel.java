@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 
@@ -20,6 +21,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Vector;
+
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 
@@ -30,6 +33,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
+import llnl.visit.ViewerMethods;
+
 public class VisitControlPanel extends JPanel {
 	private JSlider slider = new JSlider();
 
@@ -39,7 +44,8 @@ public class VisitControlPanel extends JPanel {
 	private PDEDataContext pdeDataContext;
 	private JTextField textField;
 	private DataIdentifier dataIdentifier;
-	private VisitProcess visitProcess;
+	//private VisitProcess visitProcess;
+	private VisitSession visitSession;
     private JLabel lblDataset = new JLabel("Database name:");
     private JTextArea jTextArea = new JTextArea();
     private String[] commandHistory = new String[2000]; //TODO: replace this with a more intelligent container
@@ -117,7 +123,8 @@ public class VisitControlPanel extends JPanel {
 		btnClearPlots.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Trying to delete all plots");
-				VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());	
+				//VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());	
+				visitSession.deleteActivePlots();
 				numberOfOpenPlots=0;
 				}
 		});
@@ -132,12 +139,21 @@ public class VisitControlPanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				if (selectedVariable != null) {
 					numberOfOpenPlots++;
-					VisitProcess.visitCommand(VisitPythonCommand.AddPlot("Pseudocolor", selectedVariable));
-					VisitProcess.visitCommand(VisitPythonCommand.SetActivePlots(String.valueOf(numberOfOpenPlots-1)));
-					VisitProcess.visitCommand(VisitPythonCommand.AddOperator("Transform"));
-					VisitProcess.visitCommand(VisitPythonCommand.makeTransformAttributes("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
-					VisitProcess.visitCommand("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)+".doTranslate=1");
+					
+					visitSession.deleteActivePlots();
+					visitSession.addAndDrawPseudocolorPlot(selectedVariable);
+//					viewerMethods(visitSession).SetActivePlot(numberOfOpenPlots-1);
+//					viewerMethods(visitSession).AddOperator("Transform");
+					//visitSession.getVisitClient().getViewerProxy().GetOperatorAttributes("Tranform").
+					
+//					VisitProcess.visitCommand(VisitPythonCommand.AddPlot("Pseudocolor", selectedVariable));
+//					VisitProcess.visitCommand(VisitPythonCommand.SetActivePlots(String.valueOf(numberOfOpenPlots-1)));
+//					VisitProcess.visitCommand(VisitPythonCommand.AddOperator("Transform"));
+//					VisitProcess.visitCommand(VisitPythonCommand.makeTransformAttributes("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
+//					VisitProcess.visitCommand("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)+".doTranslate=1");
+					
 					System.out.println("I have"+String.valueOf(numberOfOpenPlots)+" open");
+					/*
 					switch (numberOfOpenPlots) {
 						case 1: {break;
 						}
@@ -193,8 +209,11 @@ public class VisitControlPanel extends JPanel {
 						}	
 						default: {}
 					}
-					VisitProcess.visitCommand(VisitPythonCommand.SetOperatorOptions("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
-					VisitProcess.visitCommand(VisitPythonCommand.DrawPlots());
+					*/
+					//VisitProcess.visitCommand(VisitPythonCommand.SetOperatorOptions("transformAttrsPlot"+String.valueOf(numberOfOpenPlots-1)));
+					
+//					viewerMethods(visitSession).DrawPlots();
+					//VisitProcess.visitCommand(VisitPythonCommand.DrawPlots());
 					
 				}
 			}
@@ -216,7 +235,7 @@ public class VisitControlPanel extends JPanel {
 		btnShowVisitGui.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Trying to open VisIt GUI");
-				VisitProcess.visitCommand(VisitPythonCommand.OpenGUI());  
+		        visitSession.showVisitGUI();
 			}
 		});
 		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
@@ -228,7 +247,7 @@ public class VisitControlPanel extends JPanel {
 		JButton btnTestGetglobalattributes = new JButton("Test - GetGlobalAttributes");
 		btnTestGetglobalattributes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				VisitProcess.visitCommand(VisitPythonCommand.GetGlobalAttributes());
+				//VisitProcess.visitCommand(VisitPythonCommand.GetGlobalAttributes());
 			}
 		});
 		GridBagConstraints gbc_btnTestGetglobalattributes = new GridBagConstraints();
@@ -240,7 +259,7 @@ public class VisitControlPanel extends JPanel {
 			public void stateChanged(ChangeEvent arg0) {
 				if (!slider.getValueIsAdjusting()) {
 					System.out.println(arg0);
-					VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
+					//VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
 					
 				}
 			}
@@ -329,40 +348,40 @@ public class VisitControlPanel extends JPanel {
 		
 		
 		//listen for entered command
-		textField.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				//System.out.println("Detected a command entered");
-				
-				if (!SwingUtilities.isEventDispatchThread()) {
-			    	try {
-						SwingUtilities.invokeAndWait(
-								new Runnable() {
-									public void run() {
-										visitProcess.sendCommandAndNoteResponse(textField.getText()+"\n");
-									}
-								}
-						);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InvocationTargetException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			    }else{
-			    	visitProcess.sendCommandAndNoteResponse(textField.getText()+"\n");
-			    }
-				
-				
-				commandHistory[commandIndex]=textField.getText();
-				commandIndex++;
-				if (commandIndex>maxCommandIndex) maxCommandIndex++;
-				//System.out.println("commandIndex is now: "+ String.valueOf(commandIndex));
-				textField.setText("");
-			    
-			}
-		});
-		
+//		textField.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				//System.out.println("Detected a command entered");
+//				
+//				if (!SwingUtilities.isEventDispatchThread()) {
+//			    	try {
+//						SwingUtilities.invokeAndWait(
+//								new Runnable() {
+//									public void run() {
+//										visitProcess.sendCommandAndNoteResponse(textField.getText()+"\n");
+//									}
+//								}
+//						);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					} catch (InvocationTargetException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//			    }else{
+//			    	visitProcess.sendCommandAndNoteResponse(textField.getText()+"\n");
+//			    }
+//				
+//				
+//				commandHistory[commandIndex]=textField.getText();
+//				commandIndex++;
+//				if (commandIndex>maxCommandIndex) maxCommandIndex++;
+//				//System.out.println("commandIndex is now: "+ String.valueOf(commandIndex));
+//				textField.setText("");
+//			    
+//			}
+//		});
+//		
 		
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.insets = new Insets(4, 4, 4, 4);
@@ -375,11 +394,11 @@ public class VisitControlPanel extends JPanel {
 	}
 
 	
-	public void init(DataIdentifier dataIdentifier, VisitProcess visitProcess){
+	public void init(DataIdentifier dataIdentifier, VisitSession visitSession){
 		this.dataIdentifier = dataIdentifier;
-		this.visitProcess = visitProcess;
+		this.visitSession = visitSession;
 		lblDataset.setText(dataIdentifier.getName());
-		VisitProcess.setJTextArea(this.jTextArea);
+		//VisitProcess.setJTextArea(this.jTextArea);
 	}
 
 

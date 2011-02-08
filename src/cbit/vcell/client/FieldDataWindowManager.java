@@ -291,6 +291,9 @@ public void viewData(final ExternalDataIdentifier eDI){
 						public User getUser() {
 							return getRequestManager().getDocumentManager().getUser();
 						}
+						public RequestManager getRequestManager() {
+							return FieldDataWindowManager.this.getRequestManager();
+						}
 					};
 				
 					try {

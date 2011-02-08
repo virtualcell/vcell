@@ -1,12 +1,13 @@
 package cbit.vcell.server;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -27,6 +28,7 @@ import cbit.sql.KeyFactory;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.simdata.LocalDataSetController;
 import cbit.vcell.simdata.LocalDataSetControllerProxy;
+import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
  * after the user has been authenticated.
@@ -83,6 +85,12 @@ public void exportMessage(ExportEvent event) {
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().exportMessage(event);
 	}
+}
+
+public VisitConnectionInfo createNewVisitConnection() {
+	VisitConnectionInfo visitConnectionInfo = VisitConnectionInfo.createHardCodedVisitConnectionInfo(getUserLoginInfo().getUser());
+	
+	return visitConnectionInfo;
 }
 
 
