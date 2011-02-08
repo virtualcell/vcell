@@ -18,7 +18,6 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -39,6 +38,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
@@ -59,6 +59,7 @@ import cbit.vcell.simdata.VariableType.VariableDomain;
  * Creation date: (1/21/2001 10:29:53 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class PDEPlotControlPanel extends JPanel {
 	private JComboBox filterComboBox;
 	private JLabel ivjJLabel1 = null;
@@ -151,8 +152,6 @@ public class PDEPlotControlPanel extends JPanel {
 	};
 	private JButton viewFunctionButton = null;
 	private boolean bHasOldUserDefinedFunctions = false;
-	private static ImageIcon function_icon = null;
-	private static ImageIcon old_function_icon = null;
 	
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1404,15 +1403,9 @@ private void setIdentifierListRenderer() {
 			AnnotatedFunction f = findFunction(di);
 			if (f != null) {
 				if (f.isOldUserDefined()) {
-					if (old_function_icon == null) {
-						old_function_icon = new ImageIcon(getClass().getResource("/icons/old_function_icon.png"));
-					}
-					setIcon(old_function_icon);
+					setIcon(VCellIcons.getOldOutputFunctionIcon());
 				} else if (f.isOutputFunction()) {
-					if (function_icon == null) {
-						function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
-					}
-					setIcon(function_icon);
+					setIcon(VCellIcons.getOutputFunctionIcon());
 				}
 			}
 			setText(di.getDisplayName());

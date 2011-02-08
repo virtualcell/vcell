@@ -26,15 +26,15 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 
 	public static class DocumentEditorTreeFolderNode {
 		private DocumentEditorTreeFolderClass folderClass;
-		private boolean bFirstLevel;
+		private boolean bBold;
 		boolean bSupported = true;
 		
 		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c) {
 			this(c, false);
 		}
-		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c, boolean bFirstLevel) {
+		public DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass c, boolean bBold) {
 			this.folderClass = c;
-			this.bFirstLevel = bFirstLevel;
+			this.bBold = bBold;
 		}		
 		public boolean isSupported() {
 			return bSupported;
@@ -48,8 +48,8 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		public final DocumentEditorTreeFolderClass getFolderClass() {
 			return folderClass;
 		}
-		public boolean isFirstLevel() {
-			return bFirstLevel;
+		public boolean isBold() {
+			return bBold;
 		}
 	}
 	
@@ -57,29 +57,20 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 //		MODELINFO_NODE("Saved BioModel Info"),
 		PATHWAY_NODE("Pathway"),
 		MODEL_NODE("Biological Model"),	
+		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
+		DATA_NODE("Experimental Data"),	
 		APPLICATTIONS_NODE("Applications"),	
 		SCRIPTING_NODE("Scripting"),
 
 		REACTIONS_NODE("Reactions"),
 		STRUCTURES_NODE("Structures"),
 		SPECIES_NODE("Species"),
-		GLOBAL_PARAMETER_NODE("Global Parameters"),
-		
-		SPECIFICATIONS_NODE("Specifications"),
-		MATHEMATICS_NODE("Generated Math"),
 		
 		GEOMETRY_NODE("Geometry"),
-		STRUCTURE_MAPPING_NODE("Structure Mapping"),
-		INITIAL_CONDITIONS_NODE("Initial Conditions"),
-		APP_REACTIONS_NODE("Reactions"),
-		EVENTS_NODE("Events"),
-		ELECTRICAL_MAPPING_NODE("Electrical"),
-		DATA_SYMBOLS_NODE("Data Symbols"),
-		MICROSCOPE_MEASUREMENT_NODE("Microscope Measurements"),
-		
+		SETTINGS_NODE("Settings"),
+		PROTOCOLS_NODE("Protocols"),
 		SIMULATIONS_NODE("Simulations"),
-		OUTPUT_FUNCTIONS_NODE("Output Functions"),
-		ANALYSIS_NODE("Parameter Estimation"),
+		FITTING_NODE("Fitting"),
 		
 		MATH_ANNOTATION_NODE("Annotation"),
 		MATH_VCML_NODE("VCML Editor"),

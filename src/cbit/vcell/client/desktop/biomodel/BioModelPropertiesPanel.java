@@ -14,8 +14,6 @@ import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,6 +28,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JLabelLikeTextField;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -52,9 +51,6 @@ public class BioModelPropertiesPanel extends JPanel {
 	private BioModelWindowManager bioModelWindowManager;
 	private JPanel applicationsPanel = null;
 	private JPanel webLinksPanel = null;
-	private static Icon geometryIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/geometry2_16x16.gif"));
-	private static Icon appTypeIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/type.gif"));
-	private static Icon simulationContextIcon = new ImageIcon(BioModelPropertiesPanel.class.getResource("/images/application3_16x16.gif"));
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
@@ -367,7 +363,7 @@ private void updateInterface() {
 			SimulationContext simContext = simulationContexts[i];
 			JLabel label = new JLabel(simContext.getName());
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			label.setIcon(simulationContextIcon);
+			label.setIcon(VCellIcons.applicationIcon);
 			
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -394,9 +390,9 @@ private void updateInterface() {
 				}
 			}
 			JLabel geometryLabel = new JLabel(geometryText);
-			geometryLabel.setIcon(geometryIcon);
+			geometryLabel.setIcon(VCellIcons.geometryIcon);
 			JLabel detStochLabel = new JLabel((simContext.isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR));
-			detStochLabel.setIcon(appTypeIcon);
+			detStochLabel.setIcon(VCellIcons.mathTypeIcon);
 			
 			gbc.insets = new Insets(2, 20, 2, 2);
 			gbc.gridy = gridy ++;

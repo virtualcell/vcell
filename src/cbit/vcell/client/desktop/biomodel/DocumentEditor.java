@@ -28,7 +28,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -60,7 +59,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 @SuppressWarnings("serial")
 public abstract class DocumentEditor extends JPanel {
-	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to show/edit properties.";
+	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	
 	protected enum DocumentEditorPopupMenuAction {
 		add_new,
@@ -101,8 +100,6 @@ public abstract class DocumentEditor extends JPanel {
 	protected JPanel rightBottomEmptyPanel = null;
 	private JSeparator popupMenuSeparator = null;
 	private DocumentEditorTreeCellEditor documentEditorTreeCellEditor;
-	private TreePath mouseClickPath = null;
-	private long mouseClickPathTimeStamp = System.currentTimeMillis();
 	protected JLabel treeNodeDescriptionLabel;
 	protected IssuePanel issuePanel;
 	
@@ -173,24 +170,7 @@ public abstract class DocumentEditor extends JPanel {
 			if (e.getSource() != documentEditorTree) {
 				return;
 			}
-			TreePath oldClickPath = mouseClickPath;
-			long oldClickTimeStamp = mouseClickPathTimeStamp;			
-			mouseClickPath = null;
 			if (e.getClickCount() == 1) {
-				Point mousePoint = e.getPoint();
-				TreePath clickPath = documentEditorTree.getPathForLocation(mousePoint.x, mousePoint.y);
-				if (clickPath != null) {
-					mouseClickPath = clickPath;
-					mouseClickPathTimeStamp = System.currentTimeMillis();
-				}
-				if (oldClickPath != null && mouseClickPath != null && oldClickPath.getLastPathComponent() == mouseClickPath.getLastPathComponent()) {
-					if (mouseClickPathTimeStamp - oldClickTimeStamp > 1000) {
-						return;
-					}
-					if (isRenamable(mouseClickPath)) {
-						documentEditorTree.startEditingAtPath(mouseClickPath);
-					}
-				}
 			} else if (e.getClickCount() == 2) {
 				Object node = documentEditorTree.getLastSelectedPathComponent();
 				if (node instanceof LinkNode) {
@@ -294,8 +274,7 @@ private void initialize() {
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
-		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);			
-		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
 		int rowHeight = documentEditorTree.getRowHeight();
 		if(rowHeight < 10) { 
 			rowHeight = 20; 
@@ -337,6 +316,8 @@ private void initialize() {
 		
 		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPane();
+		rightBottomEmptyPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		issuePanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
 		rightBottomTabbedPane.addTab("Problems", issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
@@ -430,24 +411,6 @@ protected SimulationContext getSelectedSimulationContext() {
 	return simulationContext;
 }
 
-private boolean isRenamable(TreePath path) {
-	Object obj = path.getLastPathComponent();
-	if (obj != null && (obj instanceof BioModelNode)) {	
-		BioModelNode selectedNode = (BioModelNode) obj;
-		Object userObject = selectedNode.getUserObject();
-		if (userObject instanceof ReactionStep
-				|| userObject instanceof Feature
-				|| userObject instanceof SpeciesContext
-				|| userObject instanceof ModelParameter
-				|| userObject instanceof SimulationContext
-				|| userObject instanceof Simulation
-				|| userObject instanceof Membrane
-				|| userObject instanceof BioEvent) {			
-			return true;
-		}
-	}
-	return false;
-}
 private void construcutPopupMenu() {
 	popupMenu.removeAll();
 	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
@@ -475,10 +438,7 @@ private void construcutPopupMenu() {
 			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.EVENTS_NODE
-//					|| folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE // can't do this now since add new is pop up right now.
 					|| folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE
 				) {
 				bAddNew = (selectedPaths.length == 1);

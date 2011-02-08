@@ -1,39 +1,71 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRightSidePanel<Parameter> {
-	private JCheckBox includeGlobalParametersCheckBox = null;
+public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
+	private ApplicationGeometryPanel applicationGeometryPanel = null;
+	private ApplicationSettingsPanel applicationSettingsPanel;
+	private ApplicationProtocolsPanel applicationProtocolsPanel;
+	private ApplicationSimulationsPanel applicationSimulationsPanel;
+	private ApplicationFittingPanel applicationAnalysisPanel;
+	private JTabbedPane tabbedPane = null;
+	private int selectedIndex = -1;
+	private String selectedTabTitle = null;
+	private SimulationContext simulationContext;
+	private BioModelWindowManager bioModelWindowManager;
+
+	public enum ApplicationPanelTabID {
+		geometry("Geometry"),
+		settings("Settings"),
+		protocols("Protocols"),
+		simulations("Simulations"),
+		fitting("Fitting");
+		
+		String title = null;
+		ApplicationPanelTabID(String name) {
+			this.title = name;
+		}		
+	}
+	
+	private class ApplicationPanelTab {
+		ApplicationPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		ApplicationPanelTab(ApplicationPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
+	private ApplicationPanelTab modelPanelTabs[] = new ApplicationPanelTab[ApplicationPanelTabID.values().length]; 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener {		
+	private class InternalEventHandler implements ActionListener, ChangeListener {		
 				
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == includeGlobalParametersCheckBox) {
-				((ApplicationParameterTableMode)tableModel).setIncludeReactionParameters(includeGlobalParametersCheckBox.isSelected());
-			}
+			
+		}
+
+		public void stateChanged(ChangeEvent e) {
+			if (e.getSource() == tabbedPane) {
+				tabbedPaneSelectionChanged();
+			}			
 		}
 	}
 	
@@ -43,155 +75,78 @@ public class BioModelEditorApplicationPanel extends BioModelEditorApplicationRig
 	}
 
 	private void initialize(){
-		includeGlobalParametersCheckBox = new JCheckBox("Show Reaction Parameters (View only. Edit properties in Biological Model)");
-		includeGlobalParametersCheckBox.addActionListener(eventHandler);
-		addNewButton.setText("Add New Global Parameter");
+		applicationGeometryPanel = new ApplicationGeometryPanel();
+		applicationProtocolsPanel = new ApplicationProtocolsPanel();
+		applicationSettingsPanel = new ApplicationSettingsPanel();
+		applicationSimulationsPanel = new ApplicationSimulationsPanel();
+		applicationAnalysisPanel = new ApplicationFittingPanel();
+		tabbedPane = new JTabbedPane();
+		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		modelPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
+		modelPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSettingsPanel, VCellIcons.settingsIcon);
+		modelPanelTabs[ApplicationPanelTabID.protocols.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.protocols, applicationProtocolsPanel, VCellIcons.protocolsIcon);
+		modelPanelTabs[ApplicationPanelTabID.simulations.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.simulations, applicationSimulationsPanel, VCellIcons.simulationIcon);
+		modelPanelTabs[ApplicationPanelTabID.fitting.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.fitting, applicationAnalysisPanel, VCellIcons.fittingIcon);
+		tabbedPane.addChangeListener(eventHandler);
 		
-		setLayout(new GridBagLayout());
-		int gridy = 0;
-		GridBagConstraints  gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 6;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		JLabel label = new JLabel("<html><u>Application Parameters</u></html>");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		add(label, gbc);
+		for (ApplicationPanelTab tab : modelPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}
+		setLayout(new BorderLayout());
+		add(tabbedPane, BorderLayout.CENTER);
+	}	
 
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,50,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addNewButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 6;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(includeGlobalParametersCheckBox, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 6;
-		gbc.fill = GridBagConstraints.BOTH;
-		add(table.getEnclosingScrollPane(), gbc);		
-		
-		includeGlobalParametersCheckBox.addActionListener(eventHandler);
-
-		table.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
-
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row,
-					int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
-						row, column);
-				if (value instanceof NameScope) {
-					NameScope nameScope = (NameScope)value;
-					setText(nameScope.getConextDescription());
-				}
-				return this;
-			}
-			
-		});
+	public void tabbedPaneSelectionChanged() {
+		int oldSelectedIndex = selectedIndex;
+		selectedIndex = tabbedPane.getSelectedIndex();
+		if (oldSelectedIndex == selectedIndex) {
+			return;
+		}
+		if (oldSelectedIndex >= 0) {
+			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
+		}
+		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
+		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
 	}
 	
 	@Override
-	protected void tableSelectionChanged() {
-		super.tableSelectionChanged();
-		int[] rows = table.getSelectedRows();
-		if (rows == null) {
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	}
+	
+	public void setSimulationContext(SimulationContext newValue) {
+		if (simulationContext == newValue) {
 			return;
 		}
-		for (int r : rows) {
-			if (r < tableModel.getDataSize()) {
-				Parameter parameter = tableModel.getValueAt(r);
-				if (parameter instanceof ModelParameter) {
-					deleteButton.setEnabled(true);
-					return;
-				}
-			}
+		simulationContext = newValue;
+		applicationGeometryPanel.setSimulationContext(newValue);
+		applicationSettingsPanel.setSimulationContext(newValue);
+		applicationProtocolsPanel.setSimulationContext(newValue);
+		applicationSimulationsPanel.setSimulationContext(newValue);
+		applicationAnalysisPanel.setSimulationContext(newValue);
+	}
+
+	public void setBioModelWindowManager(BioModelWindowManager newValue) {
+		if (bioModelWindowManager == newValue) {
+			return;
 		}
-		deleteButton.setEnabled(false);
+		bioModelWindowManager = newValue;
+		applicationProtocolsPanel.setBioModelWindowManager(newValue);
+		applicationSimulationsPanel.setBioModelWindowManager(newValue);
+		applicationAnalysisPanel.setBioModelWindowManager(bioModelWindowManager);
 	}
-
+	
 	@Override
-	protected BioModelEditorApplicationRightSideTableModel<Parameter> createTableModel() {		
-		return new ApplicationParameterTableMode(table, false);
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		applicationGeometryPanel.setSelectionManager(selectionManager);
+		applicationSettingsPanel.setSelectionManager(selectionManager);
+		applicationProtocolsPanel.setSelectionManager(selectionManager);
+		applicationSimulationsPanel.setSelectionManager(selectionManager);
+		applicationAnalysisPanel.setSelectionManager(selectionManager);
 	}
-
-	@Override
-	protected void newButtonPressed() {
-		ModelParameter modelParameter = simulationContext.getModel().createModelParameter();
-		setTableSelections(new Object[]{modelParameter}, table, tableModel);
-	}
-
-	@Override
-	protected void deleteButtonPressed() {
-		try {
-			int[] rows = table.getSelectedRows();
-			if (rows == null) {
-				return;
-			}
-			String deleteListText = "";
-			ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
-			for (int r : rows) {
-				if (r < tableModel.getDataSize()) {
-					Parameter parameter = tableModel.getValueAt(r);
-					if (parameter instanceof ModelParameter) {
-						deleteList.add((ModelParameter)parameter);
-						deleteListText += "\t" + ((ModelParameter)parameter).getName() + "\n"; 
-					}
-				}
-			}	
-			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
-			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-				return;
-			}
-			for (ModelParameter param : deleteList) {
-				simulationContext.getModel().removeModelParameter(param);
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			DialogUtils.showErrorDialog(this, ex.getMessage());
-		}		
-	}
+	
+	public void selectTab(ApplicationPanelTabID tabid) {		
+		tabbedPane.setSelectedIndex(tabid.ordinal());
+	}	
 }

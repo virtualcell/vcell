@@ -46,7 +46,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 @SuppressWarnings("serial")
 public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private SimulationContext fieldSimulationContext = null;
-	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JPanel radioButtonPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
@@ -55,7 +54,6 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
-	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
@@ -219,37 +217,6 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
 		}
 	}
 	return ivjJMenuItemPasteAll;
-}
-
-
-/**
- * Return the JPopupMenu1 property value.
- * @return javax.swing.JPopupMenu
- */
-private javax.swing.JPopupMenu getJPopupMenuICP() {
-	if (ivjJPopupMenuICP == null) {
-		try {
-			ivjJPopupMenuICP = new javax.swing.JPopupMenu();
-			ivjJPopupMenuICP.setName("JPopupMenuICP");
-			ivjJPopupMenuICP.setLabel("Initial Conditions");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPopupMenuICP;
-}
-
-// added in july 2008, to accommodate the radio buttons and the scrolltablepane when it is stochastic application.
-private JPanel getScrollPanel()
-{
-	if(scrollPanel == null)
-	{
-		scrollPanel = new JPanel(new BorderLayout());
-		scrollPanel.add(getRadioButtonPanel(), BorderLayout.NORTH);
-		scrollPanel.add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
-	}
-	
-	return scrollPanel;
 }
 
 //added in july 2008, to accommodate two radio buttons with flow layout.
@@ -487,7 +454,8 @@ private void initialize() {
 		// user code end
 		setName("InitialConditionsPanel");
 		setLayout(new BorderLayout());
-		add(getScrollPanel(), BorderLayout.CENTER);
+		add(getRadioButtonPanel(), BorderLayout.NORTH);
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		//setSize(456, 539);
 
 		initConnections();

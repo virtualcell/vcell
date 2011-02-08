@@ -27,7 +27,7 @@ import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 
 @SuppressWarnings("serial")
-public class AnalysisPanel extends DocumentEditorSubPanel {
+public class ParameterEstimationPanel extends DocumentEditorSubPanel {
 
 	private static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	private JPanel taskTablePanel;
@@ -53,14 +53,14 @@ public class AnalysisPanel extends DocumentEditorSubPanel {
 			
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == AnalysisPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT))) {
+			if (evt.getSource() == ParameterEstimationPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT))) {
 				ivjAnalysisTaskComboBoxModel.setSimulationContext(simulationContext);
 				refreshAnalysisTaskEnables();
 			}
 		}
 	};
 	
-	public AnalysisPanel() {
+	public ParameterEstimationPanel() {
 		super();
 		initialize();
 	}
@@ -175,9 +175,8 @@ public class AnalysisPanel extends DocumentEditorSubPanel {
 	
 	private javax.swing.JButton getCopyButton() {
 		if (ivjCopyButton == null) {
-			ivjCopyButton = new javax.swing.JButton();
+			ivjCopyButton = new javax.swing.JButton("Copy...");
 			ivjCopyButton.setName("CopyButton");
-			ivjCopyButton.setText("Copy...");
 		}
 		return ivjCopyButton;
 	}
@@ -257,9 +256,8 @@ public class AnalysisPanel extends DocumentEditorSubPanel {
 	
 	private javax.swing.JButton getNewAnalysisTaskButton() {
 		if (ivjNewAnalysisTaskButton == null) {
-			ivjNewAnalysisTaskButton = new javax.swing.JButton();
+			ivjNewAnalysisTaskButton = new javax.swing.JButton("New...");
 			ivjNewAnalysisTaskButton.setName("NewAnalysisTaskButton");
-			ivjNewAnalysisTaskButton.setText("New...");
 			ivjNewAnalysisTaskButton.setActionCommand("NewModelOptSpec");
 		}
 		return ivjNewAnalysisTaskButton;
@@ -271,10 +269,10 @@ public class AnalysisPanel extends DocumentEditorSubPanel {
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		ParameterEstimationTask parameterEstimationTask = null;
-		if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof ParameterEstimationTask) {
-			parameterEstimationTask = (ParameterEstimationTask) selectedObjects[0];
+		if (selectedObjects == null || selectedObjects.length != 1 || !(selectedObjects[0] instanceof ParameterEstimationTask)) {
+			return;
 		}
+		ParameterEstimationTask parameterEstimationTask = (ParameterEstimationTask) selectedObjects[0];
 		getAnalysisTaskComboBox().setSelectedItem(parameterEstimationTask);
 	}
 }
