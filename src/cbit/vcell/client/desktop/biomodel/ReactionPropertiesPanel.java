@@ -565,6 +565,13 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
 		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
 		setTableSelections(selectedObjects, getScrollPaneTable(), getParameterTableModel());
+	} else if (selectedObjects[0] instanceof ApplicationParameter) {
+		Parameter parameter = ((ApplicationParameter)selectedObjects[0]).getParameter();
+		if (parameter instanceof KineticsParameter) {	
+			KineticsParameter kineticsParameter = (KineticsParameter) parameter;
+			setReactionStep(kineticsParameter.getKinetics().getReactionStep());
+			setTableSelections(new Object[]{kineticsParameter}, getScrollPaneTable(), getParameterTableModel());
+		}
 	} else {
 		setReactionStep(null);
 	}

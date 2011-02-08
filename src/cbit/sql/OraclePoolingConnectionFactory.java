@@ -28,6 +28,7 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 	private String connectionCacheName = "ImplicitCache01";
 	private OracleDataSource oracleDataSource = null;
 	private SessionLog log = null;
+	private boolean bFirstConnection = true;
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
@@ -79,19 +80,26 @@ public void failed(Connection con, Object lock) throws SQLException {
 
 public Connection getConnection(Object lock) throws SQLException {
 	Connection conn = null;
+	OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
 	try {
+		if (!bFirstConnection) {			
+			occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_INVALID_CONNECTIONS);
+		}
 		conn = oracleDataSource.getConnection();
+		bFirstConnection = true;
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
 		ex.printStackTrace(System.out);
 		// refresh cache
-		OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
 		occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
 		// get connection again.
 		conn = oracleDataSource.getConnection();
 	}
 	if (conn == null) {
-		throw new SQLException("max connection limit has reached. no connections are available.");
+		throw new SQLException("Cannot get a connection to the database. This could be caused by\n" +
+				"1. Max connection limit has reached. No connections are available.\n" +
+				"2. there is a problem with database server.\n" +
+				"3. there is a problem with network.\n");
 	}
 	return conn;
 }

@@ -1,24 +1,35 @@
 package cbit.vcell.client;
 
-import java.awt.Component;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Hashtable;
-import cbit.vcell.desktop.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.*;
-import cbit.vcell.client.server.*;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.desktop.*;
-import javax.swing.*;
+
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.RepaintManager;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.vcell.biomodel.*;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.DocumentWindowAboutBox;
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.UserRegistrationOP;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -91,11 +102,11 @@ private VCellClient() {
  * Insert the method's description here.
  * Creation date: (5/5/2004 3:40:19 PM)
  */
-private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fromApplet) {
+private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
 	try {
-		if (!fromApplet) {
-			/* Set Look and Feel */
+		/* Set Look and Feel */
+		if (!ResourceUtil.bLinux) {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		}
 		/* Create the first document desktop */
@@ -257,7 +268,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// fire up the GUI
 			VCDocument startupDoc = (VCDocument)hashTable.get("startupDoc");
-		    DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc, false);
+		    DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc);
 		    RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);

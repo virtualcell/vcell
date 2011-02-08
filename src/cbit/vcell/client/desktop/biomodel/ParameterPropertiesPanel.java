@@ -259,6 +259,8 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
 	if (selectedObjects[0] instanceof Parameter) {
 		setParameter((Parameter) selectedObjects[0]);
+	} else	if (selectedObjects[0] instanceof ApplicationParameter) {
+		setParameter(((ApplicationParameter) selectedObjects[0]).getParameter());
 	} else {
 		setParameter(null);
 	}	

@@ -3,16 +3,15 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Hashtable;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -92,47 +91,16 @@ public class MathematicsPanel extends JPanel {
 		if (ivjButtonsPanel == null) {
 			ivjButtonsPanel = new javax.swing.JPanel();
 			ivjButtonsPanel.setName("ButtonsPanel");
-			ivjButtonsPanel.setLayout(new GridBagLayout());
-			
-			JPanel panel = new JPanel();
-			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-			panel.add(getViewEqunsRadioButton());
-			panel.add(getViewVCMDLRadioButton());
-			//panel.setBorder(BorderFactory.createEtchedBorder());
-			
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(12,4,4,4);
-			gbc.gridheight = 2;
-			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-			gbc.gridheight = 2;
-			JLabel label = new JLabel("Choose View :");
+			ivjButtonsPanel.setLayout(new BoxLayout(ivjButtonsPanel, BoxLayout.X_AXIS));
+			JLabel label = new JLabel("Choose View:");
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			ivjButtonsPanel.add(label, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(4,4,4,50);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			gbc.gridheight = 2;
-			ivjButtonsPanel.add(panel, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 0;
-			gbc.anchor = GridBagConstraints.LINE_START;
-			gbc.insets = new Insets(4,4,4,4);
-			ivjButtonsPanel.add(getRefreshMathButton(), gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 1;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-//			gbc.weightx = 1.0;
-			ivjButtonsPanel.add(getCreateMathModelButton(), gbc);
+			ivjButtonsPanel.add(label);
+			ivjButtonsPanel.add(getViewEqunsRadioButton());
+			ivjButtonsPanel.add(getViewVCMDLRadioButton());
+			ivjButtonsPanel.add(Box.createHorizontalGlue());
+			ivjButtonsPanel.add(getRefreshMathButton());
+			ivjButtonsPanel.add(Box.createRigidArea(new Dimension(3,5)));
+			ivjButtonsPanel.add(getCreateMathModelButton());
 		}
 		return ivjButtonsPanel;
 	}
@@ -163,8 +131,8 @@ public class MathematicsPanel extends JPanel {
 			mainPanel = new javax.swing.JPanel();
 			mainPanel.setName("MathViewerPanel");
 			mainPanel.setLayout(cardLayout);
-			getMainPanel().add(getMathDescPanel(), getMathDescPanel().getName());
-			getMainPanel().add(getVCMLPanel(), getVCMLPanel().getName());
+			mainPanel.add(getMathDescPanel(), getMathDescPanel().getName());
+			mainPanel.add(getVCMLPanel(), getVCMLPanel().getName());
 		}
 		return mainPanel;
 	}
@@ -284,6 +252,10 @@ public class MathematicsPanel extends JPanel {
 	
 	public synchronized void addActionListener(ActionListener l) {
 		actionListener = AWTEventMulticaster.add(actionListener, l);
+	}
+	
+	public synchronized void removeActionListener(ActionListener l) {
+		actionListener = AWTEventMulticaster.remove(actionListener, l);
 	}
 
 	protected void fireActionPerformed(ActionEvent e) {

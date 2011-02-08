@@ -42,10 +42,12 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
@@ -66,14 +68,10 @@ import cbit.vcell.parser.NameScope;
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
-	private static Icon tableIcon = new ImageIcon(BioModelEditorModelPanel.class.getResource("/icons/table_icon.gif"));
-	private static Icon diagramIcon = new ImageIcon(BioModelEditorModelPanel.class.getResource("/icons/diagram_icon.gif"));
-
 	public enum ModelPanelTabID {
 		reaction_table("Reactions"),
 		structure_table("Structures"),
 		species_table("Species"),
-		parameter_table("Parameters"),
 		reaction_diagram("Reaction Diagram"),
 		structure_diagram("Structure Diagram");
 		
@@ -170,7 +168,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == tabbedPane) {
 				tabbedPaneSelectionChanged();
 			}
-			
 		}
 
 		public void mouseClicked(MouseEvent e) {
@@ -228,11 +225,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			textFieldSearch.setEditable(false);
 		} else {
 			newButton.setEnabled(true);
-			if (selectedIndex == ModelPanelTabID.parameter_table.ordinal()) {
-				newButton.setText("Add New Global Parameter");
-			} else {
-				newButton.setText("Add New");
-			}
 			textFieldSearch.setEditable(true);
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
@@ -325,16 +317,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		parameterPanel.add(parametersTable.getEnclosingScrollPane(), BorderLayout.CENTER);
 		
 		tabbedPane = new JTabbedPane();
-		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, diagramIcon);
-		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, diagramIcon);
-		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), tableIcon);
-		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), tableIcon);
-		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), tableIcon);
-		modelPanelTabs[ModelPanelTabID.parameter_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.parameter_table, parameterPanel, tableIcon);
+		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, VCellIcons.diagramIcon);
+		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.diagramIcon);
+		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
 		
 		for (ModelPanelTab tab : modelPanelTabs) {
+			tab.getComponent().setBorder(GuiConstants.TAB_PANEL_BORDER);
 			tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
 		}
 		
@@ -575,9 +568,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
-		} else if (selectedIndex == ModelPanelTabID.parameter_table.ordinal()) {
-			currentSelectedTable = parametersTable;
-			currentSelectedTableModel = parametersTableModel;
 		}
 	}
 	

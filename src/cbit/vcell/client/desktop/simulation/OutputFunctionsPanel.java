@@ -26,7 +26,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
@@ -357,6 +359,21 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		outputFnsListTableModel = new OutputFunctionsListTableModel(outputFnsScrollPaneTable);
 		getFnScrollPaneTable().setModel(outputFnsListTableModel);
 		getFnScrollPaneTable().createDefaultColumnsFromModel();
+		
+		outputFnsListTableModel.addTableModelListener(
+			new javax.swing.event.TableModelListener(){
+				public void tableChanged(javax.swing.event.TableModelEvent e){
+					getFnScrollPaneTable().getColumnModel().getColumn(OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME).setCellRenderer(new DefaultScrollTableCellRenderer(){
+						
+						@Override
+						protected void setValue(Object value) {
+							super.setValue(value);
+							setIcon(VCellIcons.getOutputFunctionIcon());
+						}
+					});
+				}
+			}
+		);
 	}
 
 	private void initialize() {

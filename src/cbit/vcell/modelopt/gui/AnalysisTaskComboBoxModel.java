@@ -9,6 +9,7 @@ import cbit.vcell.modelopt.AnalysisTask;
  * Creation date: (7/3/2002 1:48:59 PM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class AnalysisTaskComboBoxModel extends AbstractListModel implements javax.swing.ComboBoxModel, java.beans.PropertyChangeListener {
 	private AnalysisTask selectedObject = null;
 	private SimulationContext fieldSimulationContext = null;
@@ -142,6 +143,9 @@ public void setSelectedItem(Object anObject) {
  * @see #getSimulationContext
  */
 public void setSimulationContext(SimulationContext simulationContext) {
+	if (fieldSimulationContext == simulationContext) {
+		return;
+	}
 	if (fieldSimulationContext!=null){
 		fieldSimulationContext.removePropertyChangeListener(this);
 		if (fieldSimulationContext.getAnalysisTasks() != null) {

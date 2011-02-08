@@ -8,8 +8,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -20,6 +18,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.JLabelLikeTextField;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -37,8 +36,6 @@ public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
 	private MathModelWindowManager mathModelWindowManager;
 	private JLabel geometryLabel, detStochIconLabel;
 	private JLabelLikeTextField detStochLabel;
-	private Icon geometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
-	private Icon appTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
@@ -104,8 +101,8 @@ private void initialize() {
 		changePermissionButton.setEnabled(false);
 		geometryLabel = new JLabel();
 		detStochIconLabel = new JLabel();
-		geometryLabel.setIcon(geometryIcon);
-		detStochIconLabel.setIcon(appTypeIcon);
+		geometryLabel.setIcon(VCellIcons.geometryIcon);
+		detStochIconLabel.setIcon(VCellIcons.mathTypeIcon);
 		
 		setLayout(new GridBagLayout());
 		setBackground(Color.white);

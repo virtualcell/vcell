@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
@@ -28,7 +29,7 @@ import javax.swing.border.Border;
 public class CollapsiblePanel extends JPanel {
 
 	private class ComponentTitledBorder implements Border, MouseListener {
-		int offset = 5;
+		int offset = 7;
 
 		Component comp;
 		JComponent container;
@@ -112,8 +113,11 @@ public class CollapsiblePanel extends JPanel {
 	public CollapsiblePanel(String borderTitle, boolean expanded) {
 		super();
 		this.bExpanded = expanded;
-		borderLabel  = new JLabel(borderTitle, bExpanded ? expandedIcon : collapsedIcon, SwingConstants.RIGHT);
+		borderLabel  = new JLabel(borderTitle, bExpanded ? expandedIcon : collapsedIcon, SwingConstants.LEFT);
 		borderLabel.setForeground(borderTitleColor);
+		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.BOLD));
+		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
+		borderLabel.setPreferredSize(size);
 		setBorder(new ComponentTitledBorder(borderLabel, this, BorderFactory.createEtchedBorder()));
 		borderLabel.addMouseListener(new MouseAdapter() {
 			@Override
@@ -122,7 +126,7 @@ public class CollapsiblePanel extends JPanel {
 				toggleExpand();
 			}			
 		});
-		addHierarchyListener(new HierarchyListener() {			
+		addHierarchyListener(new HierarchyListener() {
 			public void hierarchyChanged(HierarchyEvent e) {
 				toggleExpand();
 			}

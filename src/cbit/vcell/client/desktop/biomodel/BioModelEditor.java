@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -25,15 +24,11 @@ import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorModelPanel.ModelPanelTabID;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
-import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -46,12 +41,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsPanel;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
-import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
-import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
-import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
-import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -64,8 +54,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
-import cbit.vcell.modelopt.gui.OptTestPanel;
-import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
@@ -78,20 +66,7 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelWindowManager bioModelWindowManager = null;
 	private BioModel bioModel = new BioModel(null);
 	
-	private OptTestPanel ivjoptTestPanel = null;
-	private AnalysisPanel ivjParameterEstimationPanel = null;
-	private SimulationListPanel ivjSimulationListPanel = null;
-	private GeometrySummaryViewer ivjGeometrySummaryViewer = null;
-	private StructureMappingCartoonPanel ivjStructureMappingCartoonPanel = null;
-	private OutputFunctionsPanel outputFunctionsPanel = null;
-	private InitialConditionsPanel initialConditionsPanel = null;
-	private DataSymbolsPanel dataSymbolsPanel = null;	
-	private ReactionSpecsPanel reactionSpecsPanel = null;
-	private ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
-	private EventsDisplayPanel eventsDisplayPanel = null;
-	private MathematicsPanel mathematicsPanel = null;
 	private BioModelEditorModelPanel bioModelEditorModelPanel = null;
-	private MicroscopeMeasurementPanel microscopeMeasurementPanel = null;
 	private ScriptingPanel scriptingPanel = null;
 
 	private BioModelEditorTreeCellRenderer bioModelEditorTreeCellRenderer = null;
@@ -119,8 +94,10 @@ public class BioModelEditor extends DocumentEditor {
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
 	private ApplicationsPropertiesPanel applicationsPropertiesPanel;
+	private BioModelParametersPanel bioModelParametersPanel;
+	private DataSymbolsPanel dataSymbolsPanel = null;
 	
-/**
+	/**
  * BioModelEditor constructor comment.
  */
 public BioModelEditor() {
@@ -161,14 +138,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				case SPECIES_NODE:
 					newObject = model.createSpeciesContext(model.getStructure(0));
 					break;
-				case GLOBAL_PARAMETER_NODE:
-					newObject = model.createModelParameter();
-					break;
-				case EVENTS_NODE:
-					if (selectedSimulationContext != null) {						
-						newObject = selectedSimulationContext.createBioEvent();
-					}
-					break;
 				case SIMULATIONS_NODE:
 					if (selectedSimulationContext != null) {
 						AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -188,8 +157,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 						};
 						ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 					}
-					break;
-				case OUTPUT_FUNCTIONS_NODE:
 					break;
 				}
 				if (newObject != null) {
@@ -417,74 +384,6 @@ private void copyApplication(final boolean bSpatial, final boolean bStochastic) 
 	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);
 }
 
-/**
- * Return the optTestPanel property value.
- * @return cbit.vcell.modelopt.gui.OptTestPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private OptTestPanel getoptTestPanel() {
-	if (ivjoptTestPanel == null) {
-		try {
-			ivjoptTestPanel = new OptTestPanel();
-			ivjoptTestPanel.setName("optTestPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjoptTestPanel;
-}
-
-
-/**
- * Return the ParameterEstimationPanel property value.
- * @return javax.swing.JPanel
- */
-private AnalysisPanel getParameterEstimationPanel() {
-	if (ivjParameterEstimationPanel == null) {
-		try {
-			ivjParameterEstimationPanel = new AnalysisPanel();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterEstimationPanel;
-}
-
-/**
- * Return the SimulationListPanel1 property value.
- * @return cbit.vcell.client.desktop.simulation.SimulationListPanel
- */
-private SimulationListPanel getSimulationListPanel() {
-	if (ivjSimulationListPanel == null) {
-		try {
-			ivjSimulationListPanel = new SimulationListPanel();
-			ivjSimulationListPanel.setName("SimulationListPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSimulationListPanel;
-}
-
-private MicroscopeMeasurementPanel getMicroscopeMeasurementPanel() {
-	if (microscopeMeasurementPanel == null) {
-		try {
-			microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return microscopeMeasurementPanel;
-}
-
 private BioModelEditorPathwayDiagramPanel getBioModelEditorPathwayDiagramPanel() {
 	if (bioModelEditorPathwayDiagramPanel == null) {
 		bioModelEditorPathwayDiagramPanel = new BioModelEditorPathwayDiagramPanel();		
@@ -504,14 +403,6 @@ private BioModelsNetPropertiesPanel getBioModelsNetPropertiesPanel() {
 		bioModelsNetPropertiesPanel = new BioModelsNetPropertiesPanel();
 	}
 	return bioModelsNetPropertiesPanel;
-}
-
-/**
- * Method generated to support the promotion of the userPreferences attribute.
- * @return cbit.vcell.client.server.UserPreferences
- */
-public UserPreferences getUserPreferences() {
-	return getoptTestPanel().getUserPreferences();
 }
 
 /**
@@ -646,25 +537,25 @@ private void initialize() {
 		documentEditorTree.addTreeExpansionListener(bioModelEditorTreeModel);
 		documentEditorTree.setCellRenderer(bioModelEditorTreeCellRenderer);
 		
+		bioModelParametersPanel = new BioModelParametersPanel();
+		bioModelParametersPanel.setSelectionManager(selectionManager);
+		
 		bioModelEditorApplicationPanel = new BioModelEditorApplicationPanel();
 		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
+				
+		dataSymbolsPanel = new DataSymbolsPanel();
+		
+		dataSymbolsPanel.setSelectionManager(selectionManager);
 		bioModelEditorAnnotationPanel.setSelectionManager(selectionManager);
-		getOutputFunctionsPanel().setSelectionManager(selectionManager);
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
 		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
-		getInitialConditionsPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);
 		getKineticsTypeTemplatePanel().setSelectionManager(selectionManager);
-		getReactionSpecsPanel().setSelectionManager(selectionManager);
-		getSimulationListPanel().setSelectionManager(selectionManager);
 		getSimulationSummaryPanel().setSelectionManager(selectionManager);
-		getEventsDisplayPanel().setSelectionManager(selectionManager);
 		getEventPanel().setSelectionManager(selectionManager);
-		getDataSymbolsPanel().setSelectionManager(selectionManager);
-		getParameterEstimationPanel().setSelectionManager(selectionManager);
 		getDataSymbolsSpecPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayDiagramPanel().setSelectionManager(selectionManager);
@@ -707,6 +598,13 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			}
 		} else if (singleSelection instanceof Parameter) {
 			bottomComponent = getParameterPropertiesPanel();
+		} else if (singleSelection instanceof ApplicationParameter) {
+			Parameter parameter = ((ApplicationParameter) singleSelection).getParameter();
+			if (parameter instanceof KineticsParameter) {
+				bottomComponent = getReactionPropertiesPanel();
+			} else if (parameter instanceof Parameter) {
+				bottomComponent = getParameterPropertiesPanel();
+			}
 		} else if (singleSelection instanceof SimulationContext) {
 			bottomComponent = getApplicationPropertiesPanel();
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
@@ -763,23 +661,11 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = getStructurePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
-				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
 				bottomComponent = getSimulationSummaryPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
-				bottomComponent = getParameterPropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
 				bottomComponent = getApplicationsPropertiesPanel();
 				getApplicationsPropertiesPanel().setBioModel(bioModel);
-			} else if (folderClass == DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
-				bottomComponent = getSpeciesContextSpecPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.APP_REACTIONS_NODE) {
-				bottomComponent = getKineticsTypeTemplatePanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.EVENTS_NODE) {
-				bottomComponent = getEventPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
-				bottomComponent = getDataSymbolsSpecPanel();
 			} 
 		}
 	}
@@ -794,6 +680,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 	}
 	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+		bottomComponent.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
 		rightBottomTabbedPane.repaint();
 	}
@@ -802,59 +689,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 }
 
-/**
- * Method generated to support the promotion of the optimizationService attribute.
- * @param arg1 cbit.vcell.opt.solvers.OptimizationService
- */
-public void setOptimizationService(OptimizationService arg1) {
-	getoptTestPanel().setOptimizationService(arg1);
-}
-
-/**
- * Method generated to support the promotion of the userPreferences attribute.
- * @param arg1 cbit.vcell.client.server.UserPreferences
- */
-public void setUserPreferences(UserPreferences arg1) {
-	getoptTestPanel().setUserPreferences(arg1);
-}
-
-private DataSymbolsPanel getDataSymbolsPanel() {
-	if (dataSymbolsPanel == null) {
-		try {
-			dataSymbolsPanel = new DataSymbolsPanel();
-			dataSymbolsPanel.setName("DataSymbolsPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return dataSymbolsPanel;
-}
-
-//------------- Right Panel	-----------------------
-private GeometrySummaryViewer getGeometrySummaryViewer() {
-	if (ivjGeometrySummaryViewer == null) {
-		try {
-			ivjGeometrySummaryViewer = new GeometrySummaryViewer();
-			ivjGeometrySummaryViewer.setName("GeometrySummaryViewer");
-			ivjGeometrySummaryViewer.setPreferredSize(new Dimension(500,500));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjGeometrySummaryViewer;
-}
-
-private InitialConditionsPanel getInitialConditionsPanel() {
-	if (initialConditionsPanel == null) {
-		try {
-			initialConditionsPanel = new InitialConditionsPanel();
-			initialConditionsPanel.setName("InitialConditionsPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return initialConditionsPanel;
-}
 
 private ScriptingPanel getScriptingPanel() {
 	if (scriptingPanel == null) {
@@ -865,66 +699,6 @@ private ScriptingPanel getScriptingPanel() {
 		}
 	}
 	return scriptingPanel;
-}
-
-private ReactionSpecsPanel getReactionSpecsPanel() {
-	if (reactionSpecsPanel == null) {
-		try {
-			reactionSpecsPanel = new ReactionSpecsPanel();
-			reactionSpecsPanel.setName("ReactionSpecsPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return reactionSpecsPanel;
-}
-
-private StructureMappingCartoonPanel getStructureMappingCartoonPanel() {
-	if (ivjStructureMappingCartoonPanel == null) {
-		try {
-			ivjStructureMappingCartoonPanel = new StructureMappingCartoonPanel();
-			ivjStructureMappingCartoonPanel.setName("StructureMappingCartoonPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjStructureMappingCartoonPanel;
-}
-
-private EventsDisplayPanel getEventsDisplayPanel() {
-	if (eventsDisplayPanel == null) {
-		try {
-			eventsDisplayPanel = new EventsDisplayPanel();
-			eventsDisplayPanel.setName("EventsDisplayPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return eventsDisplayPanel;
-}
-
-private MathematicsPanel getMathematicsPanel() {
-	if (mathematicsPanel == null) {
-		try {
-			mathematicsPanel = new MathematicsPanel();
-			mathematicsPanel.setName("MathematicsPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return mathematicsPanel;
-}
-
-private ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
-	if (ivjElectricalMembraneMappingPanel == null) {
-		try {
-			ivjElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
-			ivjElectricalMembraneMappingPanel.setName("ElectricalMembraneMappingPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjElectricalMembraneMappingPanel;
 }
 
 @Override
@@ -982,8 +756,9 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (leafObject instanceof Model) {
 			newTopPanel = bioModelEditorModelPanel;
-		} else if (leafObject instanceof BioModel || leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {
+		} else if (leafObject instanceof BioModel || leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {			
 			newTopPanel = bioModelPropertiesPanel;
+			bioModelPropertiesPanel.setBioModel(bioModel);
 		}
 	} else {
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
@@ -997,11 +772,6 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 			if (leafObject == null) {
 				bioModelEditorModelPanel.selectTab(ModelPanelTabID.species_table);
 			}
-		} else if (folderClass == DocumentEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
-			newTopPanel = bioModelEditorModelPanel;
-			if (leafObject == null) {
-				bioModelEditorModelPanel.selectTab(ModelPanelTabID.parameter_table);
-			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
 			if (leafObject == null) {
@@ -1010,6 +780,8 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
+		} else if (folderClass == DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE) {
+			newTopPanel = bioModelParametersPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
 			if (leafObject == null) {
 				newTopPanel = getBioModelEditorApplicationsPanel();
@@ -1017,70 +789,37 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 				newTopPanel = bioModelEditorApplicationPanel;
 				bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
 			}
+		} else if (folderClass == DocumentEditorTreeFolderClass.DATA_NODE) {
+			newTopPanel = dataSymbolsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
-		} else if (folderClass == DocumentEditorTreeFolderClass.MATHEMATICS_NODE) {
-			newTopPanel = getMathematicsPanel();
-			getMathematicsPanel().setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
+		} else if (folderClass == DocumentEditorTreeFolderClass.SETTINGS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
-			newTopPanel = getParameterEstimationPanel();
-			getParameterEstimationPanel().setSimulationContext(simulationContext);
+			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.settings);
+		} else if (folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE) {
+			newTopPanel = bioModelEditorApplicationPanel;
+			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
+			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.protocols);
+		} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
+			newTopPanel = bioModelEditorApplicationPanel;
+			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
+			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.simulations);
 		} else if (folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE) {
-			newTopPanel = getGeometrySummaryViewer();
-			getGeometrySummaryViewer().setGeometryOwner(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.STRUCTURE_MAPPING_NODE) {
-			newTopPanel = getStructureMappingCartoonPanel();
-			getStructureMappingCartoonPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
-			newTopPanel = getInitialConditionsPanel();
-			getInitialConditionsPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.APP_REACTIONS_NODE) {
-			newTopPanel = getReactionSpecsPanel();
-			getReactionSpecsPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE) {
-			newTopPanel = getElectricalMembraneMappingPanel();
-			getElectricalMembraneMappingPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.EVENTS_NODE) {
-			newTopPanel = getEventsDisplayPanel();
-			getEventsDisplayPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
-			newTopPanel = getDataSymbolsPanel();
-			getDataSymbolsPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE) {
-			newTopPanel = getMicroscopeMeasurementPanel();
-			getMicroscopeMeasurementPanel().setSimulationContext(simulationContext);
-		} else if(folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE || folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
-			ApplicationComponents applicationComponents = bioModelWindowManager.getApplicationComponents(simulationContext);
-			SimulationWorkspace simulationWorkspace = applicationComponents.getSimulationWorkspace();
-			if(folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
-				newTopPanel = getSimulationListPanel();
-				getSimulationListPanel().setSimulationWorkspace(simulationWorkspace);
-			} else if(folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
-				newTopPanel = getOutputFunctionsPanel();
-				getOutputFunctionsPanel().setSimulationWorkspace(simulationWorkspace);
-			}
+			newTopPanel = bioModelEditorApplicationPanel;
+			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
+			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.geometry);
+		} else if (folderClass == DocumentEditorTreeFolderClass.FITTING_NODE) {
+			newTopPanel = bioModelEditorApplicationPanel;
+			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
+			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.fitting);
 		}
 	}
 	Component rightTopComponent = rightSplitPane.getTopComponent();
-	if (rightTopComponent != newTopPanel) {
+	if (rightTopComponent != newTopPanel) {		
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
 	rightSplitPane.setDividerLocation(dividerLocation);
-}
-
-private OutputFunctionsPanel getOutputFunctionsPanel() {
-	if (outputFunctionsPanel == null) {
-		try {
-			outputFunctionsPanel  = new OutputFunctionsPanel();
-			outputFunctionsPanel.setName("OutputFunctionsPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return outputFunctionsPanel;
 }
 
 private BioModelEditorApplicationsPanel getBioModelEditorApplicationsPanel() {
@@ -1105,14 +844,13 @@ public void setBioModel(BioModel bioModel) {
 	}
 	this.bioModel = bioModel;
 	bioModelEditorModelPanel.setBioModel(bioModel);
-//	bioModelEditorTreeCellRenderer.setBioModel(bioModel);
 	getBioModelEditorApplicationsPanel().setBioModel(bioModel);
 	getScriptingPanel().setBioModel(bioModel);	
 	getBioModelEditorPathwayPanel().setBioModel(bioModel);
 	getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
-	bioModelPropertiesPanel.setBioModel(bioModel);
 	bioModelEditorTreeModel.setBioModel(bioModel);
 	bioModelEditorAnnotationPanel.setBioModel(bioModel);
+	bioModelParametersPanel.setBioModel(bioModel);
 	issueManager.setVCDocument(bioModel);
 }
 
@@ -1126,8 +864,6 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 		return;
 	}
 	this.bioModelWindowManager = bioModelWindowManager;
-	getGeometrySummaryViewer().addActionListener(bioModelWindowManager);
-	getMathematicsPanel().addActionListener(bioModelWindowManager);
 	bioModelsNetPanel.setDocumentWindowManager(bioModelWindowManager);
 	getBioModelsNetPropertiesPanel().setDocumentWindowManager(bioModelWindowManager);
 	bioModelPropertiesPanel.setBioModelWindowManager(bioModelWindowManager);
@@ -1140,7 +876,7 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	
 	geometryMetaDataPanel.setDocumentManager(documentManager);
 	
-	getoptTestPanel().setOptimizationService(bioModelWindowManager.getOptimizationService());
+	bioModelEditorApplicationPanel.setBioModelWindowManager(bioModelWindowManager);
 }
 
 /**

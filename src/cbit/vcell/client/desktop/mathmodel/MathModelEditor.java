@@ -200,6 +200,7 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 	if (folderNode == null) {
 		if (leafObject == mathModel) {
 			newTopPanel = mathModelPropertiesPanel;
+			mathModelPropertiesPanel.setMathModel(mathModel);
 		}
 	} else {
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
@@ -242,8 +243,7 @@ public void setMathModel(MathModel newValue) {
 	this.mathModel = newValue;
 //	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
 	vcmlEditorPanel.setMathModel(mathModel);
-	geometrySummaryViewer.setGeometryOwner(mathModel);
-	mathModelPropertiesPanel.setMathModel(mathModel);
+	geometrySummaryViewer.setGeometryOwner(mathModel);	
 	mathModelEditorTreeModel.setMathModel(mathModel);
 }
 

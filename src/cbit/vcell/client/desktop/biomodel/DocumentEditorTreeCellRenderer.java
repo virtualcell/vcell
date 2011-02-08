@@ -10,33 +10,19 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.vcell.util.gui.VCellIcons;
+
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
-import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.modelopt.AnalysisTask;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
 @SuppressWarnings("serial")
@@ -45,12 +31,11 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	protected Font boldFont = null;
 	
 	private JTree ownerTree;
-	private static Icon outputFunctionIcon = new ImageIcon(DocumentEditorTreeCellRenderer.class.getResource("/icons/function_icon.png"));
-	
+
 	public DocumentEditorTreeCellRenderer(JTree tree) {
 		super();
 		ownerTree = tree;
-		setPreferredSize(new Dimension(150,30));
+		setPreferredSize(new Dimension(170,30));
 		setBorder(new EmptyBorder(0, 2, 0, 0));
 	}
 	
@@ -97,60 +82,28 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    		toolTipPrefix = "Application: ";
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
-	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
-	    		if (folder.isFirstLevel()
-	    				||folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
-	    				|| folderClass == DocumentEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE
-	    				|| folderClass == DocumentEditorTreeFolderClass.ANALYSIS_NODE) {
+	    		if (folder.isBold()) {
 	    			font = boldFont;
 	    		} 
+	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
+	    		switch(folderClass) {
+	    		case GEOMETRY_NODE:
+	    			icon = VCellIcons.geometryIcon;
+	    			break;
+	    		case SETTINGS_NODE:
+	    			icon = VCellIcons.settingsIcon;
+	    			break;
+	    		case PROTOCOLS_NODE:
+	    			icon = VCellIcons.protocolsIcon;
+	    			break;
+	    		case SIMULATIONS_NODE:
+	    			icon = VCellIcons.simulationIcon;
+	    			break;
+	    		case FITTING_NODE:
+	    			icon = VCellIcons.fittingIcon;
+	    			break;
+	    		}
 	    		labelText = folder.getName();
-	    	} else if (userObj instanceof SpeciesContext) { 	// --- species context
-	    		labelText = ((SpeciesContext)userObj).getName();
-	    		toolTipPrefix = "Species: ";
-	    	} else if (userObj instanceof SpeciesContextSpec) { 	// --- species context
-	    		labelText = ((SpeciesContextSpec)userObj).getSpeciesContext().getName();
-	    		toolTipPrefix = "Species Parameters: ";
-	        } else if (userObj instanceof ModelParameter) {		// --- global parameter
-	        	labelText = ((ModelParameter)userObj).getName();
-	        	toolTipPrefix = "Global Parameter: ";
-	        } else if (userObj instanceof SimpleReaction) {		// --- simple reaction
-	        	labelText = ((ReactionStep)userObj).getName();
-	        	toolTipPrefix = "Simple Reaction: ";
-	        } else if (userObj instanceof FluxReaction) {		// --- flux reaction
-	        	labelText = ((ReactionStep)userObj).getName();
-	        	toolTipPrefix = "Flux Reaction: ";
-	        } else if (userObj instanceof ReactionSpec) {
-	        	labelText = ((ReactionSpec)userObj).getReactionStep().getName();
-	        	toolTipPrefix = "Reaction Settings: ";
-	        } else if (userObj instanceof DataSymbol) {			// --- field data
-	        	labelText = ((DataSymbol)userObj).getName();
-	        	toolTipPrefix = "Dataset: ";
-				toolTipSuffix = ((FieldDataSymbol)userObj).getExternalDataIdentifier().getName();
-	        } else if (userObj instanceof BioEvent) {			// --- event
-	        	BioEvent bioEvent = (BioEvent)userObj;
-	        	SimulationContext simulationContext = bioEvent.getSimulationContext();
-				if (simulationContext.getGeometry() != null && simulationContext.getGeometry().getDimension() > 0 
-						|| simulationContext.isStoch()) {
-					setEnabled(false);
-					setDisabledIcon(this.getClosedIcon());
-				} else {
-					labelText = bioEvent.getName();
-					toolTipPrefix = "Event: ";
-				}
-	    	} else if (userObj instanceof Simulation) {
-	        	labelText = ((Simulation)userObj).getName();
-	        	toolTipPrefix = "Simulation: ";
-	    	} else if (userObj instanceof AnalysisTask) {
-	    		labelText = ((AnalysisTask)userObj).getName();
-	    		toolTipPrefix = "Analysis Task: ";
-	        } else if (userObj instanceof AnnotatedFunction) {
-	        	labelText = ((AnnotatedFunction)userObj).getName();
-	        	toolTipPrefix = "Output Function: ";
-	        	icon = outputFunctionIcon;
-	        } else if (userObj instanceof Structure) {
-	        	labelText = ((Structure)userObj).getName();
-	        	toolTipPrefix = ((Structure)userObj).getTypeName() + ": ";
 	        }
 		}
 		setIcon(icon);
