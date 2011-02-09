@@ -9,7 +9,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.server.VCellThreadChecker;
 import llnl.visit.ViewerProxy;
-import llnl.visit.VisitClients;
+//import llnl.visit.VisitClients;
 
 public class VisitSession {
 	
