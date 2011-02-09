@@ -14,6 +14,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -80,8 +81,10 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
 	private JSortTable table; 
-	private JLabel pathwayLinkLabel = null; 
-	private JTextArea pathwayLinkTextArea = null; 
+//	private JLabel pathwayLinkLabel = null; 
+//	private JTextArea pathwayLinkTextArea = null; 
+	private JButton showAllJButton = null;
+	private JButton showLinkedEntitiesJButton = null;
 	private JButton pathwayObjectJButton = null; 
 	private JTextField textFieldSearch = null;
 	private JEditorPane PCLinkValueEditorPane = null;
@@ -182,13 +185,22 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == getPathwayObjectbutton()) {
 				
 				if(bioModel.getPathwayModel() == null){
-					changeFreeTextPathwayLink();
+//					changeFreeTextPathwayLink();
 					changeFreeTextAnnotation();
 				}else{
 					changeFreeTextAnnotation();
-					changeFreeTextPathwayLink();
+//					changeFreeTextPathwayLink();
 					linkToBioPaxObjects();
+					showLinkedObjects();
+					tableModel.resetSelectedValues();
 				}
+			}else if(e.getSource() == showLinkedEntitiesJButton){
+//				tableModel.showSelectedObjects();
+				showLinkedObjects();
+				tableModel.resetSelectedValues();
+			}else if(e.getSource() == showAllJButton){
+				tableModel.setSearchText("");
+				tableModel.resetSelectedValues();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
@@ -207,16 +219,20 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
-			} else if (e.getSource() == pathwayLinkTextArea) {
-				changeFreeTextPathwayLink();
+//			} else if (e.getSource() == pathwayLinkTextArea) {
+//				changeFreeTextPathwayLink();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			}else if(e.getSource() == table){
+				// show all
+				//tableModel.setSearchText("");
+				//tableModel.resetSelectedValues();
 			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSpeciesContext) {
 				updateInterface();
-				changeFreeTextPathwayLink();
+//				changeFreeTextPathwayLink();
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -277,8 +293,10 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
-	pathwayLinkTextArea.addFocusListener(eventHandler);
+//	pathwayLinkTextArea.addFocusListener(eventHandler);
 	getPathwayObjectbutton().addActionListener(eventHandler);
+	showLinkedEntitiesJButton.addActionListener(eventHandler);
+	showAllJButton.addActionListener(eventHandler);
 	getPathwayDBbutton().addActionListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
@@ -299,7 +317,7 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = 7;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JLabel label = new JLabel("<html><u>Select only one species to edit properties</u></html>");
@@ -319,7 +337,7 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 6;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
@@ -341,16 +359,16 @@ private void initialize() {
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.2;
+		gbc.weighty = 0.1;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 6;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(jsp, gbc);
 
-		gridy ++;
+/*		gridy ++;
 		pathwayLinkLabel = new JLabel();
 		pathwayLinkLabel.setName("pathwayLinkLabel");
 		pathwayLinkLabel.setText("<html><center>Associated<br>BioPax<br>Objects</center></html>");
@@ -379,7 +397,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		JScrollPane pathwayLinkScollPane = new JScrollPane(pathwayLinkTextArea);
 		add(pathwayLinkScollPane, gbc);
-		
+*/		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.anchor = GridBagConstraints.EAST;
@@ -398,8 +416,8 @@ private void initialize() {
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.2;
-		gbc.gridwidth = 3;
+		gbc.weighty = 0.5;
+		gbc.gridwidth = 6;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
@@ -407,26 +425,46 @@ private void initialize() {
 		
 		gridy ++;	
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		add(new JLabel("Search "), gbc);
 
-		textFieldSearch = new JTextField(15);
+		textFieldSearch = new JTextField(30);
 		textFieldSearch.addActionListener(eventHandler);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 0;
-		gbc.gridx = 2; 
+		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 1;
+		gbc.gridwidth = 4;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(textFieldSearch, gbc);
+		
+		showLinkedEntitiesJButton = new JButton("Show linked pathway entities");
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weighty = 0;
+		gbc.gridx = 5; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 0, 4, 0);
+		add(showLinkedEntitiesJButton, gbc);
+		
+		showAllJButton = new JButton("Show all");
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weighty = 0;
+		gbc.gridx = 6; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		add(showAllJButton, gbc);
 	
 		setBackground(Color.white);
 		initConnections();
@@ -483,7 +521,7 @@ void setSpeciesContext(SpeciesContext newValue) {
 	// commit the changes before switch to another species
 	changeName();
 	changeFreeTextAnnotation();
-	changeFreeTextPathwayLink(); 
+//	changeFreeTextPathwayLink(); 
 	
 	fieldSpeciesContext = newValue;
 	if (newValue != null) {
@@ -525,17 +563,29 @@ private void linkToBioPaxObjects(){
 	if (fieldSpeciesContext == null){
 		return;
 	}else{
+		HashSet<RelationshipObject> relationshipObjects = new HashSet<RelationshipObject>();
 		for (int i = 0; i < table.getRowCount(); i ++) {
 			EntitySelectionTableRow entitySelectionTableRow = tableModel.getValueAt(i);
 			if (entitySelectionTableRow.selected()) { 
 				RelationshipObject reObject = new RelationshipObject();
 				reObject.setBioPaxObjecte(entitySelectionTableRow.getBioPaxObject());
 				reObject.setSpecies(fieldSpeciesContext.getSpecies());
-				bioModel.getRelationshipModel().addRelationshipObject(reObject);
+				relationshipObjects.add(reObject);
+				if(bioModel.getRelationshipModel().contains(reObject)){
+					// if the relationshipObject is in the RelationshipModel and it is selected again from the table, 
+					// then the object will be removed after the "link/unlink" butter is clicked
+					bioModel.getRelationshipModel().getRelationshipObjects().remove(reObject);
+				}else{
+					// otherwise, the relationshipObject will be added to the RelationshipModel
+					// after the "link/unlink" butter is clicked
+					bioModel.getRelationshipModel().addRelationshipObject(reObject);
+				}
 			}
 		}
+		// totally reset the objects in RelationshipModel
+//		bioModel.getRelationshipModel().setRelationshipObjects(relationshipObjects);
 		changeFreeTextAnnotation();
-		changeFreeTextPathwayLink(); 
+//		changeFreeTextPathwayLink(); 
 	}
 }
 
@@ -551,7 +601,8 @@ private void updateInterface() {
 	if (bNonNullSpeciesContext) {
 		nameTextField.setText(getSpeciesContext().getName());
 		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
-		changeFreeTextPathwayLink();
+//		showLinkedBioPaxObjects()
+//		changeFreeTextPathwayLink();
 		updatePCLink();		
 	} else {
 		annotationTextArea.setText(null);
@@ -566,7 +617,7 @@ private void updateInterface() {
 			try {
 				pathwayObjectJButton = new javax.swing.JButton();
 				pathwayObjectJButton.setName("pathwayObjectJButton");
-				pathwayObjectJButton.setText("<html><center>Add Links to<br>BioPax Objects</center></html>");
+				pathwayObjectJButton.setText("<html><center>Link/unlink<br>Species<br>to Pathway</center></html>");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -617,8 +668,25 @@ private JButton getPathwayDBbutton() {
 			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());
 		}
 	}
+	
+	private void showLinkedObjects(){
+		ArrayList<EntitySelectionTableRow> rowList = new ArrayList<EntitySelectionTableRow>();
+		for(RelationshipObject reObject : bioModel.getRelationshipModel().getRelationshipObjects()){
+			if(reObject.getSpecies().equals(fieldSpeciesContext.getSpecies())){
+				BioPaxObject bpObject = reObject.getBioPaxObject();
+				for(EntitySelectionTableRow row : tableModel.rowList){
+					if (row.getBioPaxObject().equals(bpObject)){
+						rowList.add(row);
+						break;
+					}else{
+					}
+				}
+			}
+		}
+		tableModel.setData(rowList);
+	}
 
-	// display linked biopax objects in JTextArea
+/*	// display linked biopax objects in JTextArea
 	private void changeFreeTextPathwayLink() {
 		bioModel = getBioModel();
 		if(bioModel == null){
@@ -637,9 +705,9 @@ private JButton getPathwayDBbutton() {
 			}
 		}
 	}
-
+*/
 	// display the linked biopax objects 
-	public String showLinkedBioPaxObjects(){
+/*	public String showLinkedBioPaxObjects(){
 		bioModel = getBioModel();
 		String linkedBioPaxObjectContext = null;
 		if(bioModel != null){
@@ -666,7 +734,7 @@ private JButton getPathwayDBbutton() {
 		}
 		return linkedBioPaxObjectContext;
 	}
-
+*/
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		if (selectedObjects == null || selectedObjects.length != 1) {

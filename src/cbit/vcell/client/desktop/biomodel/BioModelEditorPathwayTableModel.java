@@ -92,6 +92,13 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		}
 	}
 	
+	// reset all selected values to false
+	public void resetSelectedValues(){
+		for(EntitySelectionTableRow row : rowList){
+			row.setSelected(false);
+		}
+	}
+	
 	// generate the sortable table. Set up the functions for each column
 	public Comparator<EntitySelectionTableRow> getComparator(final int col, final boolean ascending) {
 		return new Comparator<EntitySelectionTableRow>() {
@@ -169,6 +176,23 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 		return pathwayObjectList;
 	}
 	// done
+	public void showSelectedObjects() {	
+		List<EntitySelectionTableRow> newData = linkData();
+		setData(newData);
+	}
+	
+	protected ArrayList<EntitySelectionTableRow> linkData() {
+		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
+		if (rowList != null){
+			for (EntitySelectionTableRow rs : rowList){
+				if(rs.selected()){
+					pathwayObjectList.add(rs);
+				}
+			}
+			
+		}
+		return pathwayObjectList;
+	}
 
 	
 }
