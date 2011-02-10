@@ -1,5 +1,6 @@
 package org.vcell.pathway;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
@@ -9,16 +10,18 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                        ";
 	private String ID;
 	private String resource;
-	private String comment;
+	private ArrayList<String> comments = new ArrayList<String>();
 	
-	public String getComment() {
-		return comment;
+	public ArrayList<String> getComments() {
+		return comments;
+	}
+	public void setComments(ArrayList<String> comments) {
+		this.comments = comments;
 	}
 
-	public void setComment(String comment) {
-		this.comment = comment;
+	public String getID() {
+		return ID;
 	}
-
 	public void setID(String value) {
 		if (value.equals("#CPATH-LOCAL-12758385")){
 			System.out.println("found it");
@@ -26,6 +29,9 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		this.ID = value;
 	}
 
+	public String getResource() {
+		return resource;
+	}
 	public void setResource(String value) {
 		if (value.equals("#CPATH-LOCAL-12758385")){
 			System.out.println("found it");
@@ -33,14 +39,6 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		this.resource = value;
 	}
 
-	public String getID() {
-		return ID;
-	}
-
-	public String getResource() {
-		return resource;
-	}
-	
 	public String getTypeLabel(){
 		String typeName = getClass().getName();
 		typeName = typeName.replace(getClass().getPackage().getName(),"");
@@ -88,7 +86,9 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	}
 
 	public void showChildren(StringBuffer sb, int level) {
-		printString(sb,"comment",comment,level);
+		for(String c : comments) {
+			printString(sb,"comments",c,level);
+		}
 	}
 	
 	public void printString(StringBuffer sb, String name, String value, int level){

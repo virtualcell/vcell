@@ -244,7 +244,7 @@ public class PathwayReader {
 
 	private boolean addContentBioPaxObject(BioPaxObject biopaxObject, Element element, Element childElement){
 		if (childElement.getName().equals("COMMENT")){
-			biopaxObject.setComment(childElement.getTextTrim());
+			biopaxObject.getComments().add((childElement.getTextTrim()));
 			return true;
 		}else{
 			return false; // didn't consume the childElement

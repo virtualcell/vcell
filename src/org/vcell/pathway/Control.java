@@ -8,7 +8,6 @@ import org.vcell.sybil.util.text.StringUtil;
 public class Control extends InteractionImpl {
 
 	private Interaction controlledInteraction;
-
 	private Pathway controlledPathway;
 
 	private String controlType;

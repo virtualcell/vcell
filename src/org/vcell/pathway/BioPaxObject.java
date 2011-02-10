@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import java.util.ArrayList;
+
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
 import cbit.vcell.biomodel.meta.Identifiable;
@@ -12,13 +14,11 @@ public interface BioPaxObject extends Identifiable {
 	String getResource();
 	void setResource(String value);
 
-	String getComment();
-	void setComment(String value);
+	public ArrayList<String> getComments();
+	public void setComments(ArrayList<String> comment);
 	
 	void show(StringBuffer stringBuffer);
-	
 	void showChildren(StringBuffer stringBuffer, int level);
-	
 	void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject);
 	
 	String getTypeLabel();
