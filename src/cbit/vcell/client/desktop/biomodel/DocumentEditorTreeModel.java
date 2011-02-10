@@ -1,7 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.util.ArrayList;
-
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -10,11 +8,12 @@ import javax.swing.tree.TreePath;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -51,20 +50,24 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		public boolean isBold() {
 			return bBold;
 		}
+		public String toString() {
+			return getName();
+		}
 	}
 	
 	public enum DocumentEditorTreeFolderClass {
-//		MODELINFO_NODE("Saved BioModel Info"),
 		PATHWAY_NODE("Pathway"),
 		MODEL_NODE("Biological Model"),	
 		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
 		DATA_NODE("Experimental Data"),	
-		APPLICATTIONS_NODE("Applications"),	
+		APPLICATIONS_NODE("Applications"),	
 		SCRIPTING_NODE("Scripting"),
 
 		REACTIONS_NODE("Reactions"),
 		STRUCTURES_NODE("Structures"),
 		SPECIES_NODE("Species"),
+		REACTION_DIAGRAM_NODE("Reaction Diagram"),
+		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
 		
 		GEOMETRY_NODE("Geometry"),
 		SETTINGS_NODE("Settings"),
@@ -101,8 +104,9 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		try {
 			Object source = evt.getSource();			
 			if (source == selectionManager) {
-				Object[] selectedObject = ((SelectionManager)source).getSelectedObjects();
-				onSelectedObjectsChange(selectedObject);
+				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {					
+					onActiveViewChange(selectionManager.getActiveView());
+				}
 			} 
 		} catch (Exception e){
 			e.printStackTrace(System.out);
@@ -113,9 +117,6 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public void treeExpanded(TreeExpansionEvent e) {
-		if (e.getSource() == ownerTree) {
-			onSelectedObjectsChange(selectionManager.getSelectedObjects());
-		}
 	}
 	
 	protected void restoreTreeSelection() {
@@ -130,67 +131,46 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		if (ownerTree.isPathSelected(path)) {
 			return;
 		}
-//			while (true) {
-//				if (rootNode.isNodeDescendant(selectedBioModelNode)) {
-//					break;
-//				}
-//				selectedBioModelNode = (BioModelNode) selectedBioModelNode.getParent();
-//				if (selectedBioModelNode == null) {
-//					selectedBioModelNode = getDefaultSelectionNode();
-//				}
-//			}
 		ownerTree.setSelectionPath(path);
 		ownerTree.scrollPathToVisible(path);				
 	}
 	
 	protected abstract BioModelNode getDefaultSelectionNode();
 	
-	private void onSelectedObjectsChange(Object[] selectedObjects) {
-//		if (selectedObjects != null && selectedObjects.length > 0) {
-//			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
-//			for (Object object : selectedObjects) {
-//				BioModelNode node = rootNode.findNodeByUserObject(object);
-//				if (node != null) {
-//					newPathList.add(new TreePath(node.getPath()));
-//				}
-//			}
-//			if (newPathList.size() > 0) {
-//				ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
-//				TreePath path = newPathList.get(0);
-//				selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
-//				ownerTree.scrollPathToVisible(path);
-//			}
-//		} else {
-//			restoreTreeSelection();
-//		}
-		boolean bAllSimulationContext = true;
-		if (selectedObjects != null && selectedObjects.length > 0) {
-			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
-			for (Object object : selectedObjects) {
-				BioModelNode node = rootNode.findNodeByUserObject(object);
-				if (node != null) {
-					TreePath path = new TreePath(node.getPath());
-					if (ownerTree.isVisible(path)) {
-						if (!(node.getUserObject() instanceof SimulationContext)) {
-							bAllSimulationContext = false;
-						}
-						newPathList.add(path);
-					}
-				}
-			}
-			if (newPathList.size() > 0) {
-				TreePath path = newPathList.get(0);
-				if (bAllSimulationContext) {
-					selectedBioModelNode = (BioModelNode) path.getParentPath().getLastPathComponent();
-				} else {
-					selectedBioModelNode = (BioModelNode) path.getLastPathComponent();
-					ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
-					ownerTree.scrollPathToVisible(path);
-				}
-			}
-		} else {
-			restoreTreeSelection();
+	private BioModelNode findNode(SimulationContext simulationContext, DocumentEditorTreeFolderClass folderClass) {
+		BioModelNode startNode = rootNode;
+		if (simulationContext != null) {
+			startNode = rootNode.findNodeByUserObject(simulationContext);
 		}
+		if (folderClass == null) {
+			return startNode;
+		}
+		return findNodeByFolderClass(startNode, folderClass);
+	}
+	
+	private BioModelNode findNodeByFolderClass(BioModelNode startNode, DocumentEditorTreeFolderClass folderClass) {
+		Object userObject = startNode.getUserObject();
+		if (userObject instanceof DocumentEditorTreeFolderNode && folderClass.equals(((DocumentEditorTreeFolderNode)userObject).getFolderClass())) {
+			return startNode;
+		}
+		for (int i = 0; i < startNode.getChildCount(); i ++) {
+			BioModelNode childNode = (BioModelNode) startNode.getChildAt(i);
+			BioModelNode node = findNodeByFolderClass(childNode, folderClass);
+			if (node != null) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+	private void onActiveViewChange(ActiveView activeView) {
+		SimulationContext simulationContext = activeView.getSimulationContext();
+		DocumentEditorTreeFolderClass folderClass = activeView.getDocumentEditorTreeFolderClass();
+		BioModelNode node = findNode(simulationContext, folderClass);		
+		if (node != null) {
+			selectedBioModelNode = node;				
+			restoreTreeSelection();
+		}		
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -236,25 +216,8 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			}
 			BioModelNode selectedNode = (BioModelNode) obj;
 			Object userObject = selectedNode.getUserObject();
-			if (userObject instanceof ReactionStep) {
-				((ReactionStep) userObject).setName(newName);
-			} else if (userObject instanceof Structure) {
-				Structure structure = (Structure) userObject;
-				structure.setName(newName);
-				structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(newName));
-				if (structure instanceof Membrane) {
-					((Membrane)structure).getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(newName));
-				}
-			} else if (userObject instanceof SpeciesContext) {
-				((SpeciesContext) userObject).setName(newName);
-			} else if (userObject instanceof ModelParameter) {
-				((ModelParameter) userObject).setName(newName);
-			} else if (userObject instanceof SimulationContext) {
+			if (userObject instanceof SimulationContext) {
 				((SimulationContext) userObject).setName(newName);
-			} else if (userObject instanceof Simulation) {
-				((Simulation) userObject).setName(newName);
-			} else if (userObject instanceof BioEvent) {
-				((BioEvent) userObject).setName(newName);
 			}
 		} catch (Exception ex) {
 			DialogUtils.showErrorDialog(ownerTree, ex.getMessage());			

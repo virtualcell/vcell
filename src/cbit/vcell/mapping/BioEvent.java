@@ -50,6 +50,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return BioEvent.this.parameterContext;
 		}
+		public String getPathDescription() {
+			if (simulationContext != null){
+				return "/App(\""+simulationContext.getName()+"\")/Event(\""+BioEvent.this.getName()+"\")";
+			}
+			return null;
+		}
 	}
 	
 	public class EventAssignment implements Matchable, Serializable {

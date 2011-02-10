@@ -35,9 +35,6 @@ import javax.swing.tree.TreePath;
 
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReader;
-import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
-import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.util.http.pathwaycommons.search.DataSource;
 import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
@@ -57,10 +54,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.xml.XmlHelper;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -368,6 +366,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				PathwayData pathwayData = (PathwayData) hashTable.get("pathwayData");
 				if (pathwayData != null) {
+					setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_NODE));
 					setSelectedObjects(new Object[] {pathwayData});
 				}
 			}

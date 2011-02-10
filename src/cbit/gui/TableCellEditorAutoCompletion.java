@@ -19,17 +19,15 @@ import cbit.vcell.parser.ExpressionException;
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	protected TextFieldAutoCompletion textFieldAutoCompletion = null;
 	private JTable thisTable = null;
-	private boolean bValidateBinding = false;
 	
-	public TableCellEditorAutoCompletion(JTable table, boolean bValidateBinding) {		
-		this(new TextFieldAutoCompletion(), table, bValidateBinding);
+	public TableCellEditorAutoCompletion(JTable table) {		
+		this(new TextFieldAutoCompletion(), table);
 	}
 	
-	public TableCellEditorAutoCompletion(TextFieldAutoCompletion textField, JTable table, boolean bValidateBinding) {		
+	public TableCellEditorAutoCompletion(TextFieldAutoCompletion textField, JTable table) {		
 		super(textField);
 		this.textFieldAutoCompletion = (TextFieldAutoCompletion)getComponent();
 		this.thisTable = table;	
-		this.bValidateBinding = bValidateBinding;
 	}
 	
 	@Override
@@ -41,35 +39,37 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 			return false;
 		}
 		
-		final int row = thisTable.getSelectedRow();
+		final int editingRow = thisTable.getEditingRow();
+		final int editingColumn = thisTable.getEditingColumn();
 		textFieldAutoCompletion.stopEditing();
-		boolean bOK = true;
-		if (thisTable.getColumnClass(thisTable.getEditingColumn()).equals(ScopedExpression.class)) {
+		boolean bExpressionValid = true;
+		if (thisTable.getColumnClass(editingColumn).equals(ScopedExpression.class)) {
 			if (textFieldAutoCompletion.getSymbolTable() != null) {
+				ScopedExpression scopedExpression = (ScopedExpression) thisTable.getValueAt(editingRow, editingColumn);
 				String text = textFieldAutoCompletion.getText();
 				if (text.trim().length() > 0) {
 					try {
 						Expression exp = new Expression(text);
-						if (bValidateBinding) {
+						if (scopedExpression.isValidateBinding()) {
 							exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
 						}
 					} catch (ExpressionBindingException ex) {
 						ex.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.");
-						bOK = false;
+						bExpressionValid = false;
 					} catch (ExpressionException ex) {
 						ex.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.");
-						bOK = false;
+						bExpressionValid = false;
 					}
 				}
 			}
 		}
-		if (!bOK) {
+		if (!bExpressionValid) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					thisTable.requestFocus();
-					thisTable.setRowSelectionInterval(row, row);
+					thisTable.setRowSelectionInterval(editingRow, editingRow);
 					((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
 					textFieldAutoCompletion.requestFocus();										
 				}				

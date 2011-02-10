@@ -69,8 +69,11 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 		
 		@Override
-		public String getConextDescription() {
-			return getStructure().getTypeName() + ": " + getStructure().getName();
+		public String getPathDescription() {
+			if (simulationContext != null){
+				return "App("+simulationContext.getName()+") / " + getStructure().getTypeName() + "(" + getStructure().getName() + ")";
+			}
+			return null;
 		}
 	}
 	

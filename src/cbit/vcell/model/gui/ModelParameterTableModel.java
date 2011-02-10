@@ -230,7 +230,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression() == null) {
 					return ""; 
 				} else {
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope());
 				}
 			}
 			case COLUMN_ANNOTATION:{

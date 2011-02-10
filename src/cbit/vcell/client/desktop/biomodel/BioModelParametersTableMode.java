@@ -12,14 +12,15 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
@@ -33,16 +34,15 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class BioModelParametersTableMode extends BioModelEditorRightSideTableModel<ApplicationParameter> implements java.beans.PropertyChangeListener {
-	public static final int COLUMN_APPLICATION = 0;
-	public static final int COLUMN_SCOPE = 1;
-	public static final int COLUMN_NAME = 2;
-	public static final int COLUMN_DESCRIPTION = 3;
-	public static final int COLUMN_EXPRESSION = 4;
-	public static final int COLUMN_UNIT = 5;
-	private static String LABELS[] = {"Application", "Context", "Name", "Description", "Expression", "Units"};
+public class BioModelParametersTableMode extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
+	public static final int COLUMN_PATH = 0;
+	public static final int COLUMN_NAME = 1;
+	public static final int COLUMN_DESCRIPTION = 2;
+	public static final int COLUMN_EXPRESSION = 3;
+	public static final int COLUMN_UNIT = 4;
+	private static String LABELS[] = {"Path", "Name", "Description", "Expression", "Units"};
 	private boolean bIncludeReactions = true;
-	private boolean bIncludeSimulationContexts = false;
+	private boolean bIncludeSimulationContexts = true;
 	private boolean bIncludeGlobal = true;
 	
 /**
@@ -60,14 +60,8 @@ public BioModelParametersTableMode(EditorScrollTable table) {
  * @param column int
  */
 public Class<?> getColumnClass(int col) {
-	int column = col;
-	if (!bIncludeSimulationContexts) {
-		column += 1;
-	}
-	switch (column){
-		case COLUMN_APPLICATION:
-			return String.class;
-		case COLUMN_SCOPE:
+	switch (col){
+		case COLUMN_PATH:
 			return NameScope.class;
 		case COLUMN_NAME:
 			return String.class;
@@ -87,47 +81,41 @@ public Class<?> getColumnClass(int col) {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-protected List<ApplicationParameter> computeData() {
-	ArrayList<Parameter> modelParameterList = new ArrayList<Parameter>();
-	ArrayList<ApplicationParameter> appParameterList0 = new ArrayList<ApplicationParameter>();
+protected List<Parameter> computeData() {
+	ArrayList<Parameter> allParameterList = new ArrayList<Parameter>();
 	if (bioModel == null){
 		return null;
 	}
 	if (bIncludeGlobal) {
-		modelParameterList.addAll(Arrays.asList(bioModel.getModel().getModelParameters()));
+		allParameterList.addAll(Arrays.asList(bioModel.getModel().getModelParameters()));
 	}
 	if (bIncludeReactions) {
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
-			modelParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
-			modelParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
+			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
 		}
-	}
-	for (Parameter parameter : modelParameterList) {
-		appParameterList0.add(new ApplicationParameter(null, parameter));
 	}
 	if (bIncludeSimulationContexts) {
 		for (SimulationContext simContext : bioModel.getSimulationContexts()) {
-			appParameterList0.addAll(getApplicationParameterList(simContext));
+			allParameterList.addAll(getApplicationParameterList(simContext));
 		}
 	}
 	boolean bSearchInactive = searchText == null || searchText.length() == 0;
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
-	ArrayList<ApplicationParameter> appParameterList = new ArrayList<ApplicationParameter>();
-	for (ApplicationParameter appParameter : appParameterList0) {
-		Parameter parameter = appParameter.getParameter();
-		SimulationContext simulationContext = appParameter.getSimulationContext();
-		if (bSearchInactive || bIncludeSimulationContexts && simulationContext != null && simulationContext.getName().toLowerCase().contains(lowerCaseSearchText)
-				|| parameter.getNameScope().getConextDescription().toLowerCase().contains(lowerCaseSearchText)
+	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
+	for (Parameter parameter : allParameterList) {
+		if (bSearchInactive
+				|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)) {
-			appParameterList.add(appParameter);
+			parameterList.add(parameter);
 		}
 	}
-	return appParameterList;
+	return parameterList;
 }
 
-private List<ApplicationParameter> getApplicationParameterList(SimulationContext simulationContext) {	
+private List<Parameter> getApplicationParameterList(SimulationContext simulationContext) {	
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();	
 	for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
 		parameterList.addAll(mapping.computeApplicableParameterList());
@@ -139,11 +127,7 @@ private List<ApplicationParameter> getApplicationParameterList(SimulationContext
 		parameterList.addAll(Arrays.asList(elect.getParameters()));
 	}	
 	
-	ArrayList<ApplicationParameter> appParameterList = new ArrayList<ApplicationParameter>();
-	for (Parameter parameter : parameterList) {
-		appParameterList.add(new ApplicationParameter(simulationContext, parameter));
-	}
-	return appParameterList;
+	return parameterList;
 }
 
 
@@ -152,16 +136,9 @@ private List<ApplicationParameter> getApplicationParameterList(SimulationContext
  */
 public Object getValueAt(int row, int col) {
 	try {
-		int column = col;
-		if (!bIncludeSimulationContexts) {
-			column += 1;
-		}
-		ApplicationParameter appParameter = getValueAt(row);
-		Parameter parameter = appParameter.getParameter();
-		switch (column){
-			case COLUMN_APPLICATION:
-				return appParameter.getSimulationContext() == null ? null : appParameter.getSimulationContext().getName();
-			case COLUMN_SCOPE:
+		Parameter parameter = getValueAt(row);
+		switch (col){
+			case COLUMN_PATH:
 				return parameter.getNameScope();
 			case COLUMN_NAME:
 				return parameter.getName();
@@ -171,7 +148,8 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression() == null) {						
 					return null;						
 				} 
-				return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());				
+				boolean bValidateBinding = !(parameter instanceof KineticsParameter);
+				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, null);				
 			}
 			case COLUMN_UNIT:{
 				if (parameter.getUnitDefinition() != null) {
@@ -187,15 +165,9 @@ public Object getValueAt(int row, int col) {
 }
 
 public boolean isCellEditable(int row, int col) {
-	int column = col;
-	if (!bIncludeSimulationContexts) {
-		column += 1;
-	}
-	ApplicationParameter appParameter = getValueAt(row);
-	Parameter parameter = appParameter.getParameter();	
-	switch (column) {
-	case COLUMN_APPLICATION:
-	case COLUMN_SCOPE:
+	Parameter parameter = getValueAt(row);
+	switch (col) {
+	case COLUMN_PATH:
 		return false;
 	case COLUMN_NAME:
 		return parameter.isNameEditable();
@@ -212,33 +184,29 @@ public boolean isCellEditable(int row, int col) {
 @Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);
-	if (evt.getSource() instanceof Parameter) {
-		refreshData();
-	} else if (evt.getSource() == bioModel.getModel()) {
-		if (evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
-			refreshData();
-		} else if (bIncludeReactions) {
-			refreshData();
+	int[] selectedRows = ownerTable.getSelectedRows();
+	Object[] objects = null;
+	if (selectedRows.length > 0) {
+		objects = new Object[selectedRows.length];
+		for (int i = 0; i < objects.length; i ++) {
+			objects[i] = getValueAt(selectedRows[i]);
 		}
-	} else {
-		refreshData();
-	}	
+	}
+    refreshData();
+    if (objects != null) {
+    	DocumentEditorSubPanel.setTableSelections(objects, ownerTable, this);
+    }
 }
 
 public void setValueAt(Object value, int row, int col) {
 	if (value == null) {
 		return;
 	}
-	int column = col;
-	if (!bIncludeSimulationContexts) {
-		column += 1;
-	}
 	try {
 		String inputValue = (String)value;
 		inputValue = inputValue.trim();
-		ApplicationParameter appParameter = getValueAt(row);
-		Parameter parameter = appParameter.getParameter();
-		switch (column){
+		Parameter parameter = getValueAt(row);
+		switch (col){
 			case COLUMN_NAME:{
 				if (inputValue.length() == 0) {
 					return;
@@ -261,9 +229,13 @@ public void setValueAt(Object value, int row, int col) {
 						newExp = new Expression(newExpressionString);
 					}
 					scsParm.setExpression(newExp);				
+				} else if (parameter instanceof KineticsParameter){
+					Expression exp1 = new Expression(inputValue);
+					Kinetics kinetics = ((KineticsParameter) parameter).getKinetics();
+					kinetics.setParameterValue((Kinetics.KineticsParameter)parameter, exp1);
 				} else {
 					Expression exp1 = new Expression(inputValue);
-					exp1.bindExpression(appParameter.getSimulationContext());
+					exp1.bindExpression(parameter.getNameScope().getScopedSymbolTable());
 					parameter.setExpression(exp1);
 				}
 				break;
@@ -284,22 +256,12 @@ public void setValueAt(Object value, int row, int col) {
 }
 
 
-  public Comparator<ApplicationParameter> getComparator(final int col, final boolean ascending) {
-	  return new Comparator<ApplicationParameter>() {
+  public Comparator<Parameter> getComparator(final int col, final boolean ascending) {
+	  return new Comparator<Parameter>() {
 
-		public int compare(ApplicationParameter o1, ApplicationParameter o2) {
+		public int compare(Parameter parm1, Parameter parm2) {
 			int scale = ascending ? 1 : -1;
-			Parameter parm1 = o1.getParameter();
-			Parameter parm2 = o2.getParameter();
-			int column = col;
-			if (!bIncludeSimulationContexts) {
-				column += 1;
-			}
-			switch (column){
-				case COLUMN_APPLICATION:
-					String name1 = o1.getSimulationContext() == null ? "" : o1.getSimulationContext().getName();
-					String name2 = o2.getSimulationContext() == null ? "" : o2.getSimulationContext().getName();
-					return scale * name1.compareToIgnoreCase(name2);
+			switch (col){
 				case COLUMN_NAME:
 					return scale * parm1.getName().compareToIgnoreCase(parm2.getName());
 				case COLUMN_DESCRIPTION:
@@ -308,8 +270,8 @@ public void setValueAt(Object value, int row, int col) {
 					String exp1 = parm1.getExpression() == null ? "" : parm1.getExpression().infix();						
 					String exp2 = parm2.getExpression() == null ? "" : parm2.getExpression().infix();						
 					return scale * exp1.compareToIgnoreCase(exp2);
-				case COLUMN_SCOPE:
-					return scale * parm1.getNameScope().getName().compareToIgnoreCase(parm2.getNameScope().getName());
+				case COLUMN_PATH:
+					return scale * parm1.getNameScope().getPathDescription().compareToIgnoreCase(parm2.getNameScope().getPathDescription());
 				case COLUMN_UNIT:
 					String unit1 = parm1.getUnitDefinition() == null ? "" : parm1.getUnitDefinition().getSymbol();
 					String unit2 = parm2.getUnitDefinition() == null ? "" : parm2.getUnitDefinition().getSymbol();
@@ -320,32 +282,15 @@ public void setValueAt(Object value, int row, int col) {
 	  };
   }
 
-protected void simulationContextChange(PropertyChangeEvent evt) {
-//	super.simulationContextChange(evt);
-	SimulationContext oldValue = (SimulationContext)evt.getOldValue();
+@Override
+protected void bioModelChange(PropertyChangeEvent evt) {
+	super.bioModelChange(evt);
+	BioModel oldValue = (BioModel)evt.getOldValue();
 	if (oldValue!=null){
 		oldValue.getModel().removePropertyChangeListener(this);
 		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
 			parameter.removePropertyChangeListener(this);
 		}
-		for (StructureMapping mapping : oldValue.getGeometryContext().getStructureMappings()) {
-			for (Parameter parameter : mapping.getParameters()) {
-				parameter.removePropertyChangeListener(this);
-			}
-		}
-		for (SpeciesContextSpec spec : oldValue.getReactionContext().getSpeciesContextSpecs()) {
-			spec.removePropertyChangeListener(this);
-			for (Parameter parameter : spec.getParameters()) {
-				parameter.removePropertyChangeListener(this);
-			}
-		}
-		for (ElectricalStimulus elect : oldValue.getElectricalStimuli()) {
-			elect.removePropertyChangeListener(this);
-			for (Parameter parameter : elect.getParameters()) {
-				parameter.removePropertyChangeListener(this);
-			}
-		}
-
 		for (ReactionStep reactionStep : oldValue.getModel().getReactionSteps()){
 			reactionStep.removePropertyChangeListener(this);
 			reactionStep.getKinetics().removePropertyChangeListener(this);
@@ -359,29 +304,33 @@ protected void simulationContextChange(PropertyChangeEvent evt) {
 				unresolvedParameter.removePropertyChangeListener(this);
 			}
 		}
+		for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
+			simulationContext.removePropertyChangeListener(this);
+			simulationContext.getGeometryContext().removePropertyChangeListener(this);
+			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+				for (Parameter parameter : mapping.getParameters()) {
+					parameter.removePropertyChangeListener(this);
+				}
+			}
+			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+				spec.removePropertyChangeListener(this);
+				for (Parameter parameter : spec.getParameters()) {
+					parameter.removePropertyChangeListener(this);
+				}
+			}
+			for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
+				elect.removePropertyChangeListener(this);
+				for (Parameter parameter : elect.getParameters()) {
+					parameter.removePropertyChangeListener(this);
+				}
+			}
+		}
 	}
-	SimulationContext newValue = (SimulationContext)evt.getNewValue();
+	BioModel newValue = (BioModel)evt.getNewValue();
 	if (newValue != null){
 		newValue.getModel().addPropertyChangeListener(this);
 		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
 			modelParameter.addPropertyChangeListener(this);
-		}
-		for (StructureMapping mapping : newValue.getGeometryContext().getStructureMappings()) {
-			for (Parameter parameter : mapping.getParameters()) {
-				parameter.addPropertyChangeListener(this);
-			}
-		}
-		for (SpeciesContextSpec spec : newValue.getReactionContext().getSpeciesContextSpecs()) {
-			spec.addPropertyChangeListener(this);
-			for (Parameter parameter : spec.getParameters()) {
-				parameter.addPropertyChangeListener(this);
-			}
-		}
-		for (ElectricalStimulus elect : newValue.getElectricalStimuli()) {
-			elect.addPropertyChangeListener(this);
-			for (Parameter parameter : elect.getParameters()) {
-				parameter.addPropertyChangeListener(this);
-			}
 		}
 		for (ReactionStep reactionStep : newValue.getModel().getReactionSteps()){
 			reactionStep.addPropertyChangeListener(this);
@@ -394,6 +343,27 @@ protected void simulationContextChange(PropertyChangeEvent evt) {
 			}
 			for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
 				unresolvedParameter.addPropertyChangeListener(this);
+			}
+		}
+		for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
+			simulationContext.addPropertyChangeListener(this);
+			simulationContext.getGeometryContext().addPropertyChangeListener(this);
+			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+				for (Parameter parameter : mapping.getParameters()) {
+					parameter.addPropertyChangeListener(this);
+				}
+			}
+			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+				spec.addPropertyChangeListener(this);
+				for (Parameter parameter : spec.getParameters()) {
+					parameter.addPropertyChangeListener(this);
+				}
+			}
+			for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
+				elect.addPropertyChangeListener(this);
+				for (Parameter parameter : elect.getParameters()) {
+					parameter.addPropertyChangeListener(this);
+				}
 			}
 		}
 	}
@@ -437,24 +407,6 @@ public final void setIncludeSimulationContextParameters(boolean newValue) {
 	}	
 	this.bIncludeSimulationContexts = newValue;
 	refreshData();
-	fireTableStructureChanged();
-}
-
-@Override
-public String getColumnName(int column) {
-	if (bIncludeSimulationContexts) {
-		return LABELS[column];
-	}
-	
-	return LABELS[column + 1];
-}
-
-@Override
-public int getColumnCount() {
-	if (bIncludeSimulationContexts) {
-		return LABELS.length;
-	}
-	return LABELS.length - 1;
 }
 
 @Override

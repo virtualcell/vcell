@@ -25,9 +25,9 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
-public class BioModelParametersPanel extends BioModelEditorRightSidePanel<ApplicationParameter> {
+public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parameter> {
 	private JCheckBox includeGlobalParametersCheckBox = null;
-	private JCheckBox includeSimlationContextsCheckBox = null;
+	private JCheckBox includeSimulationContextsCheckBox = null;
 	private JCheckBox includeReactionsCheckBox = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
@@ -36,8 +36,8 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == includeGlobalParametersCheckBox) {
 				((BioModelParametersTableMode)tableModel).setIncludeGlobalParameters(includeGlobalParametersCheckBox.isSelected());
-			} else if (e.getSource() == includeSimlationContextsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeSimulationContextParameters(includeSimlationContextsCheckBox.isSelected());
+			} else if (e.getSource() == includeSimulationContextsCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeSimulationContextParameters(includeSimulationContextsCheckBox.isSelected());
 			} else if (e.getSource() == includeReactionsCheckBox) {
 				((BioModelParametersTableMode)tableModel).setIncludeReactionParameters(includeReactionsCheckBox.isSelected());
 			}
@@ -57,8 +57,9 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 		includeReactionsCheckBox = new JCheckBox("Reaction Parameters");
 		includeReactionsCheckBox.setSelected(true);
 		includeReactionsCheckBox.addActionListener(eventHandler);
-		includeSimlationContextsCheckBox = new JCheckBox("Parameters from All Applications");
-		includeSimlationContextsCheckBox.addActionListener(eventHandler);
+		includeSimulationContextsCheckBox = new JCheckBox("Parameters from All Applications");
+		includeSimulationContextsCheckBox.setSelected(true);
+		includeSimulationContextsCheckBox.addActionListener(eventHandler);
 
 		setLayout(new GridBagLayout());
 		int gridy = 0;
@@ -133,7 +134,7 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(includeSimlationContextsCheckBox, gbc);
+		tabPanel.add(includeSimulationContextsCheckBox, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -156,7 +157,7 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 						row, column);
 				if (value instanceof NameScope) {
 					NameScope nameScope = (NameScope)value;
-					setText(nameScope.getConextDescription());
+					setText(nameScope.getPathDescription());
 				}
 				return this;
 			}
@@ -173,8 +174,8 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 		}
 		for (int r : rows) {
 			if (r < tableModel.getDataSize()) {
-				ApplicationParameter appParameter = tableModel.getValueAt(r);
-				if (appParameter.getParameter() instanceof ModelParameter) {
+				Parameter parameter = tableModel.getValueAt(r);
+				if (parameter instanceof ModelParameter) {
 					deleteButton.setEnabled(true);
 					return;
 				}
@@ -184,7 +185,7 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 	}
 
 	@Override
-	protected BioModelEditorRightSideTableModel<ApplicationParameter> createTableModel() {		
+	protected BioModelEditorRightSideTableModel<Parameter> createTableModel() {		
 		return new BioModelParametersTableMode(table);
 	}
 
@@ -205,8 +206,7 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 			ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
 			for (int r : rows) {
 				if (r < tableModel.getDataSize()) {
-					ApplicationParameter appParameter = tableModel.getValueAt(r);
-					Parameter parameter = appParameter.getParameter();
+					Parameter parameter = tableModel.getValueAt(r);
 					if (parameter instanceof ModelParameter) {
 						deleteList.add((ModelParameter)parameter);
 						deleteListText += "\t" + ((ModelParameter)parameter).getName() + "\n"; 
@@ -228,6 +228,6 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Applic
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		setSelectedObjectsFromTable(table, tableModel);
+		setTableSelections(selectedObjects, table, tableModel);
 	}
 }

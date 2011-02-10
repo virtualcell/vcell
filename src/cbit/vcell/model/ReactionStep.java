@@ -101,6 +101,11 @@ public abstract class ReactionStep
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionStep.this;
 		}
+		
+		@Override
+		public String getPathDescription() {
+			return "Model / Reaction("+ReactionStep.this.getName()+")";
+		}
 	}
 	
 /**

@@ -64,7 +64,7 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 		
 	public final static String SPATIAL_LABEL_STRUCTURE = "Structure";
 	public final static String SPATIAL_LABEL_SUBDOMAIN = "Subdomain";
-	public final static String SPATIAL_LABEL_SIZERATIO = "Size Ratio(Structure : Subdomain)";
+	public final static String SPATIAL_LABEL_SIZERATIO = "Size Ratio";
 	public final static String SPATIAL_LABEL_X_MINUS = "X-";
 	public final static String SPATIAL_LABEL_X_PLUS = "X+";
 	public final static String SPATIAL_LABEL_Y_MINUS = "Y-";
@@ -499,58 +499,15 @@ private void update() {
 					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
 						Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-						c.setPreferredSize(new Dimension(20,45));
-						JLabel label = null;
 						if (c instanceof JLabel) {
-							label = (JLabel)c;
-						} else {
-							label = new JLabel();
-							Border border = null;
-							if (hasFocus) {
-								border = UIManager.getBorder("TableHeader.focusCellBorder");
+							JLabel label = (JLabel)c;
+							if (column == SPATIAL_COLUMN_SIZERATIO) {
+								label.setToolTipText("Size Ratio = Structure : Subdomain");
+							} else {
+								label.setToolTipText(value.toString());
 							}
-							if (border == null) {
-								border = UIManager.getBorder("TableHeader.cellBorder");
-							}							
-							if (table != null) { 
-								JTableHeader header = table.getTableHeader(); 
-								if (header != null) { 
-									Color fgColor = null;
-									Color bgColor = null;
-									if (hasFocus) {
-										fgColor = UIManager.getColor("TableHeader.focusCellForeground");
-										bgColor = UIManager.getColor("TableHeader.focusCellBackground");
-									}
-									if (fgColor == null) {
-										fgColor = header.getForeground();
-									}
-									if (bgColor == null) {
-										bgColor = header.getBackground();
-									}
-									label.setForeground(fgColor);
-									label.setBackground(bgColor);
-									label.setFont(header.getFont()); 
-								} 
-							} 
 						}
-						if (column == SPATIAL_COLUMN_SIZERATIO) {
-							label.setHorizontalTextPosition(JLabel.CENTER);
-							label.setVerticalTextPosition(JLabel.TOP);
-							label.setText("Size Ratio");
-							label.setIconTextGap(0);
-							final JLabel finalLabel = label;
-							label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"){
-
-								@Override
-								public int getIconWidth() {
-									return finalLabel.getWidth();
-								}
-							});
-						} else {
-							label.setText(value.toString());
-							label.setIcon(null);
-						}
-						return label;
+						return c;
 					}
 				}
 				

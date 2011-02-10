@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -19,6 +21,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
+
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.model.Parameter;
 
 @SuppressWarnings("serial")
 public class IssuePanel extends DocumentEditorSubPanel {
@@ -55,6 +61,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			}
 		});
 		showWarningCheckBox = new JCheckBox("Show Warnings");
+		showWarningCheckBox.setSelected(true);
 		showWarningCheckBox.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -65,6 +72,23 @@ public class IssuePanel extends DocumentEditorSubPanel {
 		issueTable = new JSortTable();
 		issueTableModel = new IssueTableModel(issueTable);
 		issueTable.setModel(issueTableModel);
+		issueTable.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					int row = issueTable.getSelectedRow();
+					if (row >= 0) {
+						Issue issue = issueTableModel.getValueAt(row);
+						Object object = issue.getSource();
+						if (object instanceof Parameter) {
+							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE));
+							setSelectedObjects(new Object[] {object});
+						}
+					}
+				}
+			}			
+		});
 		
 		setLayout(new GridBagLayout());
 		int gridy = 0;

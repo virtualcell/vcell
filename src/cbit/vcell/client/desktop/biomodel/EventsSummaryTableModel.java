@@ -85,7 +85,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 						if (event.getTriggerExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope(), true);
+							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope());
 						}
 					}
 					case COLUMN_EVENT_DELAY_EXPR: {
@@ -93,7 +93,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 						if (delay == null) {
 							return "None"; 
 						} else {
-							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope(), true);
+							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope());
 						}
 					}
 					case COLUMN_EVENT_ASSIGN_VARS_LIST: {

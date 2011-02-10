@@ -12,7 +12,6 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	private SimulationListPanel simulationListPanel;
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private MathematicsPanel mathematicsPanel;
-	private ApplicationFittingPanel applicationAnalysisPanel;
 	
 	public ApplicationSimulationsPanel() {
 		super();
@@ -23,7 +22,6 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		simulationListPanel = new SimulationListPanel();
 		outputFunctionsPanel = new OutputFunctionsPanel();
 		mathematicsPanel = new MathematicsPanel();
-		applicationAnalysisPanel = new ApplicationFittingPanel();
 		
 		simulationListPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		outputFunctionsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -62,7 +60,7 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
+		simulationListPanel.setSelectionManager(selectionManager);
 		outputFunctionsPanel.setSelectionManager(selectionManager);
 	}
-	
 }

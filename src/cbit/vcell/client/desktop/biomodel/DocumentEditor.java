@@ -10,8 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -36,21 +34,16 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
+import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -61,16 +54,18 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public abstract class DocumentEditor extends JPanel {
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	
+	protected enum DocumentEditorTabID {
+		object_properties,
+		problems,
+	}
 	protected enum DocumentEditorPopupMenuAction {
 		add_new,
-		delete,
 		add_new_app_deterministic,
 		add_new_app_stochastic,
 		copy_app,
 		rename,
 	}
 	protected static final double DEFAULT_DIVIDER_LOCATION = 0.68;
-	protected final static int RIGHT_BOTTOM_TAB_PROPERTIES_INDEX = 0;
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
 	
@@ -86,7 +81,6 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem expandAllMenuItem = null;
 	private JMenuItem collapseAllMenuItem = null;
 	private JMenuItem addNewMenuItem;
-	private JMenuItem deleteMenuItem;
 	private JMenuItem renameMenuItem;
 	
 	protected DatabaseWindowPanel databaseWindowPanel = null;
@@ -115,7 +109,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem menuItemSpatialCopyAsSpatialStochastic = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
 
-	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener {
+	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener, IssueEventListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == expandAllMenuItem) {
 				TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
@@ -142,8 +136,6 @@ public abstract class DocumentEditor extends JPanel {
 				}
 			} else if (e.getSource() == addNewMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new, e.getActionCommand());
-			} else if (e.getSource() == deleteMenuItem) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete, e.getActionCommand());
 			} else if (e.getSource() == renameMenuItem) {
 				documentEditorTree.startEditingAtPath(documentEditorTree.getSelectionPath());
 			} else if (e.getSource() == addNewAppDeterministicMenuItem) {
@@ -162,7 +154,11 @@ public abstract class DocumentEditor extends JPanel {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == selectionManager) {
-				onSelectedObjectsChange();
+				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {			
+					onSelectedObjectsChange();
+				} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+					onActiveViewChange();
+				}
 			}
 		};
 		
@@ -200,6 +196,13 @@ public abstract class DocumentEditor extends JPanel {
 				treeSelectionChanged0(e);
 			}
 		}
+		public void issueChange(IssueEvent issueEvent) {
+			String title = "Problems (" + issueManager.getNumErrors() + " Errors, " + issueManager.getNumWarnings() + " Warnings)";
+//			if (issueManager.getNumErrors() > 0) {
+//				title = "<html><b>" + title + "</b></html>";
+//			}
+			rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
+		}
 	};
 
 /**
@@ -215,6 +218,10 @@ protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction a
 public void onSelectedObjectsChange() {
 	Object[] selectedObjects = selectionManager.getSelectedObjects();
 	setRightBottomPanelOnSelection(selectedObjects);
+}
+
+private void onActiveViewChange() {
+	selectionManager.setSelectedObjects(new Object[0]);	
 }
 
 private void selectClickPath(MouseEvent e) {
@@ -284,6 +291,7 @@ private void initialize() {
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
 		leftBottomTabbedPane  = new JTabbedPane();
+		leftBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		leftBottomTabbedPane.addTab("VCell Database", databaseWindowPanel);
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
@@ -333,7 +341,7 @@ private void initialize() {
 		
 		add(splitPane, BorderLayout.CENTER);
 		
-		
+		issueManager.addIssueEventListener(eventHandler);
 		selectionManager.addPropertyChangeListener(eventHandler);
 		
 		databaseWindowPanel.setSelectionManager(selectionManager);
@@ -356,18 +364,19 @@ private void initialize() {
 private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	try {
 		treeSelectionChanged();
-		TreePath[] paths = documentEditorTree.getSelectionModel().getSelectionPaths();
-		List<Object> selectedObjects = new ArrayList<Object>();
-		if (paths != null) {
-			for (TreePath path : paths) {
-				Object node = path.getLastPathComponent();
-				if (node != null && (node instanceof BioModelNode)) {
-					selectedObjects.add(((BioModelNode)node).getUserObject());
-				}
+		Object selectedNode = documentEditorTree.getLastSelectedPathComponent();
+		ActiveView activeView = null;
+		if (selectedNode != null && (selectedNode instanceof BioModelNode)) {
+			Object selectedObject = ((BioModelNode)selectedNode).getUserObject();
+			
+			DocumentEditorTreeFolderClass folderClass = null;
+			if (selectedObject instanceof DocumentEditorTreeFolderNode) {
+				folderClass = ((DocumentEditorTreeFolderNode) selectedObject).getFolderClass();
 			}
+			activeView = new ActiveView(getSelectedSimulationContext(), folderClass);
 		}
-		if (selectedObjects.size() > 0) {
-			selectionManager.setSelectedObjects(selectedObjects.toArray());
+		if (activeView != null) {
+			selectionManager.setActiveView(activeView);
 		}
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
@@ -414,7 +423,6 @@ protected SimulationContext getSelectedSimulationContext() {
 private void construcutPopupMenu() {
 	popupMenu.removeAll();
 	TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
-	boolean bDelete = false;
 	boolean bRename = false;
 	boolean bExpand = true;
 	boolean bAddNew = false;
@@ -433,42 +441,19 @@ private void construcutPopupMenu() {
 		Object userObject = selectedNode.getUserObject();
 		if (userObject instanceof DocumentEditorTreeFolderNode) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
-			if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
+			if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bAddNewApp = true;
 			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE
 				) {
 				bAddNew = (selectedPaths.length == 1);
-				bDelete = false;
 				bRename = false;
 			}
-		} else if (userObject instanceof ReactionStep
-				|| userObject instanceof Feature
-				|| userObject instanceof SpeciesContext
-				|| userObject instanceof ModelParameter
-				|| userObject instanceof Simulation
-			) {			
-			bDelete = true;
-			bRename = true;
 		} else if (userObject instanceof SimulationContext) {			
-			bDelete = true;
 			bRename = true;
 			bCopyApp = true;
-		} else if (userObject instanceof Membrane) {
-			bDelete = false;
-			bRename = true;
-		} else {
-			SimulationContext selectedSimulationContext = getSelectedSimulationContext();
-			if (userObject instanceof BioEvent) {
-				bDelete = selectedSimulationContext != null;
-				bRename = true;			
-			} else if (userObject instanceof AnnotatedFunction) {			
-				bDelete = selectedSimulationContext != null || this instanceof MathModelEditor;
-				bRename = false;
-			}
 		}
 	}
 	if (selectedPaths.length != 1) {
@@ -500,13 +485,6 @@ private void construcutPopupMenu() {
 		}
 		popupMenu.add(renameMenuItem);
 	}
-	if (bDelete) {
-		if (deleteMenuItem == null) {
-			deleteMenuItem = new javax.swing.JMenuItem("Delete");
-			deleteMenuItem.addActionListener(eventHandler);
-		}
-		popupMenu.add(deleteMenuItem);
-	}	
 	if (bCopyApp) {
 		if (menuItemAppCopy == null) {
 			menuItemAppCopy = new JMenuItem(GuiConstants.MENU_TEXT_APP_COPY);

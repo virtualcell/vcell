@@ -81,6 +81,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private ArrayList<String> functList = new ArrayList<String>();
 	private Rectangle highlightRectangle = null;
+	private boolean bSetText = false;
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener, FocusListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -407,6 +408,9 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 	
 	public void showPopupChoices(DocumentEvent docEvt, boolean bForce) {		
+		if (bSetText) {
+			return;
+		}
 		try {
 			if (bInCompleteTask) {
 				return;
@@ -595,6 +599,9 @@ public class TextFieldAutoCompletion extends JTextField {
 		return -1;
 	}
 	
+	public boolean isPopupVisible() {
+		return autoCompJPopupMenu.isVisible();
+	}
 	
 	private void highlightParenthesis(final Graphics g){
 		FontMetrics fm = g.getFontMetrics();
@@ -678,5 +685,16 @@ public class TextFieldAutoCompletion extends JTextField {
 		if (hasFocus()) {			
 			highlightParenthesis(g);
 		}
-	}	 
+	}
+
+	@Override
+	public void setText(String t) {
+		bSetText = true;
+		try {
+			super.setText(t);
+		} finally {
+			bSetText = false;
+		}
+	}
+	
 }

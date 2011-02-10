@@ -13,6 +13,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener, IssueEventListener {
@@ -40,11 +41,16 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() == selectionManager && evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
-			onSelectedObjectsChange(selectionManager.getSelectedObjects());
-			
+		if (evt.getSource() == selectionManager) {
+			if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+				onSelectedObjectsChange(selectionManager.getSelectedObjects());
+			} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				onActiveViewChange(selectionManager.getActiveView());
+			}
 		}
 	}
+
+	protected void onActiveViewChange(ActiveView activeView){};
 
 	protected abstract void onSelectedObjectsChange(Object[] selectedObjects);
 	protected <T> void setSelectedObjectsFromTable(JTable table, DefaultSortTableModel<T> tableModel) {
@@ -58,7 +64,8 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		}
 		setSelectedObjects(selectedObjects);
 	}
-	protected static <T> void setTableSelections(Object[] selectedObjects, JTable table, DefaultSortTableModel<T> tableModel) {
+	
+	public static <T> void setTableSelections(Object[] selectedObjects, JTable table, DefaultSortTableModel<T> tableModel) {
 		if (selectedObjects == null || selectedObjects.length == 0) {
 			table.clearSelection();
 			return;
@@ -87,12 +94,20 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		for (int row : addSet) {
 			table.addRowSelectionInterval(row, row);
 		}
-		Rectangle r = table.getCellRect(table.getSelectedRow(), 0, true);
-		table.scrollRectToVisible(r);
+		if (removeSet.size() > 0 || addSet.size() > 0) {
+			Rectangle r = table.getCellRect(table.getSelectedRow(), 0, true);
+			table.scrollRectToVisible(r);
+		}
 	}
 	protected void setSelectedObjects(Object[] selectedObjects) {
 		if (selectionManager != null) {
 			selectionManager.setSelectedObjects(selectedObjects);
+		}
+	}
+	
+	protected void setActiveView(ActiveView activeView) {
+		if (selectionManager != null) {
+			selectionManager.setActiveView(activeView);
 		}
 	}
 	

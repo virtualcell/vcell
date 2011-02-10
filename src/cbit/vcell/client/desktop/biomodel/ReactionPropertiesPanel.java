@@ -36,7 +36,6 @@ import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
@@ -132,7 +131,6 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
-			ivjScrollPaneTable.setValidateExpressionBinding(false);
 			ivjScrollPaneTable.setModel(getParameterTableModel());
 			ivjScrollPaneTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		} catch (java.lang.Throwable ivjExc) {
@@ -561,17 +559,6 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
 	if (selectedObjects[0] instanceof ReactionStep) {
 		setReactionStep((ReactionStep) selectedObjects[0]);
-	} else if (selectedObjects[0] instanceof KineticsParameter) {
-		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
-		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
-		setTableSelections(selectedObjects, getScrollPaneTable(), getParameterTableModel());
-	} else if (selectedObjects[0] instanceof ApplicationParameter) {
-		Parameter parameter = ((ApplicationParameter)selectedObjects[0]).getParameter();
-		if (parameter instanceof KineticsParameter) {	
-			KineticsParameter kineticsParameter = (KineticsParameter) parameter;
-			setReactionStep(kineticsParameter.getKinetics().getReactionStep());
-			setTableSelections(new Object[]{kineticsParameter}, getScrollPaneTable(), getParameterTableModel());
-		}
 	} else {
 		setReactionStep(null);
 	}

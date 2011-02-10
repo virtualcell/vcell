@@ -21,9 +21,15 @@ import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -35,7 +41,10 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 	private EventHandler eventHandler = new EventHandler();
 	private JTextArea annotationTextArea;
 	private JTextField nameTextField = null;
+	private JTextField unitTextField = null;
+	private TextFieldAutoCompletion expressionTextField = null;
 	private JTextField descriptionTextField = null;
+	private JLabel pathLabel = null;
 
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
@@ -45,6 +54,13 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 				changeAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			} else if (e.getSource() == unitTextField) {
+				changeUnit();
+			} else if (e.getSource() == expressionTextField) {
+				if (expressionTextField.isPopupVisible()) {
+					return;
+				}
+				changeExpression();
 			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -55,7 +71,11 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == nameTextField) {
 				changeName();
-			}			
+			} else if (e.getSource() == unitTextField) {
+				changeUnit();
+			} else if (e.getSource() == expressionTextField) {
+				changeExpression();
+			}
 		}
 	}
 
@@ -85,7 +105,10 @@ private void initialize() {
 	try {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
-		nameTextField.addActionListener(eventHandler);
+		unitTextField = new JTextField();
+		unitTextField.setEditable(false);
+		expressionTextField = new TextFieldAutoCompletion();
+		expressionTextField.setEditable(false);
 		descriptionTextField = new JTextField();
 		descriptionTextField.setEditable(false);
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
@@ -94,6 +117,15 @@ private void initialize() {
 		annotationTextArea.setEditable(false);
 		annotationTextArea.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 
+		nameTextField.addActionListener(eventHandler);
+		unitTextField.addActionListener(eventHandler);
+		expressionTextField.addActionListener(eventHandler);
+		
+		annotationTextArea.addFocusListener(eventHandler);
+		nameTextField.addFocusListener(eventHandler);
+		expressionTextField.addFocusListener(eventHandler);
+		unitTextField.addFocusListener(eventHandler);
+		
 		setBackground(Color.white);
 		setLayout(new GridBagLayout());
 		int gridy = 0;
@@ -103,10 +135,10 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		JLabel label = new JLabel("<html><u>Select only one parameter to view/edit properties</u></html>");
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, gbc);
+		pathLabel= new JLabel("");
+		pathLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		pathLabel.setFont(pathLabel.getFont().deriveFont(Font.BOLD));
+		add(pathLabel, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -114,7 +146,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("Parameter Name");
+		JLabel label = new JLabel("Parameter Name");
 		add(label, gbc);
 		
 		gbc.gridx = 1; 
@@ -146,6 +178,40 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("Unit");
+		add(label, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(unitTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("Expression");
+		add(label, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(expressionTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(new JLabel("Annotation"), gbc);
@@ -160,9 +226,6 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(jsp, gbc);		
-		
-		annotationTextArea.addFocusListener(eventHandler);
-		nameTextField.addFocusListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -182,7 +245,61 @@ private void changeAnnotation() {
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
+	}
+}
+
+private void changeUnit() {
+	try{
+		if (parameter == null) {
+			return;
+		}
+		String text = unitTextField.getText();
+		if (text.length() == 0) {
+			parameter.setUnitDefinition(VCUnitDefinition.UNIT_TBD);
+		} else if (!parameter.getUnitDefinition().getSymbol().equals(text)){
+			parameter.setUnitDefinition(VCUnitDefinition.getInstance(text));
+		}
+	} catch(Exception e){
+		e.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
+	}
+}
+
+private void changeExpression() {
+	try{
+		if (parameter == null) {
+			return;
+		}
+		String text = expressionTextField.getText();
+		if(text.equals(parameter.getExpression().infix())) {
+			return;
+		}
+		if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+			SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
+			Expression newExp = null;
+			if (text == null || text.trim().length() == 0) {
+				if (scsParm.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
+						|| scsParm.getRole() == SpeciesContextSpec.ROLE_DiffusionRate
+						|| scsParm.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
+					newExp = new Expression(0.0);
+				}
+			} else {
+				newExp = new Expression(text);
+			}
+			scsParm.setExpression(newExp);	
+		} else if (parameter instanceof KineticsParameter){
+			Expression exp1 = new Expression(text);
+			Kinetics kinetics = ((KineticsParameter) parameter).getKinetics();
+			kinetics.setParameterValue((Kinetics.KineticsParameter)parameter, exp1);
+		} else {
+			Expression exp1 = new Expression(text);
+			exp1.bindExpression(parameter.getNameScope().getScopedSymbolTable());
+			parameter.setExpression(exp1);
+		}
+	} catch(Exception e){
+		e.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 	}
 }
 
@@ -199,9 +316,6 @@ void setParameter(Parameter newValue) {
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(eventHandler);
 	}
-//	// commit the changes before switch to another parameter
-//	changeName();
-//	changeAnnotation();
 	parameter = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
@@ -215,20 +329,39 @@ void setParameter(Parameter newValue) {
 private void updateInterface() {
 	boolean bNonNullParameter = parameter != null;
 	nameTextField.setEditable(bNonNullParameter && (parameter instanceof ModelParameter || parameter.isNameEditable()));
-	descriptionTextField.setEditable(bNonNullParameter && parameter.isDescriptionEditable());
-	boolean bAnnotationEditable = bNonNullParameter && parameter instanceof ModelParameter;
-	annotationTextArea.setEditable(bAnnotationEditable);
-	annotationTextArea.setBackground(bAnnotationEditable ? UIManager.getColor("TextField.background") : UIManager.getColor("TextField.inactiveBackground"));		
+	descriptionTextField.setEditable(bNonNullParameter && parameter.isDescriptionEditable());		
 	if (bNonNullParameter) {
+		nameTextField.setEditable(parameter.isNameEditable());
+		expressionTextField.setEditable(parameter.isExpressionEditable());
+		unitTextField.setEditable(parameter.isUnitEditable());
+
+		pathLabel.setText("Path : " + parameter.getNameScope().getPathDescription());
+		expressionTextField.setSymbolTable(parameter.getNameScope().getScopedSymbolTable());
 		nameTextField.setText(parameter.getName());
 		descriptionTextField.setText(parameter.getDescription());
+		expressionTextField.setText(parameter.getExpression().infix());
+		unitTextField.setText(parameter.getUnitDefinition().getSymbol());
+		
+		boolean bAnnotationEditable = false;
 		if (parameter instanceof ModelParameter) {
 			annotationTextArea.setText(((ModelParameter)parameter).getModelParameterAnnotation());
+			bAnnotationEditable = true;
 		}
+		annotationTextArea.setEditable(bAnnotationEditable);
+		annotationTextArea.setBackground(bAnnotationEditable ? UIManager.getColor("TextField.background") : UIManager.getColor("TextField.inactiveBackground"));
 	} else {
+		pathLabel.setText(null);
 		annotationTextArea.setText(null);
 		nameTextField.setText(null);
 		descriptionTextField.setText(null);
+		expressionTextField.setText(null);
+		unitTextField.setText(null);
+		
+		annotationTextArea.setEditable(false);
+		nameTextField.setEditable(false);
+		expressionTextField.setEditable(false);
+		unitTextField.setEditable(false);
+		annotationTextArea.setEditable(false);
 	}
 }
 
@@ -259,8 +392,6 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
 	if (selectedObjects[0] instanceof Parameter) {
 		setParameter((Parameter) selectedObjects[0]);
-	} else	if (selectedObjects[0] instanceof ApplicationParameter) {
-		setParameter(((ApplicationParameter) selectedObjects[0]).getParameter());
 	} else {
 		setParameter(null);
 	}	

@@ -118,7 +118,7 @@ public class EditorScrollTable extends JSortTable {
 			this(new TextFieldAutoCompletion(), table);
 		}
 		public DefaultScrollTableAutoCompleteCellEditor(TextFieldAutoCompletion textField, JTable table) {
-			super(textField, table, false);
+			super(textField, table);
 			textFieldAutoCompletion.addActionListener(new ActionListener() {				
 				public void actionPerformed(ActionEvent e) {
 					if (textFieldAutoCompletion.getSelectedIndex() < 0) {
@@ -220,8 +220,8 @@ public class EditorScrollTable extends JSortTable {
 	}
 	
 	@Override
-	public void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
-		super.setValidateExpressionBinding(bValidateExpressionBinding);
+	public void installCellEditors() {
+		super.installCellEditors();
 		setDefaultEditor(ReactionEquation.class,new DefaultScrollTableAutoCompleteCellEditor(new ReactionEquationTextFieldAutoCompletion(), this));
 	}
 	

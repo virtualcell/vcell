@@ -78,8 +78,7 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    		font = boldFont;
 	    	} else if (userObj instanceof SimulationContext) {		// --- root: application name
 	    		font = boldFont;
-	    		labelText = ((SimulationContext)userObj).getName();
-	    		toolTipPrefix = "Application: ";
+	    		labelText = "Application: " + ((SimulationContext)userObj).getName();
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 	    		if (folder.isBold()) {
@@ -87,6 +86,15 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	    		} 
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
+	    		case REACTIONS_NODE:
+	    		case STRUCTURES_NODE:
+	    		case SPECIES_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			break;
+	    		case REACTION_DIAGRAM_NODE:
+	    		case STRUCTURE_DIAGRAM_NODE:
+	    			icon = VCellIcons.diagramIcon;
+	    			break;
 	    		case GEOMETRY_NODE:
 	    			icon = VCellIcons.geometryIcon;
 	    			break;

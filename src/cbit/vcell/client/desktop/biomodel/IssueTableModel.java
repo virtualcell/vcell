@@ -22,7 +22,7 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 	private static final String[] labels = {"Description", "Source", "Context", "Category"};
 	private IssueManager issueManager = null;
 	private JTable ownerTable = null;
-	private boolean bShowWarning = false;
+	private boolean bShowWarning = true;
 	
 	public IssueTableModel(JTable table) {
 		super(labels);

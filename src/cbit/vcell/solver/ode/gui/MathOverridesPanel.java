@@ -1,6 +1,5 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -319,7 +318,7 @@ private void connPtoP5SetTarget() {
 	try {
 		getJTableFixed().setModel(getMathOverridesTableModel());
 		getJTableFixed().createDefaultColumnsFromModel();
-		getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed(), true));
+		getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed()));
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

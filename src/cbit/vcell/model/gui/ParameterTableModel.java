@@ -127,13 +127,9 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_VALUE:{
 				Expression exp = parameter.getExpression();
 				if (exp!=null){
-					if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
-						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);						
-					} else {
-						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-					}
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(), false, autoCompleteSymbolFilter);						
 				}else{
-					return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return "Variable";
 				}
 			}
 			case COLUMN_DESCRIPTION:{
