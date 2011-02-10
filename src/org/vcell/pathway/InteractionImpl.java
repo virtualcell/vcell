@@ -8,12 +8,11 @@ import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
 public class InteractionImpl extends EntityImpl implements Interaction {
 
-	private InteractionVocabulary interactionType;
-
+	private List<InteractionVocabulary> interactionTypes = new ArrayList<InteractionVocabulary>();
 	private List<InteractionParticipant> participants = new ArrayList<InteractionParticipant>();
 
-	public InteractionVocabulary getInteractionType() {
-		return interactionType;
+	public List<InteractionVocabulary> getInteractionTypes() {
+		return interactionTypes;
 	}
 
 	public List<InteractionParticipant> getParticipants() {
@@ -30,8 +29,8 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 		return participantsOfType;
 	}
 
-	public void setInteractionType(InteractionVocabulary interactionType) {
-		this.interactionType = interactionType;
+	public void setInteractionTypes(List<InteractionVocabulary> interactionTypes) {
+		this.interactionTypes = interactionTypes;
 	}
 	
 	public void setParticipants(List<InteractionParticipant> participants) {
@@ -40,7 +39,7 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
-		printObject(sb, "interactionType",interactionType,level);
+//		printObject(sb, "interactionType",interactionType,level);
 		for(InteractionParticipant participant : participants) {
 			printObject(sb, participant.getType().name(), participant.getPhysicalEntity(), level);
 		}
