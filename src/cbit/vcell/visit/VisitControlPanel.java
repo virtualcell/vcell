@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.visit.VisitSession.VisitSessionException;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -257,9 +258,15 @@ public class VisitControlPanel extends JPanel {
 		
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
-				if (!slider.getValueIsAdjusting()) {
+				if (visitSession != null && !slider.getValueIsAdjusting()) {
 					System.out.println(arg0);
 					//VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
+					try {
+						visitSession.setSliderState(slider.getValue());
+					} catch (VisitSessionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
 				}
 			}
@@ -302,50 +309,50 @@ public class VisitControlPanel extends JPanel {
 		gbc_slider.gridy = 3;
 		add(slider, gbc_slider);
 		
-		JPanel panel_1 = new JPanel();
-		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
-		gbc_panel_1.weighty = 1.0;
-		gbc_panel_1.weightx = 1.0;
-		gbc_panel_1.fill = GridBagConstraints.BOTH;
-		gbc_panel_1.gridx = 0;
-		gbc_panel_1.gridy = 4;
-		add(panel_1, gbc_panel_1);
-		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		panel_1.setLayout(gbl_panel_1);
+//		JPanel panel_1 = new JPanel();
+//		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+//		gbc_panel_1.weighty = 1.0;
+//		gbc_panel_1.weightx = 1.0;
+//		gbc_panel_1.fill = GridBagConstraints.BOTH;
+//		gbc_panel_1.gridx = 0;
+//		gbc_panel_1.gridy = 4;
+//		add(panel_1, gbc_panel_1);
+//		GridBagLayout gbl_panel_1 = new GridBagLayout();
+//		panel_1.setLayout(gbl_panel_1);
+//		
+//		JScrollPane scrollPane = new JScrollPane(jTextArea);
+//		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+//		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+//		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+//		gbc_scrollPane.weighty = 1.0;
+//		gbc_scrollPane.weightx = 1.0;
+//		gbc_scrollPane.insets = new Insets(4, 4, 4, 4);
+//		gbc_scrollPane.fill = GridBagConstraints.BOTH;
+//		gbc_scrollPane.gridx = 0;
+//		gbc_scrollPane.gridy = 0;
+//		panel_1.add(scrollPane, gbc_scrollPane);
 		
-		JScrollPane scrollPane = new JScrollPane(jTextArea);
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.weighty = 1.0;
-		gbc_scrollPane.weightx = 1.0;
-		gbc_scrollPane.insets = new Insets(4, 4, 4, 4);
-		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 0;
-		gbc_scrollPane.gridy = 0;
-		panel_1.add(scrollPane, gbc_scrollPane);
-		
-		textField = new JTextField();
-		
-		//listen for up-arrow key
-		textField.addKeyListener(new KeyListener() {	
-			public void keyPressed(KeyEvent k) {
-				//if (k.getKeyCode()==KeyEvent.VK_UP) System.out.println("Observed key up pressed. Command Index was: "+ String.valueOf(commandIndex));
-				if ((k.getKeyCode() == KeyEvent.VK_UP) & (commandIndex>0)){
-					textField.setText(commandHistory[commandIndex-1]);
-					commandIndex--;
-				}
-				if ((k.getKeyCode() == KeyEvent.VK_DOWN) & (commandIndex<maxCommandIndex)){
-					textField.setText(commandHistory[commandIndex+1]);
-					commandIndex++;
-				}
-			}
-			public void keyReleased(KeyEvent k){}
-			public void keyTyped(KeyEvent k){
-				
-			}
-		});
-		
+//		textField = new JTextField();
+//		
+//		//listen for up-arrow key
+//		textField.addKeyListener(new KeyListener() {	
+//			public void keyPressed(KeyEvent k) {
+//				//if (k.getKeyCode()==KeyEvent.VK_UP) System.out.println("Observed key up pressed. Command Index was: "+ String.valueOf(commandIndex));
+//				if ((k.getKeyCode() == KeyEvent.VK_UP) & (commandIndex>0)){
+//					textField.setText(commandHistory[commandIndex-1]);
+//					commandIndex--;
+//				}
+//				if ((k.getKeyCode() == KeyEvent.VK_DOWN) & (commandIndex<maxCommandIndex)){
+//					textField.setText(commandHistory[commandIndex+1]);
+//					commandIndex++;
+//				}
+//			}
+//			public void keyReleased(KeyEvent k){}
+//			public void keyTyped(KeyEvent k){
+//				
+//			}
+//		});
+//		
 		
 		//listen for entered command
 //		textField.addActionListener(new ActionListener() {
@@ -383,13 +390,13 @@ public class VisitControlPanel extends JPanel {
 //		});
 //		
 		
-		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.insets = new Insets(4, 4, 4, 4);
-		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 0;
-		gbc_textField.gridy = 1;
-		panel_1.add(textField, gbc_textField);
-		textField.setColumns(10);
+//		GridBagConstraints gbc_textField = new GridBagConstraints();
+//		gbc_textField.insets = new Insets(4, 4, 4, 4);
+//		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+//		gbc_textField.gridx = 0;
+//		gbc_textField.gridy = 1;
+//		panel_1.add(textField, gbc_textField);
+//		textField.setColumns(10);
 
 	}
 
@@ -411,7 +418,7 @@ public class VisitControlPanel extends JPanel {
 		for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
 			comboBox.addItem(pdeDataContext.getDataIdentifiers()[i].getName());
 		}
-		
+		slider.setValue(1);
 		slider.setMinimum(0);
 		slider.setMaximum(pdeDataContext.getTimePoints().length-1);
 		

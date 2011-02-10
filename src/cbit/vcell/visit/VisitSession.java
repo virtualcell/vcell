@@ -107,6 +107,11 @@ public class VisitSession {
 	}
 
 	
+	public void setSliderState(int sliderValue) throws VisitSessionException {
+		boolean sliderChanged = viewer.GetViewerMethods().SetTimeSliderState(sliderValue);
+		if (!sliderChanged) throw new VisitSessionException("unable to change slider state"); 
+	}
+	
 	public VisitConnectionInfo getVisitConnectionInfo(){
 		return visitConnectionInfo;
 	} 
