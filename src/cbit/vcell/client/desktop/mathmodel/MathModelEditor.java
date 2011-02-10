@@ -1,14 +1,11 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
-import javax.swing.tree.TreePath;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -16,8 +13,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -30,7 +25,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
@@ -78,8 +72,8 @@ private void handleException(java.lang.Throwable exception) {
 
 private void initialize() {
 	try {
-
-		rightSplitPane.setBottomComponent(null);
+		rightSplitPane.setDividerLocation(400);
+		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
 		mathModelEditorTreeModel = new MathModelEditorTreeModel(documentEditorTree);
 		mathModelEditorTreeCellRenderer = new MathModelEditorTreeCellRenderer(documentEditorTree);
@@ -107,12 +101,11 @@ private void initialize() {
 
 @Override
 protected void setRightBottomPanelOnSelection(Object[] selections) {
-	if (selections == null || selections.length == 0) {
+	if (selections == null) {
 		return;
 	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
-	boolean bShowBottom = true;
-	int destComponentIndex = RIGHT_BOTTOM_TAB_PROPERTIES_INDEX;
+	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
 	boolean bShowInDatabaseProperties = false;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
@@ -124,8 +117,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = mathModelEditorAnnotationPanel;
 			} else if (folderNode.getFolderClass() == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
 				bottomComponent = simulationSummaryPanel;			
-			} else {
-				bShowBottom = false;
 			}
 		} else if (singleSelection instanceof BioModelInfo) {
 			bShowInDatabaseProperties = true;
@@ -138,32 +129,26 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
-		} else {
-			bShowBottom = false;
 		}
 	}
-	if (bShowBottom) {
-		if (bShowInDatabaseProperties) {
-			for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
-				if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
-					break;
-				}
-			}
-			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
-				rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
+	if (bShowInDatabaseProperties) {
+		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
+			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
+				break;
 			}
 		}
-		if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
-			rightSplitPane.setBottomComponent(rightBottomTabbedPane);
-		}	
-		if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
-			rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
-			rightBottomTabbedPane.repaint();
+		if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
 		}
-		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
-	} else {
-		rightSplitPane.setBottomComponent(null);
 	}
+	if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
+		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
+	}	
+	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
+		rightBottomTabbedPane.repaint();
+	}
+	rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 }
 
 @Override
@@ -175,49 +160,30 @@ protected void treeSelectionChanged() {
 		}
 		BioModelNode selectedNode = (BioModelNode)lastSelectedPathComponent;
 	    Object selectedObject = selectedNode.getUserObject();
-	    if (selectedObject instanceof MathModel) {
-	    	setRightTopPanel(null, selectedObject);
-	    } else if (selectedObject instanceof DocumentEditorTreeFolderNode) { // it's a folder	    	
-	    	setRightTopPanel((DocumentEditorTreeFolderNode)selectedObject, null);
-	    } else {
-	        Object leafObject = selectedObject;
-			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
-			Object parentObject =  parentNode.getUserObject();
-			if (!(parentObject instanceof DocumentEditorTreeFolderNode)) {
-				return;
-			}
-			DocumentEditorTreeFolderNode parent = (DocumentEditorTreeFolderNode)parentObject;
-			setRightTopPanel(parent, leafObject);
-	    }
+	    setRightTopPanel(selectedObject);
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
 }
 
-private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object leafObject) {
+private void setRightTopPanel(Object selectedObject) {
 	JComponent newTopPanel = emptyPanel;
-	double dividerLocation = DEFAULT_DIVIDER_LOCATION;
-	if (folderNode == null) {
-		if (leafObject == mathModel) {
-			newTopPanel = mathModelPropertiesPanel;
-			mathModelPropertiesPanel.setMathModel(mathModel);
-		}
-	} else {
+	int dividerLocation = rightSplitPane.getDividerLocation();
+	if (selectedObject == mathModel) {
+		newTopPanel = mathModelPropertiesPanel;
+		mathModelPropertiesPanel.setMathModel(mathModel);
+	} else if (selectedObject instanceof DocumentEditorTreeFolderNode) {
+		DocumentEditorTreeFolderNode folderNode = (DocumentEditorTreeFolderNode)selectedObject;
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
 		if (folderClass == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {
 			newTopPanel = mathModelPropertiesPanel;
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_VCML_NODE) {
 			newTopPanel = vcmlEditorPanel;
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE) {
 			newTopPanel = geometrySummaryViewer;
-			dividerLocation = 1.0;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
 			newTopPanel = simulationListPanel;
-			dividerLocation = 0.4;
 		} else if(folderClass == DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE) {
-			dividerLocation = 1.0;
 			newTopPanel = outputFunctionsPanel;
 			outputFunctionsPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());
 		}
@@ -226,9 +192,7 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 	if (rightTopComponent != newTopPanel) {
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
-	if (dividerLocation < 1.0) {
-		rightSplitPane.setDividerLocation(dividerLocation);
-	}
+	rightSplitPane.setDividerLocation(dividerLocation);
 }
 
 /**
@@ -336,54 +300,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				case MATH_OUTPUT_FUNCTIONS_NODE:
 					break;
 				}				
-			}
-		} catch (Exception ex) {
-			DialogUtils.showErrorDialog(this, ex.getMessage());
-		}
-		break;
-	case delete:
-		try {
-			TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
-			List<Simulation> simulationList = new ArrayList<Simulation>();
-			List<AnnotatedFunction> outputFunctionList = new ArrayList<AnnotatedFunction>();
-			StringBuilder sb = new StringBuilder();
-			for (TreePath tp : selectedPaths) {
-				Object obj = tp.getLastPathComponent();
-				if (obj == null || !(obj instanceof BioModelNode)) {
-					continue;
-				}				
-				BioModelNode selectedNode = (BioModelNode) obj;
-				Object userObject = selectedNode.getUserObject();
-				if (userObject instanceof Simulation) {
-					Simulation simulation = (Simulation)userObject;
-					simulationList.add(simulation);
-				} else if (userObject instanceof AnnotatedFunction) {
-					AnnotatedFunction annotatedFunction = (AnnotatedFunction)userObject;
-					outputFunctionList.add(annotatedFunction);
-				}
-			}
-			for (Simulation	simulation : simulationList) {
-				sb.append("\t" + simulation.getName() + "\n");
-			}
-			if (outputFunctionList.size() > 0) {
-				sb.append("Output Function(s): \n");
-			}
-			for (AnnotatedFunction annotatedFunction: outputFunctionList) {
-				sb.append("\t" + annotatedFunction.getName() + "\n");
-			}			
-			if (sb.length() > 0) {
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following:\n\n" + sb.toString() + "\n Continue?");
-				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-					return;
-				}				
-				for (Simulation simulation : simulationList) {
-					mathModel.removeSimulation(simulation);
-				}
-				if (outputFunctionList.size() > 0) {
-					for (AnnotatedFunction annotatedFunction: outputFunctionList) {
-						mathModel.getOutputFunctionContext().removeOutputFunction(annotatedFunction);					
-					}
-				}
 			}
 		} catch (Exception ex) {
 			DialogUtils.showErrorDialog(this, ex.getMessage());

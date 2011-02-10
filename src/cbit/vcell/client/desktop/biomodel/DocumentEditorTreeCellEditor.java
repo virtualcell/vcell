@@ -12,13 +12,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultTreeCellEditor;
 
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
 
 public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 
@@ -50,20 +44,8 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 			JTextField textField = (JTextField)editingComponent;
 			if (value instanceof BioModelNode) {
 				Object userObject = ((BioModelNode) value).getUserObject();
-				if (userObject instanceof ReactionStep) {
-					text = ((ReactionStep) userObject).getName();
-				} else if (userObject instanceof Structure) {
-					text = ((Structure) userObject).getName();
-				} else if (userObject instanceof SpeciesContext) {
-					text = ((SpeciesContext) userObject).getName();
-				} else if (userObject instanceof ModelParameter) {
-					text = ((ModelParameter) userObject).getName();
-				} else if (userObject instanceof SimulationContext) {
+				if (userObject instanceof SimulationContext) {
 					text = ((SimulationContext) userObject).getName();
-				} else if (userObject instanceof BioEvent) {
-					text = ((BioEvent) userObject).getName();
-				} else if (userObject instanceof Simulation) {
-					text = ((Simulation) userObject).getName();
 				}
 				textField.setText(text);
 			}

@@ -6,7 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -21,29 +20,14 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.

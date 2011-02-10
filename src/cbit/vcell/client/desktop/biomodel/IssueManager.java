@@ -14,6 +14,7 @@ import cbit.vcell.biomodel.BioModel;
 public class IssueManager {
 	private ArrayList<Issue> issueList = new ArrayList<Issue>();
 	private VCDocument vcDocument = null;
+	private int numErrors, numWarnings;
 
 	public interface IssueEventListener {
 		void issueChange(IssueEvent issueEvent);
@@ -53,10 +54,20 @@ public class IssueManager {
 	
 	public void updateIssues() {
 		if (vcDocument instanceof BioModel) {
+			numErrors = 0;
+			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
 			Vector<Issue> tempIssueList = new Vector<Issue>();
 			((BioModel)vcDocument).gatherIssues(tempIssueList);
 			issueList = new ArrayList<Issue>(tempIssueList);
+			for (Issue issue: issueList) {
+				int severity = issue.getSeverity();
+				if (severity == Issue.SEVERITY_ERROR) {
+					numErrors ++;
+				} else if (severity == Issue.SEVERITY_WARNING) {
+					numWarnings ++;
+				}
+			}
 			fireIssueEventListener(new IssueEvent(vcDocument, oldIssueList, issueList));
 		}
 	}
@@ -69,5 +80,11 @@ public class IssueManager {
 	}
 	public final ArrayList<Issue> getIssueList() {
 		return issueList;
+	}
+	public final int getNumErrors() {
+		return numErrors;
+	}
+	public final int getNumWarnings() {
+		return numWarnings;
 	}
 }

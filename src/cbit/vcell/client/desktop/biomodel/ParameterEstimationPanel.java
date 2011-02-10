@@ -249,6 +249,7 @@ public class ParameterEstimationPanel extends DocumentEditorSubPanel {
 	
 	private void refreshAnalysisTaskEnables() {
 		boolean bHasTasks = getAnalysisTaskComboBox().getItemCount() > 0;
+		getNewAnalysisTaskButton().setEnabled(simulationContext.getGeometry().getDimension() == 0);
 		getAnalysisTaskComboBox().setEnabled(bHasTasks);
 		getDeleteAnalysisTaskButton().setEnabled(bHasTasks);
 		getCopyButton().setEnabled(bHasTasks);

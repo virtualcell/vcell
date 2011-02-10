@@ -14,6 +14,8 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -108,6 +110,22 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		}
 		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
 		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
+		
+		ActiveView activeView = null;
+		if (selectedIndex == ApplicationPanelTabID.geometry.ordinal()) {
+			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE);
+		} else if (selectedIndex == ApplicationPanelTabID.settings.ordinal()) {
+			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SETTINGS_NODE);
+		} else if (selectedIndex == ApplicationPanelTabID.protocols.ordinal()) {
+			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE);
+		} else if (selectedIndex == ApplicationPanelTabID.simulations.ordinal()) {
+			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE);
+		} else if (selectedIndex == ApplicationPanelTabID.fitting.ordinal()) {
+			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.FITTING_NODE);
+		}
+		if (activeView != null) {
+			setActiveView(activeView);
+		}
 	}
 	
 	@Override
@@ -146,7 +164,34 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationAnalysisPanel.setSelectionManager(selectionManager);
 	}
 	
-	public void selectTab(ApplicationPanelTabID tabid) {		
+	private void selectTab(ApplicationPanelTabID tabid) {		
 		tabbedPane.setSelectedIndex(tabid.ordinal());
+	}
+
+	@Override
+	protected void onActiveViewChange(ActiveView activeView) {
+		super.onActiveViewChange(activeView);
+		SimulationContext selectedSimContext = activeView.getSimulationContext();
+		DocumentEditorTreeFolderClass folderClass = activeView.getDocumentEditorTreeFolderClass();
+		if (selectedSimContext != this.simulationContext || folderClass == null) {
+			return;
+		}		
+		switch (folderClass) {
+		case GEOMETRY_NODE:
+			selectTab(ApplicationPanelTabID.geometry);
+			break;
+		case SETTINGS_NODE:
+			selectTab(ApplicationPanelTabID.settings);
+			break;
+		case PROTOCOLS_NODE:
+			selectTab(ApplicationPanelTabID.protocols);
+			break;
+		case SIMULATIONS_NODE:
+			selectTab(ApplicationPanelTabID.simulations);
+			break;
+		case FITTING_NODE:
+			selectTab(ApplicationPanelTabID.fitting);
+			break;
+		}
 	}	
 }

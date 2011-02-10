@@ -1,14 +1,11 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
-import javax.swing.tree.TreePath;
 
 import org.vcell.pathway.Pathway;
 import org.vcell.util.document.BioModelInfo;
@@ -23,9 +20,6 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorModelPanel.ModelPanelTabID;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -42,11 +36,8 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsPanel;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -161,151 +152,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				}
 				if (newObject != null) {
 					selectionManager.setSelectedObjects(new Object[]{newObject});
-				}
-			}
-		} catch (Exception ex) {
-			DialogUtils.showErrorDialog(this, ex.getMessage());
-		}
-		break;
-	case delete:
-		try {
-			TreePath[] selectedPaths = documentEditorTree.getSelectionPaths();
-			List<ReactionStep> reactionList = new ArrayList<ReactionStep>();
-			List<Feature> featureList = new ArrayList<Feature>();
-			List<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
-			List<ModelParameter> modelParameterList = new ArrayList<ModelParameter>();
-			List<BioEvent> bioEventList = new ArrayList<BioEvent>();
-			List<SimulationContext> simulationContextList = new ArrayList<SimulationContext>();
-			List<Simulation> simulationList = new ArrayList<Simulation>();
-			List<AnnotatedFunction> outputFunctionList = new ArrayList<AnnotatedFunction>();
-			StringBuilder sb = new StringBuilder();
-			for (TreePath tp : selectedPaths) {
-				Object obj = tp.getLastPathComponent();
-				if (obj == null || !(obj instanceof BioModelNode)) {
-					continue;
-				}				
-				BioModelNode selectedNode = (BioModelNode) obj;
-				Object userObject = selectedNode.getUserObject();
-				if (userObject instanceof ReactionStep) {
-					ReactionStep reactionStep = (ReactionStep)userObject;
-					reactionList.add(reactionStep);
-				} else if (userObject instanceof Feature) {	
-					Feature feature = (Feature)userObject;
-					featureList.add(feature);
-				} else if (userObject instanceof SpeciesContext) {
-					SpeciesContext speciesContext = (SpeciesContext)userObject;
-					speciesContextList.add(speciesContext);
-				} else if (userObject instanceof ModelParameter) {
-					ModelParameter modelParameter = (ModelParameter)userObject;
-					modelParameterList.add(modelParameter);
-				} else if (userObject instanceof BioEvent) {
-					BioEvent bioEvent = (BioEvent)userObject;
-					bioEventList.add(bioEvent);
-				} else if (userObject instanceof SimulationContext) {
-					SimulationContext simulationContext = (SimulationContext)userObject;
-					simulationContextList.add(simulationContext);
-				} else if (userObject instanceof Simulation) {
-					Simulation simulation = (Simulation)userObject;
-					simulationList.add(simulation);
-				} else if (userObject instanceof AnnotatedFunction) {
-					AnnotatedFunction annotatedFunction = (AnnotatedFunction)userObject;
-					outputFunctionList.add(annotatedFunction);
-				}
-			}
-			if (reactionList.size() > 0) {
-				sb.append("Reaction(s): \n");
-			}
-			for (ReactionStep reactionStep : reactionList) {
-				sb.append("\t" + reactionStep.getName() + "\n");
-			}
-			if (featureList.size() > 0) {
-				sb.append(Structure.TYPE_NAME_FEATURE + ": \n");
-			}
-			for (Feature feature : featureList) {
-				sb.append("\t" + feature.getName() + "\n");
-			}
-			if (speciesContextList.size() > 0) {
-				sb.append("Species: \n");
-			}
-			for (SpeciesContext speciesContext : speciesContextList) {
-				sb.append("\t" + speciesContext.getName() + "\n");
-			}
-			if (modelParameterList.size() > 0) {
-				sb.append("Global Parameter(s): \n");
-			}
-			for (ModelParameter	modelParameter : modelParameterList) {
-				sb.append("\t" + modelParameter.getName() + "\n");
-			}
-			if (selectedSimulationContext != null) {
-				if (bioEventList.size() > 0) {
-					sb.append("Event(s): \n");
-				}
-				for (BioEvent bioEvent : bioEventList) {
-					sb.append("\t" + bioEvent.getName() + "\n");
-				}
-			}
-			if (simulationContextList.size() > 0) {
-				sb.append("Application(s): \n");
-			}
-			for (SimulationContext	simulationContext : simulationContextList) {
-				sb.append("\t" + simulationContext.getName() + "\n");
-			}
-			if (simulationList.size() > 0) {
-				sb.append("Simulation(s): \n");
-			}
-			for (Simulation	simulation : simulationList) {
-				sb.append("\t" + simulation.getName() + "\n");
-			}
-			if (selectedSimulationContext != null) {
-				if (outputFunctionList.size() > 0) {
-					sb.append("Output Function(s): \n");
-				}
-				for (AnnotatedFunction annotatedFunction: outputFunctionList) {
-					sb.append("\t" + annotatedFunction.getName() + "\n");
-				}
-			}
-			if (sb.length() > 0) {
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following:\n\n" + sb.toString() + "\n Continue?");
-				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-					return;
-				}
-				for (ReactionStep sc : reactionList) {
-					model.removeReactionStep(sc);
-				}
-				for (Feature f : featureList) {
-					model.removeFeature(f);
-				}
-				for (SpeciesContext sc : speciesContextList) {
-					model.removeSpeciesContext(sc);
-				}
-				for (ModelParameter param : modelParameterList) {
-					model.removeModelParameter(param);
-				}
-				if (bioEventList.size() > 0) {
-					if (selectedSimulationContext != null) {
-						for (BioEvent bioEvent : bioEventList) {
-							selectedSimulationContext.removeBioEvent(bioEvent);
-						}
-					}
-				}
-				for (SimulationContext simulationContext : simulationContextList) {
-					Simulation[] simulations = simulationContext.getSimulations();
-					if(simulations != null && simulations.length != 0){
-						for (Simulation simulation : simulations) {
-							bioModel.removeSimulation(simulation);
-						}
-					}
-					bioModel.removeSimulationContext(simulationContext);
-				}
-				for (Simulation simulation : simulationList) {
-					bioModel.removeSimulation(simulation);
-				}
-				if (outputFunctionList.size() > 0) {
-					if (selectedSimulationContext != null) {
-						for (AnnotatedFunction annotatedFunction: outputFunctionList) {
-							selectedSimulationContext.getOutputFunctionContext().removeOutputFunction(annotatedFunction);
-						}
-					}
 				}
 			}
 		} catch (Exception ex) {
@@ -574,13 +420,13 @@ private void initialize() {
 
 @Override
 protected void setRightBottomPanelOnSelection(Object[] selections) {
-	if (selections == null || selections.length == 0) {
+	if (selections == null) {
 		return;
 	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
-	int destComponentIndex = RIGHT_BOTTOM_TAB_PROPERTIES_INDEX;
+	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
 	boolean bShowInDatabaseProperties = false;
-	if (selections != null && selections.length == 1) {
+	if (selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
 			bottomComponent = getReactionPropertiesPanel();
@@ -590,21 +436,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof Structure) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
-		} else if (singleSelection instanceof KineticsParameter) {
-			if (getSelectedSimulationContext() != null) {
-				bottomComponent = getKineticsTypeTemplatePanel();
-			} else {
-				bottomComponent = getReactionPropertiesPanel();
-			}
 		} else if (singleSelection instanceof Parameter) {
 			bottomComponent = getParameterPropertiesPanel();
-		} else if (singleSelection instanceof ApplicationParameter) {
-			Parameter parameter = ((ApplicationParameter) singleSelection).getParameter();
-			if (parameter instanceof KineticsParameter) {
-				bottomComponent = getReactionPropertiesPanel();
-			} else if (parameter instanceof Parameter) {
-				bottomComponent = getParameterPropertiesPanel();
-			}
 		} else if (singleSelection instanceof SimulationContext) {
 			bottomComponent = getApplicationPropertiesPanel();
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
@@ -661,9 +494,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = getStructurePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
-				bottomComponent = getSimulationSummaryPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
+			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bottomComponent = getApplicationsPropertiesPanel();
 				getApplicationsPropertiesPanel().setBioModel(bioModel);
 			} 
@@ -711,84 +542,41 @@ protected void treeSelectionChanged() {
 		BioModelNode selectedNode = (BioModelNode)lastSelectedPathComponent;
 	    Object selectedObject = selectedNode.getUserObject();
 	    SimulationContext simulationContext = getSelectedSimulationContext();
-	    if (selectedObject instanceof BioModel) {
-	    	setRightTopPanel(null, selectedObject, null);
-	    } else if (selectedObject instanceof Model) {
-	    	setRightTopPanel(null, selectedObject, null);
-	    } else if (selectedObject instanceof DocumentEditorTreeFolderNode) { // it's a folder
-//			if (((DocumentEditorTreeFolderNode) selectedObject).getFolderClass() == DocumentEditorTreeFolderClass.TASKS_NODE
-//					|| ((DocumentEditorTreeFolderNode) selectedObject).getFolderClass() == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
-//				if (selectedNode.getChildCount() > 0) {
-//					BioModelNode node = (BioModelNode) selectedNode.getChildAt(0);
-//					Object userObject = node.getUserObject();
-//					selectionManager.setSelectedObjects(new Object[] {userObject});
-//				}
-//				return;
-//			}
-	    	setRightTopPanel((DocumentEditorTreeFolderNode)selectedObject, null, simulationContext);
-	    } else if (selectedObject instanceof SimulationContext){
-	    	BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
-			Object parentObject =  parentNode.getUserObject();
-			DocumentEditorTreeFolderNode parent = (DocumentEditorTreeFolderNode)parentObject;
-	    	setRightTopPanel(parent, selectedObject, simulationContext);
-	    } else if (selectedObject instanceof VCMetaData || selectedObject instanceof MiriamResource){
-	    	setRightTopPanel(null, selectedObject, null);
-	    } else {
-	        Object leafObject = selectedObject;
-			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
-			Object parentObject =  parentNode.getUserObject();
-			if (!(parentObject instanceof DocumentEditorTreeFolderNode)) {
-				return;
-			}
-			DocumentEditorTreeFolderNode parent = (DocumentEditorTreeFolderNode)parentObject;
-			setRightTopPanel(parent, leafObject, simulationContext);
-	    }
+	    setRightTopPanel(selectedObject, simulationContext);
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
 }
 
-private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object leafObject, SimulationContext simulationContext) {
-	JComponent newTopPanel = emptyPanel;
+private void setRightTopPanel(Object selectedObject, SimulationContext simulationContext) {
+	 JComponent newTopPanel = emptyPanel;
 	int dividerLocation = rightSplitPane.getDividerLocation();//DEFAULT_DIVIDER_LOCATION;
-	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
-		if (leafObject instanceof Model) {
-			newTopPanel = bioModelEditorModelPanel;
-		} else if (leafObject instanceof Model) {
-			newTopPanel = bioModelEditorModelPanel;
-		} else if (leafObject instanceof BioModel || leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {			
-			newTopPanel = bioModelPropertiesPanel;
-			bioModelPropertiesPanel.setBioModel(bioModel);
-		}
-	} else {
+	if (selectedObject instanceof Model) {
+		newTopPanel = bioModelEditorModelPanel;
+	} else if (selectedObject instanceof BioModel || selectedObject instanceof VCMetaData || selectedObject instanceof MiriamResource) {			
+		newTopPanel = bioModelPropertiesPanel;
+		bioModelPropertiesPanel.setBioModel(bioModel);
+	} else if (selectedObject instanceof SimulationContext) {
+		newTopPanel = bioModelEditorApplicationPanel;
+		bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
+	} else if (selectedObject instanceof DocumentEditorTreeFolderNode) {
+		DocumentEditorTreeFolderNode folderNode = (DocumentEditorTreeFolderNode) selectedObject;
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
-		if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE) {
+		if (folderClass == DocumentEditorTreeFolderClass.MODEL_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			if (leafObject == null) {
-				bioModelEditorModelPanel.selectTab(ModelPanelTabID.structure_table);
-			}
-		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
+		} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
-			if (leafObject == null) {
-				bioModelEditorModelPanel.selectTab(ModelPanelTabID.species_table);
-			}
-		} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
-			newTopPanel = bioModelEditorModelPanel;
-			if (leafObject == null) {
-				bioModelEditorModelPanel.selectTab(ModelPanelTabID.reaction_table);
-			}
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
 		} else if (folderClass == DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE) {
 			newTopPanel = bioModelParametersPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATTIONS_NODE) {
-			if (leafObject == null) {
-				newTopPanel = getBioModelEditorApplicationsPanel();
-			} else {
-				newTopPanel = bioModelEditorApplicationPanel;
-				bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			}
+		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
+			newTopPanel = bioModelEditorApplicationsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.DATA_NODE) {
 			newTopPanel = dataSymbolsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
@@ -796,23 +584,18 @@ private void setRightTopPanel(DocumentEditorTreeFolderNode folderNode, Object le
 		} else if (folderClass == DocumentEditorTreeFolderClass.SETTINGS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.settings);
 		} else if (folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.protocols);
 		} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.simulations);
 		} else if (folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.geometry);
 		} else if (folderClass == DocumentEditorTreeFolderClass.FITTING_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-			bioModelEditorApplicationPanel.selectTab(ApplicationPanelTabID.fitting);
 		}
 	}
 	Component rightTopComponent = rightSplitPane.getTopComponent();

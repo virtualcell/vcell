@@ -127,7 +127,6 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
-			ivjScrollPaneTable.setValidateExpressionBinding(false);
 			ivjScrollPaneTable.setModel(getParameterTableModel());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

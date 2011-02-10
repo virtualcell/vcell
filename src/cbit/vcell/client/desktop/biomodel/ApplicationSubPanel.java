@@ -26,7 +26,7 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	public void tabbedPaneSelectionChanged() {
+	protected void tabbedPaneSelectionChanged() {
 		int oldSelectedIndex = selectedIndex;
 		selectedIndex = tabbedPane.getSelectedIndex();
 		if (oldSelectedIndex == selectedIndex) {
@@ -37,6 +37,7 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		}
 		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
 		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
+		setSelectedObjects(new Object[0]);
 	}
 	
 	public ApplicationSubPanel() {

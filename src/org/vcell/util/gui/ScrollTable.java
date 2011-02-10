@@ -61,7 +61,6 @@ public class ScrollTable extends JTable {
 	private static final String javaVersion = System.getProperty("java.version");
 	
 	private JScrollPane enclosingScrollPane = null;
-	private boolean bValidateExpressionBinding = true;
 	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
 	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
@@ -261,10 +260,9 @@ public class ScrollTable extends JTable {
 		return enclosingScrollPane;
 	}
 
-	public void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
-		this.bValidateExpressionBinding = bValidateExpressionBinding;
-		setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(this, bValidateExpressionBinding));
-		setDefaultEditor(ReactionEquation.class,new TableCellEditorAutoCompletion(this, bValidateExpressionBinding));
+	public void installCellEditors() {
+		setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(this));
+		setDefaultEditor(ReactionEquation.class,new TableCellEditorAutoCompletion(this));
 	}
 
 	@Override
@@ -315,7 +313,7 @@ public class ScrollTable extends JTable {
 			}
 		}
 		if (bHasScopedExpressionColumn) {
-			setValidateExpressionBinding(bValidateExpressionBinding);
+			installCellEditors();
 			setAutoResizeMode(autoResizeMode);
 		} else {
 			if (autoResizeMode == AUTO_RESIZE_OFF) {

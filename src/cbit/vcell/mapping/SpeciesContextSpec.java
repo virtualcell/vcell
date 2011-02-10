@@ -72,8 +72,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			return SpeciesContextSpec.this;
 		}
 		@Override
-		public String getConextDescription() {
-			return "Species: " + getSpeciesContext().getName();
+		public String getPathDescription() {
+			if (simulationContext != null){
+				return "App("+simulationContext.getName()+") / Species("+getSpeciesContext().getName()+")";
+			}
+			return null;
 		}
 	}
 	

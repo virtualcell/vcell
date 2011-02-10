@@ -36,7 +36,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATTIONS_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATIONS_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
 		};
 	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[0], false);
@@ -61,14 +61,20 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, true),
 		};	
 	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[0], false); 
 	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[1], false); 
 	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[2], false); 
+	private BioModelNode reactionDiagramNode = new BioModelNode(modelChildFolderNodes[3], false); 
+	private BioModelNode structureDiagramNode = new BioModelNode(modelChildFolderNodes[4], false); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
 			reactionsNode,
 			structuresNode,
 			speciesNode,
+			reactionDiagramNode,
+			structureDiagramNode,
 	};
 		
 	public BioModelEditorTreeModel(JTree tree) {
@@ -115,7 +121,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			bPopulatingRoot = true;
 			rootNode.setUserObject(bioModel);
 			populateAnnotationNode();
-			modelNode.setUserObject(bioModel.getModel());
 			populateApplicationsNode(true);
 			nodeStructureChanged(rootNode);
 		} finally {

@@ -175,7 +175,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return "Variable";
 				}else{
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(), true, autoCompleteSymbolFilter);
 				}
 			}
 			default:{

@@ -12,7 +12,7 @@ import cbit.vcell.parser.NameScope;
 public class ScopedExpression {
 	private Expression fieldRenamedExpression = null;
 	private NameScope fieldNameScope = null;
-	private boolean fieldIsUserEditable = true;
+	private boolean bValidateBinding = true;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	final private String fieldRenamedExpressionInfix;
 	private ExpressionBindingException expressionBindingException = null;
@@ -24,20 +24,18 @@ public class ScopedExpression {
 public ScopedExpression(Expression argExpression, NameScope argNameScope) throws ExpressionBindingException {
 	this(argExpression,argNameScope,true, null);
 }
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable) throws ExpressionBindingException {
-	this(argExpression, argNameScope, argIsUserEditable, null);
-}
+
 /**
  * ContextualExpression constructor comment.
  * @throws ExpressionBindingException 
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argValidateBinding, AutoCompleteSymbolFilter stef) {
 	super();
 	if (argExpression == null) {
 		throw new RuntimeException("Expression cannot be null");
 	}
 	this.fieldNameScope = argNameScope;
-	this.fieldIsUserEditable = argIsUserEditable;
+	this.bValidateBinding = argValidateBinding;
 	autoCompleteSymbolFilter = stef;
 	this.fieldRenamedExpression = argExpression;
 	if (fieldNameScope != null) {
@@ -80,8 +78,8 @@ public String infix() {
  * Creation date: (4/2/2004 3:02:27 PM)
  * @return boolean
  */
-public boolean isUserEditable() {
-	return fieldIsUserEditable;
+public boolean isValidateBinding() {
+	return bValidateBinding;
 }
 /**
  * Insert the method's description here.

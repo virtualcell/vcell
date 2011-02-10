@@ -8,7 +8,6 @@ import java.util.Map;
  * @author: Jim Schaff
  */
 public interface NameScope {
-	String getConextDescription();
 /**
  * Insert the method's description here.
  * Creation date: (7/31/2003 3:55:02 PM)
@@ -90,4 +89,5 @@ boolean isAncestor(NameScope nameScope);
 boolean isPeer(NameScope nameScope);
 
 public void getExternalEntries(Map<String, SymbolTableEntry> entryMap);
+String getPathDescription();
 }

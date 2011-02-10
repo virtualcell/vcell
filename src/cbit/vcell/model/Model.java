@@ -106,7 +106,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
 		@Override
-		public String getConextDescription() {
+		public String getPathDescription() {
 			return "Global";
 		}
 	}
