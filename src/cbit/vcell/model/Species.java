@@ -12,9 +12,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.biomodel.meta.Identifiable;
 
 @SuppressWarnings("serial")
-public class Species extends BioModelEntityObjectImpl
-	implements
-		java.beans.VetoableChangeListener,org.vcell.util.Cacheable,Identifiable {
+public class Species implements	java.beans.VetoableChangeListener,org.vcell.util.Cacheable,Identifiable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;

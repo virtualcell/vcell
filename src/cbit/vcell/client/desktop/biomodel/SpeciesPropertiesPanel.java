@@ -359,7 +359,7 @@ void setSpeciesContext(SpeciesContext newValue) {
 	fieldSpeciesContext = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
-		relationshipPanel.setBioModelEntityObject(fieldSpeciesContext.getSpecies());
+		relationshipPanel.setBioModelEntityObject(fieldSpeciesContext);
 	}
 	updateInterface();
 }
@@ -432,6 +432,12 @@ private void updateInterface() {
 		} else {
 			setSpeciesContext(null);
 		}		
+	}
+	
+	@Override
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		relationshipPanel.setSelectionManager(selectionManager);
 	}
 
 }

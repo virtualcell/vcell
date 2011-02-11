@@ -6,35 +6,43 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.model.BioModelEntityObject;
 
 @SuppressWarnings("serial")
 public class RelationshipPanel extends DocumentEditorSubPanel {
 	private BioModelEntityObject bioModelEntityObject = null;
 	private EventHandler eventHandler = new EventHandler();
-	// wei's code
 	private BioModel bioModel = null;
 	private BioModelEditorPathwayTableModel tableModel = null; 
 	private JSortTable table;
 	private JCheckBox showLinkedEntityCheckBox = null;
 	private JTextField textFieldSearch = null;
-	// done
+	private JButton goToButton = null;
 	
 	private class EventHandler implements ActionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(e.getSource() == showLinkedEntityCheckBox){
 				tableModel.setShowLinkOnly(showLinkedEntityCheckBox.isSelected());
+			}else if(e.getSource() == goToButton){
+				goToPathway();
 			}
 		}
 		public void insertUpdate(DocumentEvent e) {
@@ -67,7 +75,6 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {
 		setName("KineticsTypeTemplatePanel");
-		// wei's code
 		setLayout(new GridBagLayout());
 			
 		table = new JSortTable();
@@ -81,14 +88,14 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.gridwidth = 6;
+		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		table.setPreferredScrollableViewportSize(new Dimension(200,200));
 		add(table.getEnclosingScrollPane(), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 7;
+		gbc.gridx = 8;
 		gbc.gridy = gridy;
 		add(Box.createRigidArea(new Dimension(0, 75)), gbc);
 
@@ -120,18 +127,25 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 5; 
 		gbc.gridy = gridy;
-//		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 10, 4, 0);
 		add(showLinkedEntityCheckBox, gbc);	
 		
+		goToButton = new JButton("Go to Pathway");
+		goToButton.addActionListener(eventHandler);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 6; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 10, 4, 0);
+		add(goToButton, gbc);	
+		
 		setBackground(Color.white);		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 private void searchTable() {
@@ -188,6 +202,27 @@ public void setBioModel(BioModel newValue) {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	// TODO Auto-generated method stub
+	
+}
+
+private void goToPathway(){
+	if(bioModel == null){
+		return;
+	}
+	if(bioModel.getRelationshipModel() == null){
+		return;
+	}
+	ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
+	for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject)){
+		selectedBioPaxObjects.add(re.getBioPaxObject());
+System.out.println(re.getBioPaxObject().toString());
+	}
+//	System.out.println(selectionManager.toString()+"# of objects are selected : " + selectedBioPaxObjects.toArray().length);
+
+	if (selectionManager != null){
+		selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE));
+		selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
+	}
 	
 }
 
