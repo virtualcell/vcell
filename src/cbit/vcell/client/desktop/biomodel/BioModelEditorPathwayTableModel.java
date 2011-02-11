@@ -6,16 +6,29 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+
+import javax.swing.JTable;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
-import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.PathwayEvent;
+import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
+import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.BioModelEntityObject;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<EntitySelectionTableRow> {
+public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<EntitySelectionTableRow> implements PathwayListener, RelationshipListener {
 
 
 	public static final int colCount = 3;
@@ -26,35 +39,16 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	protected String searchText = null;
-	protected List<EntitySelectionTableRow> rowList = null;
 	//done
 
-	private PathwayModel pathwayModel;
+	private BioModel bioModel;
+	private BioModelEntityObject bioModelEntityObject;
+	private JTable ownerTable;
+	private boolean bShowLinkOnly = false;
 
-	public BioModelEditorPathwayTableModel() {
-		super(new String[] {"Select", "Entity Name", "Type"});
-	}
-	
-	public void setPathwayModel(PathwayModel pathwayModel){
-		if (this.pathwayModel == pathwayModel){
-			return;
-		}
-		this.pathwayModel = pathwayModel;
-		if (pathwayModel == null) {
-			setData(null);
-		} else {
-			rowList = addRows(pathwayModel);
-			setData(rowList);
-		}
-	}
-	protected  List<EntitySelectionTableRow> addRows(PathwayModel pathwayModel) {
-		List<EntitySelectionTableRow> rowList = new ArrayList<EntitySelectionTableRow>();
-		for (BioPaxObject bpObject : pathwayModel.getBiopaxObjects()){
-			if (bpObject instanceof PhysicalEntity || bpObject instanceof Conversion){
-				rowList.add(new EntitySelectionTableRow(bpObject));
-			}
-		}
-		return rowList;
+	public BioModelEditorPathwayTableModel(JTable table) {
+		super(new String[] {"Link", "Entity Name", "Type"});
+		this.ownerTable = table;
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
@@ -88,14 +82,18 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		if(valueNew instanceof Boolean && iCol == iColSelected) {
 			EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
-			entitySelectionTableRow.setSelected((Boolean) valueNew);
-		}
-	}
-	
-	// reset all selected values to false
-	public void resetSelectedValues(){
-		for(EntitySelectionTableRow row : rowList){
-			row.setSelected(false);
+			if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
+				RelationshipObject reObject = new RelationshipObject(bioModelEntityObject, entitySelectionTableRow.getBioPaxObject());
+				bioModel.getRelationshipModel().addRelationshipObject(reObject);
+			} else {// if the row is unchecked and the link is in the relationshipModel, 
+				   // then remove the link from the relationshipModel
+				for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
+					if (re.getBioModelEntityObject() == bioModelEntityObject
+							&& re.getBioPaxObject().equals(entitySelectionTableRow.getBioPaxObject())){
+						bioModel.getRelationshipModel().removeRelationshipObject(re);
+					}
+				}
+			}			
 		}
 	}
 	
@@ -149,21 +147,40 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 	
 	// filtering functions
 	public void setSearchText(String newValue) {
-		String oldValue = searchText;
+		if (searchText == newValue) {
+			return;
+		}
 		searchText = newValue;
-		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);	
 		refreshData();
 	}
 
-	protected void refreshData() {
-		List<EntitySelectionTableRow> newData = computeData();
-		setData(newData);
-	}
-	
-	protected ArrayList<EntitySelectionTableRow> computeData() {
+	private void refreshData() {
 		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
-		if (rowList != null){
-			for (EntitySelectionTableRow rs : rowList){
+		if (bioModel != null) {		
+			HashSet<RelationshipObject> relationshipObjects = null;
+			if (bioModelEntityObject != null) {
+				relationshipObjects = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
+			}
+			List<EntitySelectionTableRow> allPathwayObjectList = new ArrayList<EntitySelectionTableRow>();
+			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
+				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof Species)
+						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ReactionStep)) {
+					EntitySelectionTableRow entityRow = new EntitySelectionTableRow(bpObject1);
+					if (relationshipObjects != null) {
+						for (RelationshipObject ro : relationshipObjects) {
+							if (ro.getBioPaxObject() == entityRow.getBioPaxObject()) {
+								entityRow.setSelected(true);
+								break;
+							}
+						}
+					}
+					if (!bShowLinkOnly || entityRow.selected) {
+						allPathwayObjectList.add(entityRow);
+					}
+				}
+			}
+			
+			for (EntitySelectionTableRow rs : allPathwayObjectList){
 				BioPaxObject bpObject = rs.getBioPaxObject();
 				if (searchText == null || searchText.length() == 0 
 						|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
@@ -171,28 +188,49 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 					pathwayObjectList.add(rs);
 				}
 			}
-			
 		}
-		return pathwayObjectList;
-	}
-	// done
-	public void showSelectedObjects() {	
-		List<EntitySelectionTableRow> newData = linkData();
-		setData(newData);
-	}
-	
-	protected ArrayList<EntitySelectionTableRow> linkData() {
-		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
-		if (rowList != null){
-			for (EntitySelectionTableRow rs : rowList){
-				if(rs.selected()){
-					pathwayObjectList.add(rs);
-				}
-			}
-			
-		}
-		return pathwayObjectList;
+		setData(pathwayObjectList);
+		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 
+	public void setBioModel(BioModel newValue) {
+		if (bioModel == newValue) {
+			return;
+		}
+		BioModel oldValue = bioModel;
+		if (oldValue != null) {
+			oldValue.getPathwayModel().removePathwayListener(this);
+			oldValue.getRelationshipModel().removeRelationShipListener(this);
+		}
+		bioModel = newValue;
+		if (newValue != null) {
+			newValue.getPathwayModel().addPathwayListener(this);
+			newValue.getRelationshipModel().addRelationShipListener(this);
+		}
+	}
+
+	public void setBioModelEntityObject(BioModelEntityObject newValue) {
+		if (bioModelEntityObject == newValue) {
+			return;
+		}
+		bioModelEntityObject = newValue;
+		refreshData();
+	}
+
+	public void pathwayChanged(PathwayEvent event) {
+		refreshData();		
+	}
+	
+	public void setShowLinkOnly(boolean newValue) {
+		if (this.bShowLinkOnly == newValue) {
+			return;
+		}
+		bShowLinkOnly = newValue;
+		refreshData();
+	}
+
+	public void relationshipChanged(RelationshipEvent event) {
+		refreshData();		
+	}
 	
 }

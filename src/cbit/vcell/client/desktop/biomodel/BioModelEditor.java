@@ -432,7 +432,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getReactionPropertiesPanel();
 		} else if (singleSelection instanceof SpeciesContext) {
 			bottomComponent = getSpeciesPropertiesPanel();
-			getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code
 		} else if (singleSelection instanceof Structure) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
@@ -635,6 +634,9 @@ public void setBioModel(BioModel bioModel) {
 	bioModelEditorAnnotationPanel.setBioModel(bioModel);
 	bioModelParametersPanel.setBioModel(bioModel);
 	issueManager.setVCDocument(bioModel);
+	
+	getReactionPropertiesPanel().setBioModel(bioModel); // wei's code
+	getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code
 }
 
 /**

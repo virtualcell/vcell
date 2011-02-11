@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
@@ -11,8 +10,6 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -22,9 +19,6 @@ import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -32,6 +26,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -39,7 +34,6 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.ParameterTableModel;
@@ -57,6 +51,10 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea = null;
 	private JTextField nameTextField = null;
 	private JLabel electricalPropertiesLabel;
+	// wei's code
+	private BioModel bioModel = null;
+	private RelationshipPanel relationshipPanel = null;
+	// done
 	
 	private final static KineticsDescription[] Simple_Reaction_Kinetic_Types = {
 		KineticsDescription.MassAction,
@@ -75,16 +73,13 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.Nernst
 	};
 	
-	private class EventHandler implements ActionListener, ListSelectionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) { 
 				updateKineticChoice();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
-		}
-		public void valueChanged(ListSelectionEvent e) {
-			tableSelectionChanged();			
 		}
 		public void focusGained(FocusEvent e) {
 		}
@@ -103,20 +98,6 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 public ReactionPropertiesPanel() {
 	super();
 	initialize();
-}
-
-private void tableSelectionChanged() {
-	int[] rows = getScrollPaneTable().getSelectedRows();
-	List<Object> selectedObjects = new ArrayList<Object>();
-	for (int i = 0; i < rows.length; i++) {
-		Parameter object = getParameterTableModel().getValueAt(rows[i]);
-		if (!(object instanceof Kinetics.KineticsProxyParameter)) {
-			selectedObjects.add(object);
-		}
-	}
-	if (selectedObjects.size() > 0 || rows.length == 0) {
-		setSelectedObjects(selectedObjects.toArray());
-	}	
 }
 
 /**
@@ -177,21 +158,10 @@ private void initialize() {
 
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
 		reactionElectricalPropertiesPanel.setVisible(false);
+		relationshipPanel = new RelationshipPanel();
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.gridwidth = 3;
-		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		JLabel label = new JLabel("<html><u>Select only one reaction to edit properties</u></html>");
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, gbc);
-		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
@@ -278,19 +248,40 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(collapsiblePanel, gbc);
 		
+		// wei's code
+		CollapsiblePanel collapsiblePanel2 = new CollapsiblePanel("Link/unlink Reaction to Pathway Here", false);
+		collapsiblePanel2.setLayout(new GridBagLayout());
+		GridBagConstraints gbc2 = new GridBagConstraints();
+		gbc2.gridx = 0; 
+		gbc2.gridy = 0;
+		gbc2.weightx = 1.0;
+		gbc2.weighty = 1.0;
+		gbc2.fill = java.awt.GridBagConstraints.BOTH;
+		collapsiblePanel2.add(relationshipPanel, gbc2);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1;
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		add(collapsiblePanel2, gbc);
+		
 		setBackground(Color.white);
 		
 		getKineticsTypeComboBox().addActionListener(eventHandler);
 		getKineticsTypeComboBox().setEnabled(false);
 		initKineticChoices();
 		
-		getScrollPaneTable().getSelectionModel().addListSelectionListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 	// user code begin {2}
 	// user code end
 }
+
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -336,6 +327,7 @@ private void setReactionStep(ReactionStep newValue) {
 	}
 	getParameterTableModel().setReactionStep(reactionStep);
 	updateInterface();
+	relationshipPanel.setBioModelEntityObject(reactionStep);
 }
 
 private javax.swing.JComboBox getKineticsTypeComboBox() {
@@ -582,6 +574,14 @@ private void changeName() {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(this, e1.getMessage());
 	}
+}
+
+public void setBioModel(BioModel newValue) {
+	if (bioModel == newValue) {
+		return;
+	}
+	bioModel = newValue;
+	relationshipPanel.setBioModel(newValue);
 }
 
 }

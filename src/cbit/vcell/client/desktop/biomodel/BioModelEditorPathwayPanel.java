@@ -29,7 +29,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	
 	private PathwayData pathwayData = null; 
 	private JSortTable table;
-	private BioModelEditorPathwayTableModel tableModel = null;
+	private PathwayTableModel tableModel = null;
 	private JButton importButton = null;
 	private JTextField textFieldSearch = null;
 	
@@ -91,7 +91,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		table = new JSortTable();
-		tableModel = new BioModelEditorPathwayTableModel();
+		tableModel = new PathwayTableModel();
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
 		importButton = new JButton("Add Selected");
