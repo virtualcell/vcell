@@ -50,13 +50,13 @@ public class Pathway extends EntityImpl {
 		}
 		for (int i=0;i<pathwayComponentInteraction.size();i++){
 			Interaction interaction = pathwayComponentInteraction.get(i);
-			if (interaction == objectProxy){
+			if (interaction == objectProxy && concreteObject instanceof Interaction){
 				pathwayComponentInteraction.set(i, (Interaction)concreteObject);
 			}
 		}
 		for (int i=0;i<pathwayComponentPathway.size();i++){
 			Pathway pathway = pathwayComponentPathway.get(i);
-			if (pathway == objectProxy){
+			if (pathway == objectProxy && concreteObject instanceof Pathway){
 				pathwayComponentPathway.set(i, (Pathway)concreteObject);
 			}
 		}

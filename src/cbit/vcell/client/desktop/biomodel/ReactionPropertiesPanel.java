@@ -583,5 +583,11 @@ public void setBioModel(BioModel newValue) {
 	bioModel = newValue;
 	relationshipPanel.setBioModel(newValue);
 }
+@Override
+public void setSelectionManager(SelectionManager selectionManager) {
+	super.setSelectionManager(selectionManager);
+	relationshipPanel.setSelectionManager(selectionManager);
+}
+
 
 }

@@ -17,7 +17,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener, IssueEventListener {
-	private SelectionManager selectionManager = null;
+	protected SelectionManager selectionManager = null;
 	protected IssueManager issueManager = null;
 	
 	public DocumentEditorSubPanel() {

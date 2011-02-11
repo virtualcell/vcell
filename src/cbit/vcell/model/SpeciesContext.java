@@ -21,7 +21,7 @@ import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener {
+public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject {
 	private KeyValue key = null;
 
 	private transient Model model = null;

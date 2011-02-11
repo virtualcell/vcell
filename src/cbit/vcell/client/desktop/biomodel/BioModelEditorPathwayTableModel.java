@@ -25,7 +25,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<EntitySelectionTableRow> implements PathwayListener, RelationshipListener {
@@ -89,7 +89,7 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 				   // then remove the link from the relationshipModel
 				for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
 					if (re.getBioModelEntityObject() == bioModelEntityObject
-							&& re.getBioPaxObject().equals(entitySelectionTableRow.getBioPaxObject())){
+							&& re.getBioPaxObject() == (entitySelectionTableRow.getBioPaxObject())){
 						bioModel.getRelationshipModel().removeRelationshipObject(re);
 					}
 				}
@@ -163,7 +163,7 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 			}
 			List<EntitySelectionTableRow> allPathwayObjectList = new ArrayList<EntitySelectionTableRow>();
 			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
-				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof Species)
+				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext)
 						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ReactionStep)) {
 					EntitySelectionTableRow entityRow = new EntitySelectionTableRow(bpObject1);
 					if (relationshipObjects != null) {
