@@ -1,29 +1,28 @@
 package org.vcell.relationship;
 
 
-import org.vcell.pathway.BioPaxObject;
-
 import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.model.Species;
+
+import org.vcell.pathway.BioPaxObject;
+import cbit.vcell.model.BioModelEntityObject;
 
 public class RelationshipObject implements Identifiable{
 	private BioPaxObject biopaxObject = null;
-	private Species species = null;
+	private BioModelEntityObject bioModelObject = null;	
 	
+	public RelationshipObject(BioModelEntityObject bioModelObject,
+			BioPaxObject biopaxObject) {
+		super();
+		this.bioModelObject = bioModelObject;
+		this.biopaxObject = biopaxObject;
+	}
+
 	public BioPaxObject getBioPaxObject(){
 		return biopaxObject;
 	}
 	
-	public void setBioPaxObjecte(BioPaxObject biopaxObject){
-		this.biopaxObject = biopaxObject;
-	}
-	
-	public Species getSpecies(){
-		return species;
-	}
-	
-	public void setSpecies(Species species){
-		this.species = species;
+	public BioModelEntityObject getBioModelEntityObject(){
+		return bioModelObject;
 	}
 	
 	public String getTypeLabel(){
@@ -36,12 +35,12 @@ public class RelationshipObject implements Identifiable{
 	public boolean equals(Object object) {
 		if(object instanceof RelationshipObject) {
 			RelationshipObject reObject = (RelationshipObject) object;
-			return biopaxObject.equals(reObject.biopaxObject) && species.equals(reObject.species);
+			return biopaxObject.equals(reObject.biopaxObject) && bioModelObject.equals(reObject.bioModelObject);
 		}
 		return false;
 	}
 
 	public int hashCode() {
-		return biopaxObject.hashCode() + species.hashCode();
+		return biopaxObject.hashCode() + bioModelObject.hashCode();
 	}
 }

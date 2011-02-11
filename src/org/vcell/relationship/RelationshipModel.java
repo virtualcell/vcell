@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
-
-import cbit.vcell.model.Species;
+import cbit.vcell.model.BioModelEntityObject;
 
 
 public class RelationshipModel {
@@ -39,11 +38,11 @@ public class RelationshipModel {
 		}
 	}
 
-	public void addPathwayListener(RelationshipListener listener) {
+	public void addRelationShipListener(RelationshipListener listener) {
 		getRelationshipListeners().add(listener);
 	}
 
-	public void removePathwayListener(RelationshipListener listener) {
+	public void removeRelationShipListener(RelationshipListener listener) {
 		getRelationshipListeners().remove(listener);
 	}
 
@@ -53,6 +52,17 @@ public class RelationshipModel {
 		}
 		if(!contains(relationshipObject)){
 			getRelationshipObjects().add(relationshipObject);
+			fireRelationshipChanged(new RelationshipEvent(this,RelationshipEvent.CHANGED));
+		}
+		return relationshipObject;
+	}
+	
+	public RelationshipObject removeRelationshipObject(RelationshipObject relationshipObject){
+		if (relationshipObject==null){
+			throw new RuntimeException("remove a null object to relationship model");
+		}
+		if(!contains(relationshipObject)){
+			getRelationshipObjects().remove(relationshipObject);
 			fireRelationshipChanged(new RelationshipEvent(this,RelationshipEvent.CHANGED));
 		}
 		return relationshipObject;
@@ -69,10 +79,10 @@ public class RelationshipModel {
 		return;
 	}
 
-	public HashSet<RelationshipObject> getRelationshipObjects(Species species){
+	public HashSet<RelationshipObject> getRelationshipObjects(BioModelEntityObject bioModelObject){
 		HashSet<RelationshipObject> associatedReObjects = new HashSet<RelationshipObject>();
 		for(RelationshipObject reObject : getRelationshipObjects()){
-			if(reObject.getSpecies().equals(species))
+			if(reObject.getBioModelEntityObject().equals(bioModelObject))
 				associatedReObjects.add(reObject);
 		}
 		return associatedReObjects;
@@ -81,7 +91,7 @@ public class RelationshipModel {
 	public HashSet<RelationshipObject> getRelationshipObjects(BioPaxObject bioPaxObject){
 		HashSet<RelationshipObject> associatedReObjects = new HashSet<RelationshipObject>();
 		for(RelationshipObject reObject : getRelationshipObjects()){
-			if(reObject.getSpecies().equals(bioPaxObject))
+			if(reObject.getBioPaxObject().equals(bioPaxObject))
 				associatedReObjects.add(reObject);
 		}
 		return associatedReObjects;
