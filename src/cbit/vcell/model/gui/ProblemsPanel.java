@@ -14,9 +14,7 @@ import javax.swing.JTextArea;
 
 import org.vcell.util.Issue;
 
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelTest;
 
 public class ProblemsPanel extends JPanel {
 	private Model model = null;
@@ -106,28 +104,6 @@ public class ProblemsPanel extends JPanel {
 		} catch (java.lang.Throwable ivjExc) {
 			System.out.println("--------- UNCAUGHT EXCEPTION --------- in ProblemsPanel");
 			ivjExc.printStackTrace(System.out);
-		}
-	}
-	
-	public static void main(java.lang.String[] args) {
-		try {
-			javax.swing.JFrame frame = new javax.swing.JFrame();
-			ProblemsPanel aProblemsPanel = new ProblemsPanel();
-			aProblemsPanel.setModel(ModelTest.getExample());
-			frame.setContentPane(aProblemsPanel);
-			frame.setSize(aProblemsPanel.getSize());
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-				public void windowClosing(java.awt.event.WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			frame.show();
-			java.awt.Insets insets = frame.getInsets();
-			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-			frame.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of javax.swing.JInternalFrame");
-			exception.printStackTrace(System.out);
 		}
 	}
 }

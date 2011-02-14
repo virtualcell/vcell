@@ -7,39 +7,39 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="lib" path="arq-2.8.1.jar"/>
-	<classpathentry kind="lib" path="xercesImpl-2.7.1.jar"/>
-	<classpathentry kind="lib" path="icu4j-3.4.4.jar"/>
-	<classpathentry kind="lib" path="iri-0.7.jar"/>
-	<classpathentry kind="lib" path="jena-2.6.2.jar"/>
-	<classpathentry kind="lib" path="log4j-1.2.13.jar"/>
-	<classpathentry kind="lib" path="lucene-core-2.3.1.jar"/>
-	<classpathentry kind="lib" path="slf4j-api-1.5.6.jar"/>
-	<classpathentry kind="lib" path="slf4j-log4j12-1.5.6.jar"/>
-	<classpathentry kind="lib" path="stax-api-1.0.1.jar"/>
-	<classpathentry kind="lib" path="wstx-asl-3.2.9.jar"/>
-	<classpathentry kind="lib" path="xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="arq-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="xercesImpl-2.7.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="icu4j-3.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="iri-0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="jena-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="log4j-1.2.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lucene-core-2.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="slf4j-api-1.5.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="slf4j-log4j12-1.5.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="stax-api-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="wstx-asl-3.2.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="xml-apis.jar"/>
 	<classpathentry exported="true" kind="lib" path="bioformats_omexml_locicommon_brnch41.jar"/>
-	<classpathentry kind="lib" path="sbmlj.jar"/>
-	<classpathentry kind="lib" path="JLink.jar"/>
-	<classpathentry kind="lib" path="new_activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="sbmlj.jar"/>
+	<classpathentry exported="true" kind="lib" path="JLink.jar"/>
+	<classpathentry exported="true" kind="lib" path="new_activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
-	<classpathentry kind="lib" path="new_mail.jar"/>
-	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20080421.jar"/>
+	<classpathentry exported="true" kind="lib" path="new_mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="MiriamJavaLib-standalone-20080421.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
-	<classpathentry kind="lib" path="sonic_Client.jar"/>
-	<classpathentry kind="lib" path="sonic_XA.jar"/>
+	<classpathentry exported="true" kind="lib" path="sonic_Client.jar"/>
+	<classpathentry exported="true" kind="lib" path="sonic_XA.jar"/>
 	<classpathentry kind="lib" path="sonic_Crypto.jar"/>
 	<classpathentry kind="lib" path="sonic_Selector.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
-	<classpathentry kind="lib" path="oracle_classes12.jar"/>
-	<classpathentry kind="lib" path="copasi_build30.jar"/>
-	<classpathentry kind="lib" path="js.jar"/>
-	<classpathentry kind="lib" path="script-api.jar"/>
-	<classpathentry kind="lib" path="script-js.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="jvisit.jar"/>
+	<classpathentry exported="true" kind="lib" path="oracle_classes12.jar"/>
+	<classpathentry exported="true" kind="lib" path="copasi_build30.jar"/>
+	<classpathentry exported="true" kind="lib" path="js.jar"/>
+	<classpathentry exported="true" kind="lib" path="script-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="script-js.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

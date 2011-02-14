@@ -570,7 +570,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 			simContextNewMath.setMathDescription(newMathDesc);
 
 			StringBuffer reasonForDecision = new StringBuffer();
-			boolean bEquivalent = cbit.vcell.math.MathDescriptionTest.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
+			boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
 			mathEquivalency = MathDescription.testEquivalency(origMathDesc,newMathDesc,reasonForDecision);
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
@@ -1045,7 +1045,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					simContextNewMath.setMathDescription(newMathDesc);
 
 					StringBuffer reasonForDecision = new StringBuffer();
-					boolean bEquivalent = cbit.vcell.math.MathDescriptionTest.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
+					boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
 					mathEquivalency = MathDescription.testEquivalency(origMathDesc,newMathDesc,reasonForDecision);
 					StringBuffer buffer = new StringBuffer();
 					buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
@@ -1327,7 +1327,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     simContextNewMath.setMathDescription(newMathDesc);
 
                     StringBuffer reasonForDecision = new StringBuffer();
-                    boolean bEquivalent = cbit.vcell.math.MathDescriptionTest.testIfSame(origMathDesc, newMathDesc, new StringBuffer());
+                    boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc, newMathDesc, new StringBuffer());
                     mathEquivalency = MathDescription.testEquivalency(origMathDesc, newMathDesc, reasonForDecision);
                     StringBuffer buffer = new StringBuffer();
                     buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
