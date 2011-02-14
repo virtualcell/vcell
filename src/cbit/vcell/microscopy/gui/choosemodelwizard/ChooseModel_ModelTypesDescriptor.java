@@ -3,10 +3,14 @@ package cbit.vcell.microscopy.gui.choosemodelwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -83,6 +87,20 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 				{
 					throw new Exception("At least one model type has to be selected.");
 				}
+				//if reaction dominant off rate model is selected, we have to make sure that the bleached ROI should be selected.
+				if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] && !fStudy.getSelectedROIsForErrorCalculation()[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()])
+				{
+					String choice = DialogUtils.showWarningDialog(modelTypesPanel, "To evaluate Reaction Dominant Off Rate model, bleached ROI must be selected. \n\nSelecte 'Continue' to have bleached ROI automatically added and proceed. Or,\nSelecte 'Cancel' to stop proceeding.", new String[]{UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CONTINUE);
+					if(choice.equals(UserMessage.OPTION_CONTINUE))
+					{
+						fStudy.getSelectedROIsForErrorCalculation()[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()] = true;
+					}
+					else
+					{
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+				
 				//update selected models in FrapStudy
 			    fStudy.refreshModels(models);
 			}

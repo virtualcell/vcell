@@ -6,6 +6,7 @@ import java.io.IOException;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.opt.TimeWeights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -206,7 +207,7 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam) throws ExpressionException, OptimizationException, IOException
+	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam, double[][] measurementError) throws ExpressionException, OptimizationException, IOException
 	{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
@@ -254,12 +255,18 @@ public class FRAPDataAnalysis {
 		else
 		{
 			outputParamValues = new double[2];
-			Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
+			//construct cell roi weights -- it is a time weights (time series of cell ROI average intensity).
+			double[] cellROIWeights = new double[time.length];
+			for(int j=0; j<time.length; j++)
+			{
+				cellROIWeights[j] = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][j];
+			}
+			TimeWeights cellTimeWeights = new TimeWeights(cellROIWeights);
+			Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues, cellTimeWeights);
 			offRateAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
 			bleachWhileMonitoringRate = outputParamValues[0];
 		}
 		offRateAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
-		
 		
 		/*
 		 * to fit reaction koff rate expression
@@ -268,10 +275,18 @@ public class FRAPDataAnalysis {
 		Expression fitExpression = null;
 		double koffRate = 0;
 		double fittingParamA = 0;
+		//construct bleached roi weights --first column t, second column bleached region intensity Avg.
+		double[] bleachedROIWeights = new double[time.length];
+		for(int j=0; j<time.length; j++)
+		{
+			bleachedROIWeights[j] = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][j];
+		}
+		TimeWeights bleachedTimeWeights = new TimeWeights(bleachedROIWeights);
+		
 		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
 		{
 			outputParamValues = new double[1];// the array is used to get fitting parameter A back.
-			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()));
+			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()), bleachedTimeWeights);
 			//get reaction off rate, fitting parameter
 			koffRate = fixedParam.getInitialGuess();
 			fittingParamA = outputParamValues[0];
@@ -279,7 +294,7 @@ public class FRAPDataAnalysis {
 		else
 		{
 			outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
-			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null);
+			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null, bleachedTimeWeights);
 			//get reaction off rate, fitting parameter
 			koffRate = outputParamValues[0];
 			fittingParamA = outputParamValues[1];

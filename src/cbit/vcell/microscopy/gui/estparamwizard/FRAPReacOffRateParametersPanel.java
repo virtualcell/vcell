@@ -516,6 +516,11 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		this.frapWorkspace = frapWorkspace;
 	}
 
+	public  FRAPWorkspace getFrapWorkspace()
+	{
+		return frapWorkspace;
+	}
+	
 	private void initializeExpression() 
 	{
 		try{

@@ -667,7 +667,7 @@ public class MicroscopyXmlReader {
 	          }
 	          rowDataVector.add(rowData);
 	    }
-	    SimpleReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(columnNames, columnWeights, rowDataVector);
+	    SimpleReferenceData referenceData = new SimpleReferenceData(columnNames, columnWeights, rowDataVector);
 	    return referenceData;
 	}
 	

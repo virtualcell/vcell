@@ -76,7 +76,7 @@ public class FRAPOptData {
 	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace, SimpleReferenceData simRefData) throws Exception
 	{
-		if(simRefData.getNumColumns()!= (1+argExpFrapStudy.getFrapData().getROILength()))
+		if(simRefData.getNumDataColumns()!= (1+argExpFrapStudy.getFrapData().getROILength()))
 		{
 			throw new Exception("Stored reference data is illegal. ");
 		}
@@ -1048,14 +1048,14 @@ public class FRAPOptData {
 	public void getFromStoredRefData(SimpleReferenceData argSimRefData)
 	{
 		int roiLen = getExpFrapStudy().getFrapData().getROILength();
-		if(argSimRefData.getNumColumns() == (1+roiLen))
+		if(argSimRefData.getNumDataColumns() == (1+roiLen))
 		{
 			//t is in the first column of simpleReferenceData
-			refDataTimePoints = argSimRefData.getColumnData(0);
+			refDataTimePoints = argSimRefData.getDataByColumn(0);
 			double[][] result = new double[roiLen][];
 			for(int i=0; i<roiLen; i++)
 			{
-				result[i]=argSimRefData.getColumnData(i+1); //first column is t, so the roi data starts from second column
+				result[i]=argSimRefData.getDataByColumn(i+1); //first column is t, so the roi data starts from second column
 			}
 			dimensionReducedRefData = result;
 		}

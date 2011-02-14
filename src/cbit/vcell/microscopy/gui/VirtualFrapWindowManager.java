@@ -15,6 +15,7 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.SimStatusEvent;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
@@ -195,6 +196,11 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 
 	public void setLocalWorkSpace(LocalWorkspace arg_localWorkSpace) {
 		this.localWorkSpace = arg_localWorkSpace;
+	}
+
+	//New method added in DataViewerManager that it has to be implemented here but VFRAP doesn't use it. 
+	public RequestManager getRequestManager() {
+		throw new RuntimeException("Not implemented in VFRAP");
 	}
 	
 }
