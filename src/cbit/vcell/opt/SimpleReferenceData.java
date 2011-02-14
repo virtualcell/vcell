@@ -1,51 +1,119 @@
 package cbit.vcell.opt;
+import java.io.Serializable;
+import java.util.Vector;
+
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
+
+import cbit.vcell.util.ColumnDescription;
+import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 3:07:17 PM)
  * @author: Jim Schaff
  */
-public class SimpleReferenceData implements ReferenceData, java.io.Serializable {
+@SuppressWarnings("serial")
+public class SimpleReferenceData implements ReferenceData, Serializable 
+{
 	private String dataNames[] = null;
-	private double[] columnWeights = null;
-	private java.util.Vector<double[]> rowData = new java.util.Vector<double[]>();
-
+	private Weights weights = null;
+	//double[].length is number of variables, vector saves time series of rows(number of variables)
+	private Vector<double[]> rowData = new Vector<double[]>();
+	
 	/**
-	 * SimpleConstraintData constructor comment.
+	 * @param argRowData, vector size is the number of rows(e.g.times) and double array length is the number of columns(e.g. variables)
 	 */
-	public SimpleReferenceData(String[] argColumnNames, double[] argColumnWeights, java.util.Vector<double[]> argRowData) {
+	public SimpleReferenceData(String[] argColumnNames, Weights argWeights, Vector<double[]> argRowData) {
 		super();
+		
 		this.dataNames = argColumnNames;
-		this.columnWeights = argColumnWeights;
-
 		for (int i = 0; i < argRowData.size(); i++){
-			if ((argRowData.elementAt(i) instanceof double[])){
-				double[] rowData = (double[])argRowData.elementAt(i);
-				if (rowData.length!=argColumnNames.length){
-					throw new IllegalArgumentException("rowData not same size as number of columns");
-				}
-			}else{
-				throw new IllegalArgumentException("rowdata argument not of type double[] in SimpleReferenceData");
+			double[] dataRow = argRowData.elementAt(i);
+			if (dataRow == null || dataRow.length != argColumnNames.length){
+				throw new IllegalArgumentException("The row No." + i + " of Data is null or its length is not the same size as number of columns.");
 			}
 		}
-
+		this.weights = argWeights;
+		this.rowData = argRowData;
+	}
+	
+	/**
+	 * The argWeights here are the column weights(one variable corresponding to one column, data in the same column have the same weights).
+	 * The time should not be weighted. argWeights.length = argColumnNames - 1(excluding 't')
+	 * The argRowData, vector size is the number of rows(e.g.times) and double array length is the number of columns(e.g. variables) 
+	 */
+	public SimpleReferenceData(String[] argColumnNames, double[] argWeights, Vector<double[]> argRowData) {
+		super();
+		this.dataNames = argColumnNames;
+		
+		for (int i = 0; i < argRowData.size(); i++){
+			double[] dataRow = argRowData.elementAt(i);
+			if (dataRow == null || dataRow.length != argColumnNames.length){
+				throw new IllegalArgumentException("The row No." + i + " of Data is null or its length is not the same size as number of columns.");
+			}
+		}
+		
+		this.weights = new VariableWeights(argWeights);
 		this.rowData = argRowData;
 	}
 
 	/**
-	 * SimpleConstraintData constructor comment.
+	 * @param columnData, first dimension is the number of columns(e.g.variables), the second dimension is the number of rows(e.g.times)
 	 */
-	public SimpleReferenceData(String[] argColumnNames, double[] argColumnWeights, double[][] columnData) {
+	public SimpleReferenceData(String[] argColumnNames, Weights argWeights, double[][] columnData) {
 		super();
 		this.dataNames = argColumnNames;
-		this.columnWeights = argColumnWeights;
-
-		for (int i = 0; i < columnData[0].length; i++){
-			double[] row = new double[columnData.length];
-			for (int j = 0; j < columnData.length; j++){
-				row[j] = columnData[j][i];
+		this.weights = argWeights;
+		if(columnData != null && columnData.length > 0 && columnData[0] != null)
+		{
+			if(argColumnNames.length == columnData.length)
+			{
+				for (int i = 0; i < columnData[0].length; i++)//loop through number of rows
+				{
+					double[] dataRow = new double[columnData.length];
+					for (int j = 0; j < columnData.length; j++){
+						dataRow[j] = columnData[j][i];
+					}
+					this.rowData.add(dataRow);
+				}
+			}else{
+				throw new IllegalArgumentException("Number of variables of data are not the same as number of column names.");
 			}
-			rowData.add(row);
+		}else{
+			throw new IllegalArgumentException("Data are null or have no elements.");
+		}
+	}
+	
+	/**
+	 * The argWeights here are the column weights(one variable corresponding to one column, data in the same column have the same weights).
+	 * The time should not be weighted. argWeights.length = argColumnNames - 1(excluding 't')
+	 * The columnData, first dimension is the number of columns(e.g.variables), the second dimension is the number of rows(e.g.times) 
+	 */
+	public SimpleReferenceData(String[] argColumnNames, double[] argWeights, double[][] columnData) {
+		super();
+		this.dataNames = argColumnNames;
+		this.weights = new VariableWeights(argWeights);
+		
+		if(columnData != null && columnData.length > 0 && columnData[0] != null)
+		{
+			if(argColumnNames.length == columnData.length)
+			{
+				//data
+				for (int i = 0; i < columnData[0].length; i++)//loop through number of rows
+				{
+					double[] dataRow = new double[columnData.length];
+					for (int j = 0; j < columnData.length; j++){
+						dataRow[j] = columnData[j][i];
+					}
+					this.rowData.add(dataRow);
+				}
+			}else{
+				throw new IllegalArgumentException("Number of variables of data are not the same as number of column names.");
+			}
+		}else{
+			throw new IllegalArgumentException("Data are null or have no elements.");
 		}
 	}
 
@@ -55,34 +123,34 @@ public class SimpleReferenceData implements ReferenceData, java.io.Serializable 
  */
 public SimpleReferenceData(ReferenceData argReferenceData) {
 	super();
-	//
-	// make local copy of data
-	//
+	
 	this.dataNames = (String[])argReferenceData.getColumnNames().clone();
-	this.columnWeights = (double[])argReferenceData.getColumnWeights().clone();
-	for (int i = 0; i < argReferenceData.getNumRows(); i++){
-		this.rowData.add(argReferenceData.getRowData(i).clone());
+	this.weights = argReferenceData.getWeights().clone();
+	for (int i = 0; i < argReferenceData.getNumDataRows(); i++){
+		this.rowData.add(argReferenceData.getDataByRow(i).clone());
 	}
 }
 
 
 /**
- * SimpleConstraintData constructor comment.
+ * The argWeights here are the column weights(one variable corresponding to one column, data in the same column have the same weights).
  */
-public SimpleReferenceData(cbit.vcell.util.RowColumnResultSet rowColumnResultSet, double[] argDataColumnWeights) {
+public SimpleReferenceData(RowColumnResultSet rowColumnResultSet, double[] argWeights) {
 	super();
-	//
-	// make local copy of data
-	//
-	cbit.vcell.util.ColumnDescription[] columnDescriptions = rowColumnResultSet.getDataColumnDescriptions();
-	this.dataNames = new String[columnDescriptions.length];
-	this.columnWeights = (double[])argDataColumnWeights.clone();
-	if (dataNames.length != columnWeights.length) {
-		throw new RuntimeException("Number of data columns should equal number of column weights");
+	
+	ColumnDescription[] columnDescriptions = rowColumnResultSet.getDataColumnDescriptions();
+	if(rowColumnResultSet == null || rowColumnResultSet.getRowCount() == 0)
+	{
+		throw new IllegalArgumentException("The RowColumnResultSet is null or doesn't have row elements.");
 	}
+	this.dataNames = new String[columnDescriptions.length];
+	//dataNames
 	for (int i = 0; i < dataNames.length; i++){
 		this.dataNames[i] = columnDescriptions[i].getName();
 	}
+	//weights
+	this.weights = new VariableWeights(argWeights);
+	//data
 	for (int i = 0; i < rowColumnResultSet.getRowCount(); i++){
 		this.rowData.add(rowColumnResultSet.getRow(i).clone());
 	}
@@ -94,15 +162,15 @@ public SimpleReferenceData(cbit.vcell.util.RowColumnResultSet rowColumnResultSet
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (obj instanceof SimpleReferenceData){
 		SimpleReferenceData srd = (SimpleReferenceData)obj;
 
-		if (!org.vcell.util.Compare.isEqual(dataNames,srd.dataNames)){
+		if (!Compare.isEqual(dataNames,srd.dataNames)){
 			return false;
 		}
 		
-		if (!org.vcell.util.Compare.isEqual(columnWeights,srd.columnWeights)){
+		if (!Compare.isEqual(weights, srd.weights)){
 			return false;
 		}
 
@@ -111,9 +179,9 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		}
 
 		for (int i = 0; i < rowData.size(); i++){
-			double[] thisData = (double[])rowData.get(i);
-			double[] otherData = (double[])srd.rowData.get(i);
-			if (!org.vcell.util.Compare.isEqual(thisData,otherData)){
+			double[] thisData = rowData.get(i);
+			double[] otherData = srd.rowData.get(i);
+			if (!Compare.isEqual(thisData,otherData)){
 				return false;
 			}
 		}
@@ -130,7 +198,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return int
  * @param colName java.lang.String
  */
-public int findColumn(java.lang.String colName) {
+public int findColumn(String colName) {
 	for (int i = 0; i < dataNames.length; i++){
 		if (dataNames[i].equals(colName)){
 			return i;
@@ -139,14 +207,14 @@ public int findColumn(java.lang.String colName) {
 	return -1;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (8/3/2005 8:23:18 PM)
  * @return cbit.vcell.opt.SimpleConstraintData
  * @param tokens cbit.vcell.math.CommentStringTokenizer
  */
-public static SimpleReferenceData fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws DataAccessException {
+@SuppressWarnings("unchecked")
+public static SimpleReferenceData fromVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	String token = tokens.nextToken();
 	if (!token.equals("SimpleReferenceData")){
 		throw new DataAccessException("unexpected identifier '"+token+"', expecting '"+"Data"+"'");
@@ -180,7 +248,7 @@ public static SimpleReferenceData fromVCML(org.vcell.util.CommentStringTokenizer
 	for (int i = 0; i < numColumns; i++){
 		weights[i] = Double.parseDouble(tokens.nextToken());
 	}
-	java.util.Vector rowData = new java.util.Vector();		
+	Vector rowData = new Vector();		
 	for (int i = 0; i < numRows; i++){
 		double row[] = new double[numColumns];
 		for (int j = 0; j < numColumns; j++){
@@ -206,18 +274,18 @@ public static SimpleReferenceData fromVCML(org.vcell.util.CommentStringTokenizer
  * @return double
  * @param columnIndex int
  */
-public double[] getColumnData(int columnIndex) {
+public double[] getDataByColumn(int columnIndex) {
 	//
 	// bounds check
 	//
-	int numRows = getNumRows();
+	int numRows = getNumDataRows();
 	int numCols = dataNames.length;
 	if (columnIndex<0 || columnIndex>=numCols){
 		throw new RuntimeException("columnIndex "+columnIndex+" out of bounds");
 	}
 	double[] colData = new double[numRows];
 	for (int i = 0; i < numRows; i++){
-		colData[i] = ((double[])rowData.elementAt(i))[columnIndex];
+		colData[i] = rowData.elementAt(i)[columnIndex];
 	}
 	return colData;
 }
@@ -228,20 +296,9 @@ public double[] getColumnData(int columnIndex) {
  * Creation date: (8/3/2005 3:07:17 PM)
  * @return java.lang.String[]
  */
-public java.lang.String[] getColumnNames() {
+public String[] getColumnNames() {
 	return dataNames;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/4/2005 2:59:23 PM)
- * @return double[]
- */
-public double[] getColumnWeights() {
-	return this.columnWeights;
-}
-
 
 /**
  * Insert the method's description here.
@@ -279,7 +336,7 @@ public String getCSV() {
 	// print data
 	//
 	for (int i = 0; i < numRows; i++){
-		double row[] = (double[])rowData.get(i);
+		double row[] = rowData.get(i);
 		for (int j = 0; j < numColumns; j++){
 			if (j>0){
 				buffer.append(", ");
@@ -292,35 +349,14 @@ public String getCSV() {
 	return buffer.toString();	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/2/2006 2:34:55 PM)
- * @return int
- */
-public int getNumColumns() {
-	return dataNames.length;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2005 3:07:17 PM)
- * @return int
- */
-public int getNumRows() {
-	return rowData.size();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (8/3/2005 3:07:17 PM)
  * @return double[]
  * @param rowIndex int
  */
-public double[] getRowData(int rowIndex) {
-	return (double[])rowData.elementAt(rowIndex);
+public double[] getDataByRow(int rowIndex) {
+	return rowData.elementAt(rowIndex);
 }
 
 
@@ -351,18 +387,46 @@ public String getVCML() {
 	//
 	// print weights
 	//
-	for (int i = 0; i < numColumns; i++){
-		if (i>0){
-			buffer.append(" ");
+	if(weights instanceof TimeWeights || weights instanceof VariableWeights)
+	{
+		double[] weightData = null;
+		if(weights instanceof TimeWeights)
+		{
+			weightData = ((TimeWeights)weights).getWeightData();
 		}
-		buffer.append(columnWeights[i]);
+		else
+		{
+			weightData= ((VariableWeights)weights).getWeightData();
+		}
+		for (int i = 0; i < weightData.length; i++){
+			if (i>0){
+				buffer.append(" ");
+			}
+			buffer.append(weightData[i]);
+		}
+		buffer.append("\n");
+	}
+	else if(weights instanceof ElementWeights)
+	{
+		double[][] weightData = ((ElementWeights)weights).getWeightData();
+		for(int i=0; i<weightData.length; i++)
+		{
+			double[] rowWeights = weightData[i];
+			for (int j = 0; j < weightData[i].length; j++){
+				if (j>0){
+					buffer.append(" ");
+				}
+				buffer.append(rowWeights[j]);
+			}
+			buffer.append("\n");
+		}
 	}
 	buffer.append("\n");
 	//
 	// print data
 	//
 	for (int i = 0; i < numRows; i++){
-		double row[] = (double[])rowData.get(i);
+		double row[] = rowData.get(i);
 		for (int j = 0; j < numColumns; j++){
 			if (j>0){
 				buffer.append(" ");
@@ -377,7 +441,33 @@ public String getVCML() {
 	return buffer.toString();	
 }
 
-public int getDataSize() {	
+public int getDataSize() {//means data is 0 dimension. ISize = 1.
 	return 1;
 }
+
+/**
+ * It's a legacy method. Only when the weights are Variable Weights
+ * returns an array of the length of variables (excluding 't')
+ */
+public double[] getColumnWeights() 
+{
+	if(weights instanceof VariableWeights)
+	{
+		return ((VariableWeights)weights).getWeightData();
+	}
+	return null;
 }
+
+public int getNumDataColumns() {
+	return dataNames.length;
+}
+
+public int getNumDataRows() {
+	return rowData.size();
+}
+
+public Weights getWeights() {
+	return weights;
+}
+
+}//end of class

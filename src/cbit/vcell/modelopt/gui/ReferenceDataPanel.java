@@ -749,11 +749,11 @@ private ReferenceData subsample() {
 	for (int i = 0; i < columnNames.length; i++){
 		rc.addDataColumn(new ODESolverResultSetColumnDescription(i == timeIndex ?  ReservedSymbol.TIME.getName() : columnNames[i]));		
 	}
-	for (int i = 0; i < refData.getNumRows(); i++){
-		rc.addRow((double[])refData.getRowData(i).clone());
+	for (int i = 0; i < refData.getNumDataRows(); i++){
+		rc.addRow((double[])refData.getDataByRow(i).clone());
 	}
 
-	int desiredNumRows = refData.getNumRows() / 2;
+	int desiredNumRows = refData.getNumDataRows() / 2;
 	if (desiredNumRows<3){
 		return refData;
 	}

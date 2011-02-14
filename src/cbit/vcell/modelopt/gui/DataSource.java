@@ -41,7 +41,7 @@ public abstract class DataSource {
 
 		@Override
 		public double[] getColumnData(int columnIndex) {
-			return referenceData.getColumnData(columnIndex);
+			return referenceData.getDataByColumn(columnIndex);
 		}
 
 		@Override
@@ -68,17 +68,17 @@ public abstract class DataSource {
 
 		@Override
 		public int getNumColumns() {
-			return referenceData.getNumColumns();
+			return referenceData.getNumDataColumns();
 		}
 
 		@Override
 		public int getNumRows() {
-			return referenceData.getNumRows();
+			return referenceData.getNumDataRows();
 		}
 
 		@Override
 		public double[] getRowData(int rowIndex) {
-			return referenceData.getRowData(rowIndex);
+			return referenceData.getDataByRow(rowIndex);
 		}
 
 		@Override

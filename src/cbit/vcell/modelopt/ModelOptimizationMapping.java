@@ -380,7 +380,7 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 			if (origRefDataColumnIndex<0){
 				throw new RuntimeException("reference data column named '"+origRefDataColumnName+"' not found");
 			}
-			double columnData[] = refData.getColumnData(origRefDataColumnIndex);
+			double columnData[] = refData.getDataByColumn(origRefDataColumnIndex);
 			if (modelObjectList.contains(modelObject)){
 				throw new RuntimeException("multiple reference data columns mapped to same model object '"+modelObject.getName()+"'");
 			}
