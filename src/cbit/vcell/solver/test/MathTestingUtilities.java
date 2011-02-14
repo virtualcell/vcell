@@ -79,7 +79,7 @@ public class MathTestingUtilities {
 public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, ReferenceData referenceData)  {
 	try {
 		double[] testRSTimes = testResultSet.extractColumn(testResultSet.findColumn("t"));
-		double[] refRSTimes = referenceData.getColumnData(referenceData.findColumn("t"));
+		double[] refRSTimes = referenceData.getDataByColumn(referenceData.findColumn("t"));
 		double L2Error = 0.0;
 		
 		String[] varsToTest = referenceData.getColumnNames();
@@ -92,7 +92,7 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
 			if (refRSIndex==-1){
 				throw new RuntimeException("variable '"+varsToTest[i]+"' not found in reference dataset");
 			}
-			double refData[] = referenceData.getColumnData(refRSIndex);
+			double refData[] = referenceData.getDataByColumn(refRSIndex);
 			
 			int testRSIndex = testResultSet.findColumn(varsToTest[i]);
 			if (testRSIndex==-1){

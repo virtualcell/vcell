@@ -18,6 +18,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
+import cbit.vcell.opt.ElementWeights;
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
@@ -27,7 +28,10 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
+import cbit.vcell.opt.TimeWeights;
+import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
@@ -113,18 +117,30 @@ public class OptXmlWriter {
 			Element expressionElement = new Element(OptXmlTags.Expression_Tag);
 			expressionElement.addContent(explicitFitObjectiveFunction.getFunctionExpression().infix());
 			objectiveFunctionElement.addContent(expressionElement);
-			Element dataElement = getDataXML(explicitFitObjectiveFunction.getReferenceData());
-			objectiveFunctionElement.addContent(dataElement);
+			if(explicitFitObjectiveFunction.getReferenceData() instanceof SimpleReferenceData)
+			{
+				Element dataElement = getDataXML((SimpleReferenceData)explicitFitObjectiveFunction.getReferenceData());
+				objectiveFunctionElement.addContent(dataElement);
+			}
+			else
+			{
+				throw new OptimizationException("Optimization XML Writer exports SimpleReferenceData only.");
+			}
 
 		}else if (objectiveFunction instanceof OdeObjectiveFunction){
 			
 			OdeObjectiveFunction odeObjectiveFunction = (OdeObjectiveFunction)objectiveFunction;
 			objectiveFunctionElement.setAttribute(OptXmlTags.ObjectiveFunctionType_Attr,OptXmlTags.ObjectiveFunctionType_Attr_ODE);
 			ReferenceData refData = odeObjectiveFunction.getReferenceData();
-
-			Element dataElement = getDataXML(refData);
-			objectiveFunctionElement.addContent(dataElement);
-
+			if(refData instanceof SimpleReferenceData)
+			{
+				Element dataElement = getDataXML((SimpleReferenceData)refData);
+				objectiveFunctionElement.addContent(dataElement);
+			}
+			else
+			{
+				throw new OptimizationException("Optimization XML Writer exports SimpleReferenceData only.");
+			}
 			Element modelElement = getModelXML(odeObjectiveFunction, optimizationSpec.getParameterNames());
 			objectiveFunctionElement.addContent(modelElement);
 			
@@ -133,7 +149,7 @@ public class OptXmlWriter {
 			//
 			// write data/model variable mappings
 			//
-			for (int i = 1; i < refData.getNumColumns(); i ++) {
+			for (int i = 1; i < refData.getNumDataColumns(); i ++) {
 				Element modelMappingElement = new Element(OptXmlTags.ModelMapping_Tag);
 				modelMappingElement.setAttribute(OptXmlTags.ModelMappingDataColumn_Attr,refData.getColumnNames()[i]);
 				modelMappingElement.setAttribute(OptXmlTags.ModelMappingWeight_Attr,String.valueOf(refData.getColumnWeights()[i]));
@@ -200,51 +216,105 @@ public class OptXmlWriter {
 		return objectiveFunctionElement;
 	}
 
-	public static Element getDataXML(ReferenceData refData){	
-		Element dataElement = new Element(OptXmlTags.Data_Tag);
-
-		//
-		// write variable declarations
-		//
-		Element timeVarElement = new Element(OptXmlTags.Variable_Tag);
-		timeVarElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Independent);
-		timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
-		timeVarElement.setAttribute(OptXmlTags.VariableDimension_Attr,"1");
-		dataElement.addContent(timeVarElement);
+	public static Element getDataXML(ReferenceData refData){
+		Element refDataElement = null; 
+		if(refData instanceof SimpleReferenceData)
+		{
+			refDataElement = new Element(OptXmlTags.SimpleReferenceData_Tag);
+		}
+		else if(refData instanceof SpatialReferenceData)
+		{
+			refDataElement = new Element(OptXmlTags.SpatialReferenceData_Tag);
+		}
 		
-		int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
-		if (timeIndex != 0) {
-			throw new RuntimeException("t must be the first column");
-		}
-		for (int i = 1; i < refData.getNumColumns(); i++) {
-			Element variableElement = new Element(OptXmlTags.Variable_Tag);
-			variableElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Dependent);
-			variableElement.setAttribute(OptXmlTags.VariableName_Attr,refData.getColumnNames()[i]);
-			variableElement.setAttribute(OptXmlTags.VariableDimension_Attr,refData.getDataSize() + "");
-			dataElement.addContent(variableElement);
-		}
-		//
-		// write data
-		//
-		for (int i = 0; i < refData.getNumRows(); i ++) {
-			double[] data = refData.getRowData(i);
-			Element rowElement = new Element(OptXmlTags.Row_Tag);
-			StringBuffer rowText = new StringBuffer();
-			for (int j = 0; j < data.length; j++) {
-				rowText.append(data[j]+" ");
+		if(refDataElement != null)
+		{
+			// write variable declarations
+			// independent variable is t and dimension is 1, these are fixed.
+			Element timeVarElement = new Element(OptXmlTags.Variable_Tag);
+			timeVarElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Independent);
+			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
+			timeVarElement.setAttribute(OptXmlTags.VariableDimension_Attr,"1");
+			refDataElement.addContent(timeVarElement);
+			// check if t is at the first column
+			int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
+			if (timeIndex != 0) {
+				throw new RuntimeException("t must be the first column");
 			}
-			rowElement.addContent(rowText.toString());
-			dataElement.addContent(rowElement);
+			// add all other dependent variables, recall that the dependent variables start from 2nd column onward in reference data
+			for (int i = 1; i < refData.getNumDataColumns(); i++) {
+				Element variableElement = new Element(OptXmlTags.Variable_Tag);
+				variableElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Dependent);
+				variableElement.setAttribute(OptXmlTags.VariableName_Attr,refData.getColumnNames()[i]);
+				variableElement.setAttribute(OptXmlTags.VariableDimension_Attr,refData.getDataSize() + "");
+				refDataElement.addContent(variableElement);
+			}
+			// write data
+			Element dataRowElement = new Element(OptXmlTags.Datarow_Tag);
+			for (int i = 0; i < refData.getNumDataRows(); i ++) {
+				double[] data = refData.getDataByRow(i);
+				Element rowElement = new Element(OptXmlTags.Row_Tag);
+				StringBuffer rowText = new StringBuffer();
+				for (int j = 0; j < data.length; j++) {
+					rowText.append(data[j]+" ");
+				}
+				rowElement.addContent(rowText.toString());
+				dataRowElement.addContent(rowElement);
+			}
+			refDataElement.addContent(dataRowElement);
+			// write weights 
+			Element weightRowElement = new Element(OptXmlTags.WeightDatarow_Tag);
+			// add weight type
+			if(refData.getWeights() instanceof TimeWeights)//print weights in multiple rows, each row has one element
+			{
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Time);
+				double[] weightData = ((TimeWeights)refData.getWeights()).getWeightData();
+				for (int j = 0; j < weightData.length; j++) {
+					Element rowElement = new Element(OptXmlTags.Row_Tag);
+					StringBuffer rowText = new StringBuffer();
+					rowText.append(weightData[j]+" ");
+					rowElement.addContent(rowText.toString());
+					weightRowElement.addContent(rowElement);
+				}
+			}
+			else if(refData.getWeights() instanceof ElementWeights)//print weights in multiple rows, each row has one-more elements
+			{
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Element);
+				double[][] weightData = ((ElementWeights)refData.getWeights()).getWeightData();
+				for (int i = 0; i < weightData.length; i ++) {
+					double[] rowData = weightData[i];
+					Element rowElement = new Element(OptXmlTags.Row_Tag);
+					StringBuffer rowText = new StringBuffer();
+					for (int j = 0; j < rowData.length; j++) {
+						rowText.append(rowData[j]+" ");
+					}
+					rowElement.addContent(rowText.toString());
+					weightRowElement.addContent(rowElement);
+				}
+			}
+			else //print weights in one row, the row has one-more elements
+			{
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Variable);
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Time);
+				double[] weightData = ((VariableWeights)refData.getWeights()).getWeightData();
+				Element rowElement = new Element(OptXmlTags.Row_Tag);
+				StringBuffer rowText = new StringBuffer();
+				for (int j = 0; j < weightData.length; j++) {
+					rowText.append(weightData[j]+" ");
+				}
+				rowElement.addContent(rowText.toString());
+				weightRowElement.addContent(rowElement);
+			}
+			refDataElement.addContent(weightRowElement);
 		}
-		
-		return dataElement;
+		return refDataElement;
 	}
 
 	public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, String[] parameterNames){
 		Element modelElement = new Element(OptXmlTags.Model_Tag);
 
 		ReferenceData refData = odeObjectiveFunction.getReferenceData();
-		double refDataEndTime = refData.getColumnData(0)[refData.getNumRows()-1];
+		double refDataEndTime = refData.getDataByColumn(0)[refData.getNumDataRows()-1];
 
 		//
 		// post the problem either as an IDA or CVODE model
@@ -263,7 +333,7 @@ public class OptXmlWriter {
 		Simulation simulation = new Simulation(simVersion,odeObjectiveFunction.getMathDescription());
 		int timeIndex = refData.findColumn("t");
 		if (timeIndex>=0){
-			double[] refTimeData = refData.getColumnData(timeIndex);
+			double[] refTimeData = refData.getDataByColumn(timeIndex);
 			OutputTimeSpec outputTimeSpec = new ExplicitOutputTimeSpec(refTimeData);
 			try {
 				simulation.getSolverTaskDescription().setOutputTimeSpec(outputTimeSpec);
@@ -317,7 +387,7 @@ public class OptXmlWriter {
 		Element modelElement = new Element(OptXmlTags.Model_Tag);
 		try {
 			SpatialReferenceData refData = pdeObjectiveFunction.getReferenceData();
-			double refDataEndTime = refData.getRowData(refData.getNumRows()-1)[0];
+			double refDataEndTime = refData.getDataByRow(refData.getNumDataRows()-1)[0];
 
 			//
 			// post the problem either as an IDA or CVODE model
@@ -336,7 +406,7 @@ public class OptXmlWriter {
 			Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());
 			simulation.getMeshSpecification().setSamplingSize(refData.getDataISize());	
 
-			double[] times = refData.getColumnData(0);
+			double[] times = refData.getDataByColumn(0);
 			double minDt = Double.POSITIVE_INFINITY;
 			for (int i = 1; i < times.length; i ++) {
 				minDt = Math.min(minDt, times[i] - times[i-1]);

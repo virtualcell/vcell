@@ -276,10 +276,10 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	// add ReferenceData
 	//
 	ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
-	if (referenceData!=null && referenceData.getNumColumns()>0){
+	if (referenceData!=null && referenceData.getNumDataColumns()>0){
 		Element referenceDataElement = new Element(ReferenceDataTag);
-		referenceDataElement.setAttribute(NumRowsAttribute,Integer.toString(referenceData.getNumRows()));
-		referenceDataElement.setAttribute(NumColumnsAttribute,Integer.toString(referenceData.getNumColumns()));
+		referenceDataElement.setAttribute(NumRowsAttribute,Integer.toString(referenceData.getNumDataRows()));
+		referenceDataElement.setAttribute(NumColumnsAttribute,Integer.toString(referenceData.getNumDataColumns()));
 
 		Element dataColumnListElement = new Element(DataColumnListTag);
 		for (int i = 0; i < referenceData.getColumnNames().length; i++){
@@ -291,14 +291,14 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 		referenceDataElement.addContent(dataColumnListElement);
 
 		Element dataRowListElement = new Element(DataRowListTag);
-		for (int i = 0; i < referenceData.getNumRows(); i++){
+		for (int i = 0; i < referenceData.getNumDataRows(); i++){
 			Element dataRowElement = new Element(DataRowTag);
 			String rowText = "";
-			for (int j = 0; j < referenceData.getNumColumns(); j++){
+			for (int j = 0; j < referenceData.getNumDataColumns(); j++){
 				if (j>0){
 					rowText += " ";
 				}
-				rowText += referenceData.getRowData(i)[j];
+				rowText += referenceData.getDataByRow(i)[j];
 			}
 			dataRowElement.addContent(rowText);
 			dataRowListElement.addContent(dataRowElement);

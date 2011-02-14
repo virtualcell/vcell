@@ -91,7 +91,7 @@ private double calculateWeightedError(double[] x) {
 		}
 		System.out.println();
 		ReferenceData refData = odeObjectiveFunction.getReferenceData();
-		double refDataEndTime = refData.getColumnData(0)[refData.getNumRows()-1];
+		double refDataEndTime = refData.getDataByColumn(0)[refData.getNumDataRows()-1];
 		simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 

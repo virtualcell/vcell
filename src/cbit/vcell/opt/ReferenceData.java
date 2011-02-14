@@ -1,66 +1,55 @@
 package cbit.vcell.opt;
+
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:16:18 PM)
  * @author: Jim Schaff
  */
-public interface ReferenceData extends org.vcell.util.Matchable {
-/**
- * Insert the method's description here.
- * Creation date: (8/5/2005 11:49:26 AM)
- * @return int
- * @param colName java.lang.String
- */
+public interface ReferenceData extends Matchable {
+
 int findColumn(String colName);
 
-
 /**
- * Insert the method's description here.
- * Creation date: (8/5/2005 11:43:03 AM)
- * @return double
- * @param columnIndex int
+ * returns an array of the length of number of rows for data
  */
-double[] getColumnData(int columnIndex);
-
+double[] getDataByColumn(int columnIndex);
 
 /**
- * Insert the method's description here.
- * Creation date: (8/3/2005 12:17:12 PM)
- * @return java.lang.String[]
+ * returns an array of the length of number of columns for Data
+ */
+double[] getDataByRow(int rowIndex);
+
+/**
+ * returns an array of column names
  */
 String[] getColumnNames();
 
-
+/*
+ * returns a Weights object
+ */
+Weights getWeights();
 /**
- * Insert the method's description here.
- * Creation date: (8/4/2005 2:59:07 PM)
- * @return double[]
+ * It's a legacy method. 
+ * returns an array of the length of number of columns
  */
 double[] getColumnWeights();
 
-
 /**
- * Insert the method's description here.
- * Creation date: (8/3/2005 12:17:36 PM)
- * @return int
+ * returns number of columns
  */
-int getNumColumns();
+int getNumDataColumns();
 
 
 /**
- * Insert the method's description here.
- * Creation date: (8/3/2005 12:17:36 PM)
- * @return int
+ * returns number of rows 
  */
-int getNumRows();
+int getNumDataRows();
 
+/**
+ * returns the size of data
+ */
 int getDataSize();
 
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2005 12:18:02 PM)
- * @return double[]
- * @param rowIndex int
- */
-double[] getRowData(int rowIndex);
 }

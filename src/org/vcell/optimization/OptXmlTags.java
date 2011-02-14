@@ -17,7 +17,14 @@ public class OptXmlTags {
 	public static final String ModelType_Attr_IDA = "ida";
 	public static final String ModelType_Attr_CVODE = "cvode";
 	public static final String ModelType_Attr_FVSOLVER = "fvSolver";
-	public static final String Data_Tag = "data";
+	public static final String SimpleReferenceData_Tag = "SimpleReferenceData";
+	public static final String SpatialReferenceData_Tag = "SpatialReferenceData";
+	public static final String Datarow_Tag = "dataRows";
+	public static final String WeightDatarow_Tag = "weightRows";
+	public static final String WeightType_Attr = "weightType";
+	public static final String WeightType_Attr_Variable = "variableWeights";
+	public static final String WeightType_Attr_Time = "timeWeights";
+	public static final String WeightType_Attr_Element = "elementWeights";
 	public static final String Variable_Tag = "variable";
 	public static final String VariableType_Attr = "type";
 	public static final String VariableType_Attr_Independent = "independent";
