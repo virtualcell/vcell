@@ -25,7 +25,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
-import org.vcell.sbml.test.BiomodelsDB_TestSuite;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
@@ -35,6 +34,7 @@ import org.vcell.util.gui.DialogUtils;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
+import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -225,10 +225,10 @@ public class BioModelsNetJPanel extends JPanel {
 		while (ruleiterator.hasNext()) {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
-			boolean bSupported = temp.getAttribute(BiomodelsDB_TestSuite.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
+			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
 			if(bSupported){
-				String id = temp.getAttributeValue(BiomodelsDB_TestSuite.ID_ATTRIBUTE_NAME);
-				String name = temp.getAttributeValue(BiomodelsDB_TestSuite.MODELNAME_ATTRIBUTE_NAME);
+				String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
+				String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
 				vcellCompatibleBioModelsHash.put(id, name);
 			}
 		}

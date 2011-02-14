@@ -391,7 +391,7 @@ public void removeUncoupledParameters() {
 	try {
 		MathMapping mathMapping = getSimulationContext().createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
-		MathSystemHash mathSystemHash = MathSystemTest.fromMath(mathDesc);
+		MathSystemHash mathSystemHash = fromMath(mathDesc);
 		Graph graph = mathSystemHash.getDependencyGraph(mathSystemHash.getSymbols());
 		Tree[] spanningTrees = graph.getSpanningForest();
 		//
@@ -833,5 +833,57 @@ public void setComputeProfileDistributions(boolean bComputeProfileDistributions)
 
 public boolean isComputeProfileDistributions() {
 	return bComputeProfileDistributions;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/1/2005 8:11:32 PM)
+ * @return cbit.vcell.mapping.MathSystemHash
+ * @param mathDesc cbit.vcell.math.MathDescription
+ */
+private static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc) {
+	MathSystemHash hash = new MathSystemHash();
+
+	hash.addSymbol(new MathSystemHash.IndependentVariable("t"));
+	hash.addSymbol(new MathSystemHash.IndependentVariable("x"));
+	hash.addSymbol(new MathSystemHash.IndependentVariable("y"));
+	hash.addSymbol(new MathSystemHash.IndependentVariable("z"));
+
+	cbit.vcell.math.Variable vars[] = (cbit.vcell.math.Variable[])org.vcell.util.BeanUtils.getArray(mathDesc.getVariables(),cbit.vcell.math.Variable.class);
+	for (int i = 0; i < vars.length; i++){
+		hash.addSymbol(new MathSystemHash.Variable(vars[i].getName(),vars[i].getExpression()));
+	}
+
+	cbit.vcell.math.SubDomain subDomains[] = (cbit.vcell.math.SubDomain[])org.vcell.util.BeanUtils.getArray(mathDesc.getSubDomains(),cbit.vcell.math.SubDomain.class);
+	for (int i = 0; i < subDomains.length; i++){
+
+		cbit.vcell.math.Equation[] equations = (cbit.vcell.math.Equation[])org.vcell.util.BeanUtils.getArray(subDomains[i].getEquations(),cbit.vcell.math.Equation.class);
+		for (int j = 0; j < equations.length; j++){
+			MathSystemHash.Variable var = (MathSystemHash.Variable)hash.getSymbol(equations[j].getVariable().getName());
+			hash.addSymbol(new MathSystemHash.VariableInitial(var,equations[j].getInitialExpression()));
+			if (equations[j] instanceof cbit.vcell.math.PdeEquation){
+				//cbit.vcell.math.PdeEquation pde = (cbit.vcell.math.PdeEquation)equations[j];
+				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,pde.getRateExpression()));
+				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+			}else if (equations[j] instanceof cbit.vcell.math.VolumeRegionEquation){
+				//cbit.vcell.math.VolumeRegionEquation vre = (cbit.vcell.math.VolumeRegionEquation)equations[j];
+				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,vre.getRateExpression()));
+				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+			}else if (equations[j] instanceof cbit.vcell.math.MembraneRegionEquation){
+				//cbit.vcell.math.MembraneRegionEquation mre = (cbit.vcell.math.MembraneRegionEquation)equations[j];
+				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,mre.getRateExpression()));
+				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+			}else if (equations[j] instanceof cbit.vcell.math.FilamentRegionEquation){
+				//cbit.vcell.math.FilamentRegionEquation fre = (cbit.vcell.math.FilamentRegionEquation)equations[j];
+				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,fre.getRateExpression()));
+				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
+				
+			}else if (equations[j] instanceof cbit.vcell.math.OdeEquation){
+				cbit.vcell.math.OdeEquation ode = (cbit.vcell.math.OdeEquation)equations[j];
+				hash.addSymbol(new MathSystemHash.VariableDerivative(var,ode.getRateExpression()));
+			}
+		}
+	}
+	return hash;
 }
 }

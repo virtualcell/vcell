@@ -31,7 +31,6 @@ import javax.swing.tree.TreePath;
 
 import org.jdom.DataConversionException;
 import org.jdom.Element;
-import org.vcell.sbml.test.BiomodelsDB_TestSuite;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
@@ -138,7 +137,11 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	private JButton importButton = null;
 	private EventHandler eventHandler = new EventHandler();
 	private JTree tree = null;
-	private BioModelsNetTreeModel treeModel = null;	
+	private BioModelsNetTreeModel treeModel = null;
+	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
+	public static final String ID_ATTRIBUTE_NAME = "ID";
+	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
+	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";	
 	
 	private class EventHandler implements ActionListener, TreeSelectionListener {
 
@@ -309,10 +312,10 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		while (ruleiterator.hasNext()) {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
-			boolean bSupported = temp.getAttribute(BiomodelsDB_TestSuite.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
+			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
 			if(bSupported){
-				String id = temp.getAttributeValue(BiomodelsDB_TestSuite.ID_ATTRIBUTE_NAME);
-				String name = temp.getAttributeValue(BiomodelsDB_TestSuite.MODELNAME_ATTRIBUTE_NAME);
+				String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
+				String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
 				vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, BIOMODELS_DATABASE_URL + "/" + id));
 			}
 		}

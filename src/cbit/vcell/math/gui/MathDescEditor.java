@@ -11,18 +11,13 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
-
-import org.vcell.util.BeanUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathDescriptionTest;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
 
@@ -267,63 +262,6 @@ public void keyReleased(java.awt.event.KeyEvent e) {
 public void keyTyped(java.awt.event.KeyEvent e) {
 }
 
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		frame.setTitle("MathDescEditor");
-		MathDescEditor aMathDescEditor = new MathDescEditor();
-		frame.setContentPane(aMathDescEditor);
-		
-		JMenuBar mb = new JMenuBar();
-		JMenu menu = aMathDescEditor.getEditMenu();
-		mb.add(menu);
-		frame.setJMenuBar(mb);
-		
-		frame.setSize(700,600);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		aMathDescEditor.setMathDescription(MathDescriptionTest.getParticleExample());
-//		MathDescription mathDescription = new MathDescription("noname");
-//		Geometry geometry = new Geometry("geo",2);
-//		geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subvolume0", new Expression(1.0)));
-//		mathDescription.setGeometry(new Geometry("geo",2));
-//		aMathDescEditor.setMathDescription(mathDescription);
-//		aMathDescEditor.getVCMLPane().setText(
-//"MathDescription {\n" +
-//"\n" +
-//"Constant  c	 0.0;\n" +
-//"\n" +
-//"VolumeParticleVariable subvolume0::CCC\n" +
-//"\n" +
-//"Function  subvolume0::cc	 2*c;\n" +
-//"\n" +
-//"CompartmentSubDomain subvolume0 {\n" +
-//"   ParticleJumpProcess myproc {\n" +
-//"       SelectedParticle CCC\n" +
-//"       MacroscopicRateConstant 1.0;\n" +
-//"       Effect CCC DestroyParticle\n" +
-//"   }\n" +
-//"}\n" +
-//"\n" +
-//"}\n"
-//);
-		BeanUtils.centerOnScreen(frame);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
 
 /**
  * Set the MathDescription to a new value.

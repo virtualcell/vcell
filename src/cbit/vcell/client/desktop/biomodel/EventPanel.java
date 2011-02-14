@@ -45,7 +45,6 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContextTest;
 import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -678,29 +677,6 @@ public class EventPanel extends DocumentEditorSubPanel {
 				getDeleteEventAssgnButton().setEnabled(true);
 			} else {
 				getDeleteEventAssgnButton().setEnabled(false);
-			}
-		}
-
-		public static void main(java.lang.String[] args) {
-			try {
-				javax.swing.JFrame frame = new javax.swing.JFrame();
-				EventPanel anEventPanel = new EventPanel();
-				SimulationContext simContext = SimulationContextTest.getExample(0);
-				anEventPanel.setSimulationContext(simContext);
-				frame.setContentPane(anEventPanel);
-				frame.setSize(anEventPanel.getSize());
-				frame.addWindowListener(new java.awt.event.WindowAdapter() {
-					public void windowClosing(java.awt.event.WindowEvent e) {
-						System.exit(0);
-					};
-				});
-				java.awt.Insets insets = frame.getInsets();
-				frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-				frame.setVisible(true);
-				
-			} catch (Throwable exception) {
-				System.err.println("Exception occurred in main() of javax.swing.JPanel");
-				exception.printStackTrace(System.out);
 			}
 		}
 		
