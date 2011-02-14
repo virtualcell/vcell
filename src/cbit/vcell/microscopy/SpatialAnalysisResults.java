@@ -120,7 +120,7 @@ public class SpatialAnalysisResults{
 				ReferenceData expDataSource =
 					createReferenceData(frapDataTimeStamps,startTimeIndex,"", null);//TODO to remove null to put SpatialAnalysisResults.ORDERED_ROINAMES[roiColumn]
 
-				int numSamples = expDataSource.getNumRows();
+				int numSamples = expDataSource.getNumDataRows();
 				double sumSquaredError = MathTestingUtilities.calcWeightedSquaredError(simDataSource, expDataSource);
 				tableData[analysisParametersRow][roiColumn+ANALYSISPARAMETERS_COLUMNS_COUNT] =
 					Math.sqrt(sumSquaredError)/(numSamples-1);//unbiased estimator is numsamples-1

@@ -512,10 +512,10 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			setAllComponentsVisible();
 						
-			getZoomInButton().setEnabled(false);
-			getZoomOutButton().setEnabled(false);
-			getContrastButtonPlus().setEnabled(false);
-			getContrastButtonMinus().setEnabled(false);
+//			getZoomInButton().setEnabled(false);
+//			getZoomOutButton().setEnabled(false);
+//			getContrastButtonPlus().setEnabled(false);
+//			getContrastButtonMinus().setEnabled(false);
 			getCropButton().setEnabled(true);
 			getCropButton().setSelected(true);//paint button will not be selected
 			getAutoCropButton().setEnabled(isAutoCroppable());

@@ -77,7 +77,7 @@ public class FRAPOptFunctions
 		}
 		setIsApplyMeasurementError(bApplyMeasurementError);
 		Parameter[] outputParams = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_REACTION_OFF_RATE];
-		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = FRAPDataAnalysis.fitRecovery_reacOffRateOnly(frapData, fixedParam);
+		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateResults = FRAPDataAnalysis.fitRecovery_reacOffRateOnly(frapData, fixedParam, measurementErrors);
 		setOffRateResults(offRateResults);
 		
 		outputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
@@ -95,7 +95,8 @@ public class FRAPOptFunctions
 															    FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
 															    FRAPModel.REF_REACTION_OFF_RATE.getScale(),
 															    offRateResults.getOffRate());
-		
+//		System.out.println("best exp:" + offRateResults.getOffRateFitExpression());
+//		System.out.println("error" + getWeightedError(offRateResults.getOffRateFitExpression()));
 		return outputParams;
 	}
 	
@@ -126,7 +127,7 @@ public class FRAPOptFunctions
 		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
 		
 		//get measurementErrors under bleached area
-		double[] measurementErr_bleached = measurementErrors[0];
+		double[] measurementErr_bleached = measurementErrors[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()];
 		
 		//calculate the weighted error
 		for(int i=0; i < time.length; i++)
@@ -206,6 +207,8 @@ public class FRAPOptFunctions
 		{
 			truncatedTimes[i-startIndexRecovery] = frapDataTimeStamps[i];
 		}
+//		System.out.println("fit exp:" + fitExp.flatten());
+//		System.out.println("error" + getWeightedError(fitExp.flatten()));
 		return createData(fitExp.flatten(), truncatedTimes);
 	}
 	

@@ -640,8 +640,8 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 	private static Element getXML(SimpleReferenceData referenceData, String referenDataTag)
 	{
 		Element referenceDataElement = new Element(referenDataTag);
-		referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumRowsAttribute,Integer.toString(referenceData.getNumRows()));
-		referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute,Integer.toString(referenceData.getNumColumns()));
+		referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumRowsAttribute,Integer.toString(referenceData.getNumDataRows()));
+		referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute,Integer.toString(referenceData.getNumDataColumns()));
 
 		Element dataColumnListElement = new Element(ParameterEstimationTaskXMLPersistence.DataColumnListTag);
 		for (int i = 0; i < referenceData.getColumnNames().length; i++){
@@ -653,14 +653,14 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 		referenceDataElement.addContent(dataColumnListElement);
 
 		Element dataRowListElement = new Element(ParameterEstimationTaskXMLPersistence.DataRowListTag);
-		for (int i = 0; i < referenceData.getNumRows(); i++){
+		for (int i = 0; i < referenceData.getNumDataRows(); i++){
 			Element dataRowElement = new Element(ParameterEstimationTaskXMLPersistence.DataRowTag);
 			String rowText = "";
-			for (int j = 0; j < referenceData.getNumColumns(); j++){
+			for (int j = 0; j < referenceData.getNumDataColumns(); j++){
 				if (j>0){
 					rowText += " ";
 				}
-				rowText += referenceData.getRowData(i)[j];
+				rowText += referenceData.getDataByRow(i)[j];
 			}
 			dataRowElement.addContent(rowText);
 			dataRowListElement.addContent(dataRowElement);

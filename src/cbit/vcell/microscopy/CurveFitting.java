@@ -16,6 +16,7 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
+import cbit.vcell.opt.Weights;
 import cbit.vcell.opt.solvers.NewOptimizationSolver;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.Expression;
@@ -25,13 +26,18 @@ import cbit.vcell.solver.Simulation;
  * Fitting utilities 
  */
 public class CurveFitting {
+	
+	public static Expression fitBleachWhileMonitoring(double[] time, double[] normalized_fluor, double[] outputParam) throws ExpressionException, OptimizationException, IOException
+	{
+		return CurveFitting.fitBleachWhileMonitoring(time, normalized_fluor, outputParam, null); 
+	}
 
 	/*
 	 * @para: time, time points since the first post bleach
 	 * @para: flour, average intensities under bleached region according to time points since the first post bleach
 	 * @para: parameterValues, the array which will pass results back 
 	 */
-	public static Expression fitBleachWhileMonitoring(double[] time, double[] normalized_fluor, double[] outputParam) throws ExpressionException, OptimizationException, IOException
+	public static Expression fitBleachWhileMonitoring(double[] time, double[] normalized_fluor, double[] outputParam, Weights weights) throws ExpressionException, OptimizationException, IOException
 	{
 		if (time.length!=normalized_fluor.length){
 			throw new RuntimeException("Fluorecence and time arrays must be the same length");
@@ -56,7 +62,14 @@ public class CurveFitting {
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess())};
 		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
-		optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+		if(weights == null)
+		{
+			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+		}
+		else
+		{
+			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor, weights);
+		}
 		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
 		paramNames = optSolverResultSet.getParameterNames();
 		paramValues = optSolverResultSet.getBestEstimates();
@@ -183,7 +196,7 @@ public class CurveFitting {
 	 * @para: outputParam, the array which will pass results back. 
 	 * output: double, return the least objective function error 
 	 */
-	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate) throws ExpressionException, OptimizationException, IOException
+	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate, Weights weights) throws ExpressionException, OptimizationException, IOException
 	{
 
 		if (time.length!=normalized_fluor.length){
@@ -234,7 +247,7 @@ public class CurveFitting {
 			parameters = new Parameter[]{koffParam, fittingParamA};
 		}
 		//estimate parameters by minimizing the errors between function values and reference data
-		optResultSet = solve(koffRateExp.flatten(), parameters, normalized_time, normalized_fluor);
+		optResultSet = solve(koffRateExp.flatten(), parameters, normalized_time, normalized_fluor, weights);
 		
 		optSolverResultSet = optResultSet.getOptSolverResultSet();
 		paramNames = optSolverResultSet.getParameterNames();
@@ -271,6 +284,10 @@ public class CurveFitting {
 	}
 	
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data) throws ExpressionException, OptimizationException, IOException {
+		return CurveFitting.solve(modelExp, parameters, time, data, null);
+	}
+	
+	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data, Weights weights) throws ExpressionException, OptimizationException, IOException {
 
 		if (time.length!=data.length){
 			throw new RuntimeException("arrays must be the same length");
@@ -287,8 +304,16 @@ public class CurveFitting {
 			realData[1][i]= data[i];
 		}
 		String[] colNames = new String[]{ReservedSymbol.TIME.getName(), "intensity"};
-		double[] weights = new double[]{1.0,1.0};
-		SimpleReferenceData refData = new SimpleReferenceData(colNames, weights, realData);
+		SimpleReferenceData refData = null;
+		if(weights == null)
+		{
+			refData = new SimpleReferenceData(colNames, new double[]{1.0}, realData);
+		}
+		else
+		{
+			refData = new SimpleReferenceData(colNames, weights, realData);	
+		}
+		
 		//send to optimization service	
 		optSpec.setObjectiveFunction(new ExplicitFitObjectiveFunction(modelExp, refData));
 

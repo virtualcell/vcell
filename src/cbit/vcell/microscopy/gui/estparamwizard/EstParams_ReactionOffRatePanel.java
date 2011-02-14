@@ -253,7 +253,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 			}
-			double[] truncatedTimes = new double[frapDataTimeStamps.length - startIndexRecovery];
+						double[] truncatedTimes = new double[frapDataTimeStamps.length - startIndexRecovery];
 			for (int i = startIndexRecovery; i < frapDataTimeStamps.length; i++) 
 			{
 				koffFitOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
