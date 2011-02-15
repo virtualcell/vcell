@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
 
@@ -25,7 +26,7 @@ public class VisitConnectionInfo implements Serializable {
 	// only use on server ... to be removed.
 	@Deprecated
 	public static VisitConnectionInfo createHardCodedVisitConnectionInfo(User user){
-		return new VisitConnectionInfo("10","10.84.11.40",user,new Date());
+		return new VisitConnectionInfo("10",PropertyLoader.getRequiredProperty("vcell.visit.mdserverhost"),user,new Date());
 	}
 	
 	public String getAuxSessionKey() {
@@ -43,6 +44,6 @@ public class VisitConnectionInfo implements Serializable {
 	}	
 	
 	public String getDatabaseOpenPath(User user,String simLogName){
-		return ipAddress+":/share/apps/vcell/users/"+user.getName()+"/"+simLogName;
+		return PropertyLoader.getProperty("vcell.visit.datalocation", "")+"\\"+user.getName()+"\\"+simLogName;
 	}
 }
