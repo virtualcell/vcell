@@ -366,7 +366,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				PathwayData pathwayData = (PathwayData) hashTable.get("pathwayData");
 				if (pathwayData != null) {
-					setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_NODE));
+					setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_NODE, null));
 					setSelectedObjects(new Object[] {pathwayData});
 				}
 			}

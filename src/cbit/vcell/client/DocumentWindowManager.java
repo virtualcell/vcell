@@ -1,7 +1,5 @@
 package cbit.vcell.client;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
@@ -18,15 +16,12 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -188,34 +183,6 @@ public void compareWithSaved() {
  */
 public void connectAs(String user, String password) {
 	getRequestManager().connectAs(user, password, this);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/9/2005 6:30:13 AM)
- * @return cbit.gui.JInternalFrameEnhanced
- * @param frameContent javax.swing.JPanel
- */
-public static JInternalFrameEnhanced createDefaultFrame(JPanel frameContent) {
-
-	JInternalFrameEnhanced jif = null;
-	if(frameContent instanceof SurfaceViewerPanel){
-		jif = new JInternalFrameEnhanced("Surface Viewer", true, true, true, true);
-		jif.setContentPane(frameContent);
-		jif.setSize(500,500);
-		jif.setMinimumSize(new Dimension(400,400));
-		jif.setLocation(550, 350);
-	}else if(frameContent instanceof GeometrySummaryViewer){
-		jif = new JInternalFrameEnhanced("Geometry Summary", true, true, true, true);
-		jif.setContentPane(frameContent);
-		jif.setSize(700,600);
-		jif.setMinimumSize(new Dimension(600,400));
-		jif.setLocation(200, 300);
-	}
-
-	return jif;
-	
 }
 
 
@@ -436,31 +403,6 @@ public void saveDocument(boolean replace) {
 public void saveDocumentAsNew() {
 	getRequestManager().saveDocumentAsNew(this);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/9/2005 6:58:03 AM)
- * @param frame java.awt.Frame
- */
-public static void setDefaultTitle(JInternalFrame jif) {
-	
-
-	Container contentPane = jif.getContentPane();
-	if(contentPane instanceof GeometrySummaryViewer){
-		Geometry geom = ((GeometrySummaryViewer)contentPane).getGeometryOwner().getGeometry();
-		jif.setTitle("Viewer/Editor for Geometry "+
-				(geom != null?"'"+geom.getName()+"'"+(geom.getVersion() != null?" "+geom.getVersion().getDate():""):""));
-	}else if(contentPane instanceof SurfaceViewerPanel){
-		Geometry geom = ((SurfaceViewerPanel)contentPane).getGeometry();
-		jif.setTitle("Surface for Geometry "+
-				(geom != null?"'"+geom.getName()+"'"+(geom.getVersion() != null?" "+geom.getVersion().getDate():""):""));
-	}
-	
-	
-	
-}
-
 
 /**
  * Insert the method's description here.

@@ -44,14 +44,14 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
 	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[3], false);	
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[4], true);	
-	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[5], false);	
+//	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[5], false);	
 	private BioModelNode  bioModelChildNodes[] = {
 			pathwayNode,
 			modelNode,
 			bioModelParametersNode,
 			dataNode,
 			applicationsNode,
-			scriptingNode,
+//			scriptingNode,
 	};
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> childApplicationsNodeList = new ArrayList<BioModelNode>();

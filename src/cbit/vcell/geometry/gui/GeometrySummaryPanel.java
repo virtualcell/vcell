@@ -156,25 +156,6 @@ private void connEtoM2() {
 
 
 /**
- * connEtoM3:  (geometry1.this --> JLabelExtent.text)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.geometry.Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJLabelExtent().setText(this.getExtentString());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoM4:  (geometry1.extent --> JLabelExtent.text)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -184,25 +165,6 @@ private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getJLabelExtent().setText(this.getExtentString());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM5:  (geometry1.this --> JLabelOrigin.text)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.geometry.Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJLabelOrigin().setText(this.getOriginString());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -243,26 +205,6 @@ private void connEtoM7(cbit.vcell.geometry.GeometrySpec value) {
 		if ((getGeometrySpec() != null)) {
 			getDefaultListModelCivilized().setContents(getGeometrySpec().getSubVolumes());
 		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM8:  (geometry1.this --> cellRenderer1.this)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.geometry.Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		setcellRenderer1(this.createListCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1178,9 +1120,9 @@ private void setgeometry1(cbit.vcell.geometry.Geometry newValue) {
 			cbit.vcell.geometry.Geometry oldValue = getgeometry1();
 			ivjgeometry1 = newValue;
 			connPtoP3SetSource();
-			connEtoM3(ivjgeometry1);
-			connEtoM5(ivjgeometry1);
-			connEtoM8(ivjgeometry1);
+			getJLabelExtent().setText(this.getExtentString());
+			getJLabelOrigin().setText(this.getOriginString());
+			setcellRenderer1(this.createListCellRenderer());
 			connEtoM9(ivjgeometry1);
 			connEtoM10(ivjgeometry1);
 			

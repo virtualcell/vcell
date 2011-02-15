@@ -335,7 +335,7 @@ private void updateInterface() {
 		expressionTextField.setEditable(parameter.isExpressionEditable());
 		unitTextField.setEditable(parameter.isUnitEditable());
 
-		pathLabel.setText("Path : " + parameter.getNameScope().getPathDescription());
+		pathLabel.setText("Defined In: " + parameter.getNameScope().getPathDescription());
 		expressionTextField.setSymbolTable(parameter.getNameScope().getScopedSymbolTable());
 		nameTextField.setText(parameter.getName());
 		descriptionTextField.setText(parameter.getDescription());

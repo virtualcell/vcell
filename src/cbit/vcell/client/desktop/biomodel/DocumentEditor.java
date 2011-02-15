@@ -1,16 +1,22 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -20,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
@@ -65,7 +72,6 @@ public abstract class DocumentEditor extends JPanel {
 		copy_app,
 		rename,
 	}
-	protected static final double DEFAULT_DIVIDER_LOCATION = 0.68;
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
 	
@@ -268,13 +274,51 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
+private void documentEditor_eventDispatched(AWTEvent event) {
+	try {
+		Object source = event.getSource();
+		if (source instanceof Component) {
+			for (Component component = (Component)source; component != null; component = component.getParent()) {
+				if (component == DocumentEditor.this) {	
+					issueManager.setDirty();
+					break;
+				}
+			}			
+		}
+	}catch (Exception e){
+		e.printStackTrace();
+		// consume any exception ... don't screw up the swing event queue.
+	}	
+}
+
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
 		setLayout(new BorderLayout());
+		getToolkit().addAWTEventListener(new AWTEventListener() {
+			
+			public void eventDispatched(AWTEvent event) {
+				try {
+					Object source = event.getSource();
+					switch (event.getID()) {		
+					case KeyEvent.KEY_RELEASED:					
+						System.out.println("key released " + source);
+						documentEditor_eventDispatched(event);
+						break;
+					case MouseEvent.MOUSE_CLICKED :
+						System.out.println("mouse released " + source);
+						documentEditor_eventDispatched(event);
+						break;
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+					// consume any exception ... don't screw up the swing event queue.
+				}
+				
+			}
+		}, AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
 				
 		documentEditorTree = new javax.swing.JTree();
 		documentEditorTree.setEditable(true);
@@ -324,6 +368,7 @@ private void initialize() {
 		
 		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPane();
+		rightBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		rightBottomEmptyPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		issuePanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
@@ -373,7 +418,7 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			if (selectedObject instanceof DocumentEditorTreeFolderNode) {
 				folderClass = ((DocumentEditorTreeFolderNode) selectedObject).getFolderClass();
 			}
-			activeView = new ActiveView(getSelectedSimulationContext(), folderClass);
+			activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
 		}
 		if (activeView != null) {
 			selectionManager.setActiveView(activeView);

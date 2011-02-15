@@ -12,12 +12,12 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -25,6 +25,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
@@ -39,7 +40,7 @@ public class MathModelEditor extends DocumentEditor {
 	private MathModel mathModel = new MathModel(null);
 	
 	private SimulationListPanel simulationListPanel = null;
-	private GeometrySummaryViewer geometrySummaryViewer = null;
+	private GeometryViewer geometryViewer = null;
 	private OutputFunctionsPanel outputFunctionsPanel = null;
 //	private EquationViewerPanel equationViewerPanel;
 	private VCMLEditorPanel vcmlEditorPanel;
@@ -83,7 +84,7 @@ private void initialize() {
 		vcmlEditorPanel = new VCMLEditorPanel();
 		vcmlEditorPanel.setMinimumSize(new java.awt.Dimension(198, 148));
 		rightSplitPane.setTopComponent(vcmlEditorPanel);
-		geometrySummaryViewer = new GeometrySummaryViewer();		
+		geometryViewer = new GeometryViewer();		
 		simulationListPanel = new SimulationListPanel();
 		simulationSummaryPanel = new SimulationSummaryPanel();		
 		outputFunctionsPanel  = new OutputFunctionsPanel();
@@ -132,12 +133,12 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 	}
 	if (bShowInDatabaseProperties) {
-		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
+		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
 			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
 				break;
 			}
 		}
-		if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
 		}
 	}
@@ -180,7 +181,7 @@ private void setRightTopPanel(Object selectedObject) {
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_VCML_NODE) {
 			newTopPanel = vcmlEditorPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE) {
-			newTopPanel = geometrySummaryViewer;
+			newTopPanel = geometryViewer;
 		} else if (folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
 			newTopPanel = simulationListPanel;
 		} else if(folderClass == DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE) {
@@ -190,6 +191,7 @@ private void setRightTopPanel(Object selectedObject) {
 	}
 	Component rightTopComponent = rightSplitPane.getTopComponent();
 	if (rightTopComponent != newTopPanel) {
+		newTopPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
 	rightSplitPane.setDividerLocation(dividerLocation);
@@ -205,10 +207,11 @@ public void setMathModel(MathModel newValue) {
 		return;
 	}
 	this.mathModel = newValue;
-//	mathModelEditorTreeCellRenderer.setMathModel(mathModel);
 	vcmlEditorPanel.setMathModel(mathModel);
-	geometrySummaryViewer.setGeometryOwner(mathModel);	
+	geometryViewer.setGeometryOwner(mathModel);	
 	mathModelEditorTreeModel.setMathModel(mathModel);
+	
+	issueManager.setVCDocument(mathModel);
 }
 
 /**
@@ -221,7 +224,7 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 		return;
 	}
 	this.mathModelWindowManager = newValue;
-	geometrySummaryViewer.addActionListener(mathModelWindowManager);
+	geometryViewer.addActionListener(mathModelWindowManager);
 	mathModelPropertiesPanel.setMathModelWindowManager(mathModelWindowManager);
 	simulationListPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());
 	

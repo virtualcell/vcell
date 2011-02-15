@@ -110,4 +110,7 @@ void setDescription(String description) throws java.beans.PropertyVetoException;
  * @param newName java.lang.String
  */
 void setName(String newName) throws java.beans.PropertyVetoException;
+
+String getObjectPathDescription(Object object);
+String getObjectDescription(Object object);
 }

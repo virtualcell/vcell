@@ -28,12 +28,27 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReactionStep.ReactionNameScope;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.VCellNames;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -1041,5 +1056,46 @@ public SimulationContext getSimulationContext(String name) {
 	
 	public RelationshipModel getRelationshipModel(){
 		return relationshipModel;
+	}
+
+	public String getObjectPathDescription(Object source) {
+		String description = null;
+		if (source instanceof SymbolTableEntry) {
+			description = ((SymbolTableEntry) source).getNameScope().getPathDescription();
+		} else if (source instanceof ReactionStep) {
+			ReactionStep reactionStep = (ReactionStep) source;
+			description = ((ReactionNameScope)reactionStep.getNameScope()).getPathDescription();
+		} else if (source instanceof SpeciesContext) {
+			description = "Species";
+		} else if (source instanceof Structure) {
+			Structure structure = (Structure)source;
+			description = "Model / " + structure.getTypeName() + "(" + structure.getName() + ")";
+		} else if (source instanceof StructureMapping) {
+			StructureMapping structureMapping = (StructureMapping) source;
+			description = ((StructureMappingNameScope)structureMapping.getNameScope()).getPathDescription();
+		}
+		return description;
+	}
+
+	public String getObjectDescription(Object object) {
+		String description = null;
+		if (object instanceof SymbolTableEntry) {
+			description = ((SymbolTableEntry)object).getName();
+		} else if (object instanceof ReactionStep) {
+			description = ((ReactionStep)object).getName();
+		} else if (object instanceof SpeciesContext) {
+			description = ((SpeciesContext)object).getName();
+		} else if (object instanceof Structure) {
+			description = ((Structure)object).getName();
+		} else if (object instanceof Variable) {
+			description = ((Variable)object).getName();
+		} else if (object instanceof SubDomain) {
+			description = ((SubDomain)object).getName();
+		} else if (object instanceof Geometry) {
+			description = ((Geometry)object).getName();
+		} else if (object instanceof StructureMapping) {
+			description = ((StructureMapping)object).getStructure().getName();
+		}
+		return description;
 	}
 }

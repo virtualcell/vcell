@@ -7,7 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -24,6 +23,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.BioModelEntityObject;
 
 @SuppressWarnings("serial")
@@ -220,7 +220,7 @@ System.out.println(re.getBioPaxObject().toString());
 //	System.out.println(selectionManager.toString()+"# of objects are selected : " + selectedBioPaxObjects.toArray().length);
 
 	if (selectionManager != null){
-		selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE));
+		selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
 		selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
 	}
 	

@@ -1879,11 +1879,13 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 }
 
 public BioEvent getBioEvent(String name) {
-	for (BioEvent be : fieldBioEvents) {
-		if (be.getName().equals(name)) {
-			return be;
+	if (fieldBioEvents != null) {
+		for (BioEvent be : fieldBioEvents) {
+			if (be.getName().equals(name)) {
+				return be;
+			}
 		}
-	}	
+	}
 	return null;
 }
 

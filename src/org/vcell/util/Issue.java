@@ -1,18 +1,5 @@
 package org.vcell.util;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
-import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.parser.NameScope;
 
 
 /**
@@ -50,6 +37,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		KineticsExpressionNonParticipantSymbol,
 		KineticsExpressionUndefinedSymbol,
 		StructureMappingSizeParameterNotPositive,
+		StructureMappingNotMapped,
 		
 		InternalError,
 		ParameterBoundsDefinition,
@@ -59,6 +47,20 @@ public class Issue implements java.io.Serializable, Matchable {
 		ParameterEstimationRefereceDataNoTime,
 		ParameterEstimationRefereceDataNotMapped,
 		ParameterEstimationRefereceDataMappedImproperly,
+		
+		MathDescription_NoGeometry,
+		MathDescription_Constant_NotANumber,
+		MathDescription_ExpressionBindingException,
+		MathDescription_ExpressionException,
+		MathDescription_MathException,
+		MathDescription_CompartmentalModel,
+		MathDescription_SpatialModel,
+		MathDescription_SpatialModel_Subdomain,
+		MathDescription_SpatialModel_Geometry,
+		MathDescription_SpatialModel_Equation,
+		MathDescription_SpatialModel_Variable,
+		MathDescription_SpatialModel_Event,
+		MathDescription_StochasticModel,
 	}
 
 	//
@@ -201,54 +203,6 @@ public String getSeverityName() {
 public Object getSource() {
 	return source;
 }
-
-public String getSourceDescription() {
-	String description = null;
-	if (source instanceof ModelParameter) {
-		description = ((ModelParameter)source).getName();
-	} else if (source instanceof KineticsParameter) {
-		description =  ((KineticsParameter)source).getName();
-	} else if (source instanceof SimpleReaction) {
-		description = ((SimpleReaction)source).getName();
-	} else if (source instanceof FluxReaction) {
-		description = ((FluxReaction)source).getName();
-	} else if (source instanceof SpeciesContext) {
-		description = ((SpeciesContext)source).getName();
-	} else if (source instanceof Feature) {
-		description = ((Feature)source).getName();
-	} else if (source instanceof Membrane) {
-		description = ((Membrane)source).getName();
-	} else if (source instanceof StructureMappingParameter) {
-		description = ((StructureMappingParameter) source).getDescription() + " '" + ((StructureMappingParameter) source).getName() + "'";
-	}
-	return description;
-}
-
-public String getSourceContextDescription() {
-	String description = null;
-	if (source instanceof ModelParameter) {
-		description = "Global Parameter";
-	} else if (source instanceof KineticsParameter) {
-		description = "Reaction " + ((KineticsParameter)source).getKinetics().getReactionStep().getName();
-	} else if (source instanceof SimpleReaction) {
-		description = "Reaction";
-	} else if (source instanceof FluxReaction) {
-		description = "Flux";
-	} else if (source instanceof SpeciesContext) {
-		description = "Species";
-	} else if (source instanceof Feature) {
-		description = Structure.TYPE_NAME_FEATURE;
-	} else if (source instanceof Membrane) {
-		description = Structure.TYPE_NAME_MEMBRANE;
-	} else if (source instanceof StructureMappingParameter) {
-		StructureMappingNameScope nameScope = (StructureMappingNameScope)(((StructureMappingParameter)source).getNameScope());
-		SimulationContextNameScope parentNameScope = (SimulationContextNameScope)nameScope.getParent();
-		description = BioModel.SIMULATION_CONTEXT_DISPLAY_NAME + " '" + parentNameScope.getSimulationContext().getName() 
-			+ "': Structure Mapping: '" + nameScope.getStructureMapping().getStructure().getName() + "'";
-	}
-	return description;
-}
-
 
 /**
  * Insert the method's description here.

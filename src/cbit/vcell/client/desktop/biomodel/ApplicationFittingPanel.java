@@ -2,6 +2,7 @@ package cbit.vcell.client.desktop.biomodel;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -36,5 +37,10 @@ public class ApplicationFittingPanel extends ApplicationSubPanel {
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		parameterEstimationPanel.setSelectionManager(selectionManager);
+	}
+
+	@Override
+	public ActiveViewID getActiveViewID() {
+		return ActiveViewID.parameter_estimation;
 	}
 }

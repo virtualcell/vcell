@@ -95,10 +95,10 @@ private void initialize() {
 		setSize(572, 196);
 		setBackground(Color.white);
 
-		JLabel label = new JLabel("<html><u>Select only one species to set initial conditions</u></html>");
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, BorderLayout.NORTH);
+//		JLabel label = new JLabel("<html><u>Select only one species to set initial conditions</u></html>");
+//		label.setHorizontalAlignment(SwingConstants.CENTER);
+//		label.setFont(label.getFont().deriveFont(Font.BOLD));
+//		add(label, BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		initConnections();
 		

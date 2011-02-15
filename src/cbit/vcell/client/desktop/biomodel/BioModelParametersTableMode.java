@@ -40,10 +40,12 @@ public class BioModelParametersTableMode extends BioModelEditorRightSideTableMod
 	public static final int COLUMN_DESCRIPTION = 2;
 	public static final int COLUMN_EXPRESSION = 3;
 	public static final int COLUMN_UNIT = 4;
-	private static String LABELS[] = {"Path", "Name", "Description", "Expression", "Units"};
-	private boolean bIncludeReactions = true;
-	private boolean bIncludeSimulationContexts = true;
-	private boolean bIncludeGlobal = true;
+	private static String LABELS[] = {"Defined In:", "Name", "Description", "Expression", "Units"};
+	private boolean bReactions = true;
+	private boolean bApplications = true;
+	private boolean bGlobal = true;
+	private boolean bConstants = true;
+	private boolean bFunctions = true;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -86,16 +88,16 @@ protected List<Parameter> computeData() {
 	if (bioModel == null){
 		return null;
 	}
-	if (bIncludeGlobal) {
+	if (bGlobal) {
 		allParameterList.addAll(Arrays.asList(bioModel.getModel().getModelParameters()));
 	}
-	if (bIncludeReactions) {
+	if (bReactions) {
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
 			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
 			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
 		}
 	}
-	if (bIncludeSimulationContexts) {
+	if (bApplications) {
 		for (SimulationContext simContext : bioModel.getSimulationContexts()) {
 			allParameterList.addAll(getApplicationParameterList(simContext));
 		}
@@ -104,12 +106,15 @@ protected List<Parameter> computeData() {
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
 	for (Parameter parameter : allParameterList) {
-		if (bSearchInactive
-				|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
-				|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
-				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
-				|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)) {
-			parameterList.add(parameter);
+		boolean bNumeric = parameter.getExpression() != null && parameter.getExpression().isNumeric();
+		if (bConstants && bNumeric || bFunctions && !bNumeric) {
+			if (bSearchInactive
+					|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
+					|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
+					|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
+					|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)) {
+				parameterList.add(parameter);
+			}
 		}
 	}
 	return parameterList;
@@ -385,27 +390,43 @@ public Set<String> getAutoCompletionWords(int row, int column) {
 	return null;
 }
 
-public final void setIncludeReactionParameters(boolean newValue) {
-	if (newValue == bIncludeReactions) {
+public final void setIncludeReactions(boolean newValue) {
+	if (newValue == bReactions) {
 		return;
 	}	
-	this.bIncludeReactions = newValue;
+	this.bReactions = newValue;
 	refreshData();
 }
 
-public final void setIncludeGlobalParameters(boolean newValue) {
-	if (newValue == bIncludeGlobal) {
+public final void setIncludeGlobal(boolean newValue) {
+	if (newValue == bGlobal) {
 		return;
 	}	
-	this.bIncludeGlobal = newValue;
+	this.bGlobal = newValue;
 	refreshData();
 }
 
-public final void setIncludeSimulationContextParameters(boolean newValue) {
-	if (newValue == bIncludeSimulationContexts) {
+public final void setIncludeApplications(boolean newValue) {
+	if (newValue == bApplications) {
 		return;
 	}	
-	this.bIncludeSimulationContexts = newValue;
+	this.bApplications = newValue;
+	refreshData();
+}
+
+public final void setIncludeConstants(boolean newValue) {
+	if (newValue == bConstants) {
+		return;
+	}	
+	this.bConstants = newValue;
+	refreshData();
+}
+
+public final void setIncludeFunctions(boolean newValue) {
+	if (newValue == bFunctions) {
+		return;
+	}	
+	this.bFunctions = newValue;
 	refreshData();
 }
 

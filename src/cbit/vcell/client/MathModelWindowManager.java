@@ -23,7 +23,6 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
 
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -87,14 +86,14 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	final Object source = e.getSource();
 
-	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
 			AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					Geometry newGeom = (Geometry)hashTable.get("doc");
 					if(newGeom != null){
 						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)){
-							GeometryViewer localGeometryViewer = new GeometryViewer();
+							GeometryViewer localGeometryViewer = new GeometryViewer(false);
 							localGeometryViewer.setGeometry(newGeom);
 							localGeometryViewer.setSize(800,600);
 							int result = DialogUtils.showComponentOKCancelDialog(
@@ -134,7 +133,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
 	}
 
-	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
+	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		getRequestManager().changeGeometry(this, null);
 	}	
 }

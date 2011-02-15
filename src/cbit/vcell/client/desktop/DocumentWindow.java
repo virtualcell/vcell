@@ -40,6 +40,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.biomodel.BioModel;
@@ -224,13 +225,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DocumentWindow() {
 	super();
 	initialize();
-	BufferedImage image = null;
-	try {
-		image = ImageIO.read(getClass().getResource("/icons/vcell.gif"));
-	} catch (IOException e) {
-		e.printStackTrace();	}
-
-	setIconImage(image);
 }
 
 /**
@@ -2522,6 +2516,7 @@ private void initialize() {
 		// user code end
 		setName("DocumentWindow");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+		setIconImage(VCellIcons.getJFrameImageIcon());
 		setJMenuBar(getDocumentWindowJMenuBar());
 		setSize(460, 536);
 		setTitle("DocumentWindow");

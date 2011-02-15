@@ -6,9 +6,11 @@ package cbit.vcell.mathmodel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.ArrayList;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.MathModelChildSummary;
@@ -21,6 +23,8 @@ import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.solver.Simulation;
@@ -703,5 +707,26 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public void refreshMathDescription() {
 		// do nothing. math description always exists		
+	}
+	
+	public void gatherIssues(ArrayList<Issue> issueList) {
+		fieldMathDescription.gatherIssues(issueList);
+	}
+
+	public String getObjectPathDescription(Object object) {
+		return null;
+	}
+
+
+	public String getObjectDescription(Object object) {
+		String description = null;
+		if (object instanceof Variable) {
+			description = ((Variable)object).getName();
+		} else if (object instanceof SubDomain) {
+			description = ((SubDomain)object).getName();
+		} else if (object instanceof Geometry) {
+			description = ((Geometry)object).getName();
+		}
+		return description;		
 	}
 }

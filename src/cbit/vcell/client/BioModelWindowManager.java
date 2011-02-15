@@ -35,7 +35,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -116,8 +115,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 //		}
 //	}
 //
-	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
-		final GeometrySummaryViewer geometrySummaryViewer = (GeometrySummaryViewer)source;
+	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		
 		AsynchClientTask oldEditorTask = new AsynchClientTask("Show Old Editor",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
@@ -128,7 +127,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				}
 				Boolean bShowOldGeomEditor = (Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR);
 				if(bShowOldGeomEditor){
-					GeometryViewer localGeometryViewer = new GeometryViewer();
+					GeometryViewer localGeometryViewer = new GeometryViewer(false);
 					localGeometryViewer.setGeometry(newGeom);
 					localGeometryViewer.setPreferredSize(new Dimension(700,500));
 					int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
@@ -154,7 +153,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");
 				for (SimulationContext simulationContext : getBioModel().getSimulationContexts()) {
-					if (simulationContext == geometrySummaryViewer.getGeometryOwner()) {
+					if (simulationContext == geometryViewer.getGeometryOwner()) {
 						if(newGeom.getName() == null){
 							newGeom.setName(
 								getBioModel().getName()+"_"+
@@ -165,13 +164,13 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 						return;
 					} 
 				}
-				Geometry origGeom = geometrySummaryViewer.getGeometryOwner().getGeometry();
+				Geometry origGeom = geometryViewer.getGeometryOwner().getGeometry();
 				throw new IllegalArgumentException(
 					"Couldn't find matching application editor for orig geom '"+origGeom.getName()+"' key="+origGeom.getKey()+" in application hash.");
 			}
 		};
 
-		Geometry currentGeometry = geometrySummaryViewer.getGeometryOwner().getGeometry();
+		Geometry currentGeometry = geometryViewer.getGeometryOwner().getGeometry();
 		createGeometry(currentGeometry,
 				new AsynchClientTask[] {oldEditorTask,precomputeAllTask,setGeomOnSimContextTask}
 				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
@@ -185,9 +184,9 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 ////		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
 ////		showGeometryViewerFrame(sc);
 ////	}
-	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
-		final GeometrySummaryViewer geometrySummaryViewer = (GeometrySummaryViewer)source;
-		getRequestManager().changeGeometry(this,(SimulationContext)geometrySummaryViewer.getGeometryOwner());
+	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
+		final GeometryViewer geometryViewer = (GeometryViewer)source;
+		getRequestManager().changeGeometry(this,(SimulationContext)geometryViewer.getGeometryOwner());
 	}
 }
 

@@ -1,6 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
+
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
@@ -41,6 +44,21 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
+	}
+
+	@Override
+	public ActiveViewID getActiveViewID() {
+		Component selectedComponent = tabbedPane.getSelectedComponent();
+		if (selectedComponent == eventsDisplayPanel) {
+			return ActiveViewID.events;
+		}
+		if (selectedComponent == electricalMembraneMappingPanel) {
+			return ActiveViewID.electrical;
+		}
+		if (selectedComponent == microscopeMeasurementPanel) {
+			return ActiveViewID.microscope_measuremments;
+		}
+		return null;
 	}
 	
 }

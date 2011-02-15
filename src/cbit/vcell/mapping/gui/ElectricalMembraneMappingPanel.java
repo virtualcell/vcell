@@ -19,7 +19,6 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private Geometry ivjGeometry = null;
 	private GeometryContext ivjgeometryContext1 = null;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ScrollTable ivjScrollPaneTable1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ElectricalMembraneMappingTableModel ivjElectricalMembraneMappingTableModel1 = null;
