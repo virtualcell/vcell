@@ -44,6 +44,6 @@ public class VisitConnectionInfo implements Serializable {
 	}	
 	
 	public String getDatabaseOpenPath(User user,String simLogName){
-		return PropertyLoader.getProperty("vcell.visit.datalocation", "")+"\\"+user.getName()+"\\"+simLogName;
+		return PropertyLoader.getProperty("vcell.visit.datalocation", "")+File.separator+user.getName()+File.separator+simLogName;
 	}
 }
