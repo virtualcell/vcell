@@ -7,6 +7,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -74,4 +75,6 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		}
 		bioModelWindowManager = newValue;
 	}
+	
+	public abstract ActiveViewID getActiveViewID();
 }

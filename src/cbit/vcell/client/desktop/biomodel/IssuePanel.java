@@ -24,6 +24,11 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.model.Parameter;
 
 @SuppressWarnings("serial")
@@ -82,7 +87,13 @@ public class IssuePanel extends DocumentEditorSubPanel {
 						Issue issue = issueTableModel.getValueAt(row);
 						Object object = issue.getSource();
 						if (object instanceof Parameter) {
-							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE));
+							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, null));
+							setSelectedObjects(new Object[] {object});
+						} else if (object instanceof StructureMapping) {
+							StructureMapping structureMapping = (StructureMapping) object;
+							StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
+							SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
+							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
 							setSelectedObjects(new Object[] {object});
 						}
 					}

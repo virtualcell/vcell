@@ -18,13 +18,15 @@ import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphPane;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class StructureMappingCartoonPanel extends JPanel implements java.beans.PropertyChangeListener {
+public class StructureMappingCartoonPanel extends DocumentEditorSubPanel implements java.beans.PropertyChangeListener {
 	private GraphPane ivjStructureGraphPane = null;
 	private StructureMappingPanel ivjStructureMappingPanel = null;
 	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
@@ -988,5 +990,16 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 		};
 		// user code begin {3}
 		// user code end
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		
+	}
+	
+	@Override
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		getStructureMappingPanel().setSelectionManager(selectionManager);
 	}
 }

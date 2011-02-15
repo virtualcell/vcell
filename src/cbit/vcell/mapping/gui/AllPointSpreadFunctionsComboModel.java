@@ -9,6 +9,7 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.mapping.SimulationContext;
 
+@SuppressWarnings("serial")
 public class AllPointSpreadFunctionsComboModel extends DefaultComboBoxModel implements PropertyChangeListener {
 
 	private SimulationContext simulationContext = null;
@@ -40,7 +41,7 @@ public class AllPointSpreadFunctionsComboModel extends DefaultComboBoxModel impl
 				simulationContext.getMicroscopeMeasurement().addPropertyChangeListener(this);
 			}
 		}		
-		System.out.println("setSimulationContext");
+//		System.out.println("setSimulationContext");
 		refresh();
 	}
 

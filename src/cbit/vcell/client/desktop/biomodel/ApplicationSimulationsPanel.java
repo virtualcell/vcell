@@ -1,7 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
+
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -62,5 +65,20 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		super.setSelectionManager(selectionManager);
 		simulationListPanel.setSelectionManager(selectionManager);
 		outputFunctionsPanel.setSelectionManager(selectionManager);
+	}
+
+	@Override
+	public ActiveViewID getActiveViewID() {
+		Component selectedComponent = tabbedPane.getSelectedComponent();
+		if (selectedComponent == simulationListPanel) {
+			return ActiveViewID.simulations;
+		}
+		if (selectedComponent == outputFunctionsPanel) {
+			return ActiveViewID.output_functions;
+		}
+		if (selectedComponent == mathematicsPanel) {
+			return ActiveViewID.generated_math;
+		}
+		return null;
 	}
 }

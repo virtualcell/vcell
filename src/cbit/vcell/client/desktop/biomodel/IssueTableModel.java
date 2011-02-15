@@ -17,9 +17,8 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 
 	static final int COLUMN_DESCRIPTION = 0;
 	static final int COLUMN_SOURCE = 1;
-	static final int COLUMN_CONTEXT = 2;
-	static final int COLUMN_CATEGORY = 3;
-	private static final String[] labels = {"Description", "Source", "Context", "Category"};
+	static final int COLUMN_PATH = 2;
+	private static final String[] labels = {"Description", "Source", "Defined In:"};
 	private IssueManager issueManager = null;
 	private JTable ownerTable = null;
 	private boolean bShowWarning = true;
@@ -35,11 +34,9 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 		case COLUMN_DESCRIPTION:
 			return issue;
 		case COLUMN_SOURCE:
-			return issue.getSourceDescription();
-		case COLUMN_CONTEXT:
-			return issue.getSourceContextDescription();
-		case COLUMN_CATEGORY:
-			return issue.getCategory().name();
+			return issueManager == null ? null : issueManager.getObjectDescription(issue.getSource());
+		case COLUMN_PATH:
+			return issueManager == null ? null : issueManager.getObjectPathDescription(issue.getSource());
 		}
 		return null;
 	}
@@ -59,12 +56,10 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 						return scale * new Integer(s1).compareTo(new Integer(s2));
 					}
 				}
-				case COLUMN_CATEGORY:
-					return scale * o1.getCategory().compareTo(o2.getCategory());
 				case COLUMN_SOURCE:
-					return scale * o1.getSourceDescription().compareTo(o2.getSourceDescription());
-				case COLUMN_CONTEXT:
-					return scale * o1.getSourceContextDescription().compareTo(o2.getSourceContextDescription());
+					return issueManager == null ? 0 : scale * issueManager.getObjectDescription(o1).compareTo(issueManager.getObjectDescription(o2));
+				case COLUMN_PATH:
+					return issueManager == null ? 0 : scale * issueManager.getObjectPathDescription(o1).compareTo(issueManager.getObjectPathDescription(o2));
 				}
 				return 0;
 			}		
@@ -77,9 +72,7 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 		case COLUMN_DESCRIPTION:
 			return Issue.class;
 		case COLUMN_SOURCE:
-		case COLUMN_CONTEXT:
-			return String.class;
-		case COLUMN_CATEGORY:
+		case COLUMN_PATH:
 			return String.class;
 		}
 		return Object.class;
@@ -138,5 +131,4 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 		issueManager.updateIssues();
 		refreshData();
 	}
-
 }

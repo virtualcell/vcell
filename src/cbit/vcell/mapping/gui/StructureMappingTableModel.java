@@ -3,10 +3,11 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -16,12 +17,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.document.GeometryOwner;
@@ -49,7 +48,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class StructureMappingTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
+public class StructureMappingTableModel extends DefaultSortTableModel<StructureMapping> implements java.beans.PropertyChangeListener {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	
 	public final static int SPATIAL_COLUMN_STRUCTURE = 0;
@@ -475,53 +474,39 @@ private void updateSubdomainComboBox() {
 }
 
 private void update() {
-//	AsynchClientTask task1 = new AsynchClientTask("update geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//		
-//		@Override
-//		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			getGeometryContext().getGeometry().precomputeAll();
-//		}
-//	};
-//	AsynchClientTask task2 = new AsynchClientTask("update", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-//		
-//		@Override
-//		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			int dimension = getGeometryContext().getGeometry().getDimension();
-			bNonSpatial = (dimension == 0);
-			fireTableStructureChanged();
-			
-			if (!bNonSpatial) {
-				class StructureMappingTableHeaderRenderer implements TableCellRenderer {
-					TableCellRenderer defaultRenderer = null;
-					public StructureMappingTableHeaderRenderer(TableCellRenderer dr) {
-						defaultRenderer = dr;
-					}
-					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-							boolean hasFocus, int row, int column) {
-						Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-						if (c instanceof JLabel) {
-							JLabel label = (JLabel)c;
-							if (column == SPATIAL_COLUMN_SIZERATIO) {
-								label.setToolTipText("Size Ratio = Structure : Subdomain");
-							} else {
-								label.setToolTipText(value.toString());
-							}
-						}
-						return c;
+	int dimension = getGeometryContext().getGeometry().getDimension();
+	bNonSpatial = (dimension == 0);
+	fireTableStructureChanged();
+	refreshData();
+	
+	if (!bNonSpatial) {
+		class StructureMappingTableHeaderRenderer implements TableCellRenderer {
+			TableCellRenderer defaultRenderer = null;
+			public StructureMappingTableHeaderRenderer(TableCellRenderer dr) {
+				defaultRenderer = dr;
+			}
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
+				Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (c instanceof JLabel) {
+					JLabel label = (JLabel)c;
+					if (column == SPATIAL_COLUMN_SIZERATIO) {
+						label.setToolTipText("Size Ratio = Structure : Subdomain");
+					} else {
+						label.setToolTipText(value.toString());
 					}
 				}
-				
-				ownerTable.getTableHeader().setDefaultRenderer(new StructureMappingTableHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
-				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setPreferredWidth(100);
-				for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
-					ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
-				}
-				updateSubdomainComboBox();
-			}		
-			
-//		}
-//	};
-//	ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+				return c;
+			}
+		}
+		
+		ownerTable.getTableHeader().setDefaultRenderer(new StructureMappingTableHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
+		ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setPreferredWidth(100);
+		for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
+			ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
+		}
+		updateSubdomainComboBox();
+	}		
 }
 /**
 	 * This method gets called when a bound property is changed.
@@ -581,7 +566,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i=0;newStructureMappings!=null && i<newStructureMappings.length;i++){
 			newStructureMappings[i].addPropertyChangeListener(this);
 		}
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof StructureMapping) {
 		fireTableDataChanged();
@@ -596,7 +581,13 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
+private void refreshData() {
+	ArrayList<StructureMapping> structureMappingList = new ArrayList<StructureMapping>();	
+	if (fieldGeometryContext != null) {
+		structureMappingList.addAll(Arrays.asList(fieldGeometryContext.getStructureMappings()));
+	}
+	setData(structureMappingList);
+}
 /**
  * Sets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @param geometryContext The new value for the property.
@@ -616,7 +607,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("StructureMappingTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}	
-	StructureMapping structureMapping = getGeometryContext().getStructureMapping(rowIndex);
+	StructureMapping structureMapping = getValueAt(rowIndex);
 	Structure structure = structureMapping.getStructure();
 	if (bNonSpatial) {
 		switch (columnIndex){
@@ -796,5 +787,17 @@ public StructureMapping getStructureMapping(int row) {
 
 public boolean isNonSpatial() {
 	return bNonSpatial;
+}
+
+
+@Override
+protected Comparator<StructureMapping> getComparator(int col, boolean ascending) {
+	return null;
+}
+
+
+@Override
+public boolean isSortable(int col) {
+	return false;
 }
 }

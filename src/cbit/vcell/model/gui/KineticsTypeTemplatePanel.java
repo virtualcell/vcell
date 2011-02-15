@@ -210,7 +210,7 @@ private void initialize() {
 		gridBagConstraints.gridy = gridy;
 		gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 10);
 		this.add(getJToggleButton(), gridBagConstraints);
-		getJToggleButton().setEnabled(bEditable);
+		getJToggleButton().setVisible(bEditable);
 		
 		gridy ++;
 		java.awt.GridBagConstraints constraintsParameterPanel = new java.awt.GridBagConstraints();

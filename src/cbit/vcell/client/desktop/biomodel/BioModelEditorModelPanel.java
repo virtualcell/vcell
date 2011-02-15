@@ -51,6 +51,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
@@ -212,15 +213,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		ActiveView activeView = null;
 		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions);
 		} else if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE, ActiveViewID.structures);
 		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species);
 		} else if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram);
 		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, ActiveViewID.structure_diagram);
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -329,7 +330,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		add(tabbedPane, gbc);		
 						
 		newButton.addActionListener(eventHandler);
-		newButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		textFieldSearch.addActionListener(eventHandler);

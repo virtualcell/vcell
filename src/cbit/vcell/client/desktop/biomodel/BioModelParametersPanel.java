@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +14,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -26,21 +30,36 @@ import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
 public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parameter> {
-	private JCheckBox includeGlobalParametersCheckBox = null;
-	private JCheckBox includeSimulationContextsCheckBox = null;
-	private JCheckBox includeReactionsCheckBox = null;
+	private JCheckBox globalParametersCheckBox = null;
+	private JCheckBox applicationsCheckBox = null;
+	private JCheckBox reactionsCheckBox = null;
+	private JCheckBox constantsCheckBox = null;
+	private JCheckBox functionsCheckBox = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	
-	private class InternalEventHandler implements ActionListener {		
+	private JTabbedPane tabbedPane;
+	private int selectedIndex = -1;
+	private String selectedTabTitle = null;
+
+	private class InternalEventHandler implements ActionListener, ChangeListener {		
 				
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == includeGlobalParametersCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeGlobalParameters(includeGlobalParametersCheckBox.isSelected());
-			} else if (e.getSource() == includeSimulationContextsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeSimulationContextParameters(includeSimulationContextsCheckBox.isSelected());
-			} else if (e.getSource() == includeReactionsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeReactionParameters(includeReactionsCheckBox.isSelected());
+			if (e.getSource() == globalParametersCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeGlobal(globalParametersCheckBox.isSelected());
+			} else if (e.getSource() == applicationsCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeApplications(applicationsCheckBox.isSelected());
+			} else if (e.getSource() == reactionsCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeReactions(reactionsCheckBox.isSelected());
+			} else if (e.getSource() == constantsCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeConstants(constantsCheckBox.isSelected());
+			} else if (e.getSource() == functionsCheckBox) {
+				((BioModelParametersTableMode)tableModel).setIncludeFunctions(functionsCheckBox.isSelected());
 			}
+		}
+
+		public void stateChanged(ChangeEvent e) {
+			if (e.getSource() == tabbedPane) {
+				tabbedPaneSelectionChanged();
+			}			
 		}
 	}
 	
@@ -51,15 +70,21 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 
 	private void initialize(){
 		addNewButton.setText("Add New Global Parameter");
-		includeGlobalParametersCheckBox = new JCheckBox("Global Parameters");
-		includeGlobalParametersCheckBox.setSelected(true);
-		includeGlobalParametersCheckBox.addActionListener(eventHandler);
-		includeReactionsCheckBox = new JCheckBox("Reaction Parameters");
-		includeReactionsCheckBox.setSelected(true);
-		includeReactionsCheckBox.addActionListener(eventHandler);
-		includeSimulationContextsCheckBox = new JCheckBox("Parameters from All Applications");
-		includeSimulationContextsCheckBox.setSelected(true);
-		includeSimulationContextsCheckBox.addActionListener(eventHandler);
+		globalParametersCheckBox = new JCheckBox("Global");
+		globalParametersCheckBox.setSelected(true);
+		globalParametersCheckBox.addActionListener(eventHandler);
+		reactionsCheckBox = new JCheckBox("Reactions");
+		reactionsCheckBox.setSelected(true);
+		reactionsCheckBox.addActionListener(eventHandler);
+		applicationsCheckBox = new JCheckBox("Applications");
+		applicationsCheckBox.setSelected(true);
+		applicationsCheckBox.addActionListener(eventHandler);
+		constantsCheckBox = new JCheckBox("Parameters");
+		constantsCheckBox.setSelected(true);
+		constantsCheckBox.addActionListener(eventHandler);
+		functionsCheckBox = new JCheckBox("Functions");
+		functionsCheckBox.setSelected(true);
+		functionsCheckBox.addActionListener(eventHandler);
 
 		setLayout(new GridBagLayout());
 		int gridy = 0;
@@ -102,50 +127,12 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
-		JTabbedPane tabbedPane = new JTabbedPane();
-		JPanel tabPanel = new JPanel();
+		tabbedPane = new JTabbedPane();
+		tabbedPane.addChangeListener(eventHandler);
+		JPanel tabPanel = getParametersPanel();
 		tabPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("<html><b>BioModel Parameters</b></html>", tabPanel);
-		add(tabbedPane, gbc);
-		
-		tabPanel.setLayout(new GridBagLayout());
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(includeGlobalParametersCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(includeReactionsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(includeSimulationContextsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
-		gbc.gridwidth = 3;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(table.getEnclosingScrollPane(), gbc);		
+		tabbedPane.addTab("Parameters and Functions", tabPanel);
+		add(tabbedPane, gbc);	
 
 		table.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
 
@@ -165,6 +152,86 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		});
 	}
 	
+	private JPanel getParametersPanel() {
+		JPanel tabPanel = new JPanel();
+		tabPanel.setLayout(new GridBagLayout());
+		
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		JLabel label = new JLabel("Defined In:");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		tabPanel.add(label, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(globalParametersCheckBox, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(reactionsCheckBox, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(applicationsCheckBox, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		label = new JLabel("Type:");
+		label.setHorizontalAlignment(SwingConstants.RIGHT);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		tabPanel.add(label, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(constantsCheckBox, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 6;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(functionsCheckBox, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 7;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		tabPanel.add(table.getEnclosingScrollPane(), gbc);		
+		return tabPanel;
+	}
 	@Override
 	protected void tableSelectionChanged() {
 		super.tableSelectionChanged();
@@ -229,5 +296,18 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, table, tableModel);
+	}
+	
+	public void tabbedPaneSelectionChanged() {
+		int oldSelectedIndex = selectedIndex;
+		selectedIndex = tabbedPane.getSelectedIndex();
+		if (oldSelectedIndex == selectedIndex) {
+			return;
+		}
+		if (oldSelectedIndex >= 0) {
+			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
+		}
+		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
+		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
 	}
 }

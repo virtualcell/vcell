@@ -50,7 +50,7 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjPanel1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private GeometrySubVolumeTableModel ivjgeometrySubVolumeTableModel = null;
-	private javax.swing.JPanel ivjJPanel1 = null;
+	private javax.swing.JPanel buttonPanel = null;
 	private ScrollTable ivjScrollPaneTable = null;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
 	private SubVolume ivjSelectedSubVolume = null;
@@ -131,25 +131,6 @@ private void connEtoC10() {
 	}
 }
 /**
- * connEtoC11:  (GeometrySpec.this --> GeometrySubVolumePanel.refreshButtons()V)
- * @param value cbit.vcell.geometry.GeometrySpec
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(GeometrySpec value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refreshButtons();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoC2:  (Geometry.subVolumes --> GeometrySubVolumePanel.refreshButtons()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -218,26 +199,6 @@ private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 /**
- * connEtoM2:  (Geometry.this --> geometrySubVolumeTableModel.geometry)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getGeometry() != null)) {
-			getgeometrySubVolumeTableModel().setGeometry(getGeometry());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
  * connEtoM3:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SelectedSubVolume.this)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
@@ -292,26 +253,6 @@ private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		setSelectedSubVolume(this.findSubVolume());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM8:  (Geometry.this --> GeometrySpec.this)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getGeometry() != null)) {
-			setGeometrySpec(getGeometry().getGeometrySpec());
-		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -573,24 +514,24 @@ private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
+private javax.swing.JPanel getButtonPanel() {
+	if (buttonPanel == null) {
 		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
+			buttonPanel = new javax.swing.JPanel();
+			buttonPanel.setName("JPanel1");
 			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,0,0,7};
-			ivjJPanel1.setLayout(gridBagLayout);
+			buttonPanel.setLayout(gridBagLayout);
 
 			java.awt.GridBagConstraints constraintsFrontButton = new java.awt.GridBagConstraints();
 			constraintsFrontButton.gridx = 0; constraintsFrontButton.gridy = 0;
 			constraintsFrontButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			getJPanel1().add(getFrontButton(), constraintsFrontButton);
+			buttonPanel.add(getFrontButton(), constraintsFrontButton);
 
 			java.awt.GridBagConstraints constraintsBackButton = new java.awt.GridBagConstraints();
 			constraintsBackButton.gridx = 0; constraintsBackButton.gridy = 1;
 			constraintsBackButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			getJPanel1().add(getBackButton(), constraintsBackButton);
+			buttonPanel.add(getBackButton(), constraintsBackButton);
 
 			java.awt.GridBagConstraints constraintsDeleteButton = new java.awt.GridBagConstraints();
 			constraintsDeleteButton.gridx = 0; constraintsDeleteButton.gridy = 3;
@@ -684,17 +625,13 @@ private javax.swing.JPanel getJPanel1() {
 			gridBagConstraints.weightx = 0;
 			gridBagConstraints.gridy = 2;
 			gridBagConstraints.gridx = 0;
-			ivjJPanel1.add(addShapeButton, gridBagConstraints);
-			getJPanel1().add(getDeleteButton(), constraintsDeleteButton);
-			// user code begin {1}
-			// user code end
+			buttonPanel.add(addShapeButton, gridBagConstraints);
+			buttonPanel.add(getDeleteButton(), constraintsDeleteButton);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel1;
+	return buttonPanel;
 }
 
 /**
@@ -745,7 +682,7 @@ private javax.swing.JPanel getPanel1() {
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJPanel1.weighty = 1.0;
 			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getPanel1().add(getJPanel1(), constraintsJPanel1);
+			getPanel1().add(getButtonPanel(), constraintsJPanel1);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -910,25 +847,20 @@ private void refreshButtons() {
  * Set the Geometry to a new value.
  * @param newValue cbit.vcell.geometry.Geometry
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void setGeometry(Geometry newValue) {
 	if (ivjGeometry != newValue) {
 		try {
 			Geometry oldValue = getGeometry();
 			ivjGeometry = newValue;
-			connEtoM2(ivjGeometry);
-			connEtoM8(ivjGeometry);
+			if (ivjGeometry != null) {
+				getgeometrySubVolumeTableModel().setGeometry(ivjGeometry);
+				setGeometrySpec(ivjGeometry.getGeometrySpec());
+			}
 			firePropertyChange("geometry", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 /**
  * Set the GeometrySpec to a new value.
@@ -948,9 +880,7 @@ private void setGeometrySpec(GeometrySpec newValue) {
 			if (ivjGeometrySpec != null) {
 				ivjGeometrySpec.addPropertyChangeListener(ivjEventHandler);
 			}
-			connEtoC11(ivjGeometrySpec);
-			// user code begin {1}
-			// user code end
+			this.refreshButtons();
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end

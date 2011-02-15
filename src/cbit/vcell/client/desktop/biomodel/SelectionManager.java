@@ -7,14 +7,53 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.mapping.SimulationContext;
 
 public class SelectionManager {
+	public static enum ActiveViewID {
+		pathway,
+		model,	
+		biomodel_parameters,	
+		data,	
+		applications,	
+		scripting,
+
+		reactions,
+		structures,
+		species,
+		reaction_diagram,
+		structure_diagram,
+		
+		geometry_settings,
+		structure_mapping,
+		
+		species_settings,
+		reaction_setting,
+		
+		events,
+		electrical,
+		microscope_measuremments,
+		
+		simulations,
+		output_functions,
+		generated_math,
+		fitting,
+		parameter_estimation,
+		
+		math_annotation,
+		math_vcml,
+		math_geometry,
+		math_simulations,
+		math_output_functions;
+	}
+	
 	public static class ActiveView implements Matchable {
 		private SimulationContext simulationContext;
 		private DocumentEditorTreeFolderClass documentEditorTreeFolderClass;
+		private ActiveViewID activeViewID;
 		
-		public ActiveView(SimulationContext simulationContext, DocumentEditorTreeFolderClass documentEditorTreeFolderClass) {
+		public ActiveView(SimulationContext simulationContext, DocumentEditorTreeFolderClass documentEditorTreeFolderClass, ActiveViewID activeViewID) {
 			super();
 			this.simulationContext = simulationContext;
 			this.documentEditorTreeFolderClass = documentEditorTreeFolderClass;
+			this.activeViewID = activeViewID;
 		}
 		public final SimulationContext getSimulationContext() {
 			return simulationContext;
@@ -25,14 +64,23 @@ public class SelectionManager {
 		public boolean compareEqual(Matchable obj) {
 			if (obj instanceof ActiveView) {
 				ActiveView activeView = (ActiveView) obj;
-				if (simulationContext == activeView.simulationContext && 
-					documentEditorTreeFolderClass == null && activeView == null 
-					|| documentEditorTreeFolderClass != null && documentEditorTreeFolderClass.equals(activeView.documentEditorTreeFolderClass)
-					|| activeView.documentEditorTreeFolderClass != null && activeView.documentEditorTreeFolderClass.equals(documentEditorTreeFolderClass)) {
-					return true;
+				if (simulationContext != activeView.simulationContext) {
+					return false; 
+				}
+				if (documentEditorTreeFolderClass != null && !documentEditorTreeFolderClass.equals(activeView.documentEditorTreeFolderClass)
+					|| activeView.documentEditorTreeFolderClass != null && !activeView.documentEditorTreeFolderClass.equals(documentEditorTreeFolderClass)) {
+					return false;
+				}
+					
+				if (activeViewID != null && activeViewID.equals(activeView.activeViewID)
+					|| activeView.activeViewID != null && activeView.activeViewID.equals(activeViewID)) {
+					return false;
 				}
 			}
-			return false;
+			return true;
+		}
+		public final ActiveViewID getActiveViewID() {
+			return activeViewID;
 		}		
 	}
 	

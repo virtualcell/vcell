@@ -1,6 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
+
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
@@ -37,5 +40,17 @@ public class ApplicationSettingsPanel extends ApplicationSubPanel {
 		super.setSelectionManager(selectionManager);
 		reactionSpecsPanel.setSelectionManager(selectionManager);
 		initialConditionsPanel.setSelectionManager(selectionManager);
+	}
+	
+	@Override
+	public ActiveViewID getActiveViewID() {
+		Component selectedComponent = tabbedPane.getSelectedComponent();
+		if (selectedComponent == initialConditionsPanel) {
+			return ActiveViewID.species_settings;
+		}
+		if (selectedComponent == reactionSpecsPanel) {
+			return ActiveViewID.reaction_setting;
+		}
+		return null;
 	}
 }

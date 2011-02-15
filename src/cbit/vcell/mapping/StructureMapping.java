@@ -423,6 +423,9 @@ public void gatherIssues(Vector<Issue> issueVector) {
 			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
+	if (geometryClass == null) {
+		issueVector.add(new Issue(this, IssueCategory.StructureMappingNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to geometry.", Issue.SEVERITY_ERROR));
+	}
 }
 
 /**

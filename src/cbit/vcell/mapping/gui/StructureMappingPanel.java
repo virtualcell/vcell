@@ -10,6 +10,7 @@ import javax.swing.UIManager;
 
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.GeometryContext;
@@ -19,7 +20,7 @@ import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */
-public class StructureMappingPanel extends javax.swing.JPanel {
+public class StructureMappingPanel extends DocumentEditorSubPanel {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	private GeometryContext ivjgeometryContext1 = null;  
 	private GeometryContext fieldGeometryContext = null;
@@ -318,6 +319,11 @@ private void setgeometryContext1(GeometryContext newValue) {
 	};
 	// user code begin {3}
 	// user code end
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	setTableSelections(selectedObjects, getScrollPaneTable1(), getStructureMappingTableModel1());	
 }
 
 }

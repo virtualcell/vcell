@@ -20,6 +20,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.GlassPane;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.BNGWindow;
 import cbit.vcell.client.desktop.DatabaseWindow;
@@ -239,6 +240,7 @@ void createRecyclableWindows() {
 		// make the window
 		DatabaseWindow databaseWindow = new DatabaseWindow();
 		databaseWindow.setSize(JFRAME_SIZE);
+		databaseWindow.setIconImage(VCellIcons.getJFrameImageIcon());
 		BeanUtils.centerOnScreen(databaseWindow);
 		// make the manager
 		DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindow.getDatabaseWindowPanel(), getRequestManager());
@@ -264,6 +266,7 @@ void createRecyclableWindows() {
 		TestingFrameworkWindowPanel testingFrameworkWindowPanel = new TestingFrameworkWindowPanel();
 		testingFrameworkWindow.setWorkArea(testingFrameworkWindowPanel);
 		testingFrameworkWindow.setSize(JFRAME_SIZE);
+		testingFrameworkWindow.setIconImage(VCellIcons.getJFrameImageIcon());
 		BeanUtils.centerOnScreen(testingFrameworkWindow);
 		// make the manager
 		TestingFrameworkWindowManager windowManager = new TestingFrameworkWindowManager(testingFrameworkWindowPanel, getRequestManager());
@@ -291,6 +294,7 @@ void createRecyclableWindows() {
 		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
 		bngWindow.setWorkArea(bngOutputPanel);
 		bngWindow.setSize(JFRAME_SIZE);
+		bngWindow.setIconImage(VCellIcons.getJFrameImageIcon());
 		BeanUtils.centerOnScreen(bngWindow);
 		// make the manager
 		BNGWindowManager windowManager = new BNGWindowManager(bngOutputPanel, getRequestManager());
@@ -314,6 +318,7 @@ void createRecyclableWindows() {
 		FieldDataGUIPanel fieldDataGUIPanel = new FieldDataGUIPanel();
 		fieldDataWindow.setWorkArea(fieldDataGUIPanel);
 		fieldDataWindow.pack();
+		fieldDataWindow.setIconImage(VCellIcons.getJFrameImageIcon());
 		BeanUtils.centerOnScreen(fieldDataWindow);
 		// make the manager
 		FieldDataWindowManager fieldDataWindowManager =

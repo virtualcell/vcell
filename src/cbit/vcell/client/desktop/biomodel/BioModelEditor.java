@@ -426,6 +426,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	JComponent bottomComponent = rightBottomEmptyPanel;
 	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
 	boolean bShowInDatabaseProperties = false;
+	boolean bShowPathway = false;
+	PathwayData pathwayData = null;
 	if (selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
@@ -466,24 +468,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof BioModel || singleSelection instanceof VCMetaData) {
 			bottomComponent = bioModelEditorAnnotationPanel;
 		} else if (singleSelection instanceof PathwayData) {
-			PathwayData pathwayData = (PathwayData)singleSelection;
+			bShowPathway = true;
+			pathwayData = (PathwayData)singleSelection;
 			bottomComponent = getBioModelEditorPathwayPanel();
-			for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
-				if (rightBottomTabbedPane.getComponentAt(destComponentIndex) == bottomComponent) {
-					break;
-				}
-			}
-			Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
-			String pathwayName = "ID = "+topLevelPathway.getID();
-			if (topLevelPathway.getName().size()>0){
-				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
-			}
-			String tabTitle = "Pathway " + pathwayName;
-			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
-				rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
-			} else {
-				rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
-			}
 		} else if (singleSelection instanceof Model) {
 		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
@@ -499,13 +486,30 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} 
 		}
 	}
-	if (bShowInDatabaseProperties) {
-		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getComponentCount(); destComponentIndex ++) {
+	if (bShowPathway) {
+		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
+			if (rightBottomTabbedPane.getComponentAt(destComponentIndex) == bottomComponent) {
+				break;
+			}
+		}
+		Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
+		String pathwayName = "ID = "+topLevelPathway.getID();
+		if (topLevelPathway.getName().size()>0){
+			pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
+		}
+		String tabTitle = "Pathway " + pathwayName;
+		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
+			rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
+		} else {
+			rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
+		}
+	} else if (bShowInDatabaseProperties) {
+		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
 			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
 				break;
 			}
 		}
-		if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
 		}
 	}
