@@ -9,6 +9,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import oracle.jdbc.pool.OracleConnectionCacheManager;
 import oracle.jdbc.pool.OracleDataSource;
@@ -28,7 +30,11 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 	private String connectionCacheName = "ImplicitCache01";
 	private OracleDataSource oracleDataSource = null;
 	private SessionLog log = null;
-	private boolean bFirstConnection = true;
+	private TimerTask refreshConnectionTask = new TimerTask() {
+		public void run() {
+			refreshConnections();
+		}
+	};
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
@@ -49,18 +55,21 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	java.util.Properties prop = new java.util.Properties();
 	prop.setProperty("MinLimit", "1");
 	prop.setProperty("MaxLimit", "20");
-//		prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
+//	prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
 //	prop.setProperty("InactivityTimeout", "300");    //  seconds
 //	prop.setProperty("TimeToLiveTimeout", "300");    //  seconds
-	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
-	prop.setProperty("ValidateConnection", "true");
+//	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
+//	prop.setProperty("ValidateConnection", "true");
 	oracleDataSource.setConnectionCacheProperties (prop);
 	
 	// when vcell runs in local model, every time reconnnect, it will create a new 
 	// OraclePoolingConnectionFactory which causes same cache error. So add current time 
 	// to cache name.
 	connectionCacheName = "ImplicitCache01" + System.currentTimeMillis();
-	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name	
+	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
+	
+	Timer timer = new Timer();
+	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
 }
 
 public synchronized void closeAll() throws java.sql.SQLException {
@@ -78,18 +87,23 @@ public void failed(Connection con, Object lock) throws SQLException {
 	occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
 }
 
-public Connection getConnection(Object lock) throws SQLException {
-	Connection conn = null;
-	OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
+private synchronized void refreshConnections() {
 	try {
-		if (!bFirstConnection) {			
-			occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_INVALID_CONNECTIONS);
-		}
+		OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
+		occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
+}
+
+public synchronized Connection getConnection(Object lock) throws SQLException {
+	Connection conn = null;
+	try {
 		conn = oracleDataSource.getConnection();
-		bFirstConnection = true;
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
 		ex.printStackTrace(System.out);
+		OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
 		// refresh cache
 		occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
 		// get connection again.
@@ -155,14 +169,15 @@ public static void main(String[] args) {
 	try {
 		PropertyLoader.loadProperties();
 	
-		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(new StdoutSessionLog("aa"));
+		StdoutSessionLog sessionLog = new StdoutSessionLog("aa");
+		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(sessionLog);
 		Object lock = new Object();
 		Connection conn1 = null, conn2 = null;
 		conn1 = fac.getConnection(lock);
-		System.out.println("got conn1 " + validate(conn1));
-		Thread.sleep(15*60*1000);
+		sessionLog.print("got conn1 " + validate(conn1));
+		Thread.sleep(60*60*1000);
 		conn2 = fac.getConnection(lock);
-		System.out.println("got conn2 " + validate(conn2));
+		sessionLog.print("got conn2 " + validate(conn2));
 //		int i = 0;
 //		while (i<2000) {
 //			i ++;
