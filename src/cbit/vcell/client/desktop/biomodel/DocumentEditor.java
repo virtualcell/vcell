@@ -15,8 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -26,7 +24,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
@@ -204,9 +201,9 @@ public abstract class DocumentEditor extends JPanel {
 		}
 		public void issueChange(IssueEvent issueEvent) {
 			String title = "Problems (" + issueManager.getNumErrors() + " Errors, " + issueManager.getNumWarnings() + " Warnings)";
-//			if (issueManager.getNumErrors() > 0) {
-//				title = "<html><b>" + title + "</b></html>";
-//			}
+			if (issueManager.getNumErrors() > 0) {
+				title = "<html><b>" + title + "</b></html>";
+			}
 			rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
 		}
 	};
@@ -304,11 +301,11 @@ private void initialize() {
 					Object source = event.getSource();
 					switch (event.getID()) {		
 					case KeyEvent.KEY_RELEASED:					
-						System.out.println("key released " + source);
+//						System.out.println("key released " + source);
 						documentEditor_eventDispatched(event);
 						break;
 					case MouseEvent.MOUSE_CLICKED :
-						System.out.println("mouse released " + source);
+//						System.out.println("mouse released " + source);
 						documentEditor_eventDispatched(event);
 						break;
 					}
