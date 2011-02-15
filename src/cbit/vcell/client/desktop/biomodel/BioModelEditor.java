@@ -515,6 +515,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
 		bottomComponent.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		// a bug in BasicTabbedPanelUI (See line 3337)
+		rightBottomTabbedPane.putClientProperty("__index_to_remove__", destComponentIndex);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
 		rightBottomTabbedPane.repaint();
 	}

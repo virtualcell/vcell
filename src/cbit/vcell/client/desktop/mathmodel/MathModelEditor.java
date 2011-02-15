@@ -146,6 +146,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 	}	
 	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+		// a bug in BasicTabbedPanelUI (See line 3337)
+		rightBottomTabbedPane.putClientProperty("__index_to_remove__", destComponentIndex);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
 		rightBottomTabbedPane.repaint();
 	}
