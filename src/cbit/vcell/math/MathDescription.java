@@ -2025,98 +2025,99 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 		if (subDomainList.size()!=1){
 			Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, "Compartmental Model requires exactly one "+VCML.CompartmentSubDomain, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
-		}
-		if (!(subDomainList.elementAt(0) instanceof CompartmentSubDomain)){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, "Compartmental Model requires the subdomain be a "+VCML.CompartmentSubDomain, Issue.SEVERITY_ERROR);
-			issueList.add(issue);
-		}
-		CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
-		//distinguish ODE model and stochastic model
-		if(isNonSpatialStoch())
-		{
-			if(stochVarCount == 0) {
-				Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one stochastic volume variable", Issue.SEVERITY_ERROR);
+		} else if (subDomainList.size() == 1) {
+			if (!(subDomainList.elementAt(0) instanceof CompartmentSubDomain)){
+				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, "Compartmental Model requires the subdomain be a "+VCML.CompartmentSubDomain, Issue.SEVERITY_ERROR);
 				issueList.add(issue);
-			}	
-			if(subDomain.getJumpProcesses().size() == 0)
+			}
+			CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
+			//distinguish ODE model and stochastic model
+			if(isNonSpatialStoch())
 			{
-				Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one jump process", Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			//check variable initial condition
-			for (VarIniCondition varIniCondition : subDomain.getVarIniConditions()) {
-				Expression iniExp = varIniCondition.getIniVal();
-				try{
-					iniExp.bindExpression(this);
-				}catch(Exception ex){
-					ex.printStackTrace(System.out);
-					setWarning(ex.getMessage());
-				}				
-			}
-			//check probability rate
-			for (JumpProcess jumpProcess : subDomain.getJumpProcesses()) {
-				Expression probExp = jumpProcess.getProbabilityRate();
-				try{
-					probExp.bindExpression(this);
-				}catch(Exception ex){
-					ex.printStackTrace(System.out);
-					setWarning(ex.getMessage());
-				}
-			}
-		}
-		else
-		{
-			// ODE model
-			//
-			// Check that all equations are ODEs 
-			//
-			int odeCount = 0;
-			Enumeration<Equation> enum_equ = subDomain.getEquations();
-			while (enum_equ.hasMoreElements()){
-				Equation equ = enum_equ.nextElement();
-				if (equ instanceof OdeEquation){
-					odeCount ++;
-				} else {
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, unexpected equation of type " + VCML.PdeEquation + ", must include only "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
+				if(stochVarCount == 0) {
+					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one stochastic volume variable", Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}	
+				if(subDomain.getJumpProcesses().size() == 0)
+				{
+					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one jump process", Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
+				//check variable initial condition
+				for (VarIniCondition varIniCondition : subDomain.getVarIniConditions()) {
+					Expression iniExp = varIniCondition.getIniVal();
+					try{
+						iniExp.bindExpression(this);
+					}catch(Exception ex){
+						ex.printStackTrace(System.out);
+						setWarning(ex.getMessage());
+					}				
+				}
+				//check probability rate
+				for (JumpProcess jumpProcess : subDomain.getJumpProcesses()) {
+					Expression probExp = jumpProcess.getProbabilityRate();
+					try{
+						probExp.bindExpression(this);
+					}catch(Exception ex){
+						ex.printStackTrace(System.out);
+						setWarning(ex.getMessage());
+					}
+				}
 			}
-			if (odeCount==0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, expecting at least one "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-
-			if (volVarCount!=odeCount){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			if (memVarCount>0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must not declare any "+VCML.MembraneVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			if (filVarCount>0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must not declare any "+VCML.FilamentVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			if (volRegionVarCount>0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must not declare any "+VCML.VolumeRegionVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			if (memRegionVarCount>0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must not declare any "+VCML.MembraneRegionVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
-			}
-			if (filRegionVarCount>0){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-						"Compartmental model, must not declare any "+VCML.FilamentRegionVariable, Issue.SEVERITY_ERROR);
-				issueList.add(issue);
+			else
+			{
+				// ODE model
+				//
+				// Check that all equations are ODEs 
+				//
+				int odeCount = 0;
+				Enumeration<Equation> enum_equ = subDomain.getEquations();
+				while (enum_equ.hasMoreElements()){
+					Equation equ = enum_equ.nextElement();
+					if (equ instanceof OdeEquation){
+						odeCount ++;
+					} else {
+						Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+								"Compartmental model, unexpected equation of type " + VCML.PdeEquation + ", must include only "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
+						issueList.add(issue);
+					}
+				}
+				if (odeCount==0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, expecting at least one "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+	
+				if (volVarCount!=odeCount){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+				if (memVarCount>0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must not declare any "+VCML.MembraneVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+				if (filVarCount>0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must not declare any "+VCML.FilamentVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+				if (volRegionVarCount>0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must not declare any "+VCML.VolumeRegionVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+				if (memRegionVarCount>0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must not declare any "+VCML.MembraneRegionVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
+				if (filRegionVarCount>0){
+					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+							"Compartmental model, must not declare any "+VCML.FilamentRegionVariable, Issue.SEVERITY_ERROR);
+					issueList.add(issue);
+				}
 			}
 		}
 	//
