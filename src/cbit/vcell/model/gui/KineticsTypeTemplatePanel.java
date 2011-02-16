@@ -60,7 +60,8 @@ public class KineticsTypeTemplatePanel extends DocumentEditorSubPanel {
 			KineticsDescription.GeneralCurrent,
 			KineticsDescription.GeneralCurrentLumped,
 			KineticsDescription.GHK,
-			KineticsDescription.Nernst
+			KineticsDescription.Nernst,
+			KineticsDescription.GeneralPermeability
 	};
 	
 class IvjEventHandler implements ActionListener, ListSelectionListener {

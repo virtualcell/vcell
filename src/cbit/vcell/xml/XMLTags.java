@@ -318,6 +318,7 @@ public class XMLTags {
     public final static String KineticsTypeGeneralTotal_oldname = "GeneralTotalKinetics";
     public final static String KineticsTypeGeneralLumped = "GeneralLumpedKinetics";
     public final static String KineticsTypeGeneralCurrentLumped = "GeneralCurrentLumpedKinetics";
+    public static final String KineticsTypeGeneralPermeability = "GeneralPermeabilityKinetics";
     
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ModelParametersTag = "ModelParameters";

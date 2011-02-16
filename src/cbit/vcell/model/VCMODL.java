@@ -58,8 +58,9 @@ public class VCMODL {
 	public final static String NernstKinetics			       = "NernstKinetics";
 	public final static String HMM_IrreversibleKinetics 	   = "HenriMichaelasMentenKineticsIrr";
 	public final static String HMM_ReversibleKinetics		   = "HenriMichaelasMentenKineticsRev";
-	public final static String GeneralLumpedKinetics   	      	= "GeneralLumpedKinetics";
-	public final static String GeneralCurrentLumpedKinetics		= "GeneralCurrentLumpedKinetics";
+	public final static String GeneralLumpedKinetics   	       = "GeneralLumpedKinetics";
+	public final static String GeneralCurrentLumpedKinetics	   = "GeneralCurrentLumpedKinetics";
+	public static final String GeneralPermeabilityKinetics 	   = "GeneralPermeabilityKinetics";
 	public final static String CurrentDensity				   = "CurrentDensity";
 	public final static String LumpedCurrent				   = "LumpedCurrent";
 	public final static String ReactionRate					   = "Rate";

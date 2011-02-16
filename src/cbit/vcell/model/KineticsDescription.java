@@ -21,8 +21,9 @@ public  class KineticsDescription implements java.io.Serializable {
 	public final static KineticsDescription Nernst = new KineticsDescription("NernstKinetics", "Nernst", VCMODL.NernstKinetics, true, true, NernstKinetics.class);
 	public final static KineticsDescription GeneralLumped = new KineticsDescription("GeneralLumpedKinetics", "GeneralLumped", VCMODL.GeneralLumpedKinetics, false, false, GeneralLumpedKinetics.class);
 	public final static KineticsDescription GeneralCurrentLumped = new KineticsDescription("GeneralCurrentLumpedKinetics", "GeneralCurrentLumped", VCMODL.GeneralCurrentLumpedKinetics, true, false, GeneralCurrentLumpedKinetics.class);
+	public final static KineticsDescription GeneralPermeability = new KineticsDescription("GeneralPermeabilityKinetics", "GeneralPermeability", VCMODL.GeneralPermeabilityKinetics, false, false, GeneralPermeabilityKinetics.class);
 
-	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralLumped, GeneralCurrentLumped };
+	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralLumped, GeneralCurrentLumped, GeneralPermeability };
 	
 /**
  * KineticsDescription constructor comment.

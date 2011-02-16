@@ -2933,8 +2933,13 @@ public String isValidForStochApp()
 	// Mass Action and centain form of general Flux can be automatically transformed.
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
 	{
-		if(((reacSteps[i] instanceof SimpleReaction) && (!(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction)) && !(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)))) ||
-		  ((reacSteps[i] instanceof FluxReaction) && (!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))))
+		if(((reacSteps[i] instanceof SimpleReaction) && 
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) &&
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) 
+			||
+		  ((reacSteps[i] instanceof FluxReaction) && 
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) && 
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)))
 		{
 			unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
 		}
@@ -2978,21 +2983,29 @@ public String isValidForStochApp()
 			}
 			else // flux described by General density function
 			{
-				Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-				try{
-					rateExp = reacSteps[i].substitueKineticParameter(rateExp, false);
-					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp,(FluxReaction)reacSteps[i]);
-					if(fluxFunc.getRateToInside() != null && fluxFunc.getRateToInside().hasSymbol(ReservedSymbol.TIME.getName()))
+				if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) {
+					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					try{
+						rateExp = reacSteps[i].substitueKineticParameter(rateExp, false);
+						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp,(FluxReaction)reacSteps[i]);
+						if(fluxFunc.getRateToInside() != null && fluxFunc.getRateToInside().hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
+						if(fluxFunc.getRateToOutside() != null && fluxFunc.getRateToOutside().hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
+					}catch(Exception e)
+					{
+						exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+					}
+				} else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
+					Expression permeabilityExpr = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
+					if(permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
 					{
 						tStr = tStr + " " + reacSteps[i].getName() + ",";
 					}
-					if(fluxFunc.getRateToOutside() != null && fluxFunc.getRateToOutside().hasSymbol(ReservedSymbol.TIME.getName()))
-					{
-						tStr = tStr + " " + reacSteps[i].getName() + ",";
-					}
-				}catch(Exception e)
-				{
-					exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
 				}
 			}
 		}

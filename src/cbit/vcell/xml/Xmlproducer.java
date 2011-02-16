@@ -134,6 +134,7 @@ import cbit.vcell.model.GeneralCurrentKinetics;
 import cbit.vcell.model.GeneralCurrentLumpedKinetics;
 import cbit.vcell.model.GeneralKinetics;
 import cbit.vcell.model.GeneralLumpedKinetics;
+import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
@@ -2827,6 +2828,9 @@ private Element getXML(Kinetics param) throws XmlParseException {
 	} else if (param instanceof GeneralCurrentLumpedKinetics) {
 		//Process a GeneralCurrentLumpedKinetics
 		kineticsType = XMLTags.KineticsTypeGeneralCurrentLumped;
+	} else if (param instanceof GeneralPermeabilityKinetics) {
+		//Process a GeneralPermeabilityKinetics
+		kineticsType = XMLTags.KineticsTypeGeneralPermeability;
 	} 
 	Element kinetics = new Element(XMLTags.KineticsTag);
 	//Add atributes

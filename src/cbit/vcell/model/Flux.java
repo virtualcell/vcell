@@ -9,6 +9,9 @@ import org.vcell.util.document.KeyValue;
 
 public class Flux extends ReactionParticipant
 {
+	public static enum FluxDirection {
+		Reactant, Product, Unknown;
+	}
 /**
  * This method was created in VisualAge.
  * @param reactionStep cbit.vcell.model.ReactionStep
@@ -32,7 +35,19 @@ public boolean compareEqual(Matchable obj) {
 	}
 }
 
+public FluxDirection getFluxDirection() {
+	if (getStructure() == null) {
+		return FluxDirection.Unknown;
+	} 
+	Membrane membrane = (Membrane)getReactionStep().getStructure();
+	if (getStructure() == membrane.getInsideFeature()) {
+		return FluxDirection.Product;
+	} else 	if (getStructure() == membrane.getOutsideFeature()) {
+		return FluxDirection.Reactant;
+	}
 
+	return FluxDirection.Unknown;
+}
 /**
  * This method was created by a SmartGuide.
  * @param tokens java.util.StringTokenizer
