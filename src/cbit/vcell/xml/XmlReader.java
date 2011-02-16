@@ -149,6 +149,7 @@ import cbit.vcell.model.GeneralCurrentKinetics;
 import cbit.vcell.model.GeneralCurrentLumpedKinetics;
 import cbit.vcell.model.GeneralKinetics;
 import cbit.vcell.model.GeneralLumpedKinetics;
+import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
@@ -2076,7 +2077,10 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentLumped) ) {
 			//create GeneralCurrentLumpedKinetics
 			newKinetics = new GeneralCurrentLumpedKinetics(reaction);
-		} else {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) ) {
+			// create GeneralPermeabilityKinetics
+			newKinetics = new GeneralPermeabilityKinetics(reaction);
+		}else {
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}
 	}  catch (ExpressionException e) {

@@ -864,7 +864,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			else if(reactionStep instanceof FluxReaction)// flux reactions
 			{
 				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
-				if(kinetics.getKineticsDescription().equals(KineticsDescription.General))
+				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
 				{
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					fluxRate = reactionStep.substitueKineticParameter(fluxRate, false);

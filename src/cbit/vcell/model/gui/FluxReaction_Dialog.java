@@ -67,7 +67,8 @@ public class FluxReaction_Dialog extends JDialog {
 		KineticsDescription.GeneralCurrent,
 		KineticsDescription.GeneralCurrentLumped,
 		KineticsDescription.GHK,
-		KineticsDescription.Nernst
+		KineticsDescription.Nernst,
+		KineticsDescription.GeneralPermeability
 	};
 	private JTextArea annotationTextArea = null;
 	private JComboBox carrierComboBox = null;
@@ -419,6 +420,8 @@ private javax.swing.JComboBox getJComboBox1() {
 							setText("Goldman-Hodgkin-Katz Current Density (pA/"+SQUAREMICRON+") - permeability in "+MICRON+"/s");
 						}else if (kineticsDescription.equals(KineticsDescription.Nernst)){
 							setText("Nernst Current Density (pA/"+SQUAREMICRON+") - conductance in nS/"+SQUAREMICRON);
+						}else if (kineticsDescription.equals(KineticsDescription.GeneralPermeability)){
+							setText("General Permeability ("+MICROMOLAR+"-"+MICRON+"/s) - permeability in "+MICRON+"/s");
 						}else{
 							setText(kineticsDescription.getDescription());
 						}

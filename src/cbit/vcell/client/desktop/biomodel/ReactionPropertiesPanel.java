@@ -70,7 +70,8 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.GeneralCurrent,
 			KineticsDescription.GeneralCurrentLumped,
 			KineticsDescription.GHK,
-			KineticsDescription.Nernst
+			KineticsDescription.Nernst,
+			KineticsDescription.GeneralPermeability
 	};
 	
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
@@ -390,6 +391,8 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 									setText("Goldman-Hodgkin-Katz Current Density (pA/"+SQUAREMICRON+") - permeability in "+MICRON+"/s");
 								} else if (kineticsDescription.equals(KineticsDescription.Nernst)){
 									setText("Nernst Current Density (pA/"+SQUAREMICRON+") - conductance in nS/"+SQUAREMICRON);
+								} else if (kineticsDescription.equals(KineticsDescription.GeneralPermeability)){
+									setText("General Permeability ("+MICROMOLAR+"-"+MICRON+"/s) - permeability in "+MICRON+"/s");
 								}
 							}
 						} 

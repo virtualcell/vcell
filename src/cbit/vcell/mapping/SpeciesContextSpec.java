@@ -145,6 +145,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			return true;
 		}
 
+		@Override
+		public String getDescription() {
+			return super.getDescription() + " for "+getSpeciesContext().getName();
+		}
+		
 		public boolean isUnitEditable(){
 			return false;
 		}
