@@ -92,12 +92,12 @@ public class VisitControlPanel extends JPanel {
 		add(panel, gbc_panel);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{0, 0};
-		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
-		JLabel lblSelectVariable = new JLabel("Select variable");
+		JLabel lblSelectVariable = new JLabel("Select variable to work with");
 		GridBagConstraints gbc_lblSelectVariable = new GridBagConstraints();
 		gbc_lblSelectVariable.insets = new Insets(0, 0, 5, 0);
 		gbc_lblSelectVariable.gridx = 0;
@@ -131,22 +131,103 @@ public class VisitControlPanel extends JPanel {
 		
 		panel.add(comboBox, gbc_comboBox);
 		
+		JPanel panel_4 = new JPanel();
+		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
+		gbc_panel_4.insets = new Insets(0, 0, 5, 0);
+		gbc_panel_4.fill = GridBagConstraints.BOTH;
+		gbc_panel_4.gridx = 0;
+		gbc_panel_4.gridy = 3;
+		panel.add(panel_4, gbc_panel_4);
+		GridBagLayout gbl_panel_4 = new GridBagLayout();
+		gbl_panel_4.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_panel_4.rowHeights = new int[]{0, 0};
+		gbl_panel_4.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_4.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panel_4.setLayout(gbl_panel_4);
+		
 		JButton btnClearPlots = new JButton("Clear Plots");
-		btnClearPlots.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("Trying to delete all plots");
-				//VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());	
-				visitSession.deleteActivePlots();
-				numberOfOpenPlots=0;
-				}
-		});
 		GridBagConstraints gbc_btnClearPlots = new GridBagConstraints();
-		gbc_btnClearPlots.insets = new Insets(0, 0, 5, 0);
+		gbc_btnClearPlots.insets = new Insets(0, 0, 0, 5);
 		gbc_btnClearPlots.gridx = 0;
-		gbc_btnClearPlots.gridy = 3;
-		panel.add(btnClearPlots, gbc_btnClearPlots);
+		gbc_btnClearPlots.gridy = 0;
+		panel_4.add(btnClearPlots, gbc_btnClearPlots);
 		
 		JButton btnAddPlot = new JButton("Add Pseudocolor Plot");
+		GridBagConstraints gbc_btnAddPlot = new GridBagConstraints();
+		gbc_btnAddPlot.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddPlot.gridx = 1;
+		gbc_btnAddPlot.gridy = 0;
+		panel_4.add(btnAddPlot, gbc_btnAddPlot);
+		
+		JButton btnDrawPlot = new JButton("Draw Plots");
+		GridBagConstraints gbc_btnDrawPlot = new GridBagConstraints();
+		gbc_btnDrawPlot.insets = new Insets(0, 0, 0, 5);
+		gbc_btnDrawPlot.gridx = 2;
+		gbc_btnDrawPlot.gridy = 0;
+		panel_4.add(btnDrawPlot, gbc_btnDrawPlot);
+		
+		JButton btnShowVisitGui = new JButton("Show VisIt GUI");
+		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
+		gbc_btnShowVisitGui.insets = new Insets(0, 0, 0, 5);
+		gbc_btnShowVisitGui.gridx = 3;
+		gbc_btnShowVisitGui.gridy = 0;
+		panel_4.add(btnShowVisitGui, gbc_btnShowVisitGui);
+		
+		JButton button_1 = new JButton("Reset view");
+		GridBagConstraints gbc_button_1 = new GridBagConstraints();
+		gbc_button_1.gridx = 4;
+		gbc_button_1.gridy = 0;
+		panel_4.add(button_1, gbc_button_1);
+		
+		
+		
+		
+		
+		JLabel lblTimeStepSlider = new JLabel("Time step slider");
+		GridBagConstraints gbc_lblTimeStepSlider = new GridBagConstraints();
+		gbc_lblTimeStepSlider.insets = new Insets(0, 0, 5, 0);
+		gbc_lblTimeStepSlider.gridx = 0;
+		gbc_lblTimeStepSlider.gridy = 4;
+		panel.add(lblTimeStepSlider, gbc_lblTimeStepSlider);
+		GridBagConstraints gbc_timeSliceSlider = new GridBagConstraints();
+		gbc_timeSliceSlider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_timeSliceSlider.insets = new Insets(0, 0, 5, 0);
+		gbc_timeSliceSlider.gridx = 0;
+		gbc_timeSliceSlider.gridy = 5;
+		panel.add(timeSliceSlider, gbc_timeSliceSlider);
+		
+
+		
+		timeSliceSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				if (visitSession != null && !timeSliceSlider.getValueIsAdjusting()) {
+					System.out.println(arg0);
+					//VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
+					try {
+						visitSession.setSliderState(timeSliceSlider.getValue());
+					} catch (VisitSessionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			}
+		});
+		timeSliceSlider.setMajorTickSpacing(10);
+		timeSliceSlider.setPaintLabels(true);
+		timeSliceSlider.setPaintTicks(true);
+		button_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.resetView();
+			}
+		});
+		btnShowVisitGui.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Trying to open VisIt GUI");
+		        visitSession.showVisitGUI();
+				//visitSession.InterpretPython("OpenGUI()");
+			}
+		});
 		btnAddPlot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (selectedVariable != null) {
@@ -230,58 +311,13 @@ public class VisitControlPanel extends JPanel {
 				}
 			}
 		});
-		GridBagConstraints gbc_btnAddPlot = new GridBagConstraints();
-		gbc_btnAddPlot.insets = new Insets(0, 0, 5, 0);
-		gbc_btnAddPlot.gridx = 0;
-		gbc_btnAddPlot.gridy = 4;
-		panel.add(btnAddPlot, gbc_btnAddPlot);
-		
-		JButton btnDrawPlot = new JButton("Draw Plots");
-		GridBagConstraints gbc_btnDrawPlot = new GridBagConstraints();
-		gbc_btnDrawPlot.insets = new Insets(0, 0, 5, 0);
-		gbc_btnDrawPlot.gridx = 0;
-		gbc_btnDrawPlot.gridy = 5;
-		panel.add(btnDrawPlot, gbc_btnDrawPlot);
-		
-		JButton btnShowVisitGui = new JButton("Show VisIt GUI");
-		btnShowVisitGui.addActionListener(new ActionListener() {
+		btnClearPlots.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Trying to open VisIt GUI");
-		        visitSession.showVisitGUI();
-				//visitSession.InterpretPython("OpenGUI()");
-			}
-		});
-		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
-		gbc_btnShowVisitGui.insets = new Insets(0, 0, 5, 0);
-		gbc_btnShowVisitGui.gridx = 0;
-		gbc_btnShowVisitGui.gridy = 6;
-		panel.add(btnShowVisitGui, gbc_btnShowVisitGui);
-		
-		JButton btnTestGetglobalattributes = new JButton("Test - GetGlobalAttributes");
-		btnTestGetglobalattributes.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				//VisitProcess.visitCommand(VisitPythonCommand.GetGlobalAttributes());
-			}
-		});
-		GridBagConstraints gbc_btnTestGetglobalattributes = new GridBagConstraints();
-		gbc_btnTestGetglobalattributes.gridx = 0;
-		gbc_btnTestGetglobalattributes.gridy = 7;
-		panel.add(btnTestGetglobalattributes, gbc_btnTestGetglobalattributes);
-		
-		timeSliceSlider.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
-				if (visitSession != null && !timeSliceSlider.getValueIsAdjusting()) {
-					System.out.println(arg0);
-					//VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
-					try {
-						visitSession.setSliderState(timeSliceSlider.getValue());
-					} catch (VisitSessionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
+				System.out.println("Trying to delete all plots");
+				//VisitProcess.visitCommand(VisitPythonCommand.DeleteAllPlots());	
+				visitSession.deleteActivePlots();
+				numberOfOpenPlots=0;
 				}
-			}
 		});
 		
 		
@@ -420,14 +456,6 @@ public class VisitControlPanel extends JPanel {
 		gbl_panel_3.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_3.setLayout(gbl_panel_3);
 		
-		JButton button_1 = new JButton("Reset view");
-		GridBagConstraints gbc_button_1 = new GridBagConstraints();
-		gbc_button_1.insets = new Insets(0, 0, 5, 0);
-		gbc_button_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_button_1.gridx = 0;
-		gbc_button_1.gridy = 0;
-		panel_3.add(button_1, gbc_button_1);
-		
 		JButton btnAddClipPlane = new JButton("Add Clip Plane");
 		btnAddClipPlane.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -450,11 +478,6 @@ public class VisitControlPanel extends JPanel {
 		gbc_btnAddThreeSlice.gridx = 0;
 		gbc_btnAddThreeSlice.gridy = 2;
 		panel_3.add(btnAddThreeSlice, gbc_btnAddThreeSlice);
-		button_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				visitSession.resetView();
-			}
-		});
 		
 		JPanel sliceAxisSelectorPanel = new JPanel();
 		GridBagConstraints gbc_panel_1_1 = new GridBagConstraints();
@@ -516,27 +539,6 @@ public class VisitControlPanel extends JPanel {
 		gbc_rdbtnXyzAxis.gridx = 0;
 		gbc_rdbtnXyzAxis.gridy = 2;
 		sliceAxisSelectorPanel.add(rdbtnXyzAxis, gbc_rdbtnXyzAxis);
-		
-		
-		
-		
-		
-		JLabel lblTimeStepSlider = new JLabel("Time step slider");
-		GridBagConstraints gbc_lblTimeStepSlider = new GridBagConstraints();
-		gbc_lblTimeStepSlider.insets = new Insets(0, 0, 5, 0);
-		gbc_lblTimeStepSlider.gridx = 0;
-		gbc_lblTimeStepSlider.gridy = 3;
-		add(lblTimeStepSlider, gbc_lblTimeStepSlider);
-		timeSliceSlider.setMajorTickSpacing(10);
-		timeSliceSlider.setPaintLabels(true);
-		timeSliceSlider.setPaintTicks(true);
-		GridBagConstraints gbc_slider = new GridBagConstraints();
-		gbc_slider.weighty = 1.0;
-		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider.insets = new Insets(0, 0, 5, 0);
-		gbc_slider.gridx = 0;
-		gbc_slider.gridy = 4;
-		add(timeSliceSlider, gbc_slider);
 		
 		JLabel lblXyPlaneSlice = new JLabel("Plane slice slider");
 		GridBagConstraints gbc_lblXyPlaneSlice = new GridBagConstraints();
