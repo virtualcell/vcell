@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.visit.VisitSession;
 import cbit.vcell.visit.VisitSession.VisitSessionException;
 
 import java.awt.event.ActionListener;
@@ -35,9 +36,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
 import llnl.visit.ViewerMethods;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
+import javax.swing.SwingConstants;
 
 public class VisitControlPanel extends JPanel {
-	private JSlider slider = new JSlider();
+	private JSlider timeSliceSlider = new JSlider();
+	private JSlider sliceSlider = new JSlider();
 
 	private Origin origin;
 	private Extent extent;
@@ -53,14 +58,20 @@ public class VisitControlPanel extends JPanel {
     private int commandIndex, maxCommandIndex= 0;
     private int numberOfOpenPlots=0;
     private String selectedVariable= null;
-
+    private boolean tempSliceSelected = false;
+    private boolean sliceProjectTo2D = false;
+    private int sliceAxisSelected = 2;
+    
+    private final ButtonGroup buttonGroup = new ButtonGroup();
+    
 	/**
 	 * Create the panel.
 	 */
 	public VisitControlPanel() {
 		commandHistory[0]="";
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 92, 0, 0, 0, 119};
+		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{1.0};
 		setLayout(gridBagLayout);
 		
@@ -237,6 +248,7 @@ public class VisitControlPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Trying to open VisIt GUI");
 		        visitSession.showVisitGUI();
+				//visitSession.InterpretPython("OpenGUI()");
 			}
 		});
 		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
@@ -256,13 +268,13 @@ public class VisitControlPanel extends JPanel {
 		gbc_btnTestGetglobalattributes.gridy = 7;
 		panel.add(btnTestGetglobalattributes, gbc_btnTestGetglobalattributes);
 		
-		slider.addChangeListener(new ChangeListener() {
+		timeSliceSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
-				if (visitSession != null && !slider.getValueIsAdjusting()) {
+				if (visitSession != null && !timeSliceSlider.getValueIsAdjusting()) {
 					System.out.println(arg0);
 					//VisitProcess.visitCommand(VisitPythonCommand.SetTimeSliderState(slider.getValue()));
 					try {
-						visitSession.setSliderState(slider.getValue());
+						visitSession.setSliderState(timeSliceSlider.getValue());
 					} catch (VisitSessionException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -272,6 +284,24 @@ public class VisitControlPanel extends JPanel {
 			}
 		});
 		
+		
+		sliceSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				if (visitSession != null && !sliceSlider.getValueIsAdjusting() && tempSliceSelected) {
+					System.out.println(arg0);
+				
+					try {
+						visitSession.changeSliceAlongAxis(sliceSlider.getValue());
+					} catch (VisitSessionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			}
+		});
+		
+		
 		JPanel panel_2 = new JPanel();
 		GridBagConstraints gbc_panel_2 = new GridBagConstraints();
 		gbc_panel_2.insets = new Insets(0, 0, 5, 0);
@@ -280,34 +310,251 @@ public class VisitControlPanel extends JPanel {
 		gbc_panel_2.gridy = 2;
 		add(panel_2, gbc_panel_2);
 		GridBagLayout gbl_panel_2 = new GridBagLayout();
-		gbl_panel_2.columnWidths = new int[]{0, 0, 0};
+		gbl_panel_2.columnWidths = new int[]{0, 0, 0, 0};
 		gbl_panel_2.rowHeights = new int[]{0, 0};
-		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_2.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panel_2.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		panel_2.setLayout(gbl_panel_2);
 		
-		JButton button = new JButton("New button");
-		GridBagConstraints gbc_button = new GridBagConstraints();
-		gbc_button.insets = new Insets(0, 0, 0, 5);
-		gbc_button.gridx = 0;
-		gbc_button.gridy = 0;
-		panel_2.add(button, gbc_button);
+		JPanel panel_1 = new JPanel();
+		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+		gbc_panel_1.fill = GridBagConstraints.BOTH;
+		gbc_panel_1.insets = new Insets(0, 0, 0, 5);
+		gbc_panel_1.gridx = 0;
+		gbc_panel_1.gridy = 0;
+		panel_2.add(panel_1, gbc_panel_1);
+		GridBagLayout gbl_panel_1 = new GridBagLayout();
+		gbl_panel_1.columnWidths = new int[]{152, 0};
+		gbl_panel_1.rowHeights = new int[]{41, 25, 0, 0, 0, 0};
+		gbl_panel_1.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel_1.setLayout(gbl_panel_1);
 		
-		JButton button_1 = new JButton("New button");
+		JButton btnViewSliceIn = new JButton("View Slice in Plane:");
+		GridBagConstraints gbc_btnViewSliceIn = new GridBagConstraints();
+		gbc_btnViewSliceIn.insets = new Insets(0, 0, 5, 0);
+		gbc_btnViewSliceIn.gridx = 0;
+		gbc_btnViewSliceIn.gridy = 0;
+		panel_1.add(btnViewSliceIn, gbc_btnViewSliceIn);
+		btnViewSliceIn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addCartesianSliceOperator(sliceAxisSelected);
+				visitSession.drawPlots();
+				tempSliceSelected = true;
+			}
+		});
+		
+		final JRadioButton rdbtnProjectSlice2D = new JRadioButton("Project to 2D");
+		rdbtnProjectSlice2D.setHorizontalAlignment(SwingConstants.LEFT);
+		rdbtnProjectSlice2D.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				visitSession.changeSliceProject2D(rdbtnProjectSlice2D.isSelected());
+			}
+		});
+		GridBagConstraints gbc_rdbtnProjectTod = new GridBagConstraints();
+		gbc_rdbtnProjectTod.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnProjectTod.gridx = 0;
+		gbc_rdbtnProjectTod.gridy = 1;
+		panel_1.add(rdbtnProjectSlice2D, gbc_rdbtnProjectTod);
+		
+		final JRadioButton rdbtnShowPlaneTool = new JRadioButton("Show plane tool");
+		rdbtnShowPlaneTool.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				try {
+					visitSession.enableViewerTool(2,rdbtnShowPlaneTool.isSelected());
+					System.out.println("Toggling Viewer Tool enabled to:"+rdbtnShowPlaneTool.isSelected());
+				} catch (VisitSessionException e) {
+					
+					e.printStackTrace();
+				}
+			}
+		});
+		rdbtnShowPlaneTool.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_rdbtnShowPlaneTool = new GridBagConstraints();
+		gbc_rdbtnShowPlaneTool.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnShowPlaneTool.gridx = 0;
+		gbc_rdbtnShowPlaneTool.gridy = 2;
+		panel_1.add(rdbtnShowPlaneTool, gbc_rdbtnShowPlaneTool);
+		
+		JRadioButton rdbtnToggleSurfaceMesh = new JRadioButton("Toggle surface mesh");
+		rdbtnToggleSurfaceMesh.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addAndDrawSurfaceMesh();
+				System.out.println("Triggered Action Listener");
+			}
+		});
+		
+		final JRadioButton rdbtnShowPointTool = new JRadioButton("Show point tool");
+		rdbtnShowPointTool.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					visitSession.enableViewerTool(0,rdbtnShowPointTool.isSelected());
+				} catch (VisitSessionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		GridBagConstraints gbc_rdbtnShowPointTool = new GridBagConstraints();
+		gbc_rdbtnShowPointTool.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnShowPointTool.gridx = 0;
+		gbc_rdbtnShowPointTool.gridy = 3;
+		panel_1.add(rdbtnShowPointTool, gbc_rdbtnShowPointTool);
+		rdbtnToggleSurfaceMesh.setSelected(true);
+		
+		GridBagConstraints gbc_rdbtnToggleSurfaceMesh = new GridBagConstraints();
+		gbc_rdbtnToggleSurfaceMesh.gridx = 0;
+		gbc_rdbtnToggleSurfaceMesh.gridy = 4;
+		panel_1.add(rdbtnToggleSurfaceMesh, gbc_rdbtnToggleSurfaceMesh);
+		
+		JPanel panel_3 = new JPanel();
+		GridBagConstraints gbc_panel_3 = new GridBagConstraints();
+		gbc_panel_3.fill = GridBagConstraints.BOTH;
+		gbc_panel_3.gridx = 2;
+		gbc_panel_3.gridy = 0;
+		panel_2.add(panel_3, gbc_panel_3);
+		GridBagLayout gbl_panel_3 = new GridBagLayout();
+		gbl_panel_3.columnWidths = new int[]{148, 0};
+		gbl_panel_3.rowHeights = new int[]{53, 25, 0, 0};
+		gbl_panel_3.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel_3.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel_3.setLayout(gbl_panel_3);
+		
+		JButton button_1 = new JButton("Reset view");
 		GridBagConstraints gbc_button_1 = new GridBagConstraints();
-		gbc_button_1.gridx = 1;
+		gbc_button_1.insets = new Insets(0, 0, 5, 0);
+		gbc_button_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_button_1.gridx = 0;
 		gbc_button_1.gridy = 0;
-		panel_2.add(button_1, gbc_button_1);
-		slider.setMajorTickSpacing(10);
-		slider.setPaintLabels(true);
-		slider.setPaintTicks(true);
+		panel_3.add(button_1, gbc_button_1);
+		
+		JButton btnAddClipPlane = new JButton("Add Clip Plane");
+		btnAddClipPlane.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addClipPlaneOperator();
+			}
+		});
+		GridBagConstraints gbc_btnAddClipPlane = new GridBagConstraints();
+		gbc_btnAddClipPlane.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAddClipPlane.gridx = 0;
+		gbc_btnAddClipPlane.gridy = 1;
+		panel_3.add(btnAddClipPlane, gbc_btnAddClipPlane);
+		
+		JButton btnAddThreeSlice = new JButton("Add Three Slice");
+		btnAddThreeSlice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addThreeSliceOperator();
+			}
+		});
+		GridBagConstraints gbc_btnAddThreeSlice = new GridBagConstraints();
+		gbc_btnAddThreeSlice.gridx = 0;
+		gbc_btnAddThreeSlice.gridy = 2;
+		panel_3.add(btnAddThreeSlice, gbc_btnAddThreeSlice);
+		button_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.resetView();
+			}
+		});
+		
+		JPanel sliceAxisSelectorPanel = new JPanel();
+		GridBagConstraints gbc_panel_1_1 = new GridBagConstraints();
+		gbc_panel_1_1.insets = new Insets(0, 0, 0, 5);
+		gbc_panel_1_1.weightx = 1.0;
+		gbc_panel_1_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panel_1_1.gridx = 1;
+		gbc_panel_1_1.gridy = 0;
+		panel_2.add(sliceAxisSelectorPanel, gbc_panel_1_1);
+		GridBagLayout gbl_sliceAxisSelectorPanel = new GridBagLayout();
+		gbl_sliceAxisSelectorPanel.columnWidths = new int[]{90, 0};
+		gbl_sliceAxisSelectorPanel.rowHeights = new int[]{23, 0, 0, 0};
+		gbl_sliceAxisSelectorPanel.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_sliceAxisSelectorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		sliceAxisSelectorPanel.setLayout(gbl_sliceAxisSelectorPanel);
+		
+		JRadioButton rdbtnYzxAcis = new JRadioButton("YZ (X axis)");
+		rdbtnYzxAcis.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				sliceAxisSelected=0;
+				visitSession.changeSliceAxis(sliceAxisSelected);
+				
+			}
+		});
+		buttonGroup.add(rdbtnYzxAcis);
+		GridBagConstraints gbc_rdbtnYzxAcis = new GridBagConstraints();
+		gbc_rdbtnYzxAcis.anchor = GridBagConstraints.NORTHWEST;
+		gbc_rdbtnYzxAcis.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnYzxAcis.gridx = 0;
+		gbc_rdbtnYzxAcis.gridy = 0;
+		sliceAxisSelectorPanel.add(rdbtnYzxAcis, gbc_rdbtnYzxAcis);
+		
+		JRadioButton rdbtnXzyAxis = new JRadioButton("XZ (Y axis)");
+		rdbtnXzyAxis.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				sliceAxisSelected=1;
+				visitSession.changeSliceAxis(sliceAxisSelected);
+			}
+		});
+		buttonGroup.add(rdbtnXzyAxis);
+		GridBagConstraints gbc_rdbtnXzyAxis = new GridBagConstraints();
+		gbc_rdbtnXzyAxis.anchor = GridBagConstraints.NORTHWEST;
+		gbc_rdbtnXzyAxis.insets = new Insets(0, 0, 5, 0);
+		gbc_rdbtnXzyAxis.gridx = 0;
+		gbc_rdbtnXzyAxis.gridy = 1;
+		sliceAxisSelectorPanel.add(rdbtnXzyAxis, gbc_rdbtnXzyAxis);
+		
+		JRadioButton rdbtnXyzAxis = new JRadioButton("XY (Z axis)");
+		rdbtnXyzAxis.setSelected(true);  // Default is to slice along the Z axis
+		rdbtnXyzAxis.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				sliceAxisSelected=2;
+				visitSession.changeSliceAxis(sliceAxisSelected);
+			}
+		});
+		buttonGroup.add(rdbtnXyzAxis);
+		GridBagConstraints gbc_rdbtnXyzAxis = new GridBagConstraints();
+		gbc_rdbtnXyzAxis.anchor = GridBagConstraints.NORTHWEST;
+		gbc_rdbtnXyzAxis.gridx = 0;
+		gbc_rdbtnXyzAxis.gridy = 2;
+		sliceAxisSelectorPanel.add(rdbtnXyzAxis, gbc_rdbtnXyzAxis);
+		
+		
+		
+		
+		
+		JLabel lblTimeStepSlider = new JLabel("Time step slider");
+		GridBagConstraints gbc_lblTimeStepSlider = new GridBagConstraints();
+		gbc_lblTimeStepSlider.insets = new Insets(0, 0, 5, 0);
+		gbc_lblTimeStepSlider.gridx = 0;
+		gbc_lblTimeStepSlider.gridy = 3;
+		add(lblTimeStepSlider, gbc_lblTimeStepSlider);
+		timeSliceSlider.setMajorTickSpacing(10);
+		timeSliceSlider.setPaintLabels(true);
+		timeSliceSlider.setPaintTicks(true);
 		GridBagConstraints gbc_slider = new GridBagConstraints();
 		gbc_slider.weighty = 1.0;
 		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider.insets = new Insets(0, 0, 5, 0);
 		gbc_slider.gridx = 0;
-		gbc_slider.gridy = 3;
-		add(slider, gbc_slider);
+		gbc_slider.gridy = 4;
+		add(timeSliceSlider, gbc_slider);
+		
+		JLabel lblXyPlaneSlice = new JLabel("Plane slice slider");
+		GridBagConstraints gbc_lblXyPlaneSlice = new GridBagConstraints();
+		gbc_lblXyPlaneSlice.insets = new Insets(0, 0, 5, 0);
+		gbc_lblXyPlaneSlice.gridx = 0;
+		gbc_lblXyPlaneSlice.gridy = 5;
+		add(lblXyPlaneSlice, gbc_lblXyPlaneSlice);
+		
+		
+		GridBagConstraints gbc_xySliceSlider = new GridBagConstraints();
+		gbc_xySliceSlider.weighty = 1.0;
+		gbc_xySliceSlider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_xySliceSlider.gridx = 0;
+		gbc_xySliceSlider.gridy = 6;
+		sliceSlider.setPaintLabels(true);
+		sliceSlider.setToolTipText("Slide me to select a slice in the selected plane");
+		sliceSlider.setPaintTicks(true);
+		add(sliceSlider, gbc_xySliceSlider);
 		
 //		JPanel panel_1 = new JPanel();
 //		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
@@ -418,11 +665,22 @@ public class VisitControlPanel extends JPanel {
 		for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
 			comboBox.addItem(pdeDataContext.getDataIdentifiers()[i].getName());
 		}
-		slider.setValue(1);
-		slider.setMinimum(0);
-		slider.setMaximum(pdeDataContext.getTimePoints().length-1);
+		timeSliceSlider.setValue(1);
+		timeSliceSlider.setMinimum(0);
+		timeSliceSlider.setMaximum(pdeDataContext.getTimePoints().length-1);
 		
-		slider.setMinorTickSpacing(1);
-		slider.setMajorTickSpacing(10);
+		timeSliceSlider.setMinorTickSpacing(1);
+		timeSliceSlider.setMajorTickSpacing(10);
+		
+		sliceSlider.setMinimum(0);
+		sliceSlider.setMaximum(100);
+		sliceSlider.setValue(0);
+		sliceSlider.setMinorTickSpacing(1);
+		sliceSlider.setMajorTickSpacing(10);
+		
+	}
+	
+	public void initSliceOperatorWithSliceAttributes(){
+		
 	}
 }
