@@ -24,8 +24,7 @@ public final class RubberBandRectShape extends RectangleShape {
 		return null;
 	}
 
-	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		getSpaceManager().setSize(Math.abs(end.x-start.x), Math.abs(end.y-start.y));
 		getSpaceManager().setRelPos(Math.min(end.x,start.x), Math.min(end.y,start.y));
 		// this is like a row/column layout  (1 column)
@@ -33,16 +32,16 @@ public final class RubberBandRectShape extends RectangleShape {
 		int centerY = getSpaceManager().getSize().height/2;
 		// position label
 		labelPos.x = centerX - getLabelSize().width/2; 
-		labelPos.y = centerY - getLabelSize().height/2;
+		labelPos.y = centerY - getLabelSize().height/2;		
 	}
-
+	
 	@Override
 	public void refreshLabel() {
 	}
 
 	public void setEnd(Point end) throws Exception {
 		this.end = end;
-		refreshLayout();
+		refreshLayoutSelf();
 	}
 
 }

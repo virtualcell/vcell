@@ -1,8 +1,8 @@
 package cbit.vcell.desktop;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.TreeMap;
 import java.util.Vector;
 

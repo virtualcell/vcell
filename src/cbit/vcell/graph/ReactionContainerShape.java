@@ -5,10 +5,6 @@ package cbit.vcell.graph;
  */
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
-
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
@@ -39,31 +35,6 @@ public class ReactionContainerShape extends ContainerShape {
 		return structure;
 	}
 
-	public Dimension getPreferedSize(Graphics2D g) {
-		// get size when empty
-		Font origFont = g.getFont();
-		g.setFont(getLabelFont(g));
-		try{
-			Dimension emptySize = super.getPreferedSize(g);
-			// make larger than empty size so that children fit
-			for(Shape shape : childShapeList) {
-				if (shape instanceof ReactionStepShape || shape instanceof SpeciesContextShape){
-					emptySize.width = 
-						Math.max(emptySize.width, 
-								shape.getSpaceManager().getRelPos().x +
-								shape.getSpaceManager().getSize().width);
-					emptySize.height = 
-						Math.max(emptySize.height, 
-								shape.getSpaceManager().getRelPos().y + 
-								shape.getSpaceManager().getSize().height);
-				}
-			}
-			return emptySize;
-		} finally {
-			g.setFont(origFont);
-		}
-	}
-
 	public void randomize() {
 		// randomize the locations of speciesContexts and of reactionSteps,
 		// then draw in the reactionParticipant edges
@@ -76,7 +47,8 @@ public class ReactionContainerShape extends ContainerShape {
 		// calculate locations and sizes of reactionParticipant edges
 		for(Shape child : childShapeList) {
 			if (child instanceof ReactionParticipantShape){
-				((ReactionParticipantShape)child).refreshLayout();
+				ReactionParticipantShape reactionParticipantShape = (ReactionParticipantShape)child;
+				reactionParticipantShape.refreshLayoutSelf();
 			}
 		}
 		// position label

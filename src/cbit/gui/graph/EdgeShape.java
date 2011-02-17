@@ -157,7 +157,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		getSpaceManager().setSizePreferred((getLabelSize().height + 10), (getLabelSize().width + 10));
@@ -223,7 +223,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	}
 
 	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		if (startShape != null) {
 			start = startShape.getAttachmentLocation(getStartAttachment());
 			start.x += startShape.getSpaceManager().getAbsLoc().x;
@@ -243,7 +243,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		labelPos.x = centerX - getLabelSize().width / 2; 
 		labelPos.y = centerY - getLabelSize().height / 2;
 	}
-
+	
 	@Override
 	public void paintSelf(Graphics2D g2D, int xPos, int yPos) {
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -281,19 +281,19 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 
 	public void setEnd(Shape shape) throws Exception {
 		endShape = shape;
-		refreshLayout();
+		refreshLayoutSelf();
 	}
 
 	public void setEnd(Point end) throws Exception {
 		this.end = end;
 		endShape = null;
-		refreshLayout();
+		refreshLayoutSelf();
 	}
 
 	public void setStart(Point end) throws Exception {
 		this.start = end;
 		startShape = null;
-		refreshLayout();
+		refreshLayoutSelf();
 	}
 	
 	public Point getStart() {

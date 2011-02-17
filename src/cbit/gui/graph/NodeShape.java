@@ -6,9 +6,8 @@ package cbit.gui.graph;
 �*/
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Point;
-
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
@@ -47,23 +46,17 @@ public class NodeShape extends ElipseShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
-		java.awt.FontMetrics fm = g.getFontMetrics();
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
+		FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		getSpaceManager().setSizePreferred((radius*2), (radius*2));
 		return getSpaceManager().getSizePreferred();
 	}
 
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
-	}
-
-	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		labelPos.x = centerX - getLabelSize().width/2; 
-		labelPos.y = 0;
+		labelPos.y = 0;		
 	}
 
 	@Override
@@ -88,8 +81,4 @@ public class NodeShape extends ElipseShape {
 		setLabel(getNode().getName());
 	}
 
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
-	}
 }

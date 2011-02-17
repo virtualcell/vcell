@@ -58,16 +58,11 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		getSpaceManager().setSizePreferred((radius*2 + getLabelSize().width), (radius*2));
 		return getSpaceManager().getSizePreferred();
-	}
-
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(1,1);
 	}
 
 	private Color getSubvolumeColor(SubVolume subVolume) {
@@ -76,8 +71,7 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 		return new Color(colorModel.getRGB(handle));
 	}
 
-	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		labelPos.x = 2*radius + 5; 
 		labelPos.y = getLabelSize().height;
 	}
@@ -136,8 +130,4 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 		setLabel(geometryClass.getName());
 	}
 
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
-	}
 }

@@ -18,8 +18,8 @@ import cbit.vcell.model.Structure;
 public abstract class StructureShape extends ElipseShape {
 	private Structure structure = null;
 	private Model model = null;
-	protected static final int defaultSpacingX = 30;
-	protected static final int defaultSpacingY = 10;
+	public static final int defaultSpacingX = 30;
+	public static final int defaultSpacingY = 10;
 
 
 	public StructureShape (Structure structure, Model model, GraphModel graphModel) {

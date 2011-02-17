@@ -16,13 +16,6 @@ implements java.beans.PropertyChangeListener, Model.Owner {
 
 	/**
 	 * Insert the method's description here.
-	 * Creation date: (5/13/2003 2:30:25 PM)
-	 */
-	public ModelCartoon() {}
-
-
-	/**
-	 * Insert the method's description here.
 	 * Creation date: (5/13/2003 9:46:54 AM)
 	 * @return cbit.vcell.model.Model
 	 */

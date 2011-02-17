@@ -37,7 +37,7 @@ public class BioPaxObjectShape extends BioPaxShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		smallLabelSize.width = (smallLabel != null ? fm.stringWidth(smallLabel) : getLabelSize().width);
@@ -47,7 +47,7 @@ public class BioPaxObjectShape extends BioPaxShape {
 	}
 
 	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		labelPos.x = centerX - getLabelSize().width/2; 
 		labelPos.y = 0;
@@ -111,11 +111,6 @@ public class BioPaxObjectShape extends BioPaxShape {
 				SCS_LABEL_TRUCATED+
 				getLabel().substring(getLabel().length()-SCS_LABEL_WIDTHPARM);
 		}
-	}
-
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
 	}
 
 	public void truncateLabelName(boolean bTruncate) {

@@ -75,16 +75,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		shape.getSpaceManager().setAbsLoc(absLocation);
 	}
 
-	// TODO does this do anything useful, or is it just Visual Age baggage?
-	public void change_managed(Graphics2D g) throws Exception {
-		for (int i = 0; i < countChildren(); i++) {
-			Shape child = childShapeList.get(i);
-			child.change_managed(g);
-		}
-		getSpaceManager().setSize(getPreferedSize(g));
-		refreshLayout();
-	}
-
 	public boolean contains(Shape shape) {
 		for (int i = 0; i < childShapeList.size(); i++) {
 			if ((childShapeList.get(i)).equals(shape)) {
@@ -172,24 +162,8 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		return parent;
 	}
 
-	abstract public Dimension getPreferedSize(Graphics2D g);
-
-	public Point getSeparatorDeepCount() {
-		int selfCountX = 1;
-		if (countChildren() > 0) {
-			selfCountX++;
-		}
-		int selfCountY = countChildren() + 1;
-		Point totalDeepCount = new Point(selfCountX, selfCountY);
-		for (int i = 0; i < countChildren(); i++) {
-			Shape child = childShapeList.get(i);
-			Point childCount = child.getSeparatorDeepCount();
-			totalDeepCount.x += childCount.x;
-			totalDeepCount.y += childCount.y;
-		}
-		return totalDeepCount;
-	}
-
+	abstract public Dimension getPreferedSizeSelf(Graphics2D g);
+	
 	boolean isDescendant(Shape shape) {
 		for (int i = 0; i < childShapeList.size(); i++) {
 			Shape child = childShapeList.get(i);
@@ -214,9 +188,9 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	public boolean isSelected() {
 		return graphModel.isShapeSelected(this);
 	}
-
-	public abstract void refreshLayout() throws LayoutException;
-
+	
+	public abstract void refreshLayoutSelf();
+	
 	public void paint(Graphics2D graphics, int xParent, int yParent) {
 		for(PaintLayer layer : PaintLayer.values()) {
 			paint(graphics, xParent, yParent, layer);
@@ -280,23 +254,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		if (childShapeList.contains(shape)) {
 			childShapeList.remove(shape);
 		}
-	}
-
-	public void resize(Graphics2D g, Dimension newSize) throws Exception {
-		int deltaX = newSize.width - getSpaceManager().getSize().width;
-		int deltaY = newSize.height - getSpaceManager().getSize().height;
-		getSpaceManager().setSize(newSize);
-		// allocate extra new space according to deep child count of children
-		Point totalDeepCount = getSeparatorDeepCount();
-		for (int i = 0; i < countChildren(); i++) {
-			Shape child = childShapeList.get(i);
-			Point childDeepCount = child.getSeparatorDeepCount();
-			Dimension childSize = new Dimension(child.getSpaceManager().getSize());
-			childSize.width += deltaX * childDeepCount.x / totalDeepCount.x;
-			childSize.height += deltaY * childDeepCount.y / totalDeepCount.y;
-			child.resize(g, childSize);
-		}
-		refreshLayout();
 	}
 
 	public void notifySelected() {

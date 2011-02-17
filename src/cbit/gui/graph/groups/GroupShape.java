@@ -11,7 +11,6 @@ import java.awt.Point;
 
 import cbit.gui.ShapeLayoutUtil;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.LayoutException;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.VisualState.PaintLayer;
@@ -44,7 +43,7 @@ public class GroupShape extends Shape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		return size;
 	}
 
@@ -74,7 +73,7 @@ public class GroupShape extends Shape {
 	}
 
 	@Override
-	public void refreshLayout() throws LayoutException {
+	public void refreshLayoutSelf() {
 	}
 
 }

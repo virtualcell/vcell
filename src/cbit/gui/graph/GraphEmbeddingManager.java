@@ -40,19 +40,23 @@ import edu.rpi.graphdrawing.Stabilizer;
 
 public class GraphEmbeddingManager {
 
-	public static final String ANNEALER = "Annealer";
-	public static final String CIRCULARIZER = "Circularizer";
-	public static final String CYCLEIZER = "Cycleizer";
-	public static final String FORCEDIRECT = "ForceDirect";
-	public static final String LEVELLER = "Leveller";
-	public static final String RANDOMIZER = "Randomizer";
-	public static final String RELAXER = "Relaxer";
-	public static final String STABILIZER = "Stabilizer";		
-	public static final String GLG = "GLG";
-	
-	public static final List<String> LAYOUTS_RPI = Arrays.asList(ANNEALER, CIRCULARIZER, CYCLEIZER,
-			FORCEDIRECT, LEVELLER, RANDOMIZER, RELAXER, STABILIZER);
+	public static class OldLayouts {
 		
+		public static final String ANNEALER = "Annealer";
+		public static final String CIRCULARIZER = "Circularizer";
+		public static final String CYCLEIZER = "Cycleizer";
+		public static final String FORCEDIRECT = "ForceDirect";
+		public static final String LEVELLER = "Leveller";
+		public static final String RANDOMIZER = "Randomizer";
+		public static final String RELAXER = "Relaxer";
+		public static final String STABILIZER = "Stabilizer";		
+		public static final String GLG = "GLG";
+		
+		public static final List<String> LAYOUTS_RPI = Arrays.asList(ANNEALER, CIRCULARIZER, CYCLEIZER,
+				FORCEDIRECT, LEVELLER, RANDOMIZER, RELAXER, STABILIZER);
+			
+	}
+	
 	protected final GraphView graphView;
 	
 	public GraphEmbeddingManager(GraphView graphView) {
@@ -60,9 +64,9 @@ public class GraphEmbeddingManager {
 	}
 	
 	public void layout(String layoutName) throws Exception {
-		if(LAYOUTS_RPI.contains(layoutName)) {
+		if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
 			layoutRPI(layoutName);
-		} else if(GLG.equals(layoutName)) {
+		} else if(OldLayouts.GLG.equals(layoutName)) {
 			layoutGLG();
 		} else {
 			throw new Exception("Unsupported Layout " + layoutName);
@@ -118,14 +122,14 @@ public class GraphEmbeddingManager {
 		bb.setArea(0, 0, graphView.getWidth(), graphView.getHeight());
 		bb.globals.D(20);
 
-		bb.addEmbedder(GraphEmbeddingManager.ANNEALER, new Annealer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.CIRCULARIZER, new Circularizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.CYCLEIZER, new Cycleizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.FORCEDIRECT, new ForceDirect(bb));
-		bb.addEmbedder(GraphEmbeddingManager.LEVELLER, new Leveller(bb));
-		bb.addEmbedder(GraphEmbeddingManager.RANDOMIZER, new Randomizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.RELAXER, new Relaxer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.STABILIZER, new Stabilizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.ANNEALER, new Annealer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.LEVELLER, new Leveller(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RELAXER, new Relaxer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.STABILIZER, new Stabilizer(bb));
 
 		bb.setEmbedding(layoutName);
 		@SuppressWarnings("unchecked")

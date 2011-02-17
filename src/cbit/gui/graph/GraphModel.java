@@ -21,21 +21,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import cbit.gui.graph.GraphListener;
+import cbit.gui.graph.GraphResizeManager.ResizeMode;
 
 public abstract class GraphModel {
-
+	
 	public static final String PROPERTY_NAME_SELECTED = "selected";
 	
 	protected transient GraphListener aGraphListener = null;
 	protected transient PropertyChangeSupport propertyChange;
-	private int fieldZoomPercent = 100;
-	private boolean fieldResizable = true;
+	
+	protected GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+	
+	protected GraphResizeManager resizeManager = new GraphResizeManager(this);
+	
 	protected Set<Object> selectedObjects = new HashSet<Object>();
 	protected Map<Object, Shape> objectShapeMap = new HashMap<Object, Shape>();
 
+	public GraphResizeManager getResizeManager() { return resizeManager; }
+	
+	public GraphContainerLayout getContainerLayout() {
+		return containerLayout;
+	}
+	
 	public void addGraphListener(GraphListener newListener) {
 		aGraphListener = GraphEventMulticaster.add(aGraphListener, newListener);
 		return;
@@ -169,18 +178,22 @@ public abstract class GraphModel {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedCanvasSize(Graphics2D g) {
 		Dimension dim = null;
 		if (getTopShape() == null) {
 			dim = new Dimension(1, 1);
 		} else {
 			AffineTransform oldTransform = g.getTransform();
-			g.scale(fieldZoomPercent / 100.0, fieldZoomPercent / 100.0);
-			Dimension oldDim = getTopShape().getPreferedSize(g);
+			resizeManager.zoomGraphics(g);
+			Dimension oldDim = getContainerLayout().getPreferedSize(getTopShape(), g);
 			g.setTransform(oldTransform);
-			double newWidth = oldDim.width * (fieldZoomPercent / 100.0);
-			double newHeight = oldDim.height * (fieldZoomPercent / 100.0);
-			dim = new Dimension((int) newWidth, (int) newHeight);
+			switch(resizeManager.getResizeMode()) {
+				case AUTO_DISPLAYED: case FIX_DISPLAYED:
+					return resizeManager.zoom(oldDim);
+				case AUTO_UNZOOMED: case FIX_UNZOOMED:
+					return oldDim;
+			}
+			return oldDim;
 		}
 		return dim;
 	}
@@ -190,10 +203,6 @@ public abstract class GraphModel {
 			propertyChange = new java.beans.PropertyChangeSupport(this);
 		}
 		return propertyChange;
-	}
-
-	public boolean getResizable() {
-		return fieldResizable;
 	}
 
 	public Shape getSelectedShape() {
@@ -248,8 +257,8 @@ public abstract class GraphModel {
 		for (Shape fs : objectShapeMap.values()) {
 			if (fs.getParent() == null) {
 				if (topShape != null) {
-					showShapeHierarchyBottomUp();
-					showShapeHierarchyTopDown();
+					GraphModelShapeHierarchyPrinter.showShapeHierarchyBottomUp(this);
+					GraphModelShapeHierarchyPrinter.showShapeHierarchyTopDown(this);
 					throw new RuntimeException(
 							"ERROR: too many top level shapes, at least "
 									+ topShape + " and " + fs);
@@ -264,7 +273,7 @@ public abstract class GraphModel {
 	}
 
 	public int getZoomPercent() {
-		return fieldZoomPercent;
+		return resizeManager.getZoomPercent();
 	}
 
 	protected void handleException(Throwable exception) {
@@ -313,7 +322,7 @@ public abstract class GraphModel {
 				return;
 			} else if (topShape != null) {
 				AffineTransform oldTransform = g.getTransform();
-				g.scale(fieldZoomPercent / 100.0, fieldZoomPercent / 100.0);
+				resizeManager.zoomGraphics(g);
 				topShape.paint(g, 0, 0);
 				g.setTransform(oldTransform);
 			}
@@ -384,128 +393,12 @@ public abstract class GraphModel {
 		fireGraphChanged(new GraphEvent(this));
 	}
 
-	public void resize(Graphics2D g, Dimension newSize) throws Exception {
-
-		if (getTopShape() != null) {
-			double newWidth = (100.0 / fieldZoomPercent) * newSize.getWidth();
-			double newHeight = (100.0 / fieldZoomPercent) * newSize.getHeight();
-			getTopShape().resize(g,
-					new Dimension((int) newWidth, (int) newHeight));
-		}
+	public void notifyComponentSize(Graphics2D g, Dimension newSize) throws Exception {
+		containerLayout.layout(this, g, newSize);
+		resizeManager.notifyComponentSize(newSize);
 	}
 
-	public void setResizable(boolean resizable) {
-		boolean oldValue = fieldResizable;
-		fieldResizable = resizable;
-		firePropertyChange("resizable", new Boolean(oldValue), new Boolean(
-				resizable));
-	}
+	public ResizeMode getResizeMode() { return resizeManager.getResizeMode(); }
+	public void setResizeMode(ResizeMode resizeMode) { resizeManager.setResizeMode(resizeMode); }
 
-	public void setZoomPercent(int zoomPercent) {
-		if (zoomPercent < 1 || zoomPercent > 1000) {
-			throw new RuntimeException("zoomPercent must be between 1 and 1000");
-		}
-		int oldValue = fieldZoomPercent;
-		fieldZoomPercent = zoomPercent;
-		firePropertyChange("zoomPercent", new Integer(oldValue), new Integer(
-				zoomPercent));
-		fireGraphChanged();
-	}
-
-	public void showShapeHierarchyBottomUp() {
-		System.out.println("<<<<<<<<<Shape Hierarchy Bottom Up>>>>>>>>>");
-		List<Shape> shapes = new ArrayList<Shape>(objectShapeMap.values());
-		// gather top(s) ... should only have one
-		List<Shape> topList = new ArrayList<Shape>();
-		for (int i = 0; i < shapes.size(); i++) {
-			if (shapes.get(i).getParent() == null) {
-				topList.add(shapes.get(i));
-			}
-		}
-		// for each top, print tree
-		Stack<Shape> stack = new Stack<Shape>();
-		for (Shape top : topList) {
-			System.out.println(top.toString());
-			stack.push(top);
-			shapes.remove(top);
-			while (true) {
-				// find first remaining children of current parent and print
-				boolean bChildFound = false;
-				for (int i = 0; i < shapes.size() && stack.size() > 0; i++) {
-					Shape shape = shapes.get(i);
-					if (shape.getParent() == stack.peek()) {
-						char padding[] = new char[4 * stack.size()];
-						for (int k = 0; k < padding.length; k++)
-							padding[k] = ' ';
-						String pad = new String(padding);
-						System.out.println(pad + shape.toString());
-						stack.push(shape);
-						shapes.remove(shape);
-						bChildFound = true;
-						break;
-					}
-				}
-				if (stack.size() == 0) {
-					break;
-				}
-				if (bChildFound == false) {
-					stack.pop();
-				}
-			}
-		}
-		if (shapes.size() > 0) {
-			System.out.println(".......shapes left over:");
-			for (int i = 0; i < shapes.size(); i++) {
-				System.out.println((shapes.get(i)).toString());
-			}
-		}
-
-	}
-
-	public void showShapeHierarchyTopDown() {
-		System.out.println("<<<<<<<<<Shape Hierarchy Top Down>>>>>>>>>");
-		List<Shape> shapes = new ArrayList<Shape>(objectShapeMap.values());
-		// gather top(s) ... should only have one
-		List<Shape> topList = new ArrayList<Shape>();
-		for (int i = 0; i < shapes.size(); i++) {
-			if (shapes.get(i).getParent() == null) {
-				topList.add(shapes.get(i));
-			}
-		}
-		// for each top, print tree
-		Stack<Shape> stack = new Stack<Shape>();
-		for (int j = 0; j < topList.size(); j++) {
-			Shape top = topList.get(j);
-			System.out.println(top.toString());
-			stack.push(top);
-			shapes.remove(top);
-			while (stack.size() > 0) {
-				// find first remaining children of current parent and print
-				boolean bChildFound = false;
-				Shape currShape = stack.peek();
-				for (Shape shape : currShape.getChildren()) {
-					if (!shapes.contains(shape))
-						continue;
-					char padding[] = new char[4 * stack.size()];
-					for (int k = 0; k < padding.length; k++)
-						padding[k] = ' ';
-					String pad = new String(padding);
-					System.out.println(pad + shape.toString());
-					stack.push(shape);
-					shapes.remove(shape);
-					bChildFound = true;
-					break;
-				}
-				if (bChildFound == false) {
-					stack.pop();
-				}
-			}
-		}
-		if (shapes.size() > 0) {
-			System.out.println(".......shapes left over:");
-			for (int i = 0; i < shapes.size(); i++) {
-				System.out.println((shapes.get(i)).toString());
-			}
-		}
-	}
 }

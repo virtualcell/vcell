@@ -1,15 +1,16 @@
 package cbit.gui.graph;
 
 import java.awt.Point;
+import java.util.Random;
 
-/*�
+/*
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-�*/
+ */
 
 public abstract class ContainerShape extends RectangleShape {
-	private boolean bRandomize = false;
-	private java.util.Random rand = new java.util.Random();
+	protected boolean bRandomize = false;
+	private Random rand = new Random();
 
 	public ContainerShape(GraphModel graphModel) {
 		super(graphModel);
@@ -39,14 +40,6 @@ public abstract class ContainerShape extends RectangleShape {
 
 	protected boolean isRandom() {
 		return bRandomize;
-	}
-
-	@Override
-	public void refreshLayout() throws LayoutException {
-		super.refreshLayout();
-		if (bRandomize){
-			randomize();
-		}
 	}
 
 	public void randomize() {

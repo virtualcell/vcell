@@ -31,7 +31,7 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 
 	@Override protected final CubicCurve2D.Double getCurve() {
 		// TODO is this the best place for layout?
-		refreshLayout();
+		refreshLayoutSelf();
 		// default behavior of control points is for direction at ends to follow secant between end-points.
 		if(lastCurve_Start == null || !lastCurve_Start.equals(start) ||
 				lastCurve_End == null || !lastCurve_End.equals(end)){

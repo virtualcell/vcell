@@ -30,7 +30,6 @@ public class SpeciesContextShape extends ElipseShape {
 	SpeciesContext speciesContext = null;
 	private static final int RADIUS = 8;
 	public static final int DIAMETER = 2*RADIUS;
-	private static final int SMALL_DIAMETER = DIAMETER-1;
 	private Color darkerBackground = null;
 	private Area icon = null;
 
@@ -66,8 +65,11 @@ public class SpeciesContextShape extends ElipseShape {
 		return speciesContext;
 	}
 
+	public Dimension getSmallLabelSize() { return smallLabelSize; }
+	public Point getSmallLabelPos() { return smallLabelPos; }
+	
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		smallLabelSize.width = (smallLabel != null ? fm.stringWidth(smallLabel) : getLabelSize().width);
@@ -76,24 +78,18 @@ public class SpeciesContextShape extends ElipseShape {
 		return getSpaceManager().getSizePreferred();
 	}
 
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
-	}
-
 	public SpeciesContext getSpeciesContext() {
 		return speciesContext;
 	}
 
-	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		labelPos.x = centerX - getLabelSize().width/2; 
 		labelPos.y = 0;
 		smallLabelPos.x = centerX - smallLabelSize.width/2;
-		smallLabelPos.y = getLabelPos().y;
+		smallLabelPos.y = getLabelPos().y;		
 	}
-
+	
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		boolean isBound = false;
@@ -172,11 +168,6 @@ public class SpeciesContextShape extends ElipseShape {
 				SCS_LABEL_TRUCATED+
 				getLabel().substring(getLabel().length()-SCS_LABEL_WIDTHPARM);
 		}
-	}
-
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
 	}
 
 	public void truncateLabelName(boolean bTruncate) {

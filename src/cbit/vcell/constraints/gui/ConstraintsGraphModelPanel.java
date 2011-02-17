@@ -5,6 +5,7 @@ package cbit.vcell.constraints.gui;
 �*/
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.CartoonTool.Mode;
+import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 
 import javax.swing.*;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
@@ -148,7 +149,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.RANDOMIZER);
+		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RANDOMIZER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -185,7 +186,7 @@ private void connEtoM12(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.RELAXER);
+		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RELAXER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -204,7 +205,7 @@ private void connEtoM13(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.LEVELLER);
+		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.LEVELLER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -259,7 +260,7 @@ private void connEtoM2(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.ANNEALER);
+		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.ANNEALER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -338,7 +339,7 @@ private void connEtoM7(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.CIRCULARIZER);
+		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.CIRCULARIZER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1295,120 +1296,18 @@ private void setSelection(javax.swing.ButtonModel newValue) {
 	// user code end
 }
 
-/**
- * Comment
- */
 private void zoomInButton_ActionPerformed() {
 	if (getConstraintGraphModel()!=null){
-		switch (getConstraintGraphModel().getZoomPercent()){
-			case 195: {
-				// already at top, do nothing
-				break;
-			}
-			case 156: {
-				getConstraintGraphModel().setZoomPercent(195);
-				break;
-			}
-			case 125: {
-				getConstraintGraphModel().setZoomPercent(156);
-				break;
-			}
-			case 100: {
-				getConstraintGraphModel().setZoomPercent(125);
-				break;
-			}
-			case 80: {
-				getConstraintGraphModel().setZoomPercent(100);
-				break;
-			}
-			case 64: {
-				getConstraintGraphModel().setZoomPercent(80);
-				break;
-			}
-			case 50: {
-				getConstraintGraphModel().setZoomPercent(64);
-				break;
-			}
-			case 40: {
-				getConstraintGraphModel().setZoomPercent(50);
-				break;
-			}
-			case 30: {
-				getConstraintGraphModel().setZoomPercent(40);
-				break;
-			}
-			case 20: {
-				getConstraintGraphModel().setZoomPercent(30);
-				break;
-			}
-			case 10: {
-				getConstraintGraphModel().setZoomPercent(20);
-				break;
-			}
-			default: {
-				getConstraintGraphModel().setZoomPercent(100);
-				break;
-			}
-		}
+		try { getConstraintGraphModel().getResizeManager().zoomIn(); } 
+		catch (ZoomRangeException e) { } // Do nothing
 	}
 }
 
-
-/**
- * Comment
- */
 private void zoomOutButton_ActionPerformed() {
 	if (getConstraintGraphModel()!=null){
-		switch (getConstraintGraphModel().getZoomPercent()){
-			case 195: {
-				getConstraintGraphModel().setZoomPercent(156);
-				break;
-			}
-			case 156: {
-				getConstraintGraphModel().setZoomPercent(125);
-				break;
-			}
-			case 125: {
-				getConstraintGraphModel().setZoomPercent(100);
-				break;
-			}
-			case 100: {
-				getConstraintGraphModel().setZoomPercent(80);
-				break;
-			}
-			case 80: {
-				getConstraintGraphModel().setZoomPercent(64);
-				break;
-			}
-			case 64: {
-				getConstraintGraphModel().setZoomPercent(50);
-				break;
-			}
-			case 50: {
-				getConstraintGraphModel().setZoomPercent(40);
-				break;
-			}
-			case 40: {
-				getConstraintGraphModel().setZoomPercent(30);
-				break;
-			}
-			case 30: {
-				getConstraintGraphModel().setZoomPercent(20);
-				break;
-			}
-			case 20: {
-				getConstraintGraphModel().setZoomPercent(10);
-				break;
-			}
-			case 10: {
-				// can't zoom out any further
-				break;
-			}
-			default: {
-				getConstraintGraphModel().setZoomPercent(100);
-				break;
-			}
-		}
+		try { getConstraintGraphModel().getResizeManager().zoomOut(); } 
+		catch (ZoomRangeException e) { } // Do nothing
 	}
 }
+
 }

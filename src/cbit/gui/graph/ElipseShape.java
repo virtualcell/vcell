@@ -17,7 +17,7 @@ public abstract class ElipseShape extends Shape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		ShapeSpaceManager spaceManager = getSpaceManager();
 		FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
@@ -49,12 +49,10 @@ public abstract class ElipseShape extends Shape {
 	}
 
 	@Override
-	public void refreshLayout() throws LayoutException {
-		if (LayoutException.bActivated) {
-			if (getSpaceManager().getSize().width <= getLabelSize().width
-					|| getSpaceManager().getSize().height <= getLabelSize().height) {
-				throw new LayoutException("screen size smaller than label");
-			}
+	public void refreshLayoutSelf() {
+		if (getSpaceManager().getSize().width <= getLabelSize().width
+				|| getSpaceManager().getSize().height <= getLabelSize().height) {
+			LayoutErrorLog.logErrorMessage("screen size smaller than label");
 		}
 		// this is like a row/column layout (1 column)
 		int centerX = getSpaceManager().getSize().width / 2;
@@ -63,7 +61,7 @@ public abstract class ElipseShape extends Shape {
 		labelPos.x = centerX - getLabelSize().width / 2; 
 		labelPos.y = centerY - getLabelSize().height / 2;
 	}
-
+	
 	@Override
 	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
 		// draw elipse
