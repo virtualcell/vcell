@@ -24,8 +24,8 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
-import cbit.gui.graph.GraphLayout;
-import cbit.gui.graph.LayoutException;
+import cbit.gui.graph.GraphContainerLayout;
+import cbit.gui.graph.GraphContainerLayoutVCellClassical;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -99,8 +99,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.XMLTags;
-
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Chunk;
@@ -109,13 +107,11 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
-import com.lowagie.text.Jpeg;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
-import com.lowagie.text.Watermark;
 import com.lowagie.text.pdf.BaseFont;
 import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 
@@ -144,7 +140,6 @@ public abstract class ITextWriter {
 	public static final String MEDIUM_RESOLUTION = "medium resolution";           //default_scale*1.5
 	public static final String LOW_RESOLUTION = "low resolution";                 //default_scale
 	
-	private static final String WATERMARK_IMAGE_URI = "/images/watermark.jpg";
 	private static int DEF_FONT_SIZE = 9;
 	private static int DEF_HEADER_FONT_SIZE = 11;
 	private Font fieldFont = null;
@@ -410,7 +405,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		//dummy settings to get the real dimensions.
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = rcartoon.getPreferedSize(dummyGraphics);
+		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
 		int width = (int)prefDim.getWidth()*110/100;
 		int height = (int)prefDim.getHeight()*110/100;
 		
@@ -430,13 +425,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		while (true) {
-			try {
-				new GraphLayout().layout(rcartoon, g, new Dimension(width,height));
-				break;
-			} catch (LayoutException e) {
-				System.out.println("Layout error: " + e.getMessage());
-				rcartoon.setZoomPercent(rcartoon.getZoomPercent()*90/100);
-			}
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(rcartoon, g, new Dimension(width,height));
+			break;
 		}
 		rcartoon.paint(g, null);
 		bos = new ByteArrayOutputStream();
@@ -479,7 +470,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		//scartoon.setZoomPercent(scartoon.getZoomPercent()*3);
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = scartoon.getPreferedSize(dummyGraphics);
+		Dimension prefDim = scartoon.getPreferedCanvasSize(dummyGraphics);
 		
 		int width = (int)prefDim.getWidth()*110/100;
 		int height = (int)prefDim.getHeight()*110/100;
@@ -494,13 +485,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		while (true) {
-			try {
-				new GraphLayout().layout(scartoon, g, new Dimension(width,height));
-				break;
-			} catch (LayoutException e) {
-				System.out.println("Layout error: " + e.getMessage());
-				scartoon.setZoomPercent(scartoon.getZoomPercent()*90/100);
-			}
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(scartoon, g, new Dimension(width,height));
+			break;
 		}
 		scartoon.paint(g, null);
 		bos = new ByteArrayOutputStream();
@@ -750,30 +737,24 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		rcartoon.refreshAll();
 		int zoom = ITextWriter.getZoom(resolution);
 		System.out.println(resolution + " " + zoom);
-		rcartoon.setZoomPercent(rcartoon.getZoomPercent()*zoom);
+		rcartoon.getResizeManager().setZoomPercent(rcartoon.getResizeManager().getZoomPercent()*zoom);
 		//dummy settings to get the real dimensions.
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = rcartoon.getPreferedSize(dummyGraphics);
+		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
 		int width = (int)prefDim.getWidth()*110/100 + SIZE_INC;           
 		int height = (int)prefDim.getHeight()*110/100 + SIZE_INC;
 		BufferedImage bufferedImage;
 		Graphics2D g;
 		while (true) {
-			try {
-				System.out.println("Image width: " + width + " height: " + height);
-				bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-				g = (Graphics2D)bufferedImage.getGraphics();
-				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				new GraphLayout().layout(rcartoon, g, new Dimension(width,height));
-				break;
-			} catch (LayoutException e) {
-				System.out.println("Layout error in " + struct.getName() + ": " + e.getMessage());
-				//rcartoon.setZoomPercent(rcartoon.getZoomPercent()*90/100);
-				width = width + SIZE_INC*5;
-				height = height + SIZE_INC*5;
-			}
+			System.out.println("Image width: " + width + " height: " + height);
+			bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+			g = (Graphics2D)bufferedImage.getGraphics();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(rcartoon, g, new Dimension(width,height));
+			break;
 		}
 		g.setBackground(java.awt.Color.white);
 		g.clearRect(0, 0, width, height);
@@ -811,29 +792,24 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		scartoon.refreshAll();
 		int zoom = ITextWriter.getZoom(resolution);
 		System.out.println(resolution + " " + zoom);
-		scartoon.setZoomPercent(scartoon.getZoomPercent()*zoom);
+		scartoon.getResizeManager().setZoomPercent(scartoon.getResizeManager().getZoomPercent()*zoom);
 		//dummy settings to get the real dimensions.
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = scartoon.getPreferedSize(dummyGraphics);
+		Dimension prefDim = scartoon.getPreferedCanvasSize(dummyGraphics);
 		int width = (int)prefDim.getWidth()*110/100 + SIZE_INC*30;                 //too generous
 		int height = (int)prefDim.getHeight()*110/100 + SIZE_INC*30;
 		BufferedImage bufferedImage;
 		Graphics2D g;
 		while (true) {
-			try {
-				System.out.println("Image width: " + width + " height: " + height);
-			    bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-				g = (Graphics2D)bufferedImage.getGraphics();
-				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				new GraphLayout().layout(scartoon, g, new Dimension(width,height));
-				break;
-			} catch (LayoutException e) {
-				System.out.println("Layout error: " + e.getMessage());
-				width = width + SIZE_INC*5;
-				height = height + SIZE_INC*5;
-			}
+			System.out.println("Image width: " + width + " height: " + height);
+			bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+			g = (Graphics2D)bufferedImage.getGraphics();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(scartoon, g, new Dimension(width,height));
+			break;
 		}
 		scartoon.paint(g, null);
 		bos = new ByteArrayOutputStream();
@@ -862,13 +838,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	    BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 		while (true) {
-			try {
-				new GraphLayout().layout(structMapCartoon, g, new Dimension(width,height));
-				break;
-			} catch (LayoutException e) {
-				System.out.println("Layout error: " + e.getMessage());
-				structMapCartoon.setZoomPercent(structMapCartoon.getZoomPercent()*90/100);
-			}
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(structMapCartoon, g, new Dimension(width,height));
+			break;
 		}
 		structMapCartoon.paint(g, null);
 		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
@@ -996,28 +968,6 @@ protected Font getFont() {
 	}
 
 
-	// for debugging only, temp
-	private static void printImageToFile(ByteArrayOutputStream bos) {
-
-		final String FILE_PREFIX = "c:\\publish\\temp_";
-		final String FILE_SUFFIX = ".gif";
-		int i = 0;
-		while (new java.io.File(FILE_PREFIX + i + FILE_SUFFIX).exists()) {
-			i++;
-		}
-		try {
-			FileOutputStream fos = new FileOutputStream(FILE_PREFIX + i + FILE_SUFFIX);
-			bos.flush();
-			bos.writeTo(fos);
-			fos.flush();
-			fos.close();
-		} catch (java.io.IOException e) {
-			System.err.println("Unable to print image to file.");
-			e.printStackTrace();
-		}
-	}
-
-
 	protected void setDocument(PageFormat pageFormat) {
 
 		Rectangle pageSize = new Rectangle((float) pageFormat.getWidth(), (float) pageFormat.getHeight());
@@ -1030,16 +980,6 @@ protected Font getFont() {
 		//ITextWriter.DEF_IMAGE_HEIGHT = (int)pageFormat.getImageableHeight();
 		//can also use some of the built-in PageSize objects, like PageSize.A4, PageSize.LETTER
 		this.document = new Document(pageSize, (float) marginL, (float) marginR, (float) marginT, (float) marginB);
-	}
-
-
-	//this method will set a new page for a section
-	private void setNewPage(Section section, com.lowagie.text.Image image) {
-
-		Chunk chunk = new Chunk("");
-		chunk.setNewPage();
-		Paragraph newPage = new Paragraph(chunk);
-		section.add(newPage);
 	}
 
 
@@ -1056,7 +996,6 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 	}
 	try {
 		setDocument(pageFormat);
-		DocWriter docWriter = createDocWriter(fos);
 		// Add metadata before you open the document...
 		String name = bioModel.getName().trim();
 		String userName = "Unknown";
@@ -1228,7 +1167,6 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		}
 		try {
 			setDocument(pageFormat);
-			DocWriter docWriter = createDocWriter(fos);
 			//Add metadata before you open the document...
 			String name = geom.getName().trim();
 			String userName = "Unknown";
@@ -1340,7 +1278,6 @@ protected void writeHorizontalLine() throws DocumentException {
 		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.depth() + 1);
 		Section mathDescSubSection = null;
 		Expression expArray [] = null;
-		Table imageTable = null;
 		BufferedImage dummy = new BufferedImage(500, 50, BufferedImage.TYPE_3BYTE_BGR);
 		int scale = 1;
 		int viewableWidth = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());
@@ -1482,7 +1419,6 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		try {
 			setDocument(pageFormat);
-			DocWriter docWriter = createDocWriter(fos);
 			// Add metadata before you open the document...
 			String name = mathModel.getName().trim();
 			String userName = "Unknown";
@@ -1740,8 +1676,6 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 	//add structures image
 	if (model.getNumStructures() > 0) {
 		try {
-			int width = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());  
-			int height = (int)(document.getPageSize().height() - document.topMargin() - document.bottomMargin())/2;        //half the page size.    
 			ByteArrayOutputStream bos = generateDocStructureImage(model, ITextWriter.LOW_RESOLUTION);
 			structSection = physioChapter.addSection("Structures For: " + model.getName(), physioChapter.numberDepth() + 1);
 			addImage(structSection, bos);
@@ -1957,18 +1891,6 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		}
 	}
 
-
-	private void writeReactionParticipant(ReactionParticipant rp, Table table, String type) throws DocumentException {
-
-		table.addCell(createCell(rp.getSpecies().getCommonName(), getFont()));
-		table.addCell(createCell(type, getFont()));
-		String stoichStr;
-		if (!type.equals(XMLTags.CatalystTag)) {
-			table.addCell(createCell("" + rp.getStoichiometry(), getFont()));
-		} else {
-			table.addCell(createCell("N/A", getFont()));
-		}
-	}
 
 	private Cell getReactionArrowImageCell(boolean bReversible) throws DocumentException {
 		// Create image for arrow(s)
@@ -2598,19 +2520,5 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 		}
 		
 		container.add(eqTable);	
-	}
-
-
-	private void writeWatermark(PageFormat pageFormat) {
-
-		try {
-			Jpeg jpg = new Jpeg(this.getClass().getResource(WATERMARK_IMAGE_URI));
-			double x = (pageFormat.getWidth() - jpg.width())/2.0;
-			double y = (pageFormat.getHeight() - jpg.height())/2.0;
-			document.add(new Watermark(jpg, (int) x, (int) y));
-		} catch (Exception e) {
-			System.out.println("Error in adding watermark to document.");
-			e.printStackTrace();
-		}
 	}
 }

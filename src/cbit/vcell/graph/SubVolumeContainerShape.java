@@ -5,7 +5,6 @@ package cbit.vcell.graph;
 �*/
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 import cbit.gui.graph.ContainerShape;
@@ -27,16 +26,11 @@ public class SubVolumeContainerShape extends ContainerShape{
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		if(brightImage != null){
 			return new Dimension(brightImage.getWidth(),brightImage.getHeight());
 		}
 		return new Dimension(10,10);
-	}
-
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
 	}
 
 	@Override
@@ -54,8 +48,4 @@ public class SubVolumeContainerShape extends ContainerShape{
 	@Override
 	public void refreshLabel() {}
 
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
-	}
 }

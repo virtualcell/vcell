@@ -32,7 +32,7 @@ public class FluxReactionShape extends ReactionStepShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		getSpaceManager().setSizePreferred(25, 25);
 		if(getLabel() != null && getLabel().length() > 0){
 			FontMetrics fontMetrics = g.getFontMetrics();

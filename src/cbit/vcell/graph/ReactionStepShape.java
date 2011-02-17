@@ -6,7 +6,6 @@ package cbit.vcell.graph;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.geom.Area;
 
 import cbit.gui.graph.ElipseShape;
@@ -43,7 +42,7 @@ public abstract class ReactionStepShape extends ElipseShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		getSpaceManager().setSizePreferred(12, 12);
 		if(getLabel() != null && getLabel().length() > 0){
 			FontMetrics fontMetrics = g.getFontMetrics();
@@ -57,22 +56,11 @@ public abstract class ReactionStepShape extends ElipseShape {
 		return reactionStep;
 	}
 
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
-	}
-
-	@Override
-	public final void refreshLayout() {
+	public final void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		// position label
 		labelPos.x = centerX - getLabelSize().width/2; 
 		labelPos.y = 0;
-	}
-
-	@Override
-	public final void resize(Graphics2D g, Dimension newSize) {
-		return;
 	}
 
 	public static void setDisplayLabels(boolean argDisplayLabels) {

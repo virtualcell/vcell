@@ -112,14 +112,14 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		}
 		bb.setArea(0, 0, getGraphPane().getWidth(), getGraphPane().getHeight());
 		bb.globals.D(20);
-		bb.addEmbedder(GraphEmbeddingManager.ANNEALER, new Annealer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.CIRCULARIZER, new Circularizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.CYCLEIZER, new Cycleizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.FORCEDIRECT, new ForceDirect(bb));
-		bb.addEmbedder(GraphEmbeddingManager.LEVELLER, new Leveller(bb));
-		bb.addEmbedder(GraphEmbeddingManager.RANDOMIZER, new Randomizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.RELAXER, new Relaxer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.STABILIZER, new Stabilizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.ANNEALER, new Annealer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.LEVELLER, new Leveller(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RELAXER, new Relaxer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.STABILIZER, new Stabilizer(bb));
 		bb.setEmbedding(layoutName);
 		@SuppressWarnings("unchecked")
 		List<Node> nodeList = bb.nodes();

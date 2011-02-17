@@ -5,7 +5,6 @@ import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Graphics2D;
 
 public abstract class ConstraintGraphNode extends ElipseShape {
@@ -34,30 +33,19 @@ public abstract class ConstraintGraphNode extends ElipseShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		getSpaceManager().setSizePreferred((radius*2), (radius*2));
 		return getSpaceManager().getSizePreferred();
 	}
 
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
-	}
-
-	@Override
-	public void refreshLayout() {
+	public void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		labelPos.x = centerX - getLabelSize().width/2; 
-		labelPos.y = 0;
+		labelPos.y = 0;		
 	}
-
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
-	}
-
+	
 	public void setDegree(int newDegree) {
 		if (newDegree < 0){
 			throw new IllegalArgumentException("degree must be non-negative");

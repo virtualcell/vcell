@@ -10,7 +10,6 @@ import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.sybil.util.gui.ArrowPainter;
 
-import cbit.gui.graph.LayoutException;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
@@ -47,7 +46,7 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		// TODO Auto-generated method stub
 		return new Dimension(0, 0);
 	}
@@ -59,9 +58,8 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 	}
 
 	@Override
-	public void refreshLayout() throws LayoutException {
-		// TODO Auto-generated method stub
-
+	public void refreshLayoutSelf() {
+		// do nothing
 	}
 
 	@Override

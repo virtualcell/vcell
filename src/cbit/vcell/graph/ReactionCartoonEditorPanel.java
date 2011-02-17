@@ -29,6 +29,7 @@ import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
+
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.CartoonTool.Mode;
@@ -63,16 +64,18 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
 	private JButton glgLayoutJButton = null;
-	private ReactionCartoon reactionCartoon = new ReactionCartoon();
-	private ReactionCartoonTool reactionCartoonTool = new ReactionCartoonTool();
+	private final ReactionCartoon reactionCartoon = new ReactionCartoon();
+	private final ReactionCartoonTool reactionCartoonTool = new ReactionCartoonTool();
 
 	private boolean bFloatingRequested = false;
 	private JButton floatRequestButton = null;
-	private static Icon randomLayoutIcon = loadIcon("/sybil/images/layout/random.gif");
-	private static Icon circleLayoutIcon = loadIcon("/sybil/images/layout/circular.gif");
-	private static Icon annealedLayoutIcon = loadIcon("/sybil/images/layout/annealed.gif");
-	private static Icon levelledLayoutIcon = loadIcon("/sybil/images/layout/levelled.gif");
-	private static Icon relaxedLayoutIcon = loadIcon("/sybil/images/layout/relaxed.gif");
+	
+	public final static String IMAGE_PATH = "/sybil/images/layout/";
+	private final static Icon randomLayoutIcon = loadIcon(IMAGE_PATH + "random.gif");
+	private final static Icon circleLayoutIcon = loadIcon(IMAGE_PATH + "circular.gif");
+	private final static Icon annealedLayoutIcon = loadIcon(IMAGE_PATH + "annealed.gif");
+	private final static Icon levelledLayoutIcon = loadIcon(IMAGE_PATH + "levelled.gif");
+	private final static Icon relaxedLayoutIcon = loadIcon(IMAGE_PATH + "relaxed.gif");
 
 	
 	public ReactionCartoonEditorPanel() {
@@ -80,8 +83,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		initialize();
 	}
 
-	private static Icon loadIcon(String path) {
-		return new ImageIcon(ReactionCartoonEditorPanel.class.getResource(path));
+	private static Icon loadIcon(String fileName) {
+		return new ImageIcon(ReactionCartoonEditorPanel.class.getResource(fileName));
 	}
 	
 	public void actionPerformed(ActionEvent event) {
@@ -90,19 +93,19 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			if (getModeButtons().contains(source))
 				getReactionCartoonTool().setModeString(event.getActionCommand());
 			else if (source == getRandomLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.RANDOMIZER);
+				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.RANDOMIZER);
 			else if (source == getAnnealLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.ANNEALER);
+				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.ANNEALER);
 			else if (source == getCircleLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.CIRCULARIZER);
+				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.CIRCULARIZER);
 			else if (source == getRelaxerLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.RELAXER);
+				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.LEVELLER);
+				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.LEVELLER);
 			else if (source == getZoomInButton())
-				this.zoomInButton_ActionPerformed();
+				getReactionCartoon().getResizeManager().zoomIn();
 			else if (source == getZoomOutButton())
-				this.zoomOutButton_ActionPerformed();
+				this.getReactionCartoon().getResizeManager().zoomOut();
 			else if (source == getGlgLayoutJButton())
 				getReactionCartoonTool().layoutGlg();
 			else if (source == getFloatRequestButton()) 
@@ -577,38 +580,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getReactionCartoon().setStructureSuite(structureSuite);
 	}
 	
-	private int[] zoomLevels = { 10, 20, 30, 40, 50, 64, 80, 100, 125, 156, 195};
-
-	private void zoomInButton_ActionPerformed() {
-		if (getReactionCartoon()!=null){
-			int zoomPercent = getReactionCartoon().getZoomPercent();
-			for(int zoomPercentNew : zoomLevels) {
-				if(zoomPercentNew > zoomPercent) {
-					getReactionCartoon().setZoomPercent(zoomPercentNew);
-					break;
-				}
-			}
-		}
-	}
-
-	private void zoomOutButton_ActionPerformed() {
-		if (getReactionCartoon()!=null){
-			int zoomPercent = getReactionCartoon().getZoomPercent();
-			for(int i = zoomLevels.length - 1;  i >= 0; --i) {
-				int zoomPercentNew = zoomLevels[i];
-				if(zoomPercentNew < zoomPercent) {
-					getReactionCartoon().setZoomPercent(zoomPercentNew);
-					break;
-				}
-			}
-		}
-	}
-	
 	public final void setFloatingRequested(boolean newValue) {
 		boolean oldValue = bFloatingRequested;
 		this.bFloatingRequested = newValue;
 		floatRequestButton.setVisible(!bFloatingRequested);
 		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
 	}
-	
+
 }

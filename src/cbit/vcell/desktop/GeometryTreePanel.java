@@ -1,8 +1,8 @@
 package cbit.vcell.desktop;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 

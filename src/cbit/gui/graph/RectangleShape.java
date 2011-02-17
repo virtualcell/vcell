@@ -52,7 +52,7 @@ public abstract class RectangleShape extends Shape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(Graphics2D g) {
+	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		if (g == null) {
 			setLabelSize(10, 20);
 		} else {
@@ -84,8 +84,7 @@ public abstract class RectangleShape extends Shape {
 		}
 	}
 
-	@Override
-	public void refreshLayout() throws LayoutException {
+	public void refreshLayoutSelf() {
 		if (getSpaceManager().getSize().width <= getLabelSize().width || 
 				getSpaceManager().getSize().height <= getLabelSize().height) {
 		}

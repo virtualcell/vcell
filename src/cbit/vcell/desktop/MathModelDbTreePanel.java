@@ -1,7 +1,7 @@
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 package cbit.vcell.desktop;
 
 import java.awt.event.ActionEvent;

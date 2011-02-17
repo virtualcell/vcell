@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
 import org.vcell.pathway.BioPaxObject;
@@ -49,11 +48,6 @@ public abstract class BioPaxShape extends Shape {
 		return bioPaxObject;
 	}
 
-	@Override
-	public Point getSeparatorDeepCount() {	
-		return new Point(0,0);
-	}
-
 	public BioPaxObject getBioPaxObject() {
 		return bioPaxObject;
 	}
@@ -80,11 +74,6 @@ public abstract class BioPaxShape extends Shape {
 				SCS_LABEL_TRUCATED+
 				getLabel().substring(getLabel().length()-SCS_LABEL_WIDTHPARM);
 		}
-	}
-
-	@Override
-	public void resize(Graphics2D g, Dimension newSize) {
-		return;
 	}
 
 	public void truncateLabelName(boolean bTruncate) {

@@ -10,10 +10,10 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.GeometryInfo;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * Insert the type's description here.
  * Creation date: (3/29/01 10:39:36 AM)

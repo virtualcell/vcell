@@ -25,9 +25,10 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 
 @SuppressWarnings("serial")
 public class GraphPane extends JPanel implements GraphListener, MouseListener, Scrollable {
+	
 	private GraphModel graphModel = null;
-	private GraphLayoutManager layoutManager = new GraphLayout();
-
+	protected boolean needsLayout = true;
+	
 	public GraphPane() {
 		super();
 		initialize();
@@ -84,7 +85,7 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 	@Override
 	public Dimension getPreferredSize() {
 		if (graphModel != null) {
-			Dimension prefSize = graphModel.getPreferedSize((java.awt.Graphics2D)getGraphics());
+			Dimension prefSize = graphModel.getPreferedCanvasSize((java.awt.Graphics2D)getGraphics());
 			if (getJScrollPaneParent()!=null){
 				Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
 				prefSize = new Dimension(Math.max(viewBorderBounds.width, prefSize.width),
@@ -288,10 +289,10 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		try {
 			Graphics2D g = (Graphics2D) argGraphics;
 			if (graphModel!=null){
-				try {
-					layoutManager.layout(graphModel,this);
-				} catch (LayoutException e){
-					System.out.println("Layout error: "+e.getMessage());
+				if(needsLayout) {
+					GraphContainerLayout containerLayout = graphModel.getContainerLayout();
+					containerLayout.layout(graphModel, g, getSize());
+					needsLayout = false;					
 				}
 				graphModel.paint(g,this);
 			}	
@@ -316,6 +317,7 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 	}
 
 	public void updateAll() {
+		needsLayout = true;
 		try {
 			if (graphModel!=null){
 				if (getJScrollPaneParent()!=null){
