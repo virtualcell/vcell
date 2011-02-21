@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import cbit.gui.graph.ContainerShape;
-import cbit.gui.graph.GraphContainerLayoutVCellClassical;
+import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
@@ -37,9 +37,7 @@ public class ReactionCartoon extends ModelCartoon {
 	protected StructureSuite structureSuite = null;
 	
 	public ReactionCartoon() {
-		containerLayout = new GraphContainerLayoutVCellClassical();
-		// TODO replace above by:
-//		containerLayout = new ReactionCartoonContainerLayout();
+		containerLayout = new GraphContainerLayoutReactions();
 	}
 
 	public StructureSuite getStructureSuite() {

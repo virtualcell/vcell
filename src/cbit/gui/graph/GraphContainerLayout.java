@@ -14,7 +14,6 @@ public interface GraphContainerLayout {
 	
 	public Dimension getPreferedSize(Shape shape, Graphics2D g);
 	
-	// TODO remove this method
 	public void refreshLayoutChildren(Shape shape);
 	
 }
