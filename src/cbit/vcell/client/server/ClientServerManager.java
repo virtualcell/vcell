@@ -35,7 +35,8 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
 	public static final String BAD_CONNECTION_MESSAGE1 = "Your computer is unable to connect to the Virtual Cell server";
-	public static final String BAD_CONNECTION_MESSAGE2 = "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";						
+	public static final String BAD_CONNECTION_MESSAGE2 = "To save a copy of an open model to your computer, export to VCML format (File > Export > VCML).\n\nIf problem persists, it may be due to a firewall problem. " +
+			"Contact your network administrator and send the error message below to vcell_support@uchc.edu.";						
 
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info

@@ -120,7 +120,7 @@ public class ClientDocumentManager implements DocumentManager{
 	"1. You are no longer connected to the server. Reconnect in order to retrieve model. \n" +
 	"2. You previously saved this model using a newer version of VCell. Open model in that version.";
 	static final String FAIL_SAVE_MESSAGE = "Failed to save document. Possible reason :\n" +
-	"You are no longer connected to the server. Reconnect in order to save model.";
+	"You are no longer connected to the server. Reconnect in order to save model or export in VCML format (File > Export > VCML) to save a copy to your computer.";
 
 	
 	
