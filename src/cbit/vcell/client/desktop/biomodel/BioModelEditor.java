@@ -388,6 +388,7 @@ private void initialize() {
 		
 		bioModelEditorApplicationPanel = new BioModelEditorApplicationPanel();
 		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
+		bioModelEditorApplicationPanel.setIssueManager(issueManager);
 				
 		dataSymbolsPanel = new DataSymbolsPanel();
 		
@@ -395,6 +396,7 @@ private void initialize() {
 		bioModelEditorAnnotationPanel.setSelectionManager(selectionManager);
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
+		bioModelEditorModelPanel.setIssueManager(issueManager);
 		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
@@ -640,6 +642,8 @@ public void setBioModel(BioModel bioModel) {
 	bioModelEditorAnnotationPanel.setBioModel(bioModel);
 	bioModelParametersPanel.setBioModel(bioModel);
 	issueManager.setVCDocument(bioModel);
+	
+	bioModelEditorTreeCellRenderer.setBioModel(bioModel);
 	
 	getReactionPropertiesPanel().setBioModel(bioModel); // wei's code
 	getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code

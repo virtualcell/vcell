@@ -12,10 +12,10 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 @SuppressWarnings("serial")
-public class PathwayTableModel extends DefaultSortTableModel<EntitySelectionTableRow> {
+public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableRow> {
 
 
 	public static final int colCount = 3;
@@ -29,8 +29,8 @@ public class PathwayTableModel extends DefaultSortTableModel<EntitySelectionTabl
 
 	private PathwayModel pathwayModel;
 
-	public PathwayTableModel() {
-		super(new String[] {"Select", "Entity Name", "Type"});
+	public PathwayTableModel(ScrollTable table) {
+		super(table, new String[] {"Select", "Entity Name", "Type"});
 	}
 	
 	public void setPathwayModel(PathwayModel pathwayModel){

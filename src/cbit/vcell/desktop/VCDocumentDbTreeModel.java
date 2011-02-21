@@ -7,14 +7,20 @@ package cbit.vcell.desktop;
 import java.util.ArrayList;
 
 import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
+import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
+import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -37,7 +43,17 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 	protected BioModelNode tutorialModelsNode = null;
 	protected BioModelNode educationModelsNode = null;
 	protected BioModelNode publicModelsNode = null;
-
+	
+	public static final String Tutorials = "Tutorials";
+	public static final String Education = "Education";
+	
+	public static final String SHARED_BIO_MODELS = "Shared BioModels";
+	public static final String Public_BioModels = "Public BioModels";
+	
+	public static final String SHARED_MATH_MODELS = "Shared MathModels";
+	public static final String Public_MathModels = "Public MathModels";
+	
+	public static final String SHARED_GEOMETRIES = "Shared Geometries";
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -200,5 +216,40 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			break;
 		}
 	}
+}
+
+private BioModelNode findNode(BioModelNode node, VCDocumentInfo vcDocumentInfo) {	
+	Object userObject = node.getUserObject();
+	if (userObject instanceof VCDocumentInfoNode && ((VCDocumentInfoNode)userObject).getVCDocumentInfo() == vcDocumentInfo) {
+		if (ownerTree.isPathSelected(new TreePath(node.getPath()))) {
+			return node;
+		}
+	}
+	
+	for (int i = 0; i < node.getChildCount(); i ++){
+		BioModelNode child = (BioModelNode)node.getChildAt(i);
+		BioModelNode matchNode = findNode(child, vcDocumentInfo);
+		if (matchNode != null){
+			break;
+		}
+	}
+	return null;
+}
+
+public void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
+		ownerTree.clearSelection();
+	} else {
+		if (this instanceof BioModelDbTreeModel && selectedObjects[0] instanceof BioModelInfo
+				|| this instanceof MathModelDbTreeModel && selectedObjects[0] instanceof MathModelInfo
+				|| this instanceof GeometryDbTreeModel && selectedObjects[0] instanceof GeometryInfo)  {
+			BioModelNode node = findNode(rootNode, (VCDocumentInfo) selectedObjects[0]);
+			if (node != null) {
+				ownerTree.setSelectionPath(new TreePath(node.getPath()));
+			}
+		} else if (selectedObjects[0] == null || selectedObjects[0] instanceof VCDocumentInfo || selectedObjects[0] instanceof BioModelsNetModelInfo) {
+			ownerTree.clearSelection();
+		}
+	}	
 }
 }

@@ -39,7 +39,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			if (userObject instanceof User){
 				String label = null;
 				if (sessionUser != null && sessionUser.compareEqual((User)userObject)) {
-					label = "My Geometries ("+((User)userObject).getName()+")";
+					label = "My Geometries ("+((User)userObject).getName()+") (" + node.getChildCount() + ")";
 				} else {
 					label = ((User)userObject).getName()+"                              ";
 				}

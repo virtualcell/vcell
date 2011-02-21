@@ -2,6 +2,9 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
@@ -13,6 +16,27 @@ public class ApplicationSettingsPanel extends ApplicationSubPanel {
 	private InitialConditionsPanel initialConditionsPanel;
 	private ReactionSpecsPanel reactionSpecsPanel;	
 		
+	private enum SettingsPanelTabID {
+		species_settings("Species Settings"),
+		reaction_settings("Reaction Settings");
+		
+		String title = null;
+		SettingsPanelTabID(String name) {
+			this.title = name;
+		}
+	}
+	
+	private class SettingsPanelTab {
+		SettingsPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		SettingsPanelTab(SettingsPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
 	public ApplicationSettingsPanel() {
 		super();
 		initialize();
@@ -22,10 +46,14 @@ public class ApplicationSettingsPanel extends ApplicationSubPanel {
 		initialConditionsPanel = new InitialConditionsPanel();
 		reactionSpecsPanel = new ReactionSpecsPanel();
 		
-		initialConditionsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		reactionSpecsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("Species Settings", initialConditionsPanel);
-		tabbedPane.addTab("Reaction Settings", reactionSpecsPanel);
+		SettingsPanelTab settingsPanelTabs[] = new SettingsPanelTab[SettingsPanelTabID.values().length]; 
+		settingsPanelTabs[SettingsPanelTabID.species_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.species_settings, initialConditionsPanel, null);
+		settingsPanelTabs[SettingsPanelTabID.reaction_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.reaction_settings, reactionSpecsPanel, null);
+		
+		for (SettingsPanelTab tab : settingsPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}	
 	}
 	
 	@Override

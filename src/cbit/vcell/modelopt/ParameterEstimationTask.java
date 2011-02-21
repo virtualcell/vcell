@@ -17,6 +17,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * Creation date: (5/2/2006 4:35:50 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ParameterEstimationTask extends AnalysisTask {
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null;
 	private OptimizationSolverSpec fieldOptimizationSolverSpec = null;
@@ -91,7 +92,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * Creation date: (5/2/2006 11:04:39 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector<Issue> issueList) {
+public void gatherIssues(java.util.List<Issue> issueList) {
 	if (getModelOptimizationMapping().getOptimizationSpec()!=null){
 		getModelOptimizationMapping().getOptimizationSpec().gatherIssues(issueList);
 	}
@@ -265,5 +266,27 @@ public void setSolverMessageText(java.lang.String solverMessageText) {
 	String oldValue = fieldSolverMessageText;
 	fieldSolverMessageText = solverMessageText;
 	firePropertyChange("solverMessageText", oldValue, solverMessageText);
+}
+
+public Double getCurrentSolution(ParameterMappingSpec parameterMappingSpec) {
+	if (getOptimizationResultSet() != null){
+		//
+		// find mapping from this parameterMappingSpec to the optimization parameter.  Then lookup the opt parameter in the result set.
+		//
+		for (int i = 0; i < getModelOptimizationMapping().getParameterMappings().length; i++){
+			if (getModelOptimizationMapping().getParameterMappings()[i].getModelParameter() == parameterMappingSpec.getModelParameter()){
+				ParameterMapping parameterMapping = getModelOptimizationMapping().getParameterMappings()[i];
+				String[] parameterNames = getOptimizationResultSet().getOptSolverResultSet().getParameterNames();
+				if (parameterNames != null) {
+					for (int j = 0; j < parameterNames.length; j++){
+						if (parameterNames[j].equals(parameterMapping.getOptParameter().getName())){
+							return new Double(getOptimizationResultSet().getOptSolverResultSet().getBestEstimates()[j]);
+						}
+					}
+				}
+			}
+		}
+	}
+	return null;
 }
 }

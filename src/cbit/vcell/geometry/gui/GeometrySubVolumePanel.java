@@ -30,6 +30,8 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -42,7 +44,7 @@ import cbit.vcell.parser.Expression;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class GeometrySubVolumePanel extends javax.swing.JPanel {
+public class GeometrySubVolumePanel extends DocumentEditorSubPanel {
 	private javax.swing.JButton ivjBackButton = null;
 	private javax.swing.JButton ivjDeleteButton = null;
 	private javax.swing.JButton ivjFrontButton = null;
@@ -940,5 +942,15 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
 	};
 	// user code begin {3}
 	// user code end
+}
+
+@Override
+public void setIssueManager(IssueManager issueManager) {
+	super.setIssueManager(issueManager);
+	getgeometrySubVolumeTableModel().setIssueManager(issueManager);
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
 }
 }

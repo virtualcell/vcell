@@ -25,7 +25,9 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -87,12 +89,17 @@ public class IssuePanel extends DocumentEditorSubPanel {
 						Issue issue = issueTableModel.getValueAt(row);
 						Object object = issue.getSource();
 						if (object instanceof Parameter) {
-							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, null));
+							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions));
 							setSelectedObjects(new Object[] {object});
 						} else if (object instanceof StructureMapping) {
 							StructureMapping structureMapping = (StructureMapping) object;
 							StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
 							SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
+							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
+							setSelectedObjects(new Object[] {object});
+						} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
+							UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
+							SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
 							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
 							setSelectedObjects(new Object[] {object});
 						}

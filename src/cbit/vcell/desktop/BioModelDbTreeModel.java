@@ -24,18 +24,16 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelDbTreeModel extends VCDocumentDbTreeModel {
-	private static final String SHARED_BIO_MODELS = "Shared BioModels";
-		 
+public class BioModelDbTreeModel extends VCDocumentDbTreeModel {		 
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
 public BioModelDbTreeModel(JTree tree) {
 	super(tree);
-	tutorialModelsNode = new BioModelNode("Tutorials", true);
-	educationModelsNode = new BioModelNode("Education", true);
-	publicModelsNode = new BioModelNode("Public BioModels", true);
+	tutorialModelsNode = new BioModelNode(Tutorials, true);
+	educationModelsNode = new BioModelNode(Education, true);
+	publicModelsNode = new BioModelNode(Public_BioModels, true);
 }
 
 /**

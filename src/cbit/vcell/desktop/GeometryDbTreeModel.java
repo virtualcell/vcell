@@ -22,8 +22,6 @@ import cbit.vcell.geometry.GeometryInfo;
  */
 @SuppressWarnings("serial")
 public class GeometryDbTreeModel extends VCDocumentDbTreeModel {
-	public static final String SHARED_GEOMETRIES = "Shared Geometries";
-
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode

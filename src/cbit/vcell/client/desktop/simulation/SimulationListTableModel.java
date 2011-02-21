@@ -3,11 +3,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import javax.swing.JTable;
-
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -15,7 +14,7 @@ import cbit.vcell.solver.Simulation;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class SimulationListTableModel extends DefaultSortTableModel<Simulation> implements PropertyChangeListener {
+public class SimulationListTableModel extends VCellSortTableModel<Simulation> implements PropertyChangeListener {
 	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_LASTSAVED = 1;
@@ -24,15 +23,12 @@ public class SimulationListTableModel extends DefaultSortTableModel<Simulation> 
 	
 	private static final String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
-	private JTable ownerTable = null;
 
 /**
  * SimulationListTableModel constructor comment.
  */
-public SimulationListTableModel(JTable table) {
-	super();
-	ownerTable = table;
-	setColumns(columnNames);
+public SimulationListTableModel(ScrollTable table) {
+	super(table, columnNames);
 	addPropertyChangeListener(this);
 }
 

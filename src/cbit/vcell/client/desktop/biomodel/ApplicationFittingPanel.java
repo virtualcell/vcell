@@ -1,5 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -9,16 +12,41 @@ import cbit.vcell.mapping.SimulationContext;
 public class ApplicationFittingPanel extends ApplicationSubPanel {
 	private ParameterEstimationPanel parameterEstimationPanel = null;
 	
+	private enum FittingsPanelTabID {
+		parameter_estimation("Parameter Estimation");
+		
+		String title = null;
+		FittingsPanelTabID(String name) {
+			this.title = name;
+		}
+	}
+	
+	private class FittingsPanelTab {
+		FittingsPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		FittingsPanelTab(FittingsPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
 	public ApplicationFittingPanel() {
 		super();
 		initialize();
 	}
 
 	private void initialize(){			
-		parameterEstimationPanel = new ParameterEstimationPanel();
+		parameterEstimationPanel = new ParameterEstimationPanel();		
 		
-		parameterEstimationPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("Parameter Estimation", parameterEstimationPanel);
+		FittingsPanelTab fittingPanelTabs[] = new FittingsPanelTab[FittingsPanelTabID.values().length]; 
+		fittingPanelTabs[FittingsPanelTabID.parameter_estimation.ordinal()] = new FittingsPanelTab(FittingsPanelTabID.parameter_estimation, parameterEstimationPanel, null);
+		
+		for (FittingsPanelTab tab : fittingPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}		
 	}
 	
 	@Override

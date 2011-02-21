@@ -12,9 +12,11 @@ import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
+
+@SuppressWarnings("serial")
 public class Expression implements java.io.Serializable, org.vcell.util.Matchable {
 
 //   private String expString = null;
@@ -709,19 +711,23 @@ parseCount++;
  * @exception java.lang.Exception The exception description.
  */
 public static Expression power(Expression expression1, Expression expression2) throws ExpressionException {
-	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW], expression1, expression2);
+	return function(FunctionType.POW, expression1, expression2);
 }
 
 public static Expression power(Expression expression1, double exponent) throws ExpressionException {
-	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW], expression1, new Expression(exponent));
+	return function(FunctionType.POW, expression1, new Expression(exponent));
 }
 
 public static Expression log(Expression expression1) throws ExpressionException {
-	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG], expression1);
+	return function(FunctionType.LOG, expression1);
 }
 
 public static Expression exp(Expression expression1) throws ExpressionException {
-	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.EXP], expression1);
+	return function(FunctionType.EXP, expression1);
+}
+
+public static Expression function(FunctionType funcType, Expression... expressions) {
+	return function(funcType.getName(), expressions);
 }
 
 public static Expression function(String functionName, Expression... expressions) {
@@ -737,6 +743,7 @@ public static Expression function(String functionName, Expression... expressions
 	exp.rootNode = funcNode;
 	return exp;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (2/11/2002 1:34:06 PM)

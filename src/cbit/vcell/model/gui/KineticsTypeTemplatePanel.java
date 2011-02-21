@@ -183,7 +183,7 @@ private void initialize() {
 			gbc.gridwidth = 3;
 			gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			JLabel label = new JLabel("<html><u>View only. Edit properties in Biological Model</u></html>");
+			JLabel label = new JLabel("<html><u>View only. Edit properties in Physiology</u></html>");
 			label.setHorizontalAlignment(SwingConstants.CENTER);
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			add(label, gbc);

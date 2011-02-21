@@ -10,11 +10,13 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
@@ -38,6 +40,7 @@ import cbit.vcell.parser.ExpressionException;
  * (subVolumes).  This should be an observer for Geometry and for Model.
  * 
  */
+@SuppressWarnings("serial")
 public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener {
 	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";	
 	
@@ -47,6 +50,21 @@ public  class GeometryContext implements Serializable, Matchable, PropertyChange
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private StructureMapping[] fieldStructureMappings = new StructureMapping[0];
 	private SimulationContext fieldSimulationContext = null;
+	
+	
+	public class UnmappedGeometryClass {
+		private GeometryClass geometryClass;
+		public UnmappedGeometryClass(GeometryClass geoClass){
+			this.geometryClass = geoClass;
+		}
+		public GeometryClass getGeometryClass(){
+			return this.geometryClass;
+		}
+		public SimulationContext getSimulationContext(){
+			return GeometryContext.this.fieldSimulationContext;
+		}
+	}
+	
 /**
  * This method was created by a SmartGuide.
  * @param model cbit.vcell.model.Model
@@ -211,9 +229,17 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (11/1/2005 9:48:55 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueVector) {
+public void gatherIssues(List<Issue> issueVector) {
 	for (int i = 0; fieldStructureMappings!=null && i < fieldStructureMappings.length; i++){
 		fieldStructureMappings[i].gatherIssues(issueVector);
+	}
+	for (GeometryClass gc : fieldGeometry.getGeometryClasses()) {
+		Structure[] structuresFromGeometryClass = getStructuresFromGeometryClass(gc);
+		if (structuresFromGeometryClass == null || structuresFromGeometryClass.length == 0) {
+			UnmappedGeometryClass unmappedGeometryClass = new UnmappedGeometryClass(gc);
+			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain " + gc.getName() + " is not mapped to any physiological structure.", Issue.SEVERITY_ERROR);
+			issueVector.add(issue);
+		}
 	}
 }
 /**

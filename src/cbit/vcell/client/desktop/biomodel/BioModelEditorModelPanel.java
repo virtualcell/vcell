@@ -496,8 +496,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTableModel.setBioModel(bioModel);
 	}
 
-	JTable currentSelectedTable = null;
-	BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
+	private JTable currentSelectedTable = null;
+	private BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
 	private void computeCurrentSelectedTable() {
 		currentSelectedTable = null;
 		currentSelectedTableModel = null;
@@ -618,5 +618,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			selectTab(ModelPanelTabID.structure_diagram);
 			break;
 		}
-	}	
+	}
+	
+	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		reactionTableModel.setIssueManager(issueManager);
+		speciesTableModel.setIssueManager(issueManager);
+		structureTableModel.setIssueManager(issueManager);
+	}
 }

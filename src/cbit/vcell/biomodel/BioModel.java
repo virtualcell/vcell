@@ -6,6 +6,7 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -27,23 +28,17 @@ import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStep.ReactionNameScope;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -315,7 +310,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	getModel().gatherIssues(issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		simulationContext.gatherIssues(issueList);
@@ -1073,6 +1068,9 @@ public SimulationContext getSimulationContext(String name) {
 		} else if (source instanceof StructureMapping) {
 			StructureMapping structureMapping = (StructureMapping) source;
 			description = ((StructureMappingNameScope)structureMapping.getNameScope()).getPathDescription();
+		} else if (source instanceof UnmappedGeometryClass) {
+			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
+			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
 		}
 		return description;
 	}
@@ -1095,6 +1093,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((Geometry)object).getName();
 		} else if (object instanceof StructureMapping) {
 			description = ((StructureMapping)object).getStructure().getName();
+		} else if (object instanceof UnmappedGeometryClass) {
+			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
 		}
 		return description;
 	}

@@ -41,12 +41,11 @@ import cbit.vcell.model.Structure;
  */
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
+public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	
 	protected BioModel bioModel = null;
-	protected EditorScrollTable ownerTable = null;
 	protected String searchText = null;
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
@@ -54,8 +53,7 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ReactionEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
 	
 	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
-		super(null);
-		ownerTable = table;
+		super(table);
 		addPropertyChangeListener(this);
 	}
 	
@@ -161,7 +159,7 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	
 	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
 		if (defaultScrollTableComboBoxEditor == null) {
-			defaultScrollTableComboBoxEditor = ownerTable.new DefaultScrollTableComboBoxEditor(new JComboBox());
+			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox());
 		}
 		return defaultScrollTableComboBoxEditor;
 	}

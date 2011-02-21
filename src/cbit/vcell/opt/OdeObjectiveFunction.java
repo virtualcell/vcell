@@ -78,7 +78,7 @@ public static OdeObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenize
  * Creation date: (8/22/2005 2:30:24 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector<Issue> issueList) {
+public void gatherIssues(java.util.List<Issue> issueList) {
 	//
 	// check for a data column named "t"
 	//

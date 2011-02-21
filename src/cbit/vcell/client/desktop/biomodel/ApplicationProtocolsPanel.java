@@ -2,6 +2,9 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
@@ -14,6 +17,28 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private ElectricalMembraneMappingPanel electricalMembraneMappingPanel;
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
 	
+	private enum ProtocolsPanelTabID {
+		events("Events"),
+		electrical("Electrical"),
+		microscope_measurements("Microscope Measurements");
+		
+		String title = null;
+		ProtocolsPanelTabID(String name) {
+			this.title = name;
+		}
+	}
+	
+	private class ProtocolsPanelTab {
+		ProtocolsPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		ProtocolsPanelTab(ProtocolsPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
 	public ApplicationProtocolsPanel() {
 		super();
 		initialize();
@@ -24,12 +49,15 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
 		
-		eventsDisplayPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		electricalMembraneMappingPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		microscopeMeasurementPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("Events", eventsDisplayPanel);
-		tabbedPane.addTab("Electrical", electricalMembraneMappingPanel);
-		tabbedPane.addTab("Microscope Measurements", microscopeMeasurementPanel);		
+		ProtocolsPanelTab simsPanelTabs[] = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
+		simsPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
+		simsPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
+		simsPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
+		
+		for (ProtocolsPanelTab tab : simsPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}		
 	}	
 	
 	@Override

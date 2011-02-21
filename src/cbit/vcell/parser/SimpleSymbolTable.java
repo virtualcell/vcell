@@ -50,7 +50,7 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 			this.expression = expression;
 			this.nameScope = argNameScope;
 			this.vcUnitDefinition = vcUnitDefinition;
-			if (argNames.length!=argTypes.length){
+			if (argNames != null && argTypes != null && argNames.length!=argTypes.length){
 				throw new IllegalArgumentException("length of function argument name and type arrays must be the same");
 			}
 		}
@@ -64,7 +64,7 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 		}
 
 		public int getNumArguments() {
-			return argTypes.length;
+			return argTypes == null ? 0 : argTypes.length;
 		}
 
 		public double getConstantValue() throws ExpressionException {

@@ -11,6 +11,7 @@ import javax.swing.UIManager;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.GeometryContext;
@@ -325,5 +326,12 @@ private void setgeometryContext1(GeometryContext newValue) {
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	setTableSelections(selectedObjects, getScrollPaneTable1(), getStructureMappingTableModel1());	
 }
+
+@Override
+public void setIssueManager(IssueManager newValue) {
+	super.setIssueManager(newValue);
+	getStructureMappingTableModel1().setIssueManager(newValue);
+}
+
 
 }

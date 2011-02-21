@@ -1,5 +1,9 @@
 package org.vcell.util.document;
 
+import java.util.List;
+
+import org.vcell.util.Issue;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 12:53:51 PM)
@@ -113,4 +117,5 @@ void setName(String newName) throws java.beans.PropertyVetoException;
 
 String getObjectPathDescription(Object object);
 String getObjectDescription(Object object);
+void gatherIssues(List<Issue> issueList);
 }

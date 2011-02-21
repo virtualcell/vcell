@@ -7,13 +7,12 @@ package cbit.vcell.mapping.gui;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import javax.swing.JTable;
-
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
@@ -30,7 +29,7 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class SpeciesContextSpecsTableModel extends DefaultSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_SPECIESCONTEXT = 0;
 	public static final int COLUMN_STRUCTURE = 1;
 	public static final int COLUMN_CLAMPED = 2;
@@ -41,14 +40,12 @@ public class SpeciesContextSpecsTableModel extends DefaultSortTableModel<Species
 	
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SpeciesContextSpecsTableModel(JTable table) {
-	super(columnNames);
-	ownerTable = table;
+public SpeciesContextSpecsTableModel(ScrollTable table) {
+	super(table, columnNames);
 }
 
 /**

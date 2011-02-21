@@ -4,11 +4,12 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.AnnotatedFunction;
@@ -23,7 +24,7 @@ import cbit.vcell.simdata.VariableType;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class OutputFunctionsListTableModel extends DefaultSortTableModel<AnnotatedFunction> implements PropertyChangeListener {
+public class OutputFunctionsListTableModel extends VCellSortTableModel<AnnotatedFunction> implements PropertyChangeListener {
 	private class FunctionColumnComparator implements Comparator<AnnotatedFunction> {
 		protected int index;
 		protected boolean ascending;
@@ -55,14 +56,12 @@ public class OutputFunctionsListTableModel extends DefaultSortTableModel<Annotat
 	
 	private OutputFunctionContext outputFunctionContext = null;
 	private static String[] columnNames = new String[] {"Name", "Expression", "Subdomain"};
-	private JTable ownerTable = null;
 
 /**
  * SimulationListTableModel constructor comment.
  */
-public OutputFunctionsListTableModel(JTable table) {
-	super(columnNames);
-	ownerTable = table;
+public OutputFunctionsListTableModel(ScrollTable table) {
+	super(table, columnNames);
 }
 
 /**

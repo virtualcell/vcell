@@ -2,30 +2,26 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-
-import javax.swing.JTable;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 
 @SuppressWarnings("serial")
-public class IssueTableModel extends DefaultSortTableModel<Issue> implements IssueEventListener {
+public class IssueTableModel extends VCellSortTableModel<Issue> implements IssueEventListener {
 
 	static final int COLUMN_DESCRIPTION = 0;
 	static final int COLUMN_SOURCE = 1;
 	static final int COLUMN_PATH = 2;
 	private static final String[] labels = {"Description", "Source", "Defined In:"};
-	private IssueManager issueManager = null;
-	private JTable ownerTable = null;
 	private boolean bShowWarning = true;
 	
-	public IssueTableModel(JTable table) {
-		super(labels);
-		ownerTable = table;
+	public IssueTableModel(ScrollTable table) {
+		super(table, labels);
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
@@ -79,9 +75,9 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 	}
 
 	void refreshData() {
-		ArrayList<Issue> issueList = null;
+		List<Issue> issueList = null;
 		if (issueManager != null) {
-			ArrayList<Issue> allIssueList = issueManager.getIssueList();
+			List<Issue> allIssueList = issueManager.getIssueList();
 			issueList = new ArrayList<Issue>();
 			for (Issue issue : allIssueList) {
 				int severity = issue.getSeverity();
@@ -107,12 +103,11 @@ public class IssueTableModel extends DefaultSortTableModel<Issue> implements Iss
 		return false;
 	}
 
-	public void setIssueManager(IssueManager newValue) {
-		IssueManager oldValue = this.issueManager;
+	@Override
+	void issueManagerChange(IssueManager oldValue, IssueManager newValue) {
 		if (oldValue != null) {
 			oldValue.removeIssueEventListener(this);
 		}
-		this.issueManager = newValue;
 		if (newValue != null) {
 			newValue.addIssueEventListener(this);		
 		}

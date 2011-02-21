@@ -10,14 +10,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorTreeModel extends DefaultTreeModel
@@ -57,7 +50,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	
 	public enum DocumentEditorTreeFolderClass {
 		PATHWAY_NODE("Pathway"),
-		MODEL_NODE("Biological Model"),	
+		MODEL_NODE("Physiology"),	
 		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
 		DATA_NODE("Experimental Data"),	
 		APPLICATIONS_NODE("Applications"),	

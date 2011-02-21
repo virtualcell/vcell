@@ -62,10 +62,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
@@ -73,13 +73,13 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.Highlight;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.View;
-import javax.swing.text.Highlighter.Highlight;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
@@ -90,7 +90,7 @@ import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 @SuppressWarnings("serial")
 public class MultiPurposeTextPanel extends JPanel {
@@ -546,8 +546,8 @@ public class MultiPurposeTextPanel extends JPanel {
 			autoCompJPopupMenu.add(panel);
 			
 			// functions
-			for (String s : ASTFuncNode.getFunctionNames()) {
-				functList.add(s);
+			for (FunctionType ft : FunctionType.values()) {
+				functList.add(ft.getName());
 			}
 			Collections.sort(functList);
 			

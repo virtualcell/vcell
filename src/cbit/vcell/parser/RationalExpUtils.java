@@ -1,6 +1,7 @@
 package cbit.vcell.parser;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.
  
@@ -30,7 +31,7 @@ public class RationalExpUtils {
 			) {
 			throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression");
 		} else if (node instanceof ASTFuncNode) {
-			if (((ASTFuncNode)node).getFunction()==ASTFuncNode.POW){
+			if (((ASTFuncNode)node).getFunction()==FunctionType.POW){
 				try {
 					double constantExponent = node.jjtGetChild(1).evaluateConstant();
 					if (constantExponent != Math.floor(constantExponent)){

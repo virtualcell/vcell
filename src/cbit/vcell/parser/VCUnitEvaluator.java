@@ -1,5 +1,6 @@
 package cbit.vcell.parser;
 import ucar.units.RationalNumber;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
@@ -376,7 +377,7 @@ public class VCUnitEvaluator {
 			} else if (functionName.equalsIgnoreCase("abs") || functionName.equalsIgnoreCase("min") ||
 					   functionName.equalsIgnoreCase("max")) {
 				return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap);
-			} else if (((ASTFuncNode)node).getFunction()==ASTFuncNode.USERDEFINED){
+			} else if (((ASTFuncNode)node).getFunction()==FunctionType.USERDEFINED){
 				ASTFuncNode funcNode = (ASTFuncNode)node;
 				SymbolTableFunctionEntry stfe = funcNode.getSymbolTableFunctionEntry();
 				if (stfe!=null){

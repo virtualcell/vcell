@@ -9,6 +9,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -1104,7 +1105,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
  * Insert the method's description here.
  * Creation date: (5/12/2004 2:53:13 PM)
  */
-public void gatherIssues(Vector<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	//
 	// for each user unresolved parameter, make an issue
 	//

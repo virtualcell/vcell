@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JTable;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
@@ -35,9 +35,8 @@ public class DataSymbolsTableModel extends BioModelEditorApplicationRightSideTab
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public DataSymbolsTableModel(JTable table) {
-	super(table);
-	setColumns(LABELS);
+public DataSymbolsTableModel(ScrollTable table) {
+	super(table, LABELS);
 }
 
 /**

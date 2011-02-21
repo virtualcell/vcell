@@ -1,6 +1,6 @@
 package cbit.vcell.opt;
 import java.io.File;
-import java.util.Vector;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -41,7 +41,7 @@ public PdeObjectiveFunction(MathDescription argMathDescription, SpatialReference
  * Creation date: (8/22/2005 2:30:24 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	//
 	// check for a data column named "t"
 	//

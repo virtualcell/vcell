@@ -3,13 +3,12 @@ package cbit.vcell.mapping.gui;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import javax.swing.JTable;
-
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
@@ -22,7 +21,7 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ElectricalStimulusParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class ElectricalStimulusParameterTableModel extends VCellSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	
 	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
@@ -88,13 +87,11 @@ public class ElectricalStimulusParameterTableModel extends DefaultSortTableModel
 	private static final String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	private JTable ownerTable = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ElectricalStimulusParameterTableModel(JTable table) {
-	super(LABELS);
-	ownerTable = table;
+public ElectricalStimulusParameterTableModel(ScrollTable table) {
+	super(table, LABELS);
 	addPropertyChangeListener(this);
 }
 /**

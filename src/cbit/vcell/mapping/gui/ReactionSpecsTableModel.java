@@ -8,10 +8,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.JTable;
+import org.vcell.util.gui.ScrollTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
-
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -24,23 +23,19 @@ import cbit.vcell.model.SimpleReaction;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsTableModel extends DefaultSortTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
+public class ReactionSpecsTableModel extends VCellSortTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
 	public static final int COLUMN_ENABLED = 2;
 	public static final int COLUMN_FAST = 3;
 	private final static String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
-	
-	private JTable ownerTable = null;
-	
 	private SimulationContext fieldSimulationContext = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ReactionSpecsTableModel(JTable table) {
-	super(LABELS);
-	ownerTable = table;
+public ReactionSpecsTableModel(ScrollTable table) {
+	super(table, LABELS);
 	addPropertyChangeListener(this);
 }
 

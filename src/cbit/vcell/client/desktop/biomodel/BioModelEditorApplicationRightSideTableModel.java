@@ -3,10 +3,8 @@ package cbit.vcell.client.desktop.biomodel;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
-import javax.swing.JTable;
-
 import org.vcell.util.gui.AutoCompleteTableModel;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.mapping.SimulationContext;
 
@@ -31,17 +29,15 @@ import cbit.vcell.mapping.SimulationContext;
  */
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorApplicationRightSideTableModel<T> extends DefaultSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
+public abstract class BioModelEditorApplicationRightSideTableModel<T> extends VCellSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
 	protected static final String PROPERTY_NAME_SIMULATOIN_CONTEXT = "simulationContext";
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	
 	protected SimulationContext simulationContext = null;
-	protected JTable ownerTable = null;
 	protected String searchText = null;
 	
-	public BioModelEditorApplicationRightSideTableModel(JTable table) {
-		super(null);
-		ownerTable = table;
+	public BioModelEditorApplicationRightSideTableModel(ScrollTable table, String[] columnNames) {
+		super(table, columnNames);
 		addPropertyChangeListener(this);
 	}
 	

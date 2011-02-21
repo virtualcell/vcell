@@ -27,6 +27,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
@@ -1924,10 +1925,10 @@ public boolean isValid() {
  * This method was created in VisualAge.
  * @return boolean
  */
-public void gatherIssues(ArrayList<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	setWarning(null);
 	if (geometry==null){
-		Issue issue = new Issue(this, IssueCategory.MathDescription_NoGeometry, "no geometry defined", Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 	
@@ -1939,7 +1940,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				((Constant)var).getExpression().evaluateConstant();
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
-				Issue issue = new Issue(var, IssueCategory.MathDescription_Constant_NotANumber, "Constant cannot be evaluated to a number: " + var.getExpression().infix(), Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(var, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 		}
@@ -2023,11 +2024,11 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 		// Check that only 1 subdomain is defined and that it is a volumeSubdomain
 		//
 		if (subDomainList.size()!=1){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, "Compartmental Model requires exactly one "+VCML.CompartmentSubDomain, Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_1, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		} else if (subDomainList.size() == 1) {
 			if (!(subDomainList.elementAt(0) instanceof CompartmentSubDomain)){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, "Compartmental Model requires the subdomain be a "+VCML.CompartmentSubDomain, Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_2, Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 			CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
@@ -2035,12 +2036,12 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 			if(isNonSpatialStoch())
 			{
 				if(stochVarCount == 0) {
-					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one stochastic volume variable", Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_1, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}	
 				if(subDomain.getJumpProcesses().size() == 0)
 				{
-					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, "stochastic model requires at least one jump process", Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				//check variable initial condition
@@ -2078,44 +2079,44 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 						odeCount ++;
 					} else {
 						Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-								"Compartmental model, unexpected equation of type " + VCML.PdeEquation + ", must include only "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
+								VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_3, Issue.SEVERITY_ERROR);
 						issueList.add(issue);
 					}
 				}
 				if (odeCount==0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, expecting at least one "+VCML.OdeEquation, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 	
 				if (volVarCount!=odeCount){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_5, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (memVarCount>0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must not declare any "+VCML.MembraneVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (filVarCount>0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must not declare any "+VCML.FilamentVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (volRegionVarCount>0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must not declare any "+VCML.VolumeRegionVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.VolumeRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (memRegionVarCount>0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must not declare any "+VCML.MembraneRegionVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (filRegionVarCount>0){
 					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
-							"Compartmental model, must not declare any "+VCML.FilamentRegionVariable, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 			}
@@ -2136,8 +2137,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 			if (subDomain instanceof CompartmentSubDomain){
 				if (geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Spatial model, can't find a matching geometry subdomain for math subdomain '" + subDomain.getName() 
-							+ "'. Math subdomain names must match geometry subdomain names .", Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_1, subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				compartmentCount++;
@@ -2147,14 +2147,13 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				filamentCount++;
 			}else{
 				Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-						"Spatial model, unexpected subdomain type for subdomain "+subDomain.getName(), Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_2, subDomain.getName()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 		}
 		if (geometry.getGeometrySpec().getNumSubVolumes()!=compartmentCount){
 			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
-					"Spatial model, there are "+geometry.getGeometrySpec().getNumSubVolumes()
-					+" subdomains in geometry, but "+compartmentCount+" "+VCML.CompartmentSubDomain+"s in math description. They must match.", Issue.SEVERITY_ERROR);
+				VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_3, geometry.getGeometrySpec().getNumSubVolumes(), compartmentCount), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		if (geometry.getGeometrySpec().getFilamentGroup().getFilamentCount()!=filamentCount){
@@ -2163,12 +2162,12 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 		}
 		if (filamentCount==0 && (filVarCount>0 || filRegionVarCount>0)){
 			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
-					"Spatial model, there are no "+VCML.FilamentSubDomain+"s defined, cannot define "+VCML.FilamentVariable+" or "+VCML.FilamentRegionVariable, Issue.SEVERITY_ERROR);
+					VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_4, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		if (membraneCount==0 && (memVarCount>0 || memRegionVarCount>0)){
 			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
-					"Spatial model, there are no "+VCML.MembraneSubDomain+"s defined, cannot define "+VCML.MembraneVariable+" or "+VCML.MembraneRegionVariable, Issue.SEVERITY_ERROR);
+					VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_5, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		//
@@ -2181,7 +2180,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 					SubDomain subDomain2 = (SubDomain)subDomainList.elementAt(j);
 					if (subDomain1.getName().equals(subDomain2.getName())){
 						Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-								"Duplicate subDomains "+subDomain1.getName()+" and "+subDomain2.getName(), Issue.SEVERITY_ERROR);
+								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_6, subDomain1.getName(), subDomain2.getName()), Issue.SEVERITY_ERROR);
 						issueList.add(issue);
 					}
 					if (subDomain1 instanceof MembraneSubDomain && subDomain2 instanceof MembraneSubDomain){
@@ -2190,7 +2189,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 						if ((memSubDomain1.getInsideCompartment()==memSubDomain2.getInsideCompartment() && memSubDomain1.getOutsideCompartment()==memSubDomain2.getOutsideCompartment()) ||
 							(memSubDomain1.getInsideCompartment()==memSubDomain2.getOutsideCompartment() && memSubDomain1.getOutsideCompartment()==memSubDomain2.getInsideCompartment())){
 							Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-									"Duplicate membrane subdomains between compartments "+memSubDomain1.getInsideCompartment().getName()+" and "+memSubDomain1.getOutsideCompartment().getName(), Issue.SEVERITY_ERROR);
+								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_7, memSubDomain1.getInsideCompartment().getName(), memSubDomain1.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
@@ -2199,7 +2198,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 						CompartmentSubDomain compartmentSubDomain2 = (CompartmentSubDomain)subDomain2;
 						if (compartmentSubDomain1.getPriority()==compartmentSubDomain2.getPriority()){
 							Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-									"CompartmentSubDomain priorities must be unique see '"+compartmentSubDomain1.getName()+"' and '"+compartmentSubDomain2.getName()+"'", Issue.SEVERITY_ERROR);
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_8, compartmentSubDomain1.getName(), compartmentSubDomain2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
@@ -2216,21 +2215,21 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				BoundaryConditionType bctP = compartmentSubDomain.getBoundaryConditionXp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Xm and Xp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = compartmentSubDomain.getBoundaryConditionYm();
 				bctP = compartmentSubDomain.getBoundaryConditionYp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Ym and Yp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = compartmentSubDomain.getBoundaryConditionZm();
 				bctP = compartmentSubDomain.getBoundaryConditionZp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Zm and Zp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}				
 			}else if (subDomain instanceof MembraneSubDomain){
@@ -2239,21 +2238,21 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				BoundaryConditionType bctP = membraneSubDomain.getBoundaryConditionXp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Xm and Xp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = membraneSubDomain.getBoundaryConditionYm();
 				bctP = membraneSubDomain.getBoundaryConditionYp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Ym and Yp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = membraneSubDomain.getBoundaryConditionZm();
 				bctP = membraneSubDomain.getBoundaryConditionZp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-							"Zm and Zp must both have periodic boundary condition", Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 			}		
@@ -2276,32 +2275,30 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				//}
 				if (regions==null){
 					Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
-							"unable to get region information from geometry", Issue.SEVERITY_ERROR);
+							VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_2, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				for (int i = 0; i < regions.length; i++){
 					if (regions[i] instanceof SurfaceGeometricRegion){
 						SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[i];
-						CompartmentSubDomain compartment1 = getCompartmentSubDomain(((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume().getName());
+						SubVolume subVolume1 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume();
+						CompartmentSubDomain compartment1 = getCompartmentSubDomain(subVolume1.getName());
 						if(compartment1 == null){
-							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									"Geometry '"+getGeometry().getName()+"' SubDomain name '"
-									+((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume().getName()
-									+"' does not match any "+VCML.CompartmentSubDomain+" name in "+VCML.MathDescription+" -- check spelling/case", Issue.SEVERITY_ERROR);
+							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry,
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
-						CompartmentSubDomain compartment2 = getCompartmentSubDomain(((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume().getName());
+						SubVolume subVolume2 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
+						CompartmentSubDomain compartment2 = getCompartmentSubDomain(subVolume2.getName());
 						if(compartment2 == null){
 							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									"Geometry '"+getGeometry().getName()+"' SubDomain name '"
-									+((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume().getName()
-									+"' does not match any "+VCML.CompartmentSubDomain+" name in "+VCML.MathDescription+" -- check spelling/case", Issue.SEVERITY_ERROR);
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 						MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1,compartment2);
 						if (compartment2 != null && compartment1 != null && membraneSubDomain==null){
 							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									"There should be a MembraneSubDomain between compartments '"+compartment1.getName()+"' and '"+compartment2.getName()+"'", Issue.SEVERITY_ERROR);
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
@@ -2329,7 +2326,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 						}
 						if (!bFoundSurfaceInGeometry){
 							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									"MembraneSubDomain inside='"+membraneSubDomain.getInsideCompartment().getName()+"', outside='"+membraneSubDomain.getOutsideCompartment().getName()+"' not in geometry", Issue.SEVERITY_ERROR);
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
@@ -2358,6 +2355,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 		//
 		for (int i=0;i<variableList.size();i++){
 			Variable var = variableList.elementAt(i);
+			String varName = var.getName();
 			if (var instanceof VolVariable){
 				VolVariable volVar = (VolVariable)var;
 				
@@ -2382,8 +2380,8 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 								MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 								if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
 									if (membraneSubDomain.getJumpCondition(volVar)==null){
-										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, "Spatial Model, PDE for '"+volVar.getName()+"' in '"+subDomain.getName()+"' "+
-											       "does not have a jump condition on membrane '"+membraneSubDomain.getName() + "'", Issue.SEVERITY_ERROR);
+										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+											VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
 										issueList.add(issue);
 									}
 								}
@@ -2403,23 +2401,21 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 							boolean bInsidePresent = (memSubDomain.getInsideCompartment().getEquation(volVar) instanceof PdeEquation);
 							boolean bOutsidePresent = (memSubDomain.getOutsideCompartment().getEquation(volVar) instanceof PdeEquation);
 							if (!bInsidePresent && !bOutsidePresent){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, "Spatial Model, Jump condition for '"
-										+volVar.getName()+"' on membrane '"+memSubDomain.getName()+"' has no matching PDE in either '"+memSubDomain.getInsideCompartment().getName()+"' or "+
-									       "'"+memSubDomain.getOutsideCompartment().getName()+"'", Issue.SEVERITY_ERROR);
+								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_11, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);			
 							}
 							//
 							// if either side is missing, then flux term should be identically zero.
 							//
 							if (!bInsidePresent && !jumpCondition.getInFluxExpression().isZero()){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, "Spatial Model, Jump condition for '"
-										+ volVar.getName()+"' on membrane '"+memSubDomain.getName()+"' has a non-zero inward flux but no PDE in compartment '"
-										+ memSubDomain.getInsideCompartment().getName()+"'", Issue.SEVERITY_ERROR);
+								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation,
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_12, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);	
 							}
 							if (!bOutsidePresent && !jumpCondition.getOutFluxExpression().isZero()){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, "Spatial Model, Jump condition for '"+volVar.getName()
-										+"' on membrane '"+memSubDomain.getName()+"' has a non-zero outward flux but no PDE in compartment '"+memSubDomain.getOutsideCompartment().getName()+"'", Issue.SEVERITY_ERROR);
+								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_13, varName, memSubDomain.getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);	
 							}
 								
@@ -2427,18 +2423,18 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 					}
 				}
 				if (odeRefCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, "Spatial Model, cannot mix "
-							+ VCML.OdeEquation+"'s and " + VCML.PdeEquation+"'s for variable "+volVar.getName(), Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (steadyPdeCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, "Spatial Model, cannot mix " + VCML.Steady 
-							+ " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + volVar.getName(), Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, "Spatial Model, there is neither a "+VCML.PdeEquation+" nor an "
-							+VCML.OdeEquation+" for variable "+volVar.getName(), Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 			}
@@ -2465,17 +2461,17 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				}
 				if (odeRefCount>0 && pdeRefCount>0){
 					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-							"Spatial Model, cannot mix "+VCML.OdeEquation+"'s and "+VCML.PdeEquation+"'s for variable "+var.getName(), Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (steadyPdeCount>0 && pdeRefCount>0){
 					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-							"Spatial Model, cannot mix " + VCML.Steady + " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + var.getName(), Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
 					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-							"Spatial Model, there is neither a "+VCML.PdeEquation+" nor an "+VCML.OdeEquation+" for variable "+var.getName(), Issue.SEVERITY_ERROR);
+						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 			}
@@ -2488,8 +2484,8 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 					if (subDomain instanceof FilamentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof OdeEquation)){
-							Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-									"There should be a "+VCML.OdeEquation+" defined for variable "+var.getName()+" for "+VCML.FilamentSubDomain+" "+subDomain.getName(), Issue.SEVERITY_ERROR);
+							Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable,
+								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_21, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
@@ -2517,9 +2513,8 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 									MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 									if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
 										if (membraneSubDomain.getJumpCondition(volRegionVar)==null){
-											Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-													"Spatial Model, VolumeRegionEquation for '"+volRegionVar.getName()+"' in '"+subDomain.getName()+"' "+
-												       "does not have a jump condition on membrane '"+membraneSubDomain.getName() + "'", Issue.SEVERITY_ERROR);
+											Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable,
+												VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_17, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
 											issueList.add(issue);											
 										}
 									}
@@ -2530,7 +2525,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				}
 				if (count == 0) {
 					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-							"There should be at least one "+VCML.VolumeRegionEquation+" defined for variable "+volRegionVar.getName(), Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_18, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 			}
@@ -2550,7 +2545,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 				}
 				if (count == 0) {
 					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-							"There should be at least one "+VCML.MembraneRegionEquation+" defined for variable "+var.getName(), Issue.SEVERITY_ERROR);
+							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_19, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);					
 				}
 			}
@@ -2564,7 +2559,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof FilamentRegionEquation)){
 							Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
-									"There should be a "+VCML.FilamentRegionEquation+" defined for variable "+var.getName()+" for "+VCML.FilamentSubDomain+" "+subDomain.getName(), Issue.SEVERITY_ERROR);
+								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_20, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);							
 						}
 					}
@@ -2573,7 +2568,7 @@ public void gatherIssues(ArrayList<Issue> issueList) {
 		}
 	}
 	if (eventList.size() > 0 && isSpatial()) {
-		Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, "Events are not supported in spatial models.", Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_22, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 	for (Event event : eventList) {

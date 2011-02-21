@@ -34,23 +34,23 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 	private DocumentEditorTreeFolderNode bioModelChildFolderNodes[] = {
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.APPLICATIONS_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, true),
+//			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.DATA_NODE, true),
+//			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SCRIPTING_NODE, true),
 		};
 	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[0], false);
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[1], true);
-	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
-	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[3], false);	
-	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[4], true);	
+	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[2], true);	
+	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[3], false);
+//	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[2], false);	
 //	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[5], false);	
 	private BioModelNode  bioModelChildNodes[] = {
 			pathwayNode,
 			modelNode,
-			bioModelParametersNode,
-			dataNode,
 			applicationsNode,
+			bioModelParametersNode,
+//			dataNode,
 //			scriptingNode,
 	};
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
@@ -97,18 +97,18 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 		
 		if (oldValue != null) {	
 			oldValue.removePropertyChangeListener(this);
+			oldValue.getModel().removePropertyChangeListener(this);
 			for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
 				simulationContext.removePropertyChangeListener(this);
 				simulationContext.getDataContext().removePropertyChangeListener(this);
-				simulationContext.getOutputFunctionContext().removePropertyChangeListener(this);
 			}
 		}
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
+			newValue.getModel().addPropertyChangeListener(this);
 			for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
 				simulationContext.addPropertyChangeListener(this);
 				simulationContext.getDataContext().addPropertyChangeListener(this);
-				simulationContext.getOutputFunctionContext().addPropertyChangeListener(this);
 			}
 		}
 	}
@@ -127,7 +127,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			bPopulatingRoot = false;
 		}
 		ownerTree.expandPath(new TreePath(modelNode.getPath()));
-		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
+//		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
 		if (selectedBioModelNode == null) {
 			ownerTree.setSelectionPath(new TreePath(reactionsNode.getPath()));
 			selectedBioModelNode = reactionsNode;
@@ -273,7 +273,11 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 						}
 					}
 					populateApplicationsNode(false);
+				} else {
+					nodeChanged(rootNode);
 				}
+			} else if (source == bioModel.getModel()) {
+				nodeChanged(rootNode);
 			}
 		} catch (Exception e){
 			e.printStackTrace(System.out);

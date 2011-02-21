@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -44,8 +44,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -55,7 +55,7 @@ import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -193,8 +193,8 @@ public class TextFieldAutoCompletion extends JTextField {
 		setupActions();
 		
 		// functions
-		for (String s : ASTFuncNode.getFunctionNames()) {
-			functList.add(s);
+		for (FunctionType ft : FunctionType.values()) {
+			functList.add(ft.getName());
 		}
 		Collections.sort(functList);
 	}

@@ -3,12 +3,11 @@ package cbit.vcell.client.desktop.biomodel;
 import java.beans.PropertyChangeListener;
 import java.util.Comparator;
 
-import javax.swing.JTable;
-
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
@@ -16,7 +15,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
-public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssignment> implements PropertyChangeListener {
+public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignment> implements PropertyChangeListener {
 		private class VariableColumnComparator implements Comparator<EventAssignment> {
 			protected int index;
 			protected boolean ascending;
@@ -49,14 +48,12 @@ public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssig
 		private SimulationContext fieldSimContext = null;
 		private BioEvent fieldBioEvent = null;
 		private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-		private JTable ownerTable = null;
 
 	/**
 	 * SimulationListTableModel constructor comment.
 	 */
-	public EventAssignmentsTableModel(JTable table) {
-		super(columnNames);
-		ownerTable = table;
+	public EventAssignmentsTableModel(ScrollTable table) {
+		super(table, columnNames);
 		addPropertyChangeListener(this);
 	}
 
@@ -191,7 +188,7 @@ public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssig
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				} catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}

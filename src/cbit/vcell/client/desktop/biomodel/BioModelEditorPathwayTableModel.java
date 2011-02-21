@@ -9,8 +9,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.swing.JTable;
-
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayEvent;
@@ -20,7 +18,7 @@ import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.BioModelEntityObject;
@@ -28,7 +26,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<EntitySelectionTableRow> implements PathwayListener, RelationshipListener {
+public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntitySelectionTableRow> implements PathwayListener, RelationshipListener {
 
 
 	public static final int colCount = 3;
@@ -43,12 +41,10 @@ public class BioModelEditorPathwayTableModel extends DefaultSortTableModel<Entit
 
 	private BioModel bioModel;
 	private BioModelEntityObject bioModelEntityObject;
-	private JTable ownerTable;
 	private boolean bShowLinkOnly = false;
 
-	public BioModelEditorPathwayTableModel(JTable table) {
-		super(new String[] {"Link", "Entity Name", "Type"});
-		this.ownerTable = table;
+	public BioModelEditorPathwayTableModel(ScrollTable table) {
+		super(table, new String[] {"Link", "Entity Name", "Type"});
 	}
 	
 	public Class<?> getColumnClass(int iCol) {

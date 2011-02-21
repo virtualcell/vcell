@@ -612,7 +612,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:03:46 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueVector) {
+public void gatherIssues(List<Issue> issueVector) {
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//

@@ -1,6 +1,5 @@
 package cbit.vcell.client.server;
 import java.lang.reflect.Constructor;
-import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -11,6 +10,7 @@ import org.vcell.util.document.User;
 import cbit.rmi.event.RemoteMessageHandler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.controls.SessionManager;
@@ -36,9 +36,6 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
-	public static final String BAD_CONNECTION_MESSAGE1 = "Your computer is unable to connect to the Virtual Cell server";
-	public static final String BAD_CONNECTION_MESSAGE2 = "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";						
-
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
 		private String serverHost = null;
@@ -308,13 +305,16 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 	
 	VCellConnection newVCellConnection = null;
 	VCellConnectionFactory vcConnFactory = null;
-	String badConnStr = BAD_CONNECTION_MESSAGE1 + " (";
+	String badConnStr = "";
 	try {
 		switch (getClientServerInfo().getServerType()) {
 			case ClientServerInfo.SERVER_REMOTE: {
-				String[] hosts = getClientServerInfo().getHosts();
+				String[] hosts = getClientServerInfo().getHosts(); 
 				for (int i = 0; i < hosts.length; i ++) {
 					try {
+						if (i == 0) {
+							badConnStr += "(";
+						}
 						getClientServerInfo().setActiveHost(hosts[i]);
 						
 						badConnStr += hosts[i] + ";";
@@ -326,7 +326,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 						throw ex;
 					} catch (Exception ex) {
 						if (i == hosts.length - 1) {
-							badConnStr += "). " + BAD_CONNECTION_MESSAGE2;
+							badConnStr += ")";
 							throw ex;
 						}
 					}
@@ -337,8 +337,8 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 				new PropertyLoader();
 				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);				
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
-				Class localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
-				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {UserLoginInfo.class, SessionLog.class, boolean.class});
+				Class<?> localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
+				Constructor<?> constructor = localVCConnFactoryClass.getConstructor(new Class[] {UserLoginInfo.class, SessionLog.class, boolean.class});
 				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUserLoginInfo(), log, Boolean.TRUE});				
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
@@ -350,10 +350,10 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, badConnStr + "\n\n" + cexc.getMessage());
+		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, badConnStr + "\n\n" + exc.getMessage());		
+		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + exc.getMessage());		
 	}
 	
 	return newVCellConnection;	
@@ -704,13 +704,6 @@ public void setConnectionStatus(ConnectionStatus connectionStatus) {
 	fieldConnectionStatus = connectionStatus;
 	firePropertyChange("connectionStatus", oldValue, connectionStatus);
 }
-
-
-	private void setUserPreferences(UserPreferences newUserPreferences) {
-
-		this.userPreferences = newUserPreferences;
-	}
-
 
 /**
  * Insert the method's description here.

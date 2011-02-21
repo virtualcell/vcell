@@ -3,15 +3,14 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Issue.IssueCategory;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -394,7 +393,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * Creation date: (11/1/2005 9:57:23 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueVector) {
+public void gatherIssues(List<Issue> issueVector) {
 	// size parameter must be set to non zero value for new ode, and all stoch simulations.
 	if (getSizeParameter().getExpression() == null)
 	{
@@ -424,7 +423,7 @@ public void gatherIssues(Vector<Issue> issueVector) {
 		}
 	}
 	if (geometryClass == null) {
-		issueVector.add(new Issue(this, IssueCategory.StructureMappingNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to geometry.", Issue.SEVERITY_ERROR));
+		issueVector.add(new Issue(this, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_ERROR));
 	}
 }
 

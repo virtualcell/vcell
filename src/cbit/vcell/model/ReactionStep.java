@@ -9,8 +9,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
@@ -253,7 +253,7 @@ public abstract void fromTokens(CommentStringTokenizer tokens, Model model) thro
  * Creation date: (5/12/2004 10:26:42 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	
 	if (fieldKinetics!=null){
 		fieldKinetics.gatherIssues(issueList);

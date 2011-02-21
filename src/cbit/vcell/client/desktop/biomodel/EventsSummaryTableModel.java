@@ -6,9 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JTable;
-
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -28,9 +27,8 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 	
 	private static String[] columnNames = new String[] {"Name", "Trigger", "Delay", "Event Assignment Vars"};
 
-	public EventsSummaryTableModel(JTable table) {
-		super(table);
-		setColumns(columnNames);
+	public EventsSummaryTableModel(ScrollTable table) {
+		super(table, columnNames);
 	}
 	
 	public Class<?> getColumnClass(int column) {

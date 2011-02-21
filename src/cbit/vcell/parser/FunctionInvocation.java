@@ -1,8 +1,10 @@
 package cbit.vcell.parser;
 
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
+
 public class FunctionInvocation {
 	private String functionName = null;
-	private int functionId;
+	private FunctionType functionId;
 	private Expression[] arguments = null;
 	private Expression functionExpression = null;
 	private SymbolTableFunctionEntry symbolTableFunctionEntry = null;
@@ -23,7 +25,7 @@ public class FunctionInvocation {
 		return functionName;
 	}
 
-	public int getFunctionId() {
+	public FunctionType getFunctionId() {
 		return functionId;
 	}
 

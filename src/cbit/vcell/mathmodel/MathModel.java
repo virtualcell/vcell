@@ -6,7 +6,7 @@ package cbit.vcell.mathmodel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -709,12 +709,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		// do nothing. math description always exists		
 	}
 	
-	public void gatherIssues(ArrayList<Issue> issueList) {
+	public void gatherIssues(List<Issue> issueList) {
 		fieldMathDescription.gatherIssues(issueList);
 	}
 
 	public String getObjectPathDescription(Object object) {
-		return null;
+		if (object instanceof Geometry) {
+			return "Geometry";
+		} else {
+			return "VCML";
+		}
 	}
 
 

@@ -6,13 +6,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.JTable;
-
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
@@ -34,24 +33,21 @@ import cbit.vcell.units.VCUnitException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class ParameterTableModel extends VCellSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_DESCRIPTION = 1;
 	public final static int COLUMN_IS_GLOBAL = 2;
 	public final static int COLUMN_VALUE = 3;
 	public final static int COLUMN_UNITS = 4;
-	private String LABELS[] = { "Name", "Description", "Global", "Expression", "Units" };
+	private final static String LABELS[] = { "Name", "Description", "Global", "Expression", "Units" };
 	private ReactionStep reactionStep = null;
-	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private boolean bEditable = true;
 	
-public ParameterTableModel(JTable argParentComponent, boolean bEditable) {
-	super();
-	setColumns(LABELS);
+public ParameterTableModel(ScrollTable argParentComponent, boolean bEditable) {
+	super(argParentComponent, LABELS);
 	this.bEditable = bEditable;
 	addPropertyChangeListener(this);
-	fieldParentComponentTable = argParentComponent;
 }
 
 /**
@@ -290,10 +286,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter name:\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter name:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -304,22 +300,22 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						( (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof SpeciesContext) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof ModelQuantity) ) ) {
-							PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
+							PopupGenerator.showErrorDialog(ownerTable, "Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
 					} else {
 						try {
 							reactionStep.getKinetics().convertParameterType(parameter, false);
 						} catch (PropertyVetoException pve) {
 							pve.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(fieldParentComponentTable, "Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
+							PopupGenerator.showErrorDialog(ownerTable, "Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
 						} catch (ExpressionBindingException e) {
 							e.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(fieldParentComponentTable, "Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + e.getMessage());
+							PopupGenerator.showErrorDialog(ownerTable, "Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + e.getMessage());
 						}
 					}
 				} else {
 					// check box has been <set> (<false> to <true>) : change param from local to global  
 					if ( (parameter instanceof KineticsParameter) && (((KineticsParameter)parameter).getRole() != Kinetics.ROLE_UserDefined) ) {
-						PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter : \'" + parameter.getName() + "\' is a pre-defined kinetics parameter (not user-defined); cannot convert it to a model level (global) parameter.");
+						PopupGenerator.showErrorDialog(ownerTable, "Parameter : \'" + parameter.getName() + "\' is a pre-defined kinetics parameter (not user-defined); cannot convert it to a model level (global) parameter.");
 					} else {
 						ModelParameter mp = reactionStep.getKinetics().getReactionStep().getModel().getModelParameter(parameter.getName());
 						// model already had the model parameter 'param', but check if 'param' value is different from 
@@ -331,7 +327,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 									+ mp.getExpression().infix() + "\'; This local parameter \'" + parameter.getName() + "\' with value = \'" + 
 									parameter.getExpression().infix() + "\' will be overridden by the global value. \nPress \'Ok' to override " + 
 									"local value with global value of \'" + parameter.getName() + "\'. \nPress \'Cancel\' to retain new local value.";
-							choice = PopupGenerator.showWarningDialog(fieldParentComponentTable, msgStr, new String[] {"Ok", "Cancel"}, "Ok");
+							choice = PopupGenerator.showWarningDialog(ownerTable, msgStr, new String[] {"Ok", "Cancel"}, "Ok");
 						}
 						if (choice.equals("Ok")) {
 							try {
@@ -343,7 +339,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 									String[] symbols = parameter.getExpression().getSymbols();
 									for (int i = 0; i < symbols.length; i++) {
 										if (reactionStep.getKinetics().getKineticsParameter(symbols[i]) != null) {
-											PopupGenerator.showErrorDialog(fieldParentComponentTable, "Parameter \'" + parameter.getName() + "\' contains other local kinetic parameters; Cannot convert it to global until the referenced parameters are global.");
+											PopupGenerator.showErrorDialog(ownerTable, "Parameter \'" + parameter.getName() + "\' contains other local kinetic parameters; Cannot convert it to global until the referenced parameters are global.");
 											bPromoteable = false;
 										}
 									}
@@ -353,10 +349,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 								}
 							} catch (PropertyVetoException pve) {
 								pve.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog(fieldParentComponentTable, "Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + pve.getMessage());
+								PopupGenerator.showErrorDialog(ownerTable, "Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + pve.getMessage());
 							} catch (ExpressionBindingException e) {
 								e.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog(fieldParentComponentTable, "Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + e.getMessage());
+								PopupGenerator.showErrorDialog(ownerTable, "Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + e.getMessage());
 							}
 						}
 					}
@@ -386,10 +382,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error:\n"+e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Expression error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -406,7 +402,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (VCUnitException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter unit:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter unit:\n"+e.getMessage());
 				}
 				break;
 			}

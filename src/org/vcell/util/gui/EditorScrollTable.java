@@ -19,9 +19,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -73,43 +70,43 @@ public class EditorScrollTable extends JSortTable {
 	}
 	
 	static class ReactionEquationTextFieldAutoCompletion extends TextFieldAutoCompletion {
-		public ReactionEquationTextFieldAutoCompletion() {
-			super();
-			getDocument().addDocumentListener(new DocumentListener() {
-				
-				public void removeUpdate(DocumentEvent e) {
-				}
-				
-				public void insertUpdate(DocumentEvent e) {	
-					if (e.getLength() > 1) {
-						return;
-					}
-					final int caretPos = getCaretPosition();
-					final String text = getText();					
-					final int len = text.length();
-					if (len < 1) {
-						return;
-					}
-					SwingUtilities.invokeLater(new Runnable() {						
-						public void run() {
-							try {
-								Document doc = getDocument();
-								if (text.charAt(caretPos) == '-' && (caretPos + 1 >= len || text.charAt(caretPos + 1) != '>')) {
-									doc.insertString(caretPos + 1, ">", null);
-									setCaretPosition(caretPos + 2);
-								}
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							} finally {				
-							}							
-						}
-					});
-				}
-				
-				public void changedUpdate(DocumentEvent e) {					
-				}
-			});
-		}
+//		public ReactionEquationTextFieldAutoCompletion() {
+//			super();
+//			getDocument().addDocumentListener(new DocumentListener() {
+//				
+//				public void removeUpdate(DocumentEvent e) {
+//				}
+//				
+//				public void insertUpdate(DocumentEvent e) {	
+//					if (e.getLength() > 1) {
+//						return;
+//					}
+//					final int caretPos = getCaretPosition();
+//					final String text = getText();					
+//					final int len = text.length();
+//					if (len < 1) {
+//						return;
+//					}
+//					SwingUtilities.invokeLater(new Runnable() {						
+//						public void run() {
+//							try {
+//								Document doc = getDocument();
+//								if (text.charAt(caretPos) == '-' && (caretPos + 1 >= len || text.charAt(caretPos + 1) != '>')) {
+//									doc.insertString(caretPos + 1, ">", null);
+//									setCaretPosition(caretPos + 2);
+//								}
+//							} catch (Exception ex) {
+//								ex.printStackTrace();
+//							} finally {				
+//							}							
+//						}
+//					});
+//				}
+//				
+//				public void changedUpdate(DocumentEvent e) {					
+//				}
+//			});
+//		}
 		
 	}
 	
