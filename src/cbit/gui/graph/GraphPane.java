@@ -289,11 +289,11 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		try {
 			Graphics2D g = (Graphics2D) argGraphics;
 			if (graphModel!=null){
-				if(needsLayout) {
+//				if(needsLayout) {
 					GraphContainerLayout containerLayout = graphModel.getContainerLayout();
 					containerLayout.layout(graphModel, g, getSize());
 					needsLayout = false;					
-				}
+//				}
 				graphModel.paint(g,this);
 			}	
 		}catch (Exception e){

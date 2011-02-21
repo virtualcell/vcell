@@ -393,11 +393,6 @@ public abstract class GraphModel {
 		fireGraphChanged(new GraphEvent(this));
 	}
 
-	public void notifyComponentSize(Graphics2D g, Dimension newSize) throws Exception {
-		containerLayout.layout(this, g, newSize);
-		resizeManager.notifyComponentSize(newSize);
-	}
-
 	public ResizeMode getResizeMode() { return resizeManager.getResizeMode(); }
 	public void setResizeMode(ResizeMode resizeMode) { resizeManager.setResizeMode(resizeMode); }
 
