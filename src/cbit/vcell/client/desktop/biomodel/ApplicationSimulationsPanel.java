@@ -2,6 +2,9 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -16,6 +19,28 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private MathematicsPanel mathematicsPanel;
 	
+	private enum SimulationsPanelTabID {
+		simulations("Simulations"),
+		output_functions("Output Functions"),
+		generated_math("Generated Math");
+		
+		String title = null;
+		SimulationsPanelTabID(String name) {
+			this.title = name;
+		}
+	}
+	
+	private class SimulationsPanelTab {
+		SimulationsPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		SimulationsPanelTab(SimulationsPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
 	public ApplicationSimulationsPanel() {
 		super();
 		initialize();
@@ -26,12 +51,15 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		outputFunctionsPanel = new OutputFunctionsPanel();
 		mathematicsPanel = new MathematicsPanel();
 		
-		simulationListPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		outputFunctionsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		mathematicsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("Simulations", simulationListPanel);
-		tabbedPane.addTab("Output Functions", outputFunctionsPanel);
-		tabbedPane.addTab("Generated Math", mathematicsPanel);
+		SimulationsPanelTab simsPanelTabs[] = new SimulationsPanelTab[SimulationsPanelTabID.values().length]; 
+		simsPanelTabs[SimulationsPanelTabID.simulations.ordinal()] = new SimulationsPanelTab(SimulationsPanelTabID.simulations, simulationListPanel, null);
+		simsPanelTabs[SimulationsPanelTabID.output_functions.ordinal()] = new SimulationsPanelTab(SimulationsPanelTabID.output_functions, outputFunctionsPanel, null);
+		simsPanelTabs[SimulationsPanelTabID.generated_math.ordinal()] = new SimulationsPanelTab(SimulationsPanelTabID.generated_math, mathematicsPanel, null);
+		
+		for (SimulationsPanelTab tab : simsPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}
 	}	
 	
 	@Override

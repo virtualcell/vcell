@@ -91,7 +91,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		table = new JSortTable();
-		tableModel = new PathwayTableModel();
+		tableModel = new PathwayTableModel(table);
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
 		importButton = new JButton("Add Selected");

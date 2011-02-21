@@ -10,12 +10,15 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.NumberUtils;
 
 import cbit.gui.ReactionEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
@@ -67,7 +70,15 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			setForeground(table.getForeground());
 		}
 		
-		if (bEnableUneditableForeground && (!table.isEnabled() || !table.getModel().isCellEditable(row, column))) {
+		TableModel tableModel = table.getModel();
+		if (tableModel instanceof VCellSortTableModel) {
+			if (((VCellSortTableModel) tableModel).getIssue(row, column).size() > 0) {
+				setBorder(new LineBorder(Color.red));
+			} else {
+				setBorder(DEFAULT_GAP);
+			}
+		}
+		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
 				setForeground(uneditableForeground);
 				setFont(uneditableFont);

@@ -1,6 +1,8 @@
 package cbit.vcell.parser;
 
 import java.util.Random;
+
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
@@ -56,42 +58,42 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		0.0,	// RELATIONAL
 	};
 		
-	final int[] functionIDs = {
-		ASTFuncNode.ABS,
-		ASTFuncNode.ACOS,
-		ASTFuncNode.ASIN,
-		ASTFuncNode.ATAN,
-		ASTFuncNode.ATAN2,
-		ASTFuncNode.COS,
-		ASTFuncNode.EXP,
-		ASTFuncNode.LOG,
-		ASTFuncNode.MAX,
-		ASTFuncNode.MIN,
-		ASTFuncNode.POW,
-		ASTFuncNode.SIN,
-		ASTFuncNode.SQRT,
-		ASTFuncNode.TAN,
-		ASTFuncNode.CEIL,
-		ASTFuncNode.FLOOR,
-		ASTFuncNode.CSC,
-		ASTFuncNode.COT,
-		ASTFuncNode.SEC,
-		ASTFuncNode.ACSC,
-		ASTFuncNode.ACOT,
-		ASTFuncNode.ASEC,
-		ASTFuncNode.SINH,
-		ASTFuncNode.COSH,
-		ASTFuncNode.TANH,
-		ASTFuncNode.CSCH,
-		ASTFuncNode.COTH,
-		ASTFuncNode.SECH,
-		ASTFuncNode.ASINH,
-		ASTFuncNode.ACOSH,
-		ASTFuncNode.ATANH,
-		ASTFuncNode.ACSCH,
-		ASTFuncNode.ACOTH,
-		ASTFuncNode.ASECH,
-		ASTFuncNode.FACTORIAL
+	final FunctionType[] functionIDs = {
+		FunctionType.ABS,
+		FunctionType.ACOS,
+		FunctionType.ASIN,
+		FunctionType.ATAN,
+		FunctionType.ATAN2,
+		FunctionType.COS,
+		FunctionType.EXP,
+		FunctionType.LOG,
+		FunctionType.MAX,
+		FunctionType.MIN,
+		FunctionType.POW,
+		FunctionType.SIN,
+		FunctionType.SQRT,
+		FunctionType.TAN,
+		FunctionType.CEIL,
+		FunctionType.FLOOR,
+		FunctionType.CSC,
+		FunctionType.COT,
+		FunctionType.SEC,
+		FunctionType.ACSC,
+		FunctionType.ACOT,
+		FunctionType.ASEC,
+		FunctionType.SINH,
+		FunctionType.COSH,
+		FunctionType.TANH,
+		FunctionType.CSCH,
+		FunctionType.COTH,
+		FunctionType.SECH,
+		FunctionType.ASINH,
+		FunctionType.ACOSH,
+		FunctionType.ATANH,
+		FunctionType.ACSCH,
+		FunctionType.ACOTH,
+		FunctionType.ASECH,
+		FunctionType.FACTORIAL
 	};
 	double nodeProbability[] = null;
 	if (bIsConstraint){
@@ -131,7 +133,7 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 			ASTFuncNode fn = new ASTFuncNode();
 			double ftype = random.nextDouble();
 			int index = (int)Math.min(functionIDs.length-1,Math.floor(functionIDs.length*ftype));
-			fn.setFunctionFromName(ASTFuncNode.getFunctionNames()[functionIDs[index]]);
+			fn.setFunctionType(functionIDs[index]);
 			return fn;
 		}
 		case IDNode: {
@@ -553,109 +555,109 @@ private static int getNumberOfChildren(SimpleNode node) {
 	}else if (node instanceof ASTFuncNode){
 		ASTFuncNode fn = (ASTFuncNode)node;
 		switch (fn.getFunction()){
-			case ASTFuncNode.ABS: {
+			case ABS: {
 				return 1;
 			}
-			case ASTFuncNode.ACOS: {
+			case ACOS: {
 				return 1;
 			}
-			case ASTFuncNode.ASIN: {
+			case ASIN: {
 				return 1;
 			}
-			case ASTFuncNode.ATAN: {
+			case ATAN: {
 				return 1;
 			}
-			case ASTFuncNode.ATAN2: {
+			case ATAN2: {
 				return 2;
 			}
-			case ASTFuncNode.COS: {
+			case COS: {
 				return 1;
 			}
-			case ASTFuncNode.EXP: {
+			case EXP: {
 				return 1;
 			}
-			case ASTFuncNode.LOG: {
+			case LOG: {
 				return 1;
 			}
-			case ASTFuncNode.MAX: {
+			case MAX: {
 				return 2;
 			}
-			case ASTFuncNode.MIN: {
+			case MIN: {
 				return 2;
 			}
-			case ASTFuncNode.POW: {
+			case POW: {
 				return 2;
 			}
-			case ASTFuncNode.SIN: {
+			case SIN: {
 				return 1;
 			}
-			case ASTFuncNode.SQRT: {
+			case SQRT: {
 				return 1;
 			}
-			case ASTFuncNode.TAN: {
+			case TAN: {
 				return 1;
 			}
-			case ASTFuncNode.CEIL: {
+			case CEIL: {
 				return 1;
 			}
-			case ASTFuncNode.FLOOR: {
+			case FLOOR: {
 				return 1;
 			} 			
-			case ASTFuncNode.CSC: {
+			case CSC: {
 				return 1;
 			}
-			case ASTFuncNode.COT: {
+			case COT: {
 				return 1;
 			}
-			case ASTFuncNode.SEC: {
+			case SEC: {
 				return 1;
 			}
-			case ASTFuncNode.ACSC: {
+			case ACSC: {
 				return 1;
 			}
-			case ASTFuncNode.ACOT: {
+			case ACOT: {
 				return 1;
 			}
-			case ASTFuncNode.ASEC: {
+			case ASEC: {
 				return 1;
 			}
-			case ASTFuncNode.SINH: {
+			case SINH: {
 				return 1;
 			}
-			case ASTFuncNode.COSH: {
+			case COSH: {
 				return 1;
 			}
-			case ASTFuncNode.TANH: {
+			case TANH: {
 				return 1;
 			}
-			case ASTFuncNode.CSCH: {
+			case CSCH: {
 				return 1;
 			}
-			case ASTFuncNode.COTH: {
+			case COTH: {
 				return 1;
 			}
-			case ASTFuncNode.SECH: {
+			case SECH: {
 				return 1;
 			}
-			case ASTFuncNode.ASINH: {
+			case ASINH: {
 				return 1;
 			}
-			case ASTFuncNode.ACOSH: {
+			case ACOSH: {
 				return 1;
 			}
-			case ASTFuncNode.ATANH: {
+			case ATANH: {
 				return 1;
 			}
-			case ASTFuncNode.ACSCH: {
+			case ACSCH: {
 				return 1;
 			}
-			case ASTFuncNode.ACOTH: {
+			case ACOTH: {
 				return 1;
 			}
-			case ASTFuncNode.ASECH: {
+			case ASECH: {
 				return 1;
 			}
-			case ASTFuncNode.FACTORIAL: {
+			case FACTORIAL: {
 				return 1;
 			}			
 			default:{

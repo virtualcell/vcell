@@ -1,4 +1,5 @@
 package cbit.vcell.opt;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -72,7 +73,7 @@ public void addParameter(Parameter optVar) {
  * Creation date: (8/22/2005 1:06:33 PM)
  * @return boolean
  */
-public void gatherIssues(Vector<Issue> issueList) {
+public void gatherIssues(List<Issue> issueList) {
 	try {
 		for (int i=0;i<this.constraintList.size();i++){
 //			((Constraint)constraintList.elementAt(i)).gatherIssues(issueList);

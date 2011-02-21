@@ -1,6 +1,6 @@
 package cbit.vcell.opt;
 
-import java.util.Vector;
+import java.util.List;
 
 import org.vcell.util.Issue;
 
@@ -16,7 +16,7 @@ public class ImplicitObjectiveFunction extends ObjectiveFunction
 		scalarFunc = argScalarFunc;
 	}
 	@Override
-	public void gatherIssues(Vector<Issue> issueList) {
+	public void gatherIssues(List<Issue> issueList) {
 	}
 
 	@Override

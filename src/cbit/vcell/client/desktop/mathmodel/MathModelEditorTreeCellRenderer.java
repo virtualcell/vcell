@@ -11,7 +11,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
+import org.vcell.util.gui.VCellIcons;
+
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeCellRenderer;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mathmodel.MathModel;
  
@@ -42,44 +46,50 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
                         int row,
                         boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+		if (regularFont == null) {
+			regularFont = getFont();
+			boldFont = regularFont.deriveFont(Font.BOLD);
+		}		
 		Font font = regularFont;
 		Icon icon = null;
     	String labelText = null;
     	String toolTipPrefix = "";
     	String toolTipSuffix = "";
-    	boolean bChange = false;
     	if (value instanceof BioModelNode) {
 	        BioModelNode node = (BioModelNode)value;
+	        if (node.getChildCount() > 0) {
+	        	icon = getIcon();
+	        }
 	        Object userObj = node.getUserObject();
 	    	if (userObj instanceof MathModel) {
-	    		bChange = true;
 	    		font = boldFont;
 	    		icon = mathModelIcon;
 	    		labelText = ((MathModel)userObj).getName();
 	    		toolTipPrefix = "MathModel: ";
-//	        } else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
-//	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
-//	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
-//	    		if (folderClass == DocumentEditorTreeFolderClass.MATH_ANNOTATION_NODE) {
-//	    			bChange = true;
-//	    			String description = mathModel.getDescription();
-//	    			if (description == null || description.trim().length() == 0) {
-//	    				labelText = "(click to edit notes)";
-//	    			} else {
-//	    				labelText = description.trim();
-//	    			}
-//	    		}
-	        }
+	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
+	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
+	    		labelText = folder.getName();
+	    		if (folder.isBold()) {
+	    			font = boldFont;
+	    		}
+	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
+	    		switch(folderClass) {
+	    		case MATH_GEOMETRY_NODE:
+	    			icon = VCellIcons.geometryIcon;
+	    			break;
+	    		case MATH_SIMULATIONS_NODE:
+	    			icon = VCellIcons.simulationIcon;
+	    			break;
+	    		}
+	    	}
 		}
-    	if (bChange) {
-	    	setIcon(icon);
-	    	setFont(font);
-	    	setText(labelText);
-	    	if (toolTipSuffix.length() == 0) {
-				toolTipSuffix = labelText;
-			}
-	    	setToolTipText(toolTipPrefix + toolTipSuffix);
-    	}
+    	setIcon(icon);
+    	setFont(font);
+    	setText(labelText);
+    	if (toolTipSuffix.length() == 0) {
+			toolTipSuffix = labelText;
+		}
+    	setToolTipText(toolTipPrefix + toolTipSuffix);
         return this;
     }
 }

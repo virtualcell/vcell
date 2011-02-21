@@ -25,8 +25,8 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    public final static ReservedSymbol Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
-   public final static ReservedSymbol FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday const",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
-   public final static ReservedSymbol FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday const",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
+   public final static ReservedSymbol FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
+   public final static ReservedSymbol FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
    public final static ReservedSymbol N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
    public final static ReservedSymbol K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
    public final static ReservedSymbol GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
@@ -58,6 +58,21 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 	   N_PMOLE,
 	   KMILLIVOLTS,
 	   K_GHK,
+   };
+   
+   public final static ReservedSymbol[] ALL_RESERVED_SYMBOLS = {
+	   TIME,
+	   X,
+	   Y,
+	   Z,
+	   TEMPERATURE,
+	   GAS_CONSTANT,
+	   FARADAY_CONSTANT,
+	   FARADAY_CONSTANT_NMOLE,
+	   KMOLE,
+	   N_PMOLE,
+	   KMILLIVOLTS,
+	   K_GHK,   
    };
    
 

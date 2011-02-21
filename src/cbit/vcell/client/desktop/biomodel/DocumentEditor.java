@@ -4,6 +4,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,6 +19,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -202,7 +204,7 @@ public abstract class DocumentEditor extends JPanel {
 		public void issueChange(IssueEvent issueEvent) {
 			String title = "Problems (" + issueManager.getNumErrors() + " Errors, " + issueManager.getNumWarnings() + " Warnings)";
 			if (issueManager.getNumErrors() > 0) {
-				title = "<html><b>" + title + "</b></html>";
+				title = "<html><b>" + "Problems (<font color=red>" + issueManager.getNumErrors() + " Errors</font>, " + issueManager.getNumWarnings() + " Warnings)</b></html>";
 			}
 			rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
 		}
@@ -271,12 +273,16 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
+private Frame jframeParent;
 private void documentEditor_eventDispatched(AWTEvent event) {
 	try {
+		if (jframeParent == null) {
+			jframeParent = JOptionPane.getFrameForComponent(DocumentEditor.this);
+		}
 		Object source = event.getSource();
 		if (source instanceof Component) {
 			for (Component component = (Component)source; component != null; component = component.getParent()) {
-				if (component == DocumentEditor.this) {	
+				if (component == DocumentEditor.this || component == jframeParent) {	
 					issueManager.setDirty();
 					break;
 				}
@@ -298,14 +304,11 @@ private void initialize() {
 			
 			public void eventDispatched(AWTEvent event) {
 				try {
-					Object source = event.getSource();
 					switch (event.getID()) {		
 					case KeyEvent.KEY_RELEASED:					
-//						System.out.println("key released " + source);
 						documentEditor_eventDispatched(event);
 						break;
 					case MouseEvent.MOUSE_CLICKED :
-//						System.out.println("mouse released " + source);
 						documentEditor_eventDispatched(event);
 						break;
 					}

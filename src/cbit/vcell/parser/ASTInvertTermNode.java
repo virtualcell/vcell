@@ -5,6 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -54,7 +55,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	ASTInvertTermNode invertNode = new ASTInvertTermNode(id);
 	ASTFuncNode powNode = new ASTFuncNode();
-	powNode.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW]);
+	powNode.setFunctionType(FunctionType.POW);
 	powNode.jjtAddChild(jjtGetChild(0).copyTree());
 	powNode.jjtAddChild(new ASTFloatNode(2.0));
 	invertNode.jjtAddChild(powNode);

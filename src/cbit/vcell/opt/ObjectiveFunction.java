@@ -1,5 +1,7 @@
 package cbit.vcell.opt;
 
+import java.util.List;
+
 import org.vcell.util.Issue;
 
 /**
@@ -22,7 +24,7 @@ public ObjectiveFunction() {
  * Creation date: (8/22/2005 2:30:00 PM)
  * @param issueList java.util.Vector
  */
-public abstract void gatherIssues(java.util.Vector<Issue> issueList);
+public abstract void gatherIssues(List<Issue> issueList);
 
 
 /**

@@ -194,5 +194,14 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			selectTab(ApplicationPanelTabID.fitting);
 			break;
 		}
-	}	
+	}
+	
+	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		applicationGeometryPanel.setIssueManager(issueManager);
+		applicationSettingsPanel.setIssueManager(issueManager);
+		applicationSimulationsPanel.setIssueManager(issueManager);
+		applicationFittingPanel.setIssueManager(issueManager);
+	}
 }

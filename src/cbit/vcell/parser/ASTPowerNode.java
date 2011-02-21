@@ -9,6 +9,7 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 public class ASTPowerNode extends SimpleNode {
 
@@ -74,7 +75,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	//
 	ASTMultNode multNode2 = new ASTMultNode();
 	ASTFuncNode logNode = new ASTFuncNode();
-	logNode.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
+	logNode.setFunctionType(FunctionType.LOG);
 	logNode.jjtAddChild(jjtGetChild(0).copyTree());
 	multNode2.jjtAddChild(copyTree());
 	multNode2.jjtAddChild(logNode);
@@ -205,7 +206,7 @@ public Node flatten() throws ExpressionException {
 	//  v          v*w
 	// u    --->  u
 	//
-	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == ASTFuncNode.POW) || mantissaChild instanceof ASTPowerNode){
+	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == FunctionType.POW) || mantissaChild instanceof ASTPowerNode){
 		ASTMultNode newMultNode = new ASTMultNode();
 		newMultNode.jjtAddChild(mantissaChild.jjtGetChild(1));
 		newMultNode.jjtAddChild(exponentChild);

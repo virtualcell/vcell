@@ -1,10 +1,8 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 
 import javax.swing.JMenu;
-import javax.swing.JScrollPane;
 
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
@@ -21,13 +19,11 @@ public class VCMLEditorPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private MathDescEditor mathDescEditor = null;
 	private MathModel fieldMathModel = new MathModel(null);
-	private javax.swing.JTextPane mathWarningTextPane = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldMathModel && (evt.getPropertyName().equals(MathModel.PROPERTY_NAME_MATH_DESCRIPTION))) { 
 				getMathDescEditor().setMathDescription(fieldMathModel.getMathDescription());
-				updateWarningText();
 			}
 			if (evt.getSource() == fieldMathModel && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
 				Geometry oldValue = (Geometry) evt.getOldValue();
@@ -38,10 +34,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				if (newValue != null) {
 					newValue.getGeometrySpec().addPropertyChangeListener(this);
 				}
-				updateWarningText();
-			}
-			if (fieldMathModel.getGeometry() != null && evt.getSource() == fieldMathModel.getGeometry().getGeometrySpec()) {
-				updateWarningText();
 			}
 			if (evt.getSource() == VCMLEditorPanel.this.getMathDescEditor() && (evt.getPropertyName().equals("mathDescription"))) {
 				fieldMathModel.setMathDescription(getMathDescEditor().getMathDescription()); 
@@ -79,27 +71,6 @@ private MathDescEditor getMathDescEditor() {
 }
 
 /**
- * Return the MathWarningTextPane property value.
- * @return javax.swing.JTextPane
- */
-private javax.swing.JTextPane getMathWarningTextPane() {
-	if (mathWarningTextPane == null) {
-		try {
-			mathWarningTextPane = new javax.swing.JTextPane();
-			mathWarningTextPane.setName("MathWarningTextPane");
-			mathWarningTextPane.setForeground(java.awt.Color.red);
-			mathWarningTextPane.setFont(mathWarningTextPane.getFont().deriveFont(Font.BOLD));
-			mathWarningTextPane.setPreferredSize(new java.awt.Dimension(11, 50));
-			mathWarningTextPane.setMinimumSize(new java.awt.Dimension(11, 50));
-			mathWarningTextPane.setEditable(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return mathWarningTextPane;
-}
-
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -122,7 +93,7 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(354, 336);
 		add(getMathDescEditor(), BorderLayout.CENTER);
-		add(new JScrollPane(getMathWarningTextPane()), BorderLayout.SOUTH);
+//		add(new JScrollPane(getMathWarningTextPane()), BorderLayout.SOUTH);
 		
 		getMathDescEditor().addPropertyChangeListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
@@ -181,21 +152,6 @@ public void setMathModel(MathModel newValue) {
 			newValue.getGeometry().getGeometrySpec().addPropertyChangeListener(ivjEventHandler);
 		}
 		getMathDescEditor().setMathDescription(fieldMathModel.getMathDescription());
-		updateWarningText();
-	}
-}
-
-/**
- * Comment
- */
-public void updateWarningText() {
-	if (fieldMathModel == null) {
-		return;
-	}
-	if (fieldMathModel.getMathDescription().isValid()){
-		getMathWarningTextPane().setText("");
-	}else{
-		getMathWarningTextPane().setText(fieldMathModel.getMathDescription().getWarning());
 	}
 }
 

@@ -3,11 +3,12 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -21,7 +22,7 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel<SpeciesContextSpecParameter> implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecParameterTableModel extends VCellSortTableModel<SpeciesContextSpecParameter> implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("SpeciesContextSpecParameterTableModel: artifically filtering out membrane diffusion parameters and diffusion/bc's that are not applicable");
@@ -89,14 +90,12 @@ public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel
 	private SpeciesContextSpec fieldSpeciesContextSpec = null;
 	
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SpeciesContextSpecParameterTableModel(JTable table) {
-	super(columnNames);
-	ownerTable = table;
+public SpeciesContextSpecParameterTableModel(ScrollTable table) {
+	super(table, columnNames);
 	addPropertyChangeListener(this);
 }
 

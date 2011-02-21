@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -819,7 +820,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (11/1/2005 9:30:09 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueVector) {
+public void gatherIssues(List<Issue> issueVector) {
 	getReactionContext().gatherIssues(issueVector);
 	getGeometryContext().gatherIssues(issueVector);
 	if (fieldAnalysisTasks != null) {

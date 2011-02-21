@@ -21,6 +21,7 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.simdata.*;
 import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.export.server.*;
 /**
@@ -434,12 +435,12 @@ VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteExc
 		synchronized (adminDbServer) {
 			user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getPassword());
 			if (user == null){
-				throw new AuthenticationException("The userid (" + userLoginInfo.getUserName() + ") or password you entered is not correct. Please go to Server->Change User... to reenter your userid and password or click \"Forgot Login Password\"");
+				throw new AuthenticationException(VCellErrorMessages.getErrorMessage(VCellErrorMessages.AUTHEN_FAIL_MESSAGE, userLoginInfo.getUserName()));
 			}
 			userLoginInfo.setUser(user);
 		}
 	}catch(Exception e){
-		throw new DataAccessException("getVcellConnection User Authentication Database Access SQL Error " + e.getMessage(),e);
+		throw new DataAccessException(VCellErrorMessages.NETWORK_FAIL_MESSAGE, e);
 	}
 	//
 	// get existing VCellConnection

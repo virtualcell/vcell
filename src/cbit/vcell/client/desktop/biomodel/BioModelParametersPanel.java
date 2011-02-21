@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -9,27 +10,40 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.EditorScrollTable;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
-public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parameter> {
+public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JCheckBox globalParametersCheckBox = null;
 	private JCheckBox applicationsCheckBox = null;
 	private JCheckBox reactionsCheckBox = null;
@@ -40,19 +54,55 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 	private int selectedIndex = -1;
 	private String selectedTabTitle = null;
 
-	private class InternalEventHandler implements ActionListener, ChangeListener {		
+	private JButton addNewButton = null;
+	private JButton deleteButton = null;
+	private EditorScrollTable parametersFunctionsTable;
+	private BioModelParametersTableMode parametersFunctionsTableModel = null;
+	private BioModel bioModel;
+	private JTextField textFieldSearch = null;
+	private JPanel parametersFunctionsPanel = null;
+	private EditorScrollTable predefinedSymbolsTable;
+	private PredefinedSymbolsTableModel predefinedSymbolsTableModel = null;
+	private JPanel predefinedSymbolsPanel = null;
+	
+	private enum ParametersPanelTabID {
+		parameters_functions("Parameters and Functions"),
+		predefined("Predefined Constants and Math Functions");
+		
+		String title = null;
+		ParametersPanelTabID(String name) {
+			this.title = name;
+		}
+	}
+	
+	private class ParametersPanelTab {
+		ParametersPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		ParametersPanelTab(ParametersPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}		
+	}
+	
+	private class InternalEventHandler implements ActionListener, ChangeListener, ListSelectionListener, DocumentListener {		
 				
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == globalParametersCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeGlobal(globalParametersCheckBox.isSelected());
+			if (e.getSource() == addNewButton) {
+				newButtonPressed();
+			} else if (e.getSource() == deleteButton) {
+				deleteButtonPressed();
+			} else if (e.getSource() == globalParametersCheckBox) {
+				parametersFunctionsTableModel.setIncludeGlobal(globalParametersCheckBox.isSelected());
 			} else if (e.getSource() == applicationsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeApplications(applicationsCheckBox.isSelected());
+				parametersFunctionsTableModel.setIncludeApplications(applicationsCheckBox.isSelected());
 			} else if (e.getSource() == reactionsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeReactions(reactionsCheckBox.isSelected());
+				parametersFunctionsTableModel.setIncludeReactions(reactionsCheckBox.isSelected());
 			} else if (e.getSource() == constantsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeConstants(constantsCheckBox.isSelected());
+				parametersFunctionsTableModel.setIncludeConstants(constantsCheckBox.isSelected());
 			} else if (e.getSource() == functionsCheckBox) {
-				((BioModelParametersTableMode)tableModel).setIncludeFunctions(functionsCheckBox.isSelected());
+				parametersFunctionsTableModel.setIncludeFunctions(functionsCheckBox.isSelected());
 			}
 		}
 
@@ -61,7 +111,28 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 				tabbedPaneSelectionChanged();
 			}			
 		}
-	}
+		
+		public void valueChanged(ListSelectionEvent e) {
+			if (bioModel == null || e.getValueIsAdjusting()) {
+				return;
+			}
+			if (e.getSource() == parametersFunctionsTable.getSelectionModel()) {
+				tableSelectionChanged();
+			}
+		}
+		
+		public void insertUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void removeUpdate(DocumentEvent e) {
+			searchTable();
+		}
+
+		public void changedUpdate(DocumentEvent e) {
+			searchTable();
+		}
+	}	
 	
 	public BioModelParametersPanel() {
 		super();
@@ -69,7 +140,16 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 	}
 
 	private void initialize(){
-		addNewButton.setText("Add New Global Parameter");
+		addNewButton = new JButton("Add New Global Parameter");
+		addNewButton.addActionListener(eventHandler);
+		deleteButton = new JButton("Delete Selected");
+		deleteButton.addActionListener(eventHandler);
+		textFieldSearch = new JTextField(10);
+		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		parametersFunctionsTable = new EditorScrollTable();
+		parametersFunctionsTableModel = new BioModelParametersTableMode(parametersFunctionsTable);
+		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
+			
 		globalParametersCheckBox = new JCheckBox("Global");
 		globalParametersCheckBox.setSelected(true);
 		globalParametersCheckBox.addActionListener(eventHandler);
@@ -85,7 +165,22 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		functionsCheckBox = new JCheckBox("Functions");
 		functionsCheckBox.setSelected(true);
 		functionsCheckBox.addActionListener(eventHandler);
+		predefinedSymbolsTable = new EditorScrollTable();
+		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
+		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
 
+		tabbedPane = new JTabbedPane();
+		tabbedPane.addChangeListener(eventHandler);
+		
+		ParametersPanelTab parametersPanelTabs[] = new ParametersPanelTab[ParametersPanelTabID.values().length]; 
+		parametersPanelTabs[ParametersPanelTabID.parameters_functions.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.parameters_functions, getParametersFunctionsPanel(), null);
+		parametersPanelTabs[ParametersPanelTabID.predefined.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.predefined, getPredefinedSymbolsPanel(), null);
+		
+		for (ParametersPanelTab tab : parametersPanelTabs) {
+			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		}
+				
 		setLayout(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints  gbc = new GridBagConstraints();
@@ -127,14 +222,10 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
-		tabbedPane = new JTabbedPane();
-		tabbedPane.addChangeListener(eventHandler);
-		JPanel tabPanel = getParametersPanel();
-		tabPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.addTab("Parameters and Functions", tabPanel);
 		add(tabbedPane, gbc);	
 
-		table.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
+		parametersFunctionsTable.getSelectionModel().addListSelectionListener(eventHandler);
+		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -152,96 +243,107 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		});
 	}
 	
-	private JPanel getParametersPanel() {
-		JPanel tabPanel = new JPanel();
-		tabPanel.setLayout(new GridBagLayout());
-		
-		int gridy = 0;
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		JLabel label = new JLabel("Defined In:");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		tabPanel.add(label, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(globalParametersCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(reactionsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(applicationsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		label = new JLabel("Type:");
-		label.setHorizontalAlignment(SwingConstants.RIGHT);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		tabPanel.add(label, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(constantsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(functionsCheckBox, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
-		gbc.gridwidth = 7;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		tabPanel.add(table.getEnclosingScrollPane(), gbc);		
-		return tabPanel;
+	private JPanel getPredefinedSymbolsPanel() {
+		if (predefinedSymbolsPanel == null) {
+			predefinedSymbolsPanel = new JPanel();
+			predefinedSymbolsPanel.setLayout(new BorderLayout());
+			
+			predefinedSymbolsPanel.add(predefinedSymbolsTable.getEnclosingScrollPane(), BorderLayout.CENTER);
+		}
+		return predefinedSymbolsPanel;
 	}
-	@Override
+	private JPanel getParametersFunctionsPanel() {
+		if (parametersFunctionsPanel == null) {
+			parametersFunctionsPanel = new JPanel();
+			parametersFunctionsPanel.setLayout(new GridBagLayout());
+			
+			int gridy = 0;
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			JLabel label = new JLabel("Defined In:");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			parametersFunctionsPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(globalParametersCheckBox, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(reactionsCheckBox, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(applicationsCheckBox, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 4;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			label = new JLabel("Type:");
+			label.setHorizontalAlignment(SwingConstants.RIGHT);
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			parametersFunctionsPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 5;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(constantsCheckBox, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 6;
+			gbc.gridy = gridy;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(functionsCheckBox, gbc);
+			
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.gridwidth = 7;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			parametersFunctionsPanel.add(parametersFunctionsTable.getEnclosingScrollPane(), gbc);
+		}
+		return parametersFunctionsPanel;
+	}
+	
 	protected void tableSelectionChanged() {
-		super.tableSelectionChanged();
-		int[] rows = table.getSelectedRows();
+		setSelectedObjectsFromTable(parametersFunctionsTable, parametersFunctionsTableModel);
+		int[] rows = parametersFunctionsTable.getSelectedRows();
 		if (rows == null) {
 			return;
 		}
 		for (int r : rows) {
-			if (r < tableModel.getDataSize()) {
-				Parameter parameter = tableModel.getValueAt(r);
+			if (r < parametersFunctionsTableModel.getDataSize()) {
+				Parameter parameter = parametersFunctionsTableModel.getValueAt(r);
 				if (parameter instanceof ModelParameter) {
 					deleteButton.setEnabled(true);
 					return;
@@ -251,29 +353,22 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		deleteButton.setEnabled(false);
 	}
 
-	@Override
-	protected BioModelEditorRightSideTableModel<Parameter> createTableModel() {		
-		return new BioModelParametersTableMode(table);
-	}
-
-	@Override
 	protected void newButtonPressed() {
 		ModelParameter modelParameter = bioModel.getModel().createModelParameter();
-		setTableSelections(new Object[]{modelParameter}, table, tableModel);
+		setTableSelections(new Object[]{modelParameter}, parametersFunctionsTable, parametersFunctionsTableModel);
 	}
 
-	@Override
 	protected void deleteButtonPressed() {
 		try {
-			int[] rows = table.getSelectedRows();
+			int[] rows = parametersFunctionsTable.getSelectedRows();
 			if (rows == null) {
 				return;
 			}
 			String deleteListText = "";
 			ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
 			for (int r : rows) {
-				if (r < tableModel.getDataSize()) {
-					Parameter parameter = tableModel.getValueAt(r);
+				if (r < parametersFunctionsTableModel.getDataSize()) {
+					Parameter parameter = parametersFunctionsTableModel.getValueAt(r);
 					if (parameter instanceof ModelParameter) {
 						deleteList.add((ModelParameter)parameter);
 						deleteListText += "\t" + ((ModelParameter)parameter).getName() + "\n"; 
@@ -292,15 +387,35 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}		
 	}
+	
+	private BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
+	private void computeCurrentSelectedTable() {
+		currentSelectedTableModel = null;
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
+			currentSelectedTableModel = parametersFunctionsTableModel;
+		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
+			currentSelectedTableModel = predefinedSymbolsTableModel;			
+		}
+	}
 
+	private void searchTable() {		
+		String text = textFieldSearch.getText();
+		computeCurrentSelectedTable();
+		currentSelectedTableModel.setSearchText(text);
+	}
+	
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		setTableSelections(selectedObjects, table, tableModel);
+		setTableSelections(selectedObjects, parametersFunctionsTable, parametersFunctionsTableModel);
 	}
 	
 	public void tabbedPaneSelectionChanged() {
 		int oldSelectedIndex = selectedIndex;
 		selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex < 0) {
+			return;
+		}
 		if (oldSelectedIndex == selectedIndex) {
 			return;
 		}
@@ -309,5 +424,48 @@ public class BioModelParametersPanel extends BioModelEditorRightSidePanel<Parame
 		}
 		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
 		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
+
+		ActiveView activeView = null;
+		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions);
+		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.predefined_symbols);
+		}
+		if (activeView != null) {
+			setActiveView(activeView);
+		}
+		
+		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
+			addNewButton.setEnabled(true);
+		} else {
+			addNewButton.setEnabled(false);
+			deleteButton.setEnabled(false);			
+		}
+	}
+	
+	public void setBioModel(BioModel newValue) {
+		if (newValue == bioModel) {
+			return;
+		}
+		bioModel = newValue;		
+		parametersFunctionsTableModel.setBioModel(bioModel);
+	}
+	
+	@Override
+	protected void onActiveViewChange(ActiveView activeView) {
+		super.onActiveViewChange(activeView);
+		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()) {
+			if (activeView.getActiveViewID() != null) {
+				if (activeView.getActiveViewID().equals(ActiveViewID.parameter_estimation)) {
+					tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		parametersFunctionsTableModel.setIssueManager(issueManager);
 	}
 }

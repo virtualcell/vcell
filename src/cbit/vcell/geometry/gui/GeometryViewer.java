@@ -29,6 +29,8 @@ import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -39,7 +41,7 @@ import cbit.vcell.geometry.GeometrySpec;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class GeometryViewer extends javax.swing.JPanel implements ActionListener, java.beans.PropertyChangeListener, ChangeListener {
+public class GeometryViewer extends DocumentEditorSubPanel implements ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 	private GeometrySubVolumePanel ivjGeometrySubVolumePanel = null;
 	private javax.swing.JLabel ivjSizeLabel = null;
 	private Geometry ivjGeometry = null;
@@ -607,11 +609,9 @@ public void onGeometryChange() {
 		setGeometry(geometryOwner.getGeometry());
 		if (geometryOwner.getGeometry().getDimension() == 0){
 			getJButtonChangeDomain().setVisible(false);
-//			getGeometrySubVolumePanel().setVisible(false);
 			tabbedPane.setVisible(false);
 			getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
 		} else {
-//			getGeometrySubVolumePanel().setVisible(true);
 			getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 			getJButtonChangeDomain().setVisible(true);
 			tabbedPane.setVisible(true);
@@ -621,5 +621,15 @@ public void onGeometryChange() {
 
 public GeometryOwner getGeometryOwner() {
 	return geometryOwner; 
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+}
+
+@Override
+public void setIssueManager(IssueManager issueManager) {
+	super.setIssueManager(issueManager);
+	ivjGeometrySubVolumePanel.setIssueManager(issueManager);
 }
 }

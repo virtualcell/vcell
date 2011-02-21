@@ -1,4 +1,6 @@
 package cbit.vcell.opt;
+import org.vcell.util.Issue;
+
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -42,7 +44,7 @@ public static ExplicitObjectiveFunction fromVCML(org.vcell.util.CommentStringTok
  * Creation date: (8/22/2005 2:30:24 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector issueList) {}
+public void gatherIssues(java.util.List<Issue> issueList) {}
 
 
 /**

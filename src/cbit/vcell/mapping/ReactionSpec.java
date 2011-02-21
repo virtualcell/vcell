@@ -3,20 +3,31 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
-import cbit.vcell.model.*;
-import cbit.vcell.math.VCML;
-import cbit.vcell.units.VCUnitDefinition;
 import java.beans.PropertyVetoException;
-
-import java.io.*;
+import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+
+import cbit.vcell.math.VCML;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedBioSymbolEntries;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
 	private ReactionStep reactionStep = null;
@@ -315,7 +326,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:06:04 AM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector<Issue> issueList) {}
+public void gatherIssues(List<Issue> issueList) {}
 
 
 /**

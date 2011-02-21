@@ -4,24 +4,24 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.VCML;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -204,7 +204,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 9:44:36 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector issueVector) {
+public void gatherIssues(List<Issue> issueVector) {
 	for (int i = 0; fieldSpeciesContextSpecs!=null && i < fieldSpeciesContextSpecs.length; i++){
 		fieldSpeciesContextSpecs[i].gatherIssues(issueVector);
 	}

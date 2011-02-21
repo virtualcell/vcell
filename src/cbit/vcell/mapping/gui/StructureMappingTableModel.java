@@ -20,9 +20,10 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
@@ -48,7 +49,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class StructureMappingTableModel extends DefaultSortTableModel<StructureMapping> implements java.beans.PropertyChangeListener {
+public class StructureMappingTableModel extends VCellSortTableModel<StructureMapping> implements java.beans.PropertyChangeListener {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	
 	public final static int SPATIAL_COLUMN_STRUCTURE = 0;
@@ -106,15 +107,13 @@ public class StructureMappingTableModel extends DefaultSortTableModel<StructureM
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private GeometryContext fieldGeometryContext = null;
-	private JTable ownerTable = null;
 	private boolean bNonSpatial = true;
 
 /**
  * StructureMappingTableModel constructor comment.
  */
-public StructureMappingTableModel(JTable table) {
-	super();
-	ownerTable = table;
+public StructureMappingTableModel(ScrollTable table) {
+	super(table);
 	bNonSpatial = true;
 	addPropertyChangeListener(this);
 }

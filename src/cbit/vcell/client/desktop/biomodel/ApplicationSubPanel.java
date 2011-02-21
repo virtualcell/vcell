@@ -30,6 +30,9 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 	protected void tabbedPaneSelectionChanged() {
 		int oldSelectedIndex = selectedIndex;
 		selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex < 0) {
+			return;
+		}
 		if (oldSelectedIndex == selectedIndex) {
 			return;
 		}

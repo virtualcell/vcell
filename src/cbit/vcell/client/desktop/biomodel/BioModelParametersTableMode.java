@@ -106,7 +106,7 @@ protected List<Parameter> computeData() {
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
 	for (Parameter parameter : allParameterList) {
-		boolean bNumeric = parameter.getExpression() != null && parameter.getExpression().isNumeric();
+		boolean bNumeric = parameter.getExpression() == null || parameter.getExpression().isNumeric();
 		if (bConstants && bNumeric || bFunctions && !bNumeric) {
 			if (bSearchInactive
 					|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)

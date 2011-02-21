@@ -5,9 +5,11 @@ package cbit.vcell.geometry;
 ©*/
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
@@ -475,6 +477,10 @@ public String getObjectPathDescription(Object object) {
 
 public String getObjectDescription(Object object) {
 	return null;
+}
+
+
+public void gatherIssues(List<Issue> issueList) {
 }
 
 }

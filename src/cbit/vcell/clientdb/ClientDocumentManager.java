@@ -44,6 +44,7 @@ import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -116,14 +117,6 @@ public class ClientDocumentManager implements DocumentManager{
 	
 	protected transient DatabaseListener aDatabaseListener = null;
 	private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
-	
-	static final String FAIL_LOAD_MESSAGE = "Failed to load document. Possible reasons :\n" +
-	"1. You are no longer connected to the server. Reconnect in order to retrieve model. \n" +
-	"2. You previously saved this model using a newer version of VCell. Open model in that version.";
-	static final String FAIL_SAVE_MESSAGE = "Failed to save document. Possible reason :\n" +
-	"You are no longer connected to the server. Reconnect in order to save model.";
-
-	
 	
 	private class XMLHolder<T extends VCDocument> {
 		private String xmlString;
@@ -924,7 +917,7 @@ private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessExcep
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 	}
 }
 
@@ -1125,7 +1118,7 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -1227,7 +1220,7 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -1386,7 +1379,7 @@ private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessExc
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -2403,7 +2396,7 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 		return savedVCImage;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2447,7 +2440,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		return savedBioModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2486,7 +2479,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 		return savedGeometry;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2525,7 +2518,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		return savedMathModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2553,7 +2546,7 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
 		return savedSimulation;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2603,7 +2596,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 		return savedVCImage;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2648,7 +2641,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 		return savedBioModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2692,7 +2685,7 @@ public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws Da
 		return savedGeometry;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2732,7 +2725,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 		return savedMathModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
+		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 

@@ -19,6 +19,7 @@ import org.vcell.util.gui.JToolBarToggleButton;
 import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphPane;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
@@ -1001,5 +1002,11 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		getStructureMappingPanel().setSelectionManager(selectionManager);
+	}
+	
+	@Override
+	public void setIssueManager(IssueManager newValue) {
+		super.setIssueManager(newValue);
+		getStructureMappingPanel().setIssueManager(newValue);
 	}
 }

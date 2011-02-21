@@ -18,24 +18,18 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
-import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -114,21 +108,7 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 protected abstract void actionsOnClick(MouseEvent mouseEvent);
 
 public void onSelectedObjectsChange(Object[] selectedObjects) {
-	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
-		getJTree1().clearSelection();
-	} else {
-		if (this instanceof BioModelDbTreePanel && selectedObjects[0] instanceof BioModelInfo
-				|| this instanceof MathModelDbTreePanel && selectedObjects[0] instanceof MathModelInfo
-				|| this instanceof GeometryTreePanel && selectedObjects[0] instanceof GeometryInfo)  {
-			BioModelNode node = ((BioModelNode)getJTree1().getModel().getRoot()).findNodeByUserObject(selectedObjects[0]);
-			if (node != null) {
-				getJTree1().setSelectionPath(new TreePath(node.getPath()));
-			}
-		} else if (selectedObjects[0] == null || selectedObjects[0] instanceof VCDocumentInfo || selectedObjects[0] instanceof BioModelsNetModelInfo) {
-			getJTree1().clearSelection();
-		}
-	}
-	
+	treeModel.onSelectedObjectsChange(selectedObjects);	
 }
 
 protected abstract void documentManager_DatabaseUpdate(DatabaseEvent event);

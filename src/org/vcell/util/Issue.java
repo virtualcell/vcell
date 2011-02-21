@@ -37,7 +37,8 @@ public class Issue implements java.io.Serializable, Matchable {
 		KineticsExpressionNonParticipantSymbol,
 		KineticsExpressionUndefinedSymbol,
 		StructureMappingSizeParameterNotPositive,
-		StructureMappingNotMapped,
+		StructureNotMapped,
+		GeometryClassNotMapped,
 		
 		InternalError,
 		ParameterBoundsDefinition,

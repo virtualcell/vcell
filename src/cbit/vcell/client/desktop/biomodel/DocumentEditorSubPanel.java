@@ -32,11 +32,18 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		}
 	}
 
-	public void setIssueManager(IssueManager issueManager) {
-		this.issueManager = issueManager;
-		if (issueManager != null) {
-			issueManager.removeIssueEventListener(this);
-			issueManager.addIssueEventListener(this);
+	public void setIssueManager(IssueManager newValue) {
+		if (issueManager == newValue) {
+			return;
+		}
+		IssueManager oldValue = issueManager;
+		if (oldValue != null) {
+			oldValue.removeIssueEventListener(this);
+		}
+		this.issueManager = newValue;
+		if (newValue != null) {
+			newValue.removeIssueEventListener(this);
+			newValue.addIssueEventListener(this);
 		}
 	}
 	

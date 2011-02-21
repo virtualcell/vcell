@@ -10,7 +10,10 @@ public class SelectionManager {
 	public static enum ActiveViewID {
 		pathway,
 		model,	
-		biomodel_parameters,	
+		
+		parameters_functions,
+		predefined_symbols,
+		
 		data,	
 		applications,	
 		scripting,
@@ -21,7 +24,7 @@ public class SelectionManager {
 		reaction_diagram,
 		structure_diagram,
 		
-		geometry_settings,
+		geometry_definition,
 		structure_mapping,
 		
 		species_settings,
@@ -67,13 +70,11 @@ public class SelectionManager {
 				if (simulationContext != activeView.simulationContext) {
 					return false; 
 				}
-				if (documentEditorTreeFolderClass != null && !documentEditorTreeFolderClass.equals(activeView.documentEditorTreeFolderClass)
-					|| activeView.documentEditorTreeFolderClass != null && !activeView.documentEditorTreeFolderClass.equals(documentEditorTreeFolderClass)) {
+				if (documentEditorTreeFolderClass != activeView.documentEditorTreeFolderClass) {
 					return false;
 				}
 					
-				if (activeViewID != null && activeViewID.equals(activeView.activeViewID)
-					|| activeView.activeViewID != null && activeView.activeViewID.equals(activeViewID)) {
+				if (activeViewID != activeView.activeViewID) {
 					return false;
 				}
 			}

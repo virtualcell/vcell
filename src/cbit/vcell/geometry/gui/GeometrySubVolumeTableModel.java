@@ -3,19 +3,24 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
@@ -25,40 +30,21 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
+@SuppressWarnings("serial")
+public class GeometrySubVolumeTableModel extends VCellSortTableModel<SubVolume> implements java.beans.PropertyChangeListener {
 	private final int COLUMN_NAME = 0;
 	private final int COLUMN_VALUE = 1;
-	private String LABELS[] = { "Name", "Value" };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private final static String LABELS[] = { "Name", "Value" };
 	private Geometry fieldGeometry = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public GeometrySubVolumeTableModel(JTable table) {
-	super();
-	ownerTable = table;
+public GeometrySubVolumeTableModel(ScrollTable table) {
+	super(table, LABELS);
+	addPropertyChangeListener(this);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 
 /**
  * Insert the method's description here.
@@ -80,29 +66,6 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return LABELS.length;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	if (column<0 || column>=getColumnCount()){
-		throw new RuntimeException("GeometrySubVolumeTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
-	return LABELS[column];
-}
-
-
 /**
  * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @return The geometry property value.
@@ -112,27 +75,16 @@ public Geometry getGeometry() {
 	return fieldGeometry;
 }
 
-
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-
 /**
  * getRowCount method comment.
  */
-public int getRowCount() {
-	if (getGeometry()==null){
-		return 0;
-	}else{
-		return getGeometry().getGeometrySpec().getNumSubVolumes();
+private void refreshData() {
+	List<SubVolume> subVolumeList = null;
+	if (getGeometry()!= null){
+		subVolumeList = new ArrayList<SubVolume>();
+		subVolumeList.addAll(Arrays.asList(getGeometry().getGeometrySpec().getSubVolumes()));
 	}
+	setData(subVolumeList);
 }
 
 
@@ -141,13 +93,7 @@ public int getRowCount() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (col<0 || col>=getColumnCount()){
-			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
-		}
-		SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(row);
+		SubVolume subVolume = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				return subVolume;
@@ -170,15 +116,6 @@ public Object getValueAt(int row, int col) {
 	}
 }
 
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
@@ -189,15 +126,16 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex == COLUMN_NAME){
 		return true;
-	}else if (columnIndex == COLUMN_VALUE && getGeometry()!=null){
-		SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(rowIndex);
+	}
+	if (columnIndex == COLUMN_VALUE){
+		SubVolume subVolume = getValueAt(rowIndex);
 		//
 		// the "value" column is only editable if it is an expression for a AnalyticSubVolume
 		//
 		return (subVolume instanceof AnalyticSubVolume);
-	}else{
-		return false;
 	}
+	
+	return false;	
 }
 
 
@@ -208,22 +146,14 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("geometry")) {
-		fireTableStructureChanged();
+		refreshData();
 	}
-	if (evt.getSource() instanceof GeometrySpec && evt.getPropertyName().equals("subVolumes")) {
-		fireTableDataChanged();
+	if (evt.getSource() == getGeometry().getGeometrySpec() && evt.getPropertyName().equals("subVolumes")) {
+		refreshData();
 	}
 	if (evt.getSource() instanceof SubVolume) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -232,6 +162,9 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  * @see #getGeometry
  */
 public void setGeometry(Geometry geometry) {
+	if (fieldGeometry == geometry) {
+		return;
+	}
 	Geometry oldValue = fieldGeometry;
 	if (oldValue != null){
 		oldValue.getGeometrySpec().removePropertyChangeListener(this);
@@ -259,8 +192,6 @@ public void setGeometry(Geometry geometry) {
 		};
 	}
 	firePropertyChange("geometry", oldValue, fieldGeometry);
-
-	fireTableDataChanged();
 }
 
 
@@ -271,7 +202,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("GeometrySubVolumeTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	final SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(rowIndex);
+	final SubVolume subVolume = getValueAt(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
@@ -310,6 +241,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(ownerTable, e.getMessage(), e);
 	}
+}
+
+
+@Override
+protected Comparator<SubVolume> getComparator(int col, boolean ascending) {
+	return null;
+}
+
+@Override
+public boolean isSortable(int col) {
+	return false;
 }
 
 }

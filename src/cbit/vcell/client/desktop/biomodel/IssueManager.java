@@ -3,20 +3,18 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+
 import javax.swing.Timer;
-import java.util.Vector;
 
 import org.vcell.util.Issue;
 import org.vcell.util.document.VCDocument;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mathmodel.MathModel;
-
 @SuppressWarnings("serial")
 public class IssueManager {
-	private ArrayList<Issue> issueList = new ArrayList<Issue>();
+	private List<Issue> issueList = Collections.synchronizedList(new ArrayList<Issue>());
 	private VCDocument vcDocument = null;
 	private int numErrors, numWarnings;
 	private long dirtyTimestamp = System.currentTimeMillis();
@@ -42,17 +40,17 @@ public class IssueManager {
 		void issueChange(IssueEvent issueEvent);
 	}
 	public static class IssueEvent extends EventObject {
-		private ArrayList<Issue> oldValue;
-		private ArrayList<Issue> newValue;
-		public IssueEvent(Object source, ArrayList<Issue> oldValue, ArrayList<Issue> newValue) {
+		private List<Issue> oldValue;
+		private List<Issue> newValue;
+		public IssueEvent(Object source, List<Issue> oldValue, List<Issue> newValue) {
 			super(source);
 			this.oldValue = oldValue;
 			this.newValue = newValue;
 		}
-		public final ArrayList<Issue> getOldValue() {
+		public final List<Issue> getOldValue() {
 			return oldValue;
 		}
-		public final ArrayList<Issue> getNewValue() {
+		public final List<Issue> getNewValue() {
 			return newValue;
 		}
 		
@@ -86,15 +84,9 @@ public class IssueManager {
 			numErrors = 0;
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
-			if (vcDocument instanceof BioModel) {
-				Vector<Issue> tempIssueList = new Vector<Issue>();
-				((BioModel)vcDocument).gatherIssues(tempIssueList);
-				issueList = new ArrayList<Issue>(tempIssueList);
-			} else if (vcDocument instanceof MathModel) {
-				ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
-				((MathModel)vcDocument).gatherIssues(tempIssueList);
-				issueList = new ArrayList<Issue>(tempIssueList);
-			}
+			issueList = new ArrayList<Issue>();
+			vcDocument.gatherIssues(issueList);
+			
 			for (Issue issue: issueList) {
 				int severity = issue.getSeverity();
 				if (severity == Issue.SEVERITY_ERROR) {
@@ -104,7 +96,7 @@ public class IssueManager {
 				}
 			}
 			fireIssueEventListener(new IssueEvent(vcDocument, oldIssueList, issueList));
-			System.out.println("\n................... update performed .................." + System.currentTimeMillis());
+//			System.out.println("\n................... update performed .................." + System.currentTimeMillis());
 		} finally {
 			dirtyTimestamp = 0;
 		}
@@ -120,7 +112,7 @@ public class IssueManager {
 		vcDocument = newValue;
 		updateIssues();
 	}
-	public final ArrayList<Issue> getIssueList() {
+	public final List<Issue> getIssueList() {
 		return issueList;
 	}
 	public final int getNumErrors() {

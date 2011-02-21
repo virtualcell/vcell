@@ -4,10 +4,15 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.JTable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
@@ -18,8 +23,8 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ElectricalMembraneMappingTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final static int NUM_COLUMNS = 4;
+@SuppressWarnings("serial")
+public class ElectricalMembraneMappingTableModel extends VCellSortTableModel<MembraneMapping> implements java.beans.PropertyChangeListener {
 	public final static int COLUMN_MEMBRANE = 0;
 	public final static int COLUMN_CALCULATE_POTENTIAL = 1;
 	public final static int COLUMN_INITIAL_POTENTIAL = 2;
@@ -28,29 +33,15 @@ public class ElectricalMembraneMappingTableModel extends javax.swing.table.Abstr
 	public final static String LABEL_CALCULATE_POTENTIAL = "Calculate V?";
 	public final static String LABEL_INITIAL_POTENTIAL = "V initial";
 	public final static String LABEL_SPECIFIC_CAPACITANCE = "Specific Capacitance (pF/um2)";
-	private static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private final static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
 	private GeometryContext fieldGeometryContext = null;
-	private JTable ownerTable = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ElectricalMembraneMappingTableModel(JTable table) {
-	super();
-	ownerTable = table;
+public ElectricalMembraneMappingTableModel(ScrollTable table) {
+	super(table, LABELS);
 }
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -76,18 +67,7 @@ public Class<?> getColumnClass(int column) {
 		}
 	}
 }
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return NUM_COLUMNS;
-}
-public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	return LABELS[column];
-}
+
 /**
  * Gets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @return The geometryContext property value.
@@ -102,61 +82,25 @@ public GeometryContext getGeometryContext() {
  * @return cbit.vcell.mapping.FeatureMapping
  * @param row int
  */
-public MembraneMapping getMembraneMapping(int row) {
-	if (getGeometryContext()==null){
-		return null;
-	}
-	int membraneMappingIndex = 0;
-	StructureMapping structureMappings[] = getGeometryContext().getStructureMappings();
-	for (int i=0;i<structureMappings.length;i++){
-		if (structureMappings[i] instanceof MembraneMapping){
-			if (membraneMappingIndex==row){
-				return (MembraneMapping)structureMappings[i];
-			}
-			membraneMappingIndex++;
-		}
-	}
-	return null;
-}
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getGeometryContext()==null){
-		return 0;
-	}else{
+private void refreshData() {
+	List<MembraneMapping> membraneMappingList = new ArrayList<MembraneMapping>();
+	if (getGeometryContext() != null){
 		StructureMapping structureMappings[] = getGeometryContext().getStructureMappings();
-		int count = 0;
-		for (int i=0;structureMappings!=null && i<structureMappings.length;i++){
+		for (int i=0;i<structureMappings.length;i++){
 			if (structureMappings[i] instanceof MembraneMapping){
-				count++;
+				membraneMappingList.add((MembraneMapping)structureMappings[i]);
 			}
 		}
-		return count;
 	}
+	setData(membraneMappingList);
 }
+
 /**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-		}
-	
-		MembraneMapping membraneMapping = getMembraneMapping(row);
+		MembraneMapping membraneMapping = getValueAt(row);
 		if (membraneMapping == null){
 			return null;
 		}
@@ -191,12 +135,6 @@ public Object getValueAt(int row, int col) {
 	}
 }
 /**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-/**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
  * @return boolean
@@ -204,7 +142,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	MembraneMapping mm = getMembraneMapping(rowIndex);
+	MembraneMapping mm = getValueAt(rowIndex);
 	//
 	// see if solving for potential (otherwise ignore capacitance).
 	//
@@ -228,20 +166,14 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionContext
-		&& evt.getPropertyName().equals("structureMappings")) {
-		fireTableDataChanged();
+	if (evt.getSource() == getGeometryContext() && evt.getPropertyName().equals("structureMappings")) {
+		refreshData();
 	}
 	if (evt.getSource() instanceof StructureMapping) {
-		fireTableRowsUpdated(0,getRowCount()-1);
+		fireTableDataChanged();
 	}
 }
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
+
 /**
  * Sets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @param geometryContext The new value for the property.
@@ -268,17 +200,11 @@ public void setGeometryContext(GeometryContext geometryContext) {
 			}
 		}
 	}
-	firePropertyChange("geometryContext", oldValue, geometryContext);
-	fireTableDataChanged();
+	refreshData();
 }
+
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("ElectricalMembraneMappingTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ElectricalMembraneMappingTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	MembraneMapping membraneMapping = getMembraneMapping(rowIndex);
+	MembraneMapping membraneMapping = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_CALCULATE_POTENTIAL:{
 			boolean bCalculatePotential = ((Boolean)aValue).booleanValue();
@@ -292,9 +218,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				if (aValue instanceof String){
 					String newExpressionString = (String)aValue;
 					newExpression = new Expression(newExpressionString);
-				}else if (aValue instanceof ScopedExpression){
-//					newExpression = ((ScopedExpression)aValue).getExpression();
-					throw new RuntimeException("unexpected value type ScopedExpression");
 				}
 				membraneMapping.getInitialVoltageParameter().setExpression(newExpression);
 				fireTableRowsUpdated(rowIndex,rowIndex);
@@ -329,5 +252,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			break;
 		}
 	}
+}
+
+@Override
+protected Comparator<MembraneMapping> getComparator(int col, boolean ascending) {
+	return null;
+}
+@Override
+public boolean isSortable(int col) {
+	return false;
 }
 }
