@@ -395,22 +395,30 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  */
 public void gatherIssues(List<Issue> issueVector) {
 	// size parameter must be set to non zero value for new ode, and all stoch simulations.
-	if (getSizeParameter().getExpression() == null)
-	{
-		//issueVector.add(new Issue(getSizeParameter(), "parameter not set", "Size parameter of "+ getNameScope().getName()+" is compulsory and must be a positive value. \nPlease change it in StructureMapping tab.",Issue.SEVERITY_ERROR));
-	}
-	else
-	{
-		try{
-			double val = getSizeParameter().getExpression().evaluateConstant();
-			if(val <= 0)
-				issueVector.add(new Issue(getSizeParameter(), IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
-		}catch (ExpressionException e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException("Parameter "+getSizeParameter().getName()+"cannot be evaluated to a constant.");
+	if (simulationContext != null) {
+		Parameter sizeParam = null;
+		if (simulationContext.getGeometry().getDimension() == 0) {
+			sizeParam = getSizeParameter();
+		} else {
+			sizeParam = getUnitSizeParameter();
 		}
-		
+		if (sizeParam != null) {
+			if (sizeParam.getExpression() == null) {
+				if (!simulationContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {			
+					issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotSet, "Size parameter is not set.",Issue.SEVERITY_ERROR));
+				}					
+			} else {
+				try{
+					double val = sizeParam.getExpression().evaluateConstant();
+					if (val <= 0) {
+						issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
+					}
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+					issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
+				}			
+			}
+		}
 	}
 	//
 	// add constraints (simpleBounds) for predefined parameters

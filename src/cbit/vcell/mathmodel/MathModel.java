@@ -723,7 +723,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 
 	public String getObjectDescription(Object object) {
-		String description = null;
+		String description = "";
 		if (object instanceof Variable) {
 			description = ((Variable)object).getName();
 		} else if (object instanceof SubDomain) {

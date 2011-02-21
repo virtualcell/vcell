@@ -6,23 +6,26 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionPrintFormatter;
@@ -221,11 +224,11 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 	 */
 public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	try{
+		TableModel tableModel = table.getModel();
 		if(value == null){
 			templateJLabel.setIcon(null);
 			templateJLabel.setText(null);
 			templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			TableModel tableModel = table.getModel();
 			if (tableModel instanceof DefaultSortTableModel) {
 				if (row < ((DefaultSortTableModel) tableModel).getDataSize()) {
 					Object rowObject = ((DefaultSortTableModel) tableModel).getValueAt(row);
@@ -285,7 +288,8 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 				if (scopedExpressionImageIconHash.put(scopedExpressInfix, rei) == null){
 					scopedExpressionCacheSize += dim.width * dim.height;
 				}
-				imageRenderer.setIcon(newImageIcon);
+				imageRenderer.setIcon(newImageIcon);		
+				
 			}catch(Exception e){
 				//Fallback to String
 				e.printStackTrace();
@@ -301,6 +305,21 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 		} else {
 			renderer.setBorder(BorderFactory.createEmptyBorder());
 			renderer.setToolTipText(null);
+		}
+		if (tableModel instanceof VCellSortTableModel) {
+			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssue(row, column);
+			if (issueList.size() > 0) {
+				renderer.setToolTipText(issueList.get(0).getMessage());
+				if (column == 0) {
+					renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
+				} else if (column == table.getColumnCount() - 1) {
+					renderer.setBorder(new MatteBorder(1,0,1,1,Color.red));
+				} else {
+					renderer.setBorder(new MatteBorder(1,0,1,0,Color.red));
+				}
+			} else {
+				renderer.setBorder(BORDER);
+			}
 		}
 		return renderer;
 	} catch(Exception e) {

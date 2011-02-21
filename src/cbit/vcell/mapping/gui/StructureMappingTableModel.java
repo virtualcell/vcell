@@ -105,7 +105,6 @@ public class StructureMappingTableModel extends VCellSortTableModel<StructureMap
 	private final String SPATIAL_LABELS[] = { SPATIAL_LABEL_STRUCTURE, SPATIAL_LABEL_SUBDOMAIN, SPATIAL_LABEL_SIZERATIO, 
 			SPATIAL_LABEL_X_MINUS, SPATIAL_LABEL_X_PLUS, SPATIAL_LABEL_Y_MINUS, SPATIAL_LABEL_Y_PLUS, SPATIAL_LABEL_Z_MINUS, SPATIAL_LABEL_Z_PLUS };
 	
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private GeometryContext fieldGeometryContext = null;
 	private boolean bNonSpatial = true;
 
@@ -117,23 +116,6 @@ public StructureMappingTableModel(ScrollTable table) {
 	bNonSpatial = true;
 	addPropertyChangeListener(this);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * Insert the method's description here.
@@ -233,18 +215,6 @@ public String getColumnName(int column) {
 public GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
-
-
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
 
 /**
  * getRowCount method comment.
@@ -400,15 +370,6 @@ public Object getValueAt(int row, int col) {
 	}
 	return null;
 }
-
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-
 
 /**
  * Insert the method's description here.
@@ -570,14 +531,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof StructureMapping) {
 		fireTableDataChanged();
 	}
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 private void refreshData() {

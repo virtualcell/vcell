@@ -385,6 +385,7 @@ private void initialize() {
 		
 		bioModelParametersPanel = new BioModelParametersPanel();
 		bioModelParametersPanel.setSelectionManager(selectionManager);
+		bioModelParametersPanel.setIssueManager(issueManager);
 		
 		bioModelEditorApplicationPanel = new BioModelEditorApplicationPanel();
 		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
