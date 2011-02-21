@@ -13,7 +13,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 @SuppressWarnings("serial")
 public abstract class VCellSortTableModel<T> extends DefaultSortTableModel<T> implements IssueEventListener {
 	protected IssueManager issueManager;
-	private List<Issue> issueList = new ArrayList<Issue>();
+	protected List<Issue> issueList = new ArrayList<Issue>();
 	protected ScrollTable ownerTable = null; 
 
 	public VCellSortTableModel(ScrollTable table) {
@@ -33,13 +33,11 @@ public abstract class VCellSortTableModel<T> extends DefaultSortTableModel<T> im
 
 	public List<Issue> getIssue(int row, int col) {
 		issueList.clear();
-		if (issueManager != null) {
+		if (row < getDataSize() && issueManager != null) {
 			List<Issue> allIssueList = issueManager.getIssueList();
 			for (Issue issue: allIssueList) {
-				for (int i = 0; i < getDataSize(); i ++) {
-					if (getValueAt(i) == issue.getSource()) {
-						issueList.add(issue);
-					}
+				if (getValueAt(row) == issue.getSource() && issue.getSeverity() == Issue.SEVERITY_ERROR) {
+					issueList.add(issue);					
 				}
 			}
 		}

@@ -8,20 +8,22 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.border.MatteBorder;
 
+import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;
 
+@SuppressWarnings("serial")
 public class StructureMappingTableRenderer extends DefaultScrollTableCellRenderer
 {
 	public static class TextIcon implements Icon {
@@ -75,10 +77,6 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			return height;
 		}
 	};
-//	private static final TextIcon featureIcon = new TextIcon("(Compartment)");
-//	private static final TextIcon membraneIcon = new TextIcon("(Membrane)");
-//	public static final TextIcon volumeIcon = new TextIcon("(Volume)");
-//	public static final TextIcon surfaceIcon = new TextIcon("(Surface)");
 	private static final TextIcon volumeUnitIcon = new TextIcon("[ \u03BCm3 ]", 4, 5);
 	private static final TextIcon areaUnitIcon = new TextIcon("[ \u03BCm2 ]", 4, 5);
 	private static final TextIcon surfVolUnitIcon = new TextIcon("[ \u03BCm-1 ]", 4, 6);
@@ -98,7 +96,6 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			if (value instanceof Structure) {
 				Structure structure = (Structure)value;
 				setText(structure.getName());
-//				setIcon(structure instanceof Feature ? featureIcon : membraneIcon);
 			} else if (value instanceof Double && structureMappingTableModel.isNewSizeColumn(column)) {
 				StructureMapping structureMapping = structureMappingTableModel.getStructureMapping(row);
 				if (structureMappingTableModel.isNonSpatial()) {	
@@ -121,15 +118,27 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 				} else {
 					if (value instanceof GeometryClass) {
 						setText(((GeometryClass)value).getName());
-//						setIcon(value instanceof SubVolume ? volumeIcon : surfaceIcon);
 					} else {
 						setText(value.toString());
 					}
 				}
 			}
-				
-			String toolTip = structureMappingTableModel.getToolTip(row, column);
-			setToolTipText(toolTip);
+
+			List<Issue> issueList = structureMappingTableModel.getIssue(row, column);
+			if (issueList.size() > 0) {
+				setToolTipText(issueList.get(0).getMessage());
+				if (column == 0) {
+					setBorder(new MatteBorder(1,1,1,0,Color.red));
+				} else if (column == table.getColumnCount() - 1) {
+					setBorder(new MatteBorder(1,0,1,1,Color.red));
+				} else {
+					setBorder(new MatteBorder(1,0,1,0,Color.red));
+				}
+			} else {
+				String toolTip = structureMappingTableModel.getToolTip(row, column);
+				setToolTipText(toolTip);
+				setBorder(DEFAULT_GAP);
+			}
 		}
 		return this;
 	}

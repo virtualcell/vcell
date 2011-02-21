@@ -12,6 +12,8 @@ import javax.swing.Timer;
 import org.vcell.util.Issue;
 import org.vcell.util.document.VCDocument;
 
+import cbit.vcell.model.SimpleBoundsIssue;
+
 @SuppressWarnings("serial")
 public class IssueManager {
 	private List<Issue> issueList = Collections.synchronizedList(new ArrayList<Issue>());
@@ -84,10 +86,15 @@ public class IssueManager {
 			numErrors = 0;
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
-			issueList = new ArrayList<Issue>();
-			vcDocument.gatherIssues(issueList);
+			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
+			vcDocument.gatherIssues(tempIssueList);
 			
-			for (Issue issue: issueList) {
+			issueList = new ArrayList<Issue>();
+			for (Issue issue: tempIssueList) {
+				if (issue instanceof SimpleBoundsIssue) {
+					continue;
+				}
+				issueList.add(issue);
 				int severity = issue.getSeverity();
 				if (severity == Issue.SEVERITY_ERROR) {
 					numErrors ++;

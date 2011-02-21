@@ -3,6 +3,7 @@ package org.vcell.util.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -10,10 +11,11 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.Issue;
 import org.vcell.util.NumberUtils;
 
 import cbit.gui.ReactionEquation;
@@ -72,9 +74,18 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		
 		TableModel tableModel = table.getModel();
 		if (tableModel instanceof VCellSortTableModel) {
-			if (((VCellSortTableModel) tableModel).getIssue(row, column).size() > 0) {
-				setBorder(new LineBorder(Color.red));
+			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssue(row, column);
+			if (issueList.size() > 0) {
+				setToolTipText(issueList.get(0).getMessage());
+				if (column == 0) {
+					setBorder(new MatteBorder(1,1,1,0,Color.red));
+				} else if (column == table.getColumnCount() - 1) {
+					setBorder(new MatteBorder(1,0,1,1,Color.red));
+				} else {
+					setBorder(new MatteBorder(1,0,1,0,Color.red));
+				}
 			} else {
+				setToolTipText(null);
 				setBorder(DEFAULT_GAP);
 			}
 		}

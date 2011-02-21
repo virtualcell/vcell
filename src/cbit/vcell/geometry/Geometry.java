@@ -471,12 +471,12 @@ public void precomputeAll(boolean bForcePrecomputeSurfaces) throws GeometryExcep
 
 
 public String getObjectPathDescription(Object object) {
-	return null;
+	return "";
 }
 
 
 public String getObjectDescription(Object object) {
-	return null;
+	return "";
 }
 
 

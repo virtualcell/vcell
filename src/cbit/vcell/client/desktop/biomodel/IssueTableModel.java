@@ -53,9 +53,9 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 					}
 				}
 				case COLUMN_SOURCE:
-					return issueManager == null ? 0 : scale * issueManager.getObjectDescription(o1).compareTo(issueManager.getObjectDescription(o2));
+					return issueManager == null ? 0 : scale * issueManager.getObjectDescription(o1.getSource()).compareTo(issueManager.getObjectDescription(o2.getSource()));
 				case COLUMN_PATH:
-					return issueManager == null ? 0 : scale * issueManager.getObjectPathDescription(o1).compareTo(issueManager.getObjectPathDescription(o2));
+					return issueManager == null ? 0 : scale * issueManager.getObjectPathDescription(o1.getSource()).compareTo(issueManager.getObjectPathDescription(o2.getSource()));
 				}
 				return 0;
 			}		

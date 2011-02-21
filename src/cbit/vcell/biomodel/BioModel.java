@@ -1054,7 +1054,7 @@ public SimulationContext getSimulationContext(String name) {
 	}
 
 	public String getObjectPathDescription(Object source) {
-		String description = null;
+		String description = "";
 		if (source instanceof SymbolTableEntry) {
 			description = ((SymbolTableEntry) source).getNameScope().getPathDescription();
 		} else if (source instanceof ReactionStep) {
@@ -1076,7 +1076,7 @@ public SimulationContext getSimulationContext(String name) {
 	}
 
 	public String getObjectDescription(Object object) {
-		String description = null;
+		String description = "";
 		if (object instanceof SymbolTableEntry) {
 			description = ((SymbolTableEntry)object).getName();
 		} else if (object instanceof ReactionStep) {
