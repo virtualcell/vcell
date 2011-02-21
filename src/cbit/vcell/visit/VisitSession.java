@@ -11,6 +11,8 @@ import cbit.vcell.client.server.VCellThreadChecker;
 import llnl.visit.ViewerMethods;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ClientMethod;
+import llnl.visit.MachineProfile;
+import llnl.visit.HostProfileList;
 import llnl.visit.ClientInformation;
 import llnl.visit.ClientInformationList;
 import llnl.visit.operators.ClipAttributes;
@@ -38,6 +40,7 @@ public class VisitSession {
 	public VisitSession(ClientRequestManager clientRequestManager, String visitPath, VisitConnectionInfo visitConnectionInfo) {
 		this.visitConnectionInfo = visitConnectionInfo;
 		this.visitPath = visitPath;
+		System.out.println(visitPath);
 	}
 	
 	public void initViewerProxyOpenWindows() {
@@ -48,7 +51,7 @@ public class VisitSession {
         // Pass command line options to the viewer viewer
      	viewer.SetVerbose(true);
         viewer.SetBinPath(visitPath);
-        viewer.AddArgument("-dv");
+        //viewer.AddArgument("-dv");
         viewer.AddArgument("-auxsessionkey");
         viewer.AddArgument(visitConnectionInfo.getAuxSessionKey());
 
@@ -77,9 +80,41 @@ public class VisitSession {
 	
 	
 	public void openMDServer(String ipAddress){
+		
+		 // Change these for your remote system.
+        String host = ipAddress;;
+        String user = new String("eboyce");
+        String remotevisitPath = new String("/home/VCELL/eboyce/visit_build_2.2RC/src");
+ 
+        // Create a new host profile object and set it up for serial
+        MachineProfile profile = new MachineProfile();
+        
+        profile.SetHost(host);
+        profile.SetHostAliases(host);
+        profile.SetHostNickname(host);
+        profile.SetUserName(user);
+        profile.SetClientHostDetermination(MachineProfile.CLIENTHOSTDETERMINATION_PARSEDFROMSSHCLIENT);
+        profile.SetTunnelSSH(false);
+      
+        profile.SetDirectory(remotevisitPath);
+
+ 
+		
 		Vector args = new Vector();
 		args.add("-auxsessionkey");
 		args.add(visitConnectionInfo.getAuxSessionKey());
+		
+        viewer.GetViewerState().GetHostProfileList().ClearMachines();
+        profile.SetActiveProfile(0);
+        viewer.GetViewerState().GetHostProfileList().AddMachines(profile);
+     
+
+        viewer.GetViewerState().GetHostProfileList().Notify();
+        System.out.println("HostProfileList = \n" + 
+            viewer.GetViewerState().GetHostProfileList().toString());
+
+		
+		
 		bServerOpen = getViewerMethods().OpenMDServer(ipAddress,args);
 		bDatabaseOpen = false;
 		databaseConnectionString = null;
