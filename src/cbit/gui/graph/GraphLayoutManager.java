@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
+import org.vcell.util.graphlayout.ContainedGraphLayouter;
+
 import com.genlogic.GraphLayout.GlgCube;
 import com.genlogic.GraphLayout.GlgGraphEdge;
 import com.genlogic.GraphLayout.GlgGraphLayout;
@@ -38,18 +40,18 @@ import edu.rpi.graphdrawing.Stabilizer;
  *  Last change: January 2011 by Oliver
  */
 
-public class GraphEmbeddingManager {
+public class GraphLayoutManager {
 
 	public static class OldLayouts {
 		
-		public static final String ANNEALER = "Annealer";
-		public static final String CIRCULARIZER = "Circularizer";
-		public static final String CYCLEIZER = "Cycleizer";
-		public static final String FORCEDIRECT = "ForceDirect";
-		public static final String LEVELLER = "Leveller";
-		public static final String RANDOMIZER = "Randomizer";
-		public static final String RELAXER = "Relaxer";
-		public static final String STABILIZER = "Stabilizer";		
+		public static final String ANNEALER = "Annealer (RPI)";
+		public static final String CIRCULARIZER = "Circularizer (RPI)";
+		public static final String CYCLEIZER = "Cycleizer (RPI)";
+		public static final String FORCEDIRECT = "ForceDirect (RPI)";
+		public static final String LEVELLER = "Leveller (RPI)";
+		public static final String RANDOMIZER = "Randomizer (RPI)";
+		public static final String RELAXER = "Relaxer (RPI)";
+		public static final String STABILIZER = "Stabilizer (RPI)";		
 		public static final String GLG = "GLG";
 		
 		public static final List<String> LAYOUTS_RPI = Arrays.asList(ANNEALER, CIRCULARIZER, CYCLEIZER,
@@ -59,17 +61,31 @@ public class GraphEmbeddingManager {
 	
 	protected final GraphView graphView;
 	
-	public GraphEmbeddingManager(GraphView graphView) {
+	public GraphLayoutManager(GraphView graphView) {
 		this.graphView = graphView;
 	}
 	
 	public void layout(String layoutName) throws Exception {
-		if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
+		if(ContainedGraphLayouter.LAYOUT_NAMES.contains(layoutName)) {
+			layoutContainedGraph(layoutName);
+		} else if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
 			layoutRPI(layoutName);
 		} else if(OldLayouts.GLG.equals(layoutName)) {
 			layoutGLG();
 		} else {
 			throw new Exception("Unsupported Layout " + layoutName);
+		}
+	}
+	
+	public void layoutContainedGraph(String layoutName) {
+		if(ContainedGraphLayouter.LAYOUT_NAME_RANDOM.equals(layoutName)) {
+			VCellGraphToContainedGraphMapper mapper = 
+				new VCellGraphToContainedGraphMapper(graphView.getGraphModel());
+			mapper.updateContainedGraphFromVCellGraph();
+			ContainedGraphLayouter layouter = new ContainedGraphLayouter.RandomLayouter();
+			layouter.layout(mapper.getContainedGraph());
+			mapper.updateVCellGraphFromContainedGraph();
+			graphView.repaint();
 		}
 	}
 	
@@ -86,7 +102,7 @@ public class GraphEmbeddingManager {
 			}
 			// initialize node location to current absolute position
 			if (newNode != null) {
-				newNode.XY(shape.spaceManager.getAbsLoc().x, shape.spaceManager.getAbsLoc().y);
+				newNode.XY(shape.getSpaceManager().getAbsLoc().x, shape.getSpaceManager().getAbsLoc().y);
 				nodeShapeMap.put(newNode.label(), shape);
 			}
 		}
@@ -122,14 +138,14 @@ public class GraphEmbeddingManager {
 		bb.setArea(0, 0, graphView.getWidth(), graphView.getHeight());
 		bb.globals.D(20);
 
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.ANNEALER, new Annealer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.LEVELLER, new Leveller(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RELAXER, new Relaxer(bb));
-		bb.addEmbedder(GraphEmbeddingManager.OldLayouts.STABILIZER, new Stabilizer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.ANNEALER, new Annealer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.LEVELLER, new Leveller(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.RELAXER, new Relaxer(bb));
+		bb.addEmbedder(GraphLayoutManager.OldLayouts.STABILIZER, new Stabilizer(bb));
 
 		bb.setEmbedding(layoutName);
 		@SuppressWarnings("unchecked")
@@ -168,12 +184,12 @@ public class GraphEmbeddingManager {
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node node = nodeList.get(i);
 			Shape shape = nodeShapeMap.get(node.label());
-			Point parentLoc = shape.getParent().spaceManager.getAbsLoc();
+			Point parentLoc = shape.getParent().getSpaceManager().getAbsLoc();
 			shape.getSpaceManager().setRelPos(
 			(int) (scaleX * (node.x() - lowX)) + offsetX + parentLoc.x,
 			(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y));
 			System.out.println("Shape " + shape.getLabel() + " @ "
-					+ shape.spaceManager.getAbsLoc());
+					+ shape.getSpaceManager().getAbsLoc());
 		}
 		graphView.repaint();
 	}

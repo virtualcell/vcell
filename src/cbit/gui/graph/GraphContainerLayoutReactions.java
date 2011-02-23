@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 
 import cbit.vcell.graph.ContainerContainerShape;
@@ -14,6 +15,8 @@ import cbit.vcell.graph.SpeciesContextShape;
 public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	
 	public static final Dimension REACTION_CONTAINER_MIN_SIZE = new Dimension(100, 200);
+	public static final int HEIGHT_PADDING = 14;
+	public static final int WIDTH_PADDING = 14;
 	
 	public Dimension getPreferedSize(Shape shape, Graphics2D g) {
 		if(shape instanceof ContainerContainerShape) {
@@ -43,8 +46,8 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 								child.getSpaceManager().getSize().height);
 				}
 			}
-			preferredSize.width = preferredSize.width + preferredSize.width/10;
-			preferredSize.height = preferredSize.height + preferredSize.height/10;
+			preferredSize.width = preferredSize.width + WIDTH_PADDING;
+			preferredSize.height = preferredSize.height + HEIGHT_PADDING;
 			if(preferredSize.width < REACTION_CONTAINER_MIN_SIZE.width) {
 				preferredSize.width = REACTION_CONTAINER_MIN_SIZE.width;
 			}
@@ -210,4 +213,14 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 		}
 	}
 
+	public Rectangle getBoundaryForAutomaticLayout(Shape shape) {
+		if(shape instanceof ReactionContainerShape) {
+			Point absLoc = shape.getAbsPos();
+			Dimension size = shape.getSize();
+			return new Rectangle(absLoc.x + WIDTH_PADDING, absLoc.y + HEIGHT_PADDING, 
+					size.width - 2*WIDTH_PADDING, size.height - 2*HEIGHT_PADDING);			
+		}
+		return new Rectangle(shape.getAbsPos(), shape.getSize());
+	}
+	
 }

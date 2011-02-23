@@ -55,6 +55,16 @@ public class ShapeSpaceManager {
 		}
 	}
 
+	public final void setAbsLoc(int x, int y) {
+		Owner parent = owner.getParent();
+		if (parent != null) {
+			Point parentAbsLoc = parent.getSpaceManager().getAbsLoc();
+			setRelPos(x - parentAbsLoc.x, y - parentAbsLoc.y);
+		} else {
+			setRelPos(x, y);
+		}
+	}
+
 	public void setSize(Dimension size) { this.size = size; }
 	public void setSize(int width, int height) { size.width = width; size.height = height; }
 	public Dimension getSize() { return size; }

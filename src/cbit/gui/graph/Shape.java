@@ -55,6 +55,23 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 
 	public ShapeSpaceManager getSpaceManager() { return spaceManager; }
 	
+	public void setRelPos(Point relPos) { spaceManager.setRelPos(relPos); }
+	public void setRelPos(int x, int y) { spaceManager.setRelPos(x, y); }
+	public Point getRelPos() { return spaceManager.getRelPos(); }
+	public int getRelX() { return spaceManager.getRelX(); }
+	public int getRelY() { return spaceManager.getRelY(); }
+	public void setAbsPos(Point absPos) { spaceManager.setAbsLoc(absPos); }
+	public void setAbsPos(int x, int y) { spaceManager.setAbsLoc(x, y); }
+	public Point getAbsPos() { return spaceManager.getAbsLoc(); }
+	public int getAbsX() { return spaceManager.getAbsLoc().x; }
+	public int getAbsY() { return spaceManager.getAbsLoc().y; }
+	public void setSize(Dimension size) { spaceManager.setSize(size); }
+	public void setSize(int width, int height) { spaceManager.setSize(width, height); }
+	public Dimension getSize() { return spaceManager.getSize(); }
+	public int getWidth() { return spaceManager.getSize().width; }
+	public int getHeight() { return spaceManager.getSize().height; }
+	
+	
 	public void setLabelSize(int width, int height) { labelSize.width = width; labelSize.height = height; }
 	public Dimension getLabelSize() { return labelSize; }
 	public Point getLabelPos() { return labelPos; }

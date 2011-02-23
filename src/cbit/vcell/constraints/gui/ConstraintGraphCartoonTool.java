@@ -30,7 +30,7 @@ import com.genlogic.GraphLayout.GlgPoint;
 import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphEmbeddingManager;
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
@@ -222,14 +222,14 @@ public void layout(String layoutName) throws Exception {
 	bb.setArea(0,0,getGraphPane().getWidth(),getGraphPane().getHeight());
 	bb.globals.D(20);
 	
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.ANNEALER, new Annealer(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.LEVELLER, new Leveller(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.RELAXER, new Relaxer(bb));
-	bb.addEmbedder(GraphEmbeddingManager.OldLayouts.STABILIZER, new Stabilizer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.ANNEALER, new Annealer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.CIRCULARIZER, new Circularizer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.CYCLEIZER, new Cycleizer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.FORCEDIRECT, new ForceDirect(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.LEVELLER, new Leveller(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.RANDOMIZER, new Randomizer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.RELAXER, new Relaxer(bb));
+	bb.addEmbedder(GraphLayoutManager.OldLayouts.STABILIZER, new Stabilizer(bb));
 
 	bb.setEmbedding(layoutName);
 

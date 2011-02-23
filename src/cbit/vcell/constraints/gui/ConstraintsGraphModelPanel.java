@@ -3,7 +3,7 @@ package cbit.vcell.constraints.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
-import cbit.gui.graph.GraphEmbeddingManager;
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 
@@ -149,7 +149,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RANDOMIZER);
+		getConstraintsGraphModelTool1().layout(GraphLayoutManager.OldLayouts.RANDOMIZER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -186,7 +186,7 @@ private void connEtoM12(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RELAXER);
+		getConstraintsGraphModelTool1().layout(GraphLayoutManager.OldLayouts.RELAXER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -205,7 +205,7 @@ private void connEtoM13(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.LEVELLER);
+		getConstraintsGraphModelTool1().layout(GraphLayoutManager.OldLayouts.LEVELLER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -260,7 +260,7 @@ private void connEtoM2(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.ANNEALER);
+		getConstraintsGraphModelTool1().layout(GraphLayoutManager.OldLayouts.ANNEALER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -339,7 +339,7 @@ private void connEtoM7(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getConstraintsGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.CIRCULARIZER);
+		getConstraintsGraphModelTool1().layout(GraphLayoutManager.OldLayouts.CIRCULARIZER);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
