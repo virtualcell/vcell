@@ -7,6 +7,7 @@ package cbit.gui.graph;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 public interface GraphContainerLayout {
 
@@ -15,5 +16,7 @@ public interface GraphContainerLayout {
 	public Dimension getPreferedSize(Shape shape, Graphics2D g);
 	
 	public void refreshLayoutChildren(Shape shape);
+	
+	public Rectangle getBoundaryForAutomaticLayout(Shape shape);
 	
 }

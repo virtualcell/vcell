@@ -25,6 +25,7 @@ import javax.swing.JViewport;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
+import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.SimpleTransferable;
@@ -32,7 +33,7 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphEmbeddingManager;
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
@@ -261,8 +262,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 
 	public void layout(String layoutName) throws Exception {
-		if (getReactionCartoon().getStructureSuite().getStructures().size() != 1) {
-			if (GraphEmbeddingManager.OldLayouts.RANDOMIZER.equals(layoutName)) {
+		System.out.println(layoutName);
+		if (!ContainedGraphLayouter.LAYOUT_NAMES.contains(layoutName) &&
+				getReactionCartoon().getStructureSuite().getStructures().size() != 1) {
+			if (GraphLayoutManager.OldLayouts.RANDOMIZER.equals(layoutName)) {
 				getReactionCartoon().setRandomLayout(true);
 				getGraphPane().repaint();
 			} else {
@@ -272,8 +275,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			saveDiagram();
 			return;
 		}
-		// for non-membranes, use RPI's layout stuff
-		graphEmbeddingManager.layoutRPI(layoutName);
+		graphEmbeddingManager.layout(layoutName);
 		saveDiagram();
 	}
 

@@ -136,7 +136,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RANDOMIZER);
+			getSimpleGraphModelTool1().layout(GraphLayoutManager.OldLayouts.RANDOMIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -171,7 +171,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.RELAXER);
+			getSimpleGraphModelTool1().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -189,7 +189,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.LEVELLER);
+			getSimpleGraphModelTool1().layout(GraphLayoutManager.OldLayouts.LEVELLER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -241,7 +241,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.ANNEALER);
+			getSimpleGraphModelTool1().layout(GraphLayoutManager.OldLayouts.ANNEALER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -294,7 +294,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.OldLayouts.CIRCULARIZER);
+			getSimpleGraphModelTool1().layout(GraphLayoutManager.OldLayouts.CIRCULARIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

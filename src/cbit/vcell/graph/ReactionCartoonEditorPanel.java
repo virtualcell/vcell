@@ -30,10 +30,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.CartoonTool.Mode;
-import cbit.gui.graph.GraphEmbeddingManager;
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphPane;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.structures.StructureSuite;
@@ -93,15 +94,15 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			if (getModeButtons().contains(source))
 				getReactionCartoonTool().setModeString(event.getActionCommand());
 			else if (source == getRandomLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.RANDOMIZER);
+				getReactionCartoonTool().layout(ContainedGraphLayouter.LAYOUT_NAME_RANDOM);
 			else if (source == getAnnealLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.ANNEALER);
+				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.ANNEALER);
 			else if (source == getCircleLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.CIRCULARIZER);
+				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.CIRCULARIZER);
 			else if (source == getRelaxerLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.RELAXER);
+				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
-				getReactionCartoonTool().layout(GraphEmbeddingManager.OldLayouts.LEVELLER);
+				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
 			else if (source == getZoomInButton())
 				getReactionCartoon().getResizeManager().zoomIn();
 			else if (source == getZoomOutButton())
