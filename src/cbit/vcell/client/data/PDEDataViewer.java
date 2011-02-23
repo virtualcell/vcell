@@ -1762,7 +1762,7 @@ private void openInVisit() {
 		else {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle("Please locate the VisIt executable");
-			chooser.setVisible(true);
+			chooser.showOpenDialog(this);
 			if (!chooser.getSelectedFile().getName().toLowerCase().startsWith("visit")) {
 				DialogUtils.showErrorDialog(this, "Expecting filename to begin with 'visit'");
 				return;
