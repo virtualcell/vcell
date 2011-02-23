@@ -336,6 +336,6 @@ void accessPermissions(Component requester, VCDocument vcDocument);
 
 boolean isDifferentFromBlank(int documentType, VCDocument vcDocument);
 
-public VisitSession createNewVisitSession() throws DataAccessException;
+public VisitSession createNewVisitSession(String visitBinPath) throws DataAccessException;
 
 }

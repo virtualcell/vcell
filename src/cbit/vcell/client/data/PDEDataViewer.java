@@ -157,6 +157,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
 	private String libDir;
+	private String visitBinDir;
 //	public VisitProcess visitProcess;
 	
 	
@@ -1753,12 +1754,29 @@ private void openInVisit() {
 
 		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
 		
-		final VisitSession visitSession = getDataViewerManager().getRequestManager().createNewVisitSession();
+		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
+		
+		if ((new File("/home/VCELL/eboyce/visit_build_2.2RC/src/bin/")).exists()) {
+			visitBinDir="/home/VCELL/eboyce/visit_build_2.2RC/src/bin/";
+		}
+		else {
+			JFileChooser chooser = new JFileChooser();
+			chooser.setDialogTitle("Please locate the VisIt executable");
+			chooser.setVisible(true);
+			if (!chooser.getSelectedFile().getName().toLowerCase().startsWith("visit")) {
+				DialogUtils.showErrorDialog(this, "Expecting filename to begin with 'visit'");
+				return;
+			}
+			visitBinDir=chooser.getSelectedFile().getParentFile().getAbsolutePath();
+		}
+		
+		
+		final VisitSession visitSession = getDataViewerManager().getRequestManager().createNewVisitSession(visitBinDir);
 		
 		visitSession.openDatabase(getSimulation().getVersion().getOwner(), simlogname);
 		
-		//String varName = getPdeDataContext().getVariableName();
-		String varName = "s0";
+		String varName = getPdeDataContext().getVariableName();
+		//String varName = "s0";
 		visitSession.addAndDrawPseudocolorPlot(varName);
 
 		VisitControlPanel visitControlPanel= new VisitControlPanel();

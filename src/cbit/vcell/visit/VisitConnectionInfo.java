@@ -13,20 +13,22 @@ public class VisitConnectionInfo implements Serializable {
 	private String ipAddress;
 	private User user;
 	private Date initTime;
+	private String dataPath;
 	
 	public VisitConnectionInfo(String auxSessionKey, String ipAddress,
-			User user, Date initTime) {
+			User user, Date initTime, String dataPath) {
 		super();
 		this.auxSessionKey = auxSessionKey;
 		this.ipAddress = ipAddress;
 		this.user = user;
 		this.initTime = initTime;
+		this.dataPath = dataPath;
 	}
 	
 	// only use on server ... to be removed.
 	@Deprecated
 	public static VisitConnectionInfo createHardCodedVisitConnectionInfo(User user){
-		return new VisitConnectionInfo("10",PropertyLoader.getRequiredProperty("vcell.visit.mdserverhost"),user,new Date());
+		return new VisitConnectionInfo("10",PropertyLoader.getRequiredProperty("vcell.visit.mdserverhost"),user,new Date(),PropertyLoader.getRequiredProperty("vcell.visit.datalocation"));
 	}
 	
 	public String getAuxSessionKey() {
@@ -43,7 +45,11 @@ public class VisitConnectionInfo implements Serializable {
 		return initTime;
 	}	
 	
+	public String getDataPath(){
+		return dataPath;
+	}
+	
 	public String getDatabaseOpenPath(User user,String simLogName){
-		return PropertyLoader.getProperty("vcell.visit.datalocation", "")+File.separator+user.getName()+File.separator+simLogName;
+		return getDataPath()+File.separator+user.getName()+File.separator+simLogName;
 	}
 }
