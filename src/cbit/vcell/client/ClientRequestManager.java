@@ -3143,9 +3143,9 @@ public void accessPermissions(Component requester, VCDocument vcDoc) {
 }
 
 
-public VisitSession createNewVisitSession() throws DataAccessException {
+public VisitSession createNewVisitSession(String visitBinPath) throws DataAccessException {
 	VisitConnectionInfo visitConnInfo = getClientServerManager().createNewVisitConnection();
-	final VisitSession visitSession = new VisitSession(this,PropertyLoader.getRequiredProperty("vcell.visit.installexe"),visitConnInfo);
+	final VisitSession visitSession = new VisitSession(this,visitBinPath,visitConnInfo);
 	visitSession.initViewerProxyOpenWindows();
 	visitSession.openMDServer(visitSession.getVisitConnectionInfo().getIPAddress());
 	

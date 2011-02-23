@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.ClientRequestManager;
@@ -83,8 +84,8 @@ public class VisitSession {
 		
 		 // Change these for your remote system.
         String host = ipAddress;;
-        String user = new String("eboyce");
-        String remotevisitPath = new String("/home/VCELL/eboyce/visit_build_2.2RC/src");
+        String user = new String("visit");
+        String remotevisitPath = PropertyLoader.getRequiredProperty("vcell.visit.servervisitexecutable");
  
         // Create a new host profile object and set it up for serial
         MachineProfile profile = new MachineProfile();
