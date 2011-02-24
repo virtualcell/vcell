@@ -30,8 +30,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 	static final Color everyOtherRowColor = new Color(0xe8edff);
-	static Font regularFont = null;
-	static Font uneditableFont = null;
 	private boolean bEnableUneditableForeground = true;
 	/**
 	 * DefaultTableCellRendererEnhanced constructor comment.
@@ -39,8 +37,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public DefaultScrollTableCellRenderer() {
 		super();
 		setOpaque(true);
-		regularFont = getFont();
-		uneditableFont = regularFont/*.deriveFont(Font.BOLD)*/;
 	}
 	
 	public void disableUneditableForeground() {
@@ -92,7 +88,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
 				setForeground(uneditableForeground);
-				setFont(uneditableFont);
 			}
 		}
 		if (value instanceof Double) {

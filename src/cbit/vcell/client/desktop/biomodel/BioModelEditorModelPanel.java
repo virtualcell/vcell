@@ -559,6 +559,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (bFloating) {
 			diagramViewInternalFrame = new JInternalFrameEnhanced("Reaction Diagram View");
+			tabbedPane.putClientProperty("__index_to_remove__", ModelPanelTabID.reaction_diagram.ordinal());
 			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), new JPanel());
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
@@ -583,7 +584,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			BeanUtils.centerOnComponent(diagramViewInternalFrame, this);
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
 		} else {
-			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);			
+			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);
+			tabbedPane.putClientProperty("__index_to_remove__", ModelPanelTabID.reaction_diagram.ordinal());
 			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent());
 			tabbedPane.setSelectedIndex(ModelPanelTabID.reaction_diagram.ordinal());
 		}

@@ -20,7 +20,7 @@ public class VCDocumentDbCellRenderer extends VCellBasicCellRenderer {
 public VCDocumentDbCellRenderer(User argSessionUser) {
 	super();
 	this.sessionUser = argSessionUser;
-	setPreferredSize(new Dimension(200, 30));
+	setPreferredSize(new Dimension(200, 20));
 }
 
 public VCDocumentDbCellRenderer() {
