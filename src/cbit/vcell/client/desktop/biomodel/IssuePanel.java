@@ -1,6 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -9,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -169,38 +172,36 @@ public class IssuePanel extends DocumentEditorSubPanel {
 		issueTable.getColumnModel().getColumn(IssueTableModel.COLUMN_DESCRIPTION).setCellRenderer(tableRenderer);
 	}
 	
+	private Icon getScaledIcon(Icon tempIcon) {
+		Image image = null;
+		if (tempIcon instanceof ImageIcon) {
+			image = ((ImageIcon)tempIcon).getImage();
+		} else {
+			image = new BufferedImage(tempIcon.getIconWidth(), tempIcon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+			final Graphics imageGraphics = image.getGraphics();
+			tempIcon.paintIcon(this, imageGraphics, 0, 0);
+		}
+		image = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);  
+		return new ImageIcon(image);
+	}
+	
 	private Icon getErrorIcon() {
 		if (errorIcon == null) {
-			errorIcon = UIManager.getIcon("OptionPane.errorIcon");
-			if (errorIcon instanceof ImageIcon) {
-				Image image = ((ImageIcon)errorIcon).getImage();
-				image = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);  
-				errorIcon = new ImageIcon(image);
-			}
+			errorIcon = getScaledIcon(UIManager.getIcon("OptionPane.errorIcon"));
 		}
 		return errorIcon;
 	}
 
 	private Icon getWarningIcon() {
 		if (warningIcon == null) {
-			warningIcon = UIManager.getIcon("OptionPane.warningIcon");
-			if (warningIcon instanceof ImageIcon) {
-				Image image = ((ImageIcon)warningIcon).getImage();
-				image = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);  
-				warningIcon = new ImageIcon(image);
-			}
+			warningIcon = getScaledIcon(UIManager.getIcon("OptionPane.warningIcon"));
 		}
 		return warningIcon;
 	}
 	
 	private Icon getInfoIcon() {
 		if (infoIcon == null) {
-			infoIcon = UIManager.getIcon("OptionPane.informationIcon");
-			if (infoIcon instanceof ImageIcon) {
-				Image image = ((ImageIcon)infoIcon).getImage();
-				image = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);  
-				infoIcon = new ImageIcon(image);
-			}
+			infoIcon = getScaledIcon(UIManager.getIcon("OptionPane.informationIcon"));
 		}
 		return infoIcon;
 	}
