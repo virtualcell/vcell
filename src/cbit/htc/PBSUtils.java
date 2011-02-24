@@ -265,7 +265,7 @@ public static String submitJob(String computeResource, String jobName, String su
 		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
 		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
 		pw.println("#PBS -N " + jobName);
-		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB));
+		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb");
 		
 		while (true) {
 			String line = br.readLine();
