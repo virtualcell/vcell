@@ -1,13 +1,10 @@
 package cbit.vcell.export.server;
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
@@ -73,29 +70,27 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	boolean bOverLay = false;
-	if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
-		bOverLay = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getOverlayMode();
-	}
-	
 	int sliceIndicator = (exportSpecs.getGeometrySpecs().getModeID() == ExportConstants.GEOMETRY_FULL?FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
 	int imageScale = 0;
-	boolean bHideMmebraneOutline = false;
 	int meshMode = 0;
 	int mirroringType = 0;
 	int membraneScale = 0;
 	double duration = 1.0;
 	DisplayPreferences[] displayPreferences = null;
+	int volVarMembrOutlineThickness = 1;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
+		bOverLay = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getOverlayMode();
 		imageScale = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling();
-		bHideMmebraneOutline = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline();
+		volVarMembrOutlineThickness = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getVolVarMembrOutlineThickness();
 		meshMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode();
 		mirroringType = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType();
 		membraneScale = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling();
 		displayPreferences = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getDisplayPreferences();
 		duration = (double)((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getDuration()/1000.0;//convert from milliseconds to seconds
 	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+		bOverLay = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getOverlayMode();
 		imageScale = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling();
-		bHideMmebraneOutline = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline();
+		volVarMembrOutlineThickness = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getVolVarMembrOutlineThickness();
 		meshMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode();
 		mirroringType = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType();
 		membraneScale = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling();
@@ -115,19 +110,18 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	int startSlice = (sliceIndicator==FULL_MODE_ALL_SLICES?0:sliceIndicator);
-	int sliceCount = getSliceCount(sliceIndicator,exportSpecs.getGeometrySpecs().getAxis(), dataServerImpl.getMesh(user, vcdID));
+	int sliceCount = FormatSpecificSpecs.getSliceCount(sliceIndicator==FULL_MODE_ALL_SLICES,exportSpecs.getGeometrySpecs().getAxis(), dataServerImpl.getMesh(user, vcdID));
 	double progressIncr = 1.0/(sliceCount*(endTimeIndex - beginTimeIndex + 1)*varNames.length);
 	double progress = 0.0;
 	MovieHolder movieHolder = new MovieHolder();
+	Dimension imageDimension = FormatSpecificSpecs.getImageDimension(meshMode,imageScale,dataServerImpl.getMesh(user, vcdID),exportSpecs.getGeometrySpecs().getAxis());
+	int originalWidth = (int)imageDimension.getWidth();
+	int originalHeight = (int)imageDimension.getHeight();
 for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNumber++) {
 
 	PDEOffscreenRenderer offScreenRenderer = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
 	offScreenRenderer.setNormalAxis(exportSpecs.getGeometrySpecs().getAxis());
 	offScreenRenderer.setSlice(sliceNumber);
-	offScreenRenderer.setHideMembraneOutline(bHideMmebraneOutline);
-	Dimension imageDimension = offScreenRenderer.getImageDimension(meshMode,imageScale);
-	int originalWidth = (int)imageDimension.getWidth();
-	int originalHeight = (int)imageDimension.getHeight();
 	
 	int varNameIndex0 = 0;
 	int timeIndex0 = beginTimeIndex;
@@ -146,7 +140,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		MirrorInfo currentSliceTimeMirrorInfo =
 			renderAndMirrorSliceTimePixels(offScreenRenderer, varNames[varNameIndex0], allTimes[timeIndex0],
 				displayPreferences[varNameIndex0],imageScale, membraneScale,
-				meshMode, originalWidth, originalHeight, mirroringType);
+				meshMode, volVarMembrOutlineThickness,originalWidth, originalHeight, mirroringType);
 		if(bOverLay){
 			if(varNames.length == 1){
 				overLayPixels = currentSliceTimeMirrorInfo.getPixels();
@@ -197,31 +191,6 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 	}
 	return exportOutputV.toArray(new ExportOutput[0]);
 }
-
-	private static int getSliceCount(int sliceIndicator,int normalAxis,CartesianMesh mesh){
-		if (sliceIndicator!=FULL_MODE_ALL_SLICES){
-			return 1;
-		}
-		switch (normalAxis){
-			case Coordinate.X_AXIS:{
-				// YZ plane
-				return mesh.getSizeX();
-			}
-			case Coordinate.Y_AXIS:{
-				// ZX plane
-				return mesh.getSizeY();
-			}
-			case Coordinate.Z_AXIS:{
-				// XY plane
-				return mesh.getSizeZ();
-
-			}
-			default:{
-				throw new IllegalArgumentException("unexpected normal axis "+normalAxis);
-			}
-		}
-	}
-
 	private static class MirrorInfo {
 		private int[] pixels;
 		private int mirrorHeight;
@@ -243,22 +212,15 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 	}
 private static MirrorInfo renderAndMirrorSliceTimePixels(
 		PDEOffscreenRenderer offScreenRenderer,String varName,double timePoint,DisplayPreferences displayPreference,
-		int imageScale,int membraneScaling,int meshMode,
+		int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness,
 		int originalWidth,int originalHeight,int mirroringType) throws Exception{
 	offScreenRenderer.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
-	int[] pixels = offScreenRenderer.getPixelsRGB(imageScale,membraneScaling,meshMode);
+	int[] pixels = offScreenRenderer.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
 	pixels = ExportUtils.extendMirrorPixels(pixels,originalWidth,originalHeight, mirroringType);
 	
-	int mirrorWidth = originalWidth;
-	int mirrorHeight = originalHeight;
-	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)){
-		mirrorWidth = 2 * originalWidth;
-	}
-	if ((mirroringType == MIRROR_TOP) || (mirroringType == MIRROR_BOTTOM)){
-		mirrorHeight = 2 * originalHeight;
-	}
+	Dimension mirrorDim = FormatSpecificSpecs.getMirrorDimension(mirroringType, originalWidth, originalHeight);
 
-	return new MirrorInfo(pixels, mirrorHeight, mirrorWidth);
+	return new MirrorInfo(pixels, mirrorDim.height, mirrorDim.width);
 
 }
 private static String create4DigitNumber(int number){
@@ -317,8 +279,7 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 	}
 	FormatSpecificSpecs formatSpecificSpecs = exportSpecs.getFormatSpecificSpecs();
 	if(exportSpecs.getFormat() == ExportConstants.FORMAT_GIF && 
-		formatSpecificSpecs instanceof ImageSpecs &&
-		((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.GIF){
+		formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.GIF*/){
 		ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
 		GIFOutputStream gifOut = new GIFOutputStream(bytesOut);
 		GIFImage gifImage = new GIFUtils.GIFImage(pixels,mirrorWidth);
@@ -327,14 +288,12 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		byte[] data = bytesOut.toByteArray();
 		exportOutputV.add(new ExportOutput(true, ".gif", vcdID.getID(), dataID, data));
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_JPEG && 
-			formatSpecificSpecs instanceof ImageSpecs &&
-			((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.JPEG){
+			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.JPEG*/){
 		VideoMediaSample jpegEncodedVideoMediaSample = 
 			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, 1, isGrayScale,FormatSpecificSpecs.CODEC_JPEG, ((ImageSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
 		exportOutputV.add(new ExportOutput(true, ".jpg", vcdID.getID(), dataID, jpegEncodedVideoMediaSample.getDataBytes()));
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_ANIMATED_GIF && 
-			formatSpecificSpecs instanceof ImageSpecs &&
-			((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.ANIMATED_GIF){
+			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.ANIMATED_GIF*/){
 		int imageDuration = (int)Math.ceil((movieHolder.getSampleDurationSeconds()*100));//1/100's of a second
 		if (bEndTime && (((ImageSpecs)formatSpecificSpecs).getLoopingMode() != 0 || bSingleTimePoint)) {
 			imageDuration = 0;

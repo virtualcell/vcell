@@ -44,7 +44,6 @@ public class PDEOffscreenRenderer {
 	private DisplayAdapterService displayAdapterService = new DisplayAdapterService();
 	private int slice = 0;
 	private int normalAxis = 0;
-	private boolean bHideMembraneOutline = true;
 	private BitSet domainValid;
 
 
@@ -88,47 +87,6 @@ private int[] getCurveColors(Hashtable<SampledCurve, int[]> curvesAndMembraneInd
 private cbit.image.DisplayAdapterService getDisplayAdapterService() {
 	return displayAdapterService;
 }
-public Dimension getImageDimension(int meshMode,int imageScale) {
-	ImagePaneModel imagePaneModel = new ImagePaneModel();
-	imagePaneModel.setMode(meshMode);
-	imagePaneModel.setZoom(imageScale);
-	Dimension dim = getImageDimensionUnscaled();
-	dim.width = imagePaneModel.getScaledLength(dim.width);
-	dim.height = imagePaneModel.getScaledLength(dim.height);
-	return dim;
-}
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 12:03:46 AM)
- * @return java.awt.Dimension
- */
-private Dimension getImageDimensionUnscaled() {
-	CartesianMesh mesh = getServerPDEDataContext().getCartesianMesh();
-	switch (getNormalAxis()){
-		case Coordinate.X_AXIS:{
-			//
-			// YZ plane
-			//
-			return new Dimension(mesh.getSizeY(),mesh.getSizeZ());
-		}
-		case Coordinate.Y_AXIS:{
-			//
-			// ZX plane
-			//
-			return new Dimension(mesh.getSizeZ(),mesh.getSizeX());
-		}
-		case Coordinate.Z_AXIS:{
-			//
-			// XY plane
-			//
-			return new Dimension(mesh.getSizeX(),mesh.getSizeY());
-
-		}
-		default:{
-			throw new IllegalArgumentException("unexpected normal axis "+getNormalAxis());
-		}
-	}
-}
 
 /**
  * Insert the method's description here.
@@ -140,8 +98,9 @@ private int getNormalAxis() {
 }
 
 private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int imageScale,boolean bBackground){
-	int width = (int)getImageDimensionUnscaled().getWidth();
-	int height = (int)getImageDimensionUnscaled().getHeight();
+	Dimension dim = FormatSpecificSpecs.getMeshDimensionUnscaled(getNormalAxis(),getServerPDEDataContext().getCartesianMesh());
+	int width = (int)dim.getWidth();
+	int height = (int)dim.getHeight();
 	double[] volumeData = new double[width*height];
 	if(!bBackground){
 		//if(bNeedsDefaultScaling){setDefaultScaling();}
@@ -180,7 +139,7 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
  * Creation date: (3/1/2001 11:54:44 PM)
  * @return int[]
  */
-public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
+public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarMembrOutlineThickness) {
 	if (getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME)) {
 		CartesianMesh mesh = getServerPDEDataContext().getCartesianMesh();
 		MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
@@ -188,7 +147,7 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 		//
 		// apply curve renderer
 		//
-		if (!bHideMembraneOutline){
+		if (volVarMembrOutlineThickness > 0){
 			cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
 				new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 			curveRenderer.setNormalAxis(getNormalAxis());
@@ -204,7 +163,7 @@ public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode) {
 				for (int i=0;curves!=null && i<curves.length;i++){
 					curveRenderer.addCurve(curves[i]);
 					curveRenderer.renderPropertySegmentColors(curves[i],null/*getCurveColors(curvesAndMembraneIndexes,curves[i],meshDisplayAdapter)*/);
-					curveRenderer.renderPropertyLineWidthMultiplier(curves[i],membrScale);
+					curveRenderer.renderPropertyLineWidthMultiplier(curves[i],volVarMembrOutlineThickness);
 				}
 				Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 				curveRenderer.setAntialias(false);//must be false or could get more than 256 colors
@@ -273,15 +232,6 @@ private int getSlice() {
 	return slice;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (7/17/01 11:16:37 AM)
- * @return boolean
- * @param hideMembraneOutline boolean
- */
-public void setHideMembraneOutline(boolean hideMembraneOutline) {
-	bHideMembraneOutline = hideMembraneOutline;
-}
 /**
  * Insert the method's description here.
  * Creation date: (3/2/2001 1:47:07 AM)

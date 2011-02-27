@@ -14,6 +14,7 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_CSV 		= new ExtensionFilter(".csv",	"CSV Files (*.csv)");
 	public static final FileFilter FILE_FILTER_MOV 		= new ExtensionFilter(".mov",	"MOV Files (*.mov)");
 	public static final FileFilter FILE_FILTER_GIF 		= new ExtensionFilter(".gif",	"GIF Files (*.gif)");
+	public static final FileFilter FILE_FILTER_JPEG 		= new ExtensionFilter(".jpeg",	"JPEG Files (*.jpeg)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
 	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap"}, "XML Files (.xml .vcml .sbml .cellml .vfrap)");
