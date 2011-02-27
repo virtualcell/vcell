@@ -17,12 +17,12 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private int mirroringType;
 	private double duration;
 	private int loopingMode;
-	private boolean bHideMembraneOutline;
+	private int volVarMembrOutlineThickness;
 	private int imageScaling;
 	private int membraneScaling;
 	private int meshMode;
-	private int viewZoom;
 	private float compressionQuality;
+	private boolean bOverlay;
 
 /**
  * Insert the method's description here.
@@ -36,28 +36,28 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
  */
 public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
 		int compression, int mirroringType,
-		double duration, int loopingMode, boolean hideMembraneOutline,
-		int imageScaling,int membraneScaling,int meshMode,float compressionQuality) {
+		double duration, int loopingMode, int volVarMembrOutlineThickness,
+		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay) {
 	this.displayPreferences = displayPreferences;
 	this.format = format;
 	this.compression = compression;
 	this.mirroringType = mirroringType;
 	this.duration = duration;
 	this.loopingMode = loopingMode;
-	this.bHideMembraneOutline = hideMembraneOutline;
+	this.volVarMembrOutlineThickness = volVarMembrOutlineThickness;
 	this.imageScaling = imageScaling;
 	this.membraneScaling = membraneScaling;
 	this.meshMode = meshMode;
 	this.compressionQuality = compressionQuality;
+	this.bOverlay = bOverlay;
+}
+public boolean getOverlayMode(){
+	return bOverlay;
 }
 public float getcompressionQuality(){
 	return compressionQuality;
 }
 
-
-public void setViewZoom(int viewZoom){
-	this.viewZoom = viewZoom;
-}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 1:11:26 AM)
@@ -73,7 +73,7 @@ public boolean equals(java.lang.Object object) {
 			mirroringType == imageSpecs.getMirroringType() &&
 			duration == imageSpecs.getDuration() &&
 			loopingMode == imageSpecs.getLoopingMode() &&
-			bHideMembraneOutline == imageSpecs.isHideMembraneOutline() &&
+			volVarMembrOutlineThickness == imageSpecs.volVarMembrOutlineThickness &&
 			displayPreferences.length == imageSpecs.getDisplayPreferences().length &&
 			imageScaling == imageSpecs.imageScaling &&
 			membraneScaling == imageSpecs.membraneScaling &&
@@ -138,8 +138,8 @@ public int getMirroringType() {
  * Creation date: (7/17/01 9:57:49 AM)
  * @return boolean
  */
-public boolean isHideMembraneOutline() {
-	return bHideMembraneOutline;
+public int getVolVarMembrOutlineThickness() {
+	return volVarMembrOutlineThickness;
 }
 /**
  * Insert the method's description here.
@@ -150,12 +150,13 @@ public java.lang.String toString() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("ImageSpecs [");
 	buf.append("format: " + format + ", ");
+	buf.append("imgScaling: " + imageScaling + ", ");
 	buf.append("compression: " + compression + ", ");
 	buf.append("compressionQual: " + compressionQuality + ", ");
 	buf.append("mirroringType: " + mirroringType + ", ");
 	buf.append("duration: " + duration + ", ");
 	buf.append("loopingMode: " + loopingMode + ", ");
-	buf.append("hideMembraneOutline: " + bHideMembraneOutline + ", ");
+	buf.append("volVarMembrOutlineThickness: " + volVarMembrOutlineThickness + ", ");
 	buf.append("displayPreferences: ");
 	if (displayPreferences != null) {
 		buf.append("{");
@@ -171,7 +172,7 @@ public java.lang.String toString() {
 	return buf.toString();
 }
 public int getImageScaling() {
-	return (getMeshMode() == ImagePaneModel.MESH_MODE?viewZoom:imageScaling);
+	return imageScaling;
 }
 public int getMembraneScaling() {
 	return membraneScaling;

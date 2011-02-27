@@ -247,11 +247,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			case FORMAT_JPEG:
 			case FORMAT_ANIMATED_GIF:
 				exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport);
-				boolean bJPEG = false;
-				if(exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
-					bJPEG = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getCompressionType() == FormatSpecificSpecs.CODEC_JPEG;
-				}
-				boolean bOverrideZip = exportOutputs.length == 1 && bJPEG;
+				boolean bOverrideZip = exportOutputs.length == 1;
 				if(bSaveAsZip && !bOverrideZip){
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 				}else{

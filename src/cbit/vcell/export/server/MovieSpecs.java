@@ -16,11 +16,10 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private DisplayPreferences[] displayPreferences;
 	private int encodingFormat;
 	private int mirroringType;
-	private boolean bHideMembraneOutline;
+	private int volVarMembrOutlineThickness;
 	private int imageScaling;
 	private int membraneScaling;
 	private int meshMode;
-	private int viewZoom;
 	private int compressionType;
 	private float compressionQuality;
 	private boolean bQTVR;
@@ -35,14 +34,14 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  * @param mirroring int
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
-		int mirroringType, boolean hideMembraneOutline,
+		int mirroringType, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
 	this.encodingFormat = encodingFormat;
 	this.mirroringType = mirroringType;
-	this.bHideMembraneOutline = hideMembraneOutline;
+	this.volVarMembrOutlineThickness = volVarMembrOutlineThickness;
 	this.imageScaling = imageScaling;
 	this.membraneScaling = membraneScaling;
 	this.meshMode = meshMode;
@@ -60,9 +59,7 @@ public float getcompressionQuality(){
 public int getCompressionType(){
 	return compressionType;
 }
-public void setViewZoom(int viewZoom){
-	this.viewZoom = viewZoom;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 1:20:28 AM)
@@ -77,7 +74,7 @@ public boolean equals(java.lang.Object object) {
 			overlayMode == movieSpecs.getOverlayMode() &&
 			mirroringType == movieSpecs.getMirroringType() &&
 			duration == movieSpecs.getDuration() &&
-			bHideMembraneOutline == movieSpecs.isHideMembraneOutline() &&
+			volVarMembrOutlineThickness == movieSpecs.volVarMembrOutlineThickness &&
 			displayPreferences.length == movieSpecs.getDisplayPreferences().length &&
 			imageScaling == movieSpecs.imageScaling &&
 			membraneScaling == movieSpecs.membraneScaling &&
@@ -137,8 +134,8 @@ public boolean getOverlayMode() {
  * Creation date: (7/17/01 9:57:49 AM)
  * @return boolean
  */
-public boolean isHideMembraneOutline() {
-	return bHideMembraneOutline;
+public int getVolVarMembrOutlineThickness() {
+	return volVarMembrOutlineThickness;
 }
 /**
  * Insert the method's description here.
@@ -149,13 +146,14 @@ public java.lang.String toString() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("MovieSpecs [");
 	buf.append("quicktimeVR: " + bQTVR + ", ");
+	buf.append("image scaling: " + imageScaling + ", ");
 	buf.append("compressionType: " + compressionType + ", ");
 	buf.append("compressionQual: " + compressionQuality + ", ");
 	buf.append("overlayMode: " + overlayMode + ", ");
 	buf.append("encodingFormat: " + encodingFormat + ", ");
 	buf.append("mirroringType: " + mirroringType + ", ");
 	buf.append("duration: " + duration + ", ");
-	buf.append("hideMembraneOutline: " + bHideMembraneOutline + ", ");
+	buf.append("volVarMembrOutlineThickness: " + volVarMembrOutlineThickness + ", ");
 	buf.append("displayPreferences: ");
 	if (displayPreferences != null) {
 		buf.append("{");
@@ -171,7 +169,7 @@ public java.lang.String toString() {
 	return buf.toString();
 }
 public int getImageScaling() {
-	return (getMeshMode() == ImagePaneModel.MESH_MODE?viewZoom:imageScaling);
+	return imageScaling;
 }
 public int getMembraneScaling() {
 	return membraneScaling;

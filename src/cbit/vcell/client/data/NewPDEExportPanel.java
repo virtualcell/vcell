@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.TreeSet;
@@ -28,8 +29,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
@@ -40,13 +39,11 @@ import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.data.PDEDataViewer.DataInfoProvider;
 import cbit.vcell.export.ExportSettings;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
-import cbit.vcell.export.server.ImageSpecs;
-import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.simdata.ClientPDEDataContext;
@@ -1010,14 +1007,12 @@ private ExportSpecs getExportSpecs() {
 	} else if (getJRadioButtonFull().isSelected()) {
 		geoMode = ExportConstants.GEOMETRY_FULL;
 	}
-//	SpatialSelection[] selections = (SpatialSelection[])BeanUtils.getArray(getDefaultListModelCivilizedSelections().elements(), SpatialSelection.class);
 	Object[] selectionsArr = getJListSelections().getSelectedValues();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
-	updateSpecsForMeshMode();
 	return new ExportSpecs(
 		getPdeDataContext().getVCDataIdentifier(),
 		getExportSettings1().getSelectedFormat(),
@@ -1027,36 +1022,6 @@ private ExportSpecs getExportSpecs() {
 		getExportSettings1().getFormatSpecificSpecs()
 	);
 }
-
-private void updateSpecsForMeshMode(){
-	if(getExportSettings1().getFormatSpecificSpecs() instanceof ImageSpecs){
-		ImageSpecs imageSpecs = (ImageSpecs)getExportSettings1().getFormatSpecificSpecs();
-		imageSpecs.setViewZoom(viewZoom);
-	}else if(getExportSettings1().getFormatSpecificSpecs() instanceof MovieSpecs){
-		MovieSpecs movieSpecs = (MovieSpecs)getExportSettings1().getFormatSpecificSpecs();
-		movieSpecs.setViewZoom(viewZoom);
-	}
-
-}
-
-///**
-// * Return the JButtonAdd property value.
-// * @return javax.swing.JButton
-// */
-///* WARNING: THIS METHOD WILL BE REGENERATED. */
-//private javax.swing.JButton getJButtonAdd() {
-//	if (ivjJButtonAdd == null) {
-//		try {
-//			// user code begin {1}
-//			// user code end
-//		} catch (java.lang.Throwable ivjExc) {
-//			// user code begin {2}
-//			// user code end
-//			handleException(ivjExc);
-//		}
-//	}
-//	return ivjJButtonAdd;
-//}
 
 /**
  * Return the JButtonExport property value.
@@ -2221,12 +2186,15 @@ private void startExport() {
 		return;
 	}
 	DisplayPreferences[] displayPreferences = null;
+	Object[] variableSelections = getJListVariables().getSelectedValues();
+	boolean selectionHasVolumeVariables = false;
+	boolean selectionHasMembraneVariables = false;
 	switch (getExportSettings1().getSelectedFormat()) {
 		case ExportConstants.FORMAT_QUICKTIME:
 		case ExportConstants.FORMAT_GIF:
 		case ExportConstants.FORMAT_JPEG:
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
-			Object[] variableSelections = getJListVariables().getSelectedValues();
+			
 			displayPreferences = new DisplayPreferences[variableSelections.length];
 //			for (int i = 0; i < displayPreferences.length; i++){
 //				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
@@ -2266,6 +2234,12 @@ private void startExport() {
 							}
 						}
 						if(varSelectionDataIdnetDataIdentifier != null){
+							selectionHasVolumeVariables = selectionHasVolumeVariables ||
+								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.VOLUME) ||
+								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.VOLUME_REGION);
+							selectionHasMembraneVariables = selectionHasMembraneVariables ||
+								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.MEMBRANE) ||
+								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.MEMBRANE_REGION);
 							CartesianMesh cartesianMesh = dataInfoProvider.getPDEDataContext().getCartesianMesh();
 							int dataLength = cartesianMesh.getDataLength(varSelectionDataIdnetDataIdentifier.getVariableType());
 							domainValid = new BitSet(dataLength);
@@ -2289,47 +2263,6 @@ private void startExport() {
 					noScaleInfoNames.append("--- "+(String)variableSelections[i]+"\n");
 				}
 			}
-			if(noScaleInfoNames.length() > 0){
-				String OK_OPTION = "OK";
-				String result = PopupGenerator.showWarningDialog(this, 
-						"The following export choices have no user defined color/scale settings.\n"+
-						noScaleInfoNames.toString()+
-						"User defined color/scale is set in the 'View data' tab by unchecking the\n"+
-						"'Auto (current time)' checkbox.\n"+
-						"Default min-max color/scale range will be used",
-						new String[] {OK_OPTION,"Cancel"},OK_OPTION);
-				if(result == null || !result.equals(OK_OPTION)){
-					return;
-				}
-			}
-//			Vector<Object> v = new Vector<Object>();
-//			for (int i = 0; i < displayPreferences.length; i++){
-//				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
-//				if (displayPreferences[i] == null) {
-//					PopupGenerator.showErrorDialog(this, "No scale range or colormap available for variable '" + (String)variableSelections[i] + "'\nplease view each variable to be exported");
-//					return;
-//				} else {
-//					if (displayPreferences[i].scaleIsDefault()) {
-//						v.add(variableSelections[i]);
-//					}
-//				}
-//			}
-//			if (! v.isEmpty()) {
-////				StringBuffer names = new StringBuffer();
-////				Enumeration<Object> en = v.elements();
-////				while (en.hasMoreElements()) {
-////					names.append("\n" + en.nextElement());
-////				}
-//				String choice = PopupGenerator.showWarningDialog(this,
-//						getDataViewerManager().getUserPreferences(),
-//						UserMessage.warn_noScaleSettings,null);
-//				//String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
-//				if (choice.equals(UserMessage.OPTION_CANCEL)){
-//					// user canceled
-//					return;
-//				}
-//			}
-
 			break;
 		}
 		
@@ -2338,7 +2271,6 @@ private void startExport() {
 			// check for membrane variables... warn for 3D geometry...
 			// one gets the whole nine yards by index, not generally useful... except for a few people like Boris :)
 			boolean mbVars = false;
-			Object[] variableSelections = getJListVariables().getSelectedValues();
 			DataIdentifier[] dataIDs = getPdeDataContext().getDataIdentifiers();
 			for (int i = 0; i < variableSelections.length; i++){
 				String varName = (String)variableSelections[i];
@@ -2362,9 +2294,12 @@ private void startExport() {
 	if (getJRadioButtonSelection().isSelected() && getJListSelections().getSelectedIndex() == -1) {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
-	getExportSettings1().setDisplayPreferences(displayPreferences);
-	getExportSettings1().setSliceCount(getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
-	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this));
+
+	getExportSettings1().setTimeSpecs(new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE));
+	getExportSettings1().setDisplayPreferences(displayPreferences,Arrays.asList(variableSelections).toArray(new String[0]),viewZoom);
+	getExportSettings1().setSliceCount(FormatSpecificSpecs.getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
+	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());
+	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
 			
 	if (!okToExport) {
 		return;
@@ -2372,32 +2307,6 @@ private void startExport() {
 	// pass the request down the line; non-blocking call
 	getDataViewerManager().startExport(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext(),getExportSpecs());
 }
-
-
-	private static int getSliceCount(boolean bAllSlices,int normalAxis,CartesianMesh mesh){
-		if (!bAllSlices){
-			return 1;
-		}
-		switch (normalAxis){
-			case Coordinate.X_AXIS:{
-				// YZ plane
-				return mesh.getSizeX();
-			}
-			case Coordinate.Y_AXIS:{
-				// ZX plane
-				return mesh.getSizeY();
-			}
-			case Coordinate.Z_AXIS:{
-				// XY plane
-				return mesh.getSizeZ();
-
-			}
-			default:{
-				throw new IllegalArgumentException("unexpected normal axis "+normalAxis);
-			}
-		}
-	}
-
 
 /**
  * Comment

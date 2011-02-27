@@ -4,15 +4,20 @@ package cbit.vcell.export.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.io.*;
 import java.util.zip.DataFormatException;
 
+import org.vcell.util.Coordinate;
+
+import cbit.image.ImagePaneModel;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleJPEG;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleRaw;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Dummy parent class.
  */
@@ -73,6 +78,83 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		enc.encode(bufferedImage);
 		return new VideoMediaSampleJPEG(width, height,sampleDuration, byteArrayOutputStream.toByteArray(), bitsPerPixel, isGrayscale);
 	}
+	
+		public static int getSliceCount(boolean bAllSlices,int normalAxis,CartesianMesh mesh){
+		if (!bAllSlices){
+			return 1;
+		}
+		switch (normalAxis){
+			case Coordinate.X_AXIS:{
+				// YZ plane
+				return mesh.getSizeX();
+			}
+			case Coordinate.Y_AXIS:{
+				// ZX plane
+				return mesh.getSizeY();
+			}
+			case Coordinate.Z_AXIS:{
+				// XY plane
+				return mesh.getSizeZ();
+
+			}
+			default:{
+				throw new IllegalArgumentException("unexpected normal axis "+normalAxis);
+			}
+		}
+	}
+		
+		/**
+		 * Insert the method's description here.
+		 * Creation date: (3/2/2001 12:03:46 AM)
+		 * @return java.awt.Dimension
+		 */
+		public static Dimension getMeshDimensionUnscaled(int normalAxis,CartesianMesh mesh) {
+			switch (normalAxis){
+				case Coordinate.X_AXIS:{
+					//
+					// YZ plane
+					//
+					return new Dimension(mesh.getSizeY(),mesh.getSizeZ());
+				}
+				case Coordinate.Y_AXIS:{
+					//
+					// ZX plane
+					//
+					return new Dimension(mesh.getSizeZ(),mesh.getSizeX());
+				}
+				case Coordinate.Z_AXIS:{
+					//
+					// XY plane
+					//
+					return new Dimension(mesh.getSizeX(),mesh.getSizeY());
+
+				}
+				default:{
+					throw new IllegalArgumentException("unexpected normal axis "+normalAxis);
+				}
+			}
+		}
+		
+		public static Dimension getImageDimension(int meshMode,int imageScale,CartesianMesh mesh,int normalAxis) {
+			ImagePaneModel imagePaneModel = new ImagePaneModel();
+			imagePaneModel.setMode(meshMode);
+			imagePaneModel.setZoom(imageScale);
+			Dimension dim = FormatSpecificSpecs.getMeshDimensionUnscaled(normalAxis,mesh);
+			dim.width = imagePaneModel.getScaledLength(dim.width);
+			dim.height = imagePaneModel.getScaledLength(dim.height);
+			return dim;
+		}
+
+		public static Dimension getMirrorDimension(int mirroringType,int originalWidth,int originalHeight){
+			Dimension mirrorDim = new Dimension(originalWidth,originalHeight);
+			if ((mirroringType == ExportConstants.MIRROR_LEFT) || (mirroringType == ExportConstants.MIRROR_RIGHT)){
+				mirrorDim.width = 2 * originalWidth;
+			}
+			if ((mirroringType == ExportConstants.MIRROR_TOP) || (mirroringType == ExportConstants.MIRROR_BOTTOM)){
+				mirrorDim.height = 2 * originalHeight;
+			}
+			return mirrorDim;
+		}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 12:04:55 AM)

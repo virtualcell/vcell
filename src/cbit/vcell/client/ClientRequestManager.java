@@ -1608,6 +1608,16 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
 				fileChooser.setFileFilter(FileFilters.FILE_FILTER_MOV);
 
 		    	suffix = "_exported.mov";
+		    }else if(evt.getLocation().toLowerCase().endsWith(".gif")){
+				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_GIF);
+				fileChooser.setFileFilter(FileFilters.FILE_FILTER_GIF);
+
+		    	suffix = "_exported.gif";
+		    }else if(evt.getLocation().toLowerCase().endsWith(".jpeg")){
+				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_JPEG);
+				fileChooser.setFileFilter(FileFilters.FILE_FILTER_JPEG);
+
+		    	suffix = "_exported.jpeg";
 		    }else{
 				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
 				fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
