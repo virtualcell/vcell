@@ -139,4 +139,17 @@ public class IssueManager {
 	public void setDirty() {
 		dirtyTimestamp = System.currentTimeMillis();
 	}
+	
+	public static String getHtmlIssueMessage(List<Issue> issueList) {
+		if (issueList == null || issueList.size() == 0) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		for (Issue issue : issueList) {
+			sb.append("<li>" + issue.getMessage() + "</li>");
+		}
+		sb.append("</html>");
+		return sb.toString();
+	}
 }

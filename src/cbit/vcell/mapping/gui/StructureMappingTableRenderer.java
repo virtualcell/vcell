@@ -18,6 +18,7 @@ import javax.swing.border.MatteBorder;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.StructureMapping;
@@ -124,9 +125,9 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 				}
 			}
 
-			List<Issue> issueList = structureMappingTableModel.getIssue(row, column);
+			List<Issue> issueList = structureMappingTableModel.getIssues(row, column);
 			if (issueList.size() > 0) {
-				setToolTipText(issueList.get(0).getMessage());
+				setToolTipText(IssueManager.getHtmlIssueMessage(issueList));
 				if (column == 0) {
 					setBorder(new MatteBorder(1,1,1,0,Color.red));
 				} else if (column == table.getColumnCount() - 1) {

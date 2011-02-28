@@ -25,6 +25,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -307,9 +308,9 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 			renderer.setToolTipText(null);
 		}
 		if (tableModel instanceof VCellSortTableModel) {
-			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssue(row, column);
+			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssues(row, column);
 			if (issueList.size() > 0) {
-				renderer.setToolTipText(issueList.get(0).getMessage());
+				renderer.setToolTipText(IssueManager.getHtmlIssueMessage(issueList));
 				if (column == 0) {
 					renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
 				} else if (column == table.getColumnCount() - 1) {
