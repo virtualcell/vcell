@@ -2,7 +2,6 @@ package org.vcell.util.gui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -20,6 +19,7 @@ import org.vcell.util.NumberUtils;
 
 import cbit.gui.ReactionEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
@@ -42,6 +42,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public void disableUneditableForeground() {
 		bEnableUneditableForeground = false;
 	}
+	
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (3/27/2001 1:07:02 PM)
@@ -70,9 +71,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		
 		TableModel tableModel = table.getModel();
 		if (tableModel instanceof VCellSortTableModel) {
-			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssue(row, column);
+			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssues(row, column);
 			if (issueList.size() > 0) {
-				setToolTipText(issueList.get(0).getMessage());
+				setToolTipText(IssueManager.getHtmlIssueMessage(issueList));
 				if (column == 0) {
 					setBorder(new MatteBorder(1,1,1,0,Color.red));
 				} else if (column == table.getColumnCount() - 1) {

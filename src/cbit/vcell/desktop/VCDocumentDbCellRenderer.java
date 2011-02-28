@@ -3,8 +3,6 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Dimension;
-
 import javax.swing.JTree;
 
 import org.vcell.util.document.User;
@@ -20,7 +18,6 @@ public class VCDocumentDbCellRenderer extends VCellBasicCellRenderer {
 public VCDocumentDbCellRenderer(User argSessionUser) {
 	super();
 	this.sessionUser = argSessionUser;
-	setPreferredSize(new Dimension(200, 20));
 }
 
 public VCDocumentDbCellRenderer() {

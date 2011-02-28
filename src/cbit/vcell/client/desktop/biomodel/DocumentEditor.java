@@ -612,5 +612,8 @@ private JPopupMenu getPopupMenu() {
 
 public void updateConnectionStatus(ConnectionStatus connStatus) {
 	databaseWindowPanel.updateConnectionStatus(connStatus);
+	if (connStatus.getStatus() != ConnectionStatus.INITIALIZING) {
+		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
+	}
 }
 }

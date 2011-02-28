@@ -31,7 +31,7 @@ public abstract class VCellSortTableModel<T> extends DefaultSortTableModel<T> im
 		ownerTable.repaint();
 	}
 
-	public List<Issue> getIssue(int row, int col) {
+	public List<Issue> getIssues(int row, int col) {
 		issueList.clear();
 		if (row < getDataSize() && issueManager != null) {
 			List<Issue> allIssueList = issueManager.getIssueList();
