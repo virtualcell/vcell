@@ -23,6 +23,8 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
@@ -218,7 +220,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			Expression cellAvgExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 			// substitute parameter values 
 			cellAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellRegionData[startIndexRecovery]));
-			cellAvgExp.substituteInPlace(new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getName()), new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()));
+			cellAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(currentParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()));
 			// time shift
 			cellAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
 			try {
@@ -243,7 +245,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			//Analytic - bleach region average intensity with bleach while monitoring rate
 			ODESolverResultSet koffFitOdeSolverResultSet = new ODESolverResultSet();
 			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedSymbol.TIME.getName()));
-			Expression bleachedAvgExp = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getRecoveryExpressionWithCurrentParameters(currentParams); 
+			Expression bleachedAvgExp = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getRecoveryExpressionWithCurrentParameters(currentParams);
 			try {
 				koffFitOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(

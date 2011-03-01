@@ -328,7 +328,7 @@ public class FRAPOptFunctions
 					}
 					paramLogVal = paramLogVal - decrementStep;
 					double paramVal = Math.pow(10,paramLogVal);
-					System.out.println("paramVal:" + paramVal);
+//					System.out.println("paramVal:" + paramVal);
 					if(paramVal < (fixedParam.getLowerBound() + FRAPOptimizationUtils.epsilon))
 					{
 						paramVal = fixedParam.getLowerBound();
