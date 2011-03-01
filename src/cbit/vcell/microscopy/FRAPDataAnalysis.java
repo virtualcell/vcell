@@ -259,7 +259,8 @@ public class FRAPDataAnalysis {
 			double[] cellROIWeights = new double[time.length];
 			for(int j=0; j<time.length; j++)
 			{
-				cellROIWeights[j] = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][j];
+				double weightTemp = 1.0/measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][j];
+				cellROIWeights[j] = weightTemp * weightTemp;
 			}
 			TimeWeights cellTimeWeights = new TimeWeights(cellROIWeights);
 			Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues, cellTimeWeights);
@@ -279,7 +280,8 @@ public class FRAPDataAnalysis {
 		double[] bleachedROIWeights = new double[time.length];
 		for(int j=0; j<time.length; j++)
 		{
-			bleachedROIWeights[j] = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][j];
+			double weightTemp = 1.0/measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][j];
+			bleachedROIWeights[j] = weightTemp * weightTemp;
 		}
 		TimeWeights bleachedTimeWeights = new TimeWeights(bleachedROIWeights);
 		

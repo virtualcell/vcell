@@ -751,6 +751,13 @@ public class FRAPOptimizationUtils {
 				}
 			}
 		}
+		//for debug purpose
+//		for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
+//		{
+//			String value = sigma[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][timeIdx-startIndexRecovery]+"\t"+
+//			sigma[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][timeIdx-startIndexRecovery];
+//			System.out.println(value);
+//		}
 		return sigma;
 	}
 	

@@ -1378,20 +1378,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				int imageScale = 1;
 				int membraneScale = 1;
 				int scaleMode = ImagePaneModel.MESH_MODE;
-//				int scaleMode = ImagePaneModel.NORMAL_MODE;
+				int volVarMemOutlineThickness = 1;//the default setting in MediaSettingsPanel.
 				MovieSpecs mSpec = new MovieSpecs(duration,
 												 true,
 												 displayPref,
 												 ExportConstants.RAW_RGB,
 												 ExportConstants.NO_MIRRORING,
-												 false,
+												 volVarMemOutlineThickness,
 												 imageScale,
 												 membraneScale,
 												 scaleMode,
 												 FormatSpecificSpecs.CODEC_JPEG,
 												 1.0f/*lossless*/,
 												 false);
-				mSpec.setViewZoom(1);
+//				mSpec.setViewZoom(1);
 				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 				// pass the request
 				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext, this.getClientTaskStatusSupport());
