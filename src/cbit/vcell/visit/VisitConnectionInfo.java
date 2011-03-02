@@ -50,6 +50,9 @@ public class VisitConnectionInfo implements Serializable {
 	}
 	
 	public String getDatabaseOpenPath(User user,String simLogName){
-		return getDataPath()+user.getName()+"/"+simLogName;
+		String s = getDataPath();
+		if (!(s.endsWith("/"))) s=s+"/";
+		s=s+user.getName()+"/"+simLogName;
+		return s;
 	}
 }
