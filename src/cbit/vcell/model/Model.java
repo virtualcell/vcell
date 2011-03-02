@@ -2121,23 +2121,32 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 	ReactionStep[] oldValue = fieldReactionSteps;
 	fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 	fieldReactionSteps = reactionSteps;
+	HashSet<ReactionStep> oldReactions = new HashSet<ReactionStep>(Arrays.asList(this.fieldReactionSteps));
+	HashSet<ReactionStep> newReactions = new HashSet<ReactionStep>(Arrays.asList(reactionSteps));
+	HashSet<ReactionStep> reactionsAdded = new HashSet<ReactionStep>(newReactions);
+	reactionsAdded.removeAll(oldReactions);
+	HashSet<ReactionStep> reactionsRemoved = new HashSet<ReactionStep>(oldReactions);
+	reactionsRemoved.removeAll(newReactions);	
 
-	ReactionStep newValue[] = reactionSteps;
-	for (int i=0;i<oldValue.length;i++){	
-		oldValue[i].removePropertyChangeListener(this);
-		oldValue[i].removeVetoableChangeListener(this);
-		oldValue[i].getKinetics().removePropertyChangeListener(this);
-		oldValue[i].getKinetics().removeVetoableChangeListener(this);
-		oldValue[i].setModel(null);
+	for (ReactionStep rs : reactionsRemoved){
+		rs.removePropertyChangeListener(this);
+		rs.removeVetoableChangeListener(this);
+		rs.getKinetics().removePropertyChangeListener(this);
+		rs.getKinetics().removeVetoableChangeListener(this);
+		rs.setModel(null);
 	}
-	for (int i=0;i<newValue.length;i++){	
-		newValue[i].addPropertyChangeListener(this);
-		newValue[i].addVetoableChangeListener(this);
-		newValue[i].getKinetics().addPropertyChangeListener(this);
-		newValue[i].getKinetics().addVetoableChangeListener(this);
-		newValue[i].setModel(this);
+	for (ReactionStep rs : reactionsAdded){
+		rs.removePropertyChangeListener(this);
+		rs.addPropertyChangeListener(this);
+		rs.removeVetoableChangeListener(this);
+		rs.addVetoableChangeListener(this);
+		rs.getKinetics().removePropertyChangeListener(this);
+		rs.getKinetics().addPropertyChangeListener(this);
+		rs.getKinetics().removeVetoableChangeListener(this);
+		rs.getKinetics().addVetoableChangeListener(this);
+		rs.setModel(this);
 		try {
-			newValue[i].rebindAllToModel(this);
+			rs.rebindAllToModel(this);
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
