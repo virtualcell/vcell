@@ -2120,13 +2120,14 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException {
 	ReactionStep[] oldValue = fieldReactionSteps;
 	fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
-	fieldReactionSteps = reactionSteps;
 	HashSet<ReactionStep> oldReactions = new HashSet<ReactionStep>(Arrays.asList(this.fieldReactionSteps));
 	HashSet<ReactionStep> newReactions = new HashSet<ReactionStep>(Arrays.asList(reactionSteps));
 	HashSet<ReactionStep> reactionsAdded = new HashSet<ReactionStep>(newReactions);
 	reactionsAdded.removeAll(oldReactions);
 	HashSet<ReactionStep> reactionsRemoved = new HashSet<ReactionStep>(oldReactions);
 	reactionsRemoved.removeAll(newReactions);	
+
+	fieldReactionSteps = reactionSteps;
 
 	for (ReactionStep rs : reactionsRemoved){
 		rs.removePropertyChangeListener(this);
