@@ -9,17 +9,21 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ScrollTable;
 
@@ -27,6 +31,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -178,7 +183,7 @@ private void editSimulation() {
 	if (selectedRows.length > 0) { // make sure something is selected...
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selectedRows[0]]);
 		if (!simStatus.isRunning()){
-			getSimulationWorkspace().editSimulation(this, getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
+			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
 		}
 	}
 }
@@ -427,6 +432,25 @@ private void initConnections() throws java.lang.Exception {
 	
 	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+	DefaultScrollTableCellRenderer renderer = new DefaultScrollTableCellRenderer(){
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
+			if (value instanceof OutputTimeSpec) {
+				setText(((OutputTimeSpec) value).getDescription());
+			} else if (value instanceof Double) {
+				setText(value + "s");
+			}
+			return this;
+		}
+		
+	};
+	getScrollPaneTable().setDefaultRenderer(OutputTimeSpec.class, renderer);
+	getScrollPaneTable().setDefaultRenderer(Double.class, renderer);
+	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
 }
 
 /**

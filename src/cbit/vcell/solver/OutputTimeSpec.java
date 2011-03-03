@@ -24,7 +24,10 @@ public OutputTimeSpec() {
  * Creation date: (9/7/2005 3:42:17 PM)
  * @return java.lang.String
  */
-public abstract String getShortDescription();
+public abstract String getDescription();
+public String getShortDescription() {
+	return getDescription();
+}
 
 
 /**

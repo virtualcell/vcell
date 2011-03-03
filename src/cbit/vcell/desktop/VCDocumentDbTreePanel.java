@@ -250,9 +250,9 @@ protected void refireActionPerformed(ActionEvent e) {
 	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
 
-private void refresh() {
+private void refresh() {	
+	treeCellRenderer.setSessionUser(getDocumentManager() == null ? null : getDocumentManager().getUser());	
 	treeModel.refreshTree();
-	treeCellRenderer.setSessionUser(getDocumentManager() == null ? null : getDocumentManager().getUser());
 }
 /**
  * 

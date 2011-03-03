@@ -44,7 +44,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			AnnotationQualifier qualifier = dateNode.getDateQualifier();
 			String colorString = (sel)?"white":"black";
 			component.setText("<html>"+qualifier.getDescription()+"&nbsp;<font color=\""+colorString+"\">" + dateNode.getDate().getDateString() + "</font></html>");
-//			setIcon(fieldTextIcon);
 		} else if (value instanceof LinkNode){
 			LinkNode ln = (LinkNode)value;
 			String link = ln.getLink();
@@ -58,8 +57,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String colorString = (sel)?"white":"black";
 				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>");
 			}
-//			setIcon(fieldTextIcon);
-
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
@@ -95,11 +92,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				component.setToolTipText("Geometry");
 				component.setText(label);
 				setIcon(fieldGeometryIcon);
-			} else if (userObject instanceof String && "AppType".equals(node.getRenderHint("type"))) {
-				String label = (String)userObject;
-				component.setToolTipText("Application type");
-				component.setText(label);
-				setIcon(fieldAppTypeIcon);
 			} else if (userObject instanceof VCDocumentInfoNode) {
 				VCDocumentInfoNode infonode = (VCDocumentInfoNode)userObject;
 				User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();

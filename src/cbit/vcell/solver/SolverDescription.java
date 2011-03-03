@@ -12,12 +12,15 @@ import java.util.Set;
 
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.MathDescription;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/23/01 3:34:06 PM)
  * @author: Jim Schaff
  * Stochastic description is added on 12th July 2006.
  */
+@SuppressWarnings("serial")
 public class SolverDescription implements java.io.Serializable, org.vcell.util.Matchable {
 	private int type;
 	
@@ -620,39 +623,6 @@ public boolean compareEqual(Matchable obj) {
 
 
 /**
- * Gets the solver property (java.lang.String) value.
- * @return The solver property value.
- * @see #setSolver
- */
-private static SolverDescription getDefaultODESolverDescription() {
-	return CombinedSundials;
-}
-
-
-/**
- * Gets the solver property (java.lang.String) value.
- * @return The solver property value.
- * @see #setSolver
- */
-private static SolverDescription getDefaultPDESolverDescription() {
-	return FiniteVolumeStandalone;
-}
-
-
-/**
- * Get the default non-spatial stochastic solver which is Gibson.
- * Creation date: (9/27/2006 2:43:55 PM)
- * @return cbit.vcell.solver.SolverDescription
- */
-private static SolverDescription getDefaultNonSpatialStochSolverDescription() {
-	return StochGibson;
-}
-
-private static SolverDescription getDefaultSpatialStochSolverDescription() {
-	return Smoldyn;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (9/8/2005 11:27:58 AM)
  * @return cbit.vcell.solver.OutputTimeSpec
@@ -1008,18 +978,21 @@ public Set<SolverFeature> getSupportedFeatures() {
 }
 
 public static SolverDescription getDefaultSolverDescription(Simulation simulation) {
+	MathDescription mathDescription = simulation.getMathDescription();
 	if (simulation.isSpatial())		{		
-		if (simulation.getMathDescription().isSpatialStoch()) {
-			return SolverDescription.getDefaultSpatialStochSolverDescription();
+		if (mathDescription.isSpatialStoch()) {
+			return SolverDescription.Smoldyn;
+		} else if (mathDescription.hasFastSystems()) {
+			return SolverDescription.FiniteVolumeStandalone;
 		} else {
-			return SolverDescription.getDefaultPDESolverDescription();				
+			return SolverDescription.SundialsPDE;
 		}
 	} else {
-		if (simulation.getMathDescription().isNonSpatialStoch()) {
-			return SolverDescription.getDefaultNonSpatialStochSolverDescription();
+		if (mathDescription.isNonSpatialStoch()) {
+			return SolverDescription.StochGibson;
 		}
 		else {
-			return SolverDescription.getDefaultODESolverDescription();
+			return SolverDescription.CombinedSundials;
 		}
 	}
 }

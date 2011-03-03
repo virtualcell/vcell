@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -235,27 +234,27 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		tree.setModel(treeModel);
 		tree.getSelectionModel().addTreeSelectionListener(eventHandler);
 				
-		JPanel searchPanel = new CollapsiblePanel("Search", false);
-		searchPanel.setLayout(new GridBagLayout());
+		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", false);
+		searchPanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		searchPanel.add(searchTextField, gbc);
+		searchPanel.getContentPanel().add(searchTextField, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(0,2,0,0);
-		searchPanel.add(searchButton, gbc);
+		searchPanel.getContentPanel().add(searchButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(0,2,0,0);
-		searchPanel.add(showAllButton, gbc);	
+		searchPanel.getContentPanel().add(showAllButton, gbc);	
 		
 		setPreferredSize(new Dimension(475, 300));
 		setLayout(new GridBagLayout());

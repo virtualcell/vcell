@@ -14,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
@@ -49,7 +48,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == maxOrderHelpButton) {
-				DialogUtils.showInfoDialog(SundialsSolverOptionsPanel.this, "<html>cvode includes an algorithm, " +
+				DialogUtils.showInfoDialog(SundialsSolverOptionsPanel.this, "Max order for BDF method", "<html>cvode includes an algorithm, " +
 						"stald (STAbility Limit Detection), which provides protection against " +
 						"potentially unstable behavior of the BDF multistep integration methods is certain situations, as " +
 						"described below. " +
@@ -94,12 +93,12 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 		try {
 			FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
 			layout.setVgap(0);
-			setLayout(layout);
+			getContentPanel().setLayout(layout);
 			JLabel label = new JLabel("Max Order for BDF method (advection only) ");
-			add(label);
-			add(getMaxOrderButton());
+			getContentPanel().add(label);
+			getContentPanel().add(getMaxOrderButton());
 			getJComboBoxMaxOrder().setPreferredSize(new Dimension((int)label.getPreferredSize().getWidth(), (int)getJComboBoxMaxOrder().getPreferredSize().getHeight()));
-			add(getJComboBoxMaxOrder());			
+			getContentPanel().add(getJComboBoxMaxOrder());			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);		
 		}

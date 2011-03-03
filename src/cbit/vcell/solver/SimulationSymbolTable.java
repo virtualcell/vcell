@@ -17,6 +17,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -38,7 +39,6 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -67,6 +67,7 @@ public class SimulationSymbolTable implements ScopedSymbolTable {
 	private int index = 0;	
 	private NameScope nameScope = new SimulationNameScope();
 
+	@SuppressWarnings("serial")
 	public class SimulationNameScope extends AbstractNameScope {
 		public SimulationNameScope(){
 			super();
@@ -390,14 +391,17 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 
 
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return boolean
-	 * @param volVariable cbit.vcell.math.VolVariable
-	 * @throws ExpressionException 
-	 * @throws MathException 
-	 */
+	public boolean hasTimeVaryingDiffusionOrAdvection() throws MathException, ExpressionException {
+		for (Variable var : getVariables()) {
+			if (hasTimeVaryingDiffusionOrAdvection(var)) {
+				return true;
+			}
+		}
+		return false;
+	}
+		
 	public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws MathException, ExpressionException {
+	
 		Enumeration<SubDomain> enum1 = simulation.getMathDescription().getSubDomains();
 		while (enum1.hasMoreElements()){
 			SubDomain subDomain = enum1.nextElement();

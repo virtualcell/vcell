@@ -14,6 +14,7 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.server.JobManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -27,6 +28,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 /**
@@ -118,8 +120,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			try {
 				int dimension = sim.getMathDescription().getGeometry().getDimension();
 				if (clientSimManager.getSimulationStatus(sim).isCompleted()) { // completed
-					String warningMessage =  "Simulation '" + sim.getName() + "' is completed already. "
-						+ "\n\nDo you want to continue anyway?";
+					String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_1, sim.getName());
 					String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
 							new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 					if (result == null || !result.equals(UserMessage.OPTION_OK)) {
@@ -129,12 +130,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
 					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
-						String warningMessage =  "Simulation '" + sim.getName() + "' has non-uniform spatial step. " +
-								"This might affect the accuracy of the solution.\n\n"
-						+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-						+ "\u0394y=" + meshSpecification.getDy()
-						+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz())
-						 + "\n\nDo you want to continue anyway?";
+						String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_2, sim.getName(),
+								"\u0394x=" + meshSpecification.getDx() + "\n" + "\u0394y=" + meshSpecification.getDy()
+								+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz()));
 						String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
 								new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 						if (result == null || !result.equals(UserMessage.OPTION_OK)) {
@@ -143,11 +141,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					}
 					if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
 						if (!isSmoldynTimeStepOK(sim)) {
-							String warningMessage =  "<html>The time step for " + SolverDescription.Smoldyn.getDisplayLabel()
-								+ " needs to satisfy stability constraint" 
-								+ "<dl><dd><i>\t\u0394t &lt; s<sup>2</sup> / ( 2D<sub>max</sub> )</i></dd></dl>" 
-								+ "Where <i>s</i> is spatial resolution and <i>D<sub>max</sub></i> is the diffusion " +
-										"coefficient of the fastest diffusing species. </html>";
+							String warningMessage =  VCellErrorMessages.RunSims_3;
 							DialogUtils.showErrorDialog(documentWindowManager.getComponent(), warningMessage);
 							continue;
 						}
@@ -171,12 +165,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						int defaultNumGeometricRegions = mathGeometry.getGeometrySurfaceDescription().getGeometricRegions().length;
 						int numGeometricRegions = geoSurfaceDesc.getGeometricRegions().length;
 						if (numGeometricRegions != defaultNumGeometricRegions) {
-							String warningMessage =  "The simulation mesh size (" + newSize.getX() 
-							+ (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : "") + ")" +
-							" for '" + sim.getName() + "' results in different number of geometric regions [" + numGeometricRegions + "] than " +
-									"the number of geometric regions [" + defaultNumGeometricRegions + "] resolved in the Geometry Viewer." +
-									"\n\nThis can affect the accuracy of the solution. Finer simulation mesh is recommended."
-									 + "\n\nDo you want to continue anyway?";
+							String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_4, 
+									newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), 
+									sim.getName(), numGeometricRegions, defaultNumGeometricRegions);
 							String result = PopupGenerator.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
 									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 							if (result == null || !result.equals(UserMessage.OPTION_OK)) {
@@ -189,21 +180,34 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						if (defaultSize.getX() + 1 < newSize.getX() 
 								|| defaultSize.getY() + 1 < newSize.getY()
 								|| defaultSize.getZ() + 1 < newSize.getZ()) { // finer
-							String warningMessage =  "The mesh size (" + newSize.getX() 
-							+ (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : "") + ")" +
-							" for simulation '" + sim.getName() + "' is finer than the original image resolution (" 
-									+ (defaultSize.getX() + 1) 
-									+ (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") 
-									+ (dimension > 2 ? " x " + (defaultSize.getZ() + 1): "") + ")" +
-									".\n\nThis will not improve the accuracy of the solution and can take longer to run. Original resolution (" 
-									+ (defaultSize.getX() + 1) + (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") 
-									+ (dimension > 2 ? " x " + (defaultSize.getZ() + 1) : "") 
-									+ ") or coarser mesh is recommended."  + "\n\nDo you want to continue anyway?";
+							String defaultSizeString = (defaultSize.getX() + 1) + (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") + (dimension > 2 ? " x " + (defaultSize.getZ() + 1): "");
+							String warningMessage =   VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_5,
+									newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), sim.getName(), 
+									defaultSizeString, defaultSizeString);
 							String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
 									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 							if (result == null || !result.equals(UserMessage.OPTION_OK)) {
 								continue;
 							}
+						}
+					}
+					
+					boolean bGiveWarning = false;
+					for (int i = 0; i < sim.getScanCount(); i ++) {
+						if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+							SimulationJob simJob = new SimulationJob(sim, i, null);						
+							if (simJob.getSimulationSymbolTable().hasTimeVaryingDiffusionOrAdvection()) {
+								bGiveWarning = true;
+								break;
+							}
+						}
+					}
+					if (bGiveWarning) {
+						String warningMessage = VCellErrorMessages.RunSims_6;
+						String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
+								new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+						if (result == null || !result.equals(UserMessage.OPTION_OK)) {
+							continue;
 						}
 					}
 				}

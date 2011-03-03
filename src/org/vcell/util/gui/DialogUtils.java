@@ -298,10 +298,10 @@ private static JDialog prepareWarningDialog(final Component requester,final Stri
  * Creation date: (5/27/2004 3:01:00 AM)
  * @param message java.lang.Object
  */
-private static JDialog prepareInfoDialog(final Component requester,final String message) {
+private static JDialog prepareInfoDialog(final Component requester,final String title, final String message) {
 	JPanel panel = createMessagePanel(message);
 	JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-	JDialog dialog = pane.createDialog(requester, "");
+	JDialog dialog = pane.createDialog(requester, title);
 	dialog.setResizable(true);
 	return dialog;
 }
@@ -469,8 +469,8 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 //	}
 	return (TableListResult)
 	new SwingDispatcherSync (){
+		@SuppressWarnings("serial")
 		public Object runSwing() throws Exception{
-			@SuppressWarnings("serial")
 			//Create hidden column with original row index so original row index can
 			//be returned for user selections even if rows are sorted
 			int hiddenColumnIndex = rowDataOrig[0].length;
@@ -689,16 +689,21 @@ public static void showWarningDialog(final Component requester, final String mes
 	}.dispatchConsumeException();
 }
 
+public static void showInfoDialog(final Component requester, final String message) {
+	showInfoDialog(requester, "", message);
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 3:17:45 AM)
  * @param owner java.awt.Component
  * @param message java.lang.Object
  */
-public static void showInfoDialog(final Component requester, final String message) {
+public static void showInfoDialog(final Component requester, final String title, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareInfoDialog(requester, message);
+			final JDialog dialog = prepareInfoDialog(requester, title, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{

@@ -240,7 +240,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		mainPanel.add(cancelButton, gbc);
 
 		JScrollPane scroll = new JScrollPane(mainPanel);		
-		setLayout(new GridBagLayout());
+		getContentPanel().setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -248,7 +248,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.weighty = 1.0;
 		gbc.insets = new Insets(0, 0, 0, 0);
 		gbc.fill = GridBagConstraints.BOTH;
-		add(scroll, gbc);
+		getContentPanel().add(scroll, gbc);
 		
 		initConnections();
 	}

@@ -7,31 +7,41 @@ package cbit.vcell.solver.ode.gui;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ItemEvent;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverTaskDescription;
 
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
  * @author: John Wagner
  */
-public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {	
+@SuppressWarnings("serial")
+public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
+	private final static String SELECT_PARAMETER = "select parameter";
 	private javax.swing.JLabel ivjJLabelTitle = null;
 	private javax.swing.JPanel ivjSolverPanel = null;
 	private javax.swing.JLabel ivjIntegratorLabel = null;
+	private javax.swing.JComboBox sensitivityAnalysisComboBox = null;
 	
 	private ErrorTolerancePanel ivjErrorTolerancePanel = null;
 	private TimeBoundsPanel ivjTimeBoundsPanel = null;
@@ -52,18 +62,27 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private SundialsSolverOptionsPanel sundialsSolverOptionsPanel = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JPanel generalOptionsPanel;
-	private JPanel miscPanel = null;
+	private CollapsiblePanel generalOptionsPanel;
+	private CollapsiblePanel miscPanel = null;
 	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
 	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
 	private JCheckBox serialParameterScanCheckBox = null;
+	private CollapsiblePanel sensitivityAnalysisCollapsiblePanel;
+	private JCheckBox performSensitivityAnalysisCheckBox;
+	private JButton sensitivityAnalysisHelpButton;
 		
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(e.getSource() == getQuestionButton())
 			{
 				displayHelpInfo();
-			}			
+			} else if (e.getSource() == performSensitivityAnalysisCheckBox) {
+				performSensitivityAnalysisCheckbox_actionPerformed();
+			} else if (e.getSource() == sensitivityAnalysisComboBox) {
+				sensitivityAnalysisComboBox_actionPerformed();
+			} else if (e.getSource() == sensitivityAnalysisHelpButton) {
+				showSensitivityAnalysisHelp();
+			}
 		}
 		
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -569,15 +588,18 @@ private void initConnections() throws java.lang.Exception {
 	getQuestionButton().addActionListener(ivjEventHandler);
 	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
 	serialParameterScanCheckBox.addItemListener(ivjEventHandler);
+	sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
+	performSensitivityAnalysisCheckBox.addActionListener(ivjEventHandler);
+	sensitivityAnalysisHelpButton.addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP7SetTarget();
 	connPtoP2SetTarget();
 }
 
-public JPanel getGeneralOptionsPanel() {
+private CollapsiblePanel getGeneralOptionsPanel() {
 	if (generalOptionsPanel == null) {		
 		generalOptionsPanel = new CollapsiblePanel("General");
-		generalOptionsPanel.setLayout(new GridBagLayout());
+		generalOptionsPanel.getContentPanel().setLayout(new GridBagLayout());
 		
 		java.awt.GridBagConstraints constraintsTimeBoundsPanel = new java.awt.GridBagConstraints();
 		constraintsTimeBoundsPanel.gridx = 0; constraintsTimeBoundsPanel.gridy = 0;
@@ -585,7 +607,7 @@ public JPanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.weightx = 1.0;
 		constraintsTimeBoundsPanel.weighty = 1.0;
 		constraintsTimeBoundsPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		generalOptionsPanel.add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
+		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 	
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
 		constraintsTimeStepPanel.gridx = 1; constraintsTimeStepPanel.gridy = 0;
@@ -593,7 +615,7 @@ public JPanel getGeneralOptionsPanel() {
 		constraintsTimeStepPanel.weightx = 1.0;
 		constraintsTimeStepPanel.weighty = 1.0;
 		constraintsTimeStepPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		generalOptionsPanel.add(getTimeStepPanel(), constraintsTimeStepPanel);
+		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 	
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
@@ -601,10 +623,49 @@ public JPanel getGeneralOptionsPanel() {
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		generalOptionsPanel.add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
+		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
 	}
 	
 	return generalOptionsPanel;
+}
+
+private CollapsiblePanel getSensitivityAnalysisPanel() {
+	if (sensitivityAnalysisCollapsiblePanel == null) {
+		sensitivityAnalysisComboBox = new javax.swing.JComboBox();
+		performSensitivityAnalysisCheckBox = new JCheckBox("Perform sensitivity analysis");
+		sensitivityAnalysisHelpButton = new JButton(" ? ");
+		Font font = sensitivityAnalysisHelpButton.getFont().deriveFont(Font.BOLD);
+		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		sensitivityAnalysisHelpButton.setBorder(border);
+		sensitivityAnalysisHelpButton.setFont(font);
+		
+		sensitivityAnalysisCollapsiblePanel = new CollapsiblePanel("Local Sensitivity Analysis", false);
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().setLayout(new GridBagLayout());		
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = 0;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(performSensitivityAnalysisCheckBox, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(sensitivityAnalysisHelpButton, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = 1;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(sensitivityAnalysisComboBox, gbc); 
+	}
+	return sensitivityAnalysisCollapsiblePanel;
 }
 /**
  * Initialize the class.
@@ -614,15 +675,15 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(607, 419);
 
-		// 0
+		int gridy = 0;
 		java.awt.GridBagConstraints constraintsJLabelTitle = new java.awt.GridBagConstraints();
 		constraintsJLabelTitle.gridx = 0; 
-		constraintsJLabelTitle.gridy = 0;
+		constraintsJLabelTitle.gridy = gridy;
 		constraintsJLabelTitle.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 0, 4);
 		add(getJLabelTitle(), constraintsJLabelTitle);
 		
-		// 1
+		gridy ++;
 		java.awt.GridBagConstraints constraintsPanel2 = new java.awt.GridBagConstraints();
 		constraintsPanel2.gridx = 0; 
 		constraintsPanel2.gridy = 1;
@@ -631,55 +692,64 @@ private void initialize() {
 		constraintsPanel2.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getSolverPanel(), constraintsPanel2);
 
-		// 2
+		gridy ++;
 		java.awt.GridBagConstraints gbc1 = new java.awt.GridBagConstraints();
 		gbc1.gridx = 0; 
-		gbc1.gridy = 2;
+		gbc1.gridy = gridy;
 		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getGeneralOptionsPanel(), gbc1);
-
-		// 3
+		
+		gridy ++;
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getSensitivityAnalysisPanel(), gbc);
+		
+		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanelStoch = new java.awt.GridBagConstraints();
 		constraintsJPanelStoch.gridx = 0; 
-		constraintsJPanelStoch.gridy = 3;
+		constraintsJPanelStoch.gridy = gridy;
 		constraintsJPanelStoch.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanelStoch.weightx = 1.0;
 		constraintsJPanelStoch.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getStochSimOptionsPanel(), constraintsJPanelStoch);
-				
-		// 4
+						
+		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; 
-		constraintsJPanel1.gridy = 4;
+		constraintsJPanel1.gridy = gridy;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getOutputOptionsPanel(), constraintsJPanel1);
 		
-		// 5
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
-		gbc.gridy = 5;
+		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSundialsSolverOptionsPanel(), gbc);
 
-		// 6
+		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
-		gbc.gridy = 6;
+		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
 		
-		// 7
+		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
-		gbc.gridy = 7;
+		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -787,6 +857,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			stopAtSpatiallyUniformPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
+			updateSensitivityAnalysisComboBox();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -831,6 +902,7 @@ private void refresh() {
 	} else {
 		serialParameterScanCheckBox.setVisible(false);
 	}
+	sensitivityAnalysisCollapsiblePanel.setVisible(!getSolverTaskDescription().getSimulation().getMathDescription().isSpatial() && !getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch());
 	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans) 
 			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform) 
 			|| supportedFeatures.contains(SolverFeature.Feature_DataProcessingInstructions));
@@ -853,7 +925,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(this, getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
+	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
 }
 
 private void onPropertyChange_solverDescription() {	
@@ -864,11 +936,11 @@ private void onPropertyChange_solverDescription() {
 	}	
 }
 
-private JPanel getMiscPanel() {
+private CollapsiblePanel getMiscPanel() {
 	if (miscPanel == null) {
 		miscPanel = new CollapsiblePanel("Miscellaneous", false);
 		miscPanel.setName("MiscPanel");
-		miscPanel.setLayout(new java.awt.GridBagLayout());
+		miscPanel.getContentPanel().setLayout(new java.awt.GridBagLayout());
 	
 		int gridy = 0;
 		// 0
@@ -879,7 +951,7 @@ private JPanel getMiscPanel() {
 		gridbag1.weightx = 1.0;
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
-		miscPanel.add(serialParameterScanCheckBox, gridbag1);
+		miscPanel.getContentPanel().add(serialParameterScanCheckBox, gridbag1);
 				
 		// 1
 		gridy ++;
@@ -890,7 +962,7 @@ private JPanel getMiscPanel() {
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.weightx = 1.0;
 		gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
-		miscPanel.add(stopAtSpatiallyUniformPanel, gridbag1);
+		miscPanel.getContentPanel().add(stopAtSpatiallyUniformPanel, gridbag1);
 		
 		// 2
 		gridy ++;
@@ -901,8 +973,125 @@ private JPanel getMiscPanel() {
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.weightx = 1.0;
 		gridbag1.insets = new java.awt.Insets(0, 0, 0, 10);
-		miscPanel.add(dataProcessingInstructionPanel, gridbag1);			
+		miscPanel.getContentPanel().add(dataProcessingInstructionPanel, gridbag1);			
 	}
-	return miscPanel;
+	return miscPanel;	
+}
+
+private void updateSensitivityAnalysisComboBox() {
+	//Inhibit actionEvents from ComboBox during comboBoxModel update.
+	sensitivityAnalysisComboBox.removeActionListener(ivjEventHandler);
+	//
+	try{
+		//clear comboBoxModel
+		((javax.swing.DefaultComboBoxModel)(sensitivityAnalysisComboBox.getModel())).removeAllElements();
+		//
+		if (getSolverTaskDescription() != null && getSolverTaskDescription().getSimulation() != null) {
+			MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
+			if (mathDescription != null) {
+				Enumeration<Constant> enum1 = mathDescription.getConstants();
+				if (enum1.hasMoreElements()){
+					((javax.swing.DefaultComboBoxModel)(sensitivityAnalysisComboBox.getModel())).addElement(SELECT_PARAMETER);
+				}
+				
+				//Sort Constants, ignore case
+				TreeSet<String> sortedConstants = new TreeSet<String>(
+					new Comparator<String>(){
+						public int compare(String o1, String o2){
+							int ignoreCaseB = o1.compareToIgnoreCase(o2);
+							if (ignoreCaseB == 0){
+								return o1.compareTo(o2);
+							}
+							return ignoreCaseB;
+						}
+					}
+				);
+				while (enum1.hasMoreElements()) {
+					Constant constant = (Constant) enum1.nextElement();
+					sortedConstants.add(constant.getName());
+				}
+				String[] sortedConstantsArr = new String[sortedConstants.size()];
+				sortedConstants.toArray(sortedConstantsArr);
+				for(int i=0;i<sortedConstantsArr.length;i+= 1){
+					((javax.swing.DefaultComboBoxModel)(sensitivityAnalysisComboBox.getModel())).addElement(sortedConstantsArr[i]);
+				}
+			}
+		}
+	}finally{
+		updateSensitivityParameterDisplay((getSolverTaskDescription() != null ? getSolverTaskDescription().getSensitivityParameter() : null));
+		//Re-activate actionEvents on ComboBox
+		sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
+	}
+}
+
+private void updateSensitivityParameterDisplay(Constant sensParam) {
+	Simulation simulation = getTornOffSolverTaskDescription().getSimulation();
+	if(simulation.isSpatial() || simulation.getMathDescription().isNonSpatialStoch()) {
+		sensitivityAnalysisComboBox.setVisible(false);
+		performSensitivityAnalysisCheckBox.setVisible(false);
+	} else {
+		sensitivityAnalysisComboBox.setVisible(true);
+		performSensitivityAnalysisCheckBox.setVisible(true);
+	}
+	if (sensParam == null){
+		if (performSensitivityAnalysisCheckBox.isSelected()){
+			performSensitivityAnalysisCheckBox.setSelected(false);
+		}
+		sensitivityAnalysisComboBox.setEnabled(false);
+	}else{
+		sensitivityAnalysisCollapsiblePanel.expand(true);
+		if (!performSensitivityAnalysisCheckBox.isSelected()){
+			performSensitivityAnalysisCheckBox.setSelected(true);
+		}
+		sensitivityAnalysisComboBox.setEnabled(true);
+		if (sensitivityAnalysisComboBox.getModel().getSize()>0){
+			sensitivityAnalysisComboBox.setSelectedItem(sensParam.getName());
+		}
+	}
+}
+
+private Constant getSelectedSensitivityParameter(String constantName) {
+	if (getSolverTaskDescription()!=null &&
+		getSolverTaskDescription().getSimulation()!=null &&
+		getSolverTaskDescription().getSimulation().getMathDescription()!=null){
+		
+		if (constantName != null){
+			Enumeration<Constant> enum1 = getSolverTaskDescription().getSimulation().getMathDescription().getConstants();
+			while (enum1.hasMoreElements()){
+				Constant constant = enum1.nextElement();
+				if (constant.getName().equals(constantName)){
+					return constant;
+				}
+			}
+		}
+	}
+	return null;
+	
+}
+
+private void sensitivityAnalysisComboBox_actionPerformed() {
+	try {
+		getSolverTaskDescription().setSensitivityParameter(getSelectedSensitivityParameter((String)sensitivityAnalysisComboBox.getSelectedItem()));
+	} catch (Exception ex) {
+		DialogUtils.showErrorDialog(this, ex.getMessage(), ex);
+	}
+}
+
+private void performSensitivityAnalysisCheckbox_actionPerformed() {
+	try {
+		if (performSensitivityAnalysisCheckBox.isSelected()){
+			sensitivityAnalysisComboBox.setEnabled(true);
+			getSolverTaskDescription().setSensitivityParameter(getSelectedSensitivityParameter((String)sensitivityAnalysisComboBox.getSelectedItem()));
+		} else {
+			sensitivityAnalysisComboBox.setEnabled(false);
+			getSolverTaskDescription().setSensitivityParameter(null);
+		}
+	} catch (java.beans.PropertyVetoException e){
+		e.printStackTrace(System.out);
+	}
+}
+
+public void showSensitivityAnalysisHelp(){
+	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help);
 }
 }

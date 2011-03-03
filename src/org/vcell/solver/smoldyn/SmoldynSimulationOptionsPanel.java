@@ -14,7 +14,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
@@ -24,6 +23,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.solver.SolverTaskDescription;
 
 
+@SuppressWarnings("serial")
 public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 
 	private JCheckBox randomSeedCheckBox;
@@ -42,11 +42,11 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == randomSeedHelpButton) {
-				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "<html>rand_seed <i>int</i> " +
+				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Random Seed", "<html>rand_seed <i>int</i> " +
 						"<br>Seed for random number generator. If this line is not entered, the current " +
 						"time is used as a seed, producing different sequences for each run.</html>");
 			} else if (source == accuracyHelpButton) {
-				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "<html>accuracy <i>float</i> " +
+				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Accuracy", "<html>accuracy <i>float</i> " +
 						"<br>A parameter that determines the quantitative accuracy of the simulation, on a scale from 0 to 10. " +
 						"Low values are less accurate but run faster.  Default value is 10, for maximum accuracy. " +
 						"Bimolecular reactions are only checked for pairs of reactants that are both within the same " +
@@ -64,7 +64,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 //						"boxsize can be used to request the width of the boxes. The actual box volumes will " +
 //						"be no larger than the volume calculated from the width given here.</html>");
 			} else if (source == gaussianTableSizeHelpButton) {
-				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "<html>gauss_table_size <i>int</i> " +
+				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Gaussian Table Size", "<html>gauss_table_size <i>int</i> " +
 						"<br>This sets the size of a lookup table that is used to generate Gaussiandistributed random numbers. " +
 						"It needs to be an integer power of 2. The default value is 4096, which should be appropriate for nearly all applications.</html>");
 			} else if (source == randomSeedCheckBox) {
@@ -96,7 +96,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		
 	}
 	public SmoldynSimulationOptionsPanel() {
-		super("Smoldyn Options", false);
+		super("Advanced Solver Options", false);
 		initialize();
 	}
 	private void initialize() {
@@ -120,21 +120,21 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gaussianTableSizeHelpButton.setFont(font);
 		gaussianTableSizeHelpButton.setBorder(border);
 		
-		setLayout(new GridBagLayout());		
+		getContentPanel().setLayout(new GridBagLayout());		
 		int gridy = 0;
 		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(0, 0, 0, 0);
-		add(accuracyLabel, gbc);
+		getContentPanel().add(accuracyLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		add(accuracyHelpButton, gbc);
+		getContentPanel().add(accuracyHelpButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -142,21 +142,21 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(accuracyTextField, gbc);		
+		getContentPanel().add(accuracyTextField, gbc);		
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 10, 0, 0);
-		add(gaussianTableSizeLabel, gbc);
+		getContentPanel().add(gaussianTableSizeLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		add(gaussianTableSizeHelpButton, gbc);
+		getContentPanel().add(gaussianTableSizeHelpButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 5;
@@ -165,7 +165,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 5);
-		add(gaussianTableSizeTextField, gbc);
+		getContentPanel().add(gaussianTableSizeTextField, gbc);
 		
 		// 1
 		gridy ++;
@@ -173,14 +173,14 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(randomSeedCheckBox, gbc);
+		getContentPanel().add(randomSeedCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		add(randomSeedHelpButton, gbc);
+		getContentPanel().add(randomSeedHelpButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -188,7 +188,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		add(randomSeedTextField, gbc);
+		getContentPanel().add(randomSeedTextField, gbc);
 	}
 	
 	private void initConnections() {

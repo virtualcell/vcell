@@ -2,12 +2,19 @@ package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -17,11 +24,13 @@ import cbit.vcell.solver.Simulation;
 public class SimulationListTableModel extends VCellSortTableModel<Simulation> implements PropertyChangeListener {
 	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
 	private final static int COLUMN_NAME = 0;
-	private final static int COLUMN_LASTSAVED = 1;
-	private final static int COLUMN_STATUS = 2;
-	private final static int COLUMN_RESULTS = 3;
+	private final static int COLUMN_ENDTIME = 1;
+	private final static int COLUMN_OUTPUT = 2;
+	private final static int COLUMN_SOLVER = 3;
+	private final static int COLUMN_STATUS = 4;
+	private final static int COLUMN_RESULTS = 5;
 	
-	private static final String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
+	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
 
 /**
@@ -32,15 +41,17 @@ public SimulationListTableModel(ScrollTable table) {
 	addPropertyChangeListener(this);
 }
 
+
 /**
  * getRowCount method comment.
  */
 private void refreshData() {
+	List<Simulation> simList = null;
 	if (getSimulationWorkspace() != null && getSimulationWorkspace().getSimulations() != null) {
-		setData(Arrays.asList(getSimulationWorkspace().getSimulations()));
-	} else {
-		setData(null);
+		simList = Arrays.asList(getSimulationWorkspace().getSimulations());
 	}
+	setData(simList);
+	GuiUtils.flexResizeTableColumns(ownerTable);
 }
 
 
@@ -64,12 +75,14 @@ public Object getValueAt(int row, int column) {
 				case COLUMN_NAME: {
 					return simulation.getName();
 				} 
-				case COLUMN_LASTSAVED: {
-					if (!simulation.getIsDirty() && simulation.getVersion() != null) {
-						return simulation.getVersion().getDate().toString();
-					} else {
-						return "not yet saved";
-					}
+				case COLUMN_ENDTIME: {
+					return simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
+				} 
+				case COLUMN_OUTPUT: {
+					return simulation.getSolverTaskDescription().getOutputTimeSpec();
+				} 
+				case COLUMN_SOLVER: {
+					return simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
 				} 
 				case COLUMN_STATUS: {
 					return getSimulationWorkspace().getSimulationStatusDisplay(simulation);
@@ -95,9 +108,12 @@ public Object getValueAt(int row, int column) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	switch (columnIndex){
-		case COLUMN_NAME: {
+		case COLUMN_NAME: 
 			return true;
-		}
+		case COLUMN_ENDTIME:
+			return true;
+		case COLUMN_OUTPUT:
+			return true;
 		default: {
 			return false;
 		}
@@ -151,16 +167,10 @@ public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
  * @param columnIndex int
  */
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("SimulationListTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=getColumnCount()){
-		throw new RuntimeException("SimulationListTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
-	Simulation simulation = getSimulationWorkspace().getSimulations(rowIndex);
-	switch (columnIndex){
-		case COLUMN_NAME:{
-			try {
+	Simulation simulation = getValueAt(rowIndex);
+	try {
+		switch (columnIndex){
+			case COLUMN_NAME:
 				if (aValue instanceof String){
 					String newName = (String)aValue;
 					if (!simulation.getName().equals(newName)){
@@ -168,12 +178,37 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						fireTableRowsUpdated(rowIndex,rowIndex);
 					}
 				}
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
-			}
-			break;
+				break;
+			case COLUMN_ENDTIME:
+				if (aValue instanceof Double){
+					double newTime = (Double) aValue;
+					TimeBounds oldTimeBounds = simulation.getSolverTaskDescription().getTimeBounds();
+					TimeBounds timeBounds = new TimeBounds(oldTimeBounds.getStartingTime(), newTime);
+					simulation.getSolverTaskDescription().setTimeBounds(timeBounds);
+				}
+				break;
+			case COLUMN_OUTPUT:
+				if (aValue instanceof String){
+					OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
+					OutputTimeSpec newOts = null;
+					if (ots instanceof DefaultOutputTimeSpec) {
+						int newValue = Integer.parseInt((String)aValue);
+						newOts = new DefaultOutputTimeSpec(newValue, ((DefaultOutputTimeSpec) ots).getKeepAtMost());
+					} else if (ots instanceof UniformOutputTimeSpec) {
+						double newTime = Double.parseDouble((String)aValue);
+						newOts = new UniformOutputTimeSpec(newTime);
+					} else if (ots instanceof ExplicitOutputTimeSpec) {
+						newOts = ExplicitOutputTimeSpec.fromString((String) aValue);
+					}
+					if (newOts != null) {
+						simulation.getSolverTaskDescription().setOutputTimeSpec(newOts);
+					}
+				}
+				break;
 		}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
 	}
 }
 
@@ -185,5 +220,18 @@ protected Comparator<Simulation> getComparator(int col, boolean ascending) {
 @Override
 public boolean isSortable(int col) {
 	return false;
+}
+
+
+@Override
+public Class<?> getColumnClass(int columnIndex) {
+	switch (columnIndex) {
+	case COLUMN_ENDTIME:
+		return Double.class;
+	case COLUMN_OUTPUT:
+		return OutputTimeSpec.class;
+	default:
+		return String.class;
+	}
 }
 }

@@ -1,6 +1,5 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -106,7 +105,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 	private void initialize() {
 		try {
 
-			setLayout(new java.awt.GridBagLayout());
+			getContentPanel().setLayout(new java.awt.GridBagLayout());
 			// 1
 			JPanel trialPanel = new JPanel(new GridLayout(0,1));
 			trialPanel.add(getTrajectoryButton());
@@ -128,8 +127,8 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			seedPanel.add(panelb);
 			seedPanel.setBorder(new EtchedBorder());
 						
-			JPanel advancedPanel = new CollapsiblePanel("Advanced", false);
-			advancedPanel.setLayout(new GridBagLayout());
+			CollapsiblePanel advancedPanel = new CollapsiblePanel("Advanced", false);
+			advancedPanel.getContentPanel().setLayout(new GridBagLayout());
 			
 			// 0
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -138,7 +137,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.LINE_END;
 			gbc.insets = new Insets(4,4,4,4);
 //			gbc.weightx = 1.0;
-			advancedPanel.add(getEpsilonLabel(), gbc);
+			advancedPanel.getContentPanel().add(getEpsilonLabel(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
@@ -146,7 +145,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
-			advancedPanel.add(getEpsilonTextField(), gbc);
+			advancedPanel.getContentPanel().add(getEpsilonTextField(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
@@ -154,7 +153,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 //			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
 			gbc.anchor = GridBagConstraints.LINE_END;
-			advancedPanel.add(getLambdaLabel(), gbc);
+			advancedPanel.getContentPanel().add(getLambdaLabel(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
@@ -162,7 +161,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
-			advancedPanel.add(getLambdaTextField(), gbc);
+			advancedPanel.getContentPanel().add(getLambdaTextField(), gbc);
 			
 			// 1
 			gbc = new GridBagConstraints();
@@ -171,7 +170,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 //			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
 			gbc.anchor = GridBagConstraints.LINE_END;
-			advancedPanel.add(getMSRToleranceLabel(), gbc);
+			advancedPanel.getContentPanel().add(getMSRToleranceLabel(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
@@ -179,7 +178,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.insets = new Insets(4,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
-			advancedPanel.add(getMSRToleranceTextField(), gbc);
+			advancedPanel.getContentPanel().add(getMSRToleranceTextField(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
@@ -187,7 +186,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.insets = new Insets(4,4,4,4);
 //			gbc.weightx = 1.0;
 			gbc.anchor = GridBagConstraints.LINE_END;			
-			advancedPanel.add(getSDEToleranceLabel(), gbc);
+			advancedPanel.getContentPanel().add(getSDEToleranceLabel(), gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
@@ -195,7 +194,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.insets = new Insets(4,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 1.0;
-			advancedPanel.add(getSDEToleranceTextField(), gbc);
+			advancedPanel.getContentPanel().add(getSDEToleranceTextField(), gbc);
 			
 			//
 			gbc = new GridBagConstraints();
@@ -204,7 +203,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
-			add(trialPanel, gbc);
+			getContentPanel().add(trialPanel, gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
@@ -213,7 +212,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(4,4,4,4);
-			add(seedPanel, gbc);
+			getContentPanel().add(seedPanel, gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -223,7 +222,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(10,4,10,4);
-			add(advancedPanel, gbc);
+			getContentPanel().add(advancedPanel, gbc);
 		    
 			getButtonGroupSeed().add(getRandomSeedRadioButton());
 			getButtonGroupSeed().add(getCustomizedSeedRadioButton());
