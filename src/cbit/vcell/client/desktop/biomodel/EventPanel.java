@@ -11,6 +11,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,9 +49,11 @@ import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReservedBioSymbolEntries;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 
 @SuppressWarnings("serial")
 public class EventPanel extends DocumentEditorSubPanel {
@@ -549,14 +554,18 @@ public class EventPanel extends DocumentEditorSubPanel {
 			getVarNameComboBoxModel().removeAllElements();
 			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
 			fieldSimContext.getEntries(entryMap);
-			Set<String> varNamesSet = entryMap.keySet();
-			Iterator<String> varNames = varNamesSet.iterator();
-			// add symbols from simContext, without ReservedSymbols.
-			while (varNames.hasNext()) {
-				String varName = varNames.next();
-				if (ReservedBioSymbolEntries.getReservedSymbolEntry(varName) == null) {
-					getVarNameComboBoxModel().addElement(varName);
+			ArrayList<String> varNameList = new ArrayList<String>();
+			for (String varName : entryMap.keySet()) {
+				SymbolTableEntry symbolTableEntry = entryMap.get(varName);
+				if (symbolTableEntry instanceof SymbolTableFunctionEntry
+						|| symbolTableEntry instanceof ReservedSymbol) {
+					continue;
 				}
+				varNameList.add(varName);
+			}
+			Collections.sort(varNameList);
+			for (String varName : varNameList) {
+				getVarNameComboBoxModel().addElement(varName);
 			}
 
 			JPanel eventAssignmentPanel = getEventAssignmentPanel();

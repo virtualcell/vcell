@@ -2,6 +2,7 @@ package cbit.gui;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.model.Feature;
@@ -143,6 +144,7 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 	String rightHand = equationString.substring(gotoIndex + REACTION_GOESTO.length());
 	StringTokenizer st = new StringTokenizer(leftHand, "+");
 	ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();
+	HashMap<String, SpeciesContext> speciesContextMap = new HashMap<String, SpeciesContext>();
 	while (st.hasMoreElements()) {
 		String nextToken = st.nextToken().trim();
 		if (nextToken.length() == 0) {
@@ -164,12 +166,16 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 		String var = nextToken.substring(stoichiIndex).trim();
 		SpeciesContext sc = model.getSpeciesContext(var);
 		if (sc == null) {
-			Species species = model.getSpecies(var);
-			if (species == null) {
-				species = new Species(var, null);
+			sc = speciesContextMap.get(var);
+			if (sc == null) {
+				Species species = model.getSpecies(var);
+				if (species == null) {
+					species = new Species(var, null);
+				}
+				sc = new SpeciesContext(species, reactionStep.getStructure());
+				sc.setName(var);
+				speciesContextMap.put(var, sc);
 			}
-			sc = new SpeciesContext(species, reactionStep.getStructure());
-			sc.setName(var);
 		}
 		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Reactant(null,(SimpleReaction) reactionStep, sc, stoichi));
@@ -199,12 +205,16 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 		String var = nextToken.substring(stoichiIndex);
 		SpeciesContext sc = model.getSpeciesContext(var);
 		if (sc == null) {
-			Species species = model.getSpecies(var);
-			if (species == null) {
-				species = new Species(var, null);
+			sc = speciesContextMap.get(var);
+			if (sc == null) {
+				Species species = model.getSpecies(var);
+				if (species == null) {
+					species = new Species(var, null);
+				}
+				sc = new SpeciesContext(species, reactionStep.getStructure());
+				sc.setName(var);
+				speciesContextMap.put(var, sc);
 			}
-			sc = new SpeciesContext(species, reactionStep.getStructure());
-			sc.setName(var);
 		}
 		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Product(null,(SimpleReaction) reactionStep, sc, stoichi));

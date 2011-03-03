@@ -94,25 +94,33 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		switch(folderClass) {
 	    		case REACTIONS_NODE:
 	    			icon = VCellIcons.tableIcon;
-	    			if (bioModel != null) {
-	    				labelText += " (" + bioModel.getModel().getNumReactions() + ")";
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "          ";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumReactions() + ")";
 	    			}
 	    			break;
 	    		case STRUCTURES_NODE:
 	    			icon = VCellIcons.tableIcon;
-	    			if (bioModel != null) {
-	    				labelText += " (" + bioModel.getModel().getNumStructures() + ")";
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "          ";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumStructures() + ")";
 	    			}
 	    			break;
 	    		case SPECIES_NODE:
 	    			icon = VCellIcons.tableIcon;
-	    			if (bioModel != null) {
-	    				labelText += " (" + bioModel.getModel().getNumSpeciesContexts() + ")";
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "          ";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumSpeciesContexts() + ")";
 	    			}
 	    			break;
 	    		case APPLICATIONS_NODE:
-	    			if (bioModel != null) {
-	    				labelText += " (" + bioModel.getNumSimulationContexts() + ")";
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "          ";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getNumSimulationContexts() + ")";
 	    			}
 	    			break;
 	    		case REACTION_DIAGRAM_NODE:

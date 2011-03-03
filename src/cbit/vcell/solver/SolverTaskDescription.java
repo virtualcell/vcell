@@ -537,7 +537,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 		try {
 			SolverDescription solverDescription = getSolverDescription();
-			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
+			if (solverDescription.isSundialsSolver() || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
 				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
 					double outputTime = timeBounds.getEndingTime()/10;

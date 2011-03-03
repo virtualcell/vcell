@@ -87,7 +87,7 @@ public int getKeepEvery() {
  * Creation date: (9/7/2005 3:42:25 PM)
  * @return java.lang.String
  */
-public java.lang.String getShortDescription() {
+public java.lang.String getDescription() {
 	return "keep every " + fieldKeepEvery;// + ", max " + fieldKeepAtMost;
 }
 
@@ -148,4 +148,9 @@ public boolean isExplicit() {
 public boolean isUniform() {
 	return false;
 }
+
+@Override
+public String toString() {
+	return String.valueOf(fieldKeepEvery);
+} 
 }

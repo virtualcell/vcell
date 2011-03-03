@@ -98,16 +98,21 @@ public double[] getOutputTimes() {
 }
 
 
+@Override
+public java.lang.String getDescription() {
+	return toCommaSeperatedOneLineOfString();
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/7/2005 3:43:11 PM)
  * @return java.lang.String
  */
+@Override
 public java.lang.String getShortDescription() {
 	if (fieldOutputTimes.length <= 3) {
-		return "[" + toCommaSeperatedOneLineOfString() + "]";
+		return "{" + toCommaSeperatedOneLineOfString() + "}";
 	} else {
-		return "[" + fieldOutputTimes[0] + "," + fieldOutputTimes[1] + ", ..., " + fieldOutputTimes[fieldOutputTimes.length - 1] +"]";
+		return "{" + fieldOutputTimes[0] + "," + fieldOutputTimes[1] + ", ..., " + fieldOutputTimes[fieldOutputTimes.length - 1] +"}";
 	}
 }
 
@@ -174,7 +179,7 @@ public boolean isUniform() {
  * @return java.lang.String
  */
 public java.lang.String toCommaSeperatedOneLineOfString() {
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 
 	for (int i = 0; i < fieldOutputTimes.length; i ++) {
 		buffer.append(fieldOutputTimes[i]);
@@ -207,4 +212,9 @@ public java.lang.String toSpaceSeperatedMultiLinesOfString() {
 
 	return buffer.toString();
 }
+
+@Override
+public String toString() {
+	return toCommaSeperatedOneLineOfString();
+} 
 }

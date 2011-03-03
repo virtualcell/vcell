@@ -5,7 +5,6 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -27,6 +26,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
+@SuppressWarnings("serial")
 public class OutputOptionsPanel extends CollapsiblePanel {
 	private javax.swing.JTextField ivjOutputTimesTextField = null;
 	private javax.swing.JRadioButton ivjDefaultOutputRadioButton = null;
@@ -284,14 +284,14 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				constraintsOutputTimesTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				constraintsOutputTimesTextField.weightx = 1.0;
 				constraintsOutputTimesTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-				getExplicitOutputPanel().add(getOutputTimesTextField(), constraintsOutputTimesTextField);
+				ivjExplicitOutputPanel.add(getOutputTimesTextField(), constraintsOutputTimesTextField);
 
 				java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 				constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 1;
 				constraintsJLabel3.gridwidth = 2;
 				constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
 				JLabel jlabel3 = new javax.swing.JLabel("(Comma or space separated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
-				getExplicitOutputPanel().add(jlabel3, constraintsJLabel3);
+				ivjExplicitOutputPanel.add(jlabel3, constraintsJLabel3);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -333,7 +333,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 
 	private void initialize() {
 		try {
-			setLayout(new java.awt.GridBagLayout());
+			getContentPanel().setLayout(new java.awt.GridBagLayout());
 	
 	     	// 0
 			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
@@ -341,7 +341,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsDefaultOutputRadioButton.gridy = 0;
 			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			constraintsDefaultOutputRadioButton.anchor = GridBagConstraints.LINE_START;
-			add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
+			getContentPanel().add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsDefaultOutputPanel = new java.awt.GridBagConstraints();
 			constraintsDefaultOutputPanel.gridx = 1; 
@@ -350,7 +350,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsDefaultOutputPanel.weightx = 1.0;
 			constraintsDefaultOutputPanel.weighty = 1.0;
 			constraintsDefaultOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			add(getDefaultOutputPanel(), constraintsDefaultOutputPanel);
+			getContentPanel().add(getDefaultOutputPanel(), constraintsDefaultOutputPanel);
 	
 			// 1
 			java.awt.GridBagConstraints constraintsUniformOutputRadioButton = new java.awt.GridBagConstraints();
@@ -358,7 +358,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsUniformOutputRadioButton.gridy = 1;
 			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			constraintsUniformOutputRadioButton.anchor = GridBagConstraints.LINE_START;
-			add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
+			getContentPanel().add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsUniformOutputPanel = new java.awt.GridBagConstraints();
 			constraintsUniformOutputPanel.gridx = 1; 
@@ -367,14 +367,14 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsUniformOutputPanel.weightx = 1.0;
 			constraintsUniformOutputPanel.weighty = 1.0;
 			constraintsUniformOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			add(getUniformOutputPanel(), constraintsUniformOutputPanel);
+			getContentPanel().add(getUniformOutputPanel(), constraintsUniformOutputPanel);
 	
 			// 2
 			java.awt.GridBagConstraints constraintsExplicitOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsExplicitOutputRadioButton.gridx = 0; constraintsExplicitOutputRadioButton.gridy = 2;
 			constraintsExplicitOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			constraintsExplicitOutputRadioButton.anchor = GridBagConstraints.FIRST_LINE_START;
-			add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
+			getContentPanel().add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsExplicitOutputPanel = new java.awt.GridBagConstraints();
 			constraintsExplicitOutputPanel.gridx = 1; 
@@ -384,7 +384,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsExplicitOutputPanel.weightx = 1.0;
 			constraintsExplicitOutputPanel.weighty = 1.0;
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
-			add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
+			getContentPanel().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 					
 			getbuttonGroup1().add(getDefaultOutputRadioButton());
 			getbuttonGroup1().add(getUniformOutputRadioButton());
@@ -685,12 +685,29 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		// enables the panel where the output interval is set if the solver is IDA
 		// Otherwise, that panel is disabled. 
 
-		getDefaultOutputRadioButton().setEnabled(false);
-		getUniformOutputRadioButton().setEnabled(false);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		getUniformOutputRadioButton().setEnabled(false);
 		BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		
+		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn)) {
+			getDefaultOutputPanel().setVisible(false);
+			getDefaultOutputRadioButton().setVisible(false);
+		} else {
+			getDefaultOutputPanel().setVisible(true);
+			getDefaultOutputRadioButton().setVisible(true);
+			getDefaultOutputRadioButton().setEnabled(false);
+			BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		}
+		
+		if (solverTaskDescription.getSimulation().getMathDescription().getGeometry().getDimension() > 0
+				|| solverTaskDescription.getSimulation().getMathDescription().isNonSpatialStoch()) {
+			getExplicitOutputPanel().setVisible(false);
+			getExplicitOutputRadioButton().setVisible(false);
+		} else {
+			getExplicitOutputPanel().setVisible(true);
+			getExplicitOutputRadioButton().setVisible(true);
+			getExplicitOutputRadioButton().setEnabled(false);
+			BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		}
 
 		if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
 			// if solver is not IDA, if the output Time step radio button had been set, 
@@ -785,38 +802,4 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		
 		initConnections();
 	}
-	
-	public static void main(java.lang.String[] args) {
-		try {
-			System.out.println("UIManager Default Properties");
-			javax.swing.UIDefaults df1 = javax.swing.UIManager.getDefaults(); // returns a HashTable
-			java.util.Enumeration dfkeys = df1.keys(); // returns an Enumeration
-
-			System.out.println("\n KEY / VALUE list");
-			while (dfkeys.hasMoreElements())
-			{ 
-				Object key = dfkeys.nextElement();
-				//if (key.equals("Table.sortIconColor"))
-					System.out.println(key + "\tval: "+ df1.get(key) );
-			}
-			
-			JFrame frame = new javax.swing.JFrame("OutputOptionsPanel");
-			OutputOptionsPanel panel;
-			panel = new OutputOptionsPanel();
-			frame.setContentPane(panel);
-			frame.setSize(panel.getSize());
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-				public void windowClosing(java.awt.event.WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			java.awt.Insets insets = frame.getInsets();
-			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-			frame.pack();
-			frame.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of javax.swing.JPanel");
-			exception.printStackTrace(System.out);
-		}
-	}	
 }

@@ -1,4 +1,6 @@
 package cbit.vcell.solver;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.math.VCML;
 
 /**
@@ -6,6 +8,7 @@ import cbit.vcell.math.VCML;
  * Creation date: (9/6/2005 3:09:27 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class UniformOutputTimeSpec extends OutputTimeSpec {
 	private double fieldOutputTimeStep;
 
@@ -23,7 +26,7 @@ public UniformOutputTimeSpec(double arg_outputTimeStep) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (this == obj) {
 		return (true);
 	}
@@ -63,8 +66,8 @@ public void setOuputTimeStep(double arg_outputTimeStep)
  * Creation date: (9/7/2005 3:43:26 PM)
  * @return java.lang.String
  */
-public java.lang.String getShortDescription() {
-	return "every " + fieldOutputTimeStep + " secs";
+public java.lang.String getDescription() {
+	return "every " + fieldOutputTimeStep + "s";
 }
 
 
@@ -122,4 +125,12 @@ public boolean isExplicit() {
 public boolean isUniform() {
 	return true;
 }
+
+
+@Override
+public String toString() {
+	return String.valueOf(fieldOutputTimeStep);
+}
+
+
 }

@@ -77,7 +77,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * Insert the method's description here.
  * Creation date: (5/11/2004 3:52:25 PM)
  */
-private String applyChanges(Simulation clonedSimulation, Simulation simulation) {
+private static String applyChanges(Simulation clonedSimulation, Simulation simulation) {
 	// we cannot simply replace the simulation with the clone because of two reasons:
 	// major - vetoable listeners are transient, thus not preserved during serialization/deserialization
 	// minor - proper refreshing the simulation list would require delete/reinsert which would make it non-trivial to avoid reordering
@@ -113,8 +113,7 @@ private String applyChanges(Simulation clonedSimulation, Simulation simulation) 
  * Insert the method's description here.
  * Creation date: (10/4/2004 6:36:12 AM)
  */
-public String checkCompatibility(Simulation simulation) {
-	SimulationOwner simOwner = getSimulationOwner();
+public static String checkCompatibility(SimulationOwner simOwner, Simulation simulation) {
 	if (simOwner instanceof MathModel){
 		return null;
 	}
@@ -143,7 +142,7 @@ public String checkCompatibility(Simulation simulation) {
  * @return boolean
  * @param simulation cbit.vcell.solver.Simulation
  */
-private boolean checkSimulationParameters(Simulation simulation, JComponent parent) {
+private static boolean checkSimulationParameters(Simulation simulation, Component parent) {
 	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 	
 	String errorMessage = null;
@@ -335,7 +334,7 @@ int copySimulations(Simulation[] sims, Component requester) throws java.beans.Pr
 		return -1;
 	}
 	for (int i = 0; i < sims.length; i++){
-		String errorMessage = checkCompatibility(sims[i]);
+		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
 		if(errorMessage != null){
 			PopupGenerator.showErrorDialog(requester, errorMessage+"\nUpdate Math before copying simulations");
 			return -1;
@@ -373,9 +372,9 @@ void deleteSimulations(Simulation[] sims) throws java.beans.PropertyVetoExceptio
 /**
  * Comment
  */
-void editSimulation(JComponent parent, Simulation simulation) {
+public static void editSimulation(Component parent, SimulationOwner simOwner, Simulation simulation) {
 	
-	String errorMessage = checkCompatibility(simulation);
+	String errorMessage = checkCompatibility(simOwner, simulation);
 	if(errorMessage != null){
 		PopupGenerator.showErrorDialog(parent, errorMessage+"\nUpdate Math before editing");
 		return;
@@ -462,11 +461,11 @@ public cbit.vcell.client.ClientSimManager getClientSimManager() {
  * @return boolean
  * @param simulation cbit.vcell.solver.Simulation
  */
-private long getExpectedNumTimePoints(Simulation simulation) {
+private static long getExpectedNumTimePoints(Simulation simulation) {
 	return simulation.getSolverTaskDescription().getExpectedNumTimePoints();
 }
 
-private long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTable)
+private static long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTable)
 {
 	Simulation sim = simSymbolTable.getSimulation();
 	SolverTaskDescription solverTaskDescription = sim.getSolverTaskDescription();
@@ -550,7 +549,7 @@ private long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTa
  * @return boolean
  * @param simulation cbit.vcell.solver.Simulation
  */
-private long getExpectedSizeBytes(SimulationSymbolTable simSymbolTable) {
+private static long getExpectedSizeBytes(SimulationSymbolTable simSymbolTable) {
 	Simulation simulation = simSymbolTable.getSimulation();
 	
 	long numTimepoints;

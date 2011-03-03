@@ -15,6 +15,7 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
@@ -93,31 +94,18 @@ private void refreshData() {
 	setData(parameterList);
 }
 
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (reactionStep == null){
-		return 0;
-	}
-	
-	return reactionStep.getKinetics().getKineticsParameters().length + reactionStep.getKinetics().getUnresolvedParameters().length + reactionStep.getKinetics().getProxyParameters().length;
-	
-}
-
 public Object getValueAt(int row, int col) {
 	try {
 		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				return new Expression(parameter, reactionStep.getKinetics().getReactionStep().getNameScope()).infix();
-				//return parameter.getName();
 			}
 			case COLUMN_UNITS:{
 				if (parameter.getUnitDefinition() != null){
 					return parameter.getUnitDefinition().getSymbol();
 				}else{
-					return "??";
+					return "";
 				}
 			}
 			case COLUMN_VALUE:{
@@ -132,20 +120,13 @@ public Object getValueAt(int row, int col) {
 				return parameter.getDescription();
 			}
 			case COLUMN_IS_GLOBAL: {
-				if (parameter instanceof KineticsParameter) {
-					return Boolean.FALSE;
-				} else {
-					return Boolean.TRUE;
-				}
-			}
-			default:{
-				return null;
+				return !(parameter instanceof KineticsParameter);
 			}
 		}
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
-		return null;
 	}		
+	return null;
 }
 
 /**
@@ -160,19 +141,20 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}
 	Parameter parameter = getValueAt(rowIndex);
-	if (columnIndex == COLUMN_NAME){
+	switch (columnIndex) {
+	case COLUMN_NAME:
 		return parameter.isNameEditable();
-	}else if (columnIndex == COLUMN_UNITS){
-		return parameter.isUnitEditable();
-	}else if (columnIndex == COLUMN_DESCRIPTION){
+	case COLUMN_DESCRIPTION:
 		return false;
-	}else if (columnIndex == COLUMN_VALUE){
-		return parameter.isExpressionEditable();
-	}else if (columnIndex == COLUMN_IS_GLOBAL) {
+	case COLUMN_IS_GLOBAL:
 		// if the parameter is reaction rate param or a ReservedSymbol in the model, it should not be editable
 		if ( (parameter instanceof KineticsParameter) && (((KineticsParameter)parameter).getRole() != Kinetics.ROLE_UserDefined) ) {
 			return false;
-		} else if (parameter instanceof KineticsProxyParameter) { 
+		}
+		if (parameter instanceof UnresolvedParameter) {
+			return false;
+		}
+		if (parameter instanceof KineticsProxyParameter) { 
 			KineticsProxyParameter kpp = (KineticsProxyParameter)parameter; 
 			SymbolTableEntry ste = kpp.getTarget();
 			if ((ste instanceof ReservedSymbol) || (ste instanceof SpeciesContext) || (ste instanceof ModelQuantity)) {
@@ -180,9 +162,12 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			}
 		}
 		return true;
-	}else{
-		return false;
+	case COLUMN_VALUE:
+		return parameter.isExpressionEditable();
+	case COLUMN_UNITS:
+		return parameter.isUnitEditable();
 	}
+	return false;	
 }
 /**
 	 * This method gets called when a bound property is changed.

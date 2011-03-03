@@ -1,6 +1,5 @@
 package org.vcell.util.gui;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -10,6 +9,7 @@ import javax.swing.ImageIcon;
 
 public abstract class VCellIcons {
 	
+	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
 	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
 	

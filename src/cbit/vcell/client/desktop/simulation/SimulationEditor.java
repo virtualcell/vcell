@@ -1,25 +1,31 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.vcell.solver.*;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+
+import org.vcell.util.BeanUtils;
+
+import cbit.vcell.math.gui.MeshSpecificationPanel;
+import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.ode.gui.MathOverridesPanel;
+import cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/11/2004 1:28:57 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class SimulationEditor extends JPanel {
-	private static final int TAB_TASK_INDEX = 2;
-	private static final int TAB_MESH_INDEX = 1;
-	private static final int TAB_PARAMETERS_INDEX = 0;
-	private static final String TAB_ADVANCED_TITLE = "Advanced";
-	private static final String TAB_TASK_TITLE = "Task";
+	private static final String TAB_ADVANCED_TITLE = "Solver";
 	private static final String TAB_PARAMETERS_TITLE = "Parameters";
 	private static final String TAB_MESH_TITLE = "Mesh";
 	private JTabbedPane ivjJTabbedPane1 = null;
-	private cbit.vcell.solver.ode.gui.MathOverridesPanel ivjMathOverridesPanel1 = null;
-	private cbit.vcell.math.gui.MeshSpecificationPanel ivjMeshSpecificationPanel1 = null;
-	private cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel ivjSolverTaskDescriptionAdvancedPanel1 = null;
-	private cbit.vcell.solver.ode.gui.SolverTaskDescriptionPanel ivjSolverTaskDescriptionPanel1 = null;
-	private cbit.vcell.solver.Simulation fieldClonedSimulation = null;
+	private MathOverridesPanel ivjMathOverridesPanel1 = null;
+	private MeshSpecificationPanel ivjMeshSpecificationPanel1 = null;
+	private SolverTaskDescriptionAdvancedPanel ivjSolverTaskDescriptionAdvancedPanel1 = null;
+	private Simulation fieldClonedSimulation = null;
 
 public SimulationEditor() {
 	super();
@@ -64,10 +70,9 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 		try {
 			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 			ivjJTabbedPane1.setName("JTabbedPane1");
-			ivjJTabbedPane1.insertTab(TAB_PARAMETERS_TITLE, null, getMathOverridesPanel1(), null, TAB_PARAMETERS_INDEX);
-			ivjJTabbedPane1.insertTab(TAB_MESH_TITLE, null, getMeshSpecificationPanel1(), null, TAB_MESH_INDEX);
-			ivjJTabbedPane1.insertTab(TAB_TASK_TITLE, null, getSolverTaskDescriptionPanel1(), null, TAB_TASK_INDEX);
-			ivjJTabbedPane1.insertTab(TAB_ADVANCED_TITLE, null, getSolverTaskDescriptionAdvancedPanel1(), null, 3);
+			ivjJTabbedPane1.addTab(TAB_PARAMETERS_TITLE, getMathOverridesPanel1());
+			ivjJTabbedPane1.addTab(TAB_MESH_TITLE, getMeshSpecificationPanel1());
+			ivjJTabbedPane1.addTab(TAB_ADVANCED_TITLE, getSolverTaskDescriptionAdvancedPanel1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -144,29 +149,6 @@ private cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel getSolverTa
 	}
 	return ivjSolverTaskDescriptionAdvancedPanel1;
 }
-
-
-/**
- * Return the SolverTaskDescriptionPanel1 property value.
- * @return cbit.vcell.solver.ode.gui.SolverTaskDescriptionPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ode.gui.SolverTaskDescriptionPanel getSolverTaskDescriptionPanel1() {
-	if (ivjSolverTaskDescriptionPanel1 == null) {
-		try {
-			ivjSolverTaskDescriptionPanel1 = new cbit.vcell.solver.ode.gui.SolverTaskDescriptionPanel();
-			ivjSolverTaskDescriptionPanel1.setName("SolverTaskDescriptionPanel1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSolverTaskDescriptionPanel1;
-}
-
 
 /**
  * Called whenever the part throws an exception.
@@ -250,13 +232,12 @@ private void makeBoldTitle() {
 /**
  * Comment
  */
-public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
+public void prepareToEdit(Simulation simulation) {
 	try {
-		Simulation clonedSimulation = (Simulation)org.vcell.util.BeanUtils.cloneSerializable(simulation);
+		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
 		getMeshSpecificationPanel1().setMeshSpecification(clonedSimulation == null ? null : clonedSimulation.getMeshSpecification());
-		getSolverTaskDescriptionPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		getSolverTaskDescriptionAdvancedPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		
 		boolean shouldMeshBeEnabled = false;
@@ -267,17 +248,8 @@ public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
 				shouldMeshBeEnabled = true;
 		}
 		if (!shouldMeshBeEnabled) {
-			getJTabbedPane1().remove(TAB_MESH_INDEX);
+			getJTabbedPane1().remove(getMeshSpecificationPanel1());
 		}
-
-//		int meshTabIndex = getJTabbedPane1().indexOfTab(TAB_MESH_TITLE);
-//		if(getJTabbedPane1().isEnabledAt(meshTabIndex) != shouldMeshBeEnabled){
-//			if(!shouldMeshBeEnabled && getJTabbedPane1().getSelectedIndex() == meshTabIndex){
-//				getJTabbedPane1().setSelectedIndex(0);
-//			}
-//			getJTabbedPane1().setEnabledAt(meshTabIndex,shouldMeshBeEnabled);
-//		}
-		// ok, we're ready
 		setClonedSimulation(clonedSimulation);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);

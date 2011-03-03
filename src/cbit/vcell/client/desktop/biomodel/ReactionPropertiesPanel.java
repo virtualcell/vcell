@@ -1,9 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -233,13 +233,8 @@ private void initialize() {
 		annotationTextArea.setWrapStyleWord(true);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Add Annotation Here", false);
-		collapsiblePanel.setLayout(new GridBagLayout());
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		collapsiblePanel.add(jsp, gbc);
+		collapsiblePanel.getContentPanel().setLayout(new BorderLayout());
+		collapsiblePanel.getContentPanel().add(jsp, BorderLayout.CENTER);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -251,14 +246,8 @@ private void initialize() {
 		
 		// wei's code
 		CollapsiblePanel collapsiblePanel2 = new CollapsiblePanel("Link/unlink Reaction to Pathway Here", false);
-		collapsiblePanel2.setLayout(new GridBagLayout());
-		GridBagConstraints gbc2 = new GridBagConstraints();
-		gbc2.gridx = 0; 
-		gbc2.gridy = 0;
-		gbc2.weightx = 1.0;
-		gbc2.weighty = 1.0;
-		gbc2.fill = java.awt.GridBagConstraints.BOTH;
-		collapsiblePanel2.add(relationshipPanel, gbc2);
+		collapsiblePanel2.getContentPanel().setLayout(new BorderLayout());
+		collapsiblePanel2.getContentPanel().add(relationshipPanel, BorderLayout.CENTER);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();

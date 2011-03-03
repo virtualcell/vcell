@@ -6,11 +6,11 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -106,6 +106,7 @@ public class CollapsiblePanel extends JPanel {
 	public static final Color borderTitleColor = UIManager.getColor("TitledBorder.titleColor");
 	private JLabel borderLabel = null;
 	private boolean bExpanded = true;
+	private JPanel contentPanel = null;
 
 	public CollapsiblePanel(String borderTitle) {
 		this(borderTitle, true);
@@ -126,11 +127,14 @@ public class CollapsiblePanel extends JPanel {
 				toggleExpand();
 			}			
 		});
-		addHierarchyListener(new HierarchyListener() {
-			public void hierarchyChanged(HierarchyEvent e) {
-				toggleExpand();
-			}
-		});
+		contentPanel = new JPanel();
+		setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();  
+        gbc.weightx = 1.0;  
+        gbc.weighty = 1.0;  
+        gbc.fill = GridBagConstraints.BOTH; 
+        add(contentPanel, gbc);
+        contentPanel.setVisible(bExpanded);
 	}
 	
 	private void toggleExpand() {
@@ -138,10 +142,12 @@ public class CollapsiblePanel extends JPanel {
 			return;
 		}
 		borderLabel.setIcon(bExpanded ? expandedIcon : collapsedIcon);
-		for (Component child : getComponents()) {
-			child.setVisible(bExpanded);
-		}
+		contentPanel.setVisible(bExpanded);
 		revalidate();
+	}
+	
+	public JPanel getContentPanel() {
+		return contentPanel;
 	}
 	
 	public void expand(boolean bexpand) {
@@ -150,13 +156,5 @@ public class CollapsiblePanel extends JPanel {
 		}
 		bExpanded = bexpand;
 		toggleExpand();
-	}
-	
-	@Override
-	public void setVisible(boolean aFlag) {
-		for (Component child : getComponents()) {
-			child.setVisible(aFlag);
-		}
-		super.setVisible(aFlag);
 	}
 }

@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.solver.SolverDescription;
 
 public class VCellErrorMessages {
 //	public static void main(String[] args) {
@@ -14,7 +15,7 @@ public class VCellErrorMessages {
 //			exception.printStackTrace(System.out);
 //		}
 //	}
-	
+		
 	private final static String PLACE_HOLDER = "__PLACE_HOLDER__";
 	private final static String VCellSupport = "VCell Support(vcell_support@uchc.edu)";
 	
@@ -88,6 +89,33 @@ public class VCellErrorMessages {
 	public final static String MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2 = "stochastic model requires at least one jump process";
 	
 	// ========== math description end ================== //
+	
+	public final static String RunSims_1 = "Simulation '" + PLACE_HOLDER + "' is completed already. "
+		+ "\n\nDo you want to continue anyway?";
+	public static final String RunSims_2 = "Simulation '" + PLACE_HOLDER + "' has non-uniform spatial step. " 
+		+ "This might affect the accuracy of the solution.\n\n"
+		+ PLACE_HOLDER + "\n\nDo you want to continue anyway?";
+	public static final String RunSims_3 =  "<html>The time step for " + SolverDescription.Smoldyn.getDisplayLabel()
+			+ " needs to satisfy stability constraint" 
+			+ "<dl><dd><i>\t\u0394t &lt; s<sup>2</sup> / ( 2D<sub>max</sub> )</i></dd></dl>" 
+			+ "Where <i>s</i> is spatial resolution and <i>D<sub>max</sub></i> is the diffusion " 
+			+ "coefficient of the fastest diffusing species. </html>"; 
+	public static final String RunSims_4 = "The simulation mesh size (" + PLACE_HOLDER + ")" +
+			" for '" + PLACE_HOLDER + "' results in different number of geometric regions [" + PLACE_HOLDER + "] than " +
+			"the number of geometric regions [" + PLACE_HOLDER + "] resolved in the Geometry Viewer." +
+			"\n\nThis can affect the accuracy of the solution. Finer simulation mesh is recommended."
+			 + "\n\nDo you want to continue anyway?"; 
+	public static final String RunSims_5 = "The mesh size (" + PLACE_HOLDER + ")" 
+		+ " for simulation '" + PLACE_HOLDER + "' is finer than the original image resolution (" + PLACE_HOLDER + ")" 
+		+ ".\n\nThis will not improve the accuracy of the solution and can take longer to run. Original resolution (" 
+		+ PLACE_HOLDER + ") or coarser mesh is recommended."  + "\n\nDo you want to continue anyway?"; 
+	public final static String RunSims_6 = "You have choosen " + SolverDescription.SundialsPDE.getDisplayLabel()  
+		+ " to solve a time dependent diffusion/advection system. This could take long time. You can choose "
+		+ SolverDescription.FiniteVolumeStandalone.getDisplayLabel() + ".\n\nDo you want to continue anyway?";
+
+	
+	public final static String SensitivityAnalysis_Help = "Sensitivity Analysis " +
+			"is a technique for determining the influence of small parameter changes on model output.";
 	
 	public static final String getErrorMessage(String baseErrorMessage, Object... objects) {
 		String returnMessage = baseErrorMessage;

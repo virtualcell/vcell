@@ -74,11 +74,17 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 	    		}
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
+	    		case MATH_VCML_NODE:
+	    			icon = VCellIcons.textNotesIcon;
+	    			break;
 	    		case MATH_GEOMETRY_NODE:
 	    			icon = VCellIcons.geometryIcon;
 	    			break;
 	    		case MATH_SIMULATIONS_NODE:
 	    			icon = VCellIcons.simulationIcon;
+	    			break;
+	    		case MATH_OUTPUT_FUNCTIONS_NODE:
+	    			icon = VCellIcons.getOutputFunctionIcon();
 	    			break;
 	    		}
 	    	}

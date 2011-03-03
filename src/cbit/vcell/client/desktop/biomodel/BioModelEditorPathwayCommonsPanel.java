@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -451,21 +450,21 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		responseTree.setModel(responseTreeModel);
 		ToolTipManager.sharedInstance().registerComponent(responseTree);
 		
-		JPanel searchPanel = new CollapsiblePanel("Search", true);
-		searchPanel.setLayout(new GridBagLayout());
+		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", true);
+		searchPanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		searchPanel.add(searchTextField, gbc);
+		searchPanel.getContentPanel().add(searchTextField, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(0,4,0,0);
-		searchPanel.add(searchButton, gbc);
+		searchPanel.getContentPanel().add(searchButton, gbc);
 		
 		setPreferredSize(new Dimension(475, 300));
 		setLayout(new GridBagLayout());
