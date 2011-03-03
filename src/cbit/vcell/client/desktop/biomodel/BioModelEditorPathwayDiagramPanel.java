@@ -21,6 +21,7 @@ import org.jdom.Element;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.relationship.PathwayMapping;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.graph.GraphPane;
@@ -47,10 +48,16 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	private GraphPane graphPane;
 	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
+	private JButton bringItInButton = null; // wei's code
 	
 	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener {
 
 		public void actionPerformed(ActionEvent e) {
+			// wei's code
+			if(e.getSource() == bringItInButton){
+				bringItIn();
+			}
+			// done
 		}
 		public void valueChanged(ListSelectionEvent e) {
 		}
@@ -122,13 +129,22 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		graphCartoonTool = new PathwayGraphTool();
 		graphCartoonTool.setGraphPane(graphPane);	
 		
+		// wei's code: add a button for demo. please redesign it for better User interface
+		JPanel layoutPanel = new JPanel();
+		bringItInButton = new JButton("Bring It In");
+		bringItInButton.addActionListener(eventHandler);
+		layoutPanel.add(nodesToolBar, BorderLayout.WEST);
+		layoutPanel.add(bringItInButton, BorderLayout.EAST);	
+		// done
+		
 		JPanel graphTabPanel = new JPanel(new BorderLayout());
 		JScrollPane graphScrollPane = new JScrollPane(graphPane);
 		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		graphScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		graphTabPanel.add(graphScrollPane, BorderLayout.CENTER);
 		graphTabPanel.add(layoutToolBar, BorderLayout.WEST);
-		graphTabPanel.add(nodesToolBar, BorderLayout.NORTH);
+		graphTabPanel.add(layoutPanel, BorderLayout.NORTH);// wei's code
+// wei		graphTabPanel.add(nodesToolBar, BorderLayout.NORTH);
 		
 		JPanel sourceTabPanel = new JPanel(new BorderLayout());
 		sourceTabPanel.add(new JScrollPane(sourceTextArea), BorderLayout.CENTER);
@@ -184,4 +200,17 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 			sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");
 		}
 	}
+	
+	// wei's code
+	private void bringItIn(){
+		PathwayMapping pathwayMapping = new PathwayMapping();
+		try{
+			pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, graphCartoonTool.getGraphModel().getSelectedObjects());
+		}catch(Exception e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Errors occur when converting pathway objects to VCell bioModel objects.\n" + e.getMessage());
+		}
+	}
+	// done
 }

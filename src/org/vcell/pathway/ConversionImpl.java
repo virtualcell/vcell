@@ -2,6 +2,7 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
 
 public class ConversionImpl extends InteractionImpl implements Conversion {
@@ -22,10 +23,30 @@ public class ConversionImpl extends InteractionImpl implements Conversion {
 		return spontaneous;
 	}
 	public ArrayList<PhysicalEntity> getLeft() {
-		return left;
+		// Since arrayList left had never been set, it will return an empty ArrayList if we just "return left;" 
+		// Xintao implemented the function as the way to return arrayList leftSide after filling in the participants that have the LEFT type.
+		// Feel free to modify it if you can return the same thing here because some functions rely on it.
+		// 02/2011
+		ArrayList<PhysicalEntity> leftSide = new ArrayList<PhysicalEntity>();
+		for (InteractionParticipant obj :getParticipants()){
+			if(obj.getType() == Type.LEFT){
+				leftSide.add(obj.getPhysicalEntity());
+			}
+		}
+		return leftSide;
 	}
 	public ArrayList<PhysicalEntity> getRight() {
-		return right;
+		// Since arrayList right had never been set, it will return an empty ArrayList if we just "return right;" 
+		// Xintao implemented the function as the way to return arrayList rightSide after filling in the participants that have the RIGHT type.
+		// Feel free to modify it if you can return the same thing here because some functions rely on it
+		// 02/2011
+		ArrayList<PhysicalEntity> rightSide = new ArrayList<PhysicalEntity>();
+		for (InteractionParticipant obj :getParticipants()){
+			if(obj.getType() == Type.RIGHT){
+				rightSide.add(obj.getPhysicalEntity());
+			}
+		}
+		return rightSide;
 	}
 	
 	public void setConversionDirection(String conversionDirection) {
