@@ -30,7 +30,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	protected Point start = new Point();
 	protected Point end = new Point();
 
-	protected static final double CONTROL_WEIGHT = 50.0;
+	protected static final double CONTROL_WEIGHT = 25.0;
 	protected static final double FRACT_WEIGHT = 0.25;
 	protected Point lastCurve_Start = null;
 	protected Point lastCurve_End = null;
@@ -91,8 +91,8 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		// use 10 and 30 "pixels" away for the arrowhead.
 		double X1 = front.getX();
 		double Y1 = front.getY();
-		double X2 = front.getX() + 1.5 * deltaX;
-		double Y2 = front.getY() + 1.5 * deltaY;
+		double X2 = front.getX() + 1.0 * deltaX;
+		double Y2 = front.getY() + 1.0 * deltaY;
 		double X3 = X2 + 0.5 * width * deltaY / distance;
 		double Y3 = Y2 - 0.5 * width * deltaX / distance;
 		double X4 = X2 - 0.5 * width * deltaY / distance;

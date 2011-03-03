@@ -43,22 +43,25 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 			new Point2D.Double(FRACT_WEIGHT*start.getX() + (1.0 - FRACT_WEIGHT)*end.getX(),
 					FRACT_WEIGHT*start.getY() + (1.0 - FRACT_WEIGHT)*end.getY());
 		// calculate tangent direction at "reactionStep"
-		double tangentX = 1.0;
+		double tangentX = 0.0;
 		double tangentY = 0.0;
 		if (endShape instanceof ReactionStepShape){
 			ReactionStepShape reactionStepShape = (ReactionStepShape) endShape;
 			for(Shape shape : graphModel.getShapes()) {
 				if (shape instanceof ReactionParticipantShape && 
 						((ReactionParticipantShape) shape).endShape == reactionStepShape){
-
+					ReactionParticipantShape rpShape = (ReactionParticipantShape)shape;
+					double dx = rpShape.start.getX()-rpShape.end.getX();
+					double dy = rpShape.start.getY()-rpShape.end.getY();
+					double len = dx*dx+dy*dy;
 					if (shape instanceof ProductShape){
 						ProductShape ps = (ProductShape) shape;
-						tangentX += (ps.start.getX() - ps.end.getX());
-						tangentY += (ps.start.getY() - ps.end.getY());
+						tangentX += (ps.start.getX() - ps.end.getX())/len;
+						tangentY += (ps.start.getY() - ps.end.getY())/len;
 					}else if (shape instanceof ReactantShape){
 						ReactantShape rs = (ReactantShape) shape;
-						tangentX -= (rs.start.getX() - rs.end.getX());
-						tangentY -= (rs.start.getY() - rs.end.getY());
+						tangentX -= (rs.start.getX() - rs.end.getX())/len;
+						tangentY -= (rs.start.getY() - rs.end.getY())/len;
 					}
 				}
 			}
@@ -157,13 +160,13 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		}
 		if (arrowDirection == -1){
 			double arcLength = integrateArcLength(cubicCurve, 0.0, 1.0, 10);
-			double centerT = getParameterAtArcLength(cubicCurve, 0.0, 1.0, arcLength/2, 20);
+			double centerT = getParameterAtArcLength(cubicCurve, 0.0, 1.0, arcLength/2+2, 20);
 			Point2D center = evaluate(cubicCurve, centerT);
 			double backT = intersectWithCircle(cubicCurve, centerT, 0.0, center.getX(), center.getY(), 4);
 			Point2D back = evaluate(cubicCurve, backT);
 			double frontT = intersectWithCircle(cubicCurve, centerT, 1.0, center.getX(), center.getY(), 4);
 			Point2D front = evaluate(cubicCurve,frontT);
-			GeneralPath arrow = getArrow(front,back,6);
+			GeneralPath arrow = getArrow(front,back,7);
 			g2D.fill(arrow);
 		}
 		// draw label
