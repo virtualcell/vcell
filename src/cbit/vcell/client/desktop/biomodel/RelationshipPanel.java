@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -17,7 +18,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -26,21 +29,26 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.BioModelEntityObject;
 
+
 @SuppressWarnings("serial")
 public class RelationshipPanel extends DocumentEditorSubPanel {
 	private BioModelEntityObject bioModelEntityObject = null;
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	private BioModelEditorPathwayTableModel tableModel = null; 
+	private PathwayMapping pathwayMapping = null;
 	private JSortTable table;
 	private JCheckBox showLinkedEntityCheckBox = null;
 	private JTextField textFieldSearch = null;
 	private JButton goToButton = null;
+	private JButton bringItInButton = null;
 	
 	private class EventHandler implements ActionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(e.getSource() == showLinkedEntityCheckBox){
 				tableModel.setShowLinkOnly(showLinkedEntityCheckBox.isSelected());
+			}else if(e.getSource() == bringItInButton){
+				bringItIn();
 			}else if(e.getSource() == goToButton){
 				goToPathway();
 			}
@@ -115,22 +123,32 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 0, 4, 0);
 		add(textFieldSearch, gbc);
 		
 		showLinkedEntityCheckBox = new JCheckBox("Show linked pathway entities");
 		showLinkedEntityCheckBox.setBackground(Color.white);
 		showLinkedEntityCheckBox.addActionListener(eventHandler);
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 5; 
+		gbc.gridx = 4; 
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 10, 4, 0);
 		add(showLinkedEntityCheckBox, gbc);	
+		
+		bringItInButton = new JButton("Bring it in");
+		bringItInButton.addActionListener(eventHandler);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 5; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 0, 4, 0);
+		add(bringItInButton, gbc);
 		
 		goToButton = new JButton("Go to Pathway");
 		goToButton.addActionListener(eventHandler);
@@ -139,7 +157,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 10, 4, 0);
+		gbc.insets = new Insets(4, 0, 4, 0);
 		add(goToButton, gbc);	
 		
 		setBackground(Color.white);		
@@ -205,6 +223,26 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	
 }
 
+private void bringItIn(){
+	if(bioModel == null){
+		return;
+	}
+	if(bioModel.getRelationshipModel() == null){
+		return;
+	}
+	pathwayMapping = new PathwayMapping();
+	// need to change: hard code -- the first linked pathway object will be brought in
+	HashSet<RelationshipObject> relationshipObjects = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
+	try{
+		pathwayMapping.createBioModelEntityFromPathway(bioModel, bioModelEntityObject, (RelationshipObject)relationshipObjects.toArray()[0]);
+	}catch(Exception e)
+	{
+		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(this, "Errors occur when converting pathway objects to VCell bioModel objects.\n" + e.getMessage());
+	}
+
+}
+
 private void goToPathway(){
 	if(bioModel == null){
 		return;
@@ -215,15 +253,12 @@ private void goToPathway(){
 	ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
 	for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject)){
 		selectedBioPaxObjects.add(re.getBioPaxObject());
-System.out.println(re.getBioPaxObject().toString());
 	}
-//	System.out.println(selectionManager.toString()+"# of objects are selected : " + selectedBioPaxObjects.toArray().length);
-
 	if (selectionManager != null){
 		selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
 		selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
 	}
-	
 }
 
 }
+

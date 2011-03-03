@@ -2710,6 +2710,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				for (int j=0;j<newSpeciesContextArray.length;j++){
 					if (newSpeciesContextArray[j] == rpArray[k].getSpeciesContext()){
 						bFound = true;
+						break;
 					}
 				}
 				if (!bFound){
@@ -2757,6 +2758,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				for (int j=0;j<fieldSpeciesContexts.length;j++){
 					if (fieldSpeciesContexts[j] == rpArray[k].getSpeciesContext()){
 						bFound = true;
+						break;
 					}
 				}
 				if (!bFound){

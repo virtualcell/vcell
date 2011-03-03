@@ -23,7 +23,7 @@ public class RelationshipModel {
 	
 	public void merge(RelationshipModel relationshipModel) {
 		relationshipObjects.addAll(relationshipModel.relationshipObjects);
-		fireRelationshipChanged(new RelationshipEvent(this, RelationshipEvent.CHANGED));
+		fireRelationshipChanged(new RelationshipEvent(this, null, RelationshipEvent.CHANGED));
 	}
 	
 	private ArrayList<RelationshipListener> getRelationshipListeners(){
@@ -50,9 +50,9 @@ public class RelationshipModel {
 		if (relationshipObject==null){
 			throw new RuntimeException("added a null object to relationship model");
 		}
-		if(!contains(relationshipObject)){
+		if(!getRelationshipObjects().contains(relationshipObject)){
 			getRelationshipObjects().add(relationshipObject);
-			fireRelationshipChanged(new RelationshipEvent(this,RelationshipEvent.CHANGED));
+			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
 		}
 		return relationshipObject;
 	}
@@ -61,9 +61,9 @@ public class RelationshipModel {
 		if (relationshipObject==null){
 			throw new RuntimeException("remove a null object to relationship model");
 		}
-		if(!contains(relationshipObject)){
+		if(getRelationshipObjects().contains(relationshipObject)){
 			getRelationshipObjects().remove(relationshipObject);
-			fireRelationshipChanged(new RelationshipEvent(this,RelationshipEvent.CHANGED));
+			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
 		}
 		return relationshipObject;
 	}
@@ -75,7 +75,7 @@ public class RelationshipModel {
 		for(RelationshipObject reObject : reObjects)
 			getRelationshipObjects().add(reObject);
 
-		fireRelationshipChanged(new RelationshipEvent(this,RelationshipEvent.CHANGED));
+		fireRelationshipChanged(new RelationshipEvent(this,null, RelationshipEvent.CHANGED));
 		return;
 	}
 
@@ -95,10 +95,5 @@ public class RelationshipModel {
 				associatedReObjects.add(reObject);
 		}
 		return associatedReObjects;
-	}
-	
-	// to check whether the RelationshipObject has been added
-	public boolean contains(RelationshipObject reObject){
-		return relationshipObjects.contains(reObject);
 	}
 }

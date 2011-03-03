@@ -31,16 +31,4 @@ public class RelationshipObject implements Identifiable{
 		typeName = typeName.replace(".","");
 		return typeName;
 	}
-
-	public boolean equals(Object object) {
-		if(object instanceof RelationshipObject) {
-			RelationshipObject reObject = (RelationshipObject) object;
-			return biopaxObject.equals(reObject.biopaxObject) && bioModelObject.equals(reObject.bioModelObject);
-		}
-		return false;
-	}
-
-	public int hashCode() {
-		return biopaxObject.hashCode() + bioModelObject.hashCode();
-	}
 }

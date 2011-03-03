@@ -226,7 +226,9 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	}
 
 	public void relationshipChanged(RelationshipEvent event) {
-		refreshData();		
+		if (event.getRelationshipObject() == null || event.getRelationshipObject().getBioModelEntityObject() == bioModelEntityObject) {
+			refreshData();
+		}
 	}
 	
 }

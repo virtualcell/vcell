@@ -5,12 +5,15 @@ import java.util.EventObject;
 public class RelationshipEvent extends EventObject{
 	private int operationType = CHANGED;
 
+	private RelationshipObject relationshipObject;
+
 	public static final int CHANGED = 0;
 	
 	private static final String operationNames[] = { "changed" };
 
-	public RelationshipEvent(RelationshipModel relationshipModel, int operationType) {
+	public RelationshipEvent(RelationshipModel relationshipModel, RelationshipObject relationshipObject, int operationType) {
 		super(relationshipModel);
+		this.relationshipObject = relationshipObject;
 		this.operationType = operationType;
 	}
 	
@@ -24,5 +27,9 @@ public class RelationshipEvent extends EventObject{
 
 	public String toString() {
 		return "RelationshipEvent:" + getOperationName();
+	}
+	
+	public RelationshipObject getRelationshipObject() {
+		return relationshipObject;
 	}
 }
