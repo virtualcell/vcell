@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
-
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -74,45 +72,55 @@ import org.vcell.pathway.TemplateReaction;
 import org.vcell.pathway.TemplateReactionRegulation;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.TransportWithBiochemicalReaction;
+import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
 import org.vcell.sybil.rdf.NameSpace;
 
 public class PathwayProducerBiopax3 {
 
-	private HashSet<BioPaxObject> biopaxObjects = null;
 	public Element biopaxElement = null;
-	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
+	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
 	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
 	private final String schemaString = new String("http://www.w3.org/2001/XMLSchema#string");
 	private final String schemaInt = new String("http://www.w3.org/2001/XMLSchema#int");
 	private final String schemaBoolean = new String("http://www.w3.org/2001/XMLSchema#boolean");
 	private final String schemaDouble = new String("http://www.w3.org/2001/XMLSchema#double");
 
+	private HashSet<BioPaxObject> objectsPrinted = new HashSet<BioPaxObject>();
+	private HashSet<BioPaxObject> objectsToPrint = new HashSet<BioPaxObject>();
+	
+	public void mustPrintObject(BioPaxObject bioPaxObject){
+		if(!bioPaxObject.hasID()) {
+			return;
+		}
+		if (objectsPrinted.contains(bioPaxObject)){
+			return;
+		}
+		objectsToPrint.add(bioPaxObject);
+	}
+	
 	public PathwayProducerBiopax3() {
 	}
 
 	public void getXML(PathwayModel pathwayModel, Element rootElement) {
+		objectsToPrint.addAll(pathwayModel.getBiopaxObjects());
 		
 		biopaxElement = rootElement;
 		biopaxElement.addNamespaceDeclaration(bp);
 		biopaxElement.addNamespaceDeclaration(rdf);
 
-		biopaxObjects = (HashSet<BioPaxObject>)(pathwayModel.getBiopaxObjects());
-		int tmpCount = 0;
-		for (BioPaxObject bpObject : biopaxObjects){
+		while (objectsToPrint.size()>0){
+			BioPaxObject bpObject = objectsToPrint.iterator().next();
 			if(bpObject == null) {
 				System.out.println("null object!");
 				break;
 			}
-//			if(tmpCount > 150) {
-//				return;
-//			}
-			tmpCount++;
 			
 			String className = bpObject.getClass().getName().substring(1+bpObject.getClass().getName().lastIndexOf('.'));
 //			System.out.println("object: " + className);
-			
-			if (className.equals("Pathway")){
+			if(className.equals("Test")){
+				System.out.println("PathwayProducerBiopax3::getXML()");
+			}else if (className.equals("Pathway")){
 				biopaxElement.addContent(addObjectPathway(bpObject, className));
 			}else if (className.equals("BiochemicalReactionImpl")){
 				biopaxElement.addContent(addObjectBiochemicalReaction(bpObject, "BiochemicalReaction"));
@@ -204,8 +212,8 @@ public class PathwayProducerBiopax3 {
 				biopaxElement.addContent(addObjectBiochemicalPathwayStep(bpObject, className));
 			}else if (className.equals("PhysicalEntity")){
 				biopaxElement.addContent(addObjectPhysicalEntity(bpObject, className));
-
-			// not found "as is" in tested sample
+//
+//			// not found "as is" in tested sample
 			}else if (className.equals("Gene")){
 				biopaxElement.addContent(addObjectGene(bpObject, className));
 			}else if (className.equals("Ontology")){
@@ -241,6 +249,8 @@ public class PathwayProducerBiopax3 {
 			}else{
 				showUnexpected(bpObject);
 			}
+			objectsPrinted.add(bpObject);
+			objectsToPrint.remove(bpObject);
 		}
 		return;
 	}
@@ -255,59 +265,59 @@ public class PathwayProducerBiopax3 {
 //	}
 
 	private Element addObjectScore(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentScore(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectKPrime(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentKPrime(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectExperimentalForm(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentExperimentalForm(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectEvidence(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentEvidence(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectEntityFeature(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentEntityFeature(bpObject, element);
 		return element;
 	}
 	private Element addObjectFragmentFeature(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentFragmentFeature(bpObject, element);
 		return element;
 	}
 	private Element addObjectCovalentBindingFeature(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentCovalentBindingFeature(bpObject, element);
 		return element;
 	}
 	private Element addObjectModificationFeature(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentModificationFeature(bpObject, element);
 		return element;
 	}
 	private Element addObjectBindingFeature(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentBindingFeature(bpObject, element);
 		return element;
@@ -315,235 +325,235 @@ public class PathwayProducerBiopax3 {
 
 
 	private Element addObjectDeltaG(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDeltaG(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectChemicalStructure(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentChemicalStructure(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectDegradation(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDegradation(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectComplexAssembly(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentComplexAssembly(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectTemplateReaction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentTemplateReaction(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectMolecularInteraction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentMolecularInteraction(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectGeneticInteraction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentGeneticInteraction(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectTransportWithBiochemicalReaction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentTransportWithBiochemicalReaction(bpObject, element);
 		return element;
 	}
 	private Element addObjectTransport(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentTransport(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectInteraction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentInteraction(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectGene(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentGene(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectPhysicalEntity(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentPhysicalEntity(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectPathwayStep(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentPathwayStep(bpObject, element);
 		return element;
 	}
 	private Element addObjectBiochemicalPathwayStep(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentBiochemicalPathwayStep(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectStoichiometry(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentStoichiometry(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectSequenceSite(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSequenceSite(bpObject, element);
 		return element;
 	}
 	private Element addObjectSequenceInterval(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSequenceInterval(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectBioSource(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentBioSource(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectSmallMolecule(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSmallMolecule(bpObject, element);
 		return element;
 	}
 	private Element addObjectRnaRegion(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRnaRegion(bpObject, element);
 		return element;
 	}
 	private Element addObjectRna(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRna(bpObject, element);
 		return element;
 	}
 	private Element addObjectDnaRegion(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDnaRegion(bpObject, element);
 		return element;
 	}
 	private Element addObjectDna(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDna(bpObject, element);
 		return element;
 	}
 	private Element addObjectProtein(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentProtein(bpObject, element);
 		return element;
 	}
 	private Element addObjectComplex(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentComplex(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectTemplateReactionRegulation(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentTemplateReactionRegulation(bpObject, element);
 		return element;
 	}
 	private Element addObjectModulation(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentModulation(bpObject, element);
 		return element;
 	}
 	private Element addObjectCatalysis(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentCatalysis(bpObject, element);
 		return element;
 	}
 	private Element addObjectControl(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentControl(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectProvenance(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentProvenance(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectDnaReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDnaReference(bpObject, element);
 		return element;
 	}
 	private Element addObjectDnaRegionReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentDnaRegionReference(bpObject, element);
 		return element;
 	}
 	private Element addObjectProteinReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentProteinReference(bpObject, element);
 		return element;
 	}
 	private Element addObjectRnaReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRnaReference(bpObject, element);
 		return element;
 	}
 	private Element addObjectRnaRegionReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRnaRegionReference(bpObject, element);
 		return element;
 	}
 	private Element addObjectSmallMoleculeReference(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSmallMoleculeReference(bpObject, element);
 		return element;
@@ -551,110 +561,110 @@ public class PathwayProducerBiopax3 {
 
 
 	private Element addObjectUnificationXref(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentUnificationXref(bpObject, element);
 		return element;
 	}
 	private Element addObjectRelationshipXref(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRelationshipXref(bpObject, element);
 		return element;
 	}
 	private Element addObjectPublicationXref(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentPublicationXref(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectTissueVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentTissueVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectSequenceRegionVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSequenceRegionVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectSequenceModificationVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentSequenceModificationVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectRelationshipTypeVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentRelationshipTypeVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectPhenotypeVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentPhenotypeVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectInteractionVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentInteractionVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectExperimentalFormVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentExperimentalFormVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectEvidenceCodeVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentEvidenceCodeVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectEntityReferenceTypeVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentEntityReferenceTypeVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectCellVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentCellVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectCellularLocationVocabulary(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentCellularLocationVocabulary(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectBiochemicalReaction(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentBiochemicalReaction(bpObject, element);
 		return element;
 	}
 
 	private Element addObjectPathway(BioPaxObject bpObject, String className) {
-		Element element = new Element(className);
+		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentPathway(bpObject, element);
 		return element;
@@ -776,7 +786,8 @@ public class PathwayProducerBiopax3 {
 			List<DeltaG> list = ob.getDeltaG();
 			for(DeltaG item : list) {
 				tmpElement = new Element("deltaG", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -784,7 +795,8 @@ public class PathwayProducerBiopax3 {
 			List<KPrime> list = ob.getkEQ();
 			for(KPrime item : list) {
 				tmpElement = new Element("kEQ", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -831,7 +843,8 @@ public class PathwayProducerBiopax3 {
 
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -851,7 +864,8 @@ public class PathwayProducerBiopax3 {
 			List<Interaction> list = ob.getStepProcessInteraction();
 			for(Interaction item : list) {
 				tmpElement = new Element("stepProcess", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -859,7 +873,8 @@ public class PathwayProducerBiopax3 {
 			List<Pathway> list = ob.getStepProcessPathway();
 			for(Pathway item : list) {
 				tmpElement = new Element("stepProcess", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -867,7 +882,8 @@ public class PathwayProducerBiopax3 {
 			List<PathwayStep> list = ob.getNextStep();
 			for(PathwayStep item : list) {
 				tmpElement = new Element("nextStep", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -875,7 +891,8 @@ public class PathwayProducerBiopax3 {
 			List<Evidence> list = ob.getEvidence();
 			for(Evidence item : list) {
 				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -891,7 +908,8 @@ public class PathwayProducerBiopax3 {
 
 		if(ob.getStepConversion() != null) {
 			tmpElement = new Element("stepConversion", bp);
-			tmpElement.setAttribute("resource", ob.getStepConversion().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getStepConversion().resourceFromID(), rdf);
+			mustPrintObject(ob.getStepConversion());
 			element.addContent(tmpElement);
 		}
 		if(ob.getStepDirection() != null && ob.getStepDirection().length() > 0) {
@@ -913,7 +931,8 @@ public class PathwayProducerBiopax3 {
 
 		if(ob.getPhysicalEntity() != null) {
 			tmpElement = new Element("physicalEntity", bp);
-			tmpElement.setAttribute("resource", ob.getPhysicalEntity().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getPhysicalEntity().resourceFromID(), rdf);
+			mustPrintObject(ob.getPhysicalEntity());
 			element.addContent(tmpElement);
 		}
 		if(ob.getStoichiometricCoefficient() != null) {
@@ -957,12 +976,14 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getSequenceIntervalBegin() != null) {
 			tmpElement = new Element("sequenceIntervalBegin", bp);
-			tmpElement.setAttribute("resource", ob.getSequenceIntervalBegin().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getSequenceIntervalBegin().resourceFromID(), rdf);
+			mustPrintObject(ob.getSequenceIntervalBegin());
 			element.addContent(tmpElement);
 		}
 		if(ob.getSequenceIntervalEnd() != null) {
 			tmpElement = new Element("sequenceIntervalEnd", bp);
-			tmpElement.setAttribute("resource", ob.getSequenceIntervalEnd().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getSequenceIntervalEnd().resourceFromID(), rdf);
+			mustPrintObject(ob.getSequenceIntervalEnd());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -986,7 +1007,8 @@ public class PathwayProducerBiopax3 {
 			List<SequenceLocation> list = ob.getFeatureLocation();
 			for(SequenceLocation item : list) {
 				tmpElement = new Element("featureLocation", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -994,7 +1016,8 @@ public class PathwayProducerBiopax3 {
 			List<SequenceRegionVocabulary> list = ob.getFeatureLocationType();
 			for(SequenceRegionVocabulary item : list) {
 				tmpElement = new Element("featureLocationType", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1002,7 +1025,8 @@ public class PathwayProducerBiopax3 {
 			List<EntityFeature> list = ob.getMemberFeature();
 			for(EntityFeature item : list) {
 				tmpElement = new Element("memberFeature", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1010,7 +1034,8 @@ public class PathwayProducerBiopax3 {
 			List<Evidence> list = ob.getEvidence();
 			for(Evidence item : list) {
 				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1040,12 +1065,14 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getBindsTo() != null) {
 			tmpElement = new Element("bindsTo", bp);
-			tmpElement.setAttribute("resource", ob.getBindsTo().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getBindsTo().resourceFromID(), rdf);
+			mustPrintObject(ob.getBindsTo());
 			element.addContent(tmpElement);
 		}
 		if(ob.getModificationType() != null) {
 			tmpElement = new Element("modificationType", bp);
-			tmpElement.setAttribute("resource", ob.getModificationType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getModificationType().resourceFromID(), rdf);
+			mustPrintObject(ob.getModificationType());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1059,7 +1086,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getModificationType() != null) {
 			tmpElement = new Element("modificationType", bp);
-			tmpElement.setAttribute("resource", ob.getModificationType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getModificationType().resourceFromID(), rdf);
+			mustPrintObject(ob.getModificationType());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1080,7 +1108,8 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getBindsTo() != null) {
 			tmpElement = new Element("bindsTo", bp);
-			tmpElement.setAttribute("resource", ob.getBindsTo().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getBindsTo().resourceFromID(), rdf);
+			mustPrintObject(ob.getBindsTo());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1098,12 +1127,14 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getTissue() != null) {
 			tmpElement = new Element("tissue", bp);
-			tmpElement.setAttribute("resource", ob.getTissue().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getTissue().resourceFromID(), rdf);
+			mustPrintObject(ob.getTissue());
 			element.addContent(tmpElement);
 		}
 		if(ob.getCellType() != null) {
 			tmpElement = new Element("cellType", bp);
-			tmpElement.setAttribute("resource", ob.getCellType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getCellType().resourceFromID(), rdf);
+			mustPrintObject(ob.getCellType());
 			element.addContent(tmpElement);
 		}
 		if(ob.getName() != null && ob.getName().size() > 0) {
@@ -1119,7 +1150,8 @@ public class PathwayProducerBiopax3 {
 			List<Xref> list = ob.getxRef();
 			for(Xref item : list) {
 				tmpElement = new Element("xref", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1135,7 +1167,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1149,7 +1182,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1163,7 +1197,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1177,7 +1212,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1191,7 +1227,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1205,7 +1242,8 @@ public class PathwayProducerBiopax3 {
 		
 		if(ob.getEntityReference() != null) {
 			tmpElement = new Element("entityReference", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReference().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReference().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReference());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1222,15 +1260,17 @@ public class PathwayProducerBiopax3 {
 			List<Stoichiometry> list = ob.getComponentStoichiometry();
 			for(Stoichiometry item : list) {
 				tmpElement = new Element("componentStoichiometry", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
-		if(ob.getMemberPhysicalEntity() != null && ob.getMemberPhysicalEntity().size() > 0) {
-			List<PhysicalEntity> list = ob.getMemberPhysicalEntity();
+		if(ob.getComponents() != null && ob.getComponents().size() > 0) {
+			List<PhysicalEntity> list = ob.getComponents();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("component", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1248,7 +1288,8 @@ public class PathwayProducerBiopax3 {
 			List<Evidence> list = ob.getEvidence();
 			for(Evidence item : list) {
 				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1270,7 +1311,8 @@ public class PathwayProducerBiopax3 {
 			List<PhysicalEntity> list = ob.getCofactors();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("cofactor", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1297,7 +1339,8 @@ public class PathwayProducerBiopax3 {
 			List<Pathway> list = ob.getPathwayControllers();
 			for(Pathway item : list) {
 				tmpElement = new Element("controller", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1305,7 +1348,8 @@ public class PathwayProducerBiopax3 {
 			List<PhysicalEntity> list = ob.getPhysicalControllers();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("controller", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1317,12 +1361,19 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getControlledInteraction() != null) {
 			tmpElement = new Element("controlled", bp);
-			tmpElement.setAttribute("resource", ob.getControlledInteraction().getResource(), rdf);
+			String resource = ob.getControlledInteraction().resourceFromID();
+			if(resource != null) {
+				tmpElement.setAttribute("resource", resource, rdf);
+				mustPrintObject(ob.getControlledInteraction());
+			} else {
+				tmpElement.setAttribute("resource", "NULL", rdf);
+			}
 			element.addContent(tmpElement);
 		}
 		if(ob.getControlledPathway() != null) {
 			tmpElement = new Element("controlled", bp);
-			tmpElement.setAttribute("resource", ob.getControlledPathway().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getControlledPathway().resourceFromID(), rdf);
+			mustPrintObject(ob.getControlledPathway());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1349,7 +1400,8 @@ public class PathwayProducerBiopax3 {
 			List<Xref> list = ob.getxRef();
 			for(Xref item : list) {
 				tmpElement = new Element("xref", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1370,7 +1422,8 @@ public class PathwayProducerBiopax3 {
 			List<DnaRegionReference> list = ob.getDnaSubRegion();
 			for(DnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1378,7 +1431,8 @@ public class PathwayProducerBiopax3 {
 			List<RnaRegionReference> list = ob.getRnaSubRegion();
 			for(RnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1390,7 +1444,8 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1409,14 +1464,16 @@ public class PathwayProducerBiopax3 {
 
 		if(ob.getAbsoluteRegion() != null) {
 			tmpElement = new Element("absoluteRegion", bp);
-			tmpElement.setAttribute("resource", ob.getAbsoluteRegion().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getAbsoluteRegion().resourceFromID(), rdf);
+			mustPrintObject(ob.getAbsoluteRegion());
 			element.addContent(tmpElement);
 		}
 		if(ob.getDnaSubRegion() != null && ob.getDnaSubRegion().size() > 0) {
 			List<DnaRegionReference> list = ob.getDnaSubRegion();
 			for(DnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1424,7 +1481,8 @@ public class PathwayProducerBiopax3 {
 			List<RnaRegionReference> list = ob.getRnaSubRegion();
 			for(RnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1436,12 +1494,14 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getRegionType() != null) {
 			tmpElement = new Element("regionType", bp);
-			tmpElement.setAttribute("resource", ob.getRegionType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getRegionType().resourceFromID(), rdf);
+			mustPrintObject(ob.getRegionType());
 			element.addContent(tmpElement);
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1462,7 +1522,8 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1481,7 +1542,8 @@ public class PathwayProducerBiopax3 {
 			List<DnaRegionReference> list = ob.getDnaSubRegion();
 			for(DnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1489,7 +1551,8 @@ public class PathwayProducerBiopax3 {
 			List<RnaRegionReference> list = ob.getRnaSubRegion();
 			for(RnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1501,7 +1564,8 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1520,14 +1584,16 @@ public class PathwayProducerBiopax3 {
 
 		if(ob.getAbsoluteRegion() != null) {
 			tmpElement = new Element("absoluteRegion", bp);
-			tmpElement.setAttribute("resource", ob.getAbsoluteRegion().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getAbsoluteRegion().resourceFromID(), rdf);
+			mustPrintObject(ob.getAbsoluteRegion());
 			element.addContent(tmpElement);
 		}
 		if(ob.getDnaSubRegion() != null && ob.getDnaSubRegion().size() > 0) {
 			List<DnaRegionReference> list = ob.getDnaSubRegion();
 			for(DnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1535,7 +1601,8 @@ public class PathwayProducerBiopax3 {
 			List<RnaRegionReference> list = ob.getRnaSubRegion();
 			for(RnaRegionReference item : list) {
 				tmpElement = new Element("subRegion", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1547,12 +1614,14 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getRegionType() != null) {
 			tmpElement = new Element("regionType", bp);
-			tmpElement.setAttribute("resource", ob.getRegionType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getRegionType().resourceFromID(), rdf);
+			mustPrintObject(ob.getRegionType());
 			element.addContent(tmpElement);
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1580,7 +1649,8 @@ public class PathwayProducerBiopax3 {
 		}
 		if(ob.getStructure() != null) {
 			tmpElement = new Element("structure", bp);
-			tmpElement.setAttribute("resource", ob.getStructure().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getStructure().resourceFromID(), rdf);
+			mustPrintObject(ob.getStructure());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1602,20 +1672,23 @@ public class PathwayProducerBiopax3 {
 			List<EntityReference> list = ob.getMemberEntityReference();
 			for(EntityReference item : list) {
 				tmpElement = new Element("memberEntityReference", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
 		if(ob.getEntityReferenceType() != null) {
 			tmpElement = new Element("entityReferenceType", bp);
-			tmpElement.setAttribute("resource", ob.getEntityReferenceType().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getEntityReferenceType().resourceFromID(), rdf);
+			mustPrintObject(ob.getEntityReferenceType());
 			element.addContent(tmpElement);
 		}
 		if(ob.getEntityFeature() != null && ob.getEntityFeature().size() > 0) {
 			List<EntityFeature> list = ob.getEntityFeature();
 			for(EntityFeature item : list) {
 				tmpElement = new Element("entityFeature", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1632,7 +1705,8 @@ public class PathwayProducerBiopax3 {
 			List<Xref> list = ob.getxRef();
 			for(Xref item : list) {
 				tmpElement = new Element("xref", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1640,7 +1714,8 @@ public class PathwayProducerBiopax3 {
 			List<Evidence> list = ob.getEvidence();
 			for(Evidence item : list) {
 				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1661,7 +1736,8 @@ public class PathwayProducerBiopax3 {
 			List<EntityFeature> list = ob.getFeature();
 			for(EntityFeature item : list) {
 				tmpElement = new Element("feature", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1669,7 +1745,8 @@ public class PathwayProducerBiopax3 {
 			List<EntityFeature> list = ob.getNotFeature();
 			for(EntityFeature item : list) {
 				tmpElement = new Element("notFeature", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1677,13 +1754,15 @@ public class PathwayProducerBiopax3 {
 			List<PhysicalEntity> list = ob.getMemberPhysicalEntity();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("memberPhysicalEntity", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
 		if(ob.getCellularLocation() != null) {
 			tmpElement = new Element("cellularLocation", bp);
-			tmpElement.setAttribute("resource", ob.getCellularLocation().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getCellularLocation().resourceFromID(), rdf);
+			mustPrintObject(ob.getCellularLocation());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1757,7 +1836,8 @@ public class PathwayProducerBiopax3 {
 			List<Xref> list = ob.getxRef();
 			for(Xref item : list) {
 				tmpElement = new Element("xref", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1773,7 +1853,6 @@ public class PathwayProducerBiopax3 {
 		return element;
 	}
 	
-	//	evidence 			Evidence 		multiple 
 	//	pathwayOrder 		PathwayStep 	multiple 
 	//	pathwayComponent 	Interaction 	multiple 
 	//	pathwayComponent 	Pathway 		multiple 
@@ -1784,19 +1863,12 @@ public class PathwayProducerBiopax3 {
 		Pathway ob = (Pathway)bpObject;
 		Element tmpElement = null;
 			
-		if(ob.getEvidence() != null && ob.getEvidence().size() > 0) {
-			List<Evidence> list = ob.getEvidence();
-			for(Evidence item : list) {
-				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
-				element.addContent(tmpElement);
-			}
-		}
 		if(ob.getPathwayOrder() != null && ob.getPathwayOrder().size() > 0) {
 			List<PathwayStep> list = ob.getPathwayOrder();
 			for(PathwayStep item : list) {
 				tmpElement = new Element("pathwayOrder", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1806,7 +1878,8 @@ public class PathwayProducerBiopax3 {
 			List<Interaction> list = ob.getPathwayComponentInteraction();
 			for(Interaction item : list) {
 				tmpElement = new Element("pathwayComponent", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1814,13 +1887,15 @@ public class PathwayProducerBiopax3 {
 			List<Pathway> list = ob.getPathwayComponentPathway();
 			for(Pathway item : list) {
 				tmpElement = new Element("pathwayComponent", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
 		if(ob.getOrganism() != null) {
 			tmpElement = new Element("organism", bp);
-			tmpElement.setAttribute("resource", ob.getOrganism().getResource(), rdf);
+			tmpElement.setAttribute("resource", ob.getOrganism().resourceFromID(), rdf);
+			mustPrintObject(ob.getOrganism());
 			element.addContent(tmpElement);
 		}
 		return element;
@@ -1841,7 +1916,8 @@ public class PathwayProducerBiopax3 {
 			List<DeltaG> list = ob.getDeltaG();
 			for(DeltaG item : list) {
 				tmpElement = new Element("deltaG", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1849,7 +1925,8 @@ public class PathwayProducerBiopax3 {
 			List<KPrime> list = ob.getkEQ();
 			for(KPrime item : list) {
 				tmpElement = new Element("kEQ", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1898,7 +1975,8 @@ public class PathwayProducerBiopax3 {
 			List<PhysicalEntity> list = ob.getLeft();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("left", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1906,7 +1984,8 @@ public class PathwayProducerBiopax3 {
 			List<PhysicalEntity> list = ob.getRight();
 			for(PhysicalEntity item : list) {
 				tmpElement = new Element("right", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1914,7 +1993,8 @@ public class PathwayProducerBiopax3 {
 			List<Stoichiometry> list = ob.getParticipantStoichiometry();
 			for(Stoichiometry item : list) {
 				tmpElement = new Element("participantStoichiometry", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -1945,16 +2025,19 @@ public class PathwayProducerBiopax3 {
 			List<InteractionVocabulary> list = ob.getInteractionTypes();
 			for(InteractionVocabulary item : list) {
 				tmpElement = new Element("interactionType", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
-		if(ob.getParticipants() != null && ob.getParticipants().size() > 0) {
-			// TODO: must replace InteractionParticipant with Entity ???  and/or implement getResource()
-			List<InteractionParticipant> list = ob.getParticipants();
+		if(ob.getParticipants(InteractionParticipant.Type.PARTICIPANT) != null && ob.getParticipants(InteractionParticipant.Type.PARTICIPANT).size() > 0) {
+			List<InteractionParticipant> list = ob.getParticipants(InteractionParticipant.Type.PARTICIPANT);
 			for(InteractionParticipant item : list) {
 				tmpElement = new Element("participant", bp);
-//				tmpElement.setAttribute("resource", item.getResource(), rdf);
+//				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+//				mustPrintObject(item);
+				tmpElement.setAttribute("resource", item.getPhysicalEntity().resourceFromID(), rdf);
+				mustPrintObject(item.getPhysicalEntity());
 				element.addContent(tmpElement);
 			}
 		}
@@ -1975,7 +2058,8 @@ public class PathwayProducerBiopax3 {
 			ArrayList<Provenance> list = ob.getDataSource();
 			for(Provenance item : list) {
 				tmpElement = new Element("dataSource", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -2000,8 +2084,10 @@ public class PathwayProducerBiopax3 {
 		if(ob.getxRef() != null && ob.getxRef().size() > 0) {
 			ArrayList<Xref> list = ob.getxRef();
 			for(Xref item : list) {
-				tmpElement = new Element("xref", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				String elementName = "xref";
+				tmpElement = new Element(elementName, bp);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -2009,7 +2095,8 @@ public class PathwayProducerBiopax3 {
 			ArrayList<Evidence> list = ob.getEvidence();
 			for(Evidence item : list) {
 				tmpElement = new Element("evidence", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}		
@@ -2030,7 +2117,8 @@ public class PathwayProducerBiopax3 {
 			ArrayList<RelationshipTypeVocabulary> list = ob.getRelationshipType();
 			for(RelationshipTypeVocabulary item : list) {
 				tmpElement = new Element("relationshipType", bp);
-				tmpElement.setAttribute("resource", item.getResource(), rdf);
+				tmpElement.setAttribute("resource", item.resourceFromID(), rdf);
+				mustPrintObject(item);
 				element.addContent(tmpElement);
 			}
 		}
@@ -2130,14 +2218,15 @@ public class PathwayProducerBiopax3 {
 		}
 		return element;
 	}
+
 	// ------------------------
 	private Element addAttributes(BioPaxObject bpObject, Element element) {
 		if(bpObject.getID() != null) {
 			element.setAttribute("ID", bpObject.getID(), rdf);
 		}
-		if(bpObject.getResource() != null) {
-			element.setAttribute("resource", bpObject.getResource(), rdf);
-		}
+//		if(bpObject.resourceFromID() != null) {
+//			element.setAttribute("resource", bpObject.resourceFromID(), rdf);
+//		}
 		return element;
 	}
 

@@ -83,8 +83,9 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
-import org.vcell.sybil.rdf.NameSpace;
+import org.vcell.pathway.persistence.BiopaxProxy.*;
 
+import org.vcell.sybil.rdf.NameSpace;
 import cbit.util.xml.XmlUtil;
 
 
@@ -94,21 +95,6 @@ public class PathwayReader {
 	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
 	private Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
 
-	
-	public static interface RdfObjectProxy extends BioPaxObject {
-		
-	}
-	
-	public static class InteractionOrPathwayProxy extends InteractionImpl implements RdfObjectProxy {
-		
-	}
-	public static class PhysicalEntityProxy extends PhysicalEntity implements RdfObjectProxy {
-		
-	}
-	
-	
-	
-	
 	public static void main(String args[]){
 		try {
 			Document document = XmlUtil.readXML(new File("C:\\Developer\\eclipse\\workspace\\VCell_Standard\\temp.xml"));
@@ -146,7 +132,7 @@ public class PathwayReader {
 				}else if (childElement.getName().equals("control")){
 					addObjectControl(childElement);
 				}else if (childElement.getName().equals("Ontology")){
-					//showIgnored(childElement);
+					showIgnored(childElement, "Ontology not implemented in BioPAX 3.");
 				}else if (childElement.getName().equals("interaction")){
 					addObjectInteraction(childElement);
 				}else if (childElement.getName().equals("transport")){
@@ -159,6 +145,12 @@ public class PathwayReader {
 					addObjectRna(childElement);
 				}else if (childElement.getName().equals("physicalEntity")){
 					addObjectPhysicalEntity(childElement);
+				}else if (childElement.getName().equals("publicationXref")){
+					pathwayModel.add(addObjectPublicationXref(childElement));
+				}else if (childElement.getName().equals("relationshipXref")){
+					pathwayModel.add(addObjectRelationshipXref(childElement));
+				}else if (childElement.getName().equals("unificationXref")){
+					pathwayModel.add(addObjectUnificationXref(childElement));
 				}else{
 					showUnexpected(childElement);
 				}
@@ -216,9 +208,17 @@ public class PathwayReader {
 		for (Object attr : element.getAttributes()){
 			Attribute attribute = (Attribute)attr;
 			if (attribute.getName().equals("ID")){
-				bioPaxObject.setID(attribute.getValue());
+				if (bioPaxObject instanceof RdfObjectProxy){
+					showUnexpected(attribute);
+				}else{
+					bioPaxObject.setID(attribute.getValue());
+				}
 			}else if (attribute.getName().equals("resource")){
-				bioPaxObject.setResource(attribute.getValue());
+				if (bioPaxObject instanceof RdfObjectProxy){
+					((RdfObjectProxy)bioPaxObject).setResource(attribute.getValue());
+				}else{
+					showUnexpected(attribute);
+				}
 			}else{
 				showUnexpected(attribute);
 			}
@@ -258,6 +258,9 @@ public class PathwayReader {
 		if (childElement.getName().equals("DATA-SOURCE")){
 			Element dataSourceElement = childElement.getChild("dataSource",bp);
 			entity.getDataSource().add(addObjectProvenance(dataSourceElement));
+			return true;
+		}else if (childElement.getName().equals("SHORT-NAME")){
+			insertAtStart(entity.getName(),childElement.getTextTrim());
 			return true;
 		}else if (childElement.getName().equals("NAME")){
 			entity.getName().add(childElement.getTextTrim());
@@ -483,7 +486,13 @@ public class PathwayReader {
 			xRef.setDb(childElement.getTextTrim());
 			return true;
 		}else if (childElement.getName().equals("ID")){
-			xRef.setDb(childElement.getTextTrim());
+			xRef.setId(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("DB-VERSION")){
+			xRef.setDbVersion(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("ID-VERSION")){
+			xRef.setIdVersion(childElement.getTextTrim());
 			return true;
 		}else{
 			return false; // no match
@@ -501,7 +510,24 @@ public class PathwayReader {
 		 * ArrayList<String> url
 		 * Integer year
 		 */
-		return false; // no match
+		if (childElement.getName().equals("AUTHORS")){
+			publicationXRef.getAuthor().add(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("SOURCE")){
+			publicationXRef.getSource().add(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("TITLE")){
+			publicationXRef.setTitle(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("URL")){
+			publicationXRef.getUrl().add(childElement.getTextTrim());
+			return true;
+		}else if (childElement.getName().equals("YEAR")){
+			publicationXRef.setYear(Integer.valueOf(childElement.getTextTrim()));
+			return true;
+		}else{
+			return false; // no match
+		}
 	}
 	
 	private boolean addContentRelationshipXref(RelationshipXref relationshipXref, Element element, Element childElement){
@@ -570,7 +596,45 @@ public class PathwayReader {
 		 * ArrayList<Pathway> stepProcessPathway
 		 * ArrayList<Evidence> evidence
 		 */
-		return false; // no match
+		if (childElement.getName().equals("NEXT-STEP")){
+			Element pathwayStepElement = childElement.getChild("pathwayStep",bp);
+			if (pathwayStepElement != null){
+				PathwayStep nextPathwayStep = addObjectPathwayStep(pathwayStepElement);
+				pathwayStep.getNextStep().add(nextPathwayStep);
+				pathwayModel.add(nextPathwayStep);
+				return true;
+			} else if (childElement.getChildren().size() == 0){
+				PathwayStepProxy pathwayStepProxy = new PathwayStepProxy();
+				addAttributes(pathwayStepProxy, childElement);
+				pathwayStep.getNextStep().add(pathwayStepProxy);
+				pathwayModel.add(pathwayStepProxy);
+				return true;
+			} else {
+				return false;
+			}
+		}else if (childElement.getName().equals("STEP-INTERACTIONS")){
+			if (childElement.getChildren().size()==0){
+				// if there are no children it must be a resource inside another object
+				InteractionProxy proxyI = new InteractionProxy();
+				addAttributes(proxyI, childElement);
+				pathwayModel.add(proxyI);
+				pathwayStep.getStepProcessInteraction().add(proxyI);
+				PathwayProxy proxyP = new PathwayProxy();
+				addAttributes(proxyP, childElement);
+				pathwayModel.add(proxyP);
+				pathwayStep.getStepProcessPathway().add(proxyP);
+				return true;
+			} else {
+				// it's a real stepProcess object nested here - we ignore this situation for now
+				showIgnored(childElement, "Found NESTED child.");
+			}
+ 			return false;
+//		}else if (childElement.getName().equals("EVIDENCE")) {
+//			pathwayStep.getEvidence().add(addObjectEvidence(childElement));
+//			return true;
+		}else{
+			return false; // no match
+		}
 	}
 	
 	private boolean addContentBiochemicalPathwayStep(BiochemicalPathwayStep biochemicalPathwayStep, Element element, Element childElement){
@@ -928,11 +992,36 @@ public class PathwayReader {
 			}
 			return false;
 		}else if (childElement.getName().equals("PATHWAY-COMPONENTS")){
-			Interaction interaction = new InteractionOrPathwayProxy();
-			addAttributes(interaction, childElement);
-			pathwayModel.add(interaction);
-			pathway.getPathwayComponentInteraction().add(interaction);
-			return true;
+			Element pathwayStepElement = childElement.getChild("pathwayStep",bp);
+			if (pathwayStepElement!=null){
+				PathwayStep pathwayStep = addObjectPathwayStep(pathwayStepElement);
+				pathway.getPathwayOrder().add(pathwayStep);
+				pathwayModel.add(pathwayStep);
+				return true;
+			} else if (childElement.getChildren().size() == 0){
+				PathwayStepProxy componentPathwayStep = new PathwayStepProxy();
+				addAttributes(componentPathwayStep,childElement);
+				pathway.getPathwayOrder().add(componentPathwayStep);
+				pathwayModel.add(componentPathwayStep);
+				return true;
+			} else {
+				return false;
+			}
+//			Interaction interaction = new InteractionOrPathwayProxy();
+//			addAttributes(interaction, childElement);
+//			pathwayModel.add(interaction);
+//			pathway.getPathwayComponentInteraction().add(interaction);
+//			return true;
+//		}else if(childElement.getChildren().size() == 0) {	// no children mean proxy
+//			InteractionProxy proxyI = new InteractionProxy();
+//			addAttributes(proxyI, childElement);
+//			pathwayModel.add(proxyI);
+//			pathway.getPathwayComponentInteraction().add(proxyI);
+//			PathwayProxy proxyP = new PathwayProxy();
+//			addAttributes(proxyP, childElement);
+//			pathwayModel.add(proxyP);
+//			pathway.getPathwayComponentPathway().add(proxyP);
+//			return true;
 		}else{
 			return false;
 		}
@@ -951,8 +1040,7 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						interaction.addEntityAsParticipant(physicalEntityProxy, 
-								InteractionParticipant.Type.PARTICIPANT);
+						interaction.addPhysicalEntityAsParticipant(physicalEntityProxy, InteractionParticipant.Type.PARTICIPANT);
 						return true;
 					}
 				}
@@ -1020,8 +1108,7 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						control.addEntityAsParticipant(physicalEntityProxy, 
-								InteractionParticipant.Type.PHYSICAL_CONTROLLER);
+						control.addPhysicalController(physicalEntityProxy);
 						return true;
 					}
 				}
@@ -1034,8 +1121,7 @@ public class PathwayReader {
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
-						control.addEntityAsParticipant(physicalEntityProxy, 
-								InteractionParticipant.Type.PHYSICAL_CONTROLLER);
+						control.addPhysicalController(physicalEntityProxy);
 						return true;
 					}
 				}
@@ -1086,11 +1172,9 @@ public class PathwayReader {
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
 						if (childElement.getName().equals("LEFT")){
-							conversion.addEntityAsParticipant(physicalEntityProxy, 
-									InteractionParticipant.Type.LEFT);
+							conversion.addLeft(physicalEntityProxy);
 						}else{
-							conversion.addEntityAsParticipant(physicalEntityProxy, 
-									InteractionParticipant.Type.RIGHT);
+							conversion.addRight(physicalEntityProxy);
 						}
 						return true;
 					}
@@ -1105,11 +1189,9 @@ public class PathwayReader {
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
 						if (childElement.getName().equals("LEFT")){
-							conversion.addEntityAsParticipant(physicalEntityProxy, 
-									InteractionParticipant.Type.LEFT);
+							conversion.addLeft(physicalEntityProxy);
 						}else{
-							conversion.addEntityAsParticipant(physicalEntityProxy, 
-									InteractionParticipant.Type.RIGHT);
+							conversion.addRight(physicalEntityProxy);
 						}
 						return true;
 					}
@@ -1482,13 +1564,16 @@ public class PathwayReader {
 	private Xref addObjectXref(Element element){
 		Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
 		if (element.getChild("unificationXref",bp)!=null){
-			return addObjectUnificationXref(element.getChild("unificationXref",bp));
+			UnificationXref xref = addObjectUnificationXref(element.getChild("unificationXref",bp));
+			return xref;
 		}
 		if (element.getChild("relationshipXref",bp)!=null){
-			return addObjectRelationshipXref(element.getChild("relationshipXref",bp));
+			RelationshipXref xref = addObjectRelationshipXref(element.getChild("relationshipXref",bp));
+			return xref;
 		}
 		if (element.getChild("publicationXref",bp)!=null){
-			return addObjectPublicationXRef(element.getChild("publicationXref",bp));
+			PublicationXref xref = addObjectPublicationXref(element.getChild("publicationXref",bp));
+			return xref;
 		}
 		Xref xref = new Xref();
 		addAttributes(xref, element);
@@ -2156,7 +2241,7 @@ public class PathwayReader {
 		return xRef;
 	}
 
-	private PublicationXref addObjectPublicationXRef(Element element) {
+	private PublicationXref addObjectPublicationXref(Element element) {
 		PublicationXref publicationXref = new PublicationXref();
 		addAttributes(publicationXref, element);
 		for (Object child : element.getChildren()){

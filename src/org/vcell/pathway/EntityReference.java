@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 	
 	private ArrayList<EntityFeature> entityFeature = new ArrayList<EntityFeature>();
@@ -50,6 +52,39 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 		this.name = name;
 	}
 
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
+		for (int i=0; i<entityFeature.size(); i++) {
+			EntityFeature thing = entityFeature.get(i);
+			if(thing == objectProxy) {
+				entityFeature.set(i, (EntityFeature)concreteObject);
+			}
+		}
+		if(entityReferenceType == objectProxy) {
+			entityReferenceType = (EntityReferenceTypeVocabulary) concreteObject;
+		}
+		for (int i=0; i<memberEntityReference.size(); i++) {
+			EntityReference thing = memberEntityReference.get(i);
+			if(thing == objectProxy) {
+				memberEntityReference.set(i, (EntityReference)concreteObject);
+			}
+		}
+		for (int i=0; i<xRef.size(); i++) {
+			Xref thing = xRef.get(i);
+			if(thing == objectProxy) {
+				xRef.set(i, (Xref)concreteObject);
+			}
+		}
+		for (int i=0; i<evidence.size(); i++) {
+			Evidence thing = evidence.get(i);
+			if(thing == objectProxy) {
+				evidence.set(i, (Evidence)concreteObject);
+			}
+		}
+	}
+	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printObjects(sb, "entityFeature",entityFeature,level);

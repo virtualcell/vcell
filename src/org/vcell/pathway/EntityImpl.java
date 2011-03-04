@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 import cbit.vcell.biomodel.meta.Identifiable;
 
 public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable {
@@ -52,6 +54,27 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 		this.availability = availability;
 	}
 
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		for (int i=0; i<xRef.size(); i++) {
+			Xref thing = xRef.get(i);
+			if(thing == objectProxy) {
+				xRef.set(i, (Xref)concreteObject);
+			}
+		}
+		for (int i=0; i<dataSource.size(); i++) {
+			Provenance thing = dataSource.get(i);
+			if(thing == objectProxy) {
+				dataSource.set(i, (Provenance)concreteObject);
+			}
+		}
+		for (int i=0; i<evidence.size(); i++) {
+			Evidence thing = evidence.get(i);
+			if(thing == objectProxy) {
+				evidence.set(i, (Evidence)concreteObject);
+			}
+		}
+	}
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printStrings(sb, "name",name,level);

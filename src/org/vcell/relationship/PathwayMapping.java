@@ -5,6 +5,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BiochemicalReaction;
@@ -322,7 +323,7 @@ public class PathwayMapping {
 	}
 
 	// create the reaction equation based on the pathway conversion information 
-	private static String getParticipantsString(ArrayList <PhysicalEntity> physicalEntities) {
+	private static String getParticipantsString(List<PhysicalEntity> physicalEntities) {
 		if (physicalEntities == null){
 			return null;
 		}

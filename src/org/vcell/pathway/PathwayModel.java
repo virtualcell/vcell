@@ -2,6 +2,7 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
@@ -19,7 +20,7 @@ public class PathwayModel {
 		new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
 	
 	public Set<BioPaxObject> getBiopaxObjects(){
-		return biopaxObjects;
+		return Collections.unmodifiableSet(biopaxObjects);
 	}
 
 	public String show(boolean bIncludeChildren) {
@@ -63,17 +64,12 @@ public class PathwayModel {
 		if (bioPaxObject==null){
 			throw new RuntimeException("added a null object to pathway model");
 		}
-		getBiopaxObjects().add(bioPaxObject);
+		biopaxObjects.add(bioPaxObject);
 //		System.err.println("add all BioPaxObject children of this object to pathwayModel");
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		return bioPaxObject;
 	}
 
-	public BioPaxObject getObjectByResource(String value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	public Pathway getTopLevelPathway(){
 		ArrayList<Pathway> allPathways = new ArrayList<Pathway>();
 		for (BioPaxObject bpObject : biopaxObjects){
@@ -114,6 +110,15 @@ public class PathwayModel {
 			}
 		}
 		biopaxObjects.removeAll(proxiesToDelete);
+		// get rid of all UtilityClass objects for display purposes
+		// the producer will recreate them from memory at the time when we save
+		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(!(bpObject instanceof UtilityClass)) {
+				newBiopaxObjects.add(bpObject);
+			}
+		}
+		biopaxObjects = newBiopaxObjects;
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
 
@@ -134,9 +139,10 @@ public class PathwayModel {
 				if (bpObject.getID().equals(resource)){
 					return bpObject;
 				}
-				if (bpObject.getID().contains(resource)){
-					return bpObject;
-				}
+//				// contains() won't work, may result in matching objects which are wildly incompatible
+//				if (bpObject.getID().contains(resource)){
+//					return bpObject;
+//				}
 			}
 		}
 		return null;
@@ -174,39 +180,50 @@ public class PathwayModel {
 						addToParentMap(bpObject, new ArrayList<BioPaxObject>(pathwayControllers));
 					ArrayList<BioPaxObject> controlled = new ArrayList<BioPaxObject>();
 					Interaction controlledInteraction = ((Control) bpObject).getControlledInteraction();
-					if(controlledInteraction != null)
+					if(controlledInteraction != null){
 						controlled.add(((BioPaxObject)controlledInteraction));
-					if(((Control) bpObject).getControlledPathway() != null)
+					}
+					if(((Control) bpObject).getControlledPathway() != null){
 						controlled.add(((BioPaxObject)((Control) bpObject).getControlledPathway()));
+					}
 					addToParentMap(bpObject, controlled);
 					if(bpObject instanceof Catalysis){// for Catalysis
 					}
 				}else if(bpObject instanceof Conversion){// for Conversion
 				}else if(bpObject instanceof TemplateReaction){// for TemplateReaction
 					TemplateReaction templateReaction = (TemplateReaction) bpObject;
-					if(templateReaction.getProductDna() != null)
+					if(templateReaction.getProductDna() != null){
 						addToParentMap(bpObject, templateReaction.getProductDna());
-					if(templateReaction.getProductProtein() != null)
+					}
+					if(templateReaction.getProductProtein() != null){
 						addToParentMap(bpObject, templateReaction.getProductProtein());
-					if(templateReaction.getProductRna() != null)
+					}
+					if(templateReaction.getProductRna() != null){
 						addToParentMap(bpObject, templateReaction.getProductRna());
+					}
 					ArrayList<BioPaxObject> template = new ArrayList<BioPaxObject>();
-					if(templateReaction.getTemplateDna() != null)
+					if(templateReaction.getTemplateDna() != null){
 						template.add(templateReaction.getTemplateDna());
-					if(templateReaction.getTemplateDnaRegion() != null)
+					}
+					if(templateReaction.getTemplateDnaRegion() != null){
 						template.add(templateReaction.getTemplateDnaRegion());
-					if(templateReaction.getTemplateRna() != null)
+					}
+					if(templateReaction.getTemplateRna() != null){
 						template.add(templateReaction.getTemplateRna());
-					if(templateReaction.getTemplateRnaRegion() != null)
+					}
+					if(templateReaction.getTemplateRnaRegion() != null){
 						template.add(templateReaction.getTemplateRnaRegion());
+					}
 					addToParentMap(bpObject, template);
 				}
 			}else if(bpObject instanceof Pathway){// for Pathway
 				Pathway pathway = (Pathway) bpObject;
-				if(pathway.getPathwayComponentInteraction() != null)
+				if(pathway.getPathwayComponentInteraction() != null){
 					addToParentMap(bpObject, pathway.getPathwayComponentInteraction());
-				if(pathway.getPathwayComponentPathway() != null)
-				addToParentMap(bpObject, pathway.getPathwayComponentPathway());
+				}
+				if(pathway.getPathwayComponentPathway() != null){
+					addToParentMap(bpObject, pathway.getPathwayComponentPathway());
+				}
 			}else{ // for Gene
 			}
 		}		

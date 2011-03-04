@@ -6,22 +6,7 @@ import java.util.Set;
 
 public class InteractionParticipant {
 
-	public static enum Type { PARTICIPANT, LEFT(PARTICIPANT), RIGHT(PARTICIPANT), 
-		PHYSICAL_CONTROLLER(PARTICIPANT), COFACTOR(PHYSICAL_CONTROLLER);
-	
-		protected final Set<Type> superTypes = new HashSet<Type>();
-	
-		private Type() { superTypes.add(this); };
-		
-		private Type(Type superType) {
-			superTypes.add(this);
-			superTypes.addAll(superType.superTypes);
-		}
-		
-		public boolean hasSuperType(Type type) {
-			return superTypes.contains(type);
-		}
-		
+	public static enum Type { PARTICIPANT, COFACTOR, CONTROLLED, CONTROLLER, LEFT, PRODUCT, RIGHT, TEMPLATE;
 	}
 	
 	protected final Interaction interaction;

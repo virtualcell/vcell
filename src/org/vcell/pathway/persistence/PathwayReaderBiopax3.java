@@ -86,13 +86,15 @@ import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
 import org.vcell.sybil.rdf.NameSpace;
 
+import org.vcell.pathway.persistence.BiopaxProxy.*;
+
 import cbit.util.xml.XmlUtil;
 
 
 public class PathwayReaderBiopax3 {
 	
 	private PathwayModel pathwayModel = new PathwayModel();
-	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
+	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
 	private Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
 
 	public final Namespace getNamespaceBp() {
@@ -103,40 +105,6 @@ public class PathwayReaderBiopax3 {
 	}
 	
 	static private int unexpectedCount = 0;
-	
-	public static interface RdfObjectProxy extends BioPaxObject {}
-	public static class InteractionProxy extends InteractionImpl implements RdfObjectProxy {}
-	public static class PathwayProxy extends Pathway implements RdfObjectProxy {}
-	public static class PhysicalEntityProxy extends PhysicalEntity implements RdfObjectProxy {}
-	public static class PathwayStepProxy extends PathwayStep implements RdfObjectProxy {}
-	public static class ProvenanceProxy extends Provenance implements RdfObjectProxy {}
-	public static class BioSourceProxy extends BioSource implements RdfObjectProxy {}
-	public static class PhysicalEntityOrPathwayProxy extends EntityImpl implements RdfObjectProxy {}
-	public static class StoichiometryProxy extends Stoichiometry implements RdfObjectProxy {}
-	public static class XrefProxy extends Xref implements RdfObjectProxy {}
-	public static class SequenceLocationProxy extends SequenceLocation implements RdfObjectProxy {}
-	public static class SequenceSiteProxy extends SequenceSite implements RdfObjectProxy {}
-	public static class RelationshipTypeVocabularyProxy extends RelationshipTypeVocabulary implements RdfObjectProxy {}
-	public static class SequenceModificationVocabularyProxy extends SequenceModificationVocabulary implements RdfObjectProxy {}
-	public static class EntityFeatureProxy extends EntityFeatureImpl implements RdfObjectProxy {}
-	public static class CellularLocationVocabularyProxy extends CellularLocationVocabulary implements RdfObjectProxy {}
-	public static class EntityReferenceProxy extends EntityReference implements RdfObjectProxy {}
-	public static class GeneProxy extends Gene implements RdfObjectProxy {}
-	public static class ConversionProxy extends ConversionImpl implements RdfObjectProxy {}
-	public static class ChemicalStructureProxy extends ChemicalStructure implements RdfObjectProxy {}
-	public static class CellVocabularyProxy extends CellVocabulary implements RdfObjectProxy {}
-	public static class EvidenceProxy extends Evidence implements RdfObjectProxy {}
-	public static class ExperimentalFormProxy extends ExperimentalForm implements RdfObjectProxy {}
-	public static class DnaRegionReferenceProxy extends DnaRegionReference implements RdfObjectProxy {}
-	public static class RnaRegionReferenceProxy extends RnaRegionReference implements RdfObjectProxy {}
-	public static class EntityReferenceTypeVocabularyProxy extends EntityReferenceTypeVocabulary implements RdfObjectProxy {}
-	public static class EvidenceCodeVocabularyProxy extends EvidenceCodeVocabulary implements RdfObjectProxy {}
-	public static class ExperimentalFormVocabularyProxy extends ExperimentalFormVocabulary implements RdfObjectProxy {}
-	public static class InteractionVocabularyProxy extends InteractionVocabulary implements RdfObjectProxy {}
-	public static class PhenotypeVocabularyProxy extends PhenotypeVocabulary implements RdfObjectProxy {}
-	public static class SequenceRegionVocabularyProxy extends SequenceRegionVocabulary implements RdfObjectProxy {}
-	public static class TissueVocabularyProxy extends TissueVocabulary implements RdfObjectProxy {}
-		
 	
 	public static void main(String args[]){
 		try {
@@ -297,16 +265,27 @@ public class PathwayReaderBiopax3 {
 		for (Object attr : element.getAttributes()){
 			Attribute attribute = (Attribute)attr;
 			if (attribute.getName().equals("ID")){
-				bioPaxObject.setID(attribute.getValue());
+				if (bioPaxObject instanceof RdfObjectProxy){
+					showUnexpected(attribute);
+				}else{
+					bioPaxObject.setID(attribute.getValue());
+				}
 			}else if (attribute.getName().equals("resource")){
-				bioPaxObject.setResource(attribute.getValue());
+				if (bioPaxObject instanceof RdfObjectProxy){
+					((RdfObjectProxy)bioPaxObject).setResource(attribute.getValue());
+				}else{
+					showUnexpected(attribute);
+				}
 			}else{
 				showUnexpected(attribute);
 			}
 		}
-
 	}
-	
+
+//	if(bpObject.getID() != null) {
+//		System.out.println(" --------------------------------------- Complex found");
+//	}
+
 	private boolean addContentBioPaxObject(BioPaxObject biopaxObject, Element element, Element childElement){
 		if (childElement.getName().equals("comment")){
 			biopaxObject.getComments().add(childElement.getTextTrim());
@@ -762,6 +741,7 @@ public class PathwayReaderBiopax3 {
 		}
 	}
 	
+	// TODO: fix the items whith empty body: <PathwayStep />
 	private boolean addContentPathwayStep(PathwayStep pathwayStep, Element element, Element childElement){
 		if (addContentUtilityClass(pathwayStep, element, childElement)){
 			return true;
@@ -845,23 +825,42 @@ public class PathwayReaderBiopax3 {
 			return true;
 		}
 		/**
-		 * ArrayList<DnaRegionReference> dnaSubRegion
+		 * ArrayList<DnaRegionReference> subRegion
 		 * BioSource organism
-		 * ArrayList<RnaRegionReference> rnaSubRegion
+		 * ArrayList<RnaRegionReference> subRegion
 		 * String sequence
 		 */
 		if (childElement.getName().equals("organism")){
 			dnaReference.setOrganism(addObjectBioSource(childElement));
 			return true;
-		}else if (childElement.getName().equals("dnaSubRegion")) {
+		}else if (childElement.getName().equals("dnaSubRegion")) {		// obsolete
 			dnaReference.getDnaSubRegion().add(addObjectDnaRegionReference(childElement));
 			return true;
-		}else if (childElement.getName().equals("rnaSubRegion")) {
+		}else if (childElement.getName().equals("rnaSubRegion")) {		// obsolete
 			dnaReference.getRnaSubRegion().add(addObjectRnaRegionReference(childElement));
 			return true;
 		}else if (childElement.getName().equals("sequence")) {
 			dnaReference.setSequence(childElement.getTextTrim());
 			return true;
+		}else if (childElement.getName().equals("subRegion")){
+			if (childElement.getChildren().size()==0){
+				// if there are no children it must be a resource inside another object
+				// we don't know yet whether it's DnaRegionReference or RnaRegionReference, we make a proxy for each
+				// at the time when we solve the references we'll find out which is fake
+				DnaRegionReference dReg = new DnaRegionReferenceProxy();
+				addAttributes(dReg, childElement);
+				pathwayModel.add(dReg);
+				dnaReference.getDnaSubRegion().add(dReg);
+				RnaRegionReference rReg = new RnaRegionReferenceProxy();
+				addAttributes(rReg, childElement);
+				pathwayModel.add(rReg);
+				dnaReference.getRnaSubRegion().add(rReg);
+				return true;
+			} else {
+				// it's the real object declaration - we ignore this situation for now
+				showIgnored(childElement, "Found NESTED child.");
+				return false;
+			}
 		}else{
 			return false; // no match
 		}
@@ -1236,7 +1235,7 @@ public class PathwayReaderBiopax3 {
 			return false; // no match
 		}
 	}
-	
+
 	private boolean addContentPathway(Pathway pathway, Element element, Element childElement){
 		if (addContentEntity(pathway, element, childElement)){
 			return true;
@@ -1362,7 +1361,7 @@ public class PathwayReaderBiopax3 {
 				PhysicalEntityProxy proxyE = new PhysicalEntityProxy();
 				addAttributes(proxyE, childElement);
 				pathwayModel.add(proxyE);
-				control.getPhysicalControllers().add(proxyE);
+				control.addPhysicalController(proxyE);
 				PathwayProxy proxyP = new PathwayProxy();
 				addAttributes(proxyP, childElement);
 				pathwayModel.add(proxyP);
@@ -1408,10 +1407,10 @@ public class PathwayReaderBiopax3 {
 		 * Boolean getSpontaneous();
 		 */
 		if (childElement.getName().equals("left")){
-			conversion.getLeft().add(addObjectPhysicalEntity(childElement));
+			conversion.addLeft(addObjectPhysicalEntity(childElement));
 			return true;
 		}else if (childElement.getName().equals("right")){
-			conversion.getRight().add(addObjectPhysicalEntity(childElement));
+			conversion.addRight(addObjectPhysicalEntity(childElement));
 			return true;
 		}else if(childElement.getName().equals("participantStoichiometry")) {
 			conversion.getParticipantStoichiometry().add(addObjectStoichiometry(childElement));
@@ -1514,7 +1513,7 @@ public class PathwayReaderBiopax3 {
 			catalysis.setCatalysisDirection(childElement.getTextTrim());
 			return true;
 		}else if(childElement.getName().equals("cofactor")) {
-			catalysis.getCofactors().add(addObjectPhysicalEntity(childElement));
+			catalysis.addCofactor(addObjectPhysicalEntity(childElement));
 			return true;
 		}else{
 			return false;
@@ -1870,36 +1869,36 @@ public class PathwayReaderBiopax3 {
 	}
 
 	private Xref addObjectXref(Element element){
-		if (element.getChildren().size()==0){
-		// if there are no children it must be a resource inside another object
-			XrefProxy proxy = new XrefProxy();
-			addAttributes(proxy, element);
-			pathwayModel.add(proxy);
-			return proxy;
-		}
-		// it's the real object declaration
 		Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
 		if (element.getChild("UnificationXref",bp)!=null){
-			return addObjectUnificationXref(element.getChild("UnificationXref",bp));
+			UnificationXref xref = addObjectUnificationXref(element.getChild("UnificationXref",bp));
+			return xref;
 		}
 		if (element.getChild("RelationshipXref",bp)!=null){
-			return addObjectRelationshipXref(element.getChild("RelationshipXref",bp));
+			RelationshipXref xref = addObjectRelationshipXref(element.getChild("RelationshipXref",bp));
+			return xref;
 		}
 		if (element.getChild("PublicationXref",bp)!=null){
-			return addObjectPublicationXref(element.getChild("PublicationXref",bp));
+			PublicationXref xref = addObjectPublicationXref(element.getChild("PublicationXref",bp));
+			return xref;
 		}
-		Xref xref = new Xref();
-		addAttributes(xref, element);
-		for (Object child : element.getChildren()){
-			if (child instanceof Element){
-				Element childElement = (Element)child;
-				if (!addContentXref(xref, element, childElement)){
+		if (element.getChildren().size() == 0){
+			XrefProxy xref = new XrefProxy();
+			addAttributes(xref, element);
+			pathwayModel.add(xref);
+			return xref;
+		}else{
+			for (Object child : element.getChildren()){
+				if (child instanceof Element){
+					Element childElement = (Element)child;
 					showUnexpected(childElement);
 				}
 			}
+			Xref xref = new Xref();
+			pathwayModel.add(xref);
+			System.out.println("should never happen");
+			return xref;
 		}
-		pathwayModel.add(xref);
-		return xref;
 	}
 
 	private Protein addObjectProtein(Element element) {
@@ -2174,6 +2173,7 @@ public class PathwayReaderBiopax3 {
 		return kPrime;
 	}
 
+	// proxy thing done in addContentDnaReference
 	private DnaReference addObjectDnaReference(Element element) {
 		DnaReference dnaReference = new DnaReference();
 		addAttributes(dnaReference, element);
@@ -2562,14 +2562,8 @@ public class PathwayReaderBiopax3 {
 		return pathway;
 	}
 
+	// proxy dealt with inside addContentPathwayStep()
 	private PathwayStep addObjectPathwayStep(Element element) {
-		if (element.getChildren().size()==0){
-		// if there are no children it must be a resource inside another object
-			PathwayStepProxy proxy = new PathwayStepProxy();
-			addAttributes(proxy, element);
-			pathwayModel.add(proxy);
-			return proxy;
-		}
 		PathwayStep pathwayStep = new PathwayStep();
 		addAttributes(pathwayStep, element);
 		for (Object child : element.getChildren()){
@@ -2621,8 +2615,14 @@ public class PathwayReaderBiopax3 {
 		return provenance;
 	}
 
-	// TODO: no example found, may have to add reference
 	private Score addObjectScore(Element element) {
+		if (element.getChildren().size()==0){
+		// if there are no children it must be a resource inside another object
+			ScoreProxy proxy = new ScoreProxy();
+			addAttributes(proxy, element);
+			pathwayModel.add(proxy);
+			return proxy;
+		}
 		Score score = new Score();
 		addAttributes(score, element);
 		for (Object child : element.getChildren()){

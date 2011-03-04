@@ -67,7 +67,7 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 		// TODO Auto-generated method stub
 		Point startPos = conversionShape.getSpaceManager().getAbsCenter();
 		Point endPos = physicalEntityShape.getSpaceManager().getAbsCenter();
-		if(participant.getType().hasSuperType(Type.PHYSICAL_CONTROLLER)) {
+		if(participant.getType().equals(Type.CONTROLLER) || participant.getType().equals(Type.COFACTOR)) {
 			Stroke previousStroke = g2d.getStroke();
 			g2d.setStroke(CATALYST_STROKE);
 			g2d.drawLine(startPos.x, startPos.y, endPos.x, endPos.y);			

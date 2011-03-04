@@ -14,8 +14,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.jdom.Comment;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
+import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.Hex;
@@ -31,6 +37,7 @@ import org.vcell.util.document.Versionable;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
@@ -441,9 +448,29 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	if (param.getVersion() != null) {
 		biomodelnode.addContent( getXML(param.getVersion(), param.getName(), param.getDescription()) );
 	}
+	//Add Database Metadata (Version) information
+	if (param.getPathwayModel() != null) {
+		biomodelnode.addContent(getXML(param.getPathwayModel()));
+	}
 
 	biomodelnode.addContent(XMLMetaDataWriter.getElement(param.getVCMetaData(), param));
 	return biomodelnode;
+}
+
+private Element getXML(PathwayModel pathwayModel) {
+	Element pathwayElement = new Element(XMLTags.PathwayModelTag);
+	String biopaxVersion = "3.0";
+	// create root element of rdf for BioPAX level 3
+	Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	Element rootElement = new Element("RDF", rdf);
+	rootElement.setAttribute("version", biopaxVersion);
+	
+	// get element from producer and add it to root element
+	PathwayProducerBiopax3 xmlProducer = new PathwayProducerBiopax3();
+	xmlProducer.getXML(pathwayModel, rootElement);	// here is work done
+
+	pathwayElement.addContent(rootElement);
+	return pathwayElement;
 }
 
 

@@ -2,7 +2,7 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
-import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Pathway extends EntityImpl {
 	private BioSource organism;
@@ -44,26 +44,33 @@ public class Pathway extends EntityImpl {
 		this.pathwayOrder = pathwayOrder;
 	}
 	
+	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
 		if(organism == objectProxy) {
 			organism = (BioSource) concreteObject;
 		}
 		for (int i=0;i<pathwayComponentInteraction.size();i++){
-			Interaction interaction = pathwayComponentInteraction.get(i);
-			if (interaction == objectProxy && concreteObject instanceof Interaction){
+			Interaction thing = pathwayComponentInteraction.get(i);
+			if (thing == objectProxy && concreteObject instanceof Interaction){
 				pathwayComponentInteraction.set(i, (Interaction)concreteObject);
+			} else if(thing == objectProxy && !(concreteObject instanceof Interaction)) {
+				pathwayComponentInteraction.remove(i);
 			}
 		}
 		for (int i=0;i<pathwayComponentPathway.size();i++){
-			Pathway pathway = pathwayComponentPathway.get(i);
-			if (pathway == objectProxy && concreteObject instanceof Pathway){
+			Pathway thing = pathwayComponentPathway.get(i);
+			if (thing == objectProxy && concreteObject instanceof Pathway){
 				pathwayComponentPathway.set(i, (Pathway)concreteObject);
+			} else if (thing == objectProxy && !(concreteObject instanceof Pathway)){
+				pathwayComponentPathway.remove(i);
 			}
 		}
-		for (int i=0;i<pathwayOrder.size();i++){
-			PathwayStep step = pathwayOrder.get(i);
-			if (step == objectProxy){
-				pathwayOrder.set(i, (PathwayStep) concreteObject);
+		for (int i=0; i<pathwayOrder.size(); i++) {
+			PathwayStep thing = pathwayOrder.get(i);
+			if(thing == objectProxy) {
+				pathwayOrder.set(i, (PathwayStep)concreteObject);
 			}
 		}
 	}

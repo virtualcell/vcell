@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class DnaRegionReference extends EntityReference {
 	private SequenceLocation absoluteRegion;
 	private ArrayList<DnaRegionReference> dnaSubRegion = new ArrayList<DnaRegionReference>();
@@ -45,6 +47,37 @@ public class DnaRegionReference extends EntityReference {
 	}
 	public void setSequence(String sequence) {
 		this.sequence = sequence;
+	}
+
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
+		if(absoluteRegion == objectProxy) {
+			absoluteRegion = (SequenceLocation) concreteObject;
+		}
+		if(organism == objectProxy) {
+			organism = (BioSource) concreteObject;
+		}
+		if(regionType == objectProxy) {
+			regionType = (SequenceRegionVocabulary) concreteObject;
+		}
+		for (int i=0;i<dnaSubRegion.size();i++){
+			DnaRegionReference thing = dnaSubRegion.get(i);
+			if (thing == objectProxy && concreteObject instanceof DnaRegionReference){
+				dnaSubRegion.set(i, (DnaRegionReference)concreteObject);
+			} else if(thing == objectProxy && !(concreteObject instanceof DnaRegionReference)) {
+				dnaSubRegion.remove(i);
+			}
+		}
+		for (int i=0;i<rnaSubRegion.size();i++){
+			RnaRegionReference thing = rnaSubRegion.get(i);
+			if (thing == objectProxy && concreteObject instanceof RnaRegionReference){
+				rnaSubRegion.set(i, (RnaRegionReference)concreteObject);
+			} else if (thing == objectProxy && !(concreteObject instanceof RnaRegionReference)){
+				rnaSubRegion.remove(i);
+			}
+		}
 	}
 
 	public void showChildren(StringBuffer sb, int level){
