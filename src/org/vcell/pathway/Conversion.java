@@ -1,18 +1,19 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface Conversion extends Interaction {
 	
 	public String getConversionDirection();
 	public ArrayList<Stoichiometry> getParticipantStoichiometry();
 	public Boolean getSpontaneous();
-	public ArrayList<PhysicalEntity> getLeft();
-	public ArrayList<PhysicalEntity> getRight();
+	public List<PhysicalEntity> getLeft();
+	public List<PhysicalEntity> getRight();
 	
 	public void setConversionDirection(String conversionDirection);
 	public void setParticipantStoichiometry(ArrayList<Stoichiometry> participantStoichiometry);
 	public void setSpontaneous(Boolean spontaneous);
-	public void setLeft(ArrayList<PhysicalEntity> left);
-	public void setRight(ArrayList<PhysicalEntity> right);
+	public void addLeft(PhysicalEntity left);
+	public void addRight(PhysicalEntity right);
 }

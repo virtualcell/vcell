@@ -1424,6 +1424,9 @@ roundtripTimer += l2 - l1;
 		}
 		updatedBioModel.setVCMetaData(XmlHelper.xmlToVCMetaData(updatedBioModel.getVCMetaData(), updatedBioModel, vcMetaDataXML));
 
+		//TODO must replace this with proper persistance.
+		updatedBioModel.getPathwayModel().merge(bioModel.getPathwayModel());
+		
 		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(updatedBioModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),
 				updatedBioModel.createBioModelChildSummary().toDatabaseSerialization());

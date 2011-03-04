@@ -30,7 +30,7 @@ public class PathwaySelectionExpander {
 		do {
 			selectedToAdd.clear();
 			for(BioPaxObject selected : selectedSet) {
-				if(selected instanceof Interaction) {
+				if(selected instanceof InteractionImpl) {
 					for(InteractionParticipant participant : ((Interaction) selected).getParticipants()) {
 						PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 						if(!selectedSet.contains(physicalEntity)) {

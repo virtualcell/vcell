@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public interface Entity extends BioPaxObject {
 	public ArrayList<String> getName();
 	public void setName(ArrayList<String> name);

@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class Xref extends BioPaxObjectImpl implements UtilityClass {
 	private String db;
 	private String dbVersion;
@@ -31,6 +33,11 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 		this.idVersion = idVersion;
 	}
 	
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+	}
+
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printString(sb, "db",db,level);

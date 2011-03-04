@@ -3,18 +3,17 @@ package org.vcell.pathway;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
-
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                        ";
 	private String ID;
-	private String resource;
 	private ArrayList<String> comments = new ArrayList<String>();
 	
 	public ArrayList<String> getComments() {
 		return comments;
 	}
+	
 	public void setComments(ArrayList<String> comments) {
 		this.comments = comments;
 	}
@@ -23,22 +22,26 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		return ID;
 	}
 	public void setID(String value) {
-		if (value.equals("#CPATH-LOCAL-12758385")){
-			System.out.println("found it");
-		}
 		this.ID = value;
 	}
-
-	public String getResource() {
-		return resource;
-	}
-	public void setResource(String value) {
-		if (value.equals("#CPATH-LOCAL-12758385")){
-			System.out.println("found it");
+	
+	public String resourceFromID() {
+		if (ID != null){
+			String resourceID = "#" + this.getID();
+			return resourceID;
+		}else{
+			return ("#0");
+//			throw new RuntimeException("BioPax Object does not have an ID"); 
 		}
-		this.resource = value;
 	}
-
+	public boolean hasID() {
+		if (ID != null){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 	public String getTypeLabel(){
 		String typeName = getClass().getName();
 		typeName = typeName.replace(getClass().getPackage().getName(),"");
@@ -61,8 +64,8 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		if (ID!=null){
 			suffix = suffix + "  ID='"+ID+"'";
 		}
-		if (resource!=null){
-			suffix = suffix + "  resource='"+resource+"'";
+		if (this instanceof RdfObjectProxy && ((RdfObjectProxy)this).getResource()!=null){
+			suffix = suffix + "  resource='"+((RdfObjectProxy)this).getResource()+"'";
 		}
 		if (suffix.length()>0){
 			suffix = suffix + " ";
@@ -74,7 +77,7 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		if (level==0){
 			return "";
 		}
-		if (level>10){
+		if (level>15){
 			throw new RuntimeException("unchecked recursion in pathway.show()");
 		}
 		return spaces.substring(0,3*level);
@@ -132,21 +135,18 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public void printBoolean(StringBuffer sb, String name, Boolean value, int level){
 		if (name!=null && value!=null){
 			sb.append(getPad(level)+name+" = "+value.toString()+"\n");
-			showChildren(sb,level+1);
 		}
 	}
 	
 	public void printDouble(StringBuffer sb, String name, Double value, int level){
 		if (name!=null && value!=null){
 			sb.append(getPad(level)+name+" = "+value.toString()+"\n");
-			showChildren(sb,level+1);
 		}
 	}
 	
 	public void printInteger(StringBuffer sb, String name, Integer value, int level){
 		if (name!=null && value!=null){
 			sb.append(getPad(level)+name+" = "+value.toString()+"\n");
-			showChildren(sb,level+1);
 		}
 	}
 	

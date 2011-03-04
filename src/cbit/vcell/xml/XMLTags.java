@@ -488,4 +488,8 @@ public class XMLTags {
 
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
 	public final static String SundialsSolverOptions_maxOrderAdvection	= "maxOrderAdvection";
+	
+
+	public final static String PathwayModelTag	= "pathwayModel";
+
 }

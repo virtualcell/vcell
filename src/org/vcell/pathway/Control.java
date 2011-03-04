@@ -1,19 +1,18 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import org.vcell.pathway.persistence.PathwayReader.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.sybil.util.text.StringUtil;
 
 public class Control extends InteractionImpl {
 
 	private Interaction controlledInteraction;
 	private Pathway controlledPathway;
-
 	private String controlType;
-
 	private ArrayList<Pathway> pathwayControllers = new ArrayList<Pathway>();
-	private ArrayList<PhysicalEntity> physicalControllers = new ArrayList<PhysicalEntity>();
 
 	public Interaction getControlledInteraction() {
 		return controlledInteraction;
@@ -30,8 +29,8 @@ public class Control extends InteractionImpl {
 	public ArrayList<Pathway> getPathwayControllers() {
 		return pathwayControllers;
 	}
-	public ArrayList<PhysicalEntity> getPhysicalControllers() {
-		return physicalControllers;
+	public List<PhysicalEntity> getPhysicalControllers() {
+		return getParticipantPhysicalEntities(InteractionParticipant.Type.CONTROLLER);
 	}
 
 	public void setControlledInteraction(Interaction controlledInteraction) {
@@ -46,28 +45,32 @@ public class Control extends InteractionImpl {
 	public void setPathwayControllers(ArrayList<Pathway> pathwayControllers) {
 		this.pathwayControllers = pathwayControllers;
 	}
-	public void setPhysicalControllers(ArrayList<PhysicalEntity> physicalControllers) {
-		this.physicalControllers = physicalControllers;
+	public void addPhysicalController(PhysicalEntity physicalController) {
+		addPhysicalEntityAsParticipant(physicalController, InteractionParticipant.Type.CONTROLLER);
 	}
 	
+	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy,concreteObject);
+		
+		// we can have a combination of controllers
 		for (int i=0;i<pathwayControllers.size();i++){
-			Pathway pathway = pathwayControllers.get(i);
-			if (pathway == objectProxy){
+			Pathway controller = pathwayControllers.get(i);
+			if (controller == objectProxy && concreteObject instanceof Pathway){
 				pathwayControllers.set(i, (Pathway)concreteObject);
+			} else if (controller == objectProxy && !(concreteObject instanceof Pathway)){
+				pathwayControllers.remove(i);
 			}
 		}
-		if(controlledInteraction == objectProxy) {
-			if(concreteObject instanceof Interaction) {
-				controlledInteraction = (Interaction) concreteObject;
-			} else if(concreteObject instanceof Pathway) {
-				controlledInteraction = null;
-				controlledPathway = (Pathway) concreteObject;
-			} else {
-				throwObjectNeitherInteractionNorPathwayException(concreteObject);
-			}
-		}
+		
+		// we assume we can only have one "controlled" entity
+		if(controlledInteraction == objectProxy && concreteObject instanceof Interaction) {
+			controlledInteraction = (Interaction)concreteObject;
+			controlledPathway = null;
+		} else if(controlledPathway == objectProxy && concreteObject instanceof Pathway) {
+			controlledInteraction = null;
+			controlledPathway = (Pathway)concreteObject;
+		} 
 	}
 
 	protected void throwObjectNeitherInteractionNorPathwayException(BioPaxObject concreteObject) {
@@ -93,7 +96,7 @@ public class Control extends InteractionImpl {
 		printObject(sb,"controlledPathway",controlledPathway,level);
 		printString(sb,"controlType",controlType,level);
 		printObjects(sb,"pathwayControllers",pathwayControllers,level);
-		printObjects(sb,"physicalControllers",physicalControllers,level);
+		printObjects(sb,"physicalControllers",getPhysicalControllers(),level);
 	}
 
 }

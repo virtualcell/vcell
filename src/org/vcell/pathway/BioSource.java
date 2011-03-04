@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class BioSource extends BioPaxObjectImpl implements UtilityClass {
 	
 	private CellVocabulary cellType;
@@ -34,6 +36,24 @@ public class BioSource extends BioPaxObjectImpl implements UtilityClass {
 		this.tissue = tissue;
 	}
 
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
+		if(cellType == objectProxy) {
+			cellType = (CellVocabulary) concreteObject;
+		}
+		if(tissue == objectProxy) {
+			tissue = (TissueVocabulary) concreteObject;
+		}
+		for (int i=0; i<xRef.size(); i++) {
+			Xref thing = xRef.get(i);
+			if(thing == objectProxy) {
+				xRef.set(i, (Xref)concreteObject);
+			}
+		}
+	}
+	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb,level);
 		printObject(sb,"cellType",cellType,level);

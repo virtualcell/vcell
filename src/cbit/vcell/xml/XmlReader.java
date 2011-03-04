@@ -12,6 +12,8 @@ import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
@@ -40,6 +42,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
+import cbit.vcell.biomodel.meta.xml.rdf.XMLRDF;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
@@ -391,6 +394,18 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 		// no metadata was found, populate vcMetaData from biomodel (mainly free text annotation for identifiables)
 		if (!bMetaDataPopulated) {
 			biomodel.populateVCMetadata(bMetaDataPopulated);
+		}
+	}
+	Element pathwayElement = param.getChild(XMLTags.PathwayModelTag,vcNamespace);
+	if (pathwayElement!=null){
+		Element rdfElement = pathwayElement.getChild(XMLRDF.tagRDF, XMLRDF.nsRDF);
+		if (rdfElement!=null){
+			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
+			PathwayModel pathwayModel = pathwayReader.parse(rdfElement);
+			pathwayModel.reconcileReferences();		// ??? is this needed ???
+			biomodel.getPathwayModel().merge(pathwayModel);
+		} else {
+			throw new XmlParseException("expecting RDF element as child of pathwayModel within VCML document");
 		}
 	}
 	

@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class PublicationXref extends Xref {
 	private ArrayList<String> author = new ArrayList<String>();
 	private ArrayList<String> source = new ArrayList<String>();
@@ -39,7 +41,12 @@ public class PublicationXref extends Xref {
 	public void setYear(Integer year) {
 		this.year = year;
 	}
-	
+
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+	}
+
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printStrings(sb, "author",author,level);

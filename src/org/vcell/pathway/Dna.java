@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class Dna extends PhysicalEntity {
 	private EntityReference entityReference;	
 	
@@ -11,6 +13,15 @@ public class Dna extends PhysicalEntity {
 		this.entityReference = entityReference;
 	}
 	
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
+		if(entityReference == objectProxy) {
+			entityReference = (EntityReference) concreteObject;
+		}
+	}
+
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb,level);
 		printObject(sb,"entityReference",entityReference,level);

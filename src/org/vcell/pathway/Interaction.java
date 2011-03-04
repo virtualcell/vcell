@@ -2,6 +2,8 @@ package org.vcell.pathway;
 
 import java.util.List;
 
+import org.vcell.pathway.InteractionParticipant.Type;
+
 public interface Interaction extends Entity {
 	
 	public List<InteractionVocabulary> getInteractionTypes();
@@ -12,5 +14,5 @@ public interface Interaction extends Entity {
 	public void setParticipants(List<InteractionParticipant> participants);
 	public void addParticipant(InteractionParticipant participant);
 	
-	public void addEntityAsParticipant(PhysicalEntity entity, InteractionParticipant.Type type);
+	public void addPhysicalEntityAsParticipant(PhysicalEntity entity, Type type);
 }

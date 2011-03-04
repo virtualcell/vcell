@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class SequenceInterval extends SequenceLocation {
 	private SequenceSite sequenceIntervalBegin;
 	private SequenceSite sequenceIntervalEnd;
@@ -15,6 +17,18 @@ public class SequenceInterval extends SequenceLocation {
 	}
 	public void setSequenceIntervalEnd(SequenceSite sequenceIntervalEnd) {
 		this.sequenceIntervalEnd = sequenceIntervalEnd;
+	}
+
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+
+		if(sequenceIntervalBegin == objectProxy) {
+			sequenceIntervalBegin = (SequenceSite) concreteObject;
+		}
+		if(sequenceIntervalEnd == objectProxy) {
+			sequenceIntervalEnd = (SequenceSite) concreteObject;
+		}
 	}
 
 	public void showChildren(StringBuffer sb, int level){

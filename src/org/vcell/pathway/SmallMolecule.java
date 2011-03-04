@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 public class SmallMolecule extends PhysicalEntity {
 	private EntityReference entityReference;
 	
@@ -16,6 +18,15 @@ public class SmallMolecule extends PhysicalEntity {
 		printObject(sb, "entityReference",entityReference,level);
 	}
 	
+	@Override
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
+		
+		if(entityReference == objectProxy) {
+			entityReference = (EntityReference) concreteObject;
+		}
+	}
+
 	public String getTypeLabel(){
 		return "small molecule";
 	}
