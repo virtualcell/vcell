@@ -6,6 +6,7 @@ package cbit.vcell.mapping.gui;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import org.vcell.util.gui.ScrollTable;
 
@@ -100,11 +101,11 @@ private SimulationContext getSimulationContext() {
 
 
 private void refreshData() {
-	if (getSimulationContext()== null){
-		setData(null);
-	} else {
-		setData(Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs()));
+	List<SpeciesContextSpec> speciesContextSpecList = null;
+	if (getSimulationContext() != null){
+		speciesContextSpecList = Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs());
 	}
+	setData(speciesContextSpecList);
 }
 
 /**
@@ -215,7 +216,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		updateListenersReactionContext((ReactionContext)evt.getSource(),true);
 		updateListenersReactionContext((ReactionContext)evt.getSource(),false);
 		refreshData();
-		fireTableDataChanged();
 		
 	}
 	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {

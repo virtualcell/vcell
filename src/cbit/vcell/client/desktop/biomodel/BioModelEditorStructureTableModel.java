@@ -163,12 +163,10 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			refreshData();
 			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
-			int[] selectedRows = ownerTable.getSelectedRows();
 			Structure structure = (Structure) evt.getSource();
 			int changeRow = getRowIndex(structure);
 			if (changeRow >= 0) {
 				fireTableRowsUpdated(changeRow, changeRow);
-				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
 			}
 		}
 	}

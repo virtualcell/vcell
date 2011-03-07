@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 import org.vcell.util.gui.ScrollTable;
@@ -159,11 +160,11 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 	}
 
 	private void refreshData() {
-		if (getSimulationContext() == null || fieldBioEvent == null){
-			setData(null);
-		} else {
-			setData(fieldBioEvent.getEventAssignments());
+		ArrayList<EventAssignment> eventAssignments = null;
+		if (getSimulationContext() != null && fieldBioEvent != null) {
+			eventAssignments = fieldBioEvent.getEventAssignments();
 		}
+		setData(eventAssignments);
 	}
 	
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -183,9 +184,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 						Expression exp = new Expression((String)aValue);
 						eventAssignment.setAssignmentExpression(exp);
 					}
-					// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.
-					fireTableDataChanged();
-					fireTableRowsUpdated(rowIndex,rowIndex);
+					fireTableRowsUpdated(rowIndex, rowIndex);
 				} catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
@@ -219,7 +218,6 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 			autoCompleteSymbolFilter = argSimContext.getAutoCompleteSymbolFilter();
 		}
 		firePropertyChange("simulationContext", oldValue, argSimContext);
-		// fireTableDataChanged();
 	}
 
 	public Comparator<EventAssignment> getComparator(int col, boolean ascending)

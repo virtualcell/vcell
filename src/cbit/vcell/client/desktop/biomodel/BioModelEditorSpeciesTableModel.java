@@ -101,12 +101,10 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			updateStructureComboBox();
 		} else if (evt.getSource() instanceof SpeciesContext) {
-			int[] selectedRows = ownerTable.getSelectedRows();
 			SpeciesContext speciesContext = (SpeciesContext) evt.getSource();
 			int changeRow = getRowIndex(speciesContext);
 			if (changeRow >= 0) {
 				fireTableRowsUpdated(changeRow, changeRow);
-				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
 			}
 		}
 	}

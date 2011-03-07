@@ -435,8 +435,11 @@ private void updateSubdomainComboBox() {
 
 private void update() {
 	int dimension = getGeometryContext().getGeometry().getDimension();
+	boolean old_bNonSpatial = bNonSpatial;
 	bNonSpatial = (dimension == 0);
-	fireTableStructureChanged();
+	if (old_bNonSpatial != bNonSpatial) {
+		fireTableStructureChanged();
+	}
 	refreshData();
 	
 	if (!bNonSpatial) {
@@ -529,7 +532,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		refreshData();
 	}
 	if (evt.getSource() instanceof StructureMapping) {
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 
@@ -612,7 +615,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							}							
 						}
 					}
-					fireTableDataChanged();
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
@@ -669,7 +671,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}				
-				fireTableDataChanged();
 				break;
 			case SPATIAL_COLUMN_X_MINUS:{
 				if (aValue != null) {

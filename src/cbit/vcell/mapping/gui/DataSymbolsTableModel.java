@@ -185,13 +185,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);
 	if (evt.getSource() instanceof DataContext && evt.getPropertyName().equals("dataSymbols")) {
 		refreshData();
-		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("name")) {
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("type")) {
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 

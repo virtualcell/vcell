@@ -7,6 +7,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  * Creation date: (8/21/2006 9:35:06 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class SimulationStatusDetailsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private final static int COLUMN_SCANINDEX = 0;
 	private final static int COLUMN_STATUS = 1;
@@ -38,41 +39,9 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -83,7 +52,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param columnIndex int
  */
-public Class getColumnClass(int columnIndex) {
+public Class<?> getColumnClass(int columnIndex) {
 	switch (columnIndex) {
 		case COLUMN_SUBMITDATE : 
 		case COLUMN_STARTDATE : 
@@ -231,14 +200,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
 
