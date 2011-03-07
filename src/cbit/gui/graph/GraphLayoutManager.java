@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
+import org.vcell.util.graphlayout.EdgeTugLayouter;
+import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 
 import com.genlogic.GraphLayout.GlgCube;
 import com.genlogic.GraphLayout.GlgGraphEdge;
@@ -66,7 +69,7 @@ public class GraphLayoutManager {
 	}
 	
 	public void layout(String layoutName) throws Exception {
-		if(ContainedGraphLayouter.LAYOUT_NAMES.contains(layoutName)) {
+		if(ContainedGraphLayouter.DefaultLayouters.NAMES.contains(layoutName)) {
 			layoutContainedGraph(layoutName);
 		} else if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
 			layoutRPI(layoutName);
@@ -76,16 +79,23 @@ public class GraphLayoutManager {
 			throw new Exception("Unsupported Layout " + layoutName);
 		}
 	}
-	
+
 	public void layoutContainedGraph(String layoutName) {
-		if(ContainedGraphLayouter.LAYOUT_NAME_RANDOM.equals(layoutName)) {
-			VCellGraphToContainedGraphMapper mapper = 
-				new VCellGraphToContainedGraphMapper(graphView.getGraphModel());
-			mapper.updateContainedGraphFromVCellGraph();
-			ContainedGraphLayouter layouter = new ContainedGraphLayouter.RandomLayouter();
+		VCellGraphToContainedGraphMapper mapper = 
+			new VCellGraphToContainedGraphMapper(graphView.getGraphModel());
+		mapper.updateContainedGraphFromVCellGraph();
+		ContainedGraphLayouter layouter = null;
+		if(RandomLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new RandomLayouter();				
+		} else if(EdgeTugLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new EdgeTugLayouter();
+		} else if(ShootAndCutLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new ShootAndCutLayouter();
+		}
+		if(layouter != null) {
 			layouter.layout(mapper.getContainedGraph());
 			mapper.updateVCellGraphFromContainedGraph();
-			graphView.repaint();
+			graphView.repaint();				
 		}
 	}
 	

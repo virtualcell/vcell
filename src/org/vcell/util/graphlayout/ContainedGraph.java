@@ -1,13 +1,13 @@
 package org.vcell.util.graphlayout;
 
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.vcell.util.geometry2d.Point2D;
+import org.vcell.util.geometry2d.Vector2D;
 
 public interface ContainedGraph {
 	
@@ -26,24 +26,23 @@ public interface ContainedGraph {
 
 	public static class Container extends Element {
 		
-		protected final Rectangle boundary;
+		protected double x, y;
+		protected final double width, height;
 		
-		public Container(Object object, Rectangle boundary) { 
+		public Container(Object object, double x, double y, double width, double height) { 
 			super(object);
-			this.boundary = boundary;
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
 		}
 		
-		public Container(Object object, Point pos, Dimension size) {
-			this(object, new Rectangle(pos, size));
-		}
-		
-		public Rectangle getBoundary() { return boundary; }
-		public Point getPos() { return boundary.getLocation(); }
-		public int getX() { return boundary.x; }
-		public int getY() { return boundary.y; }
-		public Dimension getSize() { return boundary.getSize(); }
-		public int getWidth() { return boundary.width; }
-		public int getHeight() { return boundary.height; }
+		public double getX() { return x; }
+		public double getY() { return y; }
+		public double getWidth() { return width; }
+		public double getHeight() { return height; }
+		public double getNodeMaxX(Node node) { return getX() + getWidth() - node.getWidth(); }
+		public double getNodeMaxY(Node node) { return getY() + getHeight() - node.getHeight(); }
 		
 	}
 	
@@ -51,21 +50,26 @@ public interface ContainedGraph {
 
 		protected final Container container;
 
-		public Node(Object object, Container container, Rectangle placement) {
-			super(object, placement);
+		public Node(Object object, Container container, double x, double y, double width, double height) {
+			super(object, x, y, width, height);
 			this.container = container;
-		}
-		
-		public Node(Object object, Container container, Point pos, Dimension size) {
-			this(object, container, new Rectangle(pos, size));
 		}
 		
 		public Container getContainer() { return container; }
 		
-		public void setPos(Point pos) { boundary.setLocation(pos); }
-		public void setX(int x) { boundary.x = x; }
-		public void setY(int y) { boundary.y = y; }
-
+		public void setPos(double x, double y) { setX(x); setY(y); }
+		public void setX(double x) { this.x = x; }
+		public void setY(double y) { this.y = y; }
+		public Point2D getCenter() { return new Point2D(getX() + getWidth()/2, getY() + getHeight()/2); }
+		public double getCenterX() { return getX() + getWidth()/2; }
+		public double getCenterY() { return getY() + getHeight()/2; }
+		public void setCenterX(double x) { setX(x - getWidth()/2); }
+		public void setCenterY(double y) { setY(y - getHeight()/2); }
+		public void setCenter(double x, double y) { setCenterX(x); setCenterY(y); }
+		public void moveX(double dx) { setX(getX() + dx); }
+		public void moveY(double dy) { setY(getY() + dy); }
+		public void move(double dx, double dy) { setPos(getX() + dx, getY() + dy); }
+		public void move(Vector2D v) { setPos(getX() + v.x, getY() + v.y); }
 	}
 	
 	public static class Edge extends Element {
@@ -83,17 +87,19 @@ public interface ContainedGraph {
 		
 	}
 
-	public Container addContainer(Object object, Rectangle boundary);
-	public Container addContainer(Object object, Point pos, Dimension size);
+	public Container addContainer(Object object, double x, double y, double width, double height);
 	public Container getContainer(Object object);
+	public boolean containsContainer(Object object);
 	public Collection<Container> getContainers();
 	public void removeContainer(Container container);
-	public Node addNode(Object object, Container container, Rectangle placement);
-	public Node addNode(Object object, Container container, Point pos, Dimension size);
+	public Node addNode(Object object, Container container, double x, double y, 
+			double width, double height);
+	public boolean containsNode(Object object);
 	public Node getNode(Object object);
 	public Collection<? extends Node> getNodes();
 	public void removeNode(Node node);
 	public Edge addEdge(Object object, Node node1, Node node2);
+	public boolean containsEdge(Object object);
 	public Edge getEdge(Object object);
 	public Collection<? extends Edge> getEdges();
 	public void removeEdge(Edge edge);
@@ -109,18 +115,13 @@ public interface ContainedGraph {
 		protected Map<Node, Set<Edge>> nodeEdgesMap = new HashMap<Node, Set<Edge>>();
 		protected Map<Container, Set<Node>> containerNodesMap = new HashMap<Container, Set<Node>>();
 		
-		public Container addContainer(Object object, Rectangle boundary) {
-			Container container = new Container(object, boundary);
+		public Container addContainer(Object object, double x, double y, double width, double height) {
+			Container container = new Container(object, x, y, width, height);
 			containerMap.put(object, container);
 			return container;
 		}
 
-		public Container addContainer(Object object, Point pos, Dimension size) {
-			Container container = new Container(object, pos, size);
-			containerMap.put(object, container);
-			return container;
-		}
-
+		public boolean containsContainer(Object object) { return containerMap.containsKey(object); }
 		public Container getContainer(Object object) { return containerMap.get(object); }
 		public Collection<Container> getContainers() { return containerMap.values(); }
 		
@@ -135,8 +136,9 @@ public interface ContainedGraph {
 			containerMap.remove(container.getObject()); 
 		}
 
-		public Node addNode(Object object, Container container, Rectangle placement) {
-			Node node = new Node(object, container, placement);
+		public Node addNode(Object object, Container container, double x, double y, 
+				double width, double height) {
+			Node node = new Node(object, container, x, y, width, height);
 			nodeMap.put(object, node);
 			Set<Node> containerNodes = containerNodesMap.get(container);
 			if(containerNodes == null) {
@@ -147,18 +149,7 @@ public interface ContainedGraph {
 			return node;
 		}
 
-		public Node addNode(Object object, Container container, Point pos, Dimension size) {
-			Node node = new Node(object, container, pos, size);
-			nodeMap.put(object, node);
-			Set<Node> containerNodes = containerNodesMap.get(container);
-			if(containerNodes == null) {
-				containerNodes = new HashSet<Node>();
-				containerNodesMap.put(container, containerNodes);
-			}
-			containerNodes.add(node);
-			return node;
-		}
-
+		public boolean containsNode(Object object) { return nodeMap.containsKey(object); }
 		public Node getNode(Object object) { return nodeMap.get(object); }
 		public Collection<Node> getNodes() { return nodeMap.values(); }
 		
@@ -197,6 +188,7 @@ public interface ContainedGraph {
 			return edge;
 		}
 
+		public boolean containsEdge(Object object) { return edgeMap.containsKey(object); }
 		public Edge getEdge(Object object) { return edgeMap.get(object); }
 		public Collection<Edge> getEdges() { return edgeMap.values(); }
 		
