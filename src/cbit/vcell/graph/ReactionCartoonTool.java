@@ -263,7 +263,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	public void layout(String layoutName) throws Exception {
 		System.out.println(layoutName);
-		if (!ContainedGraphLayouter.LAYOUT_NAMES.contains(layoutName) &&
+		if (!ContainedGraphLayouter.DefaultLayouters.NAMES.contains(layoutName) &&
 				getReactionCartoon().getStructureSuite().getStructures().size() != 1) {
 			if (GraphLayoutManager.OldLayouts.RANDOMIZER.equals(layoutName)) {
 				getReactionCartoon().setRandomLayout(true);
