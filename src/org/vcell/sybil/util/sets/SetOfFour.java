@@ -26,6 +26,11 @@ public class SetOfFour<E> implements Set<E> {
 		this.element4 = element4; 
 	}
 	
+	public E getElement1() { return element1; }
+	public E getElement2() { return element2; }
+	public E getElement3() { return element3; }
+	public E getElement4() { return element4; }
+	
 	public boolean add(E element) { throw new UnsupportedOperationException(); }
 	
 	public boolean addAll(Collection<? extends E> collection) { 
@@ -44,6 +49,19 @@ public class SetOfFour<E> implements Set<E> {
 			if(!contains(object)) { return false; }
 		}
 		return true;
+	}
+	
+	public boolean equals(Object object) {
+		if(object instanceof Set) {
+			Set<?> set = (Set<?>) object;
+			return set.size() == 4 && set.contains(element1) && set.contains(element2) 
+			&& set.contains(element3) && set.contains(element4);
+		}
+		return false;
+	}
+	
+	public int hashCode() { 
+		return element1.hashCode() + element2.hashCode() + element3.hashCode() + element4.hashCode(); 
 	}
 
 	public boolean isEmpty() { return false; }

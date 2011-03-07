@@ -19,6 +19,9 @@ public class SetOfTwo<E> implements Set<E> {
 	
 	public SetOfTwo(E element1, E element2) { this.element1 = element1; this.element2 = element2; }
 	
+	public E getElement1() { return element1; }
+	public E getElement2() { return element2; }
+	
 	public boolean add(E element) { throw new UnsupportedOperationException(); }
 	public boolean addAll(Collection<? extends E> collection) { throw new UnsupportedOperationException(); }
 	public void clear() { throw new UnsupportedOperationException(); }
@@ -30,6 +33,16 @@ public class SetOfTwo<E> implements Set<E> {
 		}
 		return true;
 	}
+	
+	public boolean equals(Object object) {
+		if(object instanceof Set) {
+			Set<?> set = (Set<?>) object;
+			return set.size() == 2 && set.contains(element1) && set.contains(element2);
+		}
+		return false;
+	}
+	
+	public int hashCode() { return element1.hashCode() + element2.hashCode(); }
 
 	public boolean isEmpty() { return false; }
 	public Iterator<E> iterator() { return new IterOfTwo<E>(element1, element2); }

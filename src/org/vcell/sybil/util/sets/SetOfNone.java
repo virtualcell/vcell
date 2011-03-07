@@ -23,6 +23,16 @@ public class SetOfNone<E> implements Set<E> {
 		if(collection.size() == 0) { return true; }
 		else { return false; }
 	}
+	
+	public boolean equals(Object object) {
+		if(object instanceof Set) {
+			Set<?> set = (Set<?>) object;
+			return set.isEmpty();
+		}
+		return false;
+	}
+	
+	public int hashCode() { return 0; }
 
 	public boolean isEmpty() { return true; }
 	public Iterator<E> iterator() { return new IterOfNone<E>(); }
