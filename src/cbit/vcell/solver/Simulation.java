@@ -32,6 +32,7 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  * @author: John Wagner
  */
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
+	public static final String PROPERTY_NAME_SOLVER_TASK_DESCRIPTION = "solverTaskDescription";
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -775,12 +776,12 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
 	SolverTaskDescription oldValue = fieldSolverTaskDescription;
-	fireVetoableChange("solverTaskDescription", oldValue, solverTaskDescription);
+	fireVetoableChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
 	fieldSolverTaskDescription = solverTaskDescription;
 	if (solverTaskDescription != null && solverTaskDescription.getSimulation() != this) {
 		throw new IllegalArgumentException("SolverTaskDescription simulation field points to wrong simulation");
 	}
-	firePropertyChange("solverTaskDescription", oldValue, solverTaskDescription);
+	firePropertyChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
 }
 
 

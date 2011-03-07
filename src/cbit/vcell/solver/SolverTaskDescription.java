@@ -534,13 +534,18 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  *   and the property that has changed.
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
-		try {
+	try {
+		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_TIME_BOUNDS))) {
+			if (getOutputTimeSpec() instanceof UniformOutputTimeSpec) {
+				double outputTime = getTimeBounds().getEndingTime()/20;
+				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+			}
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 			SolverDescription solverDescription = getSolverDescription();
-			if (solverDescription.isSundialsSolver() || solverDescription.isSemiImplicitPdeSolver()) {
+			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
 				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
-					double outputTime = timeBounds.getEndingTime()/10;
+					double outputTime = timeBounds.getEndingTime()/20;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
 				
@@ -578,10 +583,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					smoldynSimulationOptions = new SmoldynSimulationOptions();
 				}
 			}
-			
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
 		}
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
 	}
 }
 

@@ -8,11 +8,13 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 /**
@@ -131,18 +133,48 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		SimulationWorkspace oldValue = (SimulationWorkspace) evt.getOldValue();
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(this);
+			for (Simulation simulation : oldValue.getSimulations()) {
+				simulation.removePropertyChangeListener(this);
+				simulation.getSolverTaskDescription().removePropertyChangeListener(this);
+			}
 		}
 		SimulationWorkspace newValue = (SimulationWorkspace) evt.getNewValue();
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
+			for (Simulation simulation : newValue.getSimulations()) {
+				simulation.addPropertyChangeListener(this);
+				simulation.getSolverTaskDescription().addPropertyChangeListener(this);
+			}
 		}
 		refreshData();
-	}
-	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("simulations")) {
+	} else if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("simulations")) {
+		Simulation[] oldValue = (Simulation[]) evt.getOldValue();
+		if (oldValue != null) {
+			for (Simulation simulation : oldValue) {
+				simulation.removePropertyChangeListener(this);
+				simulation.getSolverTaskDescription().removePropertyChangeListener(this);
+			}
+		}
+		Simulation[] newValue = (Simulation[]) evt.getNewValue();
+		if (newValue != null) {
+			for (Simulation simulation : newValue) {
+				simulation.addPropertyChangeListener(this);
+				simulation.getSolverTaskDescription().addPropertyChangeListener(this);
+			}
+		}
 		refreshData();
-	}
-	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("status")) {
-		fireTableRowsUpdated(((Integer)evt.getNewValue()).intValue(), ((Integer)evt.getNewValue()).intValue());
+	} else {
+		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals(Simulation.PROPERTY_NAME_SOLVER_TASK_DESCRIPTION)) {
+			SolverTaskDescription oldValue = (SolverTaskDescription)evt.getOldValue();
+			if (oldValue != null) {
+				oldValue.removePropertyChangeListener(this);
+			}
+			SolverTaskDescription newValue = (SolverTaskDescription)evt.getNewValue();
+			if (newValue != null) {
+				newValue.addPropertyChangeListener(this);
+			}			
+		}
+		fireTableRowsUpdated(0, getRowCount());
 	}
 }
 
@@ -168,7 +200,7 @@ public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
  */
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	Simulation simulation = getValueAt(rowIndex);
-	try {
+	try {		
 		switch (columnIndex){
 			case COLUMN_NAME:
 				if (aValue instanceof String){
@@ -181,15 +213,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				break;
 			case COLUMN_ENDTIME:
 				if (aValue instanceof Double){
+					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 					double newTime = (Double) aValue;
-					TimeBounds oldTimeBounds = simulation.getSolverTaskDescription().getTimeBounds();
+					TimeBounds oldTimeBounds = solverTaskDescription.getTimeBounds();
 					TimeBounds timeBounds = new TimeBounds(oldTimeBounds.getStartingTime(), newTime);
-					simulation.getSolverTaskDescription().setTimeBounds(timeBounds);
+					solverTaskDescription.setTimeBounds(timeBounds);
 				}
 				break;
 			case COLUMN_OUTPUT:
 				if (aValue instanceof String){
-					OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
+					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
+					OutputTimeSpec ots = solverTaskDescription.getOutputTimeSpec();
 					OutputTimeSpec newOts = null;
 					if (ots instanceof DefaultOutputTimeSpec) {
 						int newValue = Integer.parseInt((String)aValue);
@@ -201,7 +235,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						newOts = ExplicitOutputTimeSpec.fromString((String) aValue);
 					}
 					if (newOts != null) {
-						simulation.getSolverTaskDescription().setOutputTimeSpec(newOts);
+						solverTaskDescription.setOutputTimeSpec(newOts);
 					}
 				}
 				break;
