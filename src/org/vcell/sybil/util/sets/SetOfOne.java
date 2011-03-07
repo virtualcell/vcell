@@ -18,6 +18,8 @@ public class SetOfOne<E> implements Set<E> {
 	
 	public SetOfOne(E element) { this.element = element; }
 	
+	public E getElement() { return element; }
+	
 	public boolean add(E element) { throw new UnsupportedOperationException(); }
 	public boolean addAll(Collection<? extends E> collection) { throw new UnsupportedOperationException(); }
 	public void clear() { throw new UnsupportedOperationException(); }
@@ -29,6 +31,16 @@ public class SetOfOne<E> implements Set<E> {
 		}
 		return true;
 	}
+	
+	public boolean equals(Object object) {
+		if(object instanceof Set) {
+			Set<?> set = (Set<?>) object;
+			return set.size() == 1 && set.contains(element);
+		}
+		return false;
+	}
+	
+	public int hashCode() { return element.hashCode(); }
 
 	public boolean isEmpty() { return false; }
 	public Iterator<E> iterator() { return new IterOfOne<E>(element); }

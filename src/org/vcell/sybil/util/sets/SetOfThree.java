@@ -24,6 +24,10 @@ public class SetOfThree<E> implements Set<E> {
 		this.element3 = element3; 
 	}
 	
+	public E getElement1() { return element1; }
+	public E getElement2() { return element2; }
+	public E getElement3() { return element3; }
+	
 	public boolean add(E element) { throw new UnsupportedOperationException(); }
 	public boolean addAll(Collection<? extends E> collection) { throw new UnsupportedOperationException(); }
 	public void clear() { throw new UnsupportedOperationException(); }
@@ -35,6 +39,17 @@ public class SetOfThree<E> implements Set<E> {
 		}
 		return true;
 	}
+	
+	public boolean equals(Object object) {
+		if(object instanceof Set) {
+			Set<?> set = (Set<?>) object;
+			return set.size() == 3 && set.contains(element1) && set.contains(element2) 
+			&& set.contains(element3);
+		}
+		return false;
+	}
+	
+	public int hashCode() { return element1.hashCode() + element2.hashCode() + element3.hashCode(); }
 
 	public boolean isEmpty() { return false; }
 	public Iterator<E> iterator() { return new IterOfThree<E>(element1, element2, element3); }
