@@ -71,6 +71,9 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener, ActionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
+			if (fieldSimulation == null) {
+				return;
+			}
 			if (event.getSource() == fieldSimulation) {
 				// name is not displayed by this panel so we only need to take care of the rest
 				if (event.getPropertyName().equals("description")) {
@@ -89,11 +92,11 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 				if (event.getPropertyName().equals("mathDescription")) {
 					refreshDisplay();
 				}
-			}else if(event.getSource() == fieldSimulation.getMeshSpecification()){
+			} else if(event.getSource() == fieldSimulation.getMeshSpecification()){
 				if(event.getPropertyName().equals("geometry")){
 					displayMesh();
 				}
-			}else if(event.getSource() == fieldSimulation.getSolverTaskDescription()){
+			} else if(event.getSource() == fieldSimulation.getSolverTaskDescription()){
 				refreshDisplay();				
 			}
 		};
