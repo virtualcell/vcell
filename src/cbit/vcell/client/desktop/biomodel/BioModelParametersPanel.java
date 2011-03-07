@@ -57,7 +57,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JButton addNewButton = null;
 	private JButton deleteButton = null;
 	private EditorScrollTable parametersFunctionsTable;
-	private BioModelParametersTableMode parametersFunctionsTableModel = null;
+	private BioModelParametersTableModel parametersFunctionsTableModel = null;
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JPanel parametersFunctionsPanel = null;
@@ -147,7 +147,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		parametersFunctionsTable = new EditorScrollTable();
-		parametersFunctionsTableModel = new BioModelParametersTableMode(parametersFunctionsTable);
+		parametersFunctionsTableModel = new BioModelParametersTableModel(parametersFunctionsTable);
 		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
 			
 		globalParametersCheckBox = new JCheckBox("Global");

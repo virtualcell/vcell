@@ -237,7 +237,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		refreshData();
 	}
 	if (evt.getSource() instanceof Parameter) {
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 

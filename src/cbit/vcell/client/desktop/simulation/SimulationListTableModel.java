@@ -8,7 +8,6 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
@@ -174,7 +173,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newValue.addPropertyChangeListener(this);
 			}			
 		}
-		fireTableRowsUpdated(0, getRowCount());
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 

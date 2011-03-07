@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
@@ -101,6 +102,26 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
+		if (evt.getSource() == bioModel && evt.getPropertyName().equals(BioModel.PROPERTY_NAME_SIMULATION_CONTEXTS)) {
+			SimulationContext[] oldValue = (SimulationContext[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (SimulationContext simulationContext : oldValue) {
+					simulationContext.removePropertyChangeListener(this);
+				}
+			}
+			SimulationContext[] newValue = (SimulationContext[]) evt.getNewValue();
+			if (newValue != null) {
+				for (SimulationContext simulationContext : newValue) {
+					simulationContext.addPropertyChangeListener(this);
+				}
+			}
+		}
+		if (evt.getSource() instanceof SimulationContext) {
+			int changeRow = getRowIndex((SimulationContext) evt.getSource());
+			if (changeRow >= 0) {
+				fireTableRowsUpdated(changeRow, changeRow);
+			}
+		}
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
@@ -138,7 +159,6 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	
 	@Override
 	public Comparator<SimulationContext> getComparator(int col, boolean ascending) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -175,5 +195,22 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	@Override
 	public int getRowCount() {
 		return getDataSize();
+	}
+
+	@Override
+	protected void bioModelChange(PropertyChangeEvent evt) {
+		super.bioModelChange(evt);
+		BioModel oldValue = (BioModel) evt.getOldValue();
+		if (oldValue != null) {
+			for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
+				simulationContext.removePropertyChangeListener(this);
+			}
+		}
+		BioModel newValue = (BioModel) evt.getNewValue();
+		if (newValue != null) {
+			for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
+				simulationContext.addPropertyChangeListener(this);
+			}
+		}
 	}
 }

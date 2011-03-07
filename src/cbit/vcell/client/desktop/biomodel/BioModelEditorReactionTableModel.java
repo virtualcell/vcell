@@ -115,12 +115,10 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			updateStructureComboBox();
 		} else if (evt.getSource() instanceof ReactionStep) {
-			int[] selectedRows = ownerTable.getSelectedRows();
 			ReactionStep reactionStep = (ReactionStep) evt.getSource();
 			int changeRow = getRowIndex(reactionStep);
 			if (changeRow >= 0) {
 				fireTableRowsUpdated(changeRow, changeRow);
-				GuiUtils.tableSetSelectedRows(ownerTable, selectedRows);
 			}
 		}
 	}

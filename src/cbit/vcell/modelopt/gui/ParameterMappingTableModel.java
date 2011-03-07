@@ -325,7 +325,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		refreshData();
 	} else if (evt.getSource() instanceof ParameterMappingSpec) {
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 

@@ -246,7 +246,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof ReferenceDataMappingSpec){
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount() - 1);
 	}
 }
 

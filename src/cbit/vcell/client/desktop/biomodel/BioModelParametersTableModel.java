@@ -34,7 +34,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class BioModelParametersTableMode extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class BioModelParametersTableModel extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_PATH = 0;
 	public static final int COLUMN_NAME = 1;
 	public static final int COLUMN_DESCRIPTION = 2;
@@ -50,7 +50,7 @@ public class BioModelParametersTableMode extends BioModelEditorRightSideTableMod
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public BioModelParametersTableMode(EditorScrollTable table) {
+public BioModelParametersTableModel(EditorScrollTable table) {
 	super(table);
 	setColumns(LABELS);
 }
@@ -189,18 +189,12 @@ public boolean isCellEditable(int row, int col) {
 @Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	super.propertyChange(evt);
-	int[] selectedRows = ownerTable.getSelectedRows();
-	Object[] objects = null;
-	if (selectedRows.length > 0) {
-		objects = new Object[selectedRows.length];
-		for (int i = 0; i < objects.length; i ++) {
-			objects[i] = getValueAt(selectedRows[i]);
+	if (evt.getSource() instanceof Parameter) {
+		int changeRow = getRowIndex((Parameter) evt.getSource());
+		if (changeRow >= 0) {
+			fireTableRowsUpdated(changeRow, changeRow);
 		}
 	}
-    refreshData();
-    if (objects != null) {
-    	DocumentEditorSubPanel.setTableSelections(objects, ownerTable, this);
-    }
 }
 
 public void setValueAt(Object value, int row, int col) {

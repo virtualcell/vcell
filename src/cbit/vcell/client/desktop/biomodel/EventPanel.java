@@ -108,10 +108,6 @@ public class EventPanel extends DocumentEditorSubPanel {
 					// disable add/delete function buttons					
 					updateEventPanel();					
 				}
-				if (evt.getSource() == fieldBioEvent && (evt.getPropertyName().equals("eventAssignments"))) {
-					getEventAssignmentsTableModel().fireTableDataChanged();
-				}
-				
 				if (evt.getSource() == EventPanel.this && (evt.getPropertyName().equals("simulationContext"))) {
 					triggerTextfield.setAutoCompleteSymbolFilter(getAutoCompleteFilter());
 					triggerTextfield.setAutoCompletionWords(getAutoCompleteList());
