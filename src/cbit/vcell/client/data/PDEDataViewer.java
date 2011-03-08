@@ -56,6 +56,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
@@ -1293,11 +1294,10 @@ private void openInVisit() {
 		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
 		
 		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
-		
-		if ((new File("/home/VCELL/eboyce/visit_build_2.2RC/src/bin/")).exists()) {
-			visitBinDir="/home/VCELL/eboyce/visit_build_2.2RC/src/bin/";
-		}
-		else {
+		String visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
+		if (visitBinDirProp != null && new File(visitBinDirProp,"visit.exe").exists()) {
+			visitBinDir=visitBinDirProp;
+		}else {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle("Please locate the VisIt executable");
 			chooser.showOpenDialog(this);
