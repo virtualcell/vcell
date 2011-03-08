@@ -56,7 +56,6 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -225,9 +224,12 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		return;
 	}
 	
-	FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());
-	
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+	FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
+	if (fdis == null) {
+		throw new DataAccessException("Can't find sample image in data processing instructions");
+	}
+	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 	CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 	SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
 	VariableType varType = fdis.getFieldFuncArgs().getVariableType();

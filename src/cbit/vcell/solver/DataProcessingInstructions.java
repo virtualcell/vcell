@@ -18,13 +18,17 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XMLTags;
-import cbit.vcell.math.MathFunctionDefinitions;
 
 public final class DataProcessingInstructions implements Matchable, Serializable {
+	public static final String VFRAP = "VFRAP";
+	public static final String ROI_TIME_SERIES = "RoiTimeSeries";
 	private String scriptName;
 	private String scriptInput;
 
 	public DataProcessingInstructions(String scriptName, String scriptInput){
+		if (!scriptName.equals(VFRAP) && !scriptName.equals(ROI_TIME_SERIES)) {
+			throw new RuntimeException("DataProcessingInstruction '" + scriptName + "' not supported.");
+		}
 		this.scriptName = scriptName;
 		this.scriptInput = scriptInput;
 	}
@@ -32,6 +36,14 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 	public String getScriptName() {
 		return scriptName;
 	}
+	
+	public static DataProcessingInstructions getRoiTimeSeriesInstructions(int numRegions, KeyValue fieldDataKey, FieldFunctionArguments fd, boolean bStoreEnabled) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("StoreEnabled " + bStoreEnabled + "\n");
+		sb.append("SampleImage " + numRegions + " " + fieldDataKey + " " + fd.infix()+"\n");
+		return new DataProcessingInstructions("RoiTimeSeries", sb.toString());
+	}
+	
 	public static DataProcessingInstructions getVFrapInstructions(int[] volumePoints, int[] membranePoints, int numRegions, int zSlice, KeyValue fieldDataKey, FieldFunctionArguments fd, boolean bStoreEnabled) {
 		StringBuffer sb = new StringBuffer();
 		
@@ -56,7 +68,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + fd.infix()+"\n");
 		sb.append("StoreEnabled " + bStoreEnabled + "\n");
 
-		return new DataProcessingInstructions("VFRAP", sb.toString());
+		return new DataProcessingInstructions(VFRAP, sb.toString());
 	}
 	
 	public String getScriptInput() {
@@ -98,10 +110,12 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 		if (scriptInput != null) {
 			int index = scriptInput.indexOf("SampleImage");
 			StringTokenizer st = new StringTokenizer(scriptInput.substring(index));
-			st.nextToken();
-			st.nextToken();
-			st.nextToken();
-			String key = st.nextToken();
+			st.nextToken(); // SampleImage
+			st.nextToken(); // numRegions
+			if (getScriptName().equals(VFRAP)) {
+				st.nextToken(); // zSlice
+			}
+			String key = st.nextToken(); // key
 			
 			index = scriptInput.indexOf(FieldFunctionDefinition.FUNCTION_name);
 			if (index >= 0) {
