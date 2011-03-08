@@ -61,7 +61,7 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	private JMenuItem existingGeometryMenuItem = null;
 	private JPopupMenu popupMenu = null;
 
-	public static final String REPLACE_GEOMETRY_SPATIAL_LABEL = "Select Different Geometry";
+	public static final String REPLACE_GEOMETRY_SPATIAL_LABEL = "Replace Geometry";
 	public static final String REPLACE_GEOMETRY_NONSPATIAL_LABEL = "Add Geometry";
 	private boolean bShowReplaceButton = true;
 
@@ -261,7 +261,7 @@ private ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			ivjJButtonChangeDomain = new javax.swing.JButton("Change domain");
+			ivjJButtonChangeDomain = new javax.swing.JButton("Edit Domain...");
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -322,7 +322,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel1.insets = new java.awt.Insets(2, 4, 0, 4);
+		constraintsJLabel1.insets = new java.awt.Insets(2, 4, 0, 0);
 		JLabel label = new javax.swing.JLabel("Domain:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, constraintsJLabel1);

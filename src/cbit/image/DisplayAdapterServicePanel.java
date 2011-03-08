@@ -19,8 +19,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import org.vcell.util.Range;
+import org.vcell.util.gui.ButtonGroupCivilized;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -44,7 +46,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 	private DisplayAdapterService ivjDisplayAdapterService = null;
 	private JLabel ivjMaxRangeJLabel = null;
 	private JLabel ivjMinRangeJLabel = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JPanel ivjScalePanel = null;
 	private org.vcell.util.Range ivjactiveScaleRange1 = null;
 	private org.vcell.util.Range ivjvalueDomain1 = null;
@@ -56,10 +58,10 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 	private JLabel ivjSCNANJLabel = null;
 	private JLabel ivjSCNoRangeJLabel = null;
 	private JPanel ivjSpecialColorsJPanel = null;
-	private org.vcell.util.gui.ButtonGroupCivilized ivjColorMapButtonGroup = null;
+	private ButtonGroupCivilized ivjColorMapButtonGroup = null;
 	private ButtonModel ivjButtonModel1 = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DisplayAdapterServicePanel.this.getAutoScaleCheckbox()) 
 				connEtoM11(e);
@@ -84,22 +86,34 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoM7(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("colorModelIDs"))) 
-				connEtoC1(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("autoScale"))) 
-				connEtoM17(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) 
-				connEtoC7(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) 
-				connEtoM10(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getColorMapButtonGroup() && (evt.getPropertyName().equals("selection"))) 
-				connEtoM12(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("valueDomain"))) 
-				connEtoM20(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeScaleRange"))) 
-				connEtoM22(evt);
-			if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("specialColors"))) 
-				connEtoC5(evt);
+			try {
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("colorModelIDs"))) {
+					updateColorModelRadioButtons();
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("autoScale"))) {
+					getAutoScaleCheckbox().setSelected(getDisplayAdapterService().getAutoScale());
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
+					updateColorMapDisplay();
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
+					getColorMapButtonGroup().setSelection(String.valueOf(getDisplayAdapterService().getActiveColorModelID()));
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("valueDomain"))) { 
+					setvalueDomain1(getDisplayAdapterService().getValueDomain());
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeScaleRange"))) { 
+					setactiveScaleRange1(getDisplayAdapterService().getActiveScaleRange());
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("specialColors"))) { 
+					specialColorsChanged();
+				}
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getColorMapButtonGroup() && (evt.getPropertyName().equals("selection"))) { 
+					setButtonModel1(getColorMapButtonGroup().getSelection());
+				}
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
 		};
 	};
 
@@ -142,25 +156,6 @@ private void calculateCustomScaleRange() {
 	}
 }
 
-
-/**
- * connEtoC1:  (DisplayAdapterService.activeColorModelID --> DisplayAdapterServicePanel.updateColorModelradioButtons()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateColorModelRadioButtons();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC12:  (AutoScaleCheckbox.action.actionPerformed(java.awt.event.ActionEvent) --> DisplayAdapterServicePanel.fireHighLevelUserEvent(Ljava.awt.AWTEvent;)V)
@@ -299,26 +294,6 @@ private void connEtoC4() {
 
 
 /**
- * connEtoC5:  (DisplayAdapterService.specialColors --> DisplayAdapterServicePanel.specialColorsChanged()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.specialColorsChanged();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC6:  (activeScaleRange1.this --> DisplayAdapterServicePanel.updateColorMapDisplay()V)
  * @param value cbit.image.Range
  */
@@ -336,26 +311,6 @@ private void connEtoC6(org.vcell.util.Range value) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC7:  (DisplayAdapterService.activeColorModel --> DisplayAdapterServicePanel.updateColorMapDisplay()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateColorMapDisplay();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC8:  (valueDomain1.this --> DisplayAdapterServicePanel.updateColorMapDisplay()V)
@@ -397,26 +352,6 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 
 
 /**
- * connEtoM10:  (DisplayAdapterService.activeColorModelID --> ColorMapButtonGroup.setSelection(Ljava.lang.String;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getColorMapButtonGroup().setSelection(String.valueOf(getDisplayAdapterService().getActiveColorModelID()));
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM11:  (AutoScaleCheckbox.action.actionPerformed(java.awt.event.ActionEvent) --> DisplayAdapterService.autoScale)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -426,26 +361,6 @@ private void connEtoM11(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getDisplayAdapterService().setAutoScale(getAutoScaleCheckbox().isSelected());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM12:  (ColorMapButtonGroup.selection --> ButtonModel1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM12(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setButtonModel1(getColorMapButtonGroup().getSelection());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -476,65 +391,6 @@ private void connEtoM13(javax.swing.ButtonModel value) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoM17:  (DisplayAdapterService.autoScale --> AutoScaleCheckbox.selected)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM17(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getAutoScaleCheckbox().setSelected(getDisplayAdapterService().getAutoScale());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM20:  (DisplayAdapterService.valueDomain --> valueDomain1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM20(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setvalueDomain1(getDisplayAdapterService().getValueDomain());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM22:  (DisplayAdapterService.activeScaleRange --> activeScaleRange1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM22(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setactiveScaleRange1(getDisplayAdapterService().getActiveScaleRange());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM3:  (AutoScaleCheckbox.item.itemStateChanged(java.awt.event.ItemEvent) --> MinTextField.enabled)
@@ -676,11 +532,9 @@ private javax.swing.ButtonModel getButtonModel1() {
 private javax.swing.JPanel getColorGridPanel() {
 	if (ivjColorGridPanel == null) {
 		try {
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
+			TitledBorder ivjLocalBorder = new TitledBorder("Color");
 			ivjLocalBorder.setBorder(new javax.swing.border.EtchedBorder());
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.LEFT);
-			ivjLocalBorder.setTitle("Color");
 			ivjColorGridPanel = new javax.swing.JPanel();
 			ivjColorGridPanel.setName("ColorGridPanel");
 			ivjColorGridPanel.setBorder(ivjLocalBorder);
@@ -692,9 +546,7 @@ private javax.swing.JPanel getColorGridPanel() {
 			constraintsSpecialColorsJPanel.anchor = java.awt.GridBagConstraints.NORTH;
 			constraintsSpecialColorsJPanel.weightx = 1.0;
 			constraintsSpecialColorsJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getColorGridPanel().add(getSpecialColorsJPanel(), constraintsSpecialColorsJPanel);
-			// user code begin {1}
-			// user code end
+			ivjColorGridPanel.add(getSpecialColorsJPanel(), constraintsSpecialColorsJPanel);
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -985,7 +837,7 @@ private javax.swing.JPanel getScalePanel() {
 			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setBorder(new javax.swing.border.EtchedBorder());
 			ivjLocalBorder1.setTitleJustification(javax.swing.border.TitledBorder.LEFT);
-			ivjLocalBorder1.setTitle("Data Values Range (Min-Max)");
+			ivjLocalBorder1.setTitle("Data Range (Min-Max)");
 			ivjScalePanel = new javax.swing.JPanel();
 			ivjScalePanel.setName("ScalePanel");
 			ivjScalePanel.setBorder(ivjLocalBorder1);
@@ -1687,5 +1539,26 @@ private void updateColorModelRadioButtons() {
 		}
 	}
 	getColorGridPanel().revalidate();
+}
+
+public void setDisplayAdapterService(DisplayAdapterService newValue) {
+	if (ivjDisplayAdapterService == newValue) {
+		return;
+	}
+	DisplayAdapterService oldValue = ivjDisplayAdapterService;
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+	}
+	ivjDisplayAdapterService = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(ivjEventHandler);
+		updateColorModelRadioButtons();
+		getAutoScaleCheckbox().setSelected(getDisplayAdapterService().getAutoScale());
+		updateColorMapDisplay();
+		getColorMapButtonGroup().setSelection(String.valueOf(getDisplayAdapterService().getActiveColorModelID()));
+		setvalueDomain1(getDisplayAdapterService().getValueDomain());
+		setactiveScaleRange1(getDisplayAdapterService().getActiveScaleRange());
+		specialColorsChanged();
+	}
 }
 }

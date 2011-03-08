@@ -953,52 +953,18 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsCurveEditorToolPanel1.fill = java.awt.GridBagConstraints.VERTICAL;
 			constraintsCurveEditorToolPanel1.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsCurveEditorToolPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsCurveEditorToolPanel1.weighty = 1.0;
 			getJPanel3().add(getCurveEditorToolPanel1(), constraintsCurveEditorToolPanel1);
 
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 2;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.weightx = 1.0;
-			constraintsJPanel1.weighty = 1.0;
-			constraintsJPanel1.insets = new java.awt.Insets(0, 4, 0, 4);
-			getJPanel3().add(getJToolBar1(), constraintsJPanel1);
-
 			java.awt.GridBagConstraints constraintsImagePlanePanel1 = new java.awt.GridBagConstraints();
-			constraintsImagePlanePanel1.gridx = 0; constraintsImagePlanePanel1.gridy = 4;
+			constraintsImagePlanePanel1.gridx = 0; constraintsImagePlanePanel1.gridy = 2;
 			constraintsImagePlanePanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsImagePlanePanel1.weightx = 1.0;
-			constraintsImagePlanePanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel3().add(getImagePlanePanel1(), constraintsImagePlanePanel1);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJPanel3;
-}
-/**
- * Return the JToolBar1 property value.
- * @return javax.swing.JToolBar
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JToolBar getJToolBar1() {
-	if (ivjJToolBar1 == null) {
-		try {
-			ivjJToolBar1 = new javax.swing.JToolBar();
-			ivjJToolBar1.setName("JToolBar1");
-			ivjJToolBar1.setFloatable(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJToolBar1;
 }
 /**
  * Gets the mode property (int) value.
@@ -1076,14 +1042,15 @@ private void initialize() {
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
 		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel2.weightx = 1.0;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 0);
 		add(getImagePaneScroller1(), constraintsJPanel2);
 
 		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
 		constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 0;
 		constraintsJPanel3.fill = java.awt.GridBagConstraints.VERTICAL;
+		constraintsJPanel3.weightx = 0.0;
 		constraintsJPanel3.weighty = 1.0;
-		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJPanel3.insets = new java.awt.Insets(4, 0, 4, 4);
 		add(getJPanel3(), constraintsJPanel3);
 
 		java.awt.GridBagConstraints constraintsInfoJlabel = new java.awt.GridBagConstraints();

@@ -20,6 +20,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -435,11 +436,8 @@ private void updateSubdomainComboBox() {
 
 private void update() {
 	int dimension = getGeometryContext().getGeometry().getDimension();
-	boolean old_bNonSpatial = bNonSpatial;
 	bNonSpatial = (dimension == 0);
-	if (old_bNonSpatial != bNonSpatial) {
-		fireTableStructureChanged();
-	}
+	fireTableStructureChanged();
 	refreshData();
 	
 	if (!bNonSpatial) {

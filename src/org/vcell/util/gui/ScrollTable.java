@@ -183,7 +183,7 @@ public class ScrollTable extends JTable {
 					JLabel label = (JLabel)component;
 					label.setHorizontalAlignment(SwingConstants.CENTER);
 					label.setBackground(tableHeaderColor);
-					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorder(2, 0, 2, 0)));
+					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorder(1, 0, 1, 0)));
 				}
 				return component;
 			}			

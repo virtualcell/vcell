@@ -1,5 +1,6 @@
 package cbit.vcell.client.data;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -12,22 +13,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -48,13 +47,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-
-import llnl.visit.ViewerMethods;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
@@ -73,7 +68,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
@@ -89,7 +83,6 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.DataManager;
@@ -115,8 +108,8 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -133,24 +126,34 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
-import cbit.vcell.visit.VisitConnectionInfo;
 import cbit.vcell.visit.VisitControlPanel;
-//import cbit.vcell.visit.VisitProcess;
 import cbit.vcell.visit.VisitSession;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class PDEDataViewer extends DataViewer implements DataJobSender {
+	public enum CurrentView {
+		SLICE_VIEW("Slice View"),
+		SURFACE_VIEW("Surface View");
+		
+		private String title;
+		CurrentView(String t) {
+			title = t;
+		} 
+	}
+	private JPanel sliceViewPanel;
+	
 	private Vector<DataJobListener> dataJobListenerList = new Vector<DataJobListener>();
 	 
 	public static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";
@@ -158,6 +161,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
 	private String libDir;
 	private String visitBinDir;
+	private JTabbedPane viewDataTabbedPane;
 //	public VisitProcess visitProcess;
 	
 	
@@ -239,37 +243,21 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	};
 
 	//
-	private JInternalFrame dataValueSurfaceViewerJIF = null;
 	private DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
 	private MeshDisplayAdapter.MeshRegionSurfaces meshRegionSurfaces = null;
-	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
-	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
+//	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
+//	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
 	//
 	private PDEDataContext fieldPdeDataContext = null;
-//	private JButton ivjJButtonSpatial = null;
-//	private JButton ivjJButtonTime = null;
 	private PDEDataContextPanel ivjPDEDataContextPanel1 = null;
 	private PDEPlotControlPanel ivjPDEPlotControlPanel1 = null;
-	private boolean ivjConnPtoP1Aligning = false;
-	private boolean ivjConnPtoP2Aligning = false;
-	private boolean ivjConnPtoP3Aligning = false;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JPanel ivjExportData = null;
 	private JPanel ivjJPanelButtons = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private JPanel ivjViewData = null;
-	private boolean ivjConnPtoP4Aligning = false;
-	private boolean ivjConnPtoP5Aligning = false;
-	private boolean ivjConnPtoP6Aligning = false;
-	private boolean ivjConnPtoP7Aligning = false;
 	private NewPDEExportPanel ivjPDEExportPanel1 = null;
 	private ExportMonitorPanel ivjExportMonitorPanel1 = null;
-//	private JButton ivjKymographJButton = null;
-	private boolean ivjConnPtoP9Aligning = false;
-	private JButton ivjJButtonSurfaces = null;
-	private boolean ivjConnPtoP10Aligning = false;
-	private PDEDataContext ivjpdeDataContext1 = null;
-//	private JButton ivjJButtonSnapshotROI = null;
 	private BitSet volumeSnapshotROI;
 	private String volumeSnapshotROIDescription;
 	private BitSet membraneSnapshotROI;
@@ -279,7 +267,6 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	private JMenuItem spatialPlotMenuItem;
 	private JMenuItem timePlotMenuItem;
 	private JMenuItem kymographMenuItem;
-//	private JMenuItem visitMenuItem;
 	
 	private JButton roiButton = null;
 	private JPopupMenu roiPopupMenu = null;
@@ -288,73 +275,133 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
 	
-	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getPlotButton()) {	
-				getPlotPopupMenu().show(getPlotButton(), 0, getPlotButton().getHeight());
-			} else if (e.getSource() == getROIButton()) {
-				getROIPopupMenu().show(getROIButton(), 0, getROIButton().getHeight());
-			} else if (e.getSource() == spatialPlotMenuItem) { 
-				connEtoC2(e);
-			} else if (e.getSource() == timePlotMenuItem) { 
-				connEtoC3(e);
-			} else if (e.getSource() == kymographMenuItem) { 
-				connEtoC4(e);
-			} else if (e.getSource() == PDEDataViewer.this.getJButtonSurfaces()) { 
-				connEtoC6(e);
-			} else if (e.getSource() == statisticsMenuItem) { 
-				connEtoC9(e);
-			} else if (e.getSource() == snapShotMenuItem) {
-				snapshotROI();
-			} else if (e.getSource() == getJButtonVisit()) {
-				openInVisit();
+			try {
+				if (e.getSource() == getPlotButton()) {	
+					getPlotPopupMenu().show(getPlotButton(), 0, getPlotButton().getHeight());
+				} else if (e.getSource() == getROIButton()) {
+					getROIPopupMenu().show(getROIButton(), 0, getROIButton().getHeight());
+				} else if (e.getSource() == spatialPlotMenuItem) { 
+					connEtoC2(e);
+				} else if (e.getSource() == timePlotMenuItem) { 
+					showTimePlot();
+				} else if (e.getSource() == kymographMenuItem) { 
+					connEtoC4(e);
+				} else if (e.getSource() == statisticsMenuItem) { 
+					connEtoC9(e);
+				} else if (e.getSource() == snapShotMenuItem) {
+					snapshotROI();
+				} else if (e.getSource() == getJButtonVisit()) {
+					openInVisit();
+				}
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == PDEDataViewer.this &&
-					(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
-				if (getPdeDataContext() != null && getSimulationModelInfo() != null){
-					getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
-					getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-				} else {
-					getPDEDataContextPanel1().setDataInfoProvider(null);
-					getPDEExportPanel1().setDataInfoProvider(null);
+			try {
+				if (evt.getSource() == PDEDataViewer.this &&
+						(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
+					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
+						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+					} else {
+						getPDEDataContextPanel1().setDataInfoProvider(null);
+						getPDEExportPanel1().setDataInfoProvider(null);
+					}
+				}
+				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) { 
+					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
+					getPDEPlotControlPanel1().setPdeDataContext(getPdeDataContext());
+					getPDEExportPanel1().setPdeDataContext(getPdeDataContext());
+					PDEDataContext oldValue = (PDEDataContext) evt.getOldValue();
+					if (oldValue != null) {
+						oldValue.removePropertyChangeListener(ivjEventHandler);
+					}
+					if (getPdeDataContext() != null) {
+						getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
+					}					
+					if (getPdeDataContext().getCartesianMesh() != null && getPdeDataContext().getCartesianMesh().getGeometryDimension() == 3){
+						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) < 0) {
+							viewDataTabbedPane.addTab(CurrentView.SURFACE_VIEW.title, getDataValueSurfaceViewer());
+						}
+						getDataValueSurfaceViewer().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+						getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(this);
+						if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() != VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
+						}
+					}
+				}
+//				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
+//					setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
+//				}
+//				if (evt.getSource() == PDEDataViewer.this.getPDEPlotControlPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) { 
+//					setPdeDataContext(getPDEPlotControlPanel1().getPdeDataContext());
+//				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("displayAdapterService1"))) {
+					getPDEPlotControlPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+					getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+					if (fieldDataValueSurfaceViewer != null) {
+						fieldDataValueSurfaceViewer.setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+					}
+				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1()) { 
+					updateDataSamplerContext(evt);
+				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("slice"))) {
+					getPDEExportPanel1().setSlice(getPDEDataContextPanel1().getSlice());
+				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("slice"))) { 
+					getPDEDataContextPanel1().setSlice(getPDEExportPanel1().getSlice());
+				}
+//				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
+//					getPDEExportPanel1().setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
+//				}
+//				if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
+//					getPDEDataContextPanel1().setPdeDataContext(getPDEExportPanel1().getPdeDataContext());
+//				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("normalAxis"))) {
+					getPDEExportPanel1().setNormalAxis(getPDEDataContextPanel1().getNormalAxis());
+				}
+				if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("normalAxis"))) { 
+					getPDEDataContextPanel1().setNormalAxis(getPDEExportPanel1().getNormalAxis());
+				}
+				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("dataViewerManager"))) {
+					getPDEExportPanel1().setDataViewerManager(getDataViewerManager());
+				}
+				if (evt.getSource() == PDEDataViewer.this.getPdeDataContext() && 
+						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) || evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
+					getPDEDataContextPanel1().recodeDataForDomain();
+					if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), true);
+						}
+						if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+							updateDataValueSurfaceViewer();
+						}
+					} else {
+						viewDataTabbedPane.setSelectedComponent(sliceViewPanel);
+						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
+							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
+						}
+					}
+				}
+				if (evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1()) {
+					if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+						updateDataValueSurfaceViewer();
+					}
+				}
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}				
+		}
+		public void stateChanged(ChangeEvent e) {
+			if (e.getSource() == viewDataTabbedPane) {
+				if (viewDataTabbedPane.getSelectedComponent() == getDataValueSurfaceViewer()) {
+					updateDataValueSurfaceViewer();
 				}
 			}
-			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP1SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP1SetSource();
-			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP2SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEPlotControlPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP2SetSource();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("displayAdapterService1"))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1()) 
-				connEtoC1(evt);
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("slice"))) 
-				connPtoP7SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("slice"))) 
-				connPtoP7SetSource();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP4SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP4SetSource();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("normalAxis"))) 
-				connPtoP6SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("normalAxis"))) 
-				connPtoP6SetSource();
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("displayAdapterService1"))) 
-				connPtoP5SetTarget();
-			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("dataViewerManager"))) 
-				connPtoP9SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("dataViewerManager"))) 
-				connPtoP9SetSource();
-			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP10SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("variable"))) 
-				connEtoC7(evt);
 		};
 	};
 	public static class VolumeDataInfo{
@@ -990,26 +1037,6 @@ private void roiAction(){
 }
 
 /**
- * connEtoC1:  (PDEDataContextPanel1.propertyChange.propertyChange(java.beans.PropertyChangeEvent) --> PDEDataViewer.updateDataSamplerContext(Ljava.beans.PropertyChangeEvent;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateDataSamplerContext(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC2:  (JButtonSpatial.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -1019,25 +1046,6 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.showSpatialPlot();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC3:  (JButtonTime.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showTimePlot();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1066,66 +1074,6 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC6:  (JButtonSurfaces.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.showMembraneSurfaces(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showMembraneSurfaces(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (pdeDataContext1.variableName --> PDEDataViewer.pdeDataContext1_VariableName(Ljava.lang.String;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.pdeDataContext1_Variable();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC8:  (pdeDataContext1.this --> PDEDataViewer.pdeDataContext1_VariableName()V)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.pdeDataContext1_Variable();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC9:  (JButtonStatistics.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.calcStatistics(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -1146,414 +1094,12 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 }
 
 
-/**
- * connPtoP10SetSource:  (PDEDataViewer.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP10SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP10Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP10Aligning = true;
-			if ((getpdeDataContext1() != null)) {
-				this.setPdeDataContext(getpdeDataContext1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP10Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP10Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP10SetTarget:  (PDEDataViewer.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP10SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP10Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP10Aligning = true;
-			setpdeDataContext1(this.getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP10Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP10Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetSource:  (PDEDataViewer.pdeDataContext <--> PDEDataContextPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			this.setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (PDEDataViewer.pdeDataContext <--> PDEDataContextPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			getPDEDataContextPanel1().setPdeDataContext(this.getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP2SetSource:  (PDEDataViewer.pdeDataContext <--> PDEPlotControlPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			this.setPdeDataContext(getPDEPlotControlPanel1().getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP2SetTarget:  (PDEDataViewer.pdeDataContext <--> PDEPlotControlPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			getPDEPlotControlPanel1().setPdeDataContext(this.getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetTarget:  (PDEDataContextPanel1.displayAdapterService1 <--> PDEPlotControlPanel1.displayAdapterService)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			getPDEPlotControlPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetSource:  (PDEDataContextPanel1.pdeDataContext <--> PDEExportPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			getPDEDataContextPanel1().setPdeDataContext(getPDEExportPanel1().getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetTarget:  (PDEDataContextPanel1.pdeDataContext <--> PDEExportPanel1.pdeDataContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			getPDEExportPanel1().setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP5SetTarget:  (PDEDataContextPanel1.displayAdapterService1 <--> PDEExportPanel1.displayAdapterService)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP5SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP5Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP5Aligning = true;
-			getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP5Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP5Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP6SetSource:  (PDEDataContextPanel1.normalAxis <--> PDEExportPanel1.normalAxis)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP6SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP6Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP6Aligning = true;
-			getPDEDataContextPanel1().setNormalAxis(getPDEExportPanel1().getNormalAxis());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP6Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP6Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP6SetTarget:  (PDEDataContextPanel1.normalAxis <--> PDEExportPanel1.normalAxis)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP6SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP6Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP6Aligning = true;
-			getPDEExportPanel1().setNormalAxis(getPDEDataContextPanel1().getNormalAxis());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP6Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP6Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP7SetSource:  (PDEDataContextPanel1.slice <--> PDEExportPanel1.slice)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP7SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP7Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP7Aligning = true;
-			getPDEDataContextPanel1().setSlice(getPDEExportPanel1().getSlice());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP7Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP7Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP7SetTarget:  (PDEDataContextPanel1.slice <--> PDEExportPanel1.slice)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP7SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP7Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP7Aligning = true;
-			getPDEExportPanel1().setSlice(getPDEDataContextPanel1().getSlice());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP7Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP7Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP9SetSource:  (PDEDataViewer.dataViewerManager <--> PDEExportPanel1.dataViewerManager)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP9SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP9Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP9Aligning = true;
-			this.setDataViewerManager(getPDEExportPanel1().getDataViewerManager());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP9Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP9Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP9SetTarget:  (PDEDataViewer.dataViewerManager <--> PDEExportPanel1.dataViewerManager)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP9SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP9Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP9Aligning = true;
-			getPDEExportPanel1().setDataViewerManager(this.getDataViewerManager());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP9Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP9Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 public void dataJobMessage(final DataJobEvent dje) {
 	for (DataJobListener djl : dataJobListenerList) {
 		djl.dataJobMessage(dje);
 	}
 }
 	
-
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2005 1:53:00 PM)
@@ -1601,16 +1147,6 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 			surfaceAreas,
 			cartesianMesh.getGeometryDimension()
 		);
-		
-		dataValueSurfaceViewerJIF = new JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
-		dataValueSurfaceViewerJIF.setContentPane(fieldDataValueSurfaceViewer0);
-		//dataValueSurfaceViewerJIF.pack();
-		dataValueSurfaceViewerJIF.setSize(800,800);
-		dataValueSurfaceViewerJIF.addInternalFrameListener(new InternalFrameAdapter() {
-			public void internalFrameClosing(InternalFrameEvent e) {
-				getJButtonSurfaces().setText(SHOW_MEMB_SURFACE_BUTTON_STRING);
-			};
-		});		
 
 		fieldDataValueSurfaceViewer = fieldDataValueSurfaceViewer0;
 	}
@@ -2038,52 +1574,6 @@ private void snapshotROI() {
 //}
 
 /**
- * Return the JButtonSurfaces property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonSurfaces() {
-	if (ivjJButtonSurfaces == null) {
-		try {
-			ivjJButtonSurfaces = new javax.swing.JButton();
-			ivjJButtonSurfaces.setName("JButtonSurfaces");
-			ivjJButtonSurfaces.setText("Show Membrane Surfaces");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonSurfaces;
-}
-
-
-/**
- * Return the JButtonTime property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-//private javax.swing.JButton getJButtonTime() {
-//	if (ivjJButtonTime == null) {
-//		try {
-//			ivjJButtonTime = new javax.swing.JButton();
-//			ivjJButtonTime.setName("JButtonTime");
-//			ivjJButtonTime.setText("Show Time Plot");
-//			// user code begin {1}
-//			// user code end
-//		} catch (java.lang.Throwable ivjExc) {
-//			// user code begin {2}
-//			// user code end
-//			handleException(ivjExc);
-//		}
-//	}
-//	return ivjJButtonTime;
-//}
-
-
-/**
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
@@ -2094,49 +1584,8 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons = new javax.swing.JPanel();
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
-			ivjJPanelButtons.add(getJButtonSurfaces());
 			ivjJPanelButtons.add(getROIButton());
 			ivjJPanelButtons.add(getJButtonVisit());
-			
-//			ivjJPanelButtons.setLayout(new java.awt.GridBagLayout());
-//
-//			java.awt.GridBagConstraints constraintsJButtonSpatial = new java.awt.GridBagConstraints();
-//			constraintsJButtonSpatial.gridx = 0; constraintsJButtonSpatial.gridy = 0;
-//			constraintsJButtonSpatial.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonSpatial(), constraintsJButtonSpatial);
-//
-//			java.awt.GridBagConstraints constraintsJButtonTime = new java.awt.GridBagConstraints();
-//			constraintsJButtonTime.gridx = 1; constraintsJButtonTime.gridy = 0;
-//			constraintsJButtonTime.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonTime(), constraintsJButtonTime);
-//
-//			java.awt.GridBagConstraints constraintsKymographJButton = new java.awt.GridBagConstraints();
-//			constraintsKymographJButton.gridx = 2; constraintsKymographJButton.gridy = 0;
-//			constraintsKymographJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getKymographJButton(), constraintsKymographJButton);
-//
-//			java.awt.GridBagConstraints constraintsJButtonSurfaces = new java.awt.GridBagConstraints();
-//			constraintsJButtonSurfaces.gridx = 3; constraintsJButtonSurfaces.gridy = 0;
-//			constraintsJButtonSurfaces.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonSurfaces(), constraintsJButtonSurfaces);
-//
-//			java.awt.GridBagConstraints constraintsJButtonStatistics = new java.awt.GridBagConstraints();
-//			constraintsJButtonStatistics.gridx = 4; constraintsJButtonStatistics.gridy = 0;
-//			constraintsJButtonStatistics.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonStatistics(), constraintsJButtonStatistics);
-//			
-//			java.awt.GridBagConstraints constraintsJButtonSnapshotROI = new java.awt.GridBagConstraints();
-//			constraintsJButtonSnapshotROI.gridx = 5; constraintsJButtonSnapshotROI.gridy = 0;
-//			constraintsJButtonSnapshotROI.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonSnapshotROI()/*getJPanelSnapshotROI()*/, constraintsJButtonSnapshotROI);
-//			
-//			java.awt.GridBagConstraints constraintsJButtonJButtonVisit = new java.awt.GridBagConstraints();
-//			constraintsJButtonJButtonVisit.gridx = 6; constraintsJButtonSnapshotROI.gridy = 0;
-//			constraintsJButtonJButtonVisit.insets = new java.awt.Insets(4, 4, 4, 4);
-//			getJPanelButtons().add(getJButtonVisit(), constraintsJButtonJButtonVisit);
-			
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -2301,19 +1750,6 @@ public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
-
-/**
- * Return the pdeDataContext1 property value.
- * @return cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private PDEDataContext getpdeDataContext1() {
-	// user code begin {1}
-	// user code end
-	return ivjpdeDataContext1;
-}
-
-
 /**
  * Return the PDEDataContextPanel1 property value.
  * @return cbit.vcell.simdata.gui.PDEDataContextPanel
@@ -2363,10 +1799,10 @@ private NewPDEExportPanel getPDEExportPanel1() {
  * @return cbit.vcell.simdata.gui.PDEPlotControlPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.gui.PDEPlotControlPanel getPDEPlotControlPanel1() {
+private PDEPlotControlPanel getPDEPlotControlPanel1() {
 	if (ivjPDEPlotControlPanel1 == null) {
 		try {
-			ivjPDEPlotControlPanel1 = new cbit.vcell.simdata.gui.PDEPlotControlPanel();
+			ivjPDEPlotControlPanel1 = new PDEPlotControlPanel();
 			ivjPDEPlotControlPanel1.setName("PDEPlotControlPanel1");
 			// user code begin {1}
 			// user code end
@@ -2398,17 +1834,20 @@ private Simulation getSimulation() {
 private javax.swing.JPanel getViewData() {
 	if (ivjViewData == null) {
 		try {
+			sliceViewPanel = new JPanel(new BorderLayout());
+			sliceViewPanel.add(getPDEDataContextPanel1(), BorderLayout.CENTER);
+			sliceViewPanel.add(getJPanelButtons(), BorderLayout.SOUTH);
+			
 			ivjViewData = new javax.swing.JPanel();
 			ivjViewData.setName("ViewData");
 			ivjViewData.setLayout(new java.awt.BorderLayout());
-			getViewData().add(getPDEDataContextPanel1(), "Center");
-			getViewData().add(getPDEPlotControlPanel1(), "West");
-			getViewData().add(getJPanelButtons(), "South");
-			// user code begin {1}
-			// user code end
+			viewDataTabbedPane = new JTabbedPane();
+			viewDataTabbedPane.addTab(CurrentView.SLICE_VIEW.title, sliceViewPanel);
+			
+			viewDataTabbedPane.addChangeListener(ivjEventHandler);
+			ivjViewData.add(viewDataTabbedPane, BorderLayout.CENTER);
+			ivjViewData.add(getPDEPlotControlPanel1(), BorderLayout.WEST);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2432,29 +1871,16 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getPDEDataContextPanel1().addPropertyChangeListener(ivjEventHandler);
 	getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
-//	getJButtonSpatial().addActionListener(ivjEventHandler);
-//	getJButtonTime().addActionListener(ivjEventHandler);
 	getPDEExportPanel1().addPropertyChangeListener(ivjEventHandler);
-//	getKymographJButton().addActionListener(ivjEventHandler);
-	getJButtonSurfaces().addActionListener(ivjEventHandler);
-//	getJButtonStatistics().addActionListener(ivjEventHandler);
-	connPtoP1SetTarget();
-	connPtoP2SetTarget();
-	connPtoP3SetTarget();
-//	connPtoP8SetTarget();
-	connPtoP7SetTarget();
-	connPtoP4SetTarget();
-	connPtoP6SetTarget();
-	connPtoP5SetTarget();
-	connPtoP9SetTarget();
-	connPtoP10SetTarget();
+	getPDEPlotControlPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+	getPDEExportPanel1().setSlice(getPDEDataContextPanel1().getSlice());
+	getPDEExportPanel1().setNormalAxis(getPDEDataContextPanel1().getNormalAxis());
+	getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+	getPDEExportPanel1().setDataViewerManager(this.getDataViewerManager());
 }
 
 /**
@@ -2463,8 +1889,6 @@ private void initConnections() throws java.lang.Exception {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("PDEDataViewer");
 		setLayout(new java.awt.BorderLayout());
 		setSize(725, 569);
@@ -2473,8 +1897,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -2503,47 +1925,11 @@ public static void main(java.lang.String[] args) {
 }
 
 /**
- * Comment
- */
-private void pdeDataContext1_Variable() {
-
-	if(getPdeDataContext() == null){
-		return;
-	}
-	
-	if(getPdeDataContext().getCartesianMesh() != null && getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
-		if(getJButtonSurfaces().isVisible()){
-			getJButtonSurfaces().setVisible(false);
-			return;
-		}
-	}else{
-		if(!getJButtonSurfaces().isVisible()){
-			getJButtonSurfaces().setVisible(true);
-		}
-	}
-	
-	if(getPdeDataContext().getDataIdentifier() != null && 
-			(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-			getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION))){
-		getJButtonSurfaces().setEnabled(true);
-	}else{
-		getJButtonSurfaces().setEnabled(false);
-	}
-}
-
-/**
  * Sets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(PDEDataContext pdeDataContext) {
-
-	if(dataValueSurfaceViewerJIF != null){
-		dataValueSurfaceViewerJIF.dispose();
-	}
-	
-	dataValueSurfaceViewerJIF = null;
-	fieldDataValueSurfaceViewer = null;
+public void setPdeDataContext(PDEDataContext pdeDataContext) {	
 	meshRegionSurfaces = null;
 	
 	PDEDataContext oldValue = fieldPdeDataContext;
@@ -2551,48 +1937,13 @@ public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
 }
 
-
-/**
- * Set the pdeDataContext1 to a new value.
- * @param newValue cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(PDEDataContext newValue) {
-	if (ivjpdeDataContext1 != newValue) {
-		try {
-			PDEDataContext oldValue = getpdeDataContext1();
-			/* Stop listening for events from the current object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjpdeDataContext1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP10SetSource();
-			connEtoC8(ivjpdeDataContext1);
-			firePropertyChange("pdeDataContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
 /**
  * Sets the simulation property (cbit.vcell.solver.Simulation) value.
  * @param simulation The new value for the property.
  * @see #getSimulation
  */
-public void setSimulation(cbit.vcell.solver.Simulation simulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldSimulation;
+public void setSimulation(Simulation simulation) {
+	Simulation oldValue = fieldSimulation;
 	fieldSimulation = simulation;
 	firePropertyChange("simulation", oldValue, simulation);
 }
@@ -2691,21 +2042,6 @@ private void showKymograph() {
 	}
 
 }
-
-
-/**
- * Comment
- */
-private void showMembraneSurfaces(java.awt.event.ActionEvent actionEvent){
-
-	if(getDataValueSurfaceViewer() == null){
-		return;
-	}
-	getJButtonSurfaces().setText(UPDATE_MEMB_SURFACE_BUTTON_STRING);
-	updateDataValueSurfaceViewer();
-	getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {dataValueSurfaceViewerJIF});
-}
-
 
 /**
  * Comment
@@ -2903,6 +2239,7 @@ private void updateDataValueSurfaceViewer() {
 	if(getDataValueSurfaceViewer() == null){
 		return;
 	}
+	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
 	//SurfaceColors and DataValues
 	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
 	DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
@@ -2995,11 +2332,6 @@ private void updateDataValueSurfaceViewer() {
 	};
 
 	getDataValueSurfaceViewer().setSurfaceCollectionDataInfoProvider(svdp);
-	
-	dataValueSurfaceViewerJIF.setTitle(
-		(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+"::"+"SIM("+getSimulationModelInfo().getSimulationName()+")::":"")+
-		"VAR("+getPdeDataContext().getVariableName()+")::"+
-		"TIME("+getPdeDataContext().getTimePoint()+")");
 }
 
 private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
@@ -3013,7 +2345,7 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 	smsp.init(surfaceWidth, surfaceHeight, timePoints);
 	
 	while (true){
-		if(PopupGenerator.showComponentOKCancelDialog(dataValueSurfaceViewerJIF, smsp, "Movie Settings for var "+movieDataVarName) != JOptionPane.OK_OPTION){
+		if(PopupGenerator.showComponentOKCancelDialog(this, smsp, "Movie Settings for var "+movieDataVarName) != JOptionPane.OK_OPTION){
 			return;
 		}
 		long movieSize =(smsp.getTotalFrames()*surfaceWidth*surfaceHeight*3);
@@ -3190,4 +2522,5 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	// TODO Auto-generated method stub
 	
 }
+
 }

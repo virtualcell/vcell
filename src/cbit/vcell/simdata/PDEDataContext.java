@@ -24,7 +24,9 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
 		
-//	private class RefreshedData {
+public static final String PROPERTY_NAME_TIME_POINT = "timePoint";
+public static final String PROPERTY_NAME_VARIABLE = "variable";
+	//	private class RefreshedData {
 //		public double[] newData;
 //		public VariableType newVarType;
 //		public double newTimePoint;
@@ -417,10 +419,10 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 	//	setDataRange(refreshedData.newRange);	
 		
 		if(bVarChanged){
-			firePropertyChange("variable", oldDataiDataIdentifier, fieldDataIdentifier);
+			firePropertyChange(PROPERTY_NAME_VARIABLE, oldDataiDataIdentifier, fieldDataIdentifier);
 		}
 		if(bTimePointChanged){
-			firePropertyChange("timePoint", new Double(oldTimePoint), new Double(getTimePoint()));
+			firePropertyChange(PROPERTY_NAME_TIME_POINT, new Double(oldTimePoint), new Double(getTimePoint()));
 		}
 	}finally{
 		bBusy = false;

@@ -880,8 +880,8 @@ public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
 		}
 	}
 	//frame.pack();
-	frame.setSize(600,500);
-	BeanUtils.centerOnComponent(frame, pane);
+	frame.setSize(750, 600);
+//	BeanUtils.centerOnComponent(frame, pane);
 	frame.show();
 	try {
 		frame.setSelected(true);
