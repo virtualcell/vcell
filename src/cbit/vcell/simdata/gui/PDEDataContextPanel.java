@@ -79,7 +79,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
 				connPtoP5SetSource();
 			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && 
-					(evt.getPropertyName().equals("variable") || evt.getPropertyName().equals("timePoint"))) {
+					(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) || evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
 //				connEtoM5(evt);
 			}
 			if (evt.getSource() == PDEDataContextPanel.this.getimagePlaneManager1() && (evt.getPropertyName().equals("imagePlaneData"))) 
