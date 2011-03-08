@@ -322,7 +322,9 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 					if (getPdeDataContext() != null) {
 						getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
 					}					
-					if (getPdeDataContext().getCartesianMesh() != null && getPdeDataContext().getCartesianMesh().getGeometryDimension() == 3){
+					CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+					if (cartesianMesh != null && cartesianMesh.getGeometryDimension() == 3
+							&& cartesianMesh.getNumMembraneElements() > 0){
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) < 0) {
 							viewDataTabbedPane.addTab(CurrentView.SURFACE_VIEW.title, getDataValueSurfaceViewer());
 						}
