@@ -206,7 +206,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					String newName = (String)aValue;
 					if (!simulation.getName().equals(newName)){
 						simulation.setName(newName);
-						fireTableRowsUpdated(rowIndex,rowIndex);
 					}
 				}
 				break;
@@ -217,6 +216,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					TimeBounds oldTimeBounds = solverTaskDescription.getTimeBounds();
 					TimeBounds timeBounds = new TimeBounds(oldTimeBounds.getStartingTime(), newTime);
 					solverTaskDescription.setTimeBounds(timeBounds);
+					simulation.setIsDirty(true);
 				}
 				break;
 			case COLUMN_OUTPUT:
@@ -235,6 +235,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 					if (newOts != null) {
 						solverTaskDescription.setOutputTimeSpec(newOts);
+						simulation.setIsDirty(true);
 					}
 				}
 				break;

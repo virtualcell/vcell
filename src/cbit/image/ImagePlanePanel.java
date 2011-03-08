@@ -4,6 +4,8 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.GridBagConstraints;
+
 import javax.swing.SwingConstants;
 
 import org.vcell.util.Coordinate;
@@ -421,7 +423,6 @@ private ImagePlaneManager getimagePlaneMananager1() {
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
@@ -429,37 +430,34 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setName("JPanel1");
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
-			java.awt.GridBagConstraints constraintsSliceMinus1Button = new java.awt.GridBagConstraints();
-			constraintsSliceMinus1Button.gridx = 1; constraintsSliceMinus1Button.gridy = 0;
-			constraintsSliceMinus1Button.insets = new java.awt.Insets(0, 0, 4, 0);
-			getJPanel1().add(getSliceMinus1Button(), constraintsSliceMinus1Button);
-
 			java.awt.GridBagConstraints constraintsSliceMinus10Button = new java.awt.GridBagConstraints();
 			constraintsSliceMinus10Button.gridx = 0; constraintsSliceMinus10Button.gridy = 0;
-			constraintsSliceMinus10Button.insets = new java.awt.Insets(0, 4, 4, 0);
+			constraintsSliceMinus10Button.insets = new java.awt.Insets(0, 0, 0, 2);
+			constraintsSliceMinus10Button.weightx = 1.0;
+			constraintsSliceMinus10Button.anchor = GridBagConstraints.LINE_END;
 			getJPanel1().add(getSliceMinus10Button(), constraintsSliceMinus10Button);
+			
+			java.awt.GridBagConstraints constraintsSliceMinus1Button = new java.awt.GridBagConstraints();
+			constraintsSliceMinus1Button.gridx = 1; constraintsSliceMinus1Button.gridy = 0;
+			constraintsSliceMinus1Button.weightx = 1.0;
+			constraintsSliceMinus1Button.anchor = GridBagConstraints.LINE_START;
+			getJPanel1().add(getSliceMinus1Button(), constraintsSliceMinus1Button);
+
 
 			java.awt.GridBagConstraints constraintsSlicePlus1Button = new java.awt.GridBagConstraints();
 			constraintsSlicePlus1Button.gridx = 3; constraintsSlicePlus1Button.gridy = 0;
-			constraintsSlicePlus1Button.insets = new java.awt.Insets(0, 0, 4, 0);
+			constraintsSlicePlus1Button.insets = new java.awt.Insets(0, 0, 0, 2);
+			constraintsSlicePlus1Button.weightx = 1.0;
+			constraintsSlicePlus1Button.anchor = GridBagConstraints.LINE_END;
 			getJPanel1().add(getSlicePlus1Button(), constraintsSlicePlus1Button);
 
 			java.awt.GridBagConstraints constraintsSlicePlus10Button = new java.awt.GridBagConstraints();
 			constraintsSlicePlus10Button.gridx = 4; constraintsSlicePlus10Button.gridy = 0;
-			constraintsSlicePlus10Button.insets = new java.awt.Insets(0, 0, 4, 4);
+			constraintsSlicePlus10Button.weightx = 1.0;
+			constraintsSlicePlus10Button.anchor = GridBagConstraints.LINE_START;
 			getJPanel1().add(getSlicePlus10Button(), constraintsSlicePlus10Button);
 
-			java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
-			constraintsJPanel3.gridx = 2; constraintsJPanel3.gridy = 0;
-			constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel3.weightx = 1.0;
-			constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getJPanel3(), constraintsJPanel3);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -478,23 +476,23 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsLabel1 = new java.awt.GridBagConstraints();
-			constraintsLabel1.gridx = 1; constraintsLabel1.gridy = 0;
-			constraintsLabel1.insets = new java.awt.Insets(4, 4, 0, 4);
+			constraintsLabel1.gridx = 0; constraintsLabel1.gridy = 0;
+//			constraintsLabel1.insets = new java.awt.Insets(0, 4, 0, 4);
 			getJPanel2().add(getLabel1(), constraintsLabel1);
 
 			java.awt.GridBagConstraints constraintsXAxisCheckbox = new java.awt.GridBagConstraints();
-			constraintsXAxisCheckbox.gridx = 1; constraintsXAxisCheckbox.gridy = 1;
-			constraintsXAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
+			constraintsXAxisCheckbox.gridx = 1; constraintsXAxisCheckbox.gridy = 0;
+//			constraintsXAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
 			getJPanel2().add(getXAxisCheckbox(), constraintsXAxisCheckbox);
 
 			java.awt.GridBagConstraints constraintsZAxisCheckbox = new java.awt.GridBagConstraints();
-			constraintsZAxisCheckbox.gridx = 0; constraintsZAxisCheckbox.gridy = 1;
-			constraintsZAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
+			constraintsZAxisCheckbox.gridx = 2; constraintsZAxisCheckbox.gridy = 0;
+//			constraintsZAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
 			getJPanel2().add(getZAxisCheckbox(), constraintsZAxisCheckbox);
 
 			java.awt.GridBagConstraints constraintsYAxisCheckbox = new java.awt.GridBagConstraints();
-			constraintsYAxisCheckbox.gridx = 2; constraintsYAxisCheckbox.gridy = 1;
-			constraintsYAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
+			constraintsYAxisCheckbox.gridx = 3; constraintsYAxisCheckbox.gridy = 0;
+//			constraintsYAxisCheckbox.insets = new java.awt.Insets(0, 0, 4, 0);
 			getJPanel2().add(getYAxisCheckbox(), constraintsYAxisCheckbox);
 			// user code begin {1}
 			// user code end
@@ -782,7 +780,7 @@ private void initialize() {
 		setName("ImagePlanePanel");
 		setBorder(ivjLocalBorder);
 		setLayout(new java.awt.GridBagLayout());
-		setSize(169, 110);
+//		setSize(169, 110);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;
@@ -801,7 +799,7 @@ private void initialize() {
 		constraintsSliceLabel.gridx = 0; constraintsSliceLabel.gridy = 0;
 		constraintsSliceLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsSliceLabel.weightx = 1.0;
-		constraintsSliceLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsSliceLabel.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(getSliceLabel(), constraintsSliceLabel);
 		initConnections();
 		connEtoC10();

@@ -1,27 +1,31 @@
 package cbit.vcell.geometry.gui;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayAdapterServicePanel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.DataSelectRetrieve;
+import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.solvers.MembraneElement;
 /**
  * Insert the type's description here.
  * Creation date: (9/20/2005 9:13:34 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.awt.event.ActionListener {
 
 	//
@@ -199,59 +203,24 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 	private javax.swing.JTable ivjScrollPaneTable = null;
 	private SurfaceViewerTool ivjSurfaceViewerTool1 = null;
 	private SurfaceCollectionDataInfo fieldSurfaceCollectionDataInfo = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.table.TableModel ivjTableModel1 = null;
 	private javax.swing.JLabel ivjJLabelDirections = null;
 	private javax.swing.JLabel ivjJLabelInfo = null;
 	private javax.swing.JButton ivjJButtonHomeView = null;
-	private javax.swing.JButton ivjJButtonBottomView = null;
-	private javax.swing.JButton ivjJButtonFrontView = null;
-	private javax.swing.JButton ivjJButtonLeftView = null;
-	private javax.swing.JButton ivjJButtonRightView = null;
-	private javax.swing.JButton ivjJButtonTopView = null;
-	private javax.swing.JPanel ivjJPanel3 = null;
-	private javax.swing.JButton ivjJButtonBackView = null;
+	private javax.swing.JPanel buttonPanel = null;
 	private javax.swing.JCheckBox ivjJCheckBoxBoundingbox = null;
-	private javax.swing.JLabel ivjJLabel1 = null;
-	private javax.swing.JLabel ivjJLabel2 = null;
-	private javax.swing.JLabel ivjJLabel3 = null;
-	private javax.swing.JLabel ivjJLabel4 = null;
-	private javax.swing.JLabel ivjJLabel5 = null;
-	private javax.swing.JButton ivjJButtonSetViewAngle = null;
-	private javax.swing.JTextField ivjJTextFieldXViewAngle = null;
-	private javax.swing.JTextField ivjJTextFieldYViewAngle = null;
-	private javax.swing.JTextField ivjJTextFieldZViewAngle = null;
 	private SurfaceCollectionDataInfoProvider fieldSurfaceCollectionDataInfoProvider = null;
 	private javax.swing.JButton ivjJButtonDSR = null;
 	private javax.swing.JButton ivjJButtonStats = null;
 
-class IvjEventHandler implements 
+	private class IvjEventHandler implements 
 	java.awt.event.ActionListener, java.awt.event.MouseListener, 
 	java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener,
 	ComponentListener{
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonHomeView()) 
 				connEtoC4(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonFrontView()) 
-				connEtoC5(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonBackView()) 
-				connEtoC6(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonTopView()) 
-				connEtoC7(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonBottomView()) 
-				connEtoC8(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonLeftView()) 
-				connEtoC9(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonRightView()) 
-				connEtoC10(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJTextFieldXViewAngle()) 
-				connEtoM3(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJTextFieldYViewAngle()) 
-				connEtoM4(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJTextFieldZViewAngle()) 
-				connEtoM5(e);
-			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonSetViewAngle()) 
-				connEtoC11(e);
 			if (e.getSource() == DataValueSurfaceViewer.this.getJCheckBoxBoundingbox()) 
 				connEtoC13(e);
 			if (e.getSource() == DataValueSurfaceViewer.this.getJButtonDSR()) 
@@ -278,15 +247,13 @@ class IvjEventHandler implements
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == DataValueSurfaceViewer.this && (evt.getPropertyName().equals("surfaceCollectionDataInfo"))) 
 				connEtoC2(evt);
-			if (evt.getSource() == DataValueSurfaceViewer.this.getSurfaceViewerTool1() && (evt.getPropertyName().equals("viewAngleRadians"))) 
-				connEtoC12(evt);
 			if (evt.getSource() == DataValueSurfaceViewer.this.getSurfaceViewerTool1() && (evt.getPropertyName().equals("currentManipulation"))) 
 				connEtoC14(evt);
 		}
 		public void componentHidden(ComponentEvent e) {}
 		public void componentMoved(ComponentEvent e) {}
 		public void componentResized(ComponentEvent e) {
-			getCanvasDimensionsLabel().setText("w="+getSurfaceCanvas1().getSize().width+" h="+getSurfaceCanvas1().getSize().height);
+			getCanvasDimensionsLabel().setText("(w="+getSurfaceCanvas1().getSize().width+" h="+getSurfaceCanvas1().getSize().height + ")");
 		}
 		public void componentShown(ComponentEvent e) {
 			componentResized(e);
@@ -384,29 +351,6 @@ private void configureView(java.awt.event.ActionEvent actionEvent) {
 	
 	if(actionEvent.getSource() == getJButtonHomeView()){
 		getSurfaceViewerTool1().resetView();
-	}else if(actionEvent.getSource() == getJButtonFrontView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(-Math.PI/2,0,0));
-	}else if(actionEvent.getSource() == getJButtonBackView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(-Math.PI/2,0,0));
-		
-	}else if(actionEvent.getSource() == getJButtonTopView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(0,0,0));
-	}else if(actionEvent.getSource() == getJButtonBottomView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(0,Math.PI,0));
-		
-	}else if(actionEvent.getSource() == getJButtonLeftView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(-Math.PI/2,-Math.PI/2,0));
-		
-	}else if(actionEvent.getSource() == getJButtonRightView()){
-		getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(0,Math.PI/2,0));
-	}else if(actionEvent.getSource() == getJButtonSetViewAngle()){
-		try{
-			double angleX = Double.parseDouble(getJTextFieldXViewAngle().getText())*2*Math.PI/360;
-			double angleY = Double.parseDouble(getJTextFieldYViewAngle().getText())*2*Math.PI/360;
-			double angleZ = Double.parseDouble(getJTextFieldZViewAngle().getText())*2*Math.PI/360;
-			getSurfaceViewerTool1().setViewAngleRadians(new cbit.vcell.render.Vect3d(angleX,angleY,angleZ));
-		}catch(NumberFormatException e){
-		}
 	}
 
 	//getSurfaceCanvas1().getTrackball().zoom_z(0, 0);
@@ -423,66 +367,6 @@ private void connEtoC1() {
 		// user code begin {1}
 		// user code end
 		this.dataValueSurfaceViewer_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC10:  (JButtonRightView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC11:  (JButtonSetViewAngle.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC12:  (SurfaceViewerTool1.viewAngleRadians --> DataValueSurfaceViewer.surfaceViewerTool1_ViewAngleRadians(Lcbit.vcell.render.Vect3d;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.surfaceViewerTool1_ViewAngleRadians(getSurfaceViewerTool1().getViewAngleRadians());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -674,106 +558,6 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
 
 
 /**
- * connEtoC5:  (JButtonFrontView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (JButtonBackView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (JButtonTopView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC8:  (JButtonBottomView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC9:  (JButtonLeftView.action.actionPerformed(java.awt.event.ActionEvent) --> DataValueSurfaceViewer.configureView(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.configureView(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM1:  (DataValueSurfaceViewer.initialize() --> SurfaceViewerTool1.surfaceCanvas)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -803,66 +587,6 @@ private void connEtoM2(javax.swing.table.TableModel value) {
 		// user code end
 		getScrollPaneTable().setModel(getTableModel1());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM3:  (JTextField3.action.actionPerformed(java.awt.event.ActionEvent) --> JButtonSetViewAngle.doClick(I)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJButtonSetViewAngle().doClick(68);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM4:  (JTextField2.action.actionPerformed(java.awt.event.ActionEvent) --> JButtonSetViewAngle.doClick(I)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJButtonSetViewAngle().doClick(68);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM5:  (JTextField1.action.actionPerformed(java.awt.event.ActionEvent) --> JButtonSetViewAngle.doClick(I)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJButtonSetViewAngle().doClick(68);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -904,67 +628,6 @@ private void dataValueSurfaceViewer_Initialize() {
 	////getJComboBoxAreaRadius().addActionListener(ivjEventHandler);
 	
 	//Disable elements until they are fixed
-	getJLabel4().setVisible(false);
-	getJLabel1().setVisible(false);
-	getJLabel2().setVisible(false);
-	getJLabel3().setVisible(false);
-	getJTextFieldXViewAngle().setVisible(false);
-	getJTextFieldYViewAngle().setVisible(false);
-	getJTextFieldZViewAngle().setVisible(false);
-	getJButtonSetViewAngle().setVisible(false);
-	getJButtonBackView().setVisible(false);
-	getJButtonBottomView().setVisible(false);
-	getJButtonFrontView().setVisible(false);
-	getJButtonLeftView().setVisible(false);
-	getJButtonRightView().setVisible(false);
-	getJButtonTopView().setVisible(false);
-	
-
-}
-
-
-/**
- * Return the JButtonBack property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonBackView() {
-	if (ivjJButtonBackView == null) {
-		try {
-			ivjJButtonBackView = new javax.swing.JButton();
-			ivjJButtonBackView.setName("JButtonBackView");
-			ivjJButtonBackView.setText("Back");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonBackView;
-}
-
-/**
- * Return the JButtonBottomView property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonBottomView() {
-	if (ivjJButtonBottomView == null) {
-		try {
-			ivjJButtonBottomView = new javax.swing.JButton();
-			ivjJButtonBottomView.setName("JButtonBottomView");
-			ivjJButtonBottomView.setText("Bottom");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonBottomView;
 }
 
 
@@ -991,29 +654,6 @@ private javax.swing.JButton getJButtonDSR() {
 }
 
 /**
- * Return the JButtonFrontView property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonFrontView() {
-	if (ivjJButtonFrontView == null) {
-		try {
-			ivjJButtonFrontView = new javax.swing.JButton();
-			ivjJButtonFrontView.setName("JButtonFrontView");
-			ivjJButtonFrontView.setText("Front");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonFrontView;
-}
-
-
-/**
  * Return the JButtonReset property value.
  * @return javax.swing.JButton
  */
@@ -1023,7 +663,7 @@ private javax.swing.JButton getJButtonHomeView() {
 		try {
 			ivjJButtonHomeView = new javax.swing.JButton();
 			ivjJButtonHomeView.setName("JButtonHomeView");
-			ivjJButtonHomeView.setText("HOME");
+			ivjJButtonHomeView.setText("Reset View");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1036,75 +676,6 @@ private javax.swing.JButton getJButtonHomeView() {
 }
 
 /**
- * Return the JButtonLeftView property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonLeftView() {
-	if (ivjJButtonLeftView == null) {
-		try {
-			ivjJButtonLeftView = new javax.swing.JButton();
-			ivjJButtonLeftView.setName("JButtonLeftView");
-			ivjJButtonLeftView.setText("Left");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonLeftView;
-}
-
-
-/**
- * Return the JButtonRightView property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonRightView() {
-	if (ivjJButtonRightView == null) {
-		try {
-			ivjJButtonRightView = new javax.swing.JButton();
-			ivjJButtonRightView.setName("JButtonRightView");
-			ivjJButtonRightView.setText("Right");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonRightView;
-}
-
-
-/**
- * Return the JButtonSetViewAngle property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonSetViewAngle() {
-	if (ivjJButtonSetViewAngle == null) {
-		try {
-			ivjJButtonSetViewAngle = new javax.swing.JButton();
-			ivjJButtonSetViewAngle.setName("JButtonSetViewAngle");
-			ivjJButtonSetViewAngle.setText("Apply");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonSetViewAngle;
-}
-
-
-/**
  * Return the JButtonStats property value.
  * @return javax.swing.JButton
  */
@@ -1114,7 +685,7 @@ private javax.swing.JButton getJButtonStats() {
 		try {
 			ivjJButtonStats = new javax.swing.JButton();
 			ivjJButtonStats.setName("JButtonStats");
-			ivjJButtonStats.setText("Memb. Stats");
+			ivjJButtonStats.setText("Statistics");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1125,29 +696,6 @@ private javax.swing.JButton getJButtonStats() {
 	}
 	return ivjJButtonStats;
 }
-
-/**
- * Return the JButtonTopView property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonTopView() {
-	if (ivjJButtonTopView == null) {
-		try {
-			ivjJButtonTopView = new javax.swing.JButton();
-			ivjJButtonTopView.setName("JButtonTopView");
-			ivjJButtonTopView.setText("Top");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonTopView;
-}
-
 
 /**
  * Return the JCheckBoxBoundingbox property value.
@@ -1172,119 +720,6 @@ private javax.swing.JCheckBox getJCheckBoxBoundingbox() {
 	return ivjJCheckBoxBoundingbox;
 }
 
-
-/**
- * Return the JLabel1 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel1() {
-	if (ivjJLabel1 == null) {
-		try {
-			ivjJLabel1 = new javax.swing.JLabel();
-			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("X:");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel1;
-}
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Y:");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-
-/**
- * Return the JLabel3 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel3() {
-	if (ivjJLabel3 == null) {
-		try {
-			ivjJLabel3 = new javax.swing.JLabel();
-			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("Z:");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel3;
-}
-
-
-/**
- * Return the JLabel4 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel4() {
-	if (ivjJLabel4 == null) {
-		try {
-			ivjJLabel4 = new javax.swing.JLabel();
-			ivjJLabel4.setName("JLabel4");
-			ivjJLabel4.setText("View Angle (deg)");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel4;
-}
-
-/**
- * Return the JLabel5 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel5() {
-	if (ivjJLabel5 == null) {
-		try {
-			ivjJLabel5 = new javax.swing.JLabel();
-			ivjJLabel5.setName("JLabel5");
-			ivjJLabel5.setText("Preset Views");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel5;
-}
-
 /**
  * Return the JLabelInfo property value.
  * @return javax.swing.JLabel
@@ -1296,6 +731,8 @@ private javax.swing.JLabel getJLabelDirections() {
 			ivjJLabelDirections = new javax.swing.JLabel();
 			ivjJLabelDirections.setName("JLabelDirections");
 			ivjJLabelDirections.setText(DIRECTIONS_INFO_TEXT);
+			ivjJLabelDirections.setForeground(Color.blue);
+			ivjJLabelDirections.setFont(ivjJLabelDirections.getFont().deriveFont(ivjJLabelDirections.getFont().getSize2D() - 1));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1315,11 +752,9 @@ private javax.swing.JLabel getJLabelDirections() {
 private javax.swing.JLabel getJLabelInfo() {
 	if (ivjJLabelInfo == null) {
 		try {
-			ivjJLabelInfo = new javax.swing.JLabel();
+			ivjJLabelInfo = new javax.swing.JLabel("info");
 			ivjJLabelInfo.setName("JLabelInfo");
-			ivjJLabelInfo.setText(" ");
-			ivjJLabelInfo.setForeground(java.awt.Color.red);
-			ivjJLabelInfo.setMinimumSize(new java.awt.Dimension(20, 14));
+			ivjJLabelInfo.setBorder(BorderFactory.createEtchedBorder());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1335,153 +770,21 @@ private javax.swing.JLabel getJLabelInfo() {
  * Return the JPanel3 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
+private javax.swing.JPanel getButtonPanel() {
+	if (buttonPanel == null) {
 		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
-			gridBagLayout.rowHeights = new int[] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7};
-			ivjJPanel3.setLayout(gridBagLayout);
-
-			java.awt.GridBagConstraints constraintsJButtonHomeView = new java.awt.GridBagConstraints();
-			constraintsJButtonHomeView.gridx = 0; constraintsJButtonHomeView.gridy = 6;
-			constraintsJButtonHomeView.gridwidth = 2;
-			constraintsJButtonHomeView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonHomeView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonHomeView(), constraintsJButtonHomeView);
-
-			java.awt.GridBagConstraints constraintsJButtonFrontView = new java.awt.GridBagConstraints();
-			constraintsJButtonFrontView.gridx = 0; constraintsJButtonFrontView.gridy = 9;
-			constraintsJButtonFrontView.gridwidth = 2;
-			constraintsJButtonFrontView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonFrontView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonFrontView(), constraintsJButtonFrontView);
-
-			java.awt.GridBagConstraints constraintsJButtonTopView = new java.awt.GridBagConstraints();
-			constraintsJButtonTopView.gridx = 0; constraintsJButtonTopView.gridy = 7;
-			constraintsJButtonTopView.gridwidth = 2;
-			constraintsJButtonTopView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonTopView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonTopView(), constraintsJButtonTopView);
-
-			java.awt.GridBagConstraints constraintsJButtonLeftView = new java.awt.GridBagConstraints();
-			constraintsJButtonLeftView.gridx = 0; constraintsJButtonLeftView.gridy = 11;
-			constraintsJButtonLeftView.gridwidth = 2;
-			constraintsJButtonLeftView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonLeftView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonLeftView(), constraintsJButtonLeftView);
-
-			java.awt.GridBagConstraints constraintsJButtonBackView = new java.awt.GridBagConstraints();
-			constraintsJButtonBackView.gridx = 0; constraintsJButtonBackView.gridy = 10;
-			constraintsJButtonBackView.gridwidth = 2;
-			constraintsJButtonBackView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonBackView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonBackView(), constraintsJButtonBackView);
-
-			java.awt.GridBagConstraints constraintsJButtonBottomView = new java.awt.GridBagConstraints();
-			constraintsJButtonBottomView.gridx = 0; constraintsJButtonBottomView.gridy = 8;
-			constraintsJButtonBottomView.gridwidth = 2;
-			constraintsJButtonBottomView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonBottomView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonBottomView(), constraintsJButtonBottomView);
-
-			java.awt.GridBagConstraints constraintsJButtonRightView = new java.awt.GridBagConstraints();
-			constraintsJButtonRightView.gridx = 0; constraintsJButtonRightView.gridy = 12;
-			constraintsJButtonRightView.gridwidth = 2;
-			constraintsJButtonRightView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonRightView.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonRightView(), constraintsJButtonRightView);
-
-			java.awt.GridBagConstraints constraintsJTextFieldZViewAngle = new java.awt.GridBagConstraints();
-			constraintsJTextFieldZViewAngle.gridx = 1; constraintsJTextFieldZViewAngle.gridy = 3;
-			constraintsJTextFieldZViewAngle.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldZViewAngle.weightx = 1.0;
-			constraintsJTextFieldZViewAngle.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJTextFieldZViewAngle(), constraintsJTextFieldZViewAngle);
-
-			java.awt.GridBagConstraints constraintsJTextFieldYViewAngle = new java.awt.GridBagConstraints();
-			constraintsJTextFieldYViewAngle.gridx = 1; constraintsJTextFieldYViewAngle.gridy = 2;
-			constraintsJTextFieldYViewAngle.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldYViewAngle.weightx = 1.0;
-			constraintsJTextFieldYViewAngle.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJTextFieldYViewAngle(), constraintsJTextFieldYViewAngle);
-
-			java.awt.GridBagConstraints constraintsJTextFieldXViewAngle = new java.awt.GridBagConstraints();
-			constraintsJTextFieldXViewAngle.gridx = 1; constraintsJTextFieldXViewAngle.gridy = 1;
-			constraintsJTextFieldXViewAngle.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldXViewAngle.weightx = 1.0;
-			constraintsJTextFieldXViewAngle.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJTextFieldXViewAngle(), constraintsJTextFieldXViewAngle);
-
-			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
-			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 1;
-			constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel1(), constraintsJLabel1);
-
-			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 2;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel2(), constraintsJLabel2);
-
-			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
-			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 3;
-			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel3(), constraintsJLabel3);
-
-			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-			constraintsJLabel4.gridx = 0; constraintsJLabel4.gridy = 0;
-			constraintsJLabel4.gridwidth = 2;
-			constraintsJLabel4.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel4(), constraintsJLabel4);
-
-			java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
-			constraintsJLabel5.gridx = 0; constraintsJLabel5.gridy = 5;
-			constraintsJLabel5.gridwidth = 2;
-			constraintsJLabel5.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel5(), constraintsJLabel5);
-
-			java.awt.GridBagConstraints constraintsJButtonSetViewAngle = new java.awt.GridBagConstraints();
-			constraintsJButtonSetViewAngle.gridx = 0; constraintsJButtonSetViewAngle.gridy = 4;
-			constraintsJButtonSetViewAngle.gridwidth = 2;
-			constraintsJButtonSetViewAngle.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonSetViewAngle(), constraintsJButtonSetViewAngle);
-
-			java.awt.GridBagConstraints constraintsJCheckBoxBoundingbox = new java.awt.GridBagConstraints();
-			constraintsJCheckBoxBoundingbox.gridx = 0; constraintsJCheckBoxBoundingbox.gridy = 13;
-			constraintsJCheckBoxBoundingbox.gridwidth = 2;
-			constraintsJCheckBoxBoundingbox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJCheckBoxBoundingbox(), constraintsJCheckBoxBoundingbox);
-
-			java.awt.GridBagConstraints constraintsJButtonDSR = new java.awt.GridBagConstraints();
-			constraintsJButtonDSR.gridx = 0; constraintsJButtonDSR.gridy = 14;
-			constraintsJButtonDSR.gridwidth = 2;
-			constraintsJButtonDSR.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonDSR.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonDSR(), constraintsJButtonDSR);
-
-			java.awt.GridBagConstraints constraintsJButtonStats = new java.awt.GridBagConstraints();
-			constraintsJButtonStats.gridx = 0; constraintsJButtonStats.gridy = 15;
-			constraintsJButtonStats.gridwidth = 2;
-			constraintsJButtonStats.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJButtonStats.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJButtonStats(), constraintsJButtonStats);
-			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-			gridBagConstraints.gridwidth = 2;
-			gridBagConstraints.gridy = 16;
-			gridBagConstraints.gridx = 0;
-			ivjJPanel3.add(getJButtonMakeMovie(), gridBagConstraints);
-			// user code begin {1}
-			// user code end
+			buttonPanel = new javax.swing.JPanel();
+			buttonPanel.add(getJButtonHomeView());
+			buttonPanel.add(getJCheckBoxBoundingbox());
+			buttonPanel.add(getJButtonDSR());
+			buttonPanel.add(getJButtonStats());
+			buttonPanel.add(getJButtonMakeMovie());
+			buttonPanel.add(getCanvasDimensionsLabel());
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel3;
+	return buttonPanel;
 }
 
 /**
@@ -1507,69 +810,6 @@ private javax.swing.JScrollPane getJScrollPane1() {
 		}
 	}
 	return ivjJScrollPane1;
-}
-
-/**
- * Return the JTextField3 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getJTextFieldXViewAngle() {
-	if (ivjJTextFieldXViewAngle == null) {
-		try {
-			ivjJTextFieldXViewAngle = new javax.swing.JTextField();
-			ivjJTextFieldXViewAngle.setName("JTextFieldXViewAngle");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJTextFieldXViewAngle;
-}
-
-/**
- * Return the JTextField2 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getJTextFieldYViewAngle() {
-	if (ivjJTextFieldYViewAngle == null) {
-		try {
-			ivjJTextFieldYViewAngle = new javax.swing.JTextField();
-			ivjJTextFieldYViewAngle.setName("JTextFieldYViewAngle");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJTextFieldYViewAngle;
-}
-
-/**
- * Return the JTextField1 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getJTextFieldZViewAngle() {
-	if (ivjJTextFieldZViewAngle == null) {
-		try {
-			ivjJTextFieldZViewAngle = new javax.swing.JTextField();
-			ivjJTextFieldZViewAngle.setName("JTextFieldZViewAngle");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJTextFieldZViewAngle;
 }
 
 /**
@@ -1724,16 +964,6 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSurfaceCanvas1().addMouseListener(ivjEventHandler);
 	getJButtonHomeView().addActionListener(ivjEventHandler);
-	getJButtonFrontView().addActionListener(ivjEventHandler);
-	getJButtonBackView().addActionListener(ivjEventHandler);
-	getJButtonTopView().addActionListener(ivjEventHandler);
-	getJButtonBottomView().addActionListener(ivjEventHandler);
-	getJButtonLeftView().addActionListener(ivjEventHandler);
-	getJButtonRightView().addActionListener(ivjEventHandler);
-	getJTextFieldXViewAngle().addActionListener(ivjEventHandler);
-	getJTextFieldYViewAngle().addActionListener(ivjEventHandler);
-	getJTextFieldZViewAngle().addActionListener(ivjEventHandler);
-	getJButtonSetViewAngle().addActionListener(ivjEventHandler);
 	getSurfaceViewerTool1().addPropertyChangeListener(ivjEventHandler);
 	getJCheckBoxBoundingbox().addActionListener(ivjEventHandler);
 	getSurfaceCanvas1().addMouseMotionListener(ivjEventHandler);
@@ -1754,48 +984,55 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(1109, 690);
 
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 3;
-		constraintsJScrollPane1.gridwidth = 2;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJScrollPane1(), constraintsJScrollPane1);
-
 		java.awt.GridBagConstraints constraintsSurfaceCanvas1 = new java.awt.GridBagConstraints();
-		constraintsSurfaceCanvas1.gridx = 1; constraintsSurfaceCanvas1.gridy = 0;
-		constraintsSurfaceCanvas1.gridwidth = 2;
+		constraintsSurfaceCanvas1.gridx = 0; constraintsSurfaceCanvas1.gridy = 0;
 		constraintsSurfaceCanvas1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsSurfaceCanvas1.weightx = 1.0;
 		constraintsSurfaceCanvas1.weighty = 1.0;
 		constraintsSurfaceCanvas1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSurfaceCanvas1(), constraintsSurfaceCanvas1);
-
+		
+		displayAdapterServicePanel = new DisplayAdapterServicePanel();
+		
 		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
-		constraintsJPanel3.gridx = 0; constraintsJPanel3.gridy = 0;
-		constraintsJPanel3.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 0;
+		constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel3.anchor = java.awt.GridBagConstraints.NORTH;
 		constraintsJPanel3.weighty = 1.0;
 		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel3(), constraintsJPanel3);
+		add(displayAdapterServicePanel, constraintsJPanel3);
 
-		java.awt.GridBagConstraints constraintsJLabelDirections = new java.awt.GridBagConstraints();
-		constraintsJLabelDirections.gridx = 1; constraintsJLabelDirections.gridy = 1;
-		constraintsJLabelDirections.gridwidth = 2;
-		constraintsJLabelDirections.insets = new java.awt.Insets(4, 4, 4, 4);
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.gridx = 0;
-		add(getCanvasDimensionsLabel(), gridBagConstraints);
-		add(getJLabelDirections(), constraintsJLabelDirections);
-
+		
 		java.awt.GridBagConstraints constraintsJLabelInfo = new java.awt.GridBagConstraints();
-		constraintsJLabelInfo.gridx = 1; constraintsJLabelInfo.gridy = 2;
+		constraintsJLabelInfo.gridx = 0; constraintsJLabelInfo.gridy = 1;
 		constraintsJLabelInfo.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelInfo.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabelInfo.gridwidth = 2;
 		add(getJLabelInfo(), constraintsJLabelInfo);
+				
+		java.awt.GridBagConstraints constraintsJLabelDirections = new java.awt.GridBagConstraints();
+		constraintsJLabelDirections.gridx = 0; constraintsJLabelDirections.gridy = 2;
+		constraintsJLabelDirections.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabelDirections.gridwidth = 2;
+		constraintsJLabelDirections.anchor = GridBagConstraints.LINE_START;
+		add(getJLabelDirections(), constraintsJLabelDirections);		
+
+		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
+		constraintsJScrollPane1.gridx = 0; 
+		constraintsJScrollPane1.gridy = 3;
+		constraintsJScrollPane1.gridwidth = 2;
+		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJScrollPane1(), constraintsJScrollPane1);
+
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getButtonPanel(), gbc);
+		
 		initConnections();
 		connEtoC1();
 		connEtoM1();
@@ -2195,8 +1432,8 @@ private void refresh() {
 private void setModeCursor() {
 
 	mouseOverTimer.stop();
-	if(!getJLabelInfo().getText().equals(" ")){
-		getJLabelInfo().setText(" ");
+	if(!getJLabelInfo().getText().equals("info")){
+		getJLabelInfo().setText("info");
 	}
 	lastMouse = null;
 
@@ -2280,8 +1517,8 @@ private void setTableModel1(javax.swing.table.TableModel newValue) {
  * Comment
  */
 private void surfaceCanvas1_MouseExited(java.awt.event.MouseEvent mouseEvent) {
-	if(!getJLabelInfo().getText().equals(" ")){
-		getJLabelInfo().setText(" ");
+	if(!getJLabelInfo().getText().equals("info")){
+		getJLabelInfo().setText("info");
 	}
 	lastMouse = null;
 	mouseOverTimer.restart();
@@ -2292,26 +1529,12 @@ private void surfaceCanvas1_MouseExited(java.awt.event.MouseEvent mouseEvent) {
  * Comment
  */
 private void surfaceCanvas1_MouseMoved(java.awt.event.MouseEvent mouseEvent) {
-	if(!getJLabelInfo().getText().equals(" ")){
-		getJLabelInfo().setText(" ");
+	if(!getJLabelInfo().getText().equals("info")){
+		getJLabelInfo().setText("info");
 	}
 	lastMouse = mouseEvent;
 	mouseOverTimer.restart();
 }
-
-
-/**
- * Comment
- */
-private void surfaceViewerTool1_ViewAngleRadians(cbit.vcell.render.Vect3d arg1) {
-
-	df.setMaximumFractionDigits(2);
-
-	getJTextFieldXViewAngle().setText(df.format(arg1.getX()*180/Math.PI));
-	getJTextFieldYViewAngle().setText(df.format(arg1.getY()*180/Math.PI));
-	getJTextFieldZViewAngle().setText(df.format(arg1.getZ()*180/Math.PI));
-}
-
 
 /**
  * Insert the method's description here.
@@ -2350,14 +1573,13 @@ private void updatePickInfoDisplay() {
 			currentPick = getSurfaceCanvas1().pickPolygon(lastMouse.getX(),lastMouse.getY());
 		}
 		if(currentPick != null){
-			org.vcell.util.Coordinate centroid = ((cbit.vcell.geometry.surface.Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(currentPick.surfaceIndex).getPolygons(currentPick.polygonIndex)).calculateCentroid();
+			org.vcell.util.Coordinate centroid = ((Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(currentPick.surfaceIndex).getPolygons(currentPick.polygonIndex)).calculateCentroid();
 			df.setMaximumFractionDigits(5);
 			double area = getSurfaceCollectionDataInfoProvider().getArea(currentPick.surfaceIndex,currentPick.polygonIndex);
 			getJLabelInfo().setText(
-				" ("+getSurfaceCollectionDataInfoProvider().getValueDescription(currentPick.surfaceIndex,currentPick.polygonIndex)+
-				"["+getSurfaceCollectionDataInfoProvider().getMembraneIndex(currentPick.surfaceIndex,currentPick.polygonIndex)+"]"+")"+
-				" val= "+ (float)getSurfaceCollectionDataInfoProvider().getValue(currentPick.surfaceIndex,currentPick.polygonIndex) +
-				" area="+ (area != cbit.vcell.solvers.MembraneElement.AREA_UNDEFINED?area+"":"No Calc")+
+				" index="+getSurfaceCollectionDataInfoProvider().getMembraneIndex(currentPick.surfaceIndex,currentPick.polygonIndex) +
+				" val="+ (float)getSurfaceCollectionDataInfoProvider().getValue(currentPick.surfaceIndex,currentPick.polygonIndex) +
+				" area="+ (area != MembraneElement.AREA_UNDEFINED?df.format(area)+"":"No Calc")+
 				" centroid=("+df.format(centroid.getX())+","+df.format(centroid.getY())+","+df.format(centroid.getZ())+")");
 			return;
 		}else{
@@ -2415,6 +1637,9 @@ private void updatePickInfoDisplay() {
 				lineString = "Line("+polylinePicks.size()+") Len="+(float)lineLength;
 			}
 			getJLabelInfo().setText(lineString+(lineString.length() > 0 && !aoiString.equals(" ")?" -- ":"")+aoiString);
+			if(getJLabelInfo().getText().trim().equals("")){
+				getJLabelInfo().setText("info");
+			}
 		}
 	}else{
 		getJLabelInfo().setText("No Information Provider for Pick");
@@ -2444,9 +1669,17 @@ private void updatePickInfoDisplay() {
 		if (canvasDimensionsLabel == null) {
 			canvasDimensionsLabel = new JLabel();
 			canvasDimensionsLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			canvasDimensionsLabel.setBorder(new LineBorder(Color.black, 1, false));
 			canvasDimensionsLabel.setText("SurfCanv Dim");
 		}
 		return canvasDimensionsLabel;
+	}
+	private DisplayAdapterService displayAdapterService;
+	private DisplayAdapterServicePanel displayAdapterServicePanel;
+	public void setDisplayAdapterService(DisplayAdapterService newValue) {
+		if (displayAdapterService == newValue) {
+			return;
+		}
+		displayAdapterService = newValue;
+		displayAdapterServicePanel.setDisplayAdapterService(displayAdapterService);
 	}
 }

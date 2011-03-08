@@ -79,8 +79,9 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
 				connPtoP5SetSource();
 			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && 
-					(evt.getPropertyName().equals("variable") || evt.getPropertyName().equals("timePoint"))) 
-				connEtoM5(evt);
+					(evt.getPropertyName().equals("variable") || evt.getPropertyName().equals("timePoint"))) {
+//				connEtoM5(evt);
+			}
 			if (evt.getSource() == PDEDataContextPanel.this.getimagePlaneManager1() && (evt.getPropertyName().equals("imagePlaneData"))) 
 				connEtoC3(evt);
 			if (evt.getSource() == PDEDataContextPanel.this.getImagePlaneManagerPanel()) 
@@ -337,7 +338,7 @@ private double[] originalData = null;
 private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
 private boolean bDataInfoProviderNull = true;
 
-private void recodeDataForDomain() {
+public void recodeDataForDomain() {
 	//This method recodes data (out of domain data is set to 'out of range' value that is displayed differently)
 	// and calculates a domain aware min,max range for variables that have a domain
 	//Volume display data is set here
