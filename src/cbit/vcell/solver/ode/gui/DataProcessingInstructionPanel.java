@@ -9,6 +9,7 @@ import java.awt.Insets;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -92,14 +93,13 @@ private void editDataProcessor(boolean bEdit) {
 	JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 	JLabel nameLabel = new JLabel("Name");			
 	panel.add(nameLabel);
-	JTextField nameField = new JTextField();
+	JComboBox nameComboBox = new JComboBox();
+	nameComboBox.addItem(DataProcessingInstructions.VFRAP);
+	nameComboBox.addItem(DataProcessingInstructions.ROI_TIME_SERIES);
 	if (dpi != null) {
-		nameField.setText(dpi.getScriptName());
-	} else {
-		nameField.setText("VFRAP");
+		nameComboBox.setSelectedItem(dpi.getScriptName());
 	}
-	nameField.setColumns(20);
-	panel.add(nameField);
+	panel.add(nameComboBox);
 	mainPanel.add(panel, BorderLayout.NORTH);
 	
 	panel = new JPanel(new GridBagLayout());			
@@ -130,10 +130,11 @@ private void editDataProcessor(boolean bEdit) {
 	panel.add(sp, cbc);			
 	mainPanel.add(panel, BorderLayout.CENTER);
 	
-	int ok = DialogUtils.showComponentOKCancelDialog(this.getParent(), mainPanel, "Add Data Processor");
-	if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
+	int ok = DialogUtils.showComponentOKCancelDialog(this.getParent(), mainPanel, "Add Data Processor");	
+	if (ok == JOptionPane.OK_OPTION && textArea.getText().length() > 0) {
+		String name = (String) nameComboBox.getSelectedItem();
 		solverTaskDescription.getSimulation().setDataProcessingInstructions(
-				new DataProcessingInstructions(nameField.getText(), textArea.getText()));
+				new DataProcessingInstructions(name, textArea.getText()));
 	} else {
 		if (!bEdit) {
 			solverTaskDescription.getSimulation().setDataProcessingInstructions(null);
