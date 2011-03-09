@@ -305,10 +305,10 @@ private void initialize() {
 			public void eventDispatched(AWTEvent event) {
 				try {
 					switch (event.getID()) {		
-					case KeyEvent.KEY_RELEASED:					
+					case KeyEvent.KEY_RELEASED:	
 						documentEditor_eventDispatched(event);
 						break;
-					case MouseEvent.MOUSE_CLICKED :
+					case MouseEvent.MOUSE_RELEASED:
 						documentEditor_eventDispatched(event);
 						break;
 					}

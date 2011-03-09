@@ -5,6 +5,7 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 
+import javax.swing.BorderFactory;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.Coordinate;
@@ -798,20 +799,12 @@ private DisplayAdapterService getdisplayAdapterService1() {
  * Return the DisplayAdapterServicePanel1 property value.
  * @return cbit.image.DisplayAdapterServicePanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public DisplayAdapterServicePanel getDisplayAdapterServicePanel() {
 	if (ivjDisplayAdapterServicePanel == null) {
 		try {
-			ivjDisplayAdapterServicePanel = new cbit.image.DisplayAdapterServicePanel();
+			ivjDisplayAdapterServicePanel = new DisplayAdapterServicePanel();
 			ivjDisplayAdapterServicePanel.setName("DisplayAdapterServicePanel");
-			ivjDisplayAdapterServicePanel.setPreferredSize(new java.awt.Dimension(200, 280));
-			ivjDisplayAdapterServicePanel.setMinimumSize(new java.awt.Dimension(200, 280));
-			ivjDisplayAdapterServicePanel.setMaximumSize(new java.awt.Dimension(200, 280));
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -916,7 +909,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
-			ivjInfoJlabel.setBorder(new LineBorder(Color.black));
+			ivjInfoJlabel.setBorder(BorderFactory.createEtchedBorder());
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 			// user code begin {1}
