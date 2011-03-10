@@ -1426,6 +1426,7 @@ roundtripTimer += l2 - l1;
 
 		//TODO must replace this with proper persistance.
 		updatedBioModel.getPathwayModel().merge(bioModel.getPathwayModel());
+		updatedBioModel.getRelationshipModel().merge(bioModel.getRelationshipModel());
 		
 		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(updatedBioModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),

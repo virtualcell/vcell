@@ -87,8 +87,8 @@ import org.vcell.pathway.Xref;
 import org.vcell.sybil.rdf.NameSpace;
 
 import org.vcell.pathway.persistence.BiopaxProxy.*;
-
 import cbit.util.xml.XmlUtil;
+import static org.vcell.pathway.PathwayXMLHelper.*;
 
 
 public class PathwayReaderBiopax3 {
@@ -1703,40 +1703,6 @@ public class PathwayReaderBiopax3 {
 		return physicalEntity;
 	}
 
-	private String getElementPathString(Element childElement){
-		StringBuffer buffer = new StringBuffer();
-		Element element = childElement;
-		while (element!=null){
-			if (buffer.length()==0){
-				buffer.append(element.getName());
-			}else{
-				buffer.insert(0,element.getName()+"/");
-			}
-			element = element.getParent();
-		}
-		return buffer.toString();
-	}
-	
-	private void showUnexpected(Attribute attribute){
-		System.out.println("unexpected attribute "+getElementPathString(attribute.getParent())+" << " + attribute.getQualifiedName());
-	}
-	
-	private void showIgnored(Attribute attribute){
-		System.out.println("ignored attribute "+getElementPathString(attribute.getParent())+" << " + attribute.getQualifiedName());
-	}
-	
-	private void showUnexpected(Element childElement){
-		System.out.println("unexpected element " + unexpectedCount + ": " + getElementPathString(childElement));
-		unexpectedCount++;
-	}
-	
-	private void showIgnored(Element childElement, String reason){
-//		if (!reason.contains("?")){
-//			return;
-//		}
-//		System.out.println("ignoring element "+getElementPathString(childElement) + "   " + reason);
-	}
-	
 	private Control addObjectControl(Element controlElement) {
 		Control control = new Control();
 		addAttributes(control, controlElement);

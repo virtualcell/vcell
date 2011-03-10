@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
+import cbit.vcell.biomodel.meta.Identifiable;
+
 public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
 	protected transient ArrayList<PathwayListener> aPathwayListeners = new ArrayList<PathwayListener>();
@@ -272,6 +274,10 @@ public class PathwayModel {
 	
 	public int size(){
 		return biopaxObjects.size();
+	}
+
+	public Identifiable findBioPaxObject(String rdfId) {
+		return findFromResourceID(rdfId);
 	}
 
 }
