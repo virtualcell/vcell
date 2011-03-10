@@ -541,7 +541,6 @@ private void refreshButtonsLax() {
 	boolean bRunnable = false;
 	boolean bStoppable = false;
 	boolean bHasData = false;
-	boolean bStatusDetails = false;
 	// we make'em true if at least one sim satisfies criterion (lax policy)
 	for (int i = 0; i < selections.length; i++){
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[i]]);
@@ -549,12 +548,10 @@ private void refreshButtonsLax() {
 		bRunnable = bRunnable == false ? simStatus.isRunnable() : bRunnable;
 		bStoppable = bStoppable == false ? simStatus.isStoppable() : bStoppable;
 		bHasData = bHasData == false ? simStatus.getHasData() : bHasData;
-		bStatusDetails = !simStatus.isNeverRan() ? true : bStatusDetails;
 	}
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
-	menuItemStatusDetails.setEnabled(bStatusDetails);
 	menuItemStop.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
 }

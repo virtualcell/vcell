@@ -10,13 +10,18 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
@@ -48,10 +53,16 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.simdata.DataSet;
+import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -63,6 +74,7 @@ import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solvers.CartesianMesh;
 
 
 /**
@@ -147,6 +159,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		output_files,
 		
 		cmd,
+		B,
 		n,
 //		one line of display is printed to the listed file, giving the time and the number 
 //		of molecules for each molecular species. Molecule states are ignored. 
@@ -183,6 +196,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		
 		vcellPrintProgress,
 		vcellWriteOutput,
+		vcellDataProcess,
 	}
 	
 /**
@@ -226,7 +240,7 @@ private void init() throws SolverException {
 
 
 @Override
-public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException {	
+public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException {	
 	init();
 	
 	writeJms(simulation);	
@@ -253,7 +267,7 @@ private void writeSimulationSettings() {
 	printWriter.println();
 }
 
-private void writeRuntimeCommands() throws SolverException {
+private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
 	OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
 	if (ots.isUniform()) {
 		GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
@@ -279,6 +293,12 @@ private void writeRuntimeCommands() throws SolverException {
 		int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+
+		// DON'T CHANGE THE ORDER HERE.
+		// DataProcess must be before vcellWriteOutput
+		if (simulation.getDataProcessingInstructions() != null) {
+			writeDataProcessor();
+		}		
 		printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
 		if (dimension > 1) {
 			printWriter.print(" " + sampleSize.getY());
@@ -288,11 +308,55 @@ private void writeRuntimeCommands() throws SolverException {
 		}
 		printWriter.print(" " + volumeRegionList.size());
 		printWriter.println();
-		
-		printWriter.println();
+		printWriter.println();		
 	} else {
 		throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 	}
+}
+
+private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
+	Simulation simulation = simulationJob.getSimulation();
+	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
+	if (dpi == null) {
+		return;
+	}
+	
+	FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
+	if (fdis == null) {
+		throw new DataAccessException("Can't find sample image in data processing instructions");
+	}
+	File userDirectory = outputFile.getParentFile();
+	
+	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+	CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
+	SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
+	VariableType varType = fdis.getFieldFuncArgs().getVariableType();
+	VariableType dataVarType = simDataBlock.getVariableType();
+	if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
+		throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+	}
+	double[] origData = simDataBlock.getData();	
+	String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+	
+	File fdatFile = new File(userDirectory, filename);
+	
+	
+	DataSet.writeNew(fdatFile,
+			new String[] {fdis.getFieldFuncArgs().getVariableName()},
+			new VariableType[]{simDataBlock.getVariableType()},
+			new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
+			new double[][]{origData});
+	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + dpi.getScriptName());
+	StringTokenizer st = new StringTokenizer(dpi.getScriptInput(), "\n\r");
+	while (st.hasMoreTokens()) {
+		String str = st.nextToken();
+		if (str.trim().length() > 0) {
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " " + str);
+		}
+	}
+	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
+	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");	
 }
 
 private void writeReactions() throws ExpressionException, MathException {

@@ -273,6 +273,8 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	private JPopupMenu roiPopupMenu = null;
 	private JMenuItem statisticsMenuItem;
 	private JMenuItem snapShotMenuItem;
+	
+	private DataProcessingResultsPanel dataProcessingResultsPanel;
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
 	
@@ -335,6 +337,10 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
 						}
 					}
+					createDataProcessingResultsPanel();
+				}
+				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
+					createDataProcessingResultsPanel();
 				}
 //				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
 //					setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
@@ -2523,6 +2529,17 @@ public void removeDataJobListener(DataJobListener listener) {
 public void showTimePlotMultipleScans(DataManager dataManager) {
 	// TODO Auto-generated method stub
 	
+}
+
+private void createDataProcessingResultsPanel() {
+	if (getSimulation() != null && getSimulation().getDataProcessingInstructions() != null) {		
+		if (dataProcessingResultsPanel == null || getJTabbedPane1().indexOfComponent(dataProcessingResultsPanel) < 0) {
+			dataProcessingResultsPanel = new DataProcessingResultsPanel();
+			getJTabbedPane1().addTab("Post Processing Data", dataProcessingResultsPanel);
+		}
+		dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
+	}
+
 }
 
 }

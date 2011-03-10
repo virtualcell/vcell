@@ -3,14 +3,11 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.plot.PlotData;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.solver.SimulationInfo;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.*;
+import cbit.vcell.math.Function;
+import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 3:21:23 PM)
@@ -101,6 +98,10 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.u
  */
 protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, vcDataID, varName, time);
+}
+
+public DataProcessingOutput retrieveDataProcessingOutput() throws org.vcell.util.DataAccessException {
+	return getDataServerImpl().getDataProcessingOutput(user, vcDataID);
 }
 
 
