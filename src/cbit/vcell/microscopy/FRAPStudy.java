@@ -336,9 +336,9 @@ public class FRAPStudy implements Matchable{
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation newSimulation = new Simulation(simVersion,simContext.getMathDescription());
 		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
-		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(timeStepVal));
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
+		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(timeStepVal));
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());
 		newSimulation.getSolverTaskDescription().setTimeStep(new TimeStep(timeStepVal, timeStepVal, timeStepVal));
 		
