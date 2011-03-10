@@ -14,7 +14,8 @@ import cbit.vcell.graph.SpeciesContextShape;
 
 public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	
-	public static final Dimension REACTION_CONTAINER_MIN_SIZE = new Dimension(100, 200);
+	public static final Dimension REACTION_CONTAINER_MIN_SIZE = new Dimension(200, 250);
+	public static final int TOP_LABEL_HEIGHT = 20;
 	public static final int HEIGHT_PADDING = 14;
 	public static final int WIDTH_PADDING = 14;
 	
@@ -89,6 +90,14 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 			change_managed(topShape, g2d);
 			resize(topShape, this.getPreferedSize(topShape, g2d), g2d);
 		}
+		int topShapeX = 0, topShapeY = 0;
+		if(topShape.getWidth() < size.width) {
+			topShapeX = (size.width - topShape.getWidth()) / 2;
+		}
+		if(topShape.getHeight() < size.height) {
+			topShapeY = (size.height - topShape.getHeight()) / 2;
+		}
+		topShape.setAbsPos(topShapeX, topShapeY);
 	}
 	
 	public void change_managed(Shape shape, Graphics2D g) {
@@ -217,8 +226,8 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 		if(shape instanceof ReactionContainerShape) {
 			Point absLoc = shape.getAbsPos();
 			Dimension size = shape.getSize();
-			return new Rectangle(absLoc.x + WIDTH_PADDING, absLoc.y + HEIGHT_PADDING, 
-					size.width - 2*WIDTH_PADDING, size.height - 2*HEIGHT_PADDING);			
+			return new Rectangle(absLoc.x + WIDTH_PADDING, absLoc.y + HEIGHT_PADDING + TOP_LABEL_HEIGHT, 
+					size.width - 2*WIDTH_PADDING, size.height - 2*HEIGHT_PADDING - TOP_LABEL_HEIGHT);			
 		}
 		return new Rectangle(shape.getAbsPos(), shape.getSize());
 	}
