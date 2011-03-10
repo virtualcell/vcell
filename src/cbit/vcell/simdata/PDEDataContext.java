@@ -16,6 +16,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
@@ -24,6 +25,7 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
 		
+public static final String PROPERTY_NAME_TIME_POINTS = "timePoints";
 public static final String PROPERTY_NAME_TIME_POINT = "timePoint";
 public static final String PROPERTY_NAME_VARIABLE = "variable";
 	//	private class RefreshedData {
@@ -66,6 +68,7 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 	private CartesianMesh cartesianMesh = null;
 //	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
+	private DataProcessingOutput dataProcessingOutput;
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
@@ -210,7 +213,14 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param time double
  */
 protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException;
+protected abstract DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException;
 
+public DataProcessingOutput getDataProcessingOutput() throws DataAccessException {
+	if (dataProcessingOutput == null) {
+		dataProcessingOutput = retrieveDataProcessingOutput();
+	}
+	return dataProcessingOutput;
+}
 /**
  * Gets the timePoint property (double) value.
  * @return The timePoint property value.
@@ -548,7 +558,7 @@ public void setTimePoint(double timePoint) throws DataAccessException {
 protected void setTimePoints(double[] timePoints) {
 	double[] oldValue = fieldTimePoints;
 	fieldTimePoints = timePoints;
-	firePropertyChange("timePoints", oldValue, timePoints);
+	firePropertyChange(PROPERTY_NAME_TIME_POINTS, oldValue, timePoints);
 }
 
 public void setVariable(DataIdentifier selectedDataIdentifier) throws DataAccessException {

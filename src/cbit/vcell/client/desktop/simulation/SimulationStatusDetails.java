@@ -66,6 +66,8 @@ Object getSimulationStatusDisplay(int index) {
 			} else {
 				return jobStatus.getSimulationMessage().getDisplayMessage();
 			}
+		} else {
+			return simStatus.getDetails();
 		}
 	}
 	return null;

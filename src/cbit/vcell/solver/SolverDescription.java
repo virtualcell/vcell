@@ -972,6 +972,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_Spatial);
 		featureSet.add(SolverFeature.Feature_Stochastic);
 		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
 		break;	
 	}
 	return featureSet;

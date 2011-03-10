@@ -1,8 +1,11 @@
 package cbit.vcell.client.desktop.simulation;
 
-import javax.swing.Scrollable;
+import java.awt.BorderLayout;
 
+import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.ScrollTable;
+
+import cbit.vcell.solver.Simulation;
 
 /**
  * Insert the type's description here.
@@ -14,7 +17,7 @@ public class SimulationStatusDetailsPanel extends javax.swing.JPanel {
 	private ScrollTable ivjScrollPaneTable = null;
 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
 	private SimulationStatusDetailsTableModel ivjSimulationStatusDetailsTableModel1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JLabel ivjJLabel2 = null;
 	private javax.swing.JLabel ivjJLabel3 = null;
 	private javax.swing.JLabel ivjJLabel4 = null;
@@ -22,12 +25,16 @@ public class SimulationStatusDetailsPanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjNameTextField = null;
 	private javax.swing.JTextField ivjSolverTextField = null;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SimulationStatusDetailsPanel.this && (evt.getPropertyName().equals("simulationStatusDetails"))) 
-				connEtoM1(evt);
-			if (evt.getSource() == SimulationStatusDetailsPanel.this && (evt.getPropertyName().equals("simulationStatusDetails"))) 
-				connEtoC1(evt);
+			if (evt.getSource() == SimulationStatusDetailsPanel.this && (evt.getPropertyName().equals("simulationStatusDetails"))) {
+				try {
+					getSimulationStatusDetailsTableModel1().setSimulationStatusDetails(getSimulationStatusDetails());
+					simulationStatusDetailsPanel_SimulationStatusDetails(getSimulationStatusDetails());
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				} 
+			}
 		};
 	};
 
@@ -38,112 +45,6 @@ public SimulationStatusDetailsPanel() {
 	super();
 	initialize();
 }
-
-/**
- * SimulationStatusDetailsPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public SimulationStatusDetailsPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * SimulationStatusDetailsPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public SimulationStatusDetailsPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * SimulationStatusDetailsPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public SimulationStatusDetailsPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
- * connEtoC1:  (SimulationStatusDetailsPanel.simulationStatusDetails --> SimulationStatusDetailsPanel.simulationStatusDetailsPanel_SimulationStatusDetails(Lcbit.vcell.client.desktop.simulation.SimulationStatusDetails;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.simulationStatusDetailsPanel_SimulationStatusDetails(this.getSimulationStatusDetails());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (SimulationStatusDetailsPanel.initialize() --> SimulationStatusDetailsPanel.simulationStatusDetailsPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.simulationStatusDetailsPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (SimulationStatusDetailsPanel.simulationStatusDetails --> SimulationStatusDetailsTableModel1.simulationStatusDetails)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getSimulationStatusDetailsTableModel1().setSimulationStatusDetails(this.getSimulationStatusDetails());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (SimulationStatusDetailsTableModel1.this <--> ScrollPaneTable.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		getScrollPaneTable().setModel(getSimulationStatusDetailsTableModel1());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * Return the JTextField2 property value.
@@ -360,7 +261,7 @@ public SimulationStatusDetails getSimulationStatusDetails() {
 private SimulationStatusDetailsTableModel getSimulationStatusDetailsTableModel1() {
 	if (ivjSimulationStatusDetailsTableModel1 == null) {
 		try {
-			ivjSimulationStatusDetailsTableModel1 = new cbit.vcell.client.desktop.simulation.SimulationStatusDetailsTableModel();
+			ivjSimulationStatusDetailsTableModel1 = new SimulationStatusDetailsTableModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -408,18 +309,6 @@ private void handleException(java.lang.Throwable exception) {
 
 
 /**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
-	connPtoP1SetTarget();
-}
-
-/**
  * Initialize the class.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -430,43 +319,17 @@ private void initialize() {
 		setName("SimulationStatusDetailsPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(692, 609);
-		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
-		add(getJPanel1(), "North");
-		initConnections();
-		connEtoC2();
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
+		add(getJPanel1(), BorderLayout.NORTH);
+		
+		addPropertyChangeListener(ivjEventHandler);
+		getScrollPaneTable().setModel(getSimulationStatusDetailsTableModel1());
+		getScrollPaneTable().createDefaultColumnsFromModel();
+		simulationStatusDetailsPanel_Initialize();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		SimulationStatusDetailsPanel aSimulationStatusDetailsPanel;
-		aSimulationStatusDetailsPanel = new SimulationStatusDetailsPanel();
-		frame.setContentPane(aSimulationStatusDetailsPanel);
-		frame.setSize(aSimulationStatusDetailsPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.setVisible(true);
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * Sets the simulationStatusDetails property (cbit.vcell.client.desktop.simulation.SimulationStatusDetails) value.
@@ -484,7 +347,7 @@ public void setSimulationStatusDetails(SimulationStatusDetails simulationStatusD
  * Comment
  */
 public void simulationStatusDetailsPanel_Initialize() {
-	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new org.vcell.util.gui.DateRenderer());
+	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new DateRenderer());
 	return;
 }
 
@@ -497,7 +360,7 @@ public void simulationStatusDetailsPanel_SimulationStatusDetails(cbit.vcell.clie
 		return;
 	}
 	
-	cbit.vcell.solver.Simulation sim = simStatusDetails.getSimulation();
+	Simulation sim = simStatusDetails.getSimulation();
 	getNameTextField().setText(sim.getName());
 	getIDTextField().setText("" + (sim.getKey() != null ? sim.getKey().toString() : "")+
 			(sim.getSimulationVersion() != null &&
@@ -505,7 +368,7 @@ public void simulationStatusDetailsPanel_SimulationStatusDetails(cbit.vcell.clie
 				?" (parentSimRef="+sim.getSimulationVersion().getParentSimulationReference().toString()+")"
 				:"")
 	);
-	getSolverTextField().setText("" + sim.getSolverTaskDescription().getSolverDescription().getDisplayLabel());
+	getSolverTextField().setText(sim.getSolverTaskDescription().getSolverDescription().getDisplayLabel());
 	return;
 }
 

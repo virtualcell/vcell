@@ -12,6 +12,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 
@@ -103,6 +104,10 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessE
  */
 protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws DataAccessException {
 	return getDataManager().getSimDataBlock(varName, time);
+}
+
+public DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException {
+	return getDataManager().getDataProcessingOutput();
 }
 
 

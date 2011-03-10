@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.simulation;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
@@ -17,7 +16,6 @@ public class SimulationStatusDetailsTableModel extends javax.swing.table.Abstrac
 	private final static int COLUMN_STARTDATE = 5;
 	private final static int COLUMN_ENDDATE = 6;
 	
-	private final static int NUM_COLUMNS = 8;
 	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date"};
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
@@ -125,7 +123,7 @@ public Object getValueAt(int row, int col) {
 		switch (col) {			
 			case COLUMN_SCANINDEX: {
 				if (jobStatus == null) {
-					return null;
+					return row;
 				}
 				return new Integer(jobStatus.getJobIndex());
 			}
