@@ -46,6 +46,10 @@ public class PCRParameter {
 		public Q(String q) { super("q", q); }		
 	}
 
+	public static class MaxHits extends PCRParameter { 
+		public MaxHits(int maxHits) { super("maxHits", ""+maxHits); }		
+	}
+
 	public static class Output extends PCRParameter { 
 		public Output(String output) { super("output", output); } 
 		

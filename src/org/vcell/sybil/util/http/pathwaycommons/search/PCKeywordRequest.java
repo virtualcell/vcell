@@ -27,6 +27,7 @@ public class PCKeywordRequest extends PathwayCommonsRequest {
 		super(PCRParameter.CmdVersion.search); 
 		keyword = keywordNew;
 		paras().add(new PCRParameter.Q(keyword));
+		paras().add(new PCRParameter.MaxHits(14));
 		paras().add(PCRParameter.Output.xml);
 	}
 

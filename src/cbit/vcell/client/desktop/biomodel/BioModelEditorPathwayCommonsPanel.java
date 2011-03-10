@@ -96,6 +96,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		version,
 		output,
 		q,
+		maxHits,
 		search,
 		get_record_by_cpath_id,
 		
@@ -406,6 +407,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + searchText
+						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 //				System.out.println("url=" + url);
 				URLConnection connection = url.openConnection();
