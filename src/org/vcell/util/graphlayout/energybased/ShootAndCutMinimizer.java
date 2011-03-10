@@ -10,7 +10,7 @@ import org.vcell.util.graphlayout.energybased.EnergySum.Minimizer;
 
 public class ShootAndCutMinimizer implements Minimizer {
 
-	public static final double cut = 0.25;
+	public static final double cut = 0.4;
 	
 	protected Random random = new Random();
 	
@@ -19,7 +19,7 @@ public class ShootAndCutMinimizer implements Minimizer {
 		for(Node node : graph.getNodes()) {
 			double shiftX = ContainedGraphUtil.getRandomShiftX(node, random);
 			double shiftY = ContainedGraphUtil.getRandomShiftY(node, random);
-			while(Math.abs(shiftX) + Math.abs(shiftY) > 0.001) {
+			while(Math.abs(shiftX) + Math.abs(shiftY) > 0.3) {
 				NodesShift nodesShift = new NodesShift.SingleNode(graph, node, shiftX, shiftY);
 				if(energySum.getDifference(nodesShift) < 0) {
 					nodesShift.apply();
