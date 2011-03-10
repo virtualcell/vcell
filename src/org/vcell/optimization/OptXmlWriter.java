@@ -114,9 +114,17 @@ public class OptXmlWriter {
 			
 			ExplicitFitObjectiveFunction explicitFitObjectiveFunction = (ExplicitFitObjectiveFunction)objectiveFunction;
 			objectiveFunctionElement.setAttribute(OptXmlTags.ObjectiveFunctionType_Attr,OptXmlTags.ObjectiveFunctionType_Attr_ExplicitFit);
-			Element expressionElement = new Element(OptXmlTags.Expression_Tag);
-			expressionElement.addContent(explicitFitObjectiveFunction.getFunctionExpression().infix());
-			objectiveFunctionElement.addContent(expressionElement);
+			//add expression list
+			Element expressionListElement = new Element(OptXmlTags.ExpressionList_Tag);
+			objectiveFunctionElement.addContent(expressionListElement);
+			ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = explicitFitObjectiveFunction.getExpressionDataPairs();
+			for(int i=0; i<expDataPairs.length; i++)
+			{
+				Element expressionElement = new Element(OptXmlTags.Expression_Tag);
+				expressionElement.setAttribute(OptXmlTags.ExpRefDataColumnIndex_Attr, expDataPairs[i].getReferenceDataIndex()+"");
+				expressionElement.addContent(expDataPairs[i].getFitFunction().infix());
+				expressionListElement.addContent(expressionElement);
+			}
 			if(explicitFitObjectiveFunction.getReferenceData() instanceof SimpleReferenceData)
 			{
 				Element dataElement = getDataXML((SimpleReferenceData)explicitFitObjectiveFunction.getReferenceData());
@@ -265,7 +273,36 @@ public class OptXmlWriter {
 			// write weights 
 			Element weightRowElement = new Element(OptXmlTags.WeightDatarow_Tag);
 			// add weight type
-			if(refData.getWeights() instanceof TimeWeights)//print weights in multiple rows, each row has one element
+			if(refData.getWeights() instanceof ElementWeights)//print weights in multiple rows, each row has one-to-more elements
+			{
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Element);
+				double[][] weightData = ((ElementWeights)refData.getWeights()).getWeightData();
+				//elementWeights: first dimensin is number of rows, second dimension is number of vars
+				for (int i = 0; i < weightData.length; i ++) {
+					double[] rowData = weightData[i];
+					Element rowElement = new Element(OptXmlTags.Row_Tag);
+					StringBuffer rowText = new StringBuffer();
+					for (int j = 0; j < rowData.length; j++) {
+						rowText.append(rowData[j]+" ");
+					}
+					rowElement.addContent(rowText.toString());
+					weightRowElement.addContent(rowElement);
+				}
+				
+			}
+			else if(refData.getWeights() instanceof VariableWeights) //print weights in one row, the row has one-to-more elements
+			{
+				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Variable);
+				double[] weightData = ((VariableWeights)refData.getWeights()).getWeightData();
+				Element rowElement = new Element(OptXmlTags.Row_Tag);
+				StringBuffer rowText = new StringBuffer();
+				for (int j = 0; j < weightData.length; j++) {
+					rowText.append(weightData[j]+" ");
+				}
+				rowElement.addContent(rowText.toString());
+				weightRowElement.addContent(rowElement);
+			}
+			else//time weights. Print weights in multiple rows, each row has one element
 			{
 				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Time);
 				double[] weightData = ((TimeWeights)refData.getWeights()).getWeightData();
@@ -277,34 +314,7 @@ public class OptXmlWriter {
 					weightRowElement.addContent(rowElement);
 				}
 			}
-			else if(refData.getWeights() instanceof ElementWeights)//print weights in multiple rows, each row has one-more elements
-			{
-				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Element);
-				double[][] weightData = ((ElementWeights)refData.getWeights()).getWeightData();
-				for (int i = 0; i < weightData.length; i ++) {
-					double[] rowData = weightData[i];
-					Element rowElement = new Element(OptXmlTags.Row_Tag);
-					StringBuffer rowText = new StringBuffer();
-					for (int j = 0; j < rowData.length; j++) {
-						rowText.append(rowData[j]+" ");
-					}
-					rowElement.addContent(rowText.toString());
-					weightRowElement.addContent(rowElement);
-				}
-			}
-			else //print weights in one row, the row has one-more elements
-			{
-				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Variable);
-				weightRowElement.setAttribute(OptXmlTags.WeightType_Attr, OptXmlTags.WeightType_Attr_Time);
-				double[] weightData = ((VariableWeights)refData.getWeights()).getWeightData();
-				Element rowElement = new Element(OptXmlTags.Row_Tag);
-				StringBuffer rowText = new StringBuffer();
-				for (int j = 0; j < weightData.length; j++) {
-					rowText.append(weightData[j]+" ");
-				}
-				rowElement.addContent(rowText.toString());
-				weightRowElement.addContent(rowElement);
-			}
+			 
 			refDataElement.addContent(weightRowElement);
 		}
 		return refDataElement;
