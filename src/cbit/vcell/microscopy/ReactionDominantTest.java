@@ -99,7 +99,9 @@ public class ReactionDominantTest
 		double[] weights = new double[]{1.0,1.0};
 		SimpleReferenceData refData = new SimpleReferenceData(colNames, weights, realData);
 		//send to optimization service	
-		optSpec.setObjectiveFunction(new ExplicitFitObjectiveFunction(Fbleached_bleachFastExp.flatten(), refData));
+		ExplicitFitObjectiveFunction.ExpressionDataPair oneExpDataPair= new ExplicitFitObjectiveFunction.ExpressionDataPair(Fbleached_bleachFastExp.flatten(),1);
+		ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{oneExpDataPair};
+		optSpec.setObjectiveFunction(new ExplicitFitObjectiveFunction(expDataPairs, refData));
 		optSpec.setComputeProfileDistributions(true);
 		// Add parameters to the optimizationSpec
 		// get the initial guess to send it to the f() function. ....

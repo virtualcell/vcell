@@ -19,7 +19,7 @@ public class FRAPOptFunctions
 	public static String SYMBOL_KOFF = "k_off";
 	public static String SYMBOL_BWM_RATE = "beta";
 	public static String SYMBOL_I_inibleached = "I_inibleached";
-	public static String FUNC_RECOVERY_BLEACH_REACTION_DOMINANT = SYMBOL_I_inibleached + "+" +SYMBOL_A + "*(1-exp(-1*"+SYMBOL_KOFF+"*"+ReservedSymbol.TIME.getName()+"))" + "*exp(-1*"+ SYMBOL_BWM_RATE+"*"+ ReservedSymbol.TIME.getName() +")";
+	public static String FUNC_RECOVERY_BLEACH_REACTION_DOMINANT = "("+ SYMBOL_I_inibleached + "+" +SYMBOL_A + "*(1-exp(-1*"+SYMBOL_KOFF+"*"+ReservedSymbol.TIME.getName()+")))" + "*exp(-1*"+ SYMBOL_BWM_RATE+"*"+ ReservedSymbol.TIME.getName() +")";
 	public static String SYMBOL_I_inicell = "I_inicell";
 	public static String FUNC_CELL_INTENSITY = SYMBOL_I_inicell + "*(exp(-1*"+SYMBOL_BWM_RATE+"*"+ReservedSymbol.TIME.getName()+"))";
 	
@@ -98,52 +98,6 @@ public class FRAPOptFunctions
 //		System.out.println("best exp:" + offRateResults.getOffRateFitExpression());
 //		System.out.println("error" + getWeightedError(offRateResults.getOffRateFitExpression()));
 		return outputParams;
-	}
-	
-	public double getWeightedError(Expression fitExpression) throws ExpressionException
-	{
-		double weightedError = 0;
-		FRAPData frapData = getExpFrapStudy().getFrapData();
-		int startIndexForRecovery = getExpFrapStudy().getStartingIndexForRecovery();
-		//get normalized experimental data as reference
-		double[] temp_background = frapData.getAvgBackGroundIntensity();
-		//the prebleachAvg has backgroud subtracted.
-		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
-		//temp_fluor has subtracted background and divided by prebleach average.
-		double[] temp_fluor = FRAPDataAnalysis.getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
-		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
-
-		//get nomalized preBleachAverage under bleached area.
-		double preBleachAverage_bleachedArea = 0.0;
-		for (int i = 0; i < startIndexForRecovery; i++) {
-			preBleachAverage_bleachedArea += temp_fluor[i];
-		}
-		preBleachAverage_bleachedArea /= startIndexForRecovery;
-		//average intensity under bleached area. The time points start from the first post bleach
-		double[] fluor = new double[temp_fluor.length-startIndexForRecovery];
-		//Time points stat from the first post bleach
-		double[] time = new double[temp_time.length-startIndexForRecovery];
-		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
-		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
-		
-		//get measurementErrors under bleached area
-		double[] measurementErr_bleached = measurementErrors[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()];
-		
-		//calculate the weighted error
-		for(int i=0; i < time.length; i++)
-		{
-			Expression tempExpression = new Expression(fitExpression);
-			tempExpression.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[i]));
-			double expTimeVal = tempExpression.evaluateConstant();
-			double difference = fluor[i] - expTimeVal;
-			if(bApplyMeasurementError)
-			{
-				difference = difference/measurementErr_bleached[i];
-			}
-			weightedError = weightedError + difference * difference;
-		}
-		
-		return weightedError;
 	}
 	
 	public Expression getRecoveryExpressionWithCurrentParameters(Parameter[] currentParams) throws ExpressionException
@@ -227,7 +181,7 @@ public class FRAPOptFunctions
 				ProfileData profileData = new ProfileData();
 				//add the fixed parameter to profileData, output exp data and opt results
 				Parameter[] newBestParameters = getBestParamters(frapStudy.getFrapData(), null, true);
-				double iniError = getWeightedError(getOffRateResults().getOffRateFitExpression());
+				double iniError = getOffRateResults().getObjectiveFunctionValue();
 				//fixed parameter(make sure parameter shall not be smaller than epsilon)
 				Parameter fixedParam = newBestParameters[j];
 				if(fixedParam.getInitialGuess() == 0)//log function cannot take 0 as parameter
@@ -277,7 +231,7 @@ public class FRAPOptFunctions
 		                                                      paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
 					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), increasedParam, true);
-					double error = getWeightedError(getOffRateResults().getOffRateFitExpression());
+					double error = getOffRateResults().getObjectiveFunctionValue();
 					pde = new ProfileDataElement(increasedParam.getName(), paramLogVal, error, newParameters);
 					profileData.addElement(pde);
 					//check if the we run enough to get confidence intervals(99% @6.635, we plus 10 over the min error)
@@ -342,7 +296,7 @@ public class FRAPOptFunctions
 		                                            paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
 					Parameter[] newParameters = getBestParamters(frapStudy.getFrapData(), decreasedParam, true);
-					double error = getWeightedError(getOffRateResults().getOffRateFitExpression());
+					double error = getOffRateResults().getObjectiveFunctionValue();
 					pde = new ProfileDataElement(decreasedParam.getName(), paramLogVal, error, newParameters);
 					profileData.addElement(0,pde);
 					if(error > (iniError+10))

@@ -101,7 +101,16 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		private Expression offRateFitExpression = null;
 		private Double bleachWhileMonitoringTau = null;
 		private Expression fitBleachWhileMonitorExpression = null;
+		private Double objFuncValue = null;
 		
+		public Double getObjectiveFunctionValue() {
+			return objFuncValue;
+		}
+
+		public void setObjectiveFunctionValue(Double objFuncValue) {
+			this.objFuncValue = objFuncValue;
+		}
+
 		public Double getBleachWhileMonitoringTau() {
 			return bleachWhileMonitoringTau;
 		}
