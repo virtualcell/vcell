@@ -5,7 +5,7 @@ import org.vcell.util.Matchable;
 
 public class ElementWeights implements Weights {
 	double[][] weights = null;
-	
+	//first dimension is number of rows, second dimension is number of columns
 	public ElementWeights(double[][] argElementWeights)
 	{
 		this.weights = argElementWeights;

@@ -35,7 +35,9 @@ public class OptXmlTags {
 	public static final String ModelMapping_Tag = "modelMapping";
 	public static final String ModelMappingDataColumn_Attr = "dataColumn";
 	public static final String ModelMappingWeight_Attr = "weight";
+	public static final String ExpressionList_Tag = "expressionList";
 	public static final String Expression_Tag = "expression";
+	public static final String ExpRefDataColumnIndex_Attr = "referenceDataColIndex";
 
 	public static final String ParameterDescription_Tag = "parameterDescription";
 	public static final String Parameter_Tag = "parameter";

@@ -10,19 +10,38 @@ import cbit.vcell.util.RowColumnResultSet;
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)
  * @author: Jim Schaff
+ * Modified the data structure on March 1st, to take multiple explicitFunctions 
+ * to fit referenceData. the function and the data to be fit are stored in a data 
+ * structure ExpressionDataPair.
  */
 public class ExplicitFitObjectiveFunction extends ObjectiveFunction {
-	private Expression functionExpression = null;
+	private ExpressionDataPair[] funcDataPairs = null;
 	private SimpleReferenceData simpleReferenceData = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2005 2:39:38 PM)
- */
 
-public ExplicitFitObjectiveFunction(Expression fnExp, ReferenceData argReferenceData) {
+public static class ExpressionDataPair 
+{
+	private Expression fitFunction = null;
+	private int referenceDataIndex = -1; 
+	public ExpressionDataPair(Expression fnExp, int refDataIndex) {
+		this.fitFunction = fnExp;
+		this.referenceDataIndex = refDataIndex;
+	}
+	
+	public Expression getFitFunction()
+	{
+		return fitFunction;
+	}
+	public int getReferenceDataIndex()
+	{
+		return referenceDataIndex;
+	}
+}
+
+
+public ExplicitFitObjectiveFunction(ExpressionDataPair[] fnDataPair, ReferenceData argReferenceData) {
 	super();
-	this.functionExpression = fnExp;
+	this.funcDataPairs = fnDataPair;
 	this.simpleReferenceData = new SimpleReferenceData(argReferenceData);
 }
 
@@ -98,34 +117,45 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 	
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (8/5/2005 11:40:58 AM)
- * @return cbit.vcell.opt.ReferenceData
+/*
+ * returns the SimpleReferenceData.
  */
 public ReferenceData getReferenceData() {
 	return simpleReferenceData;
 }
 
+/*
+ * 
+ */
+public ExpressionDataPair[] getExpressionDataPairs()
+{
+	return funcDataPairs;
+}
 
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2005 12:09:38 PM)
- * @return java.lang.String
+/*
+ * get VCML of the ExplicitFitObjectiveFunction.
  */
 public String getVCML() {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("ExplicitFitObjectiveFunction {\n");
-	buffer.append(functionExpression.infix()+"\n");
-
-	buffer.append(simpleReferenceData.getVCML()+"\n");
+	for(int i=0; i<funcDataPairs.length; i++)
+	{
+		buffer.append(funcDataPairs[i].getFitFunction().infix() + "\t" + "DataIndex" + "\t" + funcDataPairs[i].getReferenceDataIndex() + "\n");
+	}
 	
+	buffer.append(simpleReferenceData.getVCML()+"\n");
 	buffer.append("}\n");
 	return buffer.toString();
 }
 
+/*
+ * 
+ */
+public Expression getFunctionExpression(int indexInArray) {
+	return funcDataPairs[indexInArray].getFitFunction();
+}
 
-public Expression getFunctionExpression() {
-	return functionExpression;
+public int getReferenceDataColumnIndex(int indexInArray){
+	return funcDataPairs[indexInArray].getReferenceDataIndex();
 }
 }
