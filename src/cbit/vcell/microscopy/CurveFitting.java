@@ -16,7 +16,9 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
+import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.opt.Weights;
+import cbit.vcell.opt.ExplicitFitObjectiveFunction.ExpressionDataPair;
 import cbit.vcell.opt.solvers.NewOptimizationSolver;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.Expression;
@@ -61,14 +63,15 @@ public class CurveFitting {
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess())};
+
 		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
 		if(weights == null)
 		{
-			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+			optResultSet = solve(modelExp,parameters,normalized_time,normalized_fluor);
 		}
 		else
 		{
-			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor, weights);
+			optResultSet = solve(modelExp, parameters,normalized_time,normalized_fluor, weights);
 		}
 		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
 		paramNames = optSolverResultSet.getParameterNames();
@@ -191,16 +194,21 @@ public class CurveFitting {
 
 	/*
 	 * @para: time, time points since the first post bleach.
-	 * @para: flour, average intensities under bleached region according to time points since the first post bleach.
-	 * @para: inputparam, bleaching while monitoring rate, will be substituted in the model expression.
-	 * @para: outputParam, the array which will pass results back. 
-	 * output: double, return the least objective function error 
+	 * @para: normalized_data, first dimension index 0:average intensities under cell region, first dimension index 1: average intensities under bleached region
+	 * @para: inputparam, index 0:cellROIAvg at time 0(first post bleach). index 1:bleachedROIAvg at time 0(first post bleach).
+	 * @para: outputParam, results for 2 or 3 parameters, depending on if there is any fixed parameter. 
 	 */
-	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam, Double offRate, Weights weights) throws ExpressionException, OptimizationException, IOException
+	public static double fitRecovery_reacKoffRateOnly(double[] time, double[][] normalized_data, double[] inputparam, double[] outputParam, Parameter fixedParameter, Weights weights) throws ExpressionException, OptimizationException, IOException
 	{
-
-		if (time.length!=normalized_fluor.length){
-			throw new RuntimeException("Fluorecence and time arrays must be the same length");
+		if (normalized_data != null && normalized_data.length > 0)
+		{
+			for(int i=0; i<normalized_data.length; i++)
+			{
+			    if(normalized_data[i] != null && time.length != normalized_data[i].length)
+			    {
+				    throw new RuntimeException("Fluorecence and time arrays must be the same length");
+			    }
+			}
 		}
 
 		//normaliztion for time by subtracting the starting time: time[0]
@@ -208,114 +216,140 @@ public class CurveFitting {
 		for (int i = 0; i < time.length; i++){
 			normalized_time[i] = time[i]-time[0];
 		}
-		Expression koffRateExp = null;
+		//initiate variables
 		OptimizationResultSet optResultSet = null;
-		OptSolverResultSet optSolverResultSet = null;
-		String[] paramNames = null;//estimated results' names.
-		double[] paramValues = null;//estimated results' values for output.
-
-		koffRateExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
-		//inputparam[0] is the first post bleach, inputparam[1] is the  bleach while monitoring rate.
-		//substitute first post bleach and bleach while monitoring rate in the off rate expression.
-		double iniBleachedIntensity = inputparam[0];
-		double bleachWhileMonitoringRate = inputparam[1];
-		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(iniBleachedIntensity));
-		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(bleachWhileMonitoringRate));
-		if(offRate != null)
-		{
-			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(offRate));
-		}
-		
+		Expression bwmRateExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
+		Expression koffRateExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+		//get parameters to be estimated(use all of the 3 if there is no fixed parameter. Or 2 out of the 3 if there is a fixed parameter)
+		Parameter bwmParam = new Parameter(FRAPOptFunctions.SYMBOL_BWM_RATE,
+							 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+							 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+							 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+							 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess());
 		Parameter koffParam = new Parameter(FRAPOptFunctions.SYMBOL_KOFF,
-											FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
-											FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
-											FRAPModel.REF_REACTION_OFF_RATE.getScale(),
-											FRAPModel.REF_REACTION_OFF_RATE.getInitialGuess());
+							 FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
+							 FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
+							 FRAPModel.REF_REACTION_OFF_RATE.getScale(),
+							 FRAPModel.REF_REACTION_OFF_RATE.getInitialGuess());
 		Parameter fittingParamA = new Parameter(FRAPOptFunctions.SYMBOL_A, /*binding site concentration is reused to store fitting parameter A, but the name can not be reused*/
-												FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
-												FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
-												FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(),
-												FRAPModel.REF_BS_CONCENTRATION_OR_A.getInitialGuess());
-		//setting parameters to be esitmated
-		Parameter parameters[] = null;
-		if(offRate != null)
+							 FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
+							 FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
+							 FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(),
+							 FRAPModel.REF_BS_CONCENTRATION_OR_A.getInitialGuess());
+		
+		//get column names for reference data to be constructed
+		String[] columnNames = new String[]{ReservedSymbol.TIME.getName(), "cellIntensityAvg", "bleachIntensityAvg"};
+		
+		if(fixedParameter == null)
 		{
-			parameters = new Parameter[]{fittingParamA};
+			//get expression pairs
+			bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
+			ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
+			koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
+			ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
+			ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
+			//get fitting parameter array
+			Parameter[] parameters = new Parameter[]{bwmParam, fittingParamA, koffParam};
+			//solve
+			optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
+			
 		}
 		else
 		{
-			parameters = new Parameter[]{koffParam, fittingParamA};
+			if(fixedParameter != null && fixedParameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+			{
+				//get expression pairs
+				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
+				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParameter.getInitialGuess()));
+				ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
+				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
+				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParameter.getInitialGuess()));
+				ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
+				ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
+				//get fitting parameter array
+				Parameter[] parameters = new Parameter[]{fittingParamA, koffParam};
+				//solve
+				optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
+			}
+			else if(fixedParameter != null && fixedParameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+			{
+				//get expression pairs
+				bwmRateExp = bwmRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(inputparam[0]));
+				ExplicitFitObjectiveFunction.ExpressionDataPair bwmRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(bwmRateExp, 1);
+				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(inputparam[1]));
+				koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(fixedParameter.getInitialGuess()));
+				ExplicitFitObjectiveFunction.ExpressionDataPair koffRateExpDataPair = new ExplicitFitObjectiveFunction.ExpressionDataPair(koffRateExp, 2);
+				ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[]{bwmRateExpDataPair, koffRateExpDataPair};
+				//get fitting parameter array
+				Parameter[] parameters = new Parameter[]{bwmParam, fittingParamA};
+				//solve
+				optResultSet = solve(expDataPairs, parameters, normalized_time, normalized_data, columnNames, weights);
+			}
 		}
-		//estimate parameters by minimizing the errors between function values and reference data
-		optResultSet = solve(koffRateExp.flatten(), parameters, normalized_time, normalized_fluor, weights);
-		
-		optSolverResultSet = optResultSet.getOptSolverResultSet();
-		paramNames = optSolverResultSet.getParameterNames();
-		paramValues = optSolverResultSet.getBestEstimates();
-
-		// copy into "output" buffer from parameter values.
+		//get output parameter values		
+		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
+		String[] paramNames = optSolverResultSet.getParameterNames();
+		double[] paramValues = optSolverResultSet.getBestEstimates();
+		//copy into "output" buffer from parameter values.
 		for (int i = 0; i < paramValues.length; i++) {
 			outputParam[i] = paramValues[i]; 
 		}
-
+		//for debug purpose
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
 		//investigate the return information 
 		processReturnCode(OptimizationSolverSpec.SOLVERTYPE_CFSQP, optSolverResultSet);
-		
-		// construct recovery under bleached region by diffusion only expression
-		Expression fit = new Expression(koffRateExp);
-
-		System.out.println("fit before subsituting parameters:"+fit.infix());
-		
-		// substitute parameter values
-		for (int i = 0; i < paramValues.length; i++) {
-			fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
-		}
-		
-		// undo time shift
-		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
-		
-		// undo fluorescence normalization
-		System.out.println("fit equation after unnorm:" + fit.infix());
-		
-		return fit;
+		//return objective function value
+		return optSolverResultSet.getLeastObjectiveFunctionValue();
 	}
-	
+
+	//legacy method, which takes one explicit function to fit one reference data column (colIndex = 1, index 0 is time column) with no Weights(or considered as the only one dependent variable weight is 1)
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data) throws ExpressionException, OptimizationException, IOException {
 		return CurveFitting.solve(modelExp, parameters, time, data, null);
 	}
-	
+	//legacy method, which taks one explicit function to fit one reference data column (colIndex = 1, index 0 is time column)
+	//if weights is null, set the only one dependent variable weight is 1
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data, Weights weights) throws ExpressionException, OptimizationException, IOException {
-
-		if (time.length!=data.length){
-			throw new RuntimeException("arrays must be the same length");
+		//one fit function and data pair
+		ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs = new ExplicitFitObjectiveFunction.ExpressionDataPair[1];
+		expDataPairs[0] = new ExplicitFitObjectiveFunction.ExpressionDataPair(modelExp, 1);
+		//one column of reference data in two dimensional array
+		double[][] refData = new double[1][];
+		refData[0] = data;
+		//column names
+		String[] colNames = new String[]{ReservedSymbol.TIME.getName(), "intensity"};
+		//weights
+		Weights dataWeights = weights;
+		if(dataWeights == null)
+		{
+			dataWeights = new VariableWeights(new double[]{1.0});
 		}
+		return CurveFitting.solve(expDataPairs, parameters, time, refData, colNames, dataWeights);
+	}
+	
+	public static OptimizationResultSet solve(ExplicitFitObjectiveFunction.ExpressionDataPair[] expDataPairs, Parameter[] parameters, double[] time, double[][] data, String[] colNames, Weights weights) throws ExpressionException, OptimizationException, IOException {
 
 		//choose optimization solver, currently we have Powell and CFSQP 
 		NewOptimizationSolver optService = new NewOptimizationSolver();
 		OptimizationSpec optSpec = new OptimizationSpec();
-		//create simple reference data
-		double[][] realData = new double[2][time.length];
-		for(int i=0; i<time.length; i++)
+		//create simple reference data, columns: t + dataColumns
+		double[][] realData = new double[1 + data.length][time.length];
+		for(int i=0; i<time.length; i++) //add time column
 		{
 			realData[0][i] = time[i];
-			realData[1][i]= data[i];
 		}
-		String[] colNames = new String[]{ReservedSymbol.TIME.getName(), "intensity"};
-		SimpleReferenceData refData = null;
-		if(weights == null)
+		for(int i=0; i<data.length; i++) //add each data column to realData
 		{
-			refData = new SimpleReferenceData(colNames, new double[]{1.0}, realData);
+			for(int j=0; j<time.length; j++)
+			{
+				realData[1+i][j] = data[i][j];
+			}
 		}
-		else
-		{
-			refData = new SimpleReferenceData(colNames, weights, realData);	
-		}
+		SimpleReferenceData refData = new SimpleReferenceData(colNames, weights, realData);	
 		
 		//send to optimization service	
-		optSpec.setObjectiveFunction(new ExplicitFitObjectiveFunction(modelExp, refData));
+		optSpec.setObjectiveFunction(new ExplicitFitObjectiveFunction(expDataPairs, refData));
 
 		double parameterValues[] = new double[parameters.length];
 		for (int i = 0; i < parameters.length; i++){
@@ -331,17 +365,18 @@ public class CurveFitting {
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
 		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
-		
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
 		
-		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
+		//uncomment following statements for debug purpose
+		/*OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
 		String[] paramNames = optSolverResultSet.getParameterNames();
 		double[] paramValues = optSolverResultSet.getBestEstimates();
+		
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
-		
-//		optSolverCallbacks.showStatistics(); //uncomment for debug purpose
+		optSolverCallbacks.showStatistics();*/ 
+
 		return optResultSet;
 	}
 

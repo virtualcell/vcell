@@ -4,9 +4,12 @@ package cbit.vcell.microscopy;
 import java.io.IOException;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.opt.ElementWeights;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.TimeWeights;
+import cbit.vcell.opt.Weights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -69,7 +72,7 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults fitRecovery_diffusionOnly(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException
+	public static FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults fitRecovery_diffusionOnly(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException, IllegalArgumentException
 	{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
@@ -203,8 +206,9 @@ public class FRAPDataAnalysis {
 	/**
 	 * Method fitRecovery2.
 	 * @param frapData, the original image info.
-	 * @param arg_bleachType, the gaussian spot or half cell bleaching types.
-	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
+	 * @param fixedParameter: the fixed parameter from profile likelihood distribution analysis.
+	 * @param measurementError: the measurementError is used as weights for calculating objectiveFunction errors.
+	 * @return FrapDataAnalysisResults.ReactionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
 	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData, Parameter fixedParam, double[][] measurementError) throws ExpressionException, OptimizationException, IOException
@@ -217,95 +221,123 @@ public class FRAPDataAnalysis {
 		double[] temp_background = frapData.getAvgBackGroundIntensity();
 		//the prebleachAvg has backgroud subtracted.
 		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
-		//temp_fluor has subtracted background and divided by prebleach average.
-		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
+		//tempBeachedAverage and tempCellROIAverage have subtracted background and divided by prebleach average. the following array has data for the full time duration.
+		double[] tempBeachedAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); 
+		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
 
-		//get nomalized preBleachAverage under bleached area.
-		double preBleachAverage_bleachedArea = 0.0;
-		for (int i = 0; i < startIndexForRecovery; i++) {
-			preBleachAverage_bleachedArea += temp_fluor[i];
-		}
-		preBleachAverage_bleachedArea /= startIndexForRecovery;
-		//average intensity under bleached area. The time points start from the first post bleach
-		double[] fluor = new double[temp_fluor.length-startIndexForRecovery];
-		//Time points stat from the first post bleach
-		double[] time = new double[temp_time.length-startIndexForRecovery];
-		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
+		//get bleached and cell roi data starting from first post bleach
+		double[] bleachedAverage = new double[tempBeachedAverage.length-startIndexForRecovery];//The time points start from the first post bleach
+		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];//time points start from the first post bleach
+		double[] time = new double[temp_time.length-startIndexForRecovery]; //Time points stat from the first post bleach
+		System.arraycopy(tempBeachedAverage, startIndexForRecovery, bleachedAverage, 0, bleachedAverage.length);
+		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
 		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
 		
+		//initialize reaction off rate analysis results
 		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateAnalysisResults = new FrapDataAnalysisResults.ReactionOnlyAnalysisRestults();
 
-		//curve fitting 
-		double[] inputParamValues = null; //bleaching while monitoring rate
-		double[] outputParamValues = null; // koff rate
-		
-		/*
-		 * to fit Bleach while monitoring rate
-		 */
-		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
-		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];
-		//Cell Avg. points start from the first post bleach
-		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
-		double bleachWhileMonitoringRate = 0;
-		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+		/**curve fitting*/ 
+		//index 0: cell ROI intensity average at time 0, I_cell_ini. index 1: bleached intensity average at time 0, I_bleached_ini
+		double[] inputParamValues = new double[]{cellROIAverage[0], bleachedAverage[0]};
+		double[] outputParamValues = null; // if fixed parameter is null, then outputs are bwm rate, koff rate, fitting parameter A. Otherwise outputs are two out of three.
+		//create data array,first col is cell average, second col is bleached average. 
+		double[][] fitData = new double[2][];
+		fitData[0] = cellROIAverage;
+		fitData[1] = bleachedAverage;
+		//create element weights array, first col is cell data weights, second col is bleached data weights
+		double[][] weightData = new double[time.length][2];
+		double[] cellROIMeasurementError = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()];
+		double[] bleachedROIMeasurementError = measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()];
+		for(int i=0; i<time.length; i++)//elementWeight, first dimension is number of rows(time points), second dimension is number of variables(fitDatasets)
 		{
-			bleachWhileMonitoringRate = fixedParam.getInitialGuess();
+			weightData[i][0] = 1/(cellROIMeasurementError[i]* cellROIMeasurementError[i]);
+			weightData[i][1] = 1/(bleachedROIMeasurementError[i]* bleachedROIMeasurementError[i]);
+		}
+		ElementWeights eleWeights = new ElementWeights(weightData);
+		if(fixedParam == null)
+		{
+			//call curvefitting
+			outputParamValues = new double[3]; //bwmrate, fitting parameter A & reaction off rate
+			double error = CurveFitting.fitRecovery_reacKoffRateOnly(time, fitData, inputParamValues, outputParamValues, fixedParam, eleWeights);
+			//set objective function value
+			offRateAnalysisResults.setObjectiveFunctionValue(error);
+			//set reaction off rate analysis results
+			offRateAnalysisResults.setBleachWhileMonitoringTau(outputParamValues[0]);
+			offRateAnalysisResults.setFittingParamA(outputParamValues[1]);
+			offRateAnalysisResults.setOffRate(outputParamValues[2]);
+			//set cell intensity expression ( only t left in expression)
+			Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
+			cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
+			cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
+			cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+			offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
+			//set bleached region intensity expression ( only t left in expression)
+			Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachedAverage[0]));
+			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
+			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[1]));//subsitute parameter A
+			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(outputParamValues[2]));//reaction off rate
+			bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+			offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
 		}
 		else
 		{
-			outputParamValues = new double[2];
-			//construct cell roi weights -- it is a time weights (time series of cell ROI average intensity).
-			double[] cellROIWeights = new double[time.length];
-			for(int j=0; j<time.length; j++)
+			if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
 			{
-				double weightTemp = 1.0/measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][j];
-				cellROIWeights[j] = weightTemp * weightTemp;
+				outputParamValues = new double[2];//fitting parameter A & reaction off rate
+				double error = CurveFitting.fitRecovery_reacKoffRateOnly(time, fitData, inputParamValues, outputParamValues, fixedParam, eleWeights);
+				//set objective function value
+				offRateAnalysisResults.setObjectiveFunctionValue(error);
+				//set reaction off rate analysis results
+				offRateAnalysisResults.setBleachWhileMonitoringTau(fixedParam.getInitialGuess());
+				offRateAnalysisResults.setFittingParamA(outputParamValues[0]);
+				offRateAnalysisResults.setOffRate(outputParamValues[1]);
+				//set cell intensity expression ( only t left in expression)
+				Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
+				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
+				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParam.getInitialGuess()));//subsitute bwmRate
+				cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
+				//set bleached region intensity expression ( only t left in expression)
+				Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachedAverage[0]));
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParam.getInitialGuess()));//subsitute bwmRate
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[0]));//subsitute parameter A
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(outputParamValues[1]));//reaction off rate
+				bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
 			}
-			TimeWeights cellTimeWeights = new TimeWeights(cellROIWeights);
-			Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues, cellTimeWeights);
-			offRateAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
-			bleachWhileMonitoringRate = outputParamValues[0];
+			else if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
+			{
+				outputParamValues = new double[2];//bwmRate & fitting parameter A
+				double error = CurveFitting.fitRecovery_reacKoffRateOnly(time, fitData, inputParamValues, outputParamValues, fixedParam, eleWeights);
+				//set objective function value
+				offRateAnalysisResults.setObjectiveFunctionValue(error);
+				//set reaction off rate analysis results
+				offRateAnalysisResults.setBleachWhileMonitoringTau(outputParamValues[0]);
+				offRateAnalysisResults.setFittingParamA(outputParamValues[1]);
+				offRateAnalysisResults.setOffRate(fixedParam.getInitialGuess());
+				//set cell intensity expression ( only t left in expression)
+				Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
+				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
+				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
+				cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
+				//set bleached region intensity expression ( only t left in expression)
+				Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(bleachedAverage[0]));
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[1]));//subsitute parameter A
+				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(fixedParam.getInitialGuess()));//reaction off rate
+				bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
+			}
+			else
+			{
+				throw new OptimizationException("Unknown fixed parameter:" + fixedParam.getName());
+			}
 		}
-		offRateAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
-		
-		/*
-		 * to fit reaction koff rate expression
-		 */
-		inputParamValues = new double[]{fluor[0], bleachWhileMonitoringRate}; // the input parameter is the initial intensity under bleached area(first post bleach), bleach while monitoring rate
-		Expression fitExpression = null;
-		double koffRate = 0;
-		double fittingParamA = 0;
-		//construct bleached roi weights --first column t, second column bleached region intensity Avg.
-		double[] bleachedROIWeights = new double[time.length];
-		for(int j=0; j<time.length; j++)
-		{
-			double weightTemp = 1.0/measurementError[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][j];
-			bleachedROIWeights[j] = weightTemp * weightTemp;
-		}
-		TimeWeights bleachedTimeWeights = new TimeWeights(bleachedROIWeights);
-		
-		if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
-		{
-			outputParamValues = new double[1];// the array is used to get fitting parameter A back.
-			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, new Double(fixedParam.getInitialGuess()), bleachedTimeWeights);
-			//get reaction off rate, fitting parameter
-			koffRate = fixedParam.getInitialGuess();
-			fittingParamA = outputParamValues[0];
-		}
-		else
-		{
-			outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
-			fitExpression = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues, null, bleachedTimeWeights);
-			//get reaction off rate, fitting parameter
-			koffRate = outputParamValues[0];
-			fittingParamA = outputParamValues[1];
-		}
-		
-		//set reaction only off rate analysis results
-		offRateAnalysisResults.setOffRate(koffRate);
-		offRateAnalysisResults.setFittingParamA(fittingParamA);
-		offRateAnalysisResults.setOffRateFitExpression(fitExpression);
 		
 		return offRateAnalysisResults;
 	}
