@@ -75,16 +75,13 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
 import org.vcell.sybil.rdf.NameSpace;
+import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayProducerBiopax3 {
 
 	public Element biopaxElement = null;
 	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
 	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
-	private final String schemaString = new String("http://www.w3.org/2001/XMLSchema#string");
-	private final String schemaInt = new String("http://www.w3.org/2001/XMLSchema#int");
-	private final String schemaBoolean = new String("http://www.w3.org/2001/XMLSchema#boolean");
-	private final String schemaDouble = new String("http://www.w3.org/2001/XMLSchema#double");
 
 	private HashSet<BioPaxObject> objectsPrinted = new HashSet<BioPaxObject>();
 	private HashSet<BioPaxObject> objectsToPrint = new HashSet<BioPaxObject>();
@@ -254,15 +251,6 @@ public class PathwayProducerBiopax3 {
 		}
 		return;
 	}
-
-	private void showUnexpected(BioPaxObject bpObject) {
-	}
-
-//	private Element addObjectSequenceLocation(BioPaxObject bpObject, String className) {
-//		Element element = new Element(className);
-//		
-//		return element;
-//	}
 
 	private Element addObjectScore(BioPaxObject bpObject, String className) {
 		Element element = new Element(className, bp);

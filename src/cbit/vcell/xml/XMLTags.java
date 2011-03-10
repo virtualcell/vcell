@@ -491,5 +491,9 @@ public class XMLTags {
 	
 
 	public final static String PathwayModelTag	= "pathwayModel";
+	public final static String RelationshipModelTag	= "relationshipModel";
+	public static final String relationshipObjectTag = "RelationshipObject";
+	public static final String bioPaxObjectIdTag = "bioPaxObjectID";
+	public static final String bioModelObjectIdTag = "bioModelObjectID";
 
 }

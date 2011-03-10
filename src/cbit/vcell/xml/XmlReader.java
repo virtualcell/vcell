@@ -14,6 +14,8 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
+import org.vcell.relationship.RelationshipModel;
+import org.vcell.relationship.persistence.RelationshipReader;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
@@ -198,6 +200,9 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
+import static org.vcell.pathway.PathwayXMLHelper.*;
+
+
 /**
  * This class implements the translation of XML data into Java Vcell objects..
  * Creation date: (7/17/2000 12:22:50 PM)
@@ -396,7 +401,7 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 			biomodel.populateVCMetadata(bMetaDataPopulated);
 		}
 	}
-	Element pathwayElement = param.getChild(XMLTags.PathwayModelTag,vcNamespace);
+	Element pathwayElement = param.getChild(XMLTags.PathwayModelTag, vcNamespace);
 	if (pathwayElement!=null){
 		Element rdfElement = pathwayElement.getChild(XMLRDF.tagRDF, XMLRDF.nsRDF);
 		if (rdfElement!=null){
@@ -406,6 +411,18 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 			biomodel.getPathwayModel().merge(pathwayModel);
 		} else {
 			throw new XmlParseException("expecting RDF element as child of pathwayModel within VCML document");
+		}
+	}
+	
+	Element relationshipElement = param.getChild(XMLTags.RelationshipModelTag, vcNamespace);
+	if (relationshipElement!=null){
+		Element rmnsElement = relationshipElement.getChild("RMNS", vcNamespace);
+		if (rmnsElement!=null){
+			RelationshipReader relationshipReader = new RelationshipReader();
+			RelationshipModel relationshipModel = relationshipReader.parse(rmnsElement, biomodel);
+			biomodel.getRelationshipModel().merge(relationshipModel);
+		} else {
+//			throw new XmlParseException("expecting RMNS element as child of pathwayModel within VCML document");
 		}
 	}
 	

@@ -20,6 +20,8 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayProducerBiopax3;
+import org.vcell.relationship.RelationshipModel;
+import org.vcell.relationship.persistence.RelationshipProducer;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.Coordinate;
@@ -40,6 +42,7 @@ import cbit.image.VCPixelClass;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
@@ -180,6 +183,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
+import static org.vcell.pathway.PathwayXMLHelper.*;
 
 /**
  * This class concentrates all the XML production code from Java objects.
@@ -448,9 +452,13 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	if (param.getVersion() != null) {
 		biomodelnode.addContent( getXML(param.getVersion(), param.getName(), param.getDescription()) );
 	}
-	//Add Database Metadata (Version) information
+	//Add bioPAX and relationship information
 	if (param.getPathwayModel() != null) {
 		biomodelnode.addContent(getXML(param.getPathwayModel()));
+	}
+	RelationshipModel rm = param.getRelationshipModel();
+	if (rm != null) {
+		biomodelnode.addContent(getXML(rm, param));
 	}
 
 	biomodelnode.addContent(XMLMetaDataWriter.getElement(param.getVCMetaData(), param));
@@ -471,6 +479,17 @@ private Element getXML(PathwayModel pathwayModel) {
 
 	pathwayElement.addContent(rootElement);
 	return pathwayElement;
+}
+private Element getXML(RelationshipModel relationshipModel, IdentifiableProvider provider) {
+	Element relationshipElement = new Element(XMLTags.RelationshipModelTag);
+	String biopaxVersion = "3.0";	// we'll use biopax version here
+	Element rootElement = new Element("RMNS");
+	rootElement.setAttribute("version", biopaxVersion);
+	
+	RelationshipProducer xmlProducer = new RelationshipProducer();
+	xmlProducer.getXML(relationshipModel, rootElement, provider);
+	relationshipElement.addContent(rootElement);
+	return relationshipElement;
 }
 
 

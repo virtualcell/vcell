@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.util.BeanUtils;
@@ -28,7 +29,6 @@ import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
@@ -440,6 +440,15 @@ public SimulationContext[] getSimulationContexts() {
  */
 public SimulationContext getSimulationContext(int index) {
 	return getSimulationContexts()[index];
+}
+
+public SimulationContext getSimulationContexts(String name) {
+	for (SimulationContext simContext : fieldSimulationContexts){
+		if (simContext.getName().equals(name)){
+			return simContext;
+		}
+	}
+	return null;
 }
 
 
@@ -946,6 +955,14 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 }
 
 public Identifiable getIdentifiableObject(VCID vcid) {
+	if (vcid.getClassName().equals("BioPaxObject")){
+		String rdfId = vcid.getLocalName();
+		return getPathwayModel().findBioPaxObject(rdfId);
+	}
+	if (vcid.getClassName().equals("SpeciesContext")){
+		String localName = vcid.getLocalName();
+		return getModel().getSpeciesContext(localName);
+	}
 	if (vcid.getClassName().equals("Species")){
 		String localName = vcid.getLocalName();
 		return getModel().getSpecies(localName);
@@ -958,6 +975,10 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getModel().getReactionStep(localName);
 	}
+//	if (vcid.getClassName().equals("Application")){
+//		String localName = vcid.getLocalName();
+//		return getSimulationContexts(localName);
+//	}
 	if (vcid.getClassName().equals("BioModel")){
 		return this;
 	}
@@ -967,7 +988,10 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 public VCID getVCID(Identifiable identifiable) {
 	String localName;
 	String className;
-	if (identifiable instanceof Species){
+	if (identifiable instanceof SpeciesContext){
+		localName = ((SpeciesContext)identifiable).getName();
+		className = "SpeciesContext";
+	}else if (identifiable instanceof Species){
 		localName = ((Species)identifiable).getCommonName();
 		className = "Species";
 	}else if (identifiable instanceof Structure){
@@ -979,6 +1003,12 @@ public VCID getVCID(Identifiable identifiable) {
 	}else if (identifiable instanceof BioModel){
 		localName = ((BioModel)identifiable).getName();
 		className = "BioModel";
+//	}else if (identifiable instanceof SimulationContext){
+//		localName = ((SimulationContext)identifiable).getName();
+//		className = "Application";
+	}else if (identifiable instanceof BioPaxObject){
+		localName = ((BioPaxObject)identifiable).getID();
+		className = "BioPaxObject";
 	}else{
 		throw new RuntimeException("unsupported Identifiable class");
 	}
@@ -1001,6 +1031,9 @@ public Set<Identifiable> getAllIdentifiables() {
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getSpecies()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
+//	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
+	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
+	allIdenfiables.addAll(Arrays.asList(biopaxObjects.toArray(new BioPaxObject[biopaxObjects.size()])));
 	allIdenfiables.add(this);
 	return allIdenfiables;
 }
