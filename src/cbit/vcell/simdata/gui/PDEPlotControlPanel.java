@@ -600,7 +600,9 @@ private void filterVariableNames(){
 				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
 				ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
 				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
-					DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+					DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+					DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
+					System.arraycopy(originalDataIdentifierArr, 0, dataIdentifierArr, 0, originalDataIdentifierArr.length);
 					Arrays.sort(dataIdentifierArr, new Comparator<DataIdentifier>(){
 						public int compare(DataIdentifier o1, DataIdentifier o2) {
 							int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
