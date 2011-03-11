@@ -544,6 +544,7 @@ private void refreshButtonsLax() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	// newButton always available...
 	copyButton.setEnabled(selections.length > 0);
+	statusDetailsButton.setEnabled(selections.length > 0);
 	boolean bEditable = false;
 	if (selections.length==1){
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[0]]);
