@@ -615,6 +615,7 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 		fieldSimulationWorkspace.addPropertyChangeListener(ivjEventHandler);
 	}
 	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);
+	refreshButtonsLax();
 }
 
 
