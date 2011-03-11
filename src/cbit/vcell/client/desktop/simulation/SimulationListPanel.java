@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -12,15 +13,13 @@ import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
@@ -28,6 +27,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -44,7 +44,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
-	private JPanel ivjButtonPanel = null;
+	private JToolBar toolBar = null;
 	private JButton ivjEditButton = null;
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
@@ -56,10 +56,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
 	private JButton moreActionsButton = null;
-	private JPopupMenu popupMenuMoreAction = null;
-//	private JMenuItem menuItemCopy = new JMenuItem("Copy");
-	private JMenuItem menuItemStop = new JMenuItem("Stop");
-	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
+	private JButton stopButton;
+	private JButton statusDetailsButton;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, 
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
@@ -74,14 +72,12 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				deleteSimulations();
 			} else if (e.getSource() == getRunButton()) {
 				runSimulations();
-			} else if (e.getSource() == menuItemStop) {
+			} else if (e.getSource() == stopButton) {
 				stopSimulations();
 			} else if (e.getSource() == getResultsButton()) {
 				showSimulationResults();
-			} else if (e.getSource() == menuItemStatusDetails) {
+			} else if (e.getSource() == statusDetailsButton) {
 				showSimulationStatusDetails();
-			} else if (e.getSource() == moreActionsButton) {
-				getPopupMenuMore().show(moreActionsButton, 0, moreActionsButton.getHeight());
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -98,9 +94,6 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 			
 		}
 		public void mouseClicked(MouseEvent e) {
-			if (e.getSource() == getMoreActionsButton()) { 
-				getPopupMenuMore().show(e.getComponent(), e.getX(), e.getY());
-			}			
 		}
 		public void mousePressed(MouseEvent e) {
 		}
@@ -196,26 +189,35 @@ private void editSimulation() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getButtonPanel() {
-	if (ivjButtonPanel == null) {
+private javax.swing.JToolBar getToolBar() {
+	if (toolBar == null) {
 		try {
-			ivjButtonPanel = new javax.swing.JPanel();
-			ivjButtonPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
-			ivjButtonPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-			ivjButtonPanel.setPreferredSize(new Dimension(750, 40));
-			ivjButtonPanel.setName("ButtonPanel");
+			toolBar = new javax.swing.JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.setAlignmentX(Component.RIGHT_ALIGNMENT);
+			toolBar.setAlignmentY(Component.TOP_ALIGNMENT);
+			toolBar.setPreferredSize(new Dimension(750, 40));
+			toolBar.setName("ButtonPanel");
 			FlowLayout fl = new java.awt.FlowLayout();
 			fl.setVgap(5);
-			ivjButtonPanel.setLayout(fl);
-			copyButton = new JButton("Copy");
+			toolBar.setLayout(fl);
+			copyButton = new JButton("", VCellIcons.copySimIcon);
+			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
-			getButtonPanel().add(getNewButton(), getNewButton().getName());
-			getButtonPanel().add(getEditButton(), getEditButton().getName());
-			getButtonPanel().add(copyButton);
-			getButtonPanel().add(getDeleteButton(), getDeleteButton().getName());
-			getButtonPanel().add(getRunButton(), getRunButton().getName());
-			getButtonPanel().add(getResultsButton(), getResultsButton().getName());
-			getButtonPanel().add(getMoreActionsButton(), getMoreActionsButton().getName());
+			stopButton = new JButton("", VCellIcons.stopSimIcon);
+			stopButton.setToolTipText("Stop Simulation");
+			stopButton.addActionListener(ivjEventHandler);
+			statusDetailsButton = new JButton("", VCellIcons.statusDetailscon);
+			statusDetailsButton.setToolTipText("Simulation Status Details...");
+			statusDetailsButton.addActionListener(ivjEventHandler);
+			toolBar.add(getNewButton(), getNewButton().getName());
+			toolBar.add(copyButton);
+			toolBar.add(getDeleteButton(), getDeleteButton().getName());
+			toolBar.add(getEditButton(), getEditButton().getName());
+			toolBar.add(getRunButton(), getRunButton().getName());
+			toolBar.add(stopButton);
+			toolBar.add(getResultsButton(), getResultsButton().getName());
+			toolBar.add(statusDetailsButton);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -224,7 +226,7 @@ private javax.swing.JPanel getButtonPanel() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjButtonPanel;
+	return toolBar;
 }
 
 /**
@@ -235,9 +237,9 @@ private javax.swing.JPanel getButtonPanel() {
 private javax.swing.JButton getEditButton() {
 	if (ivjEditButton == null) {
 		try {
-			ivjEditButton = new javax.swing.JButton();
+			ivjEditButton = new javax.swing.JButton("", VCellIcons.editSimIcon);
 			ivjEditButton.setName("EditButton");
-			ivjEditButton.setText("Edit");
+			ivjEditButton.setToolTipText("Edit Simulation");
 			ivjEditButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -258,9 +260,9 @@ private javax.swing.JButton getEditButton() {
 private javax.swing.JButton getNewButton() {
 	if (ivjNewButton == null) {
 		try {
-			ivjNewButton = new javax.swing.JButton();
+			ivjNewButton = new javax.swing.JButton("", VCellIcons.newSimIcon);
 			ivjNewButton.setName("NewButton");
-			ivjNewButton.setText("New");
+			ivjNewButton.setToolTipText("New Simulation");
 			ivjNewButton.setEnabled(true);
 			// user code begin {1}
 			// user code end
@@ -282,9 +284,9 @@ private javax.swing.JButton getNewButton() {
 private javax.swing.JButton getResultsButton() {
 	if (ivjResultsButton == null) {
 		try {
-			ivjResultsButton = new javax.swing.JButton();
+			ivjResultsButton = new javax.swing.JButton("", VCellIcons.resultsIcon);
 			ivjResultsButton.setName("ResultsButton");
-			ivjResultsButton.setText("Results");
+			ivjResultsButton.setToolTipText("Simulation Results");
 			ivjResultsButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -306,9 +308,9 @@ private javax.swing.JButton getResultsButton() {
 private javax.swing.JButton getRunButton() {
 	if (ivjRunButton == null) {
 		try {
-			ivjRunButton = new javax.swing.JButton();
+			ivjRunButton = new javax.swing.JButton("", VCellIcons.runSimIcon);
 			ivjRunButton.setName("RunButton");
-			ivjRunButton.setText("Run");
+			ivjRunButton.setToolTipText("Run Simulation");
 			ivjRunButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -324,9 +326,9 @@ private javax.swing.JButton getRunButton() {
 private javax.swing.JButton getDeleteButton() {
 	if (ivjDeleteButton == null) {
 		try {
-			ivjDeleteButton = new javax.swing.JButton();
+			ivjDeleteButton = new javax.swing.JButton("", VCellIcons.delSimIcon);
 			ivjDeleteButton.setName("DeleteButton");
-			ivjDeleteButton.setText("Delete");
+			ivjDeleteButton.setToolTipText("Delete Simulation");
 			ivjDeleteButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -434,14 +436,11 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	getNewButton().addActionListener(ivjEventHandler);
 	getEditButton().addActionListener(ivjEventHandler);
-	copyButton.addActionListener(ivjEventHandler);
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
-	menuItemStop.addActionListener(ivjEventHandler);
 	getResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	menuItemStatusDetails.addActionListener(ivjEventHandler);
 	
 	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
@@ -477,8 +476,8 @@ private void initialize() {
 		setSize(750, 560);
 						
 		setLayout(new BorderLayout());
+		add(getToolBar(), BorderLayout.SOUTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
-		add(getButtonPanel(), BorderLayout.SOUTH);
 		
 		initConnections();
 		getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -493,6 +492,8 @@ private void initialize() {
  */
 public static void main(java.lang.String[] args) {
 	try {
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		
 		JFrame frame = new javax.swing.JFrame("SimulationListPanel");
 		SimulationListPanel aSimulationListPanel;
 		aSimulationListPanel = new SimulationListPanel();
@@ -565,7 +566,7 @@ private void refreshButtonsLax() {
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
-	menuItemStop.setEnabled(bStoppable);
+	stopButton.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
 }
 
@@ -657,18 +658,6 @@ private void stopSimulations() {
 	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
-
-	private JPopupMenu getPopupMenuMore() {
-		if (popupMenuMoreAction == null) {
-			popupMenuMoreAction = new JPopupMenu();
-//			popupMenuMoreAction.add(menuItemCopy);
-			popupMenuMoreAction.add(new JSeparator());
-			popupMenuMoreAction.add(menuItemStop);
-			popupMenuMoreAction.add(menuItemStatusDetails);
-		}
-		
-		return popupMenuMoreAction;
-	}
 	
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {

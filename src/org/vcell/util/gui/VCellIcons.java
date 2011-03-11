@@ -28,6 +28,16 @@ public abstract class VCellIcons {
 	private static Icon outputFunctionIcon = null;
 	private static BufferedImage jFrameIconImage = null;
 	
+	// simulation
+	public final static Icon newSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_new.gif"));
+	public final static Icon copySimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_copy.gif"));
+	public final static Icon delSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_del.gif"));
+	public final static Icon editSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_edit.gif"));
+	public final static Icon runSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_run.gif"));
+	public final static Icon stopSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_stop.gif"));
+	public final static Icon resultsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_results.jpg"));
+	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
+	
 	public static Icon getOldOutputFunctionIcon() {
 		if (oldOutputFunctionIcon == null) {
 			oldOutputFunctionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/old_function_icon.png"));
