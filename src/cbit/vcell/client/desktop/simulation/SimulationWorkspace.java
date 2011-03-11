@@ -52,7 +52,6 @@ public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private ClientSimManager clientSimManager = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Simulation[] fieldSimulations = null;
-	private JProgressBar[] statusBars = null;
 
 /**
  * Insert the method's description here.
@@ -424,23 +423,7 @@ public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -450,7 +433,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (6/7/2004 12:41:27 PM)
  * @return cbit.vcell.client.ClientSimManager
  */
-public cbit.vcell.client.ClientSimManager getClientSimManager() {
+public ClientSimManager getClientSimManager() {
 	return clientSimManager;
 }
 
@@ -640,7 +623,7 @@ public cbit.vcell.document.SimulationOwner getSimulationOwner() {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -662,54 +645,6 @@ public Simulation getSimulations(int index) {
 SimulationStatus getSimulationStatus(Simulation simulation) {
 	return getClientSimManager().getSimulationStatus(simulation);
 }
-
-
-/**
- * Comment
- */
-Object getSimulationStatusDisplay(Simulation simulation) {
-	int index = -1;
-	if (getSimulations() == null) {
-		return null;
-	} else {
-		for (int i = 0; i < getSimulations().length; i++){
-			if (getSimulations()[i] == simulation) {
-				index = i;
-				break;
-			}
-		}
-	}
-	if (index == -1) {
-		return null;
-	} else {
-		SimulationStatus simStatus = getClientSimManager().getSimulationStatus(simulation);
-		boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
-								  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
-		if (displayProgress){
-			double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
-			getStatusBars()[index].setValue((int)(progress * 100));
-			if (simStatus.isFailed()) {
-				getStatusBars()[index].setString("One or more jobs failed");
-			} else {
-				getStatusBars()[index].setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
-			}
-			return getStatusBars()[index];
-		} else {
-			return simStatus.getDetails();
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/10/2004 3:03:08 AM)
- * @return javax.swing.JProgressBar[]
- */
-private javax.swing.JProgressBar[] getStatusBars() {
-	return statusBars;
-}
-
 
 /**
  * The hasListeners method was generated to support the propertyChange field.
@@ -788,29 +723,8 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 public void setSimulations(final Simulation[] simulations) {
 	Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
-	if (simulations == null) {
-		setStatusBars(null);
-	} else {
-		setStatusBars(new JProgressBar[simulations.length]);
-		for (int i = 0; i < getStatusBars().length; i++){
-			JProgressBar bar = new JProgressBar();
-			bar.setStringPainted(true);
-			getStatusBars()[i] = bar;
-		}
-	}
 	firePropertyChange("simulations", oldValue, simulations);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/10/2004 3:03:08 AM)
- * @param newStatusBars javax.swing.JProgressBar[]
- */
-private void setStatusBars(javax.swing.JProgressBar[] newStatusBars) {
-	statusBars = newStatusBars;
-}
-
 
 /**
  * Comment

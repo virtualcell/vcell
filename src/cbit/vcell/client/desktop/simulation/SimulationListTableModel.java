@@ -1,10 +1,18 @@
 package cbit.vcell.client.desktop.simulation;
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.JProgressBar;
+import javax.swing.JTable;
+import javax.swing.JToolTip;
+
+import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -16,6 +24,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -34,11 +43,31 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
 	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
 
+	private class SimulationStatusCellRenderer extends DefaultScrollTableCellRenderer {
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			Object obj = getSimulationStatusDisplay(row);
+			if (obj instanceof JProgressBar) {
+				return (JProgressBar)obj;
+			}
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+				row, column);
+			if (value instanceof SimulationStatus) {
+				setText(obj.toString());
+				String details = ((SimulationStatus) value).getDetails();
+				setToolTipText(details);
+			}
+			return this;
+		}
+	}
 /**
  * SimulationListTableModel constructor comment.
  */
 public SimulationListTableModel(ScrollTable table) {
 	super(table, columnNames);
+	table.setDefaultRenderer(SimulationStatus.class, new SimulationStatusCellRenderer());
 	addPropertyChangeListener(this);
 }
 
@@ -66,6 +95,32 @@ private SimulationWorkspace getSimulationWorkspace() {
 }
 
 /**
+ * Comment
+ */
+Object getSimulationStatusDisplay(int row) {
+	Simulation simulation = getValueAt(row);
+	SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
+	boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
+							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
+	if (displayProgress){
+		double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
+		JProgressBar progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
+		progressBar.setValue((int)(progress * 100));
+		if (simStatus.isFailed()) {
+			progressBar.setString("One or more jobs failed");
+		} else {
+			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
+		}
+		return progressBar;
+	} else if (simStatus.isFailed()) {
+		return simStatus.getStatusString();
+	} else {
+		return simStatus.getDetails();
+	}	
+}
+
+/**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int column) {
@@ -86,7 +141,7 @@ public Object getValueAt(int row, int column) {
 					return simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
 				} 
 				case COLUMN_STATUS: {
-					return getSimulationWorkspace().getSimulationStatusDisplay(simulation);
+					return getSimulationWorkspace().getSimulationStatus(simulation);
 				} 
 				case COLUMN_RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
@@ -260,6 +315,8 @@ public boolean isSortable(int col) {
 @Override
 public Class<?> getColumnClass(int columnIndex) {
 	switch (columnIndex) {
+	case COLUMN_STATUS:
+		return SimulationStatus.class;
 	case COLUMN_ENDTIME:
 		return Double.class;
 	case COLUMN_OUTPUT:
