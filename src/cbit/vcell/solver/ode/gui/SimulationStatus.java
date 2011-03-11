@@ -184,7 +184,7 @@ public Double getProgressAt(int index) {
  * Creation date: (6/25/2001 1:22:22 PM)
  * @return java.lang.String
  */
-private String getStatusString() {
+public String getStatusString() {
 	return STATUS_NAMES[status];
 }
 

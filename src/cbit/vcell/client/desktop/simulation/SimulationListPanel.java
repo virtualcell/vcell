@@ -18,6 +18,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolTip;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
@@ -25,6 +26,7 @@ import javax.swing.table.TableCellEditor;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -44,6 +46,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JPanel ivjButtonPanel = null;
 	private JButton ivjEditButton = null;
+	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
@@ -54,7 +57,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private SimulationWorkspace fieldSimulationWorkspace = null;
 	private JButton moreActionsButton = null;
 	private JPopupMenu popupMenuMoreAction = null;
-	private JMenuItem menuItemCopy = new JMenuItem("Copy");
+//	private JMenuItem menuItemCopy = new JMenuItem("Copy");
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
 	
@@ -65,7 +68,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				newSimulation();
 			} else if (e.getSource() == SimulationListPanel.this.getEditButton()) {
 				editSimulation();
-			} else if (e.getSource() == menuItemCopy) {
+			} else if (e.getSource() == copyButton) {
 				copySimulations();
 			} else if (e.getSource() == getDeleteButton()) { 
 				deleteSimulations();
@@ -204,8 +207,11 @@ private javax.swing.JPanel getButtonPanel() {
 			FlowLayout fl = new java.awt.FlowLayout();
 			fl.setVgap(5);
 			ivjButtonPanel.setLayout(fl);
+			copyButton = new JButton("Copy");
+			copyButton.addActionListener(ivjEventHandler);
 			getButtonPanel().add(getNewButton(), getNewButton().getName());
 			getButtonPanel().add(getEditButton(), getEditButton().getName());
+			getButtonPanel().add(copyButton);
 			getButtonPanel().add(getDeleteButton(), getDeleteButton().getName());
 			getButtonPanel().add(getRunButton(), getRunButton().getName());
 			getButtonPanel().add(getResultsButton(), getResultsButton().getName());
@@ -340,7 +346,14 @@ private javax.swing.JButton getDeleteButton() {
 private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new ScrollTable();
+			ivjScrollPaneTable = new ScrollTable() {
+				@Override
+				public JToolTip createToolTip() {
+					MultiLineToolTip tip = new MultiLineToolTip();
+			        tip.setComponent(this);
+			        return tip;
+				}
+			};
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
@@ -421,7 +434,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	getNewButton().addActionListener(ivjEventHandler);
 	getEditButton().addActionListener(ivjEventHandler);
-	menuItemCopy.addActionListener(ivjEventHandler);
+	copyButton.addActionListener(ivjEventHandler);
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
 	menuItemStop.addActionListener(ivjEventHandler);
@@ -529,7 +542,7 @@ private void newSimulation() {
 private void refreshButtonsLax() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	// newButton always available...
-	menuItemCopy.setEnabled(selections.length > 0);
+	copyButton.setEnabled(selections.length > 0);
 	boolean bEditable = false;
 	if (selections.length==1){
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[0]]);
@@ -648,7 +661,7 @@ private void stopSimulations() {
 	private JPopupMenu getPopupMenuMore() {
 		if (popupMenuMoreAction == null) {
 			popupMenuMoreAction = new JPopupMenu();
-			popupMenuMoreAction.add(menuItemCopy);
+//			popupMenuMoreAction.add(menuItemCopy);
 			popupMenuMoreAction.add(new JSeparator());
 			popupMenuMoreAction.add(menuItemStop);
 			popupMenuMoreAction.add(menuItemStatusDetails);
