@@ -3,7 +3,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -12,7 +13,9 @@ import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -194,29 +197,27 @@ private javax.swing.JToolBar getToolBar() {
 		try {
 			toolBar = new javax.swing.JToolBar();
 			toolBar.setFloatable(false);
-			toolBar.setAlignmentX(Component.RIGHT_ALIGNMENT);
-			toolBar.setAlignmentY(Component.TOP_ALIGNMENT);
-			toolBar.setPreferredSize(new Dimension(750, 40));
-			toolBar.setName("ButtonPanel");
 			FlowLayout fl = new java.awt.FlowLayout();
-			fl.setVgap(5);
+			fl.setVgap(0);
 			toolBar.setLayout(fl);
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
+			stopButton.setEnabled(false);
 			stopButton.addActionListener(ivjEventHandler);
 			statusDetailsButton = new JButton("", VCellIcons.statusDetailscon);
 			statusDetailsButton.setToolTipText("Simulation Status Details...");
 			statusDetailsButton.addActionListener(ivjEventHandler);
-			toolBar.add(getNewButton(), getNewButton().getName());
+			toolBar.add(getNewButton());
 			toolBar.add(copyButton);
-			toolBar.add(getDeleteButton(), getDeleteButton().getName());
-			toolBar.add(getEditButton(), getEditButton().getName());
-			toolBar.add(getRunButton(), getRunButton().getName());
+			toolBar.add(getEditButton());
+			toolBar.add(getDeleteButton());
+			toolBar.addSeparator();
+			toolBar.add(getRunButton());
 			toolBar.add(stopButton);
-			toolBar.add(getResultsButton(), getResultsButton().getName());
+			toolBar.add(getResultsButton());
 			toolBar.add(statusDetailsButton);
 			// user code begin {1}
 			// user code end
@@ -569,7 +570,15 @@ private void refreshButtonsLax() {
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
+	new JComboBox().addItemListener(new ItemListener() {
+		
+		public void itemStateChanged(ItemEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+	});
 }
+
 
 /**
  * Comment
