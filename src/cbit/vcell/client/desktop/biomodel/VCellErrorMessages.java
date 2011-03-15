@@ -99,7 +99,10 @@ public class VCellErrorMessages {
 			+ " needs to satisfy stability constraint" 
 			+ "<dl><dd><i>\t\u0394t &lt; s<sup>2</sup> / ( 2D<sub>max</sub> )</i></dd></dl>" 
 			+ "Where <i>s</i> is spatial resolution and <i>D<sub>max</sub></i> is the diffusion " 
-			+ "coefficient of the fastest diffusing species. </html>"; 
+			+ "coefficient of the fastest diffusing species. For this simulation, <i>s</i> = <i>" + PLACE_HOLDER  
+			+ "</i> and <i>D<sub>max</sub></i> = <i>" + PLACE_HOLDER + "</i>. Hence choose <i>\t\u0394t</i> such that "
+			+ "<dl><dd><i>\t\u0394t &lt;" + PLACE_HOLDER
+			+ "</dd></dl></html>"; 
 	public static final String RunSims_4 = "The simulation mesh size (" + PLACE_HOLDER + ")" +
 			" for '" + PLACE_HOLDER + "' results in different number of geometric regions [" + PLACE_HOLDER + "] than " +
 			"the number of geometric regions [" + PLACE_HOLDER + "] resolved in the Geometry Viewer." +
