@@ -581,11 +581,11 @@ public static TableListResult showComponentOptionsTableList(final Component requ
  * @param preferences cbit.vcell.client.UserPreferences
  * @param preferenceName java.lang.String
  */
-private static String showDialog(final Component requester, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
+private static String showDialog(final Component requester, String title, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
 	String message = userMessage.getMessage(replacementText);
 	JPanel panel = createMessagePanel(message);
 	JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
-	final JDialog dialog = pane.createDialog(requester, "");
+	final JDialog dialog = pane.createDialog(requester, title);
 	dialog.setResizable(true);
 	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 	try {
@@ -899,6 +899,10 @@ protected static void showReportDialog(final Component requester, final String r
  * @param preferenceName java.lang.String
  */
 public static String showWarningDialog(final Component parentComponent,final  String message,final  String[] options,final  String defaultOption) {
+	return showWarningDialog(parentComponent, "", message, options, defaultOption);
+}
+
+public static String showWarningDialog(final Component parentComponent,final String title, final String message, final  String[] options,final  String defaultOption) {
 	return (String)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
@@ -906,12 +910,13 @@ public static String showWarningDialog(final Component parentComponent,final  St
 				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message,options,defaultOption);
-			return showDialog(parentComponent, simpleUserMessage, null,JOptionPane.WARNING_MESSAGE);
+			return showDialog(parentComponent, title, simpleUserMessage, null,JOptionPane.WARNING_MESSAGE);
 		}
 	}.dispatchWrapRuntime();
 
 }
-public static String showOKCancelWarningDialog(final Component parentComponent, final String message) {
+
+public static String showOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
 	return (String)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
@@ -919,7 +924,7 @@ public static String showOKCancelWarningDialog(final Component parentComponent, 
 				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
-			return showDialog(parentComponent, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
 		}
 	}.dispatchWrapRuntime();	
 }

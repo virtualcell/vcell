@@ -175,7 +175,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		if (rows == null || rows.length == 0) {
 			return;
 		}
-		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected application(s)?");
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting application(s)", "Are you sure you want to delete selected application(s)?");
 		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 			return;
 		}
