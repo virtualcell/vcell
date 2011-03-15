@@ -1,11 +1,15 @@
 package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
+import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -15,7 +19,6 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class ServerPDEDataContext extends PDEDataContext {
 	private DataServerImpl dataServerImpl = null;
-	private VCDataIdentifier vcDataID = null;
 	private User user = null;
 	private OutputContext outputContext = null;
 
@@ -54,8 +57,8 @@ private DataServerImpl getDataServerImpl() {
  *
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getFunctions(outputContext,user, vcDataID);
+public AnnotatedFunction[] getFunctions() throws DataAccessException {
+	return getDataServerImpl().getFunctions(outputContext,user, getVCDataIdentifier());
 }
 
 
@@ -72,8 +75,8 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.
  *
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getLineScan(getOutputContext(),user, vcDataID, variable, time, spatialSelection);
+public PlotData getLineScan(java.lang.String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
+	return getDataServerImpl().getLineScan(getOutputContext(),user, getVCDataIdentifier(), variable, time, spatialSelection);
 }
 
 
@@ -84,8 +87,8 @@ public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cb
  * @param varName java.lang.String
  * @param time double
  */
-protected ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getParticleDataBlock(user, vcDataID, time);
+protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException {
+	return getDataServerImpl().getParticleDataBlock(user, getVCDataIdentifier(), time);
 }
 
 
@@ -96,12 +99,12 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.u
  * @param varName java.lang.String
  * @param time double
  */
-protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, vcDataID, varName, time);
+protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws DataAccessException {
+	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, getVCDataIdentifier(), varName, time);
 }
 
-public DataProcessingOutput retrieveDataProcessingOutput() throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getDataProcessingOutput(user, vcDataID);
+public DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException {
+	return getDataServerImpl().getDataProcessingOutput(user, getVCDataIdentifier());
 }
 
 
@@ -117,20 +120,9 @@ public DataProcessingOutput retrieveDataProcessingOutput() throws org.vcell.util
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getTimeSeriesValues(getOutputContext(),user, vcDataID, timeSeriesJobSpec);
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+	return getDataServerImpl().getTimeSeriesValues(getOutputContext(),user, getVCDataIdentifier(), timeSeriesJobSpec);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 12:39:13 AM)
- * @return java.lang.String
- */
-public VCDataIdentifier getVCDataIdentifier() {
-	return vcDataID;
-}
-
 
 /**
  * Insert the method's description here.
@@ -159,7 +151,7 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
+public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	dataServerImpl.makeRemoteFile(getOutputContext(),user, exportSpecs);
 }
 
@@ -170,7 +162,7 @@ public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) thr
  */
 public void refreshIdentifiers() {
 	try {
-		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(getOutputContext(),user, vcDataID));
+		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(getOutputContext(),user, getVCDataIdentifier()));
 		if ( getVariableName() != null && !org.vcell.util.BeanUtils.arrayContains(getVariableNames(), getVariableName()) )  {
 			// This condition occurs if a function has been removed from the dataset (esp. MergedDataset->compare).
 			if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
@@ -208,17 +200,6 @@ public void refreshTimes() {
 private void setDataServerImpl(DataServerImpl newDataServerImpl) {
 	dataServerImpl = newDataServerImpl;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 12:39:13 AM)
- * @param newSimulationIdentifier java.lang.String
- */
-private void setVCDataIdentifier(VCDataIdentifier newVcdID) {
-	vcDataID = newVcdID;
-}
-
 
 private OutputContext getOutputContext() {
 	return outputContext;
