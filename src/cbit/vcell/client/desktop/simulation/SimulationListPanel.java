@@ -7,6 +7,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -25,7 +27,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 
+import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Executable;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.MultiLineToolTip;
@@ -36,8 +40,11 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
@@ -54,6 +61,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
+	private JButton particleViewButton = null;
 	private ScrollTable ivjScrollPaneTable = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
@@ -81,6 +89,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				showSimulationResults();
 			} else if (e.getSource() == statusDetailsButton) {
 				showSimulationStatusDetails();
+			} else if (e.getSource() == particleViewButton) {
+				particleView();
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -197,9 +207,10 @@ private javax.swing.JToolBar getToolBar() {
 		try {
 			toolBar = new javax.swing.JToolBar();
 			toolBar.setFloatable(false);
-			FlowLayout fl = new java.awt.FlowLayout();
-			fl.setVgap(0);
-			toolBar.setLayout(fl);
+//			FlowLayout fl = new java.awt.FlowLayout();
+//			fl.setVgap(0);
+//			toolBar.setLayout(fl);
+			toolBar.addSeparator();
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
@@ -219,11 +230,12 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(stopButton);
 			toolBar.add(getResultsButton());
 			toolBar.add(statusDetailsButton);
-			// user code begin {1}
-			// user code end
+			toolBar.addSeparator();
+			particleViewButton = new JButton("", VCellIcons.particleRunSimIcon);
+			particleViewButton.setToolTipText("Real-Time Particle View");
+			particleViewButton.addActionListener(ivjEventHandler);
+			toolBar.add(particleViewButton);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -477,7 +489,7 @@ private void initialize() {
 		setSize(750, 560);
 						
 		setLayout(new BorderLayout());
-		add(getToolBar(), BorderLayout.SOUTH);
+		add(getToolBar(), BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		
 		initConnections();
@@ -542,41 +554,49 @@ private void newSimulation() {
  * Comment
  */
 private void refreshButtonsLax() {
+	particleViewButton.setVisible(fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatialStoch());
+	
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	// newButton always available...
-	copyButton.setEnabled(selections.length > 0);
-	statusDetailsButton.setEnabled(selections.length > 0);
+	
+	boolean bCopy = false;
 	boolean bEditable = false;
-	if (selections.length==1){
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[0]]);
-		if (!simStatus.isRunning()){
-			bEditable = true;
-		}
-	}
 	boolean bDeletable = false;
 	boolean bRunnable = false;
 	boolean bStoppable = false;
 	boolean bHasData = false;
-	// we make'em true if at least one sim satisfies criterion (lax policy)
-	for (int i = 0; i < selections.length; i++){
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[i]]);
-		bDeletable = bDeletable == false ? !simStatus.isRunning() : bDeletable;
-		bRunnable = bRunnable == false ? simStatus.isRunnable() : bRunnable;
-		bStoppable = bStoppable == false ? simStatus.isStoppable() : bStoppable;
-		bHasData = bHasData == false ? simStatus.getHasData() : bHasData;
+	boolean bStatusDetails = false;
+	boolean bParticleView = false;
+	
+	if (selections != null && selections.length > 0) {
+		bCopy = true;
+		bStatusDetails = true;
+		Simulation firstSelection = ivjSimulationListTableModel1.getValueAt(selections[0]);
+		if (selections.length == 1){
+			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(firstSelection);
+			if (!simStatus.isRunning()){
+				bEditable = true;
+			}
+			bParticleView = firstSelection.getScanCount() == 1;			
+		}
+		
+		// we make'em true if at least one sim satisfies criterion (lax policy)
+		for (int i = 0; i < selections.length; i++){
+			Simulation sim = ivjSimulationListTableModel1.getValueAt(selections[i]);
+			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
+			bDeletable = bDeletable || !simStatus.isRunning();
+			bRunnable = bRunnable || simStatus.isRunnable();
+			bStoppable = bStoppable || simStatus.isStoppable();
+			bHasData = bHasData || simStatus.getHasData();
+		}
 	}
+	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
-	getDeleteButton().setEnabled(bDeletable);
+	getDeleteButton().setEnabled(bDeletable);	
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
-	new JComboBox().addItemListener(new ItemListener() {
-		
-		public void itemStateChanged(ItemEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-	});
+	statusDetailsButton.setEnabled(bStatusDetails);
+	particleViewButton.setEnabled(bParticleView);
 }
 
 
@@ -624,8 +644,9 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 	if (fieldSimulationWorkspace != null) {
 		fieldSimulationWorkspace.addPropertyChangeListener(ivjEventHandler);
 	}
-	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);
+	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);	
 	refreshButtonsLax();
+	particleViewButton.setVisible(fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatialStoch());
 }
 
 
@@ -687,5 +708,31 @@ private void stopSimulations() {
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, getScrollPaneTable(), getSimulationListTableModel1());
 		
+	}
+	
+	private void particleView() {
+		int row = getScrollPaneTable().getSelectedRow();
+		if (row < 0) {
+			return;
+		}
+		final Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
+		AsynchClientTask task1 = new AsynchClientTask("start smoldyn", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				File smoldynExe = ResourceUtil.getSmoldynExecutable();
+				SimulationJob simJob = new SimulationJob(selectedSim, 0, null);
+				File inputFile = new File(smoldynExe.getParent(), simJob.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
+				inputFile.deleteOnExit();
+				PrintWriter pw = new PrintWriter(inputFile);
+				SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+				smf.write();
+				pw.close();
+				String[] cmd = new String[] {smoldynExe.getAbsolutePath(), inputFile.getAbsolutePath()};
+				Executable executable = new Executable(cmd);
+				executable.start();			
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{task1});
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

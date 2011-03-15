@@ -14,7 +14,7 @@ public class ResourceUtil {
 	public final static boolean bWindows = system_osname.contains("Windows");
 	public final static boolean bMac = system_osname.contains("Mac");
 	public final static boolean bLinux = system_osname.contains("Linux");
-	public static String osname = null;
+	public final static String osname;
 	static {
 		if (bWindows) {
 			osname = "windows";
@@ -32,6 +32,20 @@ public class ResourceUtil {
 	private static File userHome = null;
 	private static File vcellHome = null;
 	private static File libDir = null;
+	
+	private static File smoldynHome = null;
+	private final static String DLL_GLUT;
+	static {
+		if (bWindows) {
+			DLL_GLUT = "glut32.dll";
+		} else {
+			DLL_GLUT = "libglut.so";
+		}
+	}
+	private final static String EXE_SMOLDYN = "smoldyn" + EXE_SUFFIX;
+	private static File smoldynExecutable = null;
+	private final static String RES_EXE_SMOLDYN = RES_PACKAGE + "/" + EXE_SMOLDYN;
+	private final static String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
 	
 	private static List<String> libList = null;
 
@@ -121,8 +135,19 @@ public class ResourceUtil {
 			}
 		}
 		return vcellHome;
-	}
+	}	
 	
+	public static File getSmoldynHome() 
+	{
+		if(smoldynHome == null)
+		{
+			smoldynHome = new File(getVcellHome(), "Smoldyn");
+			if (!smoldynHome.exists()) {
+				smoldynHome.mkdirs();
+			}
+		}
+		return smoldynHome;
+	}	
 	
 	public static void loadNativeSolverLibrary () {
 		try {
@@ -142,5 +167,21 @@ public class ResourceUtil {
 		} catch (Throwable ex1){
 			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
 		}
+	}
+	
+	private static boolean bFirstTimeSmoldyn = true;
+	public static File getSmoldynExecutable() throws IOException {
+		if (smoldynExecutable == null) {
+			smoldynExecutable = new java.io.File(getSmoldynHome(), EXE_SMOLDYN);
+		}
+		if (bFirstTimeSmoldyn || !smoldynExecutable.exists()) {
+			ResourceUtil.writeFileFromResource(RES_EXE_SMOLDYN, smoldynExecutable);
+		}
+		File file_glut_dll = new java.io.File(smoldynHome, DLL_GLUT);
+		if (bFirstTimeSmoldyn || !file_glut_dll.exists()) {
+			ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+		}
+		bFirstTimeSmoldyn = false;
+		return smoldynExecutable;
 	}
 }

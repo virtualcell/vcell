@@ -1,11 +1,17 @@
 package org.vcell.util.gui;
 
+import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.vcell.util.BeanUtils;
 
 public abstract class VCellIcons {
 	
@@ -34,6 +40,7 @@ public abstract class VCellIcons {
 	public final static Icon delSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_del.gif"));
 	public final static Icon editSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_edit.gif"));
 	public final static Icon runSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_run.gif"));
+	public final static Icon particleRunSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/particle_run.gif"));
 	public final static Icon stopSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_stop.gif"));
 	public final static Icon resultsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_results.jpg"));
 	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
@@ -60,6 +67,27 @@ public abstract class VCellIcons {
 			}
 		}
 		return jFrameIconImage;
+	}
+
+	public static void main(java.lang.String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			JPanel panel =  new JPanel(new BorderLayout());
+			panel.add(new JButton("", particleRunSimIcon), BorderLayout.CENTER);
+			frame.add(panel);
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setSize(200,200);
+			BeanUtils.centerOnScreen(frame);
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
 	}
 
 }
