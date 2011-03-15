@@ -25,6 +25,7 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
 		
+public static final String PROPERTY_NAME_VCDATA_IDENTIFIER = "vcDataIdentifier";
 public static final String PROPERTY_NAME_TIME_POINTS = "timePoints";
 public static final String PROPERTY_NAME_TIME_POINT = "timePoint";
 public static final String PROPERTY_NAME_VARIABLE = "variable";
@@ -69,6 +70,7 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 //	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
 	private DataProcessingOutput dataProcessingOutput;
+	private VCDataIdentifier vcDataIdentifier = null;
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
@@ -286,14 +288,6 @@ public java.lang.String[] getVariableNames() {
 	}
 	return null;
 }
-
-
-/**
- * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
- * @return The simulationInfo property value.
- */
-public abstract VCDataIdentifier getVCDataIdentifier();
-
 
 /**
  * The hasListeners method was generated to support the propertyChange field.
@@ -591,6 +585,20 @@ public void setVariableNameAndTime(String varName, double timePoint) throws Data
 		throw new DataAccessException("Couldn't find DataIdentifier for variable name "+varName);
 	}
 	setVariableAndTime(dataIdentifier, timePoint);
+}
+
+final void setVCDataIdentifier(VCDataIdentifier newValue) {
+	if (vcDataIdentifier == newValue) {
+		return;
+	}
+	VCDataIdentifier oldValue = vcDataIdentifier;
+	this.vcDataIdentifier = newValue;
+	firePropertyChange(PROPERTY_NAME_VCDATA_IDENTIFIER, oldValue, newValue);
+}
+
+
+public final VCDataIdentifier getVCDataIdentifier() {
+	return vcDataIdentifier;
 }
 
 }

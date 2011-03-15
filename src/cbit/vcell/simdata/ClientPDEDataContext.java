@@ -127,22 +127,13 @@ public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobS
 	return dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 }
 
-
-/**
- * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
- * @return The simulationInfo property value.
- */
-public VCDataIdentifier getVCDataIdentifier() {
-	return dataManager.getVCDataIdentifier();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 5:16:19 PM)
  */
 private void initialize() {
 	try {
+		setVCDataIdentifier(getDataManager().getVCDataIdentifier());
 		setParticleData(getDataManager().getParticleDataExists());
 		setCartesianMesh(getDataManager().getMesh());
 		setTimePoints(getDataManager().getDataSetTimes());
@@ -215,6 +206,7 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 		setDataIdentifiers(dis);
 		setTimePoints(times);
 		externalRefresh();
+		setVCDataIdentifier(dataManager.getVCDataIdentifier());
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);
 	}

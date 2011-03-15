@@ -380,7 +380,9 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 					getPDEExportPanel1().setDataViewerManager(getDataViewerManager());
 				}
 				if (evt.getSource() == PDEDataViewer.this.getPdeDataContext() && 
-						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) || evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
+						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER) 
+						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) 
+						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
 					getPDEDataContextPanel1().recodeDataForDomain();
 					if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
