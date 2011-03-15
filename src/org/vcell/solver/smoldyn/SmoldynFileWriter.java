@@ -340,11 +340,11 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			}
 			printWriter.print(" " + volumeRegionList.size());
 			printWriter.println();
+		} else {
+			throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 		}
-		printWriter.println();		
-	} else {
-		throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 	}
+	printWriter.println();		
 }
 
 private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
