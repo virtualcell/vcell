@@ -505,23 +505,24 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				boolean bValid = true;
 				try {
 					double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
-					if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
+					if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
 						double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
 						
-						String suggestedInterval = outputTime + "";
+						double suggestedInterval = outputTime;
 						if (outputTime < timeStep) {
-							suggestedInterval = timeStep + "";
+							suggestedInterval = timeStep;
 							bValid = false;
 						} else {
-							float n = (float)(outputTime/timeStep);
-							if (n != (int)n) {
+							double n = outputTime/timeStep;
+							int intn = (int)Math.round(n);
+							if (intn != n) {
 								bValid = false;
-								suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
+								suggestedInterval = (intn * timeStep);
 							}
 						} 
 					
-						if (!bValid) {					
-							String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval must " +
+						if (!bValid) {		
+							String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval", "Output Interval must " +
 									"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
 									new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
 							if (ret.equals(UserMessage.OPTION_YES)) {

@@ -375,7 +375,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 					}
 				}
 			}	
-			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
+			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting global parameters", "You are going to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
 			}

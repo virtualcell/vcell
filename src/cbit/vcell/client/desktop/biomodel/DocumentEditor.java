@@ -70,6 +70,7 @@ public abstract class DocumentEditor extends JPanel {
 		add_new_app_stochastic,
 		copy_app,
 		rename,
+		delete,
 	}
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
@@ -87,6 +88,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem collapseAllMenuItem = null;
 	private JMenuItem addNewMenuItem;
 	private JMenuItem renameMenuItem;
+	private JMenuItem deleteMenuItem;
 	
 	protected DatabaseWindowPanel databaseWindowPanel = null;
 	protected JTabbedPane leftBottomTabbedPane = null;
@@ -143,6 +145,8 @@ public abstract class DocumentEditor extends JPanel {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new, e.getActionCommand());
 			} else if (e.getSource() == renameMenuItem) {
 				documentEditorTree.startEditingAtPath(documentEditorTree.getSelectionPath());
+			} else if (e.getSource() == deleteMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete, e.getActionCommand());
 			} else if (e.getSource() == addNewAppDeterministicMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic, e.getActionCommand());
 			} else if (e.getSource() == addNewAppStochasticMenuItem) {
@@ -473,6 +477,7 @@ private void construcutPopupMenu() {
 	boolean bAddNew = false;
 	boolean bAddNewApp = false;
 	boolean bCopyApp = false;
+	boolean bDelete = false;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -499,6 +504,7 @@ private void construcutPopupMenu() {
 		} else if (userObject instanceof SimulationContext) {			
 			bRename = true;
 			bCopyApp = true;
+			bDelete = true;
 		}
 	}
 	if (selectedPaths.length != 1) {
@@ -529,6 +535,13 @@ private void construcutPopupMenu() {
 			renameMenuItem.addActionListener(eventHandler);
 		}
 		popupMenu.add(renameMenuItem);
+	}
+	if (bDelete) {
+		if (deleteMenuItem == null) {
+			deleteMenuItem = new javax.swing.JMenuItem("Delete");
+			deleteMenuItem.addActionListener(eventHandler);
+		}
+		popupMenu.add(deleteMenuItem);
 	}
 	if (bCopyApp) {
 		if (menuItemAppCopy == null) {

@@ -20,6 +20,7 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -189,6 +190,25 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 			copyApplication(true, false);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
 			copyApplication(true, true);
+		}
+		break;
+	case delete:
+		try {
+			if (selectedSimulationContext != null) {
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting application", "You are going to delete the Application '" + selectedSimulationContext.getName() + "'. Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				Simulation[] simulations = selectedSimulationContext.getSimulations();
+				if(simulations != null && simulations.length != 0){
+					for (Simulation simulation : simulations) {
+						bioModel.removeSimulation(simulation);
+					}
+				}
+				bioModel.removeSimulationContext(selectedSimulationContext);
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
 		break;
 	}

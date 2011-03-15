@@ -2,6 +2,7 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,6 +28,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -125,6 +128,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;	
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
+
+	private JPanel buttonPanel;
 	
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener, DocumentListener {
 
@@ -228,12 +233,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()
 				|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			newButton.setEnabled(false);
+			newButton.setVisible(false);
 			deleteButton.setEnabled(false);
-			textFieldSearch.setEditable(false);
 		} else {
-			newButton.setEnabled(true);
-			textFieldSearch.setEditable(true);
+			newButton.setVisible(true);
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
 				int[] rows = currentSelectedTable.getSelectedRows();
@@ -253,7 +256,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void initialize(){
 		newButton = new JButton("Add New");
 		deleteButton = new JButton("Delete Selected");
-		textFieldSearch = new JTextField(15);
+		textFieldSearch = new JTextField();
 		
 		structuresTable = new EditorScrollTable();
 		reactionsTable = new EditorScrollTable();
@@ -271,38 +274,45 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
-		setLayout(new GridBagLayout());
-		int gridy = 0;
+		buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = gridy;
+		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
+		buttonPanel.add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
+		gbc.gridy = 0;
+		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
+		buttonPanel.add(textFieldSearch, gbc);
 				
 		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.weightx = 0.5;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);
+		
+		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
-		gbc.gridy = gridy;
+		gbc.gridy = 0;
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(newButton, gbc);
+		buttonPanel.add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
 		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
+		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
+		buttonPanel.add(deleteButton, gbc);
 				
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -319,15 +329,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
 		}
 		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 6;
-		gbc.fill = GridBagConstraints.BOTH;
-		add(tabbedPane, gbc);		
+		
+		setLayout(new BorderLayout());
+		add(tabbedPane, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
 						
 		newButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
@@ -374,7 +379,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void searchTable() {
 		String searchText = textFieldSearch.getText();
 		computeCurrentSelectedTable();
-		currentSelectedTableModel.setSearchText(searchText);
+		if (currentSelectedTableModel != null) {
+			currentSelectedTableModel.setSearchText(searchText);
+		}
 	}
 	
 	private void showAllButtonPressed() {
@@ -436,7 +443,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						deleteListText += "\t" + speciesContext.getName() + "\n"; 
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following species:\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting species", "You are going to delete the following species:\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
@@ -454,7 +461,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						}
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting structure(s)", "You are going to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
@@ -470,7 +477,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						deleteListText += "\t" + reaction.getName() + "\n"; 
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting reaction(s)", "You are going to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
