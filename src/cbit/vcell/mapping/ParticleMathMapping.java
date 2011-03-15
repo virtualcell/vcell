@@ -625,61 +625,31 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			subDomain.addParticleProperties(particleProperties);
 		}
 	}
+	// Using the MassActionFunction to write out the math description 
+	MassActionSolver.MassActionFunction maFunc = null;
 	for (ReactionStep reactionStep : reactionSteps){
 		Kinetics kinetics = reactionStep.getKinetics();
 		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 		GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 		SubDomain subdomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
 
-//		if (reactionStep instanceof SimpleReaction) { // simple reactions
-		// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
-		// rate constants are important in calculating the probability rate.
-		// for Mass Action, we use KForward and KReverse, 
-		// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
+		/* check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
+		   rate constants are important in calculating the probability rate.
+		   for Mass Action, we use KForward and KReverse, 
+		   for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
+		 */
 		VCUnitDefinition forwardRateUnit = null;
 		VCUnitDefinition reverseRateUnit = null;
 		Expression forwardRate = null;
 		Expression reverseRate = null;
-		if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)) {
-			Parameter forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
-			Parameter reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
-			forwardRate = new Expression(forwardRateParameter, getNameScope());
-			forwardRateUnit = forwardRateParameter.getUnitDefinition();
-			reverseRate = new Expression(reverseRateParameter, getNameScope());
-			reverseRateUnit = reverseRateParameter.getUnitDefinition();
-//		} else if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
-//			Parameter permeabilityParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-//			forwardRate = new Expression(permeabilityParameter, getNameScope());
-//			forwardRateUnit = permeabilityParameter.getUnitDefinition();
-//			reverseRate = new Expression(permeabilityParameter, getNameScope());
-//			reverseRateUnit = permeabilityParameter.getUnitDefinition();
-		} else if (reactionStep instanceof SimpleReaction && kinetics.getKineticsDescription().equals(KineticsDescription.General)) {
+		
+		if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
+		   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
+		   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
+		{
 			Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 			rateExp = reactionStep.substitueKineticParameter(rateExp, false);
-			MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
-			if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
-			{
-				throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
-			}
-			else
-			{
-				if(maFunc.getForwardRate() != null)
-				{
-					forwardRate = maFunc.getForwardRate();
-					forwardRateUnit = maFunc.getForwardRateUnit();
-				}
-				if(maFunc.getReverseRate() != null)
-				{
-					reverseRate = maFunc.getReverseRate();
-					reverseRateUnit = maFunc.getReverseRateUnit();
-				}
-			}
-		} else if (reactionStep instanceof FluxReaction && 
-				(kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
-				 kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))) {
-			Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-			rateExp = reactionStep.substitueKineticParameter(rateExp, false);
-			MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
+			maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
 			if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 			{
 				throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
@@ -698,39 +668,50 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 			}
 		}
-			    
+		
 		// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
 		// we process it as forward reaction
 		List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
 		List<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
 		List<Action> forwardActions = new ArrayList<Action>();
 		List<Action> reverseActions = new ArrayList<Action>();
-		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
+		List<ReactionParticipant> reactants = maFunc.getReactants();
+		List<ReactionParticipant> products = maFunc.getProducts();
+
+		for (ReactionParticipant rp : reactants){
 			SpeciesContext sc = rp.getSpeciesContext();
 			GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 			String varName = getMathSymbol(sc, scGeometryClass);
 			Variable var = mathDesc.getVariable(varName);
 			if (var instanceof ParticleVariable){
 				ParticleVariable particle = (ParticleVariable)var;
-				if (rp instanceof Reactant || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Reactant))){
-					reactantParticles.add(particle);
-				}else if (rp instanceof Product || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Product))){
-					productParticles.add(particle);
-				}
+				reactantParticles.add(particle);
 				for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
 					if (forwardRate!=null) {
-						if (rp instanceof Reactant || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Reactant))){
-							forwardActions.add(Action.createDestroyAction(particle));
-						} else if (rp instanceof Product || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Product))){
-							forwardActions.add(Action.createCreateAction(particle));
-						}
+						forwardActions.add(Action.createDestroyAction(particle));
 					}					 
 					if (reverseRate!=null) {
-						if (rp instanceof Reactant || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Reactant))){
-							reverseActions.add(Action.createCreateAction(particle));
-						} else if (rp instanceof Product || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Product))){
-							reverseActions.add(Action.createDestroyAction(particle));
-						}
+						reverseActions.add(Action.createCreateAction(particle));
+					}
+				}
+			}else{
+				throw new MappingException("particle variable '"+varName+"' not found");
+			}
+		}
+		for (ReactionParticipant rp : products){
+			SpeciesContext sc = rp.getSpeciesContext();
+			GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+			String varName = getMathSymbol(sc, scGeometryClass);
+			Variable var = mathDesc.getVariable(varName);
+			if (var instanceof ParticleVariable){
+				ParticleVariable particle = (ParticleVariable)var;
+				productParticles.add(particle);
+				for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+					if (forwardRate!=null) {
+						forwardActions.add(Action.createCreateAction(particle));
+					}					 
+					if (reverseRate!=null) {
+						reverseActions.add(Action.createDestroyAction(particle));
 					}
 				}
 			}else{
@@ -750,21 +731,17 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			
 			// Step (1) : Calculate N
-			ReactionParticipant[] rxnParticipants = reactionStep.getReactionParticipants();
 			int N = 0;
-			for (ReactionParticipant rp : rxnParticipants) {
-				// for a reactant
-				if (rp instanceof Reactant || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Reactant))) {
-					// if reactant is in vol
-					if (rp.getStructure() instanceof Feature) {
-						// add it to total count N
-						N += rp.getStoichiometry();
-					}
+			for (ReactionParticipant rp : reactants) {
+				// for a reactant in vol
+				if (rp.getStructure() instanceof Feature) {
+					// add it to total count N
+					N += rp.getStoichiometry();
 				}
 			}
 			
 			// Step (2) : if reaction is a vol reaction, N = N-1
-			if (reactionStep .getStructure() instanceof Feature) {
+			if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
 				N = N-1;
 			}
 			
@@ -790,21 +767,17 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			
 			// Step (1) : Calculate N
-			ReactionParticipant[] rxnParticipants = reactionStep.getReactionParticipants();
 			int N = 0;
-			for (ReactionParticipant rp : rxnParticipants) {
-				// for a product
-				if (rp instanceof Product || (rp instanceof Flux && ((Flux)rp).getFluxDirection().equals(FluxDirection.Product))) {
-					// if product is in vol
-					if (rp.getStructure() instanceof Feature) {
-						// add it to total count N
-						N += rp.getStoichiometry();
-					}
+			for (ReactionParticipant rp : products) {
+				// for a product in vol
+				if (rp.getStructure() instanceof Feature) {
+					// add it to total count N
+					N += rp.getStoichiometry();
 				}
 			}
 			
 			// Step (2) : if reaction is a vol reaction, N = N-1
-			if (reactionStep .getStructure() instanceof Feature) {
+			if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
 				N = N-1;
 			}
 			

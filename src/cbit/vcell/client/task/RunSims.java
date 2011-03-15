@@ -38,6 +38,24 @@ import cbit.vcell.solver.SolverDescription;
  */
 public class RunSims extends AsynchClientTask {
 	
+	public static class SmoldynTimeStepVars {
+		private double spatialRes = 0.0;
+		private double maxDiffusion = 1.0;
+		
+		public SmoldynTimeStepVars(double argS, double argDmax) {
+			this.spatialRes = argS;
+			this.maxDiffusion = argDmax;
+		}
+		public double getSpatialResolution() {
+			return spatialRes;			
+		}
+		public double getMaxDiffusion() {
+			return maxDiffusion;		
+		}
+	}
+
+	private SmoldynTimeStepVars smoldynTimestepVars = null;
+	
 	public RunSims() {
 		super("Sending simulation start requests", TASKTYPE_NONSWING_BLOCKING);
 	}
@@ -77,6 +95,7 @@ public class RunSims extends AsynchClientTask {
 			double s = sim.getMeshSpecification().getDx();
 			double dt = sim.getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
 			if (dt >= s * s / (2 * Dmax)) {
+				smoldynTimestepVars = new SmoldynTimeStepVars(s, Dmax);
 				return false;
 			}
 		}
@@ -141,7 +160,11 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					}
 					if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
 						if (!isSmoldynTimeStepOK(sim)) {
-							String warningMessage =  VCellErrorMessages.RunSims_3;
+							double s = smoldynTimestepVars.getSpatialResolution();
+							double dMax = smoldynTimestepVars.getMaxDiffusion();
+							double condn = (s*s)/(2.0*dMax);
+							String warningMessage =   VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_3, Double.toString(s),
+									Double.toString(dMax), Double.toString(condn));
 							DialogUtils.showErrorDialog(documentWindowManager.getComponent(), warningMessage);
 							continue;
 						}
