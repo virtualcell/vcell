@@ -178,7 +178,7 @@ public class ResourceUtil {
 			ResourceUtil.writeFileFromResource(RES_EXE_SMOLDYN, smoldynExecutable);
 		}
 		File file_glut_dll = new java.io.File(smoldynHome, DLL_GLUT);
-		if (bFirstTimeSmoldyn || !file_glut_dll.exists()) {
+		if (!bMac && (bFirstTimeSmoldyn || !file_glut_dll.exists())) {
 			ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
 		}
 		bFirstTimeSmoldyn = false;
