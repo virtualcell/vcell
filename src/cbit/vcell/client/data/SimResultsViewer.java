@@ -164,12 +164,12 @@ private void initialize() throws DataAccessException {
 	// if necessarry, create parameter choices panel and wire it up
 	if (getSimulation().getScanCount() > 1) {
 		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout(5, 5));
+		panel.setLayout(new BorderLayout(5, 0));
 		panel.setBorder(BorderFactory.createEtchedBorder());
 		
-		JLabel label = new JLabel("<html><u><b>Choose Parameter Values</b></u></html>");
+		JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		label.setBorder(BorderFactory.createEmptyBorder(2, 2, 0, 2));
 		panel.add(label, BorderLayout.NORTH);
 		
 		String[] scanParams = getSimulation().getMathOverrides().getScannedConstantNames();

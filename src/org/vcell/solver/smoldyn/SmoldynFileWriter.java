@@ -1,6 +1,7 @@
 package org.vcell.solver.smoldyn;
 
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
+import cbit.plot.Plot2DPanel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -86,6 +88,7 @@ import cbit.vcell.solvers.CartesianMesh;
 public class SmoldynFileWriter extends SolverFileWriter 
 {
 
+	@SuppressWarnings("serial")
 	private class NotAConstantException extends Exception {		
 	}
 	
@@ -100,10 +103,15 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryXSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryYSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
+	private boolean bGraphicOpenGL = false;
 	
 	enum SmoldynKeyword {
 		species,
 		difc,
+		
+		graphics,
+		opengl,
+		color,
 		
 		time_start,
 		time_stop,
@@ -204,7 +212,13 @@ public class SmoldynFileWriter extends SolverFileWriter
  */
 public SmoldynFileWriter(PrintWriter pw, File outputFile, SimulationJob arg_simulationJob, boolean bMessaging) 
 {
+	this(pw, false, outputFile, arg_simulationJob, bMessaging);
+}
+
+public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, File outputFile, SimulationJob arg_simulationJob, boolean bMessaging) 
+{
 	super(pw, arg_simulationJob, bMessaging);
+	bGraphicOpenGL = bGraphic;
 	this.outputFile = outputFile;
 }
 
@@ -243,9 +257,12 @@ private void init() throws SolverException {
 public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException {	
 	init();
 	
-	writeJms(simulation);	
+	if (bUseMessaging) {
+		writeJms(simulation);
+	}
 	writeSpecies();	
-	writeDiffusions();	
+	writeDiffusions();
+	writeGraphicsOpenGL();
 	writeSurfacesAndCompartments();	
 	writeReactions();
 	writeMolecules();	
@@ -267,47 +284,63 @@ private void writeSimulationSettings() {
 	printWriter.println();
 }
 
-private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
-	OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
-	if (ots.isUniform()) {
-		GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
-		ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
-		ArrayList<VolumeGeometricRegion> volumeRegionList = new ArrayList<VolumeGeometricRegion>();
-		for (GeometricRegion geometricRegion : AllGeometricRegions) {
-			if (geometricRegion instanceof SurfaceGeometricRegion){
-				surfaceRegionList.add((SurfaceGeometricRegion)geometricRegion);
-			} else if (geometricRegion instanceof VolumeGeometricRegion){
-				volumeRegionList.add((VolumeGeometricRegion)geometricRegion);
-			} else {
-				throw new SolverException("unsupported geometric region type " + geometricRegion.getClass());
-			}
-		}
-		
-		printWriter.println("# runtime command");	
-		printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
-//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
-//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + VCellSmoldynKeyword.vcellPrintProgress);
-		ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
-		TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
-		int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+private void writeGraphicsOpenGL() throws MathException {
+	if (!bGraphicOpenGL) {
+		return;
+	}
+	printWriter.println("# runtime command");	
+	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
+	Color[] colors = Plot2DPanel.generateAutoColor(particleVariableList.size(), Color.white, new Integer(5));
+	for (int i = 0; i < particleVariableList.size(); i ++) {
+		Color c = colors[i];
+		printWriter.println(SmoldynKeyword.color + " " + getVariableName(particleVariableList.get(i),null) + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
+	}
+	printWriter.println();
+}
 
-		// DON'T CHANGE THE ORDER HERE.
-		// DataProcess must be before vcellWriteOutput
-		if (simulation.getDataProcessingInstructions() != null) {
-			writeDataProcessor();
-		}		
-		printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
-		if (dimension > 1) {
-			printWriter.print(" " + sampleSize.getY());
-			if (dimension > 2) {
-				printWriter.print(" " + sampleSize.getZ());			
+private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
+	printWriter.println("# runtime command");
+	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + VCellSmoldynKeyword.vcellPrintProgress);
+	if (outputFile != null) {
+		OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
+		if (ots.isUniform()) {
+			GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
+			ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
+			ArrayList<VolumeGeometricRegion> volumeRegionList = new ArrayList<VolumeGeometricRegion>();
+			for (GeometricRegion geometricRegion : AllGeometricRegions) {
+				if (geometricRegion instanceof SurfaceGeometricRegion){
+					surfaceRegionList.add((SurfaceGeometricRegion)geometricRegion);
+				} else if (geometricRegion instanceof VolumeGeometricRegion){
+					volumeRegionList.add((VolumeGeometricRegion)geometricRegion);
+				} else {
+					throw new SolverException("unsupported geometric region type " + geometricRegion.getClass());
+				}
 			}
+			
+			printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
+	//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
+	//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
+			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
+			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
+			int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+	
+			// DON'T CHANGE THE ORDER HERE.
+			// DataProcess must be before vcellWriteOutput
+			if (simulation.getDataProcessingInstructions() != null) {
+				writeDataProcessor();
+			}		
+			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
+			if (dimension > 1) {
+				printWriter.print(" " + sampleSize.getY());
+				if (dimension > 2) {
+					printWriter.print(" " + sampleSize.getZ());			
+				}
+			}
+			printWriter.print(" " + volumeRegionList.size());
+			printWriter.println();
 		}
-		printWriter.print(" " + volumeRegionList.size());
-		printWriter.println();
 		printWriter.println();		
 	} else {
 		throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");

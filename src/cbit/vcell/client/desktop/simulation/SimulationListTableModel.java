@@ -1,21 +1,27 @@
 package cbit.vcell.client.desktop.simulation;
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
@@ -24,6 +30,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.ode.gui.OutputOptionsPanel;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
@@ -283,8 +290,38 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						int newValue = Integer.parseInt((String)aValue);
 						newOts = new DefaultOutputTimeSpec(newValue, ((DefaultOutputTimeSpec) ots).getKeepAtMost());
 					} else if (ots instanceof UniformOutputTimeSpec) {
-						double newTime = Double.parseDouble((String)aValue);
-						newOts = new UniformOutputTimeSpec(newTime);
+						try {
+							boolean bValid = true;
+							double outputTime = Double.parseDouble((String)aValue);
+							if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+								double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
+								
+								double suggestedInterval = outputTime;
+								if (outputTime < timeStep) {
+									suggestedInterval = timeStep;
+									bValid = false;
+								} else {
+									double n = outputTime/timeStep;
+									int intn = (int)Math.round(n);
+									if (intn != n) {
+										bValid = false;
+										suggestedInterval = (intn * timeStep);
+									}
+								} 
+								if (bValid) {
+									newOts = new UniformOutputTimeSpec(outputTime);
+								} else {		
+									String ret = PopupGenerator.showWarningDialog(ownerTable, "Output Interval", "Output Interval must " +
+											"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
+											new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+									if (ret.equals(UserMessage.OPTION_YES)) {
+										newOts = new UniformOutputTimeSpec(suggestedInterval);
+									} 
+								}
+							}
+						} catch (NumberFormatException ex) {
+							DialogUtils.showErrorDialog(ownerTable, "Wrong number format " + ex.getMessage().toLowerCase());
+						}
 					} else if (ots instanceof ExplicitOutputTimeSpec) {
 						newOts = ExplicitOutputTimeSpec.fromString((String) aValue);
 					}

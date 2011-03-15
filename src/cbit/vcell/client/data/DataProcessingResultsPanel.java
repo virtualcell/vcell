@@ -49,7 +49,7 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 		varJList.addListSelectionListener(new ListSelectionListener() {
 			
 			public void valueChanged(ListSelectionEvent e) {
-				onVariableChange((String) varJList.getSelectedValue());
+				onVariablesChange();
 			}
 		});
 		plotPane = new PlotPane();
@@ -148,34 +148,41 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 	}
 	
-	private void onVariableChange(String varName) {
+	private void onVariablesChange() {
 		try {
-			ucar.nc2.Variable volVar = ncfile.findVariable(varName);
-			int[] shape = volVar.getShape();
-			int numRegions = shape[1];
-			int numTimes = shape[0];
-			int[] origin = new int[2];
-			double[][] plotDatas = new double[numRegions + 1][numTimes];
-			plotDatas[0] = timeArray;
-
-			ArrayDouble.D2 data = null;
-			try {
-				data = (ArrayDouble.D2) volVar.read(origin, shape);
-			} catch (Exception e) {
-				e.printStackTrace(System.err);
-				throw new IOException("Can not read volVar data.");
-			}
-			String[] colNames = new String[shape[1]];
-			for (int j = 0; j < numRegions; j++) {
-				colNames[j] = "col" + j;
-			}
-			for (int i = 0; i < numRegions; i++) {
-				for (int j = 0; j < numTimes; j++) {
-					plotDatas[i + 1][j] = data.get(j, i);
+			Object[] selectedObjects = varJList.getSelectedValues();
+			int numSelectedVars = selectedObjects.length;
+			double[][] plotDatas = null;
+			String[] plotNames = null;
+			for (int v = 0; v < numSelectedVars; v ++) {
+				String varName = (String)selectedObjects[v];
+				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
+				int[] shape = volVar.getShape();
+				int numRegions = shape[1];
+				int numTimes = shape[0];
+				int[] origin = new int[2];
+				if (plotDatas == null) {
+					plotDatas = new double[numSelectedVars * numRegions + 1][numTimes];
+					plotDatas[0] = timeArray;
+					plotNames = new String[numSelectedVars * numRegions];
+				}
+	
+				ArrayDouble.D2 data = null;
+				try {
+					data = (ArrayDouble.D2) volVar.read(origin, shape);
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+					throw new IOException("Can not read volVar data.");
+				}
+				for (int i = 0; i < numRegions; i++) {
+					plotNames[v * numRegions + i] = varName + ": region " + i;
+					for (int j = 0; j < numTimes; j++) {
+						plotDatas[v * numRegions + 1 + i][j] = data.get(j, i);
+					}
 				}
 			}
-			Plot2D plot2D = new SingleXPlot2D(null, ReservedSymbol.TIME.getName(), colNames, plotDatas, 
-					new String[] {"Time Plot", ReservedSymbol.TIME.getName(), varName});				
+			Plot2D plot2D = new SingleXPlot2D(null, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
+					new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
 			plotPane.setPlot2D(plot2D);
 		} catch (Exception e1) {
 			DialogUtils.showErrorDialog(this, e1.getMessage(), e1);
