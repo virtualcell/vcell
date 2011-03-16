@@ -131,6 +131,8 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.RandomVariable;
@@ -200,7 +202,6 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 
 /**
@@ -1978,6 +1979,31 @@ private JumpProcess getJumpProcess(Element param, MathDescription md) throws Xml
 	return jump;
 }
 
+private ParticleInitialConditionCount getParticleInitialConditionCount(Element param) {
+    String temp = param.getChildText(XMLTags.ParticleCountTag, vcNamespace);
+    Expression countExp = null;
+    if (temp!=null && temp.length()>0) {
+    	countExp = unMangleExpression(temp);        	
+    }  
+    temp = param.getChildText(XMLTags.ParticleLocationXTag, vcNamespace);
+    Expression locXExp = null;
+    if (temp!=null && temp.length()>0) {
+    	locXExp = unMangleExpression(temp);        	
+    }  
+    temp = param.getChildText(XMLTags.ParticleLocationYTag, vcNamespace);
+    Expression locYExp = null;
+    if (temp!=null && temp.length()>0) {
+    	locYExp = unMangleExpression(temp);        	
+    }  
+    temp = param.getChildText(XMLTags.ParticleLocationZTag, vcNamespace);
+    Expression locZExp = null;
+    if (temp!=null && temp.length()>0) {
+    	locZExp = unMangleExpression(temp);        	
+    }  
+        
+    return new ParticleInitialConditionCount(countExp, locXExp, locYExp, locZExp);
+}
+
 private ParticleProperties getParticleProperties(Element param, MathDescription mathDesc) throws XmlParseException {
     //Retrieve the variable reference
     String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));    
@@ -1987,32 +2013,26 @@ private ParticleProperties getParticleProperties(Element param, MathDescription 
     }    
     
     ArrayList<ParticleInitialCondition> initialConditions = new ArrayList<ParticleInitialCondition>();
-	Iterator<Element> iterator = param.getChildren(XMLTags.ParticleInitialTag, vcNamespace).iterator();
+	Iterator<Element> iterator = param.getChildren(XMLTags.ParticleInitialCountTag, vcNamespace).iterator();
+	while (iterator.hasNext() ) {
+		Element tempelement = (Element)iterator.next();        
+        initialConditions.add(getParticleInitialConditionCount(tempelement));
+	}
+	iterator = param.getChildren(XMLTags.ParticleInitialCountTag_old, vcNamespace).iterator();
+	while (iterator.hasNext() ) {
+		Element tempelement = (Element)iterator.next();		
+		initialConditions.add(getParticleInitialConditionCount(tempelement));
+	}
+	iterator = param.getChildren(XMLTags.ParticleInitialConcentrationTag, vcNamespace).iterator();
 	while (iterator.hasNext() ) {
 		Element tempelement = (Element)iterator.next();
 		
-        String temp = tempelement.getChildText(XMLTags.ParticleCountTag, vcNamespace);
-        Expression countExp = null;
-        if (temp!=null && temp.length()>0) {
-        	countExp = unMangleExpression(temp);        	
-        }  
-        temp = tempelement.getChildText(XMLTags.ParticleLocationXTag, vcNamespace);
-        Expression locXExp = null;
-        if (temp!=null && temp.length()>0) {
-        	locXExp = unMangleExpression(temp);        	
-        }  
-        temp = tempelement.getChildText(XMLTags.ParticleLocationYTag, vcNamespace);
-        Expression locYExp = null;
-        if (temp!=null && temp.length()>0) {
-        	locYExp = unMangleExpression(temp);        	
-        }  
-        temp = tempelement.getChildText(XMLTags.ParticleLocationZTag, vcNamespace);
-        Expression locZExp = null;
-        if (temp!=null && temp.length()>0) {
-        	locZExp = unMangleExpression(temp);        	
-        }  
-        
-        initialConditions.add(new ParticleInitialCondition(countExp, locXExp, locYExp, locZExp));
+		String temp = tempelement.getChildText(XMLTags.ParticleDistributionTag, vcNamespace);
+		Expression distExp = null;
+		if (temp!=null && temp.length()>0) {
+			distExp = unMangleExpression(temp);        	
+		}	
+		initialConditions.add(new ParticleInitialConditionConcentration(distExp));
 	}
 	
 	String temp = param.getChildText(XMLTags.ParticleDiffusionTag, vcNamespace);

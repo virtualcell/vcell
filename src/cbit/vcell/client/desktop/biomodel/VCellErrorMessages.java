@@ -15,7 +15,11 @@ public class VCellErrorMessages {
 //			exception.printStackTrace(System.out);
 //		}
 //	}
-		
+	
+	public static String getSmoldynMaxMolReachedErrorMessage(long estimateMaxMol, int maxMolLimit) {
+		return "Estimated total number of molecules ("+estimateMaxMol+") exceeded limit(" + maxMolLimit + ")";
+	}
+	
 	private final static String PLACE_HOLDER = "__PLACE_HOLDER__";
 	private final static String VCellSupport = "VCell Support(vcell_support@uchc.edu)";
 	

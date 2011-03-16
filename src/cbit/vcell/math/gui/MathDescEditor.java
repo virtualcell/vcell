@@ -347,7 +347,8 @@ private static List<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.SelectedParticle);		
 		autoCompletionWords.add(VCML.ParticleProperties);
 		autoCompletionWords.add(getTemplate_ParticleProperties());		
-		autoCompletionWords.add(VCML.ParticleInitial);
+		autoCompletionWords.add(VCML.ParticleInitialCount);
+		autoCompletionWords.add(VCML.ParticleInitialConcentration);
 		autoCompletionWords.add(VCML.ParticleCount);
 		autoCompletionWords.add(VCML.ParticleLocationX);
 		autoCompletionWords.add(VCML.ParticleLocationY);
@@ -403,7 +404,7 @@ private static String getTemplate_ParticleJumpProcess() {
 
 private static String getTemplate_ParticleProperties() {	
 	return VCML.ParticleProperties + " varName " + VCML.BeginBlock + "\n" 
-		+ "\t\t" + VCML.ParticleInitial + " " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.ParticleInitialCount + " " + VCML.BeginBlock + "\n" 
 		+ "\t\t\t" + VCML.ParticleCount + " 1.0; \n"
 		+ "\t\t\t" + VCML.ParticleLocationX + " u; \n"
 		+ "\t\t\t" + VCML.ParticleLocationY + " u; \n"
@@ -529,7 +530,8 @@ public static List<String> getkeywords() {
 		keywords.add(VCML.CreateParticle);
 		keywords.add(VCML.SelectedParticle);
 		keywords.add(VCML.ParticleProperties);
-		keywords.add(VCML.ParticleInitial);
+		keywords.add(VCML.ParticleInitialCount);
+		keywords.add(VCML.ParticleInitialConcentration);
 		keywords.add(VCML.ParticleCount);
 		keywords.add(VCML.ParticleLocationX);
 		keywords.add(VCML.ParticleLocationY);

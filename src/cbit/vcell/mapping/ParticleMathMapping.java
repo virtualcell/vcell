@@ -12,7 +12,6 @@ import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -22,37 +21,33 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Flux.FluxDirection;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -273,7 +268,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		if (getSimulationContext().isUsingConcentration()) {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			initExpr = new Expression(initParm.getExpression());
-			initExpr = speciesContextSpecs[i].convertConcentrationToParticles(initExpr);			
+			initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
 		} else {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
 			initExpr = new Expression(initParm.getExpression());
@@ -588,15 +583,21 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			// initial distribution of particles
 			//
 			ArrayList<ParticleInitialCondition> particleInitialConditions = new ArrayList<ParticleInitialCondition>();
-//Expression initialCount = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount),sm.getGeometryClass()));
-			Expression initialCount = new Expression(getMathSymbol(scs.getInitialConditionParameter(),sm.getGeometryClass()));
-			if (initialCount==null){
-				throw new MappingException("initialCount not defined for speciesContext "+scs.getSpeciesContext().getName());
+			ParticleInitialCondition pic = null;
+			if (getSimulationContext().isUsingConcentration()) {
+				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
+				pic = new ParticleInitialConditionConcentration(initialDistribution);
+			} else {
+				Expression initialCount = scs.getInitialCountParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialCountParameter(),sm.getGeometryClass()));
+				if (initialCount==null){
+					throw new MappingException("initialCount not defined for speciesContext "+scs.getSpeciesContext().getName());
+				}
+				Expression locationX = new Expression("u");
+				Expression locationY = new Expression("u");
+				Expression locationZ = new Expression("u");
+				pic = new ParticleInitialConditionCount(initialCount, locationX, locationY, locationZ);
 			}
-			Expression locationX = new Expression("u");
-			Expression locationY = new Expression("u");
-			Expression locationZ = new Expression("u");
-			particleInitialConditions.add(new ParticleInitialCondition(initialCount, locationX, locationY, locationZ));
+			particleInitialConditions.add(pic);
 
 			//
 			// diffusion

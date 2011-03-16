@@ -14,8 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.jdom.Comment;
-import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.pathway.PathwayModel;
@@ -39,7 +37,6 @@ import org.vcell.util.document.Versionable;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
@@ -81,6 +78,7 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -88,13 +86,14 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.Delay;
+import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -117,6 +116,9 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.RandomVariable;
@@ -130,9 +132,6 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.Event.Delay;
-import cbit.vcell.math.Event.EventAssignment;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -151,6 +150,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
@@ -161,7 +161,6 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
@@ -183,7 +182,6 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
-import static org.vcell.pathway.PathwayXMLHelper.*;
 
 /**
  * This class concentrates all the XML production code from Java objects.
@@ -1651,31 +1649,38 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 	particleProperties.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	
 	for (ParticleInitialCondition pic : param.getParticleInitialConditions()) {
-		org.jdom.Element particleInitial = new org.jdom.Element(XMLTags.ParticleInitialTag);
-		
-		Element e = new Element(XMLTags.ParticleCountTag);
-		e.setText(mangleExpression(pic.getCount()));
-		particleInitial.addContent(e);
-		
-		if (pic.getLocationX() != null) {
-			e = new Element(XMLTags.ParticleLocationXTag);
-			e.setText(mangleExpression(pic.getLocationX()));
-			particleInitial.addContent(e);
-		}
-		
-		if (pic.getLocationY() != null) {
-			e = new Element(XMLTags.ParticleLocationYTag);
-			e.setText(mangleExpression(pic.getLocationY()));
-			particleInitial.addContent(e);
-		}
-		
-		if (pic.getLocationZ() != null) {
-			e = new Element(XMLTags.ParticleLocationZTag);
-			e.setText(mangleExpression(pic.getLocationZ()));
+		org.jdom.Element particleInitial = null;
+		if (pic instanceof ParticleInitialConditionCount) {
+			particleInitial = new org.jdom.Element(XMLTags.ParticleInitialCountTag);
+			ParticleInitialConditionCount ppic = (ParticleInitialConditionCount)pic;
+			Element e = new Element(XMLTags.ParticleCountTag);
+			e.setText(mangleExpression(ppic.getCount()));
 			particleInitial.addContent(e);
 			
+			if (ppic.getLocationX() != null) {
+				e = new Element(XMLTags.ParticleLocationXTag);
+				e.setText(mangleExpression(ppic.getLocationX()));
+				particleInitial.addContent(e);
+			}
+			
+			if (ppic.getLocationY() != null) {
+				e = new Element(XMLTags.ParticleLocationYTag);
+				e.setText(mangleExpression(ppic.getLocationY()));
+				particleInitial.addContent(e);
+			}
+			
+			if (ppic.getLocationZ() != null) {
+				e = new Element(XMLTags.ParticleLocationZTag);
+				e.setText(mangleExpression(ppic.getLocationZ()));
+				particleInitial.addContent(e);				
+			}			
+		} else if (pic instanceof ParticleInitialConditionConcentration) {
+			particleInitial = new org.jdom.Element(XMLTags.ParticleInitialConcentrationTag);
+			ParticleInitialConditionConcentration ppic = (ParticleInitialConditionConcentration)pic;
+			Element e = new Element(XMLTags.ParticleDistributionTag);
+			e.setText(mangleExpression(ppic.getDistribution()));
+			particleInitial.addContent(e);
 		}
-		
 		particleProperties.addContent(particleInitial);
 	}
 	

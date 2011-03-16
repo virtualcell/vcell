@@ -12,13 +12,13 @@ import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 
 @SuppressWarnings("serial")
-public class ApplicationSettingsPanel extends ApplicationSubPanel {
+public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	private InitialConditionsPanel initialConditionsPanel;
 	private ReactionSpecsPanel reactionSpecsPanel;	
 		
 	private enum SettingsPanelTabID {
-		species_settings("Species Settings"),
-		reaction_settings("Reaction Settings");
+		species_settings("Species"),
+		reaction_settings("Reactions");
 		
 		String title = null;
 		SettingsPanelTabID(String name) {
@@ -37,7 +37,7 @@ public class ApplicationSettingsPanel extends ApplicationSubPanel {
 		}		
 	}
 	
-	public ApplicationSettingsPanel() {
+	public ApplicationSpecificationsPanel() {
 		super();
 		initialize();
 	}

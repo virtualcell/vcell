@@ -19,16 +19,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import org.vcell.util.Issue;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
 
@@ -172,70 +168,13 @@ public class MathematicsPanel extends JPanel {
 		return ivjViewVCMDLRadioButton;
 	}
 	
-	private AsynchClientTask[] updateMath() {
-		AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Geometry geometry = simulationContext.getGeometry();
-				if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-					geometry.getGeometrySurfaceDescription().updateAll();
-				}
-				// Use differnt mathmapping for different applications (stoch or non-stoch)
-				simulationContext.checkValidity();
-				
-				MathMapping mathMapping = simulationContext.createNewMathMapping();
-				MathDescription mathDesc = mathMapping.getMathDescription();
-				hashTable.put("mathMapping", mathMapping);
-				hashTable.put("mathDesc", mathDesc);
-			}			
-		};
-		AsynchClientTask task2 = new AsynchClientTask("formating math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
-				if (mathDesc != null) {
-					simulationContext.setMathDescription(mathDesc);
-				}
-			}
-		};
-		AsynchClientTask task3 = new AsynchClientTask("showing issues", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
-				MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
-				if (mathDesc != null) {
-					//
-					// inform user if any issues
-					//					
-					Issue issues[] = mathMapping.getIssues();
-					if (issues!=null && issues.length>0){
-						StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
-						int issueCount=0;
-						for (int i = 0; i < issues.length; i++){
-							if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
-								messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
-								issueCount++;
-							}
-						}
-						if (issueCount>0){
-							PopupGenerator.showWarningDialog(MathematicsPanel.this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
-						}
-					}
-				}
-			}
-		};
-		return new AsynchClientTask[] { task1, task2, task3};
-	}
 	private void refreshMath() {
-		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), updateMath(), false);
+		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext), false);
 	}
 	
 	private void createMathModel(final ActionEvent e) {
 		// relays an action event with this as the source
-		AsynchClientTask[] updateTasks = updateMath();
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, simulationContext);
 		AsynchClientTask[] tasks = new AsynchClientTask[updateTasks.length + 1];
 		System.arraycopy(updateTasks, 0, tasks, 0, updateTasks.length);
 		

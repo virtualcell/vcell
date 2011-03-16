@@ -3,28 +3,80 @@ package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.sbml.libsbml.ListOf;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-
-import com.hp.hpl.jena.sparql.function.library.localname;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 
+@SuppressWarnings("serial")
 public class ParticleProperties implements Serializable, Matchable {
 	
-	public static class ParticleInitialCondition implements Serializable, Matchable {
+	public abstract static class ParticleInitialCondition implements Serializable, Matchable {
+		public abstract String getVCML(int dimension);
+		abstract void bind(SymbolTable symbolTable) throws ExpressionBindingException;
+	}
+	
+	public static class ParticleInitialConditionConcentration extends ParticleInitialCondition {
+		Expression distribution;
+		public ParticleInitialConditionConcentration(Expression dist) {
+			distribution = dist;
+		}
+		public ParticleInitialConditionConcentration(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
+			super();
+			readVCML(tokens);
+		}
+		public boolean compareEqual(Matchable obj) {
+			if (!(obj instanceof ParticleInitialConditionConcentration)) {
+				return false;
+			}
+			
+			ParticleInitialConditionConcentration pic = (ParticleInitialConditionConcentration) obj;		
+			return Compare.isEqual(distribution, pic.distribution);
+		}
+		public String getVCML(int dimension) {
+			StringBuilder buffer = new StringBuilder();
+			buffer.append(VCML.ParticleInitialConcentration + " " + VCML.BeginBlock +"\n");
+			buffer.append("\t\t\t"+VCML.ParticleDistribution + " " + distribution.infix() + ";\n");
+			buffer.append("\t\t"+" "+VCML.EndBlock+"\n");
+			return buffer.toString();	
+		}
+		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {			
+			String token = tokens.nextToken();
+			if (!token.equals(VCML.BeginBlock)){
+				throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
+			}
+			distribution = new Expression(0);
+			while(true){
+				token = tokens.nextToken();
+				if (token.equals(VCML.EndBlock)) {
+					break;
+				}
+				if (token.equals(VCML.ParticleDistribution)) {
+					distribution = new Expression(tokens.readToSemicolon());
+				} else {
+					throw new MathFormatException("unexpected identifier "+token);
+				}
+			}
+		}
+		void bind(SymbolTable symbolTable) throws ExpressionBindingException {		
+			distribution.bindExpression(symbolTable);
+		}
+		public Expression getDistribution() {
+			return distribution;
+		}
+	}
+	public static class ParticleInitialConditionCount extends ParticleInitialCondition {
 		Expression count;
 		Expression locationX = null;
 		Expression locationY = null;
 		Expression locationZ = null;
 		private static final String UNIFORM = "u";
 		
-		public ParticleInitialCondition(Expression count, Expression locationX,
+		public ParticleInitialConditionCount(Expression count, Expression locationX,
 				Expression locationY, Expression locationZ) {
 			super();
 			try {
@@ -37,7 +89,7 @@ public class ParticleProperties implements Serializable, Matchable {
 //				e.printStackTrace();
 			}
 		}
-		public ParticleInitialCondition(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
+		public ParticleInitialConditionCount(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
 			super();
 			readVCML(tokens);
 		}
@@ -71,7 +123,7 @@ public class ParticleProperties implements Serializable, Matchable {
 		
 		public String getVCML(int dimension) {
 			StringBuffer buffer = new StringBuffer();
-			buffer.append(VCML.ParticleInitial + " " + VCML.BeginBlock +"\n");
+			buffer.append(VCML.ParticleInitialCount + " " + VCML.BeginBlock +"\n");
 			buffer.append("\t\t\t"+VCML.ParticleCount + " " + count.infix() + ";\n");
 			buffer.append("\t\t\t"+VCML.ParticleLocationX + " " + locationX.infix() + ";\n");
 			if (dimension > 1) {
@@ -108,11 +160,11 @@ public class ParticleProperties implements Serializable, Matchable {
 			return isXUniform() && isYUniform() && isZUniform();
 		}
 		public boolean compareEqual(Matchable object) {
-			if (!(object instanceof ParticleInitialCondition)) {
+			if (!(object instanceof ParticleInitialConditionCount)) {
 				return false;
 			}
 			
-			ParticleInitialCondition pic = (ParticleInitialCondition) object;		
+			ParticleInitialConditionCount pic = (ParticleInitialConditionCount) object;		
 			return Compare.isEqual(count, pic.count) 
 					&&	Compare.isEqualOrNull(locationX, pic.locationX) 
 					&&	Compare.isEqualOrNull(locationY, pic.locationY) 
@@ -164,8 +216,11 @@ public class ParticleProperties implements Serializable, Matchable {
 			}
 			if (token.equals(VCML.ParticleDiffusion)) {
 				diffExp = new Expression(tokens.readToSemicolon());
-			} else if (token.equals(VCML.ParticleInitial)) {
-				ParticleInitialCondition pic = new ParticleInitialCondition(tokens);
+			} else if (token.equals(VCML.ParticleInitialCount) || token.equals(VCML.ParticleInitialCount_old)) {
+				ParticleInitialConditionCount pic = new ParticleInitialConditionCount(tokens);
+				listOfParticleInitialConditions.add(pic);
+			} else if (token.equals(VCML.ParticleInitialConcentration)) {
+				ParticleInitialConditionConcentration pic = new ParticleInitialConditionConcentration(tokens);
 				listOfParticleInitialConditions.add(pic);
 			} else {
 				throw new MathFormatException("unexpected identifier "+token);

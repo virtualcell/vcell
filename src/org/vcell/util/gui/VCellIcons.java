@@ -74,7 +74,7 @@ public abstract class VCellIcons {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JButton("", particleRunSimIcon), BorderLayout.CENTER);
+			panel.add(new JButton("", tableIcon), BorderLayout.CENTER);
 			frame.add(panel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {

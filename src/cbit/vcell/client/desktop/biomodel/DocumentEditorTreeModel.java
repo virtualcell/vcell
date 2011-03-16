@@ -63,7 +63,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
 		
 		GEOMETRY_NODE("Geometry"),
-		SETTINGS_NODE("Settings"),
+		SETTINGS_NODE("Specifications"),
 		PROTOCOLS_NODE("Protocols"),
 		SIMULATIONS_NODE("Simulations"),
 		FITTING_NODE("Fitting"),
