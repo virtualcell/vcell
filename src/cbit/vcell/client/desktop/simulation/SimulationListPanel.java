@@ -1,10 +1,6 @@
 package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -13,11 +9,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -40,6 +35,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -207,13 +203,10 @@ private javax.swing.JToolBar getToolBar() {
 		try {
 			toolBar = new javax.swing.JToolBar();
 			toolBar.setFloatable(false);
-//			FlowLayout fl = new java.awt.FlowLayout();
-//			fl.setVgap(0);
-//			toolBar.setLayout(fl);
-			toolBar.addSeparator();
+			
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
-			copyButton.addActionListener(ivjEventHandler);
+			copyButton.addActionListener(ivjEventHandler);			
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -221,6 +214,11 @@ private javax.swing.JToolBar getToolBar() {
 			statusDetailsButton = new JButton("", VCellIcons.statusDetailscon);
 			statusDetailsButton.setToolTipText("Simulation Status Details...");
 			statusDetailsButton.addActionListener(ivjEventHandler);
+			particleViewButton = new JButton("", VCellIcons.particleRunSimIcon);
+			particleViewButton.setToolTipText("Real-Time Particle View");
+			particleViewButton.addActionListener(ivjEventHandler);
+						
+			toolBar.addSeparator();
 			toolBar.add(getNewButton());
 			toolBar.add(copyButton);
 			toolBar.add(getEditButton());
@@ -231,10 +229,18 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(getResultsButton());
 			toolBar.add(statusDetailsButton);
 			toolBar.addSeparator();
-			particleViewButton = new JButton("", VCellIcons.particleRunSimIcon);
-			particleViewButton.setToolTipText("Real-Time Particle View");
-			particleViewButton.addActionListener(ivjEventHandler);
 			toolBar.add(particleViewButton);
+			
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getRunButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(stopButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getResultsButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(statusDetailsButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(particleViewButton);
+
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

@@ -585,7 +585,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 	}
 	
-	protected void setToolBarButtonSizes(AbstractButton button) {
+	public static void setToolBarButtonSizes(AbstractButton button) {
 		button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
 		button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
 		button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
