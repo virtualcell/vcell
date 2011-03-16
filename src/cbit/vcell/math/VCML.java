@@ -162,7 +162,8 @@ public class VCML {
 	public final static String UniformDistribution_Maximum = "Maximum";
 	
 	public final static String ParticleProperties 		= "ParticleProperties"; // particle
-	public final static String ParticleInitial			= "ParticleInitial"; // particle
+	public final static String ParticleInitialCount_old		= "ParticleInitial"; // particle
+	public final static String ParticleInitialCount			= "ParticleInitialCount"; // particle
 	public final static String ParticleCount			= "ParticleCount"; // particle
 	public final static String ParticleLocationX		= "ParticleLocationX"; // particle
 	public final static String ParticleLocationY		= "ParticleLocationY"; // particle
@@ -173,6 +174,9 @@ public class VCML {
 	public final static String CreateParticle			= "CreateParticle"; // particle
 	public final static String DestroyParticle			= "DestroyParticle"; // particle
 	public final static String SelectedParticle			= "SelectedParticle"; // particle
+	
+	public final static String ParticleInitialConcentration	= "ParticleInitialConcentration"; // particle
+	public final static String ParticleDistribution		= "ParticleDistribution"; // particle
 	
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";

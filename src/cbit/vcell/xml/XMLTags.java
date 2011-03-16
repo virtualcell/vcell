@@ -475,7 +475,8 @@ public class XMLTags {
 	public final static String ParticleProbabilityRateTag = "ParticleProbabilityRate";
 	public final static String SelectedParticleTag = "SelectedParticle";
 	public final static String ParticlePropertiesTag 		= "ParticleProperties"; // particle
-	public final static String ParticleInitialTag			= "ParticleInitial"; // particle
+	public final static String ParticleInitialCountTag			= "ParticleInitialCount"; // particle
+	public final static String ParticleInitialCountTag_old			= "ParticleInitial"; // particle
 	public final static String ParticleCountTag			= "ParticleCount"; // particle
 	public final static String ParticleLocationXTag		= "ParticleLocationX"; // particle
 	public final static String ParticleLocationYTag		= "ParticleLocationY"; // particle
@@ -485,6 +486,9 @@ public class XMLTags {
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
+	
+	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
+	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
 
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
 	public final static String SundialsSolverOptions_maxOrderAdvection	= "maxOrderAdvection";

@@ -23,6 +23,7 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -38,6 +39,7 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.Issue;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
@@ -121,6 +123,7 @@ import cbit.vcell.geometry.gui.GeometrySummaryPanel;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
@@ -3165,6 +3168,64 @@ public VisitSession createNewVisitSession(String visitBinPath) throws DataAccess
 		}
 	};
 	return visitSession;
+}
+
+public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
+	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry geometry = simulationContext.getGeometry();
+			if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
+				geometry.getGeometrySurfaceDescription().updateAll();
+			}
+			// Use differnt mathmapping for different applications (stoch or non-stoch)
+			simulationContext.checkValidity();
+			
+			MathMapping mathMapping = simulationContext.createNewMathMapping();
+			MathDescription mathDesc = mathMapping.getMathDescription();
+			hashTable.put("mathMapping", mathMapping);
+			hashTable.put("mathDesc", mathDesc);
+		}			
+	};
+	AsynchClientTask task2 = new AsynchClientTask("formating math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
+			if (mathDesc != null) {
+				simulationContext.setMathDescription(mathDesc);
+			}
+		}
+	};
+	AsynchClientTask task3 = new AsynchClientTask("showing issues", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
+			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
+			if (mathDesc != null) {
+				//
+				// inform user if any issues
+				//					
+				Issue issues[] = mathMapping.getIssues();
+				if (issues!=null && issues.length>0){
+					StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
+					int issueCount=0;
+					for (int i = 0; i < issues.length; i++){
+						if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
+							messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
+							issueCount++;
+						}
+					}
+					if (issueCount>0){
+						PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
+					}
+				}
+			}
+		}
+	};
+	return new AsynchClientTask[] { task1, task2, task3};
 }
 
 }

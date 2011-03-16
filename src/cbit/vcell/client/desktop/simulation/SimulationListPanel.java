@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.AbstractButton;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,11 +30,15 @@ import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -721,8 +724,18 @@ private void stopSimulations() {
 		if (row < 0) {
 			return;
 		}
+		AsynchClientTask[] tasks = null;
+		SimulationOwner simulationOwner = getSimulationWorkspace().getSimulationOwner();
 		final Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
-		AsynchClientTask task1 = new AsynchClientTask("start smoldyn", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		if (simulationOwner instanceof SimulationContext) {
+			AsynchClientTask[] updateTask = ClientRequestManager.updateMath(this, ((SimulationContext)simulationOwner));
+			tasks = new AsynchClientTask[updateTask.length + 1];
+			System.arraycopy(updateTask, 0, tasks, 0, updateTask.length);
+		} else {
+			tasks = new AsynchClientTask[1];
+		}
+		
+		tasks[tasks.length - 1] = new AsynchClientTask("start smoldyn", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -739,6 +752,6 @@ private void stopSimulations() {
 				executable.start();			
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{task1});
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

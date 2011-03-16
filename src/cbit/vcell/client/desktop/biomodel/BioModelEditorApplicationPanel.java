@@ -21,7 +21,7 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private ApplicationGeometryPanel applicationGeometryPanel = null;
-	private ApplicationSettingsPanel applicationSettingsPanel;
+	private ApplicationSpecificationsPanel applicationSettingsPanel;
 	private ApplicationProtocolsPanel applicationProtocolsPanel;
 	private ApplicationSimulationsPanel applicationSimulationsPanel;
 	private ApplicationFittingPanel applicationFittingPanel;
@@ -33,7 +33,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 
 	public enum ApplicationPanelTabID {
 		geometry("Geometry"),
-		settings("Settings"),
+		settings("Specifications"),
 		protocols("Protocols"),
 		simulations("Simulations"),
 		fitting("Fitting");
@@ -79,7 +79,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private void initialize(){
 		applicationGeometryPanel = new ApplicationGeometryPanel();
 		applicationProtocolsPanel = new ApplicationProtocolsPanel();
-		applicationSettingsPanel = new ApplicationSettingsPanel();
+		applicationSettingsPanel = new ApplicationSpecificationsPanel();
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
 		applicationFittingPanel = new ApplicationFittingPanel();
 		tabbedPane = new JTabbedPane();

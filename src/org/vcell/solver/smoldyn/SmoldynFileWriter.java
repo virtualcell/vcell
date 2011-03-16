@@ -23,6 +23,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
 import cbit.plot.Plot2DPanel;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -49,7 +50,10 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
@@ -59,6 +63,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -87,6 +92,8 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class SmoldynFileWriter extends SolverFileWriter 
 {
+
+	private static final int MAX_MOL_LIMIT = 1000000;
 
 	@SuppressWarnings("serial")
 	private class NotAConstantException extends Exception {		
@@ -474,10 +481,135 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 	} 
 }
 
+private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
+	MeshSpecification meshSpecification = simulation.getMeshSpecification();
+	ISize sampleSize = meshSpecification.getSamplingSize();
+	int numX = sampleSize.getX();
+	int numY = dimension < 2 ? 1 : sampleSize.getY();
+	int numZ = dimension < 3 ? 1 : sampleSize.getZ();
+	double dx = meshSpecification.getDx();
+	double dy = meshSpecification.getDy();
+	double dz = meshSpecification.getDz();
+	Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
+	double ox = origin.getX();
+	double oy = origin.getY();
+	double oz = origin.getZ();
+	Extent extent = resampledGeometry.getExtent();
+	double ex = extent.getX();
+	double ey = extent.getY();
+	double ez = extent.getZ();
+	
+	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[]{ReservedVariable.X.getName(), ReservedVariable.Y.getName(), ReservedVariable.Z.getName()});
+	Expression disExpression = new Expression(initialConcentration.getDistribution());
+	disExpression.bindExpression(simulationSymbolTable);
+	disExpression = simulationSymbolTable.substituteFunctions(disExpression).flatten();	
+	disExpression.bindExpression(simpleSymbolTable);
+	double values[] = new double[3];
+	
+	double totalCount = 0;
+	for (int k = 0; k < numZ; k ++) {
+		double centerz = oz + k * dz;
+		double loz = Math.max(oz, centerz - dz/2);
+		double hiz = Math.min(oz + ez, centerz + dz/2);
+		double lz = hiz - loz;
+		values[2] = centerz;
+		for (int j = 0; j < numY; j ++) {
+			double centery = oy + j * dy;
+			double loy = Math.max(oy, centery - dy/2);
+			double hiy = Math.min(oy + ey, centery + dy/2);
+			values[1] = centery;
+			double ly = hiy - loy;
+			for (int i = 0; i < numX; i ++) {
+				double centerx = ox + i * dx;
+				double lox = Math.max(ox, centerx - dx/2);
+				double hix = Math.min(ox + ex, centerx + dx/2);
+				double lx = hix - lox;
+				values[0] = centerx;
+				
+				double volume = lx;
+				if (dimension > 1) {
+					volume *= ly;
+					if (dimension > 2) {
+						volume *= lz;
+					}
+				}
+				double count = Math.ceil(disExpression.evaluateVector(values) * volume);
+				if (count == 0) {
+					continue;
+				}
+				totalCount += count;
+				sb.append(SmoldynKeyword.mol + " " + (int)count + " " + variableName + " " + lox + "-" + hix);
+				if (dimension > 1) {
+					sb.append(" " + loy + "-" + hiy);
+				
+					if (dimension > 2) {
+						sb.append(" " + loz + "-" + hiz);
+					}
+				}
+				sb.append("\n");
+			}
+		}
+	}
+
+	return totalCount;
+}
+
+private double writeInitialCount(ParticleInitialConditionCount initialCount, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
+	double count = 0;
+	try {
+		count = subsituteFlatten(initialCount.getCount());
+	} catch (NotAConstantException ex) {
+		throw new ExpressionException("initial count for variable " + variableName + " is not a constant. Constants are required for all intial counts");
+	}
+	if (count > 0) {
+		int intcount = (int)count;
+		if (initialCount.isUniform()) {
+			// here count has to split between all compartments
+			if (subDomain instanceof CompartmentSubDomain) {
+				sb.append(SmoldynKeyword.compartment_mol);
+				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + "\n");
+			} else if (subDomain instanceof MembraneSubDomain) {
+				sb.append(SmoldynKeyword.surface_mol); 
+				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
+			}
+		} else {
+			sb.append(SmoldynKeyword.mol + " " + intcount + " " + variableName);
+			try {
+				if (initialCount.isXUniform()) {
+					sb.append(" " + initialCount.getLocationX().infix());					
+				} else {
+					double locX = subsituteFlatten(initialCount.getLocationX());
+					sb.append(" " + locX);
+				}
+				if (dimension > 1) {
+					if (initialCount.isYUniform()) {
+						sb.append(" " + initialCount.getLocationY().infix());					
+					} else {
+						double locY = subsituteFlatten(initialCount.getLocationY());
+						sb.append(" " + locY);
+					}
+					if (dimension > 2) {
+						if (initialCount.isZUniform()) {
+							sb.append(" " + initialCount.getLocationZ().infix());					
+						} else {
+							double locZ = subsituteFlatten(initialCount.getLocationZ());
+							sb.append(" " + locZ);
+						}
+					}
+				}
+			} catch (NotAConstantException ex) {
+				throw new ExpressionException("location for variable " + variableName + " is not a constant. Constants are required for all locations");
+			}
+			sb.append("\n");
+		}
+	}
+	return count;
+}
+
 private void writeMolecules() throws ExpressionException, MathException {
 	// write molecules
-	StringBuffer sb = new StringBuffer();
-	int max_mol = 0;
+	StringBuilder sb = new StringBuilder();
+	double max_mol = 0;
 	Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 	while (subDomainEnumeration.hasMoreElements()) {
 		SubDomain subDomain = subDomainEnumeration.nextElement();
@@ -486,60 +618,20 @@ private void writeMolecules() throws ExpressionException, MathException {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
 			String variableName = getVariableName(particleProperties.getVariable(),subDomain);
 			for (ParticleInitialCondition pic : particleInitialConditions) {
-				int count = 0;
-				try {
-					count = (int)subsituteFlatten(pic.getCount());
-				} catch (NotAConstantException ex) {
-					throw new ExpressionException("initial count for variable " + variableName + " is not a constant. Constants are required for all intial counts");
-				}
-				if (count == 0) {
-					continue;
-				}
-				max_mol += count;
-				if (pic.isUniform()) {
-					// here count has to split between all compartments
-					if (subDomain instanceof CompartmentSubDomain) {
-						sb.append(SmoldynKeyword.compartment_mol);
-						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
-					} else if (subDomain instanceof MembraneSubDomain) {
-						sb.append(SmoldynKeyword.surface_mol); 
-						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
-					}
-				} else {
-					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
-					try {
-						if (pic.isXUniform()) {
-							sb.append(" " + pic.getLocationX().infix());					
-						} else {
-							double locX = subsituteFlatten(pic.getLocationX());
-							sb.append(" " + locX);
-						}
-						if (dimension > 1) {
-							if (pic.isYUniform()) {
-								sb.append(" " + pic.getLocationY().infix());					
-							} else {
-								double locY = subsituteFlatten(pic.getLocationY());
-								sb.append(" " + locY);
-							}
-							if (dimension > 2) {
-								if (pic.isZUniform()) {
-									sb.append(" " + pic.getLocationZ().infix());					
-								} else {
-									double locZ = subsituteFlatten(pic.getLocationZ());
-									sb.append(" " + locZ);
-								}
-							}
-						}
-					} catch (NotAConstantException ex) {
-						throw new ExpressionException("location for variable " + variableName + " is not a constant. Constants are required for all locations");
-					}
-					sb.append("\n");
+				if (pic instanceof ParticleInitialConditionCount) {
+					max_mol += writeInitialCount((ParticleInitialConditionCount)pic, subDomain, variableName, sb);
+				} else if (pic instanceof ParticleInitialConditionConcentration) {
+					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, variableName, sb);
 				}
 			}
 		}		
 	}
+	max_mol = Math.max(50000, max_mol * 10);
+	if (max_mol > MAX_MOL_LIMIT) {
+		throw new MathException(VCellErrorMessages.getSmoldynMaxMolReachedErrorMessage((long)max_mol, MAX_MOL_LIMIT));
+	}
 	printWriter.println("# molecules");	
-	printWriter.println(SmoldynKeyword.max_mol + " " + Math.max(50000, max_mol * 10));
+	printWriter.println(SmoldynKeyword.max_mol + " " + (long)max_mol);
 	printWriter.println(sb);
 }
 
