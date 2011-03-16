@@ -23,7 +23,6 @@ import cbit.vcell.clientdb.DocumentManager;
  */
 @SuppressWarnings("serial")
 public class CartoonEditorPanelFixed extends JPanel {
-	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,5);
 	private JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
@@ -360,11 +359,9 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjFeatureButton.setName("FeatureButton");
 				ivjFeatureButton.setToolTipText("Compartment Tool");
 				ivjFeatureButton.setText("");
-				ivjFeatureButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjFeatureButton.setActionCommand(Mode.FEATURE.getActionCommand());
 				ivjFeatureButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/feature.gif")));
-				ivjFeatureButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
-				ivjFeatureButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
+				ReactionCartoonEditorPanel.setToolBarButtonSizes(ivjFeatureButton);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -461,12 +458,10 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjSelectButton.setName("SelectButton");
 				ivjSelectButton.setToolTipText("Select Tool");
 				ivjSelectButton.setText("");
-				ivjSelectButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjSelectButton.setActionCommand(Mode.SELECT.getActionCommand());
 				ivjSelectButton.setSelected(true);
 				ivjSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.gif")));
-				ivjSelectButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
-				ivjSelectButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
+				ReactionCartoonEditorPanel.setToolBarButtonSizes(ivjSelectButton);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -495,24 +490,17 @@ public class CartoonEditorPanelFixed extends JPanel {
 	 * Return the SpeciesButton property value.
 	 * @return cbit.gui.JToolBarToggleButton
 	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private org.vcell.util.gui.JToolBarToggleButton getSpeciesButton() {
+	private JToolBarToggleButton getSpeciesButton() {
 		if (ivjSpeciesButton == null) {
 			try {
-				ivjSpeciesButton = new org.vcell.util.gui.JToolBarToggleButton();
+				ivjSpeciesButton = new JToolBarToggleButton();
 				ivjSpeciesButton.setName("SpeciesButton");
 				ivjSpeciesButton.setToolTipText("Species Tool");
 				ivjSpeciesButton.setText("");
-				ivjSpeciesButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjSpeciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
 				ivjSpeciesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/species.gif")));
-				ivjSpeciesButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
-				ivjSpeciesButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
-				// user code begin {1}
-				// user code end
+				ReactionCartoonEditorPanel.setToolBarButtonSizes(ivjSpeciesButton);
 			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
 				handleException(ivjExc);
 			}
 		}
