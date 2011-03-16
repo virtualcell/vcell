@@ -28,6 +28,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -165,7 +166,7 @@ private void displayMesh() {
                     {
                         // 06/12/2002 JMW Replaced this line...
                         //labelText = "("+samplingSize.getX()+","+samplingSize.getY()+") elements";
-                        labelText = samplingSize.getX() + " x " + samplingSize.getY() + " = " +
+                        labelText = samplingSize.getX() + "x" + samplingSize.getY() + " = " +
 							samplingSize.getX() * samplingSize.getY() + " elements";
                         break;
                     }
@@ -173,7 +174,7 @@ private void displayMesh() {
                     {
                         // 06/12/2002 JMW Replaced this line...
                         //labelText = "("+samplingSize.getX()+","+samplingSize.getY()+","+samplingSize.getZ()+") elements";
-                        labelText = samplingSize.getX() + " x " + samplingSize.getY() + " x " + samplingSize.getZ() + " = " +
+                        labelText = samplingSize.getX() + "x" + samplingSize.getY() + "x" + samplingSize.getZ() + " = " +
 							samplingSize.getX() * samplingSize.getY() * samplingSize.getZ() + " elements";
                         break;
                     }
@@ -784,7 +785,7 @@ private void initialize() {
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSettingsPanel(), gbc); 	
 		
-		editButton = new JButton("Edit...");
+		editButton = new JButton("Edit...", VCellIcons.editSimIcon);
 		editButton.addActionListener(ivjEventHandler);
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 4; 
@@ -792,7 +793,7 @@ private void initialize() {
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(editButton, gbc);
 
 		gridy ++;
@@ -807,19 +808,20 @@ private void initialize() {
 		constraintsJLabelMesh.gridx = 1; 
 		constraintsJLabelMesh.gridy = gridy;
 		constraintsJLabelMesh.weightx = 1.0;
+		constraintsJLabelMesh.gridwidth = 2;
 		constraintsJLabelMesh.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelMesh.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelMesh(), constraintsJLabelMesh);
 
 		java.awt.GridBagConstraints constraintsJLabel8 = new java.awt.GridBagConstraints();
-		constraintsJLabel8.gridx = 2; 
+		constraintsJLabel8.gridx = 3; 
 		constraintsJLabel8.gridy = gridy;
 		constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel8(), constraintsJLabel8); // Geometry Size
 
 		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
-		constraintsJLabelGeometrySize.gridx = 3; 
+		constraintsJLabelGeometrySize.gridx = 4; 
 		constraintsJLabelGeometrySize.gridy = gridy;
 		constraintsJLabelGeometrySize.weightx = 1.0;
 		constraintsJLabelGeometrySize.fill = java.awt.GridBagConstraints.HORIZONTAL;
