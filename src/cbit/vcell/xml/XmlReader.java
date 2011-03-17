@@ -130,6 +130,8 @@ import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -550,17 +552,47 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 	}
 
 	//Process Variable initial conditions (added for stochastic algos)
-	iterator = param.getChildren( XMLTags.VarIniConditionTag, vcNamespace ).iterator();
-	while (iterator.hasNext()) {
-		Element tempelement = (Element)iterator.next();
-		try {
-			subDomain.addVarIniCondition( getVarIniCondition(tempelement, mathDesc) );
-		} catch (MathException e) {
-			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name+" : "+e.getMessage());
-		} catch (ExpressionException e) {e.printStackTrace();}
+	iterator = param.getChildren( XMLTags.VarIniCount_OldTag, vcNamespace ).iterator();
+	if(iterator != null)
+	{
+		while (iterator.hasNext()) {
+			Element tempelement = (Element)iterator.next();
+			try {
+				subDomain.addVarIniCondition( getVarIniCount(tempelement, mathDesc) );
+			} catch (MathException e) {
+				e.printStackTrace();
+				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name+" : "+e.getMessage());
+			} catch (ExpressionException e) {e.printStackTrace();}
+		}
 	}
 	
+	iterator = param.getChildren( XMLTags.VarIniCountTag, vcNamespace ).iterator();
+	if(iterator != null)
+	{
+		while (iterator.hasNext()) {
+			Element tempelement = (Element)iterator.next();
+			try {
+				subDomain.addVarIniCondition( getVarIniCount(tempelement, mathDesc) );
+			} catch (MathException e) {
+				e.printStackTrace();
+				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name+" : "+e.getMessage());
+			} catch (ExpressionException e) {e.printStackTrace();}
+		}
+	}
+	
+	iterator = param.getChildren( XMLTags.VarIniPoissonExpectedCountTag, vcNamespace ).iterator();
+	if(iterator != null)
+	{
+		while (iterator.hasNext()) {
+			Element tempelement = (Element)iterator.next();
+			try {
+				subDomain.addVarIniCondition( getVarIniPoissonExpectedCount(tempelement, mathDesc) );
+			} catch (MathException e) {
+				e.printStackTrace();
+				throw new XmlParseException("A MathException was fired when adding a variable initial condition to the compartmentSubDomain " + name+" : "+e.getMessage());
+			} catch (ExpressionException e) {e.printStackTrace();}
+		}
+	}
 	//	
 	//Process JumpProcesses (added for stochastic algos)
 	iterator = param.getChildren( XMLTags.JumpProcessTag, vcNamespace ).iterator();
@@ -5119,7 +5151,7 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-private VarIniCondition getVarIniCondition(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
+private VarIniCondition getVarIniCount(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
 {
 	//retrieve values
 	Expression exp = unMangleExpression(param.getText());
@@ -5133,7 +5165,28 @@ private VarIniCondition getVarIniCondition(Element param, MathDescription md) th
 		throw new MathFormatException("variable "+name+" not a Stochastic Volume Variable");
 	}
 	try {
-		VarIniCondition varIni= new VarIniCondition(var,exp);
+		VarIniCondition varIni= new VarIniCount(var,exp);
+		return varIni;		
+	} catch (Exception e){e.printStackTrace();}
+	
+	return null;	
+}
+
+private VarIniCondition getVarIniPoissonExpectedCount(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
+{
+	//retrieve values
+	Expression exp = unMangleExpression(param.getText());
+	
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	Variable var = md.getVariable(name);
+	if (var == null){
+		throw new MathFormatException("variable "+name+" not defined");
+	}	
+	if (!(var instanceof StochVolVariable)){
+		throw new MathFormatException("variable "+name+" not a Stochastic Volume Variable");
+	}
+	try {
+		VarIniCondition varIni= new VarIniPoissonExpectedCount(var,exp);
 		return varIni;		
 	} catch (Exception e){e.printStackTrace();}
 	

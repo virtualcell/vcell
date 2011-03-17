@@ -91,7 +91,9 @@ public class XMLTags {
     public final static String VolumeRateTag = "VolumeRate";
 
     public final static String StochVolVariableTag = "StochasticVolumeVariable"; //stoch
-    public final static String VarIniConditionTag = "VariableInitialCondition"; //stoch
+    public final static String VarIniCount_OldTag = "VariableInitialCondition"; //stoch
+	public final static String VarIniCountTag = "VariableInitialCount"; //stoch
+	public final static String VarIniPoissonExpectedCountTag = "VariableInitialPoissonExpectedCount"; //stoch
     public final static String ActionTag = "Effect"; //stoch
     public final static String JumpProcessTag = "JumpProcess"; //stoch
     public final static String ProbabilityRateTag = "ProbabilityRate"; //stoch

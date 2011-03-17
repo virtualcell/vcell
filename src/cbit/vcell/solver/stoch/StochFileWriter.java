@@ -4,6 +4,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.math.random.RandomDataImpl;
+
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -192,6 +194,14 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		List<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
 		if((varInis != null) && (varInis.size()>0))
 	    {
+			RandomDataImpl dist = new RandomDataImpl();
+			if(simulation.getSolverTaskDescription().getStochOpt().isUseCustomSeed())
+			{
+				Integer randomSeed = simulation.getSolverTaskDescription().getStochOpt().getCustomSeed();
+				if (randomSeed != null) {
+					dist.reSeed(randomSeed);
+				}
+			}
 		    printWriter.println("TotalVars"+"\t"+varInis.size());
 		  	for(int i=0; i<varInis.size(); i++)
 			{
@@ -199,8 +209,13 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		  			Expression iniExp = varInis.get(i).getIniVal();
 		  			iniExp.bindExpression(simSymbolTable);
 					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
-		  			double iniValue = iniExp.evaluateConstant();
-		  			printWriter.println(((VarIniCondition)varInis.get(i)).getVar().getName()+"\t"+Math.round(iniValue));
+		  			double expectedCount = iniExp.evaluateConstant();
+		  			long poissonSampleCount = 0;
+		  			if(expectedCount > 0)
+		  			{
+		  				poissonSampleCount = dist.nextPoisson(expectedCount);
+		  			}
+		  			printWriter.println(((VarIniCondition)varInis.get(i)).getVar().getName()+"\t" + poissonSampleCount);
 		  		}catch(cbit.vcell.parser.ExpressionException ex)
 		  		{
 		  			ex.printStackTrace();

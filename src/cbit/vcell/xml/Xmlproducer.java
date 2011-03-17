@@ -116,6 +116,8 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -2536,8 +2538,15 @@ private Element getXML(SubDomain param) throws XmlParseException{
  */
 private Element getXML(VarIniCondition param) 
 {
-	Element varIni = new Element(XMLTags.VarIniConditionTag);
-
+	Element varIni = null;
+	if(param instanceof VarIniPoissonExpectedCount)
+	{
+		varIni = new Element(XMLTags.VarIniPoissonExpectedCountTag);
+	}
+	else
+	{
+		varIni = new Element(XMLTags.VarIniCountTag);
+	}
 	//Add atribute
 	varIni.setAttribute(XMLTags.NameAttrTag, mangle(param.getVar().getName()));
 	varIni.addContent(mangleExpression(param.getIniVal()));
