@@ -1470,7 +1470,15 @@ private synchronized void refreshLogFile() throws DataAccessException {
 	} catch (FileNotFoundException e) {
 	} catch (IOException e) {
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
+	}catch (SecurityException e){
+		//Added because "new FileInputStream(...) throws security exception when file permissions wrong
+		e.printStackTrace(System.out);
+		throw new DataAccessException(e.getMessage(),e);
+	}catch (RuntimeException e){
+		//log exceptions we are passing on
+		e.printStackTrace(System.out);
+		throw e;
 	}
 }
 
