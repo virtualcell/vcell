@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.math.random.RandomDataImpl;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -50,11 +51,11 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.JmsUtils;
@@ -506,6 +507,11 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 	disExpression.bindExpression(simpleSymbolTable);
 	double values[] = new double[3];
 	
+	RandomDataImpl dist = new RandomDataImpl();
+	Integer randomSeed = simulation.getSolverTaskDescription().getSmoldynSimulationOptions().getRandomSeed();
+	if (randomSeed != null) {
+		dist.reSeed(randomSeed);
+	}
 	double totalCount = 0;
 	for (int k = 0; k < numZ; k ++) {
 		double centerz = oz + k * dz;
@@ -533,10 +539,11 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 						volume *= lz;
 					}
 				}
-				double count = Math.ceil(disExpression.evaluateVector(values) * volume);
-				if (count == 0) {
+				double expectedCount = disExpression.evaluateVector(values) * volume;
+				if (expectedCount <= 0) {
 					continue;
 				}
+				long count = dist.nextPoisson(expectedCount);
 				totalCount += count;
 				sb.append(SmoldynKeyword.mol + " " + (int)count + " " + variableName + " " + lox + "-" + hix);
 				if (dimension > 1) {

@@ -6,29 +6,26 @@ import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Vector;
 
-import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 
-import cbit.gui.graph.GraphPane;
-import cbit.gui.graph.Shape;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -37,15 +34,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.model.gui.AddModelParamDialog;
-import cbit.vcell.model.gui.EditSpeciesDialog;
-import cbit.vcell.model.gui.FeatureDialog;
-import cbit.vcell.model.gui.MembraneDialog;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -610,113 +599,5 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	 */
 	public void setDocumentManager(cbit.vcell.clientdb.DocumentManager argDocumentManager) {
 		this.documentManager = argDocumentManager;
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 */
-	protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model model,Structure structure, java.awt.Point locationForSpeciesContextShape) {
-		if(getDialogOwner(myGraphPane) == null){
-			return;
-		}
-		//
-		JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
-		EditSpeciesDialog createSpeciesContextDialog = new EditSpeciesDialog(parent);	
-		createSpeciesContextDialog.initAddSpecies(model,structure);
-		ZEnforcer.showModalDialogOnTop(createSpeciesContextDialog, getJDesktopPane());
-		if (locationForSpeciesContextShape != null && createSpeciesContextDialog.getSpeciesContext()!=null){
-			SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
-			if (speciesContext!=null){
-				Shape scShape = getGraphModel().getShapeFromModelObject(speciesContext);
-				scShape.getSpaceManager().setRelPos(locationForSpeciesContextShape);
-			}
-		}
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 */
-	protected void showEditSpeciesDialog(GraphPane myGraphPane, Model model, SpeciesContext speciesContext) {
-		//
-		if(getDialogOwner(myGraphPane) == null){
-			return;
-		}
-		//
-		JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
-		EditSpeciesDialog editSpeciesDialog = new EditSpeciesDialog(parent);
-		editSpeciesDialog.initEditSpecies(speciesContext, model);
-		//
-		ZEnforcer.showModalDialogOnTop(editSpeciesDialog, getJDesktopPane());
-		getGraphModel().fireGraphChanged();
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 */
-	protected void showCreateGlobalParamDialog(GraphPane myGraphPane, final Model model, java.awt.Point location) {
-		if(getDialogOwner(myGraphPane) == null){
-			return;
-		}
-		//
-		AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();
-		createGlobalParamDialog.initAddModelParam(model);
-		if(location != null){
-			createGlobalParamDialog.setLocation(location);
-		}
-		//
-		getDialogOwner(myGraphPane).remove(createGlobalParamDialog);
-		getDialogOwner(myGraphPane).add(createGlobalParamDialog, JLayeredPane.MODAL_LAYER);
-		org.vcell.util.BeanUtils.centerOnComponent(createGlobalParamDialog, getDialogOwner(myGraphPane));
-		createGlobalParamDialog.setVisible(true);
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 */
-	public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model model,Feature parentFeature,Feature childFeature) {
-		//
-		// showFeaturePropertyDialog is invoked in two modes:
-		//
-		// 1) parent!=null and child==null
-		//      upon ok, it adds a new feature to the supplied parent.
-		//
-		// 2) parent==null and child!=null
-		//      upon ok, edits the feature name
-		//
-		if((parentFeature == null && childFeature == null) || (parentFeature != null && childFeature != null)){
-			throw new IllegalArgumentException("Can't set FeatureProperties with current feature arguments");
-		}
-		JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, JFrame.class);
-		FeatureDialog featureDialog = new FeatureDialog(parent);
-		//
-		featureDialog.setModel(model);
-		featureDialog.setChildFeature(childFeature);
-		featureDialog.setParentFeature(parentFeature);
-		if(parentFeature != null){
-			featureDialog.setTitle("Add New Feature to " + parentFeature.getName());
-		}else{
-			featureDialog.setTitle("Properties for " + childFeature.getName());
-		}
-		//
-		ZEnforcer.showModalDialogOnTop(featureDialog, JOptionPane.getDesktopPaneForComponent(myGraphPane));
-	}
-
-
-	/**
-	 * This method was created by a SmartGuide.
-	 */
-	public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Membrane membrane) {
-		if(getDialogOwner(myGraphPane) == null){
-			return;
-		}
-		JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, JFrame.class);
-		MembraneDialog membraneDialog = new MembraneDialog(parent);
-		membraneDialog.init(membrane);
-		membraneDialog.setTitle("Properties for " + membrane.getName());
-		ZEnforcer.showModalDialogOnTop(membraneDialog, JOptionPane.getDesktopPaneForComponent(myGraphPane));
 	}
 }

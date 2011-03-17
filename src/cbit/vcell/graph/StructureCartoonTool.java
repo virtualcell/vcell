@@ -11,13 +11,11 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileOutputStream;
-import java.util.Hashtable;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
-import org.vcell.util.BeanUtils;
+
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleTransferable;
@@ -28,24 +26,15 @@ import cbit.gui.graph.Shape;
 import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.graph.structures.AllStructureSuite;
-import cbit.vcell.graph.structures.MembraneStructureSuite;
-import cbit.vcell.graph.structures.SingleStructureSuite;
-import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.gui.ModelParametersDialog;
-import cbit.vcell.model.gui.ReactionCartoonEditorDialog;
 import cbit.vcell.publish.ITextWriter;
 
 /**
@@ -61,10 +50,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	// private Point movingPointWorld = null;
 	// private Point movingOffsetWorld = null;
 	private Mode mode = null;
-	private Hashtable<String, ReactionCartoonEditorDialog> reactionEditorHash = 
-		new Hashtable<String, ReactionCartoonEditorDialog>();
-	private ModelParametersDialog modelParametersDialog = null;
-
 	/**
 	 * @param canvas
 	 *            cbit.vcell.graph.CartoonCanvas
@@ -75,31 +60,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	 */
 	public StructureCartoonTool() {
 		super();
-	}
-
-	/**
-	 * Insert the method's description here. Creation date: (6/21/2005 5:41:56
-	 * PM)
-	 * 
-	 * @param bDispose
-	 *            boolean
-	 */
-	private void disposeReactionCartoonEditorDialog(
-			ReactionCartoonEditorDialog rced) {
-
-		DocumentWindowManager.close(rced, getJDesktopPane());
-		// rced.dispose();
-
-		//
-		// The following added to force ReactionCartoon to cleanup its listeners
-		// otherwise
-		// 1. ReactionCartoon could not be garbage collected. Many "phantom"
-		// copies would accumulate from showing ReactionCartoonEditorPanel
-		// 2. Erroneous (deleted,renamed) object references in "phantom"
-		// ReactionCartoons would interact with
-		// listener callbacks and throw exceptions.
-		//
-		rced.cleanupOnClose();
 	}
 
 	/**
@@ -195,15 +155,15 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 //				showEditSpeciesDialog(getGraphPane(), getStructureCartoon().getModel(), 
 //						((SpeciesContextShape) shape).getSpeciesContext());
 			}
-		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
-			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
-				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
-				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
-				locationOnScreen.translate(graphPaneLocation.x,
-						graphPaneLocation.y);
-				showCreateGlobalParamDialog(getGraphPane(),
-						getStructureCartoon().getModel(), locationOnScreen);
-			}
+//		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
+//			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
+//				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
+//				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
+//				locationOnScreen.translate(graphPaneLocation.x,
+//						graphPaneLocation.y);
+//				showCreateGlobalParamDialog(getGraphPane(),
+//						getStructureCartoon().getModel(), locationOnScreen);
+//			}
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
@@ -246,15 +206,15 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
 
-		} else if (menuAction.equals(CartoonToolMiscActions.Reactions.MENU_ACTION)) {
-			if (shape instanceof StructureShape) {
-				showReactionCartoonEditorPanel((StructureShape) shape);
-			}
+//		} else if (menuAction.equals(CartoonToolMiscActions.Reactions.MENU_ACTION)) {
+//			if (shape instanceof StructureShape) {
+//				showReactionCartoonEditorPanel((StructureShape) shape);
+//			}
 
-		} else if (menuAction.equals(CartoonToolMiscActions.ReactionsSlices.MENU_ACTION)) {
-			if (shape instanceof StructureShape) {
-				showReactionSlicesCartoonEditorPanel((StructureShape) shape);
-			}
+//		} else if (menuAction.equals(CartoonToolMiscActions.ReactionsSlices.MENU_ACTION)) {
+//			if (shape instanceof StructureShape) {
+//				showReactionSlicesCartoonEditorPanel((StructureShape) shape);
+//			}
 
 		} else if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
 				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
@@ -498,17 +458,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			// references to
 			// the wrong Model or the structures don't match the ContainerShape
 			// heirarchy
-			Iterator<ReactionCartoonEditorDialog> iter = 
-				reactionEditorHash.values().iterator();
-			while (iter.hasNext()) {
-				disposeReactionCartoonEditorDialog(iter.next());
-			}
-			reactionEditorHash.clear();
 			// clear the model in ModelParametersPanel and ProblemsPanel thro'
 			// ModelParametersDialog
-			if (modelParametersDialog != null) {
-				modelParametersDialog.cleanupOnClose();
-			}
 
 			if (evt.getSource() == (StructureCartoon) getGraphModel()
 					&& evt.getPropertyName().equals("model")) {
@@ -519,14 +470,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				if (evt.getNewValue() != null) {
 					((Model) evt.getNewValue()).removePropertyChangeListener(this);
 					((Model) evt.getNewValue()).addPropertyChangeListener(this);
-				}
-				if (modelParametersDialog != null
-						&& modelParametersDialog.getModelParametersPanel() != null
-						&& (modelParametersDialog.getModelParametersPanel().getModel() 
-								!= ((StructureCartoon) getGraphModel())
-								.getModel())) {
-					modelParametersDialog.init(((StructureCartoon) 
-							getGraphModel()).getModel());
 				}
 			}
 
@@ -808,68 +751,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		}
 	}
 	
-	public void showReactionCartoonEditorPanel(
-			final StructureShape structureShape) {
-		if (getGraphModel() == null || getDocumentManager() == null
-				|| getJDesktopPane() == null) {
-			return;
-		}
-		//
-		// See propertyChange method for related code that closes
-		// ReactionEditorCartoonDialog when appropriate
-		//
-		Structure structure = structureShape.getStructure();
-		StructureSuite layout;
-		if(structure instanceof Membrane) {
-			layout = new MembraneStructureSuite(((Membrane) structure));
-		} else {
-			layout = new SingleStructureSuite(structure);
-		}
-		StructureSuite structureSuite = layout;
-		ReactionCartoonEditorDialog rced = reactionEditorHash.get(structureSuite.getTitle());
-		if (rced == null) {
-			final ReactionCartoonEditorDialog reactionCartoonEditorDialog = 
-				new ReactionCartoonEditorDialog();
-			reactionCartoonEditorDialog.setIconifiable(true);
-			reactionCartoonEditorDialog.init(structureShape.getModel(),
-					structureSuite, getDocumentManager());
-			reactionEditorHash.put(structureSuite.getTitle(), reactionCartoonEditorDialog);
-			rced = reactionCartoonEditorDialog;
-			rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, 
-					rced.getLocation().y + reactionEditorHash.size() * 15);
-		}
-		BeanUtils.centerOnComponent(rced, getJDesktopPane());
-		DocumentWindowManager.showFrame(rced, getJDesktopPane());
-	}
-
-	public void showReactionSlicesCartoonEditorPanel(
-			final StructureShape structureShape) {
-		if (getGraphModel() == null || getDocumentManager() == null
-				|| getJDesktopPane() == null) {
-			return;
-		}
-		//
-		// See propertyChange method for related code that closes
-		// ReactionEditorCartoonDialog when appropriate
-		//
-		StructureSuite structureSuite = 
-			new AllStructureSuite(getStructureCartoon());
-		ReactionCartoonEditorDialog rced = reactionEditorHash.get(structureSuite.getTitle());
-		if (rced == null) {
-			final ReactionCartoonEditorDialog reactionCartoonEditorDialog = 
-				new ReactionCartoonEditorDialog();
-			reactionCartoonEditorDialog.setIconifiable(true);
-			reactionCartoonEditorDialog.init(structureShape.getModel(),
-				structureSuite, getDocumentManager());
-			reactionEditorHash.put(structureSuite.getTitle(), reactionCartoonEditorDialog);
-			rced = reactionCartoonEditorDialog;
-			rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, 
-					rced.getLocation().y + reactionEditorHash.size() * 15);
-		}
-		BeanUtils.centerOnComponent(rced, getJDesktopPane());
-		DocumentWindowManager.showFrame(rced, getJDesktopPane());
-	}
-
 	// TO DO: allow user preferences for directory selection.
 	public void showSaveStructureImageDialog(Model model, String resLevel)
 	throws Exception {

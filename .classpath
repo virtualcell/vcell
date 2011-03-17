@@ -41,5 +41,6 @@
 	<classpathentry exported="true" kind="lib" path="script-js.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
+	<classpathentry kind="lib" path="apache_commons_math_2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
