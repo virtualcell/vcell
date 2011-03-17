@@ -69,6 +69,10 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 						"It needs to be an integer power of 2. The default value is 4096, which should be appropriate for nearly all applications.</html>");
 			} else if (source == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
+				if(!randomSeedCheckBox.isSelected())
+				{
+					setNewRandomSeed();
+				}
 			}
 		}
 
