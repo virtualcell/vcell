@@ -5,9 +5,11 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -17,7 +19,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.jdom.Element;
+import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
@@ -25,19 +27,12 @@ import org.vcell.relationship.PathwayMapping;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.graph.GraphPane;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
+import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel implements PathwayListener {
@@ -49,6 +44,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
 	private JButton bringItInButton = null; // wei's code
+	private ConversionPanel conversionPanel = new ConversionPanel(); // wei's code
 	
 	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener {
 
@@ -189,6 +185,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		if (this.bioModel!=null){
 			this.bioModel.getPathwayModel().addPathwayListener(this);
 		}
+		conversionPanel.setBioModel(bioModel);
 		refreshInterface();
 	}
 
@@ -202,15 +199,34 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	}
 	
 	// wei's code
+	public Object[] getSelectedBioPaxObjects(){
+		return graphCartoonTool.getGraphModel().getSelectedObjects();
+	}
+	
 	private void bringItIn(){
-		PathwayMapping pathwayMapping = new PathwayMapping();
-		try{
-			pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, graphCartoonTool.getGraphModel().getSelectedObjects());
-		}catch(Exception e)
-		{
-			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(this, "Errors occur when converting pathway objects to VCell bioModel objects.\n" + e.getMessage());
+		if(graphCartoonTool.getGraphModel().getSelectedObjects().length < 1){
+			return;
 		}
+		ArrayList<BioPaxObject> selectedObjects = new ArrayList<BioPaxObject>();
+		for(int i = 0; i < graphCartoonTool.getGraphModel().getSelectedObjects().length; i++){
+			if((graphCartoonTool.getGraphModel().getSelectedObjects()[i]) instanceof BioPaxObject)
+				selectedObjects.add((BioPaxObject) (graphCartoonTool.getGraphModel().getSelectedObjects()[i]));			
+		}
+		if(selectedObjects.size() < 1){
+			return;
+		}
+        //Create and set up the content pane.
+        conversionPanel.setOpaque(true); //content panes must be opaque
+        conversionPanel.setBioPaxObjects(selectedObjects);
+        int returnCode = DialogUtils.showComponentOKCancelDialog(this, conversionPanel, "Convert to BioModel");
+		if (returnCode == JOptionPane.OK_OPTION) {
+			conversionPanel.bringItIn();
+		}
+	}
+	
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		conversionPanel.setSelectionManager(selectionManager);
 	}
 	// done
 }
