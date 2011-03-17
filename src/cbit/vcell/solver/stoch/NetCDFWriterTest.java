@@ -12,6 +12,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ErrorTolerance;
@@ -36,7 +37,8 @@ public class NetCDFWriterTest {
 			try{
 				CompartmentSubDomain sd = new CompartmentSubDomain("bistable",CompartmentSubDomain.NON_SPATIAL_PRIORITY);
 				StochVolVariable v = new StochVolVariable("X");
-				VarIniCondition varIni = new VarIniCondition(v,new Expression(5));
+				//note: the initialCondition here are all in count.
+				VarIniCondition varIni = new VarIniCount(v,new Expression(5));
 				//subDomain add variables
 				sd.addVarIniCondition(varIni); 
 		
@@ -131,13 +133,13 @@ public class NetCDFWriterTest {
 			try{
 				CompartmentSubDomain sd = new CompartmentSubDomain("HMM",CompartmentSubDomain.NON_SPATIAL_PRIORITY);
 				StochVolVariable v1 = new StochVolVariable("S");
-				VarIniCondition varIni1 = new VarIniCondition(v1,new Expression(602));
+				VarIniCondition varIni1 = new VarIniCount(v1,new Expression(602));
 				StochVolVariable v2 = new StochVolVariable("E");
-				VarIniCondition varIni2 = new VarIniCondition(v2,new Expression(602));
+				VarIniCondition varIni2 = new VarIniCount(v2,new Expression(602));
 				StochVolVariable v3 = new StochVolVariable("ES");
-				VarIniCondition varIni3 = new VarIniCondition(v3,new Expression(0));
+				VarIniCondition varIni3 = new VarIniCount(v3,new Expression(0));
 				StochVolVariable v4 = new StochVolVariable("P");
-				VarIniCondition varIni4 = new VarIniCondition(v4,new Expression(0));
+				VarIniCondition varIni4 = new VarIniCount(v4,new Expression(0));
 				//subDomain add variables
 				sd.addVarIniCondition(varIni1);
 				sd.addVarIniCondition(varIni2);

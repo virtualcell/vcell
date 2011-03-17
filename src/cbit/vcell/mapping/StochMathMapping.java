@@ -16,7 +16,9 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -78,7 +80,7 @@ public class StochMathMapping extends MathMapping {
  * @throws MappingException
  * @throws ExpressionException
  */
-private Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
+private Expression getExpressionConcToExpectedCount(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
 	Expression particlesExpr = null;	//to create an expression for number of particles 
 
@@ -584,8 +586,8 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 
 				//add function for initial amount
 				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
-				Expression 	iniAmountExp = getExpressionConcToAmt(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
-//				iniAmountExp.bindExpression(this);
+				Expression 	iniAmountExp = getExpressionConcToExpectedCount(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
+				// this is just going to add a var in math with iniCountSymbol, it is not actually write the expression to IniCountParameter.
 				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm.getGeometryClass()),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm.getGeometryClass()),domain));
 			}
 			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
@@ -1001,8 +1003,18 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
-			if (initParm!=null){
-				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
+			if (initParm!=null)
+			{
+				VarIniCondition varIni = null;
+				if(getSimulationContext().isUsingConcentration())
+				{
+					varIni = new VarIniPoissonExpectedCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
+				}
+				else 
+				{
+					varIni = new VarIniCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
+				}
+				
 				subDomain.addVarIniCondition(varIni);
 			}
 		}
@@ -1133,40 +1145,12 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
 		scm.setHasEventAssignment(false);
-		if (scs.isConstant()){
-			SpeciesContextSpec.SpeciesContextSpecParameter initCountParm = scs.getInitialCountParameter();
-			SpeciesContextSpec.SpeciesContextSpecParameter initConcParm =  scs.getInitialConcentrationParameter();
-			Expression initCondInCount = null;
-			//initial condition is concentration
-			if(initConcParm != null && initConcParm.getExpression() != null)
-			{
-				initCondInCount = getExpressionConcToAmt(new Expression(initConcParm, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
-			}
-			else
-			{
-				initCondInCount = new Expression(initCountParm, getNameScope());
-			}
-//			initCondInCount.bindExpression(this);
-			initCondInCount = getSubstitutedExpr(initCondInCount, true, true);
-			scm.setDependencyExpression(initCondInCount);
-		}
-		//
-		// test if participant in fast reaction step, request elimination if possible
-		//
+		// We still want the stochastic constant species context to be a fixed function, but still stochvolumnVar.
+		// we don't eliminate variables for stochastic
+		scm.setDependencyExpression(null);
+		// We don't participant in fast reaction step for stochastic
 		scm.setFastParticipant(false);
-		ReactionSpec reactionSpecs[] = getSimulationContext().getReactionContext().getReactionSpecs();
-		for (int j=0;j<reactionSpecs.length;j++){
-			ReactionSpec reactionSpec = reactionSpecs[j];
-			if (reactionSpec.isExcluded()){
-				continue;
-			}
-			ReactionStep rs = reactionSpec.getReactionStep();
-			if (rs instanceof SimpleReaction && rs.countNumReactionParticipants(scs.getSpeciesContext()) > 0){
-				if (reactionSpec.isFast()){
-					scm.setFastParticipant(true);
-				}
-			}
-		}
+		
 		getSpeciesContextMappingList().addElement(scm);
 	}
 }
@@ -1179,18 +1163,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
  */
 @Override
 protected void refreshVariables() throws MappingException {
-	//
-	// non-constant dependant variables(means rely on other contants/functions) require a function
-	//
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
-	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = enum1.nextElement();
-		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
-		if (scm.getDependencyExpression() != null && !scs.isConstant()){
-			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));
-			scm.setVariable(null);
-		}
-	}
 
 	//
 	// non-constant independant variables require either a membrane or volume variable
@@ -1220,40 +1193,11 @@ protected void refreshVariables() throws MappingException {
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());
 		}
-
-		if (scm.getDependencyExpression() == null && !scs.isConstant()){
-			scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass())));
-			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
-		}
+		//we always add variables, all species are independent variables, no matter they are constant or not.
+		scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass())));
+		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
+		
 	}
 }
-
-//substitute parameters with mathsymbol(e.g. if there is "a" para in reaction1, subsitute it to "a_reaction1" in reaction1 if there are "a"s in different reactions )
-//this is useful for general law kinetics
-//private Expression substitueKineticPara(Expression exp, ReactionStep rs, StructureMapping sm) throws MappingException, ExpressionException
-//{
-//	Expression result = new Expression(exp);
-//	String symbols[] = result.getSymbols();
-//	for (int k = 0;symbols!=null && k < symbols.length; k++){
-//		Kinetics.KineticsParameter kp = rs.getKinetics().getKineticsParameter(symbols[k]);
-//		if (kp != null)
-//		{
-//			try{
-//				if( getMathSymbol0(kp,sm).compareTo(symbols[k]) !=0)
-//				{
-//					result.substituteInPlace(new Expression(symbols[k]), new Expression(getMathSymbol0(kp,sm)));	
-//				}
-//			}catch(ExpressionException e1){
-//				e1.printStackTrace();
-//				throw new ExpressionException(e1.getMessage());
-//			}catch(MappingException e2){
-//				e2.printStackTrace();
-//				throw new MappingException("Erroe occurs when try to get math symbol for kinetic para:"+symbols[k]+".\n"+e2.getMessage());
-//			}
-//		    
-//		}
-//	}
-//	return result;
-//}
 
 }

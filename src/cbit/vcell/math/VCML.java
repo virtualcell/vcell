@@ -33,7 +33,9 @@ public class VCML {
 	public final static String VolumeRegionVariable 	= "VolumeRegionVariable";
 	public final static String MembraneRegionVariable	= "MembraneRegionVariable";
 	public final static String FilamentRegionVariable	= "FilamentRegionVariable";
-	public final static String VarIniCondition 			= "VariableInitialCondition"; //stoch
+	public final static String VarIniCount_Old 			= "VariableInitialCondition"; //stoch
+	public final static String VarIniCount 			    = "VariableInitialCount"; //stoch
+	public final static String VarIniPoissonExpectedCount 	= "VariableInitialPoissonExpectedCount"; //stoch
 	public final static String MembraneElements 		= "MembraneElements";
 	public final static String ContourElements 			= "ContourElements";
 	public final static String Task				 		= "Task";
