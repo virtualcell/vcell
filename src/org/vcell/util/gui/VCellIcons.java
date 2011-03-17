@@ -18,6 +18,9 @@ public abstract class VCellIcons {
 	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
 	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
+	public final static Icon documentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/document_icon.png"));
+	public final static Icon structureIcon = new ImageIcon(VCellIcons.class.getResource("/images/bioModel_16x16.gif"));
+	public final static Icon mathModelIcon = new ImageIcon(VCellIcons.class.getResource("/images/math_16x16.gif"));
 	
 	// application
 	public final static Icon geometryIcon = new ImageIcon(VCellIcons.class.getResource("/images/geometry2_16x16.gif"));
@@ -74,7 +77,7 @@ public abstract class VCellIcons {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JButton("", tableIcon), BorderLayout.CENTER);
+			panel.add(new JButton("", documentIcon), BorderLayout.CENTER);
 			frame.add(panel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {

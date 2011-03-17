@@ -397,11 +397,12 @@ public abstract class GraphModel {
 	public void setResizeMode(ResizeMode resizeMode) { resizeManager.setResizeMode(resizeMode); }
 	
 	public void searchText(String text) {
+		String lowerCaseText = text.toLowerCase();
 		Set<Object> selectedObjectsNew = new HashSet<Object>();
 		for(Map.Entry<Object, Shape> entry : objectShapeMap.entrySet()) {
 			Object object = entry.getKey();
 			Shape shape = entry.getValue();
-			if(shape.getLabel().contains(text)) {
+			if(text != null && text.length() != 0 && shape.getLabel() != null && shape.getLabel().toLowerCase().contains(lowerCaseText)) {
 				selectedObjectsNew.add(object);
 			}
 		}

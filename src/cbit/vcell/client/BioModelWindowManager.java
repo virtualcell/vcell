@@ -30,6 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -319,7 +320,7 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
-	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));	
+	editorFrame.setFrameIcon(VCellIcons.documentIcon);	
 	editorFrame.add(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setMinimumSize(new Dimension(400, 300));

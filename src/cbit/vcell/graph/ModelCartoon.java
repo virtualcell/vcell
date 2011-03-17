@@ -3,6 +3,10 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import cbit.gui.graph.*;
 import cbit.vcell.model.*;
 /**
@@ -41,5 +45,19 @@ implements java.beans.PropertyChangeListener, Model.Owner {
 		}
 		refreshAll();
 		firePropertyChange(PROPERTY_NAME_MODEL, oldModel, newFieldModel);
+	}
+	
+	@Override
+	public void searchText(String text) {
+		String lowerCaseText = text.toLowerCase();
+		Set<Object> selectedObjectsNew = new HashSet<Object>();
+		for(Map.Entry<Object, Shape> entry : objectShapeMap.entrySet()) {
+			Object object = entry.getKey();
+			Shape shape = entry.getValue();
+			if(!(object instanceof Structure) && text != null && text.length() != 0 && shape.getLabel() != null && shape.getLabel().toLowerCase().contains(lowerCaseText)) {
+				selectedObjectsNew.add(object);
+			}
+		}
+		setSelectedObjects(selectedObjectsNew.toArray());
 	}
 }
