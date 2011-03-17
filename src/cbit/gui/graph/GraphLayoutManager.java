@@ -238,23 +238,27 @@ public class GraphLayoutManager {
 				ReactionParticipantShape rpShape = (ReactionParticipantShape) shape;
 				SpeciesContextShape scShape = (SpeciesContextShape) rpShape.getStartShape();
 				ReactionStepShape rsShape = (ReactionStepShape) rpShape.getEndShape();
-				if (rpShape instanceof ReactantShape) {
-					graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-				} else if (rpShape instanceof ProductShape) {
-					graph.AddEdge(nodeMap.get(rsShape), nodeMap.get(scShape), null, 0, null);
-				} else if (rpShape instanceof CatalystShape) {
-					graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-				} else if (rpShape instanceof FluxShape) {
-					// check if coming or going
-					SpeciesContext sc = scShape.getSpeciesContext();
-					if (sc.getStructure() == rsShape.getReactionStep()
-							.getStructure().getParentStructure()) {
-						graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
+				GlgGraphNode speciesContextNode = nodeMap.get(scShape);
+				GlgGraphNode reactionNode = nodeMap.get(rsShape);
+				if(!graph.NodesConnected(speciesContextNode, reactionNode)) {
+					if (rpShape instanceof ReactantShape) {
+						graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
+					} else if (rpShape instanceof ProductShape) {
+						graph.AddEdge(reactionNode, speciesContextNode, null, 0, null);
+					} else if (rpShape instanceof CatalystShape) {
+						graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
+					} else if (rpShape instanceof FluxShape) {
+						// check if coming or going
+						SpeciesContext sc = scShape.getSpeciesContext();
+						if (sc.getStructure() == rsShape.getReactionStep()
+								.getStructure().getParentStructure()) {
+							graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
+						} else {
+							graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
+						}
 					} else {
-						graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
+						continue;
 					}
-				} else {
-					continue;
 				}
 			}
 		}
