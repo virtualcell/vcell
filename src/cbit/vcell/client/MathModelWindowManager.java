@@ -22,6 +22,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
@@ -258,7 +259,7 @@ private void createMathModelFrame() {
 	mathModelEditor.setMathModelWindowManager(this);
 
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("MathModel", true, false, true, true);
-	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/math_16x16.gif")));	
+	editorFrame.setFrameIcon(VCellIcons.documentIcon);	
 	editorFrame.add(mathModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setMinimumSize(new Dimension(400, 300));

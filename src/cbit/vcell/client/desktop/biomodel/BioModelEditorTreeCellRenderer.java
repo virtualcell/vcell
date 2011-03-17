@@ -23,15 +23,9 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 @SuppressWarnings("serial")
 public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
 	private BioModel bioModel = null;
-	private Icon bioModelIcon = null;
 	
 	public BioModelEditorTreeCellRenderer(JTree tree) {
 		super(tree);
-		try {
-			bioModelIcon = new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif"));
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-		}
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -77,7 +71,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	        Object userObj = node.getUserObject();
 	    	if (userObj instanceof BioModel) {
 	    		font = boldFont;
-	    		icon = bioModelIcon;
+	    		icon = VCellIcons.documentIcon;
 	    		labelText = ((BioModel)userObj).getName();
 	    		toolTipPrefix = "BioModel: ";
 	    	} else if (userObj instanceof SimulationContext) {		// --- root: application name
@@ -124,8 +118,10 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			}
 	    			break;
 	    		case REACTION_DIAGRAM_NODE:
-	    		case STRUCTURE_DIAGRAM_NODE:
 	    			icon = VCellIcons.diagramIcon;
+	    			break;
+	    		case STRUCTURE_DIAGRAM_NODE:
+	    			icon = VCellIcons.structureIcon;
 	    			break;
 	    		case GEOMETRY_NODE:
 	    			icon = VCellIcons.geometryIcon;

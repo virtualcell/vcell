@@ -414,7 +414,6 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	try {
 		treeSelectionChanged();
 		Object selectedNode = documentEditorTree.getLastSelectedPathComponent();
-		ActiveView activeView = null;
 		if (selectedNode != null && (selectedNode instanceof BioModelNode)) {
 			Object selectedObject = ((BioModelNode)selectedNode).getUserObject();
 			
@@ -422,10 +421,11 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			if (selectedObject instanceof DocumentEditorTreeFolderNode) {
 				folderClass = ((DocumentEditorTreeFolderNode) selectedObject).getFolderClass();
 			}
-			activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
-		}
-		if (activeView != null) {
+			ActiveView activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
 			selectionManager.setActiveView(activeView);
+			if (selectedObject instanceof SimulationContext) { // selected object is Simulation Context
+				selectionManager.setSelectedObjects(new Object[]{selectedObject});
+			}
 		}
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);

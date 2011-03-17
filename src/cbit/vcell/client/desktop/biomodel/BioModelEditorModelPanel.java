@@ -15,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -73,10 +74,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTabID {
 		reaction_table("Reactions"),
-		structure_table("Structures"),
-		species_table("Species"),
 		reaction_diagram("Reaction Diagram"),
-		structure_diagram("Structure Diagram");
+		structure_table("Structures"),
+		structure_diagram("Structure Diagram"),
+		species_table("Species");
 		
 		private String name = null;
 		ModelPanelTabID(String name) {
@@ -184,15 +185,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 
 		public void insertUpdate(DocumentEvent e) {
-			searchTable();
+			search();
 		}
 
 		public void removeUpdate(DocumentEvent e) {
-			searchTable();
+			search();
 		}
 
 		public void changedUpdate(DocumentEvent e) {
-			searchTable();
+			search();
 		}
 	}
 	
@@ -200,6 +201,21 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		super();
 		addPropertyChangeListener(eventHandler);
 		initialize();
+	}
+	
+	private void refreshDeleteButton() {
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+			deleteButton.setEnabled(reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects().length > 0);			
+		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+			deleteButton.setEnabled(cartoonEditorPanel.getStructureCartoon().getSelectedObjects().length > 0);
+		} else {
+			computeCurrentSelectedTable();
+			if (currentSelectedTableModel != null) {
+				int[] rows = currentSelectedTable.getSelectedRows();
+				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));			
+			}
+		}
 	}
 
 	public void tabbedPaneSelectionChanged() {
@@ -231,26 +247,22 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		if (activeView != null) {
 			setActiveView(activeView);
 		}
-		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()
-				|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() ||
+				selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
 			newButton.setVisible(false);
-			deleteButton.setEnabled(false);
 		} else {
 			newButton.setVisible(true);
-			computeCurrentSelectedTable();
-			if (currentSelectedTableModel != null) {
-				int[] rows = currentSelectedTable.getSelectedRows();
-				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));			
-			}
 		}
+		refreshDeleteButton();
 	}
 
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
-		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
-		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
-		setTableSelections(selectedObjects, structuresTable, structureTableModel);
-		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
-		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
+//		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
+//		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
+//		setTableSelections(selectedObjects, structuresTable, structureTableModel);
+//		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
+//		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
+		refreshDeleteButton();
 	}
 
 	private void initialize(){
@@ -376,11 +388,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		return bioModel.getModel();
 	}
 	
-	private void searchTable() {
+	private void search() {
 		String searchText = textFieldSearch.getText();
-		computeCurrentSelectedTable();
-		if (currentSelectedTableModel != null) {
-			currentSelectedTableModel.setSearchText(searchText);
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+			reactionCartoonEditorPanel.getReactionCartoon().searchText(searchText);
+		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+			cartoonEditorPanel.getStructureCartoon().searchText(searchText);
+		} else {
+			computeCurrentSelectedTable();
+			if (currentSelectedTableModel != null) {
+				currentSelectedTableModel.setSearchText(searchText);
+			}
 		}
 	}
 	
@@ -427,68 +446,69 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	private void deleteButtonPressed() {
-		computeCurrentSelectedTable();
 		try {
-			int[] rows = currentSelectedTable.getSelectedRows();
-			if (rows == null || rows.length == 0) {
-				return;
-			}
-			String deleteListText = "";
-			if (currentSelectedTable == speciesTable) {
-				ArrayList<SpeciesContext> deleteList = new ArrayList<SpeciesContext>();
-				for (int r : rows) {
-					if (r < speciesTableModel.getDataSize()) {
-						SpeciesContext speciesContext = speciesTableModel.getValueAt(r);
-						deleteList.add(speciesContext);
-						deleteListText += "\t" + speciesContext.getName() + "\n"; 
-					}
-				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting species", "You are going to delete the following species:\n\n " + deleteListText + "\n Continue?");
-				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			ArrayList<Object> deleteList = new ArrayList<Object>();
+			int selectedIndex = tabbedPane.getSelectedIndex();
+			if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
+				deleteList.addAll(Arrays.asList(reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects()));			
+			} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+				deleteList.addAll(Arrays.asList(cartoonEditorPanel.getStructureCartoon().getSelectedObjects()));
+			} else {
+				computeCurrentSelectedTable();
+				int[] rows = currentSelectedTable.getSelectedRows();
+				if (rows == null || rows.length == 0) {
 					return;
 				}
-				for (SpeciesContext sc : deleteList) {
-					bioModel.getModel().removeSpeciesContext(sc);
-				}
-			} else if (currentSelectedTable == structuresTable) {
-				ArrayList<Feature> deleteList = new ArrayList<Feature>();
-				for (int r : rows) {
-					if (r < structureTableModel.getDataSize()) {
-						Structure rowValue = structureTableModel.getValueAt(r);
-						if (rowValue instanceof Feature) {
-							deleteList.add((Feature) rowValue);
-							deleteListText += "\t" + ((Feature)rowValue).getName() + "\n"; 
+				if (currentSelectedTable == speciesTable) {
+					for (int r : rows) {
+						if (r < speciesTableModel.getDataSize()) {
+							SpeciesContext speciesContext = speciesTableModel.getValueAt(r);
+							deleteList.add(speciesContext);
+						}
+					}
+				} else if (currentSelectedTable == structuresTable) {
+					for (int r : rows) {
+						if (r < structureTableModel.getDataSize()) {
+							Structure rowValue = structureTableModel.getValueAt(r);
+							if (rowValue instanceof Feature) {
+								deleteList.add((Feature) rowValue);
+							}
+						}
+					}
+				} else if (currentSelectedTable == reactionsTable) {
+					for (int r : rows) {
+						if (r < reactionTableModel.getDataSize()) {
+							ReactionStep reaction = reactionTableModel.getValueAt(r);
+							deleteList.add(reaction);
 						}
 					}
 				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting structure(s)", "You are going to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
-				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-					return;
+			}
+			if (deleteList.size() == 0) {
+				return;
+			}
+			StringBuilder deleteListText = new StringBuilder();
+			for (Object object : deleteList) {
+				if (object instanceof SpeciesContext) {
+					deleteListText.append("Species\t'" + ((SpeciesContext)object).getName() + "'\n");
+				} else if (object instanceof ReactionStep) {
+					deleteListText.append("Reaction\t'" + ((ReactionStep)object).getName() + "'\n");
+				} else if (object instanceof Structure) {
+					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
-				for (Feature f : deleteList) {
-					bioModel.getModel().removeFeature(f);
-				}
-			} else if (currentSelectedTable == reactionsTable) {
-				ArrayList<ReactionStep> deleteList = new ArrayList<ReactionStep>();
-				for (int r : rows) {
-					if (r < reactionTableModel.getDataSize()) {
-						ReactionStep reaction = reactionTableModel.getValueAt(r);
-						deleteList.add(reaction);
-						deleteListText += "\t" + reaction.getName() + "\n"; 
-					}
-				}
-				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting reaction(s)", "You are going to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
-				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-					return;
-				}
-				for (ReactionStep sc : deleteList) {
-					bioModel.getModel().removeReactionStep(sc);
-				}
+			}
+			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
+			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+				return;
+			}
+			for (Object object : deleteList) {
+				bioModel.getModel().removeObject(object);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
+			
 	}
 	
 	private void bioModelChange() {

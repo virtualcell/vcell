@@ -51,16 +51,16 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	public enum DocumentEditorTreeFolderClass {
 		PATHWAY_NODE("Pathway"),
 		MODEL_NODE("Physiology"),	
-		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
 		DATA_NODE("Experimental Data"),	
 		APPLICATIONS_NODE("Applications"),	
+		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
 		SCRIPTING_NODE("Scripting"),
 
 		REACTIONS_NODE("Reactions"),
-		STRUCTURES_NODE("Structures"),
-		SPECIES_NODE("Species"),
 		REACTION_DIAGRAM_NODE("Reaction Diagram"),
+		STRUCTURES_NODE("Structures"),
 		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
+		SPECIES_NODE("Species"),
 		
 		GEOMETRY_NODE("Geometry"),
 		SETTINGS_NODE("Specifications"),

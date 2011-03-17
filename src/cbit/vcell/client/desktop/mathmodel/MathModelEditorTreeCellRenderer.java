@@ -22,15 +22,9 @@ import cbit.vcell.mathmodel.MathModel;
 @SuppressWarnings("serial")
 public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
 //	private MathModel mathModel = null;
-	private Icon mathModelIcon = null;
 	
 	public MathModelEditorTreeCellRenderer(JTree tree) {
 		super(tree);
-		try {
-			mathModelIcon = new ImageIcon(getClass().getResource("/images/math_16x16.gif"));
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-		}
 	}
 
 //	public void setMathModel(MathModel mm) {
@@ -63,7 +57,7 @@ public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRende
 	        Object userObj = node.getUserObject();
 	    	if (userObj instanceof MathModel) {
 	    		font = boldFont;
-	    		icon = mathModelIcon;
+	    		icon = VCellIcons.documentIcon;
 	    		labelText = ((MathModel)userObj).getName();
 	    		toolTipPrefix = "MathModel: ";
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
