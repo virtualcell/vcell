@@ -3048,4 +3048,13 @@ public String isValidForStochApp()
 	}
 	return returnStr;
 }
+
+	public void removeObject(Object object) throws PropertyVetoException {
+		if(object instanceof Feature) { removeFeature((Feature) object); }
+		else if(object instanceof ModelParameter) { removeModelParameter((ModelParameter) object); }
+		else if(object instanceof ReactionStep) { removeReactionStep((ReactionStep) object); }
+		else if(object instanceof Species) { removeSpecies((Species) object); }
+		else if(object instanceof SpeciesContext) { removeSpeciesContext((SpeciesContext) object); }
+	}
+	
 }
