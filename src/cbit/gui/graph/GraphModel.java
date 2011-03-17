@@ -395,5 +395,17 @@ public abstract class GraphModel {
 
 	public ResizeMode getResizeMode() { return resizeManager.getResizeMode(); }
 	public void setResizeMode(ResizeMode resizeMode) { resizeManager.setResizeMode(resizeMode); }
+	
+	public void searchText(String text) {
+		Set<Object> selectedObjectsNew = new HashSet<Object>();
+		for(Map.Entry<Object, Shape> entry : objectShapeMap.entrySet()) {
+			Object object = entry.getKey();
+			Shape shape = entry.getValue();
+			if(shape.getLabel().contains(text)) {
+				selectedObjectsNew.add(object);
+			}
+		}
+		setSelectedObjects(selectedObjectsNew.toArray());
+	}
 
 }
