@@ -38,7 +38,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -563,7 +562,9 @@ private void newSimulation() {
  * Comment
  */
 private void refreshButtonsLax() {
-	particleViewButton.setVisible(fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatialStoch());
+	if (fieldSimulationWorkspace.getSimulationOwner().getMathDescription() != null) {
+		particleViewButton.setVisible(fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatialStoch());
+	}
 	
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	
@@ -655,7 +656,6 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 	}
 	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);	
 	refreshButtonsLax();
-	particleViewButton.setVisible(fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatialStoch());
 }
 
 

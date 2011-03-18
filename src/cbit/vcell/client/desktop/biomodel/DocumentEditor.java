@@ -324,7 +324,15 @@ private void initialize() {
 			}
 		}, AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
 				
-		documentEditorTree = new javax.swing.JTree();
+		documentEditorTree = new javax.swing.JTree() {
+
+			@Override
+			public boolean isPathEditable(TreePath path) {
+				Object object = path.getLastPathComponent();
+				return (object instanceof BioModelNode) && (((BioModelNode)object).getUserObject() instanceof SimulationContext);
+			}
+			
+		};
 		documentEditorTree.setEditable(true);
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
