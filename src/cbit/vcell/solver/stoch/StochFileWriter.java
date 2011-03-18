@@ -191,6 +191,8 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	  	printWriter.println("<model>");
 		//  variables
 		printWriter.println("<discreteVariables>");
+		//speceis initial condition (in number of molecules)
+		//Species iniCondition are sampled from a poisson distribution(which has a mean of the current iniExp value)
 		List<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
 		if((varInis != null) && (varInis.size()>0))
 	    {
