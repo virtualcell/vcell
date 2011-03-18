@@ -176,59 +176,21 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						}
 					}
 				}
-				int totalNumHits = Integer.parseInt(searchResponse.getAttribute("total_num_hits"));
-				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\": " + hitList.size() + " of " + totalNumHits + " matches"), true);				
+//				int totalNumHits = Integer.parseInt(searchResponse.getAttribute("total_num_hits"));
+				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\""), true);				
 				for (Hit hit : hitList) {
-					BioModelNode hitNode = new BioModelNode(hit, true);
-					createHitChildNode(hitNode, hit.names(), "name");
-					createHitChildNode(hitNode, hit.synonyms(), "synonym");
-					createHitChildNode(hitNode, hit.descriptions(), "description");
-					createHitChildNode(hitNode, hit.excerpts(), "excerpt");
-					DataSource dataSource = hit.dataSource();
-					if (dataSource != null) {
-						hitNode.add(new BioModelNode(dataSource, false));
-					}
-					Organism organism = hit.organism();
-					if (organism != null) {
-						hitNode.add(new BioModelNode(organism, false));
-					}
-					// xref
-					List<XRef> xrefList = hit.xRefs();
-					BioModelNode xrefsNode = null;
-					int numXRefs = xrefList.size();
-					if (numXRefs == 0) {
-						xrefsNode = new BioModelNode(new PathwayStringObject("no cross references"), false);
-					} else {					
-						List<XRef> obsoleteXRefs = new ArrayList<XRef>();
-						xrefsNode = new BioModelNode(null, true);
-						for(XRef xRef : hit.xRefs()) { 
-							if (obsolete(xRef)) {
-								obsoleteXRefs.add(xRef);
-							} else {
-								xrefsNode.add(new BioModelNode(xRef, false));
-							}
-						}
-						int numObsoletes = obsoleteXRefs.size();
-						xrefsNode.setUserObject(new PathwayStringObject(numXRefs + " cross reference(s) " + (numObsoletes == 0 ? "" : "(" + numObsoletes + " obsolete(s))")));
-						for(XRef xRef : obsoleteXRefs) {							
-							xrefsNode.add(new BioModelNode(xRef, false));
-						}
-					}					
-					hitNode.add(xrefsNode);
 					// pathway
 					List<Pathway> pathwayList = hit.pathways();
-					BioModelNode pathwaysNode = null;
 					int numPathways = pathwayList.size();
-					if (numPathways == 0) {
-						pathwaysNode = new BioModelNode(new PathwayStringObject("no pathways"), false);
-					} else {
-						pathwaysNode = new BioModelNode(new PathwayStringObject(numPathways + " pathway(s)"), true);
+					if (numPathways > 0) {
+						BioModelNode hitNode = new BioModelNode(hit, true);
+//						BioModelNode pathwaysNode = new BioModelNode(new PathwayStringObject(numPathways + " pathway(s)"), true);
 						for (Pathway pathway: pathwayList) {
-							pathwaysNode.add(new BioModelNode(pathway, false));
+							hitNode.add(new BioModelNode(pathway, false));
 						}
+//						hitNode.add(pathwaysNode);
+						searchNode.add(hitNode);
 					}
-					hitNode.add(pathwaysNode);
-					searchNode.add(hitNode);
 				}
 			}
 			rootNode.insert(searchNode, 0);
@@ -288,11 +250,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						}
 					}
 					StringBuilder stringBuilder = new StringBuilder();
-					if (hit.primaryID() != null && hit.primaryID().trim().length() > 0) {
-						stringBuilder.append("," + hit.primaryID().trim()); 
-					}
 					if (hit.entityType() != null && hit.entityType().trim().length() > 0) {
-						stringBuilder.append("," + hit.entityType().trim()); 
+						stringBuilder.append(hit.entityType().trim()); 
 					}
 					if (hit.organism() != null && hit.organism().speciesName().trim().length() > 0) {
 						stringBuilder.append("," + hit.organism().speciesName().trim()); 
@@ -300,7 +259,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					labelText =  name + (stringBuilder.length() == 0 ? "" : "(" + stringBuilder.toString() + ")");
 				} else if (userObject instanceof Pathway){
 					Pathway pathway = (Pathway)userObject;
-					labelText = pathway.primaryId() + ":  " + pathway.name() + "  [" + pathway.dataSource().name() + "]";
+					labelText = pathway.name() + "  [" + pathway.dataSource().name() + "]";
 				} else if (userObject instanceof DataSource){
 					DataSource dataSource = (DataSource)userObject;
 					labelText = "Data source: " + dataSource.name() + " (" + dataSource.primaryId() + ")";
@@ -494,7 +453,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(showPathwayButton, gbc);
 		
