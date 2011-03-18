@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -143,6 +144,35 @@ private XmlUtil() {
   		builder.setErrorHandler(errorHandler);
 		try {
 	  		sDoc = builder.build(file);
+			// Element root = null;
+	  		// root = sDoc.getRootElement();
+	  		// flush/replace previous error log with every read.
+	  		String errorHandlerLog = errorHandler.getErrorLog();
+	  		if (errorHandlerLog.length() > 0) {
+				System.out.println(errorHandlerLog);
+				XmlUtil.errorLog = errorHandlerLog;
+	  		} else {
+				XmlUtil.errorLog = "";                     
+	  		}
+		} catch (JDOMException e) { 
+        	e.printStackTrace();
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
+    	} catch (IOException e) { 
+        	e.printStackTrace();
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+    	}
+
+    	return sDoc;
+	}
+	
+	public static Document readXML(InputStream inputStream) throws RuntimeException {
+		
+		SAXBuilder builder = new SAXBuilder(false);                           
+		Document sDoc = null;
+		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
+  		builder.setErrorHandler(errorHandler);
+		try {
+	  		sDoc = builder.build(inputStream);
 			// Element root = null;
 	  		// root = sDoc.getRootElement();
 	  		// flush/replace previous error log with every read.

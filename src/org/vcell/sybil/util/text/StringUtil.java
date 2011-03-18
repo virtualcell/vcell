@@ -10,6 +10,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -67,6 +70,22 @@ public class StringUtil {
 		String line = new String();
 		while((line = bufferedReader.readLine()) != null) { stringBuffer.append(line + "\n"); }
 		return stringBuffer.toString();
+	}
+	
+	public static String textFromInputStream(InputStream is, String encoding) throws IOException {
+		Writer writer = new StringWriter(); 
+		char[] buffer = new char[1024]; 
+		try { 
+			Reader reader = new BufferedReader(new InputStreamReader(is, encoding)); 
+			int n; 
+			while ((n = reader.read(buffer)) != -1) { 
+				writer.write(buffer, 0, n); 
+			} 
+		} finally { 
+			is.close(); 
+		} 
+		return writer.toString(); 
+
 	}
 
 	public static Document documentFromText(String text) {

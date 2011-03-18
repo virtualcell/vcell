@@ -2,10 +2,13 @@ package org.vcell.relationship;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
+
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.model.BioModelEntityObject;
 
 
@@ -13,17 +16,30 @@ public class RelationshipModel {
 	private HashSet<RelationshipObject> relationshipObjects = new HashSet<RelationshipObject>();
 	protected transient ArrayList<RelationshipListener> aRelationshipListeners = new ArrayList<RelationshipListener>();
 
-	public Set<RelationshipObject> getRelationshipObjects(){
-		return relationshipObjects;
-	}
-	
 	public void setRelationshipObjects(HashSet<RelationshipObject> relationshipObjects){
 		this.relationshipObjects = relationshipObjects;
+	}
+	public Set<RelationshipObject> getRelationshipObjects(){
+		return relationshipObjects;
 	}
 	
 	public void merge(RelationshipModel relationshipModel) {
 		relationshipObjects.addAll(relationshipModel.relationshipObjects);
 		fireRelationshipChanged(new RelationshipEvent(this, null, RelationshipEvent.CHANGED));
+	}
+	
+	public boolean compare(HashSet<RelationshipObject> theirRelationshipObjects, IdentifiableProvider provider) {
+
+		if(relationshipObjects.size() != theirRelationshipObjects.size()) {
+			return false;			// different number of objects
+		}
+		
+		for (RelationshipObject bpObject : relationshipObjects){
+			if(!bpObject.compare(theirRelationshipObjects, provider)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private ArrayList<RelationshipListener> getRelationshipListeners(){

@@ -1,9 +1,11 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.util.Matchable;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                        ";
@@ -81,6 +83,38 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 			throw new RuntimeException("unchecked recursion in pathway.show()");
 		}
 		return spaces.substring(0,3*level);
+	}
+	
+	public final boolean fullCompare(HashSet<BioPaxObject> theirBiopaxObjects){
+		for (BioPaxObject theirBpObject : theirBiopaxObjects){
+			if(getID().equals(theirBpObject.getID())) {
+				int level = 1;
+				StringBuffer sbOurs = new StringBuffer();
+				StringBuffer sbTheirs = new StringBuffer();
+				
+				showChildren(sbOurs, level);
+				theirBpObject.showChildren(sbTheirs, level);
+				if(sbOurs.toString().equals(sbTheirs.toString())) {
+					return true;
+				}
+				return false;
+
+			}
+		}
+		return false;
+	}
+
+	public boolean compareEqual(Matchable obj) {
+		int level = 1;
+		StringBuffer sbOurs = new StringBuffer();
+		StringBuffer sbTheirs = new StringBuffer();
+		
+		showChildren(sbOurs, level);
+		((BioPaxObject)obj).showChildren(sbTheirs, level);
+		if(sbOurs.toString().equals(sbTheirs.toString())) {
+			return true;
+		}
+		return false;
 	}
 	
 	public final void show(StringBuffer sb){
