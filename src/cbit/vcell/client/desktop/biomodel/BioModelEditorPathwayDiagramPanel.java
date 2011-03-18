@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
@@ -23,16 +25,15 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
-import org.vcell.relationship.PathwayMapping;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
-import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel implements PathwayListener {
@@ -46,7 +47,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	private JButton bringItInButton = null; // wei's code
 	private ConversionPanel conversionPanel = new ConversionPanel(); // wei's code
 	
-	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener {
+	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener, PropertyChangeListener {
 
 		public void actionPerformed(ActionEvent e) {
 			// wei's code
@@ -59,6 +60,12 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		}
 		public void annotationChanged(AnnotationEvent annotationEvent) {
 			refreshInterface();
+		}
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals(GraphModel.PROPERTY_NAME_SELECTED)) {
+				Object[] selectedObjects = (Object[]) evt.getNewValue();
+				setSelectedObjects(selectedObjects);
+			}			
 		}
 	}
 	
@@ -123,7 +130,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		sourceTextArea = new JTextArea();		
 		graphPane =  new GraphPane();
 		graphCartoonTool = new PathwayGraphTool();
-		graphCartoonTool.setGraphPane(graphPane);	
+		graphCartoonTool.setGraphPane(graphPane);		
 		
 		// wei's code: add a button for demo. please redesign it for better User interface
 		JPanel layoutPanel = new JPanel();
@@ -164,7 +171,12 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		}
 		try {
 			PathwayModel pathwayModel = bioModel.getPathwayModel();
+			GraphModel oldModel = graphPane.getGraphModel();
+			if (oldModel != null) {
+				oldModel.removePropertyChangeListener(eventHandler);
+			}
 			PathwayGraphModel pathwayGraphModel = new PathwayGraphModel();
+			pathwayGraphModel.addPropertyChangeListener(eventHandler);
 			graphPane.setGraphModel(pathwayGraphModel);
 			pathwayGraphModel.setPathwayModel(pathwayModel);
 			sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");

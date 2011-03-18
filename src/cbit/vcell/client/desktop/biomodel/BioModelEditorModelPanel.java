@@ -257,11 +257,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
-//		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
-//		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
-//		setTableSelections(selectedObjects, structuresTable, structureTableModel);
-//		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
-//		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
+		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
+		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
+		setTableSelections(selectedObjects, structuresTable, structureTableModel);
+		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
+		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
 		refreshDeleteButton();
 	}
 
@@ -329,7 +329,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, VCellIcons.diagramIcon);
-		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.diagramIcon);
+		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.structureIcon);
 		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);

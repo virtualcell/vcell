@@ -65,7 +65,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				if ( sessionUser != null && sessionUser.compareEqual((User)userObject)){
 					label = "My BioModels ("+((User)userObject).getName()+") (" + node.getChildCount() + ")";
 				} else {
-					label = ((User)userObject).getName()+"                        ";
+					label = ((User)userObject).getName()+"(abcdefghijklmnopq)(000000)";
 				}
 				component.setToolTipText("User Name");
 				component.setText(label);

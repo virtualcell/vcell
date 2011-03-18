@@ -7,6 +7,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
+import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Pathway;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -88,6 +89,7 @@ public class BioModelEditor extends DocumentEditor {
 	private ApplicationsPropertiesPanel applicationsPropertiesPanel;
 	private BioModelParametersPanel bioModelParametersPanel;
 	private DataSymbolsPanel dataSymbolsPanel = null;
+	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
 	
 	/**
  * BioModelEditor constructor comment.
@@ -412,8 +414,11 @@ private void initialize() {
 		bioModelEditorApplicationPanel.setIssueManager(issueManager);
 				
 		dataSymbolsPanel = new DataSymbolsPanel();
-		
 		dataSymbolsPanel.setSelectionManager(selectionManager);
+		
+		bioPaxObjectPropertiesPanel = new BioPaxObjectPropertiesPanel();
+		bioPaxObjectPropertiesPanel.setSelectionManager(selectionManager);
+		
 		bioModelEditorAnnotationPanel.setSelectionManager(selectionManager);
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
@@ -488,6 +493,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getDataSymbolsSpecPanel();
 		} else if (singleSelection instanceof BioEvent) {
 			bottomComponent = getEventPanel();
+		} else if (singleSelection instanceof BioPaxObject) {
+			bottomComponent = bioPaxObjectPropertiesPanel;
 		} else if (singleSelection instanceof BioModel || singleSelection instanceof VCMetaData) {
 			bottomComponent = bioModelEditorAnnotationPanel;
 		} else if (singleSelection instanceof PathwayData) {
