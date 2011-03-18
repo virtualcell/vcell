@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,7 +94,17 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class SmoldynFileWriter extends SolverFileWriter 
 {
+	private static final String PANEL_TRIANGLE_NAME_PREFIX = "triangle";
 
+	private static class TrianglePanel {
+		String name;
+		Triangle triangle;		
+		private TrianglePanel(String name, Triangle triangle) {
+			super();
+			this.name = name;
+			this.triangle = triangle;
+		}
+	}
 	private static final int MAX_MOL_LIMIT = 1000000;
 
 	@SuppressWarnings("serial")
@@ -112,6 +123,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryYSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
 	private boolean bGraphicOpenGL = false;
+	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
 	
 	enum SmoldynKeyword {
 		species,
@@ -482,30 +494,23 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 	} 
 }
 
-private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
-	MeshSpecification meshSpecification = simulation.getMeshSpecification();
-	ISize sampleSize = meshSpecification.getSamplingSize();
-	int numX = sampleSize.getX();
-	int numY = dimension < 2 ? 1 : sampleSize.getY();
-	int numZ = dimension < 3 ? 1 : sampleSize.getZ();
-	double dx = meshSpecification.getDx();
-	double dy = meshSpecification.getDy();
-	double dz = meshSpecification.getDz();
-	Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
-	double ox = origin.getX();
-	double oy = origin.getY();
-	double oz = origin.getZ();
-	Extent extent = resampledGeometry.getExtent();
-	double ex = extent.getX();
-	double ey = extent.getY();
-	double ez = extent.getZ();
-	
+private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, Variable variable, String variableName, StringBuilder sb) throws ExpressionException, MathException {	
 	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[]{ReservedVariable.X.getName(), ReservedVariable.Y.getName(), ReservedVariable.Z.getName()});
 	Expression disExpression = new Expression(initialConcentration.getDistribution());
 	disExpression.bindExpression(simulationSymbolTable);
 	disExpression = simulationSymbolTable.substituteFunctions(disExpression).flatten();	
 	disExpression.bindExpression(simpleSymbolTable);
 	double values[] = new double[3];
+	if (dimension == 1) {
+		if (disExpression.getSymbolBinding(ReservedVariable.Y.getName()) != null 
+				|| disExpression.getSymbolBinding(ReservedVariable.Z.getName()) != null) {
+			throw new MathException(VCellErrorMessages.getSmoldynWrongCoordinates("'y' or 'z'", dimension, variable, disExpression));
+		}
+	} else if (dimension == 2) {
+		if (disExpression.getSymbolBinding(ReservedVariable.Z.getName()) != null) {
+			throw new MathException(VCellErrorMessages.getSmoldynWrongCoordinates("'z'", dimension, variable, disExpression));
+		}		
+	}
 	
 	RandomDataImpl dist = new RandomDataImpl();
 	Integer randomSeed = simulation.getSolverTaskDescription().getSmoldynSimulationOptions().getRandomSeed();
@@ -513,48 +518,115 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		dist.reSeed(randomSeed);
 	}
 	double totalCount = 0;
-	for (int k = 0; k < numZ; k ++) {
-		double centerz = oz + k * dz;
-		double loz = Math.max(oz, centerz - dz/2);
-		double hiz = Math.min(oz + ez, centerz + dz/2);
-		double lz = hiz - loz;
-		values[2] = centerz;
-		for (int j = 0; j < numY; j ++) {
-			double centery = oy + j * dy;
-			double loy = Math.max(oy, centery - dy/2);
-			double hiy = Math.min(oy + ey, centery + dy/2);
-			values[1] = centery;
-			double ly = hiy - loy;
-			for (int i = 0; i < numX; i ++) {
-				double centerx = ox + i * dx;
-				double lox = Math.max(ox, centerx - dx/2);
-				double hix = Math.min(ox + ex, centerx + dx/2);
-				double lx = hix - lox;
-				values[0] = centerx;
-				
-				double volume = lx;
-				if (dimension > 1) {
-					volume *= ly;
-					if (dimension > 2) {
-						volume *= lz;
+	if (subDomain instanceof CompartmentSubDomain) {
+		MeshSpecification meshSpecification = simulation.getMeshSpecification();
+		ISize sampleSize = meshSpecification.getSamplingSize();
+		int numX = sampleSize.getX();
+		int numY = dimension < 2 ? 1 : sampleSize.getY();
+		int numZ = dimension < 3 ? 1 : sampleSize.getZ();
+		double dx = meshSpecification.getDx();
+		double dy = meshSpecification.getDy();
+		double dz = meshSpecification.getDz();
+		Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
+		double ox = origin.getX();
+		double oy = origin.getY();
+		double oz = origin.getZ();
+		Extent extent = resampledGeometry.getExtent();
+		double ex = extent.getX();
+		double ey = extent.getY();
+		double ez = extent.getZ();
+		
+		for (int k = 0; k < numZ; k ++) {
+			double centerz = oz + k * dz;
+			double loz = Math.max(oz, centerz - dz/2);
+			double hiz = Math.min(oz + ez, centerz + dz/2);
+			double lz = hiz - loz;
+			values[2] = centerz;
+			for (int j = 0; j < numY; j ++) {
+				double centery = oy + j * dy;
+				double loy = Math.max(oy, centery - dy/2);
+				double hiy = Math.min(oy + ey, centery + dy/2);
+				values[1] = centery;
+				double ly = hiy - loy;
+				for (int i = 0; i < numX; i ++) {
+					double centerx = ox + i * dx;
+					double lox = Math.max(ox, centerx - dx/2);
+					double hix = Math.min(ox + ex, centerx + dx/2);
+					double lx = hix - lox;
+					values[0] = centerx;
+					
+					double volume = lx;
+					if (dimension > 1) {
+						volume *= ly;
+						if (dimension > 2) {
+							volume *= lz;
+						}
 					}
-				}
-				double expectedCount = disExpression.evaluateVector(values) * volume;
-				if (expectedCount <= 0) {
-					continue;
-				}
-				long count = dist.nextPoisson(expectedCount);
-				totalCount += count;
-				sb.append(SmoldynKeyword.mol + " " + (int)count + " " + variableName + " " + lox + "-" + hix);
-				if (dimension > 1) {
-					sb.append(" " + loy + "-" + hiy);
-				
-					if (dimension > 2) {
-						sb.append(" " + loz + "-" + hiz);
+					double expectedCount = disExpression.evaluateVector(values) * volume;
+					if (expectedCount <= 0) {
+						continue;
 					}
+					long count = dist.nextPoisson(expectedCount);
+					if (count <= 0) {
+						continue;
+					}
+					totalCount += count;
+					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
+					if (dimension > 1) {
+						sb.append(" " + loy + "-" + hiy);
+					
+						if (dimension > 2) {
+							sb.append(" " + loz + "-" + hiz);
+						}
+					}
+					sb.append("\n");				
 				}
-				sb.append("\n");
 			}
+		}
+	} else if (subDomain instanceof MembraneSubDomain) {
+		ArrayList<TrianglePanel> trianglePanelList = membraneSubdomainTriangleMap.get(subDomain);
+		for (TrianglePanel trianglePanel : trianglePanelList) {
+			Triangle triangle = trianglePanel.triangle;
+			switch (dimension) {
+			case 1:
+				values[0] = triangle.getNodes(0).getX();
+				break;
+			case 2: {
+				double centroidX = triangle.getNodes(0).getX();
+				double centroidY = triangle.getNodes(0).getY();
+
+				if (triangle.getNodes(0).getX() == triangle.getNodes(1).getX() && triangle.getNodes(0).getY() == triangle.getNodes(1).getY()) {
+					centroidX += triangle.getNodes(2).getX();
+					centroidY += triangle.getNodes(2).getY();
+				} else {
+					centroidX += triangle.getNodes(1).getX();
+					centroidY += triangle.getNodes(1).getY();
+				}
+				values[0] = centroidX / 2;
+				values[1] = centroidY / 2;
+				break;
+			}
+			case 3: {
+				double centroidX = triangle.getNodes(0).getX() + triangle.getNodes(1).getX() + triangle.getNodes(2).getX();
+				double centroidY = triangle.getNodes(0).getY() + triangle.getNodes(1).getY() + triangle.getNodes(2).getY();
+				double centroidZ = triangle.getNodes(0).getZ() + triangle.getNodes(1).getZ() + triangle.getNodes(2).getZ();
+				values[0] = centroidX / 3;
+				values[1] = centroidY / 3;
+				values[2] = centroidZ / 3;
+				break;
+			}
+			}
+			double expectedCount = disExpression.evaluateVector(values) * triangle.getArea();
+			if (expectedCount <= 0) {
+				continue;
+			}
+			long count = dist.nextPoisson(expectedCount);
+			if (count <= 0) {
+				continue;
+			}
+			totalCount += count;
+			sb.append(SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
+					+ SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
 		}
 	}
 
@@ -628,7 +700,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 				if (pic instanceof ParticleInitialConditionCount) {
 					max_mol += writeInitialCount((ParticleInitialConditionCount)pic, subDomain, variableName, sb);
 				} else if (pic instanceof ParticleInitialConditionConcentration) {
-					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, variableName, sb);
+					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, particleProperties.getVariable(), variableName, sb);
 				}
 			}
 		}		
@@ -738,13 +810,14 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	// write boundaries and wall surfaces
 	writeWallSurfaces();
 	
-	if (!bHasNoSurface) {	
+	if (!bHasNoSurface) {
+		membraneSubdomainTriangleMap = new HashMap<MembraneSubDomain, ArrayList<TrianglePanel> >();
 		// write surfaces
 		printWriter.println("# surfaces");
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
-			SurfaceClass surfaceClass = surfaceClasses[sci];
+			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
-			ArrayList<Triangle> triList = new ArrayList<Triangle>();
+			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 				VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
@@ -770,10 +843,10 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									unit01n.unit();
 									if (Math.abs(unit01n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
 										// first two indices are ok
-										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
 									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
 										// first two are opposite
-										triList.add(new Triangle(nodes[1], nodes[2], nodes[0]));
+										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[1], nodes[2], nodes[0])));
 									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
 										// same plane ... do we use 0 and 2 or 2 and 0?
 										Vect3d v02 = Vect3d.sub(v2, v0);
@@ -781,17 +854,17 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										unit02n.unit();
 										if (Math.abs(unit02n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
 											// first two indices are ok
-											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
+											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[1])));
 										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
 											// first two are opposite
-											triList.add(new Triangle(nodes[2], nodes[0], nodes[1]));
+											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[2], nodes[0], nodes[1])));
 										}else{
 											throw new RuntimeException("failed to generate surface");
 										}
 									}
 								}else{
-									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
-									triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
+									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
+									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[3])));
 								}
 							} else {
 								if (dimension == 2){
@@ -807,10 +880,10 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									unit01n.unit();
 									if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
 										// first two indices are ok
-										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
 									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
 										// first two are opposite
-										triList.add(new Triangle(nodes[1], nodes[2], nodes[0]));
+										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[1], nodes[2], nodes[0])));
 									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
 										// same plane ... do we use 0 and 2 or 2 and 0?
 										Vect3d v02 = Vect3d.sub(v2, v0);
@@ -818,29 +891,35 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										unit02n.unit();
 										if (Math.abs(unit02n.getZ()-1.0) < 1e-6){
 											// first two indices are ok
-											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
+											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[1])));
 										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
 											// first two are opposite
-											triList.add(new Triangle(nodes[2], nodes[0], nodes[1]));
+											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[2], nodes[0], nodes[1])));
 										}else{
 											throw new RuntimeException("failed to generate surface");
 										}
 									}
 								}else{
-									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
-									triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
+									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
+									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[3])));
 								}
 							}
 						}
 					}
 				}
 			}
+			SubVolume[] adjacentSubvolums = surfaceClass.getAdjacentSubvolumes().toArray(new SubVolume[0]);
+			CompartmentSubDomain csd0 = simulation.getMathDescription().getCompartmentSubDomain(adjacentSubvolums[0].getName());
+			CompartmentSubDomain csd1 = simulation.getMathDescription().getCompartmentSubDomain(adjacentSubvolums[1].getName());
+			MembraneSubDomain membraneSubDomain = simulation.getMathDescription().getMembraneSubDomain(csd0, csd1);
+			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
 			
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
-			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());
+			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
 			if (DEBUG) tmppw.println("verts" + sci + "=[");
-			for (Triangle triangle : triList) {
+			for (TrianglePanel trianglePanel : triList) {
+				Triangle triangle = trianglePanel.triangle;
 				printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
 				switch (dimension) {
 				case 1:
@@ -866,7 +945,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					break;
 				}
 			
-				printWriter.println();
+				printWriter.println(" " + trianglePanel.name);
 				if (DEBUG) tmppw.println();
 			}
 			printWriter.println(SmoldynKeyword.end_surface);

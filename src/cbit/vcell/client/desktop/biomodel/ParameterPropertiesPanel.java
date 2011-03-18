@@ -339,7 +339,9 @@ private void updateInterface() {
 		expressionTextField.setSymbolTable(parameter.getNameScope().getScopedSymbolTable());
 		nameTextField.setText(parameter.getName());
 		descriptionTextField.setText(parameter.getDescription());
-		expressionTextField.setText(parameter.getExpression().infix());
+		if (parameter.getExpression() != null) {
+			expressionTextField.setText(parameter.getExpression().infix());
+		}
 		unitTextField.setText(parameter.getUnitDefinition().getSymbol());
 		
 		boolean bAnnotationEditable = false;
