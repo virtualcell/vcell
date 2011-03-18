@@ -1,6 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.SolverDescription;
 
 public class VCellErrorMessages {
@@ -18,6 +20,11 @@ public class VCellErrorMessages {
 	
 	public static String getSmoldynMaxMolReachedErrorMessage(long estimateMaxMol, int maxMolLimit) {
 		return "Estimated total number of molecules ("+estimateMaxMol+") exceeded limit(" + maxMolLimit + ")";
+	}
+	
+	public static String getSmoldynWrongCoordinates(String coordName, int dimension, Variable var, Expression exp) {
+		return "Cannot use coordinate " + coordName + " in initial concentration for variable '" + var.getName() + "' in " + dimension + "D simulation. \n" +
+				"The expression is: " + exp.infix() + ".";
 	}
 	
 	private final static String PLACE_HOLDER = "__PLACE_HOLDER__";
