@@ -11,11 +11,13 @@ import org.vcell.util.Compare;
 import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.ArrayInt;
+import ucar.ma2.ArrayLong;
 import ucar.ma2.DataType;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -29,7 +31,12 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+
+import org.apache.commons.math.random.RandomDataImpl;
+
 /**
  * This class is used to write input file for stochastic hybrid solvers.
  * The input file will be in NetCDF format containing all the requred model information
@@ -79,7 +86,7 @@ public class NetCDFWriter {
 		}
 		//check subDomain
 		SubDomain subDomain = null;
-		java.util.Enumeration<SubDomain> e=simulation.getMathDescription().getSubDomains();
+		Enumeration<SubDomain> e=simulation.getMathDescription().getSubDomains();
 		if(e.hasMoreElements())
 		{
 			subDomain = e.nextElement();
@@ -90,7 +97,7 @@ public class NetCDFWriter {
 		{
 			throw new MathException("Stochastic model has no jump process.");
 		}
-		//TODO
+	
 		return true;
 	}
 
@@ -145,10 +152,10 @@ public class NetCDFWriter {
 			//get reaction rate law types and rate constants
 			ReactionRateLaw[] reactionRateLaws = getReactionRateLaws(probs);
 			
-		  	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
-			cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
-			cbit.vcell.solver.UniformOutputTimeSpec timeSpec = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
-			cbit.vcell.solver.UniformOutputTimeSpec outputTimeSpec = ((UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
+		  	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
+			TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
+			UniformOutputTimeSpec timeSpec = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+			UniformOutputTimeSpec outputTimeSpec = ((UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
 			StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 					
 			//create an empty NetCDF-3 file
@@ -470,17 +477,32 @@ public class NetCDFWriter {
 				 }
 			     ncfile.write("Species_names", A11);
 				
-				//SpeciesIC(NumSpecies) ;
-				ArrayInt A12 = new ArrayInt.D1(numSpecies.getLength());
+				//Species Initial Condition (in number of molecules).
+			    //Species iniCondition are sampled from a poisson distribution(which has a mean of the current iniExp value)
+			    RandomDataImpl dist = new RandomDataImpl();
+			    if(stochOpt.isUseCustomSeed())
+				{
+					Integer randomSeed = stochOpt.getCustomSeed();
+					if (randomSeed != null) {
+						dist.reSeed(randomSeed);
+					}
+				}
+				ArrayLong A12 = new ArrayLong.D1(numSpecies.getLength());
 			    idx = A12.getIndex();
 			    for(int i=0; i<numSpecies.getLength(); i++)
 			    {
 			    	try{
-			    		Expression varIni = subDomain.getVarIniCondition(vars.elementAt(i).getName()).getIniVal();
-			    		varIni.bindExpression(simSymbolTable);
-			    		varIni = simSymbolTable.substituteFunctions(varIni).flatten();
-			    		int val = (int)Math.round(varIni.evaluateConstant());
-			    		A12.setInt(idx.set(i),val);
+			    		Expression varIniExp = subDomain.getVarIniCondition(vars.elementAt(i).getName()).getIniVal();
+			    		varIniExp.bindExpression(simSymbolTable);
+			    		varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();
+			    		double expectedCount = varIniExp.evaluateConstant();
+			    		long poissonSampleCount = 0;
+			  			if(expectedCount > 0)
+			  			{
+			  				poissonSampleCount = dist.nextPoisson(expectedCount);
+			  			}
+
+			    		A12.setLong(idx.set(i),poissonSampleCount);
 			    	}catch(ExpressionException ex)
 			    	{
 			    		ex.printStackTrace(System.err);
