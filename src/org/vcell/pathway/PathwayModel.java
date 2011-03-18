@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.biomodel.meta.Identifiable;
 
@@ -22,8 +23,11 @@ public class PathwayModel {
 		new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
 	
 	public Set<BioPaxObject> getBiopaxObjects(){
-		return Collections.unmodifiableSet(biopaxObjects);
+		return biopaxObjects;
 	}
+//	public Set<BioPaxObject> getBiopaxObjects(){
+//		return Collections.unmodifiableSet(biopaxObjects);
+//	}
 
 	public String show(boolean bIncludeChildren) {
 		StringBuffer stringBuffer = new StringBuffer();
@@ -35,6 +39,34 @@ public class PathwayModel {
 			}
 		}
 		return stringBuffer.toString();
+	}
+	
+	public boolean compare(HashSet<BioPaxObject> theirBiopaxObjects) {
+
+		if(biopaxObjects.size() != theirBiopaxObjects.size()) {
+			return false;			// different number of objects
+		}
+		
+		for (BioPaxObject ourBpObject : biopaxObjects){
+			if(!fastCompareIDs(ourBpObject, theirBiopaxObjects)) {
+				return false;		// one object was replaced with some other object
+			}
+		}
+		
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(!bpObject.fullCompare(theirBiopaxObjects)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	private boolean fastCompareIDs(BioPaxObject ourBpObject, HashSet<BioPaxObject> theirBiopaxObjects) {
+		for (BioPaxObject theirBpObject : theirBiopaxObjects){
+			if(ourBpObject.getID().equals(theirBpObject.getID())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void merge(PathwayModel pathwayModel) {

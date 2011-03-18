@@ -12,6 +12,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -76,16 +82,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
 	private static final String uniport = "uniprot";
 	public static class PathwayData {
-		private String xml;
 		private PathwayModel pathwayModel;
 		
-		private PathwayData(String xml, PathwayModel pathwayModel) {
+		private PathwayData(PathwayModel pathwayModel) {
 			super();
-			this.xml = xml;
 			this.pathwayModel = pathwayModel;
-		}
-		public final String getXml() {
-			return xml;
 		}
 		public PathwayModel getPathwayModel() {
 			return pathwayModel;
@@ -309,12 +310,22 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
 				
 				URLConnection connection = url.openConnection();
-				String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
+
 				PathwayReader pathwayReader = new PathwayReader();
-				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText,null);
+				org.jdom.Document jdomDocument = XmlUtil.readXML(connection.getInputStream());
+//				String xmlText = XmlUtil.xmlToString(jdomDocument, false);
+				
+//				String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
+//				PathwayReader pathwayReader = new PathwayReader();
+//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
+				
+//				String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
+//				PathwayReader pathwayReader = new PathwayReader();
+//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
+				
 				PathwayModel pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
 				pathwayModel.reconcileReferences();
-				PathwayData pathwayData = new PathwayData(xmlText, pathwayModel);
+				PathwayData pathwayData = new PathwayData(pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 				pathwayModel.refreshParentMap();
 			}
@@ -370,7 +381,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 //				System.out.println("url=" + url);
 				URLConnection connection = url.openConnection();
-				Document document = DOMUtil.parse(connection.getInputStream());				
+				Document document = DOMUtil.parse(connection.getInputStream());		
+
+//				org.jdom.Document d = XmlUtil.readXML(connection.getInputStream());
+				
 				Element errorElement = DOMUtil.firstChildElement(document, "error");
 				if (errorElement != null) { 
 //					String xml = DOMUtil.firstChildContent(document, "error");

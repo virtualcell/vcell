@@ -4,6 +4,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Vector;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -182,6 +184,12 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 	if (!getModel().compareEqual(bioModel.getModel())){
+		return false;
+	}
+	if (!getPathwayModel().compare((HashSet<BioPaxObject>) bioModel.getPathwayModel().getBiopaxObjects())){
+		return false;
+	}
+	if (!((RelationshipModel) getRelationshipModel()).compare((HashSet<RelationshipObject>) bioModel.getRelationshipModel().getRelationshipObjects(), bioModel)){
 		return false;
 	}
 	if (!Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
@@ -1032,7 +1040,7 @@ public Set<Identifiable> getAllIdentifiables() {
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
 //	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
-	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
+	ArrayList<BioPaxObject> biopaxObjects = (ArrayList<BioPaxObject>) getPathwayModel().getBiopaxObjects();
 	allIdenfiables.addAll(Arrays.asList(biopaxObjects.toArray(new BioPaxObject[biopaxObjects.size()])));
 	allIdenfiables.add(this);
 	return allIdenfiables;

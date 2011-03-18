@@ -1,6 +1,8 @@
 package org.vcell.relationship;
 
 
+import java.util.HashSet;
+
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
@@ -26,6 +28,18 @@ public class RelationshipObject implements Identifiable{
 		return bioModelObject;
 	}
 	
+	public final boolean compare(HashSet<RelationshipObject> theirRelationshipObjects, IdentifiableProvider provider){
+		for (RelationshipObject theirRelationshipObject : theirRelationshipObjects){
+			VCID vcidBpOurs = provider.getVCID(getBioPaxObject());
+			VCID vcidBpTheirs = provider.getVCID(theirRelationshipObject.getBioPaxObject());
+			VCID vcidBmOurs = provider.getVCID(getBioModelEntityObject());
+			VCID vcidBmTheirs = provider.getVCID(theirRelationshipObject.getBioModelEntityObject());
+			if(vcidBpOurs.equals(vcidBpTheirs) && vcidBmOurs.equals(vcidBmTheirs)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public String getTypeLabel(){
 		String typeName = getClass().getName();
 		typeName = typeName.replace(getClass().getPackage().getName(),"");
