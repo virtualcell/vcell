@@ -15,6 +15,28 @@ import org.vcell.util.BeanUtils;
 
 public abstract class VCellIcons {
 	
+	// pathway
+	public final static Icon pathwaySelectIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/select.gif"));
+	public final static Icon pathwayZoomInIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/zoomin.gif"));
+	public final static Icon pathwayZoomOutIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/zoomout.gif"));
+	public final static Icon pathwayRandomIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/random.gif"));
+	public final static Icon pathwayCircularIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/circular.gif"));
+	public final static Icon pathwayAnnealedIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/annealed.gif"));
+	public final static Icon pathwayLevelledIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/levelled.gif"));
+	public final static Icon pathwayRelaxedIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/relaxed.gif"));
+	public final static Icon pathwayReactionsOnlyIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level1.gif"));
+	public final static Icon pathwayReactionNetworkIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level2.gif"));
+	public final static Icon pathwayComponentsIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level3.gif"));
+	
+	public final static Icon pathwayReactionIcon = new ImageIcon(VCellIcons.class.getResource("/images/step.gif"));
+	public final static Icon pathwayTransportIcon = new ImageIcon(VCellIcons.class.getResource("/images/flux.gif"));
+	public final static Icon pathwayReactionWtIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/transportWithBiochemicalReaction.gif"));
+	public final static Icon pathwayEntityIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/entity.gif"));
+	public final static Icon pathwaySmallMoleculeIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/smallMolecule.gif"));
+	public final static Icon pathwayProteinIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/protein.gif"));
+	public final static Icon pathwayComplexIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/complex.gif"));
+	public final static Icon pathwayParticipantsIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/modification.gif"));
+
 	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
 	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));

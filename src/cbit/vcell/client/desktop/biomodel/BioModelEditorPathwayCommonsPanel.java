@@ -1,9 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,12 +17,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -43,14 +37,8 @@ import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.sybil.util.http.pathwaycommons.search.DataSource;
 import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
-import org.vcell.sybil.util.http.pathwaycommons.search.PCKeywordResponse;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
-import org.vcell.sybil.util.http.uniprot.UniProtExtractor;
-import org.vcell.sybil.util.http.uniprot.UniProtRDFRequest;
-import org.vcell.sybil.util.http.uniprot.UniProtRDFRequest.Response;
-import org.vcell.sybil.util.http.uniprot.box.UniProtBox;
-import org.vcell.sybil.util.http.uniprot.box.imp.UniProtBoxImp;
 import org.vcell.sybil.util.text.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -65,8 +53,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 
-import com.hp.hpl.jena.rdf.model.Model;
-
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 
@@ -80,7 +66,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		}
 	}
 	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
-	private static final String uniport = "uniprot";
 	public static class PathwayData {
 		private PathwayModel pathwayModel;
 		
@@ -117,114 +102,57 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private JTree responseTree = null;
 	private ResponseTreeModel responseTreeModel = null;
 	private JButton showPathwayButton = null;
+	private JButton gotoPathwayButton = null;
 	private EventHandler eventHandler = new EventHandler();
-	private int mouseOverRow = -1;
-	private static UniProtBox uniProtBox = new UniProtBoxImp();		
 
 	private class ResponseTreeModel extends DefaultTreeModel {
 		private BioModelNode rootNode = null;
-		private Map<String, BioModelNode> searchMap = new HashMap<String, BioModelNode>();
 		
 		ResponseTreeModel() {
 			super(new BioModelNode(new PathwayStringObject("search results"), true), true);
 			rootNode = (BioModelNode)root;
 		}
 		
-		private void createHitChildNode(BioModelNode hitNode, List<String> childElementList, String childName) {
-			BioModelNode namesNode = null;
-			if (childElementList.size() > 0) {
-				if (childElementList.size() == 1) {
-					namesNode = new BioModelNode(new PathwayStringObject("1 " + childName + ": " + childElementList.get(0)), true);
-				} else {
-					namesNode = new BioModelNode(new PathwayStringObject(childElementList.size() + " " + childName + "s"), true);
-				}
-				for (String element : childElementList) {
-					namesNode.add(new BioModelNode(new PathwayStringObject(element), false));
-				}
-				hitNode.add(namesNode);
-			}
-		}
-			
-		private boolean obsolete(XRef xRef) {
-			if (xRef.db().equalsIgnoreCase(uniport) &&
-					PCKeywordResponse.uniProtBox().entryIsObsolete(xRef.id())) {
-				return true;
-			}
-			return false;
-		}
-		
 		void addSearchResponse(String searchText, Element searchResponse) {
-			BioModelNode searchNode = searchMap.get(searchText);
-			if (searchNode != null) {
-				rootNode.remove(searchNode);
-			}
+			rootNode.removeAllChildren();
 			if (searchResponse == null) {
-				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\": no matches"));				
+				rootNode.setUserObject(new PathwayStringObject("no pathways found for \"" + searchText + "\""));				
 			} else {
-				List<Hit> hitList = new ArrayList<Hit>();
 				List<Element> hitElements = DOMUtil.childElements(searchResponse, "search_hit");
+				int pathwayCount = 0;
 				for(Element hitElement : hitElements) { 
 					Hit hit = new Hit(hitElement);
-					hitList.add(hit); 
-					for(XRef xref : hit.xRefs()) {
-						if(xref.db().equalsIgnoreCase("uniprot")) {
-							UniProtRDFRequest uniProtRequest = new UniProtRDFRequest(xref.id());
-							Response uniProtResponse = uniProtRequest.response();
-							if(uniProtResponse instanceof UniProtRDFRequest.ModelResponse) {
-								Model model = ((UniProtRDFRequest.ModelResponse) uniProtResponse).model();
-								uniProtBox.add(UniProtExtractor.extractBox(model));
-							}
-						}
-					}
-				}
-//				int totalNumHits = Integer.parseInt(searchResponse.getAttribute("total_num_hits"));
-				searchNode = new BioModelNode(new PathwayStringObject("Keyword \"" + searchText + "\""), true);				
-				for (Hit hit : hitList) {
+					
 					// pathway
 					List<Pathway> pathwayList = hit.pathways();
 					int numPathways = pathwayList.size();
+					pathwayCount += numPathways;
+					BioModelNode hitNode = new BioModelNode(hit, true);
 					if (numPathways > 0) {
-						BioModelNode hitNode = new BioModelNode(hit, true);
-//						BioModelNode pathwaysNode = new BioModelNode(new PathwayStringObject(numPathways + " pathway(s)"), true);
 						for (Pathway pathway: pathwayList) {
 							hitNode.add(new BioModelNode(pathway, false));
 						}
-//						hitNode.add(pathwaysNode);
-						searchNode.add(hitNode);
+						rootNode.add(hitNode);
 					}
 				}
+				rootNode.setUserObject(new PathwayStringObject(pathwayCount + " pathways found for \"" + searchText + "\""));
 			}
-			rootNode.insert(searchNode, 0);
-			searchMap.put(searchText, searchNode);
 			nodeStructureChanged(rootNode);
-			TreePath path = new TreePath(searchNode.getPath());
+			TreePath path = new TreePath(rootNode.getPath());
 			responseTree.expandPath(path);
 			responseTree.setSelectionPath(path);
 		}
 		
 	}
 	
-	private class ResonseTreeCellRenderer extends DefaultTreeCellRenderer {
+	private static final String PATHWAY_QUERY_URL = "http://www.pathwaycommons.org/pc/record2.do?id=";
+	private class ResponseTreeCellRenderer extends DefaultTreeCellRenderer {
 		
-		private Font mouseOverFont = null;
-		private Font regularFont = null;
 		
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, 
 				boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus){
 			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			if (regularFont == null) {
-				regularFont = getFont();
-				mouseOverFont = regularFont.deriveFont(Font.BOLD);
-			}
-			if (row == mouseOverRow){
-				if (!sel) {
-					setForeground(Color.BLUE);
-					setFont(mouseOverFont);
-				}
-			} else {
-				setFont(regularFont);
-			}
 			String labelText = null;
 			if (value instanceof BioModelNode) {
 				BioModelNode bioModelNode = (BioModelNode)value;
@@ -257,10 +185,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					if (hit.organism() != null && hit.organism().speciesName().trim().length() > 0) {
 						stringBuilder.append("," + hit.organism().speciesName().trim()); 
 					}
-					labelText =  name + (stringBuilder.length() == 0 ? "" : "(" + stringBuilder.toString() + ")");
+					labelText = hit.pathways().size() + " pathways for " + name + (stringBuilder.length() == 0 ? "" : "(" + stringBuilder.toString() + ")");
 				} else if (userObject instanceof Pathway){
 					Pathway pathway = (Pathway)userObject;
 					labelText = pathway.name() + "  [" + pathway.dataSource().name() + "]";
+					setToolTipText("Double-click to import pathway");
 				} else if (userObject instanceof DataSource){
 					DataSource dataSource = (DataSource)userObject;
 					labelText = "Data source: " + dataSource.name() + " (" + dataSource.primaryId() + ")";
@@ -284,6 +213,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				search();
 			} else if (e.getSource() == showPathwayButton) {
 				showPathway();
+			} else if (e.getSource() == gotoPathwayButton) {
+				gotoPathway();
 			}
 		}
 
@@ -297,9 +228,19 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
+	public void gotoPathway() {
+		Pathway pathway = computeSelectedPathway();
+		if (pathway != null) {
+			String url = PATHWAY_QUERY_URL + pathway.primaryId();
+			if (url != null) {
+				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url, false);
+			}
+		}
+	}
+	
 	public void showPathway() {
-		
-		AsynchClientTask task1 = new AsynchClientTask("searching", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		final Pathway pathway = computeSelectedPathway();
+		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Pathway pathway = computeSelectedPathway();
@@ -356,7 +297,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		return null;
 	}
 	public void treeSelectionChanged() {		
-		showPathwayButton.setEnabled(computeSelectedPathway() != null);
+		boolean selected = computeSelectedPathway() != null;
+		showPathwayButton.setEnabled(selected);
+		gotoPathwayButton.setEnabled(selected);
 	}
 
 	public void search() {
@@ -417,9 +360,12 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);
-		showPathwayButton = new JButton("Show Pathway");
+		showPathwayButton = new JButton("Import Pathway");
 		showPathwayButton.addActionListener(eventHandler);
 		showPathwayButton.setEnabled(false);
+		gotoPathwayButton = new JButton("Open WebLink");
+		gotoPathwayButton.addActionListener(eventHandler);
+		gotoPathwayButton.setEnabled(false);
 		responseTree = new JTree();
 		responseTreeModel = new ResponseTreeModel();
 		responseTree.setModel(responseTreeModel);
@@ -448,6 +394,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(searchPanel, gbc);	
@@ -458,6 +405,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new JScrollPane(responseTree), gbc);
@@ -467,48 +415,26 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(showPathwayButton, gbc);
 		
-		responseTree.getSelectionModel().addTreeSelectionListener(eventHandler);
-		responseTree.setCellRenderer(new ResonseTreeCellRenderer());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.insets = new Insets(4,4,4,4);
+		add(gotoPathwayButton, gbc);
 		
-		responseTree.addMouseMotionListener(new MouseMotionAdapter() { 
-		    public void mouseMoved(MouseEvent e) { 	
-		    	mouseOverRow = -1;
-		    	TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
-		    	String url = generateURL(path);
-				if (url != null) {
-    				mouseOverRow = responseTree.getClosestRowForLocation(e.getX(), e.getY());
-    				responseTree.setToolTipText("Double click to launch the web page " + url);
-    				responseTree.repaint();
-		    	} else {
-		    		responseTree.setToolTipText(null);
-		    	}
-		    } 
-		});
+		responseTree.getSelectionModel().addTreeSelectionListener(eventHandler);
+		responseTree.setCellRenderer(new ResponseTreeCellRenderer());	
 		
 		responseTree.addMouseListener( new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				if (e.getClickCount() <= 1) {
 					return;
 				}
-				TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
-		    	if (path != null){
-		    		String url = generateURL(path);
-		    		if (url != null) {
-		    			DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url, false);
-		    		}
-				}
+				showPathway();
 			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				super.mouseExited(e);
-				mouseOverRow = -1;
-				repaint();
-			}			
 		});
 		// done
 		responseTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
@@ -534,33 +460,4 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
-	
-	private String generateURL(TreePath treePath) {
-		if (treePath == null) {
-			return null;
-		}
-		Object selectedObject = treePath.getLastPathComponent();
-		String url = null;
-		if (selectedObject instanceof BioModelNode) {
-			selectedObject = ((BioModelNode) selectedObject).getUserObject();
-		}
-		if (selectedObject instanceof Organism) {
-			Organism organism = (Organism) selectedObject;
-			url = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=" + organism.ncbiOrganismId();
-		} else if (selectedObject instanceof Pathway) {
-			Pathway pathway = (Pathway) selectedObject;
-			url = "http://www.pathwaycommons.org/pc/record2.do?id=" + pathway.primaryId();
-		} else if (selectedObject instanceof XRef) {
-			XRef xref = (XRef) selectedObject;
-			url = xref.url();
-		}
-		if (url != null) {
-			url = url.trim();
-			if (url.length() > 0) {
-				return url;
-			}
-		}
-		return null;
-	}
-
 }
