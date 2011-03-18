@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -35,6 +36,7 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
@@ -272,31 +274,21 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(jsp, gbc);
-	
-		label = new JLabel("<html><b><u>Link/unlink Species to Pathway Here</u></b></html>");
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(label, gbc);
+		add(jsp, gbc);		
 		
-		relationshipPanel = new RelationshipPanel();
+		relationshipPanel = new RelationshipPanel();		
+		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Link/unlink Species to Pathway Here");
+		collapsiblePanel.getContentPanel().setLayout(new BorderLayout());
+		collapsiblePanel.getContentPanel().add(relationshipPanel, BorderLayout.CENTER);
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
 		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 4, 4, 4);
-		add(relationshipPanel, gbc);
+		gbc.insets = new Insets(0, 4, 0, 4);
+		add(collapsiblePanel, gbc);
 	
 		setBackground(Color.white);
 		initConnections();

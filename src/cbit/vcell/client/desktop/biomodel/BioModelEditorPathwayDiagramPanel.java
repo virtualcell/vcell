@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -26,6 +27,7 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
@@ -74,18 +76,18 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		initialize();
 	}
 	
-	private JButton createToolBarButton(String[] attributes) {
+	private JButton createToolBarButton(ToolBarButton toolButton) {
 		JButton button = new JButton();
 		button.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 		button.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 		button.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 		button.setMargin(new Insets(2, 2, 2, 2));
-		button.setToolTipText(attributes[1]);
-		button.setIcon(new ImageIcon(getClass().getResource("/sybil/images/" + attributes[3])));
+		button.setToolTipText(toolButton.shortDescrString);
+		button.setIcon(toolButton.icon);
 		return button;
 	}
 
-	private JToolBar createToolBar(String[][] layouts, int orientation) {
+	private JToolBar createToolBar(ToolBarButton[] layouts, int orientation) {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.setBorder(new javax.swing.border.EtchedBorder());
@@ -96,33 +98,64 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		return toolBar;
 	}
 	
+	private static enum ToolBarButton {
+		select("Select", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
+		zoomin("Zoom In", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
+		zoomout("Zoom Out", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
+		random("Random", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
+		circular("Circular", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
+		annealed("Annealed", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
+		levelled("Levelled", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
+		relaxed("Relaxed", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
+		reactions_only("Reactions Only", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
+		reaction_network("Reaction Network", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
+		components("Components", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon),
+		
+		reaction("Reaction", "Biochemical Reaction", "Biochemical Reaction", VCellIcons.pathwayReactionIcon),
+		transport("Transport", "Transport", "Transport", VCellIcons.pathwayTransportIcon),
+		reaction_wt("Reaction WT", "Biochemical Reaction with Transport", "Biochemical Reaction with Transport", VCellIcons.pathwayReactionWtIcon),
+		entity("Entity", "Physical Entity", "Physical Entity", VCellIcons.pathwayEntityIcon),
+		small_molecule("Small Molecule", "Small Molecule", "Small Molecule", VCellIcons.pathwaySmallMoleculeIcon),
+		protein("Protein", "Protein", "Protein", VCellIcons.pathwayProteinIcon),
+		complex("Complex", "Complex", "Complex", VCellIcons.pathwayComplexIcon),
+		participant("Participant", "Participant", "Physical Entity Participant", VCellIcons.pathwayParticipantsIcon);
+
+
+		String name, shortDescrString, longDescription;
+		Icon icon;
+		private ToolBarButton(String name, String shortDescrString,
+				String longDescription, Icon icon) {
+			this.name = name;
+			this.shortDescrString = shortDescrString;
+			this.longDescription = longDescription;
+			this.icon = icon;
+		}		
+	}
+
 	private void initialize() {
-		String[][] layouts = new String[][] {
-				new String[]{"Select", "Select", "Select parts of the graph", "layout/select.gif"},
-				new String[]{"Zoom In", "Zoom In", "Make graph look bigger", "layout/zoomin.gif"},
-				new String[]{"Zoom Out", "Zoom Out", "Make graph look smaller", "layout/zoomout.gif"},
-				new String[]{"Random", "Random Layout", "Reconfigure graph randomly", "layout/random.gif"},
-				new String[]{"Circular", "Circular Layout", "Reconfigure graph circular", "layout/circular.gif"},
-				new String[]{"Annealed", "Annealed Layout", "Reconfigure graph by annealing", "layout/annealed.gif"},
-				new String[]{"Levelled", "Levelled Layout", "Reconfigure graph in levels", "layout/levelled.gif"},
-				new String[]{"Relaxed", "Relaxed Layout", "Reconfigure graph by relaxing", "layout/relaxed.gif"},
-				new String[]{"Reactions Only", "Reactions Only", "Show only Reactions",	"layout/level1.gif"},
-				new String[]{"Reaction Network", "Reaction Network", "Reaction Network", "layout/level2.gif"},
-				new String[]{"Components", "Components", "Reactions, entities and components", "layout/level3.gif"},								
+		ToolBarButton[] layouts = new ToolBarButton[] {
+				ToolBarButton.select,
+				ToolBarButton.zoomin,
+				ToolBarButton.zoomout,
+				ToolBarButton.random,
+				ToolBarButton.circular,
+				ToolBarButton.annealed,
+				ToolBarButton.levelled,
+				ToolBarButton.relaxed,
+				ToolBarButton.reactions_only,
+				ToolBarButton.reaction_network,
+				ToolBarButton.components,				
 		};
 
-		String[][] interactions = new String[][] {
-				new String[]{"Reaction", "Biochemical Reaction", "Biochemical Reaction", 
-						"biopax/biochemicalReaction.gif"},
-				new String[]{"Transport", "Transport", "Transport", "biopax/transport.gif"},
-				new String[]{"Reaction WT", "Biochemical Reaction with Transport", 
-						"Biochemical Reaction with Transport", 
-						"biopax/transportWithBiochemicalReaction.gif"},
-				new String[]{"Entity", "Physical Entity", "Physical Entity", "biopax/entity.gif"},
-				new String[]{"Small Molecule", "Small Molecule", "Small Molecule", "biopax/smallMolecule.gif"},
-				new String[]{"Protein", "Protein", "Protein", "biopax/protein.gif"},
-				new String[]{"Complex", "Complex", "Complex", "biopax/complex.gif"},
-				new String[]{"Participant", "Participant", "Physical Entity Participant", "biopax/modification.gif"},
+		ToolBarButton[] interactions = new ToolBarButton[] {
+				ToolBarButton.reaction,
+				ToolBarButton.transport,
+				ToolBarButton.reaction_wt,
+				ToolBarButton.entity,
+				ToolBarButton.small_molecule,
+				ToolBarButton.protein,
+				ToolBarButton.complex,
+				ToolBarButton.participant,
 		};
 		
 		JToolBar layoutToolBar = createToolBar(layouts, javax.swing.SwingConstants.VERTICAL);
