@@ -89,7 +89,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case REACTIONS_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {
-	    				labelText = folder.getName() + "          ";
+	    				labelText = folder.getName() + "(00000)";
 	    			} else {
 	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumReactions() + ")";
 	    			}
@@ -97,7 +97,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case STRUCTURES_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {
-	    				labelText = folder.getName() + "          ";
+	    				labelText = folder.getName() + "(00000)";
 	    			} else {
 	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumStructures() + ")";
 	    			}
@@ -105,14 +105,14 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case SPECIES_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {
-	    				labelText = folder.getName() + "          ";
+	    				labelText = folder.getName() + "(00000)";
 	    			} else {
 	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumSpeciesContexts() + ")";
 	    			}
 	    			break;
 	    		case APPLICATIONS_NODE:
 	    			if (bioModel == null) {
-	    				labelText = folder.getName() + "          ";
+	    				labelText = folder.getName() + "(00000)";
 	    			} else {
 	    				labelText = folder.getName() + " (" + bioModel.getNumSimulationContexts() + ")";
 	    			}
