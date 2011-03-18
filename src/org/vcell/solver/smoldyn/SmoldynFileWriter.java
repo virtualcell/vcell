@@ -518,7 +518,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		dist.reSeed(randomSeed);
 	}
 	double totalCount = 0;
-	if (subDomain instanceof CompartmentSubDomain) {
+	if (subDomain instanceof CompartmentSubDomain) {		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
 		ISize sampleSize = meshSpecification.getSamplingSize();
 		int numX = sampleSize.getX();
@@ -535,7 +535,8 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		double ex = extent.getX();
 		double ey = extent.getY();
 		double ez = extent.getZ();
-		
+				
+		int offset = 0;
 		for (int k = 0; k < numZ; k ++) {
 			double centerz = oz + k * dz;
 			double loz = Math.max(oz, centerz - dz/2);
@@ -548,7 +549,15 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 				double hiy = Math.min(oy + ey, centery + dy/2);
 				values[1] = centery;
 				double ly = hiy - loy;
-				for (int i = 0; i < numX; i ++) {
+				for (int i = 0; i < numX; i ++) {					
+					int regionIndex = resampledGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfoFromOffset(offset).getRegionIndex();
+					offset ++;
+					GeometricRegion region = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions(regionIndex);
+					if (region instanceof VolumeGeometricRegion) {
+						if (!((VolumeGeometricRegion) region).getSubVolume().getName().equals(subDomain.getName())) {
+							continue;
+						}
+					}
 					double centerx = ox + i * dx;
 					double lox = Math.max(ox, centerx - dx/2);
 					double hix = Math.min(ox + ex, centerx + dx/2);
