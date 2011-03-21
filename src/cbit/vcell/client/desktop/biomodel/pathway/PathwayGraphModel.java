@@ -82,8 +82,9 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 					if(shape instanceof BioPaxPhysicalEntityShape) {
 						BioPaxPhysicalEntityShape physicalEntityShape = (BioPaxPhysicalEntityShape) shape;
 						BioPaxInteractionParticipantShape edgeShape = 
-							new BioPaxInteractionParticipantShape(conversionShape, physicalEntityShape, 
-									participant.getType(), this);
+							new BioPaxInteractionParticipantShape(participant,
+									conversionShape, physicalEntityShape, 
+									this);
 						pathwayContainerShape.addChildShape(edgeShape);
 						addShape(edgeShape);
 					}
@@ -105,8 +106,8 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 									BioPaxPhysicalEntityShape physicalEntityShape = 
 										(BioPaxPhysicalEntityShape) shape;
 									BioPaxInteractionParticipantShape edgeShape = 
-										new BioPaxInteractionParticipantShape(conversionShape, 
-												physicalEntityShape, participant.getType(), this);
+										new BioPaxInteractionParticipantShape(participant, conversionShape, 
+												physicalEntityShape, this);
 									pathwayContainerShape.addChildShape(edgeShape);
 									addShape(edgeShape);
 								}
