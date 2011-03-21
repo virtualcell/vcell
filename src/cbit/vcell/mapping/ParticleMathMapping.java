@@ -268,7 +268,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		if (getSimulationContext().isUsingConcentration()) {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			initExpr = new Expression(initParm.getExpression());
-			initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
+			if (speciesContextSpecs[i].getSpeciesContext().getStructure() instanceof Feature) {
+				initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
+			}
 		} else {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
 			initExpr = new Expression(initParm.getExpression());
@@ -541,26 +543,47 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 		}else if (geometryClasses[k] instanceof SurfaceClass){
 			SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
-			//
-			// if there is a spatially resolved membrane surrounding this subVolume, then create a membraneSubDomain
-			//
-			structures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
-			Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
-			Iterator<SubVolume> iterator = sv.iterator();
-			SubVolume innerSubVolume = iterator.next();
-			SubVolume outerSubVolume = iterator.next();
-			if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
-				SubVolume temp = innerSubVolume;
-				innerSubVolume = outerSubVolume;
-				outerSubVolume = temp;
+			// determine membrane inside and outside subvolume
+			// this preserves backward compatibility so that membrane subdomain
+			// inside and outside correspond to structure hierarchy when present
+			SubVolume outerSubVolume = null;
+			SubVolume innerSubVolume = null;
+			Structure[] mappedStructures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+			for (Structure s : mappedStructures) {
+				if (s instanceof Membrane) {
+					Membrane m = (Membrane)s;
+					Feature infeature = m.getInsideFeature();
+					Feature outfeature = m.getOutsideFeature();
+					FeatureMapping insm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(infeature);
+					FeatureMapping outsm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(outfeature);
+					if (insm.getGeometryClass() instanceof SubVolume) {
+						innerSubVolume = (SubVolume)insm.getGeometryClass();
+					}
+					if (outsm.getGeometryClass() instanceof SubVolume) {
+						outerSubVolume = (SubVolume)outsm.getGeometryClass();
+					}
+				}
 			}
-	
+			// if structure hierarchy not present, alphabetically choose inside and outside
+			// make the choice deterministic
+			if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
+				Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+				Iterator<SubVolume> iterator = sv.iterator();
+				innerSubVolume = iterator.next();
+				outerSubVolume = iterator.next();
+				if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+					SubVolume temp = innerSubVolume;
+					innerSubVolume = outerSubVolume;
+					outerSubVolume = temp;
+				}
+			}
+
 			//
 			// create subDomain
 			//
 			CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
 			CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
-	
+
 			MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
 			mathDesc.addSubDomain(memSubDomain);
 		}
