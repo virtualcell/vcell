@@ -4,6 +4,9 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -24,6 +27,8 @@ import javax.swing.table.TableCellEditor;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Executable;
+import org.vcell.util.ExecutableException;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.MultiLineToolTip;
@@ -735,7 +740,7 @@ private void stopSimulations() {
 			tasks = new AsynchClientTask[1];
 		}
 		
-		tasks[tasks.length - 1] = new AsynchClientTask("start smoldyn", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		tasks[tasks.length - 1] = new AsynchClientTask("start simulating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -746,12 +751,87 @@ private void stopSimulations() {
 				PrintWriter pw = new PrintWriter(inputFile);
 				SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
 				smf.write();
-				pw.close();
+				pw.close();				
 				String[] cmd = new String[] {smoldynExe.getAbsolutePath(), inputFile.getAbsolutePath()};
-				Executable executable = new Executable(cmd);
-				executable.start();			
+				StringBuilder commandLine = new StringBuilder();
+				for (int i = 0; i < cmd.length; i ++) {
+					if (i > 0) {
+						commandLine.append(" ");
+					}		
+					commandLine.append(TokenMangler.getEscapedPathName(cmd[i]));		
+				}
+				System.out.println(commandLine);
+				ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+				Process process = processBuilder.start();
+				
+//				long t = System.currentTimeMillis();
+//				long timeoutMS = 0;
+//				long pollingIntervalMS = 1000;
+//				char charArrayOut[] = new char[10000];
+//				char charArrayErr[] = new char[10000];
+//				String outString = new String();
+//				String errString = new String();
+//				int numReadOut = 0; int numReadErr = 0; int exitValue = 0;
+//				InputStream inputStreamOut = process.getInputStream();
+//				InputStream inputStreamErr = process.getErrorStream();
+//				InputStreamReader inputStreamReaderOut = new InputStreamReader(inputStreamOut);
+//				InputStreamReader inputStreamReaderErr = new InputStreamReader(inputStreamErr);
+//
+//				boolean running = true;
+//				while (running || (numReadOut > 0) || (numReadErr > 0)) {
+//					if (timeoutMS > 0 && System.currentTimeMillis() - t > timeoutMS) {
+//						throw new ExecutableException("Process timed out");
+//					}
+//					try {
+//						exitValue = process.exitValue();
+//						running = false;
+//					} catch (IllegalThreadStateException e) {
+//						// process didn't exit yet, do nothing
+//					}
+//					try {
+//						if (pollingIntervalMS > 0) Thread.sleep(pollingIntervalMS);
+//					} catch (InterruptedException e) {
+//					}
+//					try {
+//						if (inputStreamOut.available() > 0) {
+//							numReadOut = inputStreamReaderOut.read(charArrayOut, 0, charArrayOut.length);
+//						} else {
+//							numReadOut = 0;
+//						}
+//					} catch (IOException ioexc) {
+//						System.out.println("EXCEPTION (process " + commandLine + ") - IOException while reading StdOut: " + ioexc.getMessage());
+//						numReadOut = 0;
+//					}
+//					try {
+//						if (inputStreamErr.available() > 0) {
+//							numReadErr = inputStreamReaderErr.read(charArrayErr, 0, charArrayErr.length);
+//						} else {
+//							numReadErr = 0;
+//						}
+//					} catch (IOException ioexc) {
+//						System.out.println("EXCEPTION (process " + commandLine + ") - IOException while reading StdErr: " + ioexc.getMessage());
+//						numReadErr = 0;
+//					}
+//					if (numReadOut > 0) {
+//						String newInput = new String(charArrayOut, 0, numReadOut);
+//						outString += newInput;
+//						if (outString.contains("[[[progress:0%]]]")) {
+//							return;
+//						}
+//						if (numReadOut == charArrayOut.length) {
+//							outString += "\n(standard output truncated...)";
+//						}
+//					}
+//					if (numReadErr > 0) {
+//						String newInput = new String(charArrayErr, 0, numReadErr);
+//						errString += newInput;
+//						if (numReadErr == charArrayErr.length) {
+//							errString += "\n(standard output truncated...)";
+//						}
+//					}
+//				}
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -124,6 +124,8 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
+	private ArrayList<String> killReactionCmdList = new ArrayList<String>();
+	private static final double KILL_REACTION_RATE = 1.0;
 	
 	enum SmoldynKeyword {
 		species,
@@ -188,7 +190,8 @@ public class SmoldynFileWriter extends SolverFileWriter
 		
 		cmd,
 		B,
-		n,
+		E,
+		N,
 //		one line of display is printed to the listed file, giving the time and the number 
 //		of molecules for each molecular species. Molecule states are ignored. 
 //		The ordering used is the same as was given in the species command.
@@ -225,6 +228,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		vcellPrintProgress,
 		vcellWriteOutput,
 		vcellDataProcess,
+		vcellReact1KillMolecules,
 	}
 	
 /**
@@ -319,8 +323,14 @@ private void writeGraphicsOpenGL() throws MathException {
 }
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
+	printWriter.println("# " + VCellSmoldynKeyword.vcellReact1KillMolecules + " runtime command");	
+	for (String cmd : killReactionCmdList) {
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + cmd);
+	}
+	printWriter.println();
+	
 	printWriter.println("# runtime command");
-	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + VCellSmoldynKeyword.vcellPrintProgress);
+	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
 	if (outputFile != null) {
 		OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
 		if (ots.isUniform()) {
@@ -338,20 +348,18 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			}
 			
 			printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
-	//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
-	//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
 			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 			int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
 	
 			// DON'T CHANGE THE ORDER HERE.
 			// DataProcess must be before vcellWriteOutput
 			if (simulation.getDataProcessingInstructions() != null) {
 				writeDataProcessor();
 			}		
-			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
+			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
 			if (dimension > 1) {
 				printWriter.print(" " + sampleSize.getY());
 				if (dimension > 2) {
@@ -471,9 +479,29 @@ private void writeReactions() throws ExpressionException, MathException {
 			if (reactants.size() == 2) {
 				macroscopicRateConstant *= ReservedSymbol.KMOLE.getExpression().evaluateConstant();
 			}
+			
 			printWriter.println(" " + macroscopicRateConstant);
 		}
 	}
+	
+	printWriter.println();
+	printWriter.println("# added reactions to kill molecules misplaced during initial condtions");
+	for (ParticleVariable pv : particleVariableList) {
+		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
+		if (varDomain == null) {
+			continue;
+		}
+		Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
+		while (subDomainEnumeration.hasMoreElements()) {
+			SubDomain subDomain = subDomainEnumeration.nextElement();
+			if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
+				String reactName = "kill_" + subDomain.getName() + "_" + pv.getName();
+				printWriter.println(SmoldynKeyword.reaction_cmpt + " " + subDomain.getName() + " " + reactName + " " + pv.getName() + " -> 0 " + KILL_REACTION_RATE);
+				killReactionCmdList.add(VCellSmoldynKeyword.vcellReact1KillMolecules + " " + pv.getName() + " " + reactName);
+			}
+		}
+	}
+	
 	printWriter.println();
 }
 
