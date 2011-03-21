@@ -28,20 +28,21 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 	protected final BioPaxConversionShape conversionShape;
 	protected final BioPaxPhysicalEntityShape physicalEntityShape;
 	
-	public BioPaxInteractionParticipantShape(BioPaxConversionShape conversionShape,
-			BioPaxPhysicalEntityShape physicalEntityShape, InteractionParticipant.Type type,
+	public BioPaxInteractionParticipantShape(
+			InteractionParticipant participant, 
+			BioPaxConversionShape conversionShape,
+			BioPaxPhysicalEntityShape physicalEntityShape, 
 			PathwayGraphModel graphModel) {
 		super(graphModel);
-		participant = new InteractionParticipant(conversionShape.getConversion(), 
-				physicalEntityShape.getPhysicalEntity(), type);
+		this.participant = participant;
 		this.conversionShape = conversionShape;
 		this.physicalEntityShape = physicalEntityShape;
 	}
-	public VisualState.Owner getStartShape() {
+	public Shape getStartShape() {
 		return conversionShape;
 	}
 
-	public VisualState.Owner getEndShape() {
+	public Shape getEndShape() {
 		return physicalEntityShape;
 	}
 
@@ -59,7 +60,8 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 
 	@Override
 	public void refreshLayoutSelf() {
-		// do nothing
+		labelPos.x = (getStartShape().getAbsX() + getEndShape().getAbsX()) / 2;
+		labelPos.y = (getStartShape().getAbsY() + getEndShape().getAbsY()) / 2;
 	}
 
 	@Override
@@ -81,6 +83,7 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 		} else if(participant.getType().equals(Type.RIGHT)) {
 			ArrowPainter.paintArrow(g2d, startPos, endPos, ARROW_LENGTH, ARROW_WIDTH);
 		}
+		g2d.drawString(getLabel(), xAbs + labelPos.x, yAbs + labelPos.y);
 	}
 
 	@Override

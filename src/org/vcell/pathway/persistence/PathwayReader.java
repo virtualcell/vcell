@@ -1045,6 +1045,19 @@ public class PathwayReader {
 					}
 				}
 			}
+			physicalEntityParticipantElement = childElement.getChild("sequenceParticipant",bp);
+			if (physicalEntityParticipantElement!=null){
+				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
+				if (physicalEntityPropertyElement!=null){
+					if (physicalEntityPropertyElement.getChildren().size()==0){
+						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
+						pathwayModel.add(physicalEntityProxy);
+						interaction.addPhysicalEntityAsParticipant(physicalEntityProxy, InteractionParticipant.Type.PARTICIPANT);
+						return true;
+					}
+				}
+			}
 			return false;
 		}else{
 			return false;

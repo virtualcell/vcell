@@ -1,14 +1,12 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
@@ -29,23 +27,17 @@ import org.vcell.pathway.Stoichiometry;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.util.gui.AutoCompleteTableModel;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.ReactionEquation;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
 
+@SuppressWarnings("serial")
 public class BioModelEditorConversionTableModel extends VCellSortTableModel<ConversionTableRow> 
 	implements PathwayListener, RelationshipListener, PropertyChangeListener, AutoCompleteTableModel{
 
@@ -64,7 +56,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	protected String searchText = null;
 
 	private BioModel bioModel;
-	private ArrayList<BioPaxObject> bioPaxObjects;
+	private List<BioPaxObject> bioPaxObjects;
 	private ArrayList<BioPaxObject> convertedBPObjects;
 	private ArrayList<ConversionTableRow> allPathwayObjectList;
 	//	private boolean bShowLinkOnly = false;
@@ -214,7 +206,8 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		for (Structure s : structures) {
 			aModel.addElement(s);
 		}
-		structureComboBoxCellEditor.setRenderer(new DefaultListCellRenderer() {
+
+		DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer() {
 			
 			public Component getListCellRendererComponent(JList list, Object value,
 					int index, boolean isSelected, boolean cellHasFocus) {
@@ -225,7 +218,8 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				}
 				return this;
 			}
-		});
+		};
+		structureComboBoxCellEditor.setRenderer(defaultListCellRenderer);
 		structureComboBoxCellEditor.setModel(aModel);
 		structureComboBoxCellEditor.setSelectedIndex(0);
 //		structureComboBoxCellEditor.addItemListener(new ItemListener() {
@@ -527,7 +521,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		updateStructureComboBox();
 	}
 
-	public void setBioPaxObjects(ArrayList<BioPaxObject> newValue) {
+	public void setBioPaxObjects(List<BioPaxObject> newValue) {
 		if (bioPaxObjects == newValue) {
 			return;
 		}

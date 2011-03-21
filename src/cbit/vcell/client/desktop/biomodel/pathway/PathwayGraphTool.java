@@ -42,8 +42,7 @@ public class PathwayGraphTool extends BioCartoonTool {
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
-		Point screenPoint = new Point(event.getX(), event.getY());
-
+		Point worldPoint = screenToWorld(event.getX(), event.getY());
 		try {
 			// if right mouse button, then do popup menu
 			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
@@ -66,8 +65,8 @@ public class PathwayGraphTool extends BioCartoonTool {
 			System.out.println("CartoonTool.mouseClicked: uncaught exception");
 			e.printStackTrace(System.out);
 			Point canvasLoc = getGraphPane().getLocationOnScreen();
-			canvasLoc.x += screenPoint.x;
-			canvasLoc.y += screenPoint.y;
+			canvasLoc.x += worldPoint.x;
+			canvasLoc.y += worldPoint.y;
 			DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 	}
@@ -238,11 +237,7 @@ public class PathwayGraphTool extends BioCartoonTool {
 		if(getGraphModel() == null){ return; }
 		try {
 			// Pick shape
-			int eventX = event.getX();
-			int eventY = event.getY();
-			Point worldPoint = new Point(
-					(int) (eventX * 100.0 / getGraphModel().getZoomPercent()),
-					(int) (eventY * 100.0 / getGraphModel().getZoomPercent()));
+			Point worldPoint = screenToWorld(event.getX(), event.getY());
 			Shape endShape = getGraphModel().pickWorld(worldPoint);
 			// if mouse popupMenu event, popup menu
 			if (event.isPopupTrigger() && mode == Mode.SELECT) {

@@ -3,16 +3,13 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -26,6 +23,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.util.gui.ActionSpecs;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
 
@@ -34,11 +32,14 @@ import cbit.gui.graph.GraphPane;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayEditor;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayImportSelectionTool;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel implements PathwayListener {
+public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel 
+implements PathwayListener, PathwayEditor {
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private EventHandler eventHandler = new EventHandler();
@@ -47,17 +48,9 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
 	private JButton bringItInButton = null; // wei's code
-	private ConversionPanel conversionPanel = new ConversionPanel(); // wei's code
 	
-	private class EventHandler implements ActionListener, ListSelectionListener, AnnotationEventListener, PropertyChangeListener {
+	private class EventHandler implements ListSelectionListener, AnnotationEventListener, PropertyChangeListener {
 
-		public void actionPerformed(ActionEvent e) {
-			// wei's code
-			if(e.getSource() == bringItInButton){
-				bringItIn();
-			}
-			// done
-		}
 		public void valueChanged(ListSelectionEvent e) {
 		}
 		public void annotationChanged(AnnotationEvent annotationEvent) {
@@ -167,8 +160,8 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		
 		// wei's code: add a button for demo. please redesign it for better User interface
 		JPanel layoutPanel = new JPanel();
-		bringItInButton = new JButton("Bring It In");
-		bringItInButton.addActionListener(eventHandler);
+		bringItInButton = new JButton(new PathwayImportSelectionTool.BringItInAction(
+				new ActionSpecs("Bring It In"), this, new ConversionPanel()));
 		layoutPanel.add(nodesToolBar, BorderLayout.WEST);
 		layoutPanel.add(bringItInButton, BorderLayout.EAST);	
 		// done
@@ -230,7 +223,6 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		if (this.bioModel!=null){
 			this.bioModel.getPathwayModel().addPathwayListener(this);
 		}
-		conversionPanel.setBioModel(bioModel);
 		refreshInterface();
 	}
 
@@ -244,34 +236,18 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	}
 	
 	// wei's code
-	public Object[] getSelectedBioPaxObjects(){
-		return graphCartoonTool.getGraphModel().getSelectedObjects();
+	public List<BioPaxObject> getSelectedBioPaxObjects(){
+		ArrayList<BioPaxObject> bpObjects = new ArrayList<BioPaxObject>();
+		for(Object selected : graphCartoonTool.getGraphModel().getSelectedObjects()) {
+			if(selected instanceof BioPaxObject) {
+				bpObjects.add((BioPaxObject) selected);
+			}
+		}
+		return bpObjects;
 	}
 	
-	private void bringItIn(){
-		if(graphCartoonTool.getGraphModel().getSelectedObjects().length < 1){
-			return;
-		}
-		ArrayList<BioPaxObject> selectedObjects = new ArrayList<BioPaxObject>();
-		for(int i = 0; i < graphCartoonTool.getGraphModel().getSelectedObjects().length; i++){
-			if((graphCartoonTool.getGraphModel().getSelectedObjects()[i]) instanceof BioPaxObject)
-				selectedObjects.add((BioPaxObject) (graphCartoonTool.getGraphModel().getSelectedObjects()[i]));			
-		}
-		if(selectedObjects.size() < 1){
-			return;
-		}
-        //Create and set up the content pane.
-        conversionPanel.setOpaque(true); //content panes must be opaque
-        conversionPanel.setBioPaxObjects(selectedObjects);
-        int returnCode = DialogUtils.showComponentOKCancelDialog(this, conversionPanel, "Convert to BioModel");
-		if (returnCode == JOptionPane.OK_OPTION) {
-			conversionPanel.bringItIn();
-		}
-	}
+	public SelectionManager getSelectionManager() { return selectionManager; }
+
+	public BioModel getBioModel() { return bioModel; }
 	
-	public void setSelectionManager(SelectionManager selectionManager) {
-		super.setSelectionManager(selectionManager);
-		conversionPanel.setSelectionManager(selectionManager);
-	}
-	// done
 }

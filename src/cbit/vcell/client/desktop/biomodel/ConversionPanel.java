@@ -9,41 +9,28 @@ import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
 
-import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.tree.TreePath;
-
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Conversion;
 import org.vcell.relationship.PathwayMapping;
-import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.sorttable.JSortTable;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
-import cbit.vcell.model.BioModelEntityObject;
-import cbit.vcell.model.Structure;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayImportSelectionTool;
 
-public class ConversionPanel extends DocumentEditorSubPanel {
+@SuppressWarnings("serial")
+public class ConversionPanel extends DocumentEditorSubPanel implements PathwayImportSelectionTool {
 //	private BioModelEntityObject bioModelEntityObject = null;
-	private ArrayList<BioPaxObject> bioPaxObjects= null;
+	private List<BioPaxObject> bioPaxObjects= null;
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	private BioModelEditorConversionTableModel tableModel = null; 
@@ -230,7 +217,7 @@ public static void main(java.lang.String[] args) {
  * @param kinetics The new value for the property.
  * @see #getKinetics
  */
-public void setBioPaxObjects(ArrayList<BioPaxObject> newValue) {
+public void setBioPaxObjects(List<BioPaxObject> newValue) {
 	if (bioPaxObjects == newValue) {
 		return;
 	}
@@ -254,6 +241,13 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 
 public BioModelEditorConversionTableModel getTableModel(){
 	return tableModel;
+}
+
+public void showSelectionDialog() {
+    int returnCode = DialogUtils.showComponentOKCancelDialog(this, this, "Convert to BioModel");
+	if (returnCode == JOptionPane.OK_OPTION) {
+		bringItIn();
+	}
 }
 
 public void bringItIn(){
