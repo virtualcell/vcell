@@ -17,6 +17,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 
@@ -221,14 +222,24 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, true), false);
 				BioModelNode fittingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.FITTING_NODE, true), false);
 				
-				BioModelNode[] applicationsChildNodes = new BioModelNode[] {
-						geometryNode,
-						settingsNode,
-						protocolsNode,
-						simulationsNode,
-						fittingNode,
-				};
-				for (BioModelNode node : applicationsChildNodes) {
+				BioModelNode[] applicationChildNodes = null;
+				if (simulationContext.isValidForFitting()) {
+					applicationChildNodes = new BioModelNode[] {
+							geometryNode,
+							settingsNode,
+							protocolsNode,
+							simulationsNode,
+							fittingNode,
+					};					
+				} else {
+					applicationChildNodes = new BioModelNode[] {
+							geometryNode,
+							settingsNode,
+							protocolsNode,
+							simulationsNode,
+					};
+				}
+				for (BioModelNode node : applicationChildNodes) {
 					appNode.add(node);
 					if (bSelectedInSimulationContext && !bFoundSelected && selectedUserObject instanceof DocumentEditorTreeFolderNode
 						&& ((DocumentEditorTreeFolderNode)selectedUserObject).getName().equals(((DocumentEditorTreeFolderNode)node.getUserObject()).getName())) {
@@ -278,6 +289,23 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 				}
 			} else if (source == bioModel.getModel()) {
 				nodeChanged(rootNode);
+			} else if (source instanceof SimulationContext) {
+				if (evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
+					SimulationContext simulationContext = (SimulationContext)source;
+					if (!simulationContext.isValidForFitting()) {
+						BioModelNode appNode = applicationsNode.findNodeByUserObject(source);
+						for (int i = 0; i < appNode.getChildCount(); i ++) {
+							BioModelNode child = (BioModelNode) appNode.getChildAt(i);
+							if (child.getUserObject() instanceof DocumentEditorTreeFolderNode) {
+								if (((DocumentEditorTreeFolderNode)child.getUserObject()).getFolderClass() == DocumentEditorTreeFolderClass.FITTING_NODE) {
+									appNode.remove(child);
+									nodeStructureChanged(appNode);
+									return;
+								}			
+							}
+						}
+					}
+				}
 			}
 		} catch (Exception e){
 			e.printStackTrace(System.out);

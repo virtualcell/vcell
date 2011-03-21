@@ -10,6 +10,7 @@ import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
@@ -92,6 +93,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				component.setToolTipText("Geometry");
 				component.setText(label);
 				setIcon(fieldGeometryIcon);
+			} else if (userObject instanceof String && "AppType".equals(node.getRenderHint("type"))) {
+				String label = (String)userObject;
+				component.setToolTipText("Application type");
+				component.setText(label);
+				setIcon(VCellIcons.mathTypeIcon);
 			} else if (userObject instanceof VCDocumentInfoNode) {
 				VCDocumentInfoNode infonode = (VCDocumentInfoNode)userObject;
 				User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();

@@ -1,36 +1,31 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -43,7 +38,6 @@ public class IssuePanel extends DocumentEditorSubPanel {
 	private IssueTableModel issueTableModel = null;
 	private JButton refreshButton = null;
 	private JCheckBox showWarningCheckBox;
-	private Icon errorIcon, warningIcon, infoIcon;
 	
 	public IssuePanel() {
 		super();
@@ -152,13 +146,13 @@ public class IssuePanel extends DocumentEditorSubPanel {
 					Icon icon = null;
 					switch (severity) {
 					case Issue.SEVERITY_INFO:
-						icon = getInfoIcon();
+						icon = VCellIcons.getInfoIcon();
 						break;
 					case Issue.SEVERITY_WARNING:
-						icon = getWarningIcon();
+						icon = VCellIcons.getWarningIcon();
 						break;					
 					case Issue.SEVERITY_ERROR:
-						icon = getErrorIcon();
+						icon = VCellIcons.getErrorIcon();
 						break;
 					}
 					setIcon(icon);
@@ -170,39 +164,5 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			}			
 		};
 		issueTable.getColumnModel().getColumn(IssueTableModel.COLUMN_DESCRIPTION).setCellRenderer(tableRenderer);
-	}
-	
-	private Icon getScaledIcon(Icon tempIcon) {
-		Image image = null;
-		if (tempIcon instanceof ImageIcon) {
-			image = ((ImageIcon)tempIcon).getImage();
-		} else {
-			image = new BufferedImage(tempIcon.getIconWidth(), tempIcon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-			final Graphics imageGraphics = image.getGraphics();
-			tempIcon.paintIcon(this, imageGraphics, 0, 0);
-		}
-		image = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);  
-		return new ImageIcon(image);
-	}
-	
-	private Icon getErrorIcon() {
-		if (errorIcon == null) {
-			errorIcon = getScaledIcon(UIManager.getIcon("OptionPane.errorIcon"));
-		}
-		return errorIcon;
-	}
-
-	private Icon getWarningIcon() {
-		if (warningIcon == null) {
-			warningIcon = getScaledIcon(UIManager.getIcon("OptionPane.warningIcon"));
-		}
-		return warningIcon;
-	}
-	
-	private Icon getInfoIcon() {
-		if (infoIcon == null) {
-			infoIcon = getScaledIcon(UIManager.getIcon("OptionPane.informationIcon"));
-		}
-		return infoIcon;
 	}
 }

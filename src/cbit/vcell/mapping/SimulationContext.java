@@ -2126,4 +2126,8 @@ public boolean isSameTypeAs(SimulationContext simulationContext) {
 		
 	return (isStoch() && simulationContext.isStoch()) || (!isStoch() && !simulationContext.isStoch());
 }
+
+public boolean isValidForFitting() {
+	return getGeometry().getDimension() == 0 && !isStoch();
+}
 }
