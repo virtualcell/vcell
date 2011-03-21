@@ -1,19 +1,26 @@
 package org.vcell.util.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
 
 public abstract class VCellIcons {
+	
+	public final static int VCellIconWidth = 16;
+	public final static int VCellIconHeight = 16;
 	
 	// pathway
 	public final static Icon pathwaySelectIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/select.gif"));
@@ -41,19 +48,19 @@ public abstract class VCellIcons {
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
 	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
 	public final static Icon documentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/document_icon.png"));
-	public final static Icon structureIcon = new ImageIcon(VCellIcons.class.getResource("/icons/structure_icon.gif"));
 	public final static Icon mathModelIcon = new ImageIcon(VCellIcons.class.getResource("/images/math_16x16.gif"));
 	
 	// application
-	public final static Icon geometryIcon = new ImageIcon(VCellIcons.class.getResource("/images/geometry2_16x16.gif"));
-	public final static Icon simulationIcon = new ImageIcon(VCellIcons.class.getResource("/images/run2_16x16.gif"));
-	public final static Icon settingsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/app_settings.gif"));
-	public final static Icon protocolsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/app_protocols.png"));
-	public final static Icon fittingIcon = new ImageIcon(VCellIcons.class.getResource("/icons/app_fitting.gif"));
+	public final static Icon geometryIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/geometry2_16x16.gif")));
+	public final static Icon simulationIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/run2_16x16.gif")));
+	public final static Icon settingsIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_settings.gif")));
+	public final static Icon protocolsIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_protocols.png")));
+	public final static Icon fittingIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/app_fitting.gif")));
 	
 	// model
-	public final static Icon tableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/table_icon.gif"));
-	public final static Icon diagramIcon = new ImageIcon(VCellIcons.class.getResource("/icons/diagram_icon.gif"));
+	public final static Icon tableIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/table_icon.gif")));
+	public final static Icon structureIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/images/bioModel_16x16.gif")));
+	public final static Icon diagramIcon = getScaledIcon(new ImageIcon(VCellIcons.class.getResource("/icons/diagram_icon.gif")));
 	
 	private static Icon oldOutputFunctionIcon = null;
 	private static Icon outputFunctionIcon = null;
@@ -94,12 +101,36 @@ public abstract class VCellIcons {
 		return jFrameIconImage;
 	}
 
+	private static Icon errorIcon = null;
+	private static Icon warningIcon = null;
+	private static Icon infoIcon = null;
+	public static Icon getErrorIcon() {
+		if (errorIcon == null) {
+			errorIcon = getScaledIcon(UIManager.getIcon("OptionPane.errorIcon"));
+		}
+		return errorIcon;
+	}
+
+	public static Icon getWarningIcon() {
+		if (warningIcon == null) {
+			warningIcon = getScaledIcon(UIManager.getIcon("OptionPane.warningIcon"));
+		}
+		return warningIcon;
+	}
+	
+	public static Icon getInfoIcon() {
+		if (infoIcon == null) {
+			infoIcon = getScaledIcon(UIManager.getIcon("OptionPane.informationIcon"));
+		}
+		return infoIcon;
+	}
+	
 	public static void main(java.lang.String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JButton("", structureIcon), BorderLayout.CENTER);
+			panel.add(new JLabel("label", protocolsIcon, SwingConstants.LEFT), BorderLayout.CENTER);
 			frame.add(panel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {
@@ -113,6 +144,27 @@ public abstract class VCellIcons {
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");
 			exception.printStackTrace(System.out);
 		}
+	}
+
+	private static Icon getScaledIcon(Icon tempIcon) {
+		return getScaledIcon(null, tempIcon);
+	}
+	
+	public static Icon getScaledIcon(Component component, Icon tempIcon) {
+		if (tempIcon.getIconWidth() == VCellIconWidth && tempIcon.getIconHeight() == VCellIconHeight) {
+			return tempIcon;
+		}
+		
+		Image image = null;
+		if (tempIcon instanceof ImageIcon) {
+			image = ((ImageIcon)tempIcon).getImage();
+		} else {
+			image = new BufferedImage(tempIcon.getIconWidth(), tempIcon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+			final Graphics imageGraphics = image.getGraphics();
+			tempIcon.paintIcon(component, imageGraphics, 0, 0);
+		}
+		image = image.getScaledInstance(VCellIconWidth, VCellIconHeight, Image.SCALE_SMOOTH);		
+		return new ImageIcon(image);
 	}
 
 }

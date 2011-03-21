@@ -3,6 +3,8 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -10,13 +12,18 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modeldb.ModelTable;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
@@ -55,10 +62,10 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		}		
 	}
 	
-	private ApplicationPanelTab modelPanelTabs[] = new ApplicationPanelTab[ApplicationPanelTabID.values().length]; 
+	private ApplicationPanelTab appPanelTabs[] = new ApplicationPanelTab[ApplicationPanelTabID.values().length]; 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener, ChangeListener {		
+	private class InternalEventHandler implements ActionListener, ChangeListener, PropertyChangeListener {		
 				
 		public void actionPerformed(ActionEvent e) {
 			
@@ -67,6 +74,14 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		public void stateChanged(ChangeEvent e) {
 			if (e.getSource() == tabbedPane) {
 				tabbedPaneSelectionChanged();
+			}			
+		}
+
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == simulationContext) {
+				if (evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
+					showOrHideFittingPanel();
+				}
 			}			
 		}
 	}
@@ -84,14 +99,14 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationFittingPanel = new ApplicationFittingPanel();
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		modelPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
-		modelPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSettingsPanel, VCellIcons.settingsIcon);
-		modelPanelTabs[ApplicationPanelTabID.protocols.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.protocols, applicationProtocolsPanel, VCellIcons.protocolsIcon);
-		modelPanelTabs[ApplicationPanelTabID.simulations.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.simulations, applicationSimulationsPanel, VCellIcons.simulationIcon);
-		modelPanelTabs[ApplicationPanelTabID.fitting.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.fitting, applicationFittingPanel, VCellIcons.fittingIcon);
+		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
+		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSettingsPanel, VCellIcons.settingsIcon);
+		appPanelTabs[ApplicationPanelTabID.protocols.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.protocols, applicationProtocolsPanel, VCellIcons.protocolsIcon);
+		appPanelTabs[ApplicationPanelTabID.simulations.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.simulations, applicationSimulationsPanel, VCellIcons.simulationIcon);
+		appPanelTabs[ApplicationPanelTabID.fitting.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.fitting, applicationFittingPanel, VCellIcons.fittingIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		
-		for (ApplicationPanelTab tab : modelPanelTabs) {
+		for (ApplicationPanelTab tab : appPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
 			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}
@@ -136,12 +151,33 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		if (simulationContext == newValue) {
 			return;
 		}
+		SimulationContext oldValue = simulationContext;
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(eventHandler);
+		}
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(eventHandler);
+		}
 		simulationContext = newValue;
-		applicationGeometryPanel.setSimulationContext(newValue);
-		applicationSettingsPanel.setSimulationContext(newValue);
-		applicationProtocolsPanel.setSimulationContext(newValue);
-		applicationSimulationsPanel.setSimulationContext(newValue);
-		applicationFittingPanel.setSimulationContext(newValue);
+		applicationGeometryPanel.setSimulationContext(simulationContext);
+		applicationSettingsPanel.setSimulationContext(simulationContext);
+		applicationProtocolsPanel.setSimulationContext(simulationContext);
+		applicationSimulationsPanel.setSimulationContext(simulationContext);
+		showOrHideFittingPanel();
+	}
+
+	private void showOrHideFittingPanel() {
+		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.fitting.ordinal()];
+		if (simulationContext.isValidForFitting()) {
+			if (tabbedPane.indexOfComponent(tab.component) < 0) {
+				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			}
+			applicationFittingPanel.setSimulationContext(simulationContext);
+		} else {
+			if (tabbedPane.indexOfComponent(tab.component) >= 0) {
+				tabbedPane.remove(tab.component);
+			}
+		}
 	}
 
 	public void setBioModelWindowManager(BioModelWindowManager newValue) {
