@@ -38,7 +38,8 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 	private JList varJList;
 	private PlotPane plotPane = null;
 	private double[] timeArray;
-
+	private int[] lastSelectedIdxArray = null;
+	
 	public DataProcessingResultsPanel() {
 		super();
 		initialize();
@@ -50,6 +51,9 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 		varJList.addListSelectionListener(new ListSelectionListener() {
 			
 			public void valueChanged(ListSelectionEvent e) {
+				if (e.getValueIsAdjusting()) {
+					return;
+				}
 				onVariablesChange();
 			}
 		});
@@ -140,8 +144,17 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 							dlm.addElement(var.getName());
 						}
 					}
+					int[] lastSelectedIdxArray0 = varJList.getSelectedIndices(); 
 					varJList.setModel(dlm);
-					varJList.setSelectedIndex(0);
+					lastSelectedIdxArray = lastSelectedIdxArray0;
+					if(lastSelectedIdxArray == null || lastSelectedIdxArray.length == 0)
+					{
+						varJList.setSelectedIndex(0);
+					}
+					else
+					{
+						varJList.setSelectedIndices(lastSelectedIdxArray);
+					}
 				}
 			}
 		};
@@ -151,6 +164,8 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 	
 	private void onVariablesChange() {
 		try {
+			//keep old indices
+			lastSelectedIdxArray = varJList.getSelectedIndices();
 			Object[] selectedObjects = varJList.getSelectedValues();
 			int numSelectedVars = selectedObjects.length;
 			double[][] plotDatas = null;
