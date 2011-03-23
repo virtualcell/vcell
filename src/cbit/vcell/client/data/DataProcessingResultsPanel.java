@@ -30,6 +30,7 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 
+@SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel implements PropertyChangeListener {
 
 	private PDEDataContext pdeDataContext;
@@ -191,6 +192,9 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS)) {
+			update();
+		}
+		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER)) {
 			update();
 		}
 	}

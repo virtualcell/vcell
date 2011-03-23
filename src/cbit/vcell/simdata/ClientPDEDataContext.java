@@ -189,9 +189,8 @@ public abstract void refreshIdentifiers();
 
 
 /**
- * Insert the method's description here.
- * Creation date: (10/19/2005 12:21:50 PM)
- * @param newDataManager cbit.vcell.desktop.controls.DataManager
+ * This method is called from SimResultsViewer.updateScanParamChoices(),
+ * which is going to update results view upon a choice of scaned parameters.
  */
 public void setDataManager(PDEDataManager newDataManager) throws DataAccessException{
 	VCDataIdentifier oldid = dataManager.getVCDataIdentifier();

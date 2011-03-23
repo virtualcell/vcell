@@ -223,6 +223,11 @@ public DataProcessingOutput getDataProcessingOutput() throws DataAccessException
 	}
 	return dataProcessingOutput;
 }
+
+private void clearDataProcessingOutput()
+{
+	dataProcessingOutput = null;
+}
 /**
  * Gets the timePoint property (double) value.
  * @return The timePoint property value.
@@ -593,6 +598,9 @@ final void setVCDataIdentifier(VCDataIdentifier newValue) {
 	}
 	VCDataIdentifier oldValue = vcDataIdentifier;
 	this.vcDataIdentifier = newValue;
+	//clear up the data processing output, once the scan(basically job id) has been changed)
+	clearDataProcessingOutput(); 
+	
 	firePropertyChange(PROPERTY_NAME_VCDATA_IDENTIFIER, oldValue, newValue);
 }
 
