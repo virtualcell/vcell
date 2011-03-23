@@ -95,7 +95,7 @@ import cbit.vcell.solvers.CartesianMesh;
 public class SmoldynFileWriter extends SolverFileWriter 
 {
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "triangle";
-
+	
 	private static class TrianglePanel {
 		String name;
 		Triangle triangle;		
@@ -106,7 +106,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		}
 	}
 	private static final int MAX_MOL_LIMIT = 1000000;
-
+	private long randomSeed = 0; //value assigned in the constructor
 	@SuppressWarnings("serial")
 	private class NotAConstantException extends Exception {		
 	}
@@ -244,6 +244,15 @@ public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, File outputFile, Simu
 	super(pw, arg_simulationJob, bMessaging);
 	bGraphicOpenGL = bGraphic;
 	this.outputFile = outputFile;
+	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
+	SmoldynSimulationOptions smoldynSimulationOptions = arg_simulationJob.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
+	if (smoldynSimulationOptions.getRandomSeed() != null) {
+		this.randomSeed = smoldynSimulationOptions.getRandomSeed();
+	} else {
+		this.randomSeed = System.currentTimeMillis();
+	}
+	//We add jobindex to the random seed in case there is a parameter scan.
+	randomSeed = randomSeed + simulationJob.getJobIndex();
 }
 
 private void init() throws SolverException {
@@ -302,9 +311,8 @@ private void writeSimulationSettings() {
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
 	printWriter.println(SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
 	printWriter.println(SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
-	if (smoldynSimulationOptions.getRandomSeed() != null) {
-		printWriter.println(SmoldynKeyword.rand_seed + " " + smoldynSimulationOptions.getRandomSeed());
-	}
+	
+	printWriter.println(SmoldynKeyword.rand_seed + " " + randomSeed);
 	printWriter.println();
 }
 
@@ -541,10 +549,8 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 	}
 	
 	RandomDataImpl dist = new RandomDataImpl();
-	Integer randomSeed = simulation.getSolverTaskDescription().getSmoldynSimulationOptions().getRandomSeed();
-	if (randomSeed != null) {
-		dist.reSeed(randomSeed);
-	}
+	dist.reSeed(randomSeed);
+	
 	double totalCount = 0;
 	if (subDomain instanceof CompartmentSubDomain) {		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
