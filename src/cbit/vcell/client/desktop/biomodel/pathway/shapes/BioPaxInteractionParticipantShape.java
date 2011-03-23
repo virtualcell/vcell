@@ -83,7 +83,10 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 		} else if(participant.getType().equals(Type.RIGHT)) {
 			ArrowPainter.paintArrow(g2d, startPos, endPos, ARROW_LENGTH, ARROW_WIDTH);
 		}
-		g2d.drawString(getLabel(), xAbs + labelPos.x, yAbs + labelPos.y);
+		String label = getLabel();
+		if(label != null) {
+			g2d.drawString(label, xAbs + labelPos.x, yAbs + labelPos.y);			
+		}
 	}
 
 	@Override
