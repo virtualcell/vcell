@@ -3171,6 +3171,9 @@ public VisitSession createNewVisitSession(String visitBinPath) throws DataAccess
 }
 
 public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
+	return updateMath(requester, simulationContext, true);
+}
+public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext, final boolean bShowWarning) {
 	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -3202,6 +3205,9 @@ public static AsynchClientTask[] updateMath(final JComponent requester, final Si
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (!bShowWarning) {
+				return;
+			}
 			MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
 			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
 			if (mathDesc != null) {
@@ -3219,7 +3225,7 @@ public static AsynchClientTask[] updateMath(final JComponent requester, final Si
 						}
 					}
 					if (issueCount>0){
-						PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
+						PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
 					}
 				}
 			}

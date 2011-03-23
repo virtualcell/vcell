@@ -124,9 +124,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
-	private ArrayList<String> killReactionCmdList = new ArrayList<String>();
-	private static final double KILL_REACTION_RATE = 1.0;
-	
+	private static final int Default_Display_Size = 5;
 	enum SmoldynKeyword {
 		species,
 		difc,
@@ -134,6 +132,12 @@ public class SmoldynFileWriter extends SolverFileWriter
 		graphics,
 		opengl,
 		color,
+		display_size,
+		grid_color,
+		background_color,
+		grid_thickness,
+		frame_color,
+		frame_thickness,
 		
 		time_start,
 		time_stop,
@@ -210,6 +214,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		warnescapee,
 		output_file_number,		
 		incrementfile,
+		killmolincmpt, 
 		
 		accuracy,
 		boxsize,
@@ -228,7 +233,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		vcellPrintProgress,
 		vcellWriteOutput,
 		vcellDataProcess,
-		vcellReact1KillMolecules,
+//		vcellReact1KillMolecules,
 	}
 	
 /**
@@ -322,19 +327,37 @@ private void writeGraphicsOpenGL() throws MathException {
 	}
 	printWriter.println("# runtime command");	
 	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
-	Color[] colors = Plot2DPanel.generateAutoColor(particleVariableList.size(), Color.white, new Integer(5));
+	Color bg = new Color(0xffffff);
+	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
+	printWriter.println(SmoldynKeyword.frame_color + " 0.8 0.8 0.9");
+//	printWriter.println(SmoldynKeyword.grid_thickness + " 1");
+//	printWriter.println(SmoldynKeyword.grid_color + " 0 0 0");
+	printWriter.println(SmoldynKeyword.background_color + " " + bg.getRed()/255.0 + " " + bg.getGreen()/255.0 + " " + bg.getBlue()/255.0);
+	Color[] colors = Plot2DPanel.generateAutoColor(particleVariableList.size(), bg, new Integer(5));
 	for (int i = 0; i < particleVariableList.size(); i ++) {
 		Color c = colors[i];
-		printWriter.println(SmoldynKeyword.color + " " + getVariableName(particleVariableList.get(i),null) + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
+		String variableName = getVariableName(particleVariableList.get(i),null);
+		printWriter.println(SmoldynKeyword.color + " " + variableName + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
+		printWriter.println(SmoldynKeyword.display_size + " " + variableName + " " + Default_Display_Size);
 	}
 	printWriter.println();
 }
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
-	printWriter.println("# " + VCellSmoldynKeyword.vcellReact1KillMolecules + " runtime command");	
-	for (String cmd : killReactionCmdList) {
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + cmd);
-	}
+	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
+	for (ParticleVariable pv : particleVariableList) {
+		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
+		if (varDomain == null) {
+			continue;
+		}
+		Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
+		while (subDomainEnumeration.hasMoreElements()) {
+			SubDomain subDomain = subDomainEnumeration.nextElement();
+			if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + " " + subDomain.getName());
+			}
+		}
+	}	
 	printWriter.println();
 	
 	printWriter.println("# runtime command");
@@ -490,27 +513,9 @@ private void writeReactions() throws ExpressionException, MathException {
 			
 			printWriter.println(" " + macroscopicRateConstant);
 		}
-	}
-	
+	}	
 	printWriter.println();
-	printWriter.println("# added reactions to kill molecules misplaced during initial condtions");
-	for (ParticleVariable pv : particleVariableList) {
-		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
-		if (varDomain == null) {
-			continue;
-		}
-		Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
-		while (subDomainEnumeration.hasMoreElements()) {
-			SubDomain subDomain = subDomainEnumeration.nextElement();
-			if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
-				String reactName = "kill_" + subDomain.getName() + "_" + pv.getName();
-				printWriter.println(SmoldynKeyword.reaction_cmpt + " " + subDomain.getName() + " " + reactName + " " + pv.getName() + " -> 0 " + KILL_REACTION_RATE);
-				killReactionCmdList.add(VCellSmoldynKeyword.vcellReact1KillMolecules + " " + pv.getName() + " " + reactName);
-			}
-		}
-	}
-	
-	printWriter.println();
+
 }
 
 private String getVariableName(Variable var, SubDomain subdomain) throws MathException {
@@ -958,6 +963,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
 			
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
 			if (DEBUG) tmppw.println("verts" + sci + "=[");
@@ -1342,8 +1348,8 @@ private void writeWallSurfaces() throws SolverException {
 		printWriter.println("# bounding wall surface");
 		// X walls
 		printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[0]);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[1]);
+		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[0]);
+		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[1]);
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 		// yz walls
 		switch (dimension) {
@@ -1366,8 +1372,8 @@ private void writeWallSurfaces() throws SolverException {
 		if (dimension > 1) {
 			// Y walls
 			printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[2]);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[3]);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[2]);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[3]);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 			// xz walls
 			switch (dimension) {
@@ -1386,8 +1392,8 @@ private void writeWallSurfaces() throws SolverException {
 			if (dimension > 2) {
 				// Z walls
 				printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[4]);
-				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[5]);
+				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[4]);
+				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[5]);
 				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 				// xy walls
 				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
