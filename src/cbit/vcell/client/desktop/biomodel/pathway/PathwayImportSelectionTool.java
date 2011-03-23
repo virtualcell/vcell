@@ -16,7 +16,7 @@ public interface PathwayImportSelectionTool {
 	public void setBioModel(BioModel bioModel);
 	public void setSelectionManager(SelectionManager selectionManager);
 	public void setBioPaxObjects(List<BioPaxObject> bpObjects);
-	public void bringItIn();
+	public void showSelectionDialog();
 
 	@SuppressWarnings("serial")
 	public static class BringItInAction extends AbstractAction {
@@ -38,7 +38,7 @@ public interface PathwayImportSelectionTool {
 				tool.setBioModel(editor.getBioModel());
 				tool.setSelectionManager(editor.getSelectionManager());
 				tool.setBioPaxObjects(selectedBioPaxObjects);
-				tool.bringItIn(); 
+				tool.showSelectionDialog(); 
 			}
 		}
 		
