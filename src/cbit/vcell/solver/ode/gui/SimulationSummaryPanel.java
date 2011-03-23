@@ -10,17 +10,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -32,7 +28,6 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -68,9 +63,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JLabel labelRelTolValue = null;
 	private JLabel labelAbsTolValue = null;
 	private JPanel settingsPanel;
-	private JButton editButton = null;
 
-	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener, ActionListener {
+	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if (fieldSimulation == null) {
 				return;
@@ -106,12 +100,6 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 		public void focusLost(FocusEvent e) {
 			updateAnnotation();	
 		}
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == editButton) {
-				SimulationWorkspace.editSimulation(JOptionPane.getFrameForComponent(SimulationSummaryPanel.this), null, getSimulation());
-			}
-			
-		};
 	};
 
 /**
@@ -761,7 +749,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; 
 		constraintsJScrollPane1.gridy = gridy;
-		constraintsJScrollPane1.gridwidth = 3;
+		constraintsJScrollPane1.gridwidth = GridBagConstraints.REMAINDER;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -785,17 +773,6 @@ private void initialize() {
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSettingsPanel(), gbc); 	
 		
-		editButton = new JButton("Edit...", VCellIcons.editSimIcon);
-		editButton.addActionListener(ivjEventHandler);
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 4; 
-		gbc.gridy = gridy;
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(editButton, gbc);
-
 		gridy ++;
 		java.awt.GridBagConstraints constraintsJLabel11 = new java.awt.GridBagConstraints();
 		constraintsJLabel11.gridx = 0; 

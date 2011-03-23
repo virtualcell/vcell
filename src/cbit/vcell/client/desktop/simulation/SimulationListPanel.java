@@ -733,7 +733,7 @@ private void stopSimulations() {
 		SimulationOwner simulationOwner = getSimulationWorkspace().getSimulationOwner();
 		final Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
 		if (simulationOwner instanceof SimulationContext) {
-			AsynchClientTask[] updateTask = ClientRequestManager.updateMath(this, ((SimulationContext)simulationOwner));
+			AsynchClientTask[] updateTask = ClientRequestManager.updateMath(this, ((SimulationContext)simulationOwner), false);
 			tasks = new AsynchClientTask[updateTask.length + 1];
 			System.arraycopy(updateTask, 0, tasks, 0, updateTask.length);
 		} else {
