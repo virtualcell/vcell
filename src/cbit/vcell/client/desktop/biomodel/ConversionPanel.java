@@ -29,28 +29,19 @@ import cbit.vcell.client.desktop.biomodel.pathway.PathwayImportSelectionTool;
 
 @SuppressWarnings("serial")
 public class ConversionPanel extends DocumentEditorSubPanel implements PathwayImportSelectionTool {
-//	private BioModelEntityObject bioModelEntityObject = null;
 	private List<BioPaxObject> bioPaxObjects= null;
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	private BioModelEditorConversionTableModel tableModel = null; 
 	private EditorScrollTable table = null;
-//	private JSortTable table;
-//	private JCheckBox showLinkedEntityCheckBox = null;
 	private JTextField textFieldSearch = null;
-//	private JButton goToButton = null;
 	private JButton bringItInButton = null;
 	private JButton resetButton = null;
 	
 	private class EventHandler implements ActionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-//			if(e.getSource() == showLinkedEntityCheckBox){
-//				tableModel.setShowLinkOnly(showLinkedEntityCheckBox.isSelected());
-//			}else 
 			if(e.getSource() == bringItInButton){
 				bringItIn();
-//			}else if(e.getSource() == goToButton){
-//				goToPathway();
 			}else if(e.getSource() == resetButton){
 				resetValues();
 			}
@@ -91,7 +82,6 @@ private void initialize() {
 		tableModel = new BioModelEditorConversionTableModel(table);
 		table.setModel(tableModel);
 		tableModel.setIssueManager(issueManager);
-//		table.disableUneditableForeground();
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();		
@@ -103,13 +93,11 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		table.setPreferredScrollableViewportSize(new Dimension(400,200));
-//		table.setDefaultEditor(Double.class,new DoubleEditor(0, 100));
 		add(table.getEnclosingScrollPane(), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 9;
 		gbc.gridy = gridy;
-//		add(Box.createRigidArea(new Dimension(0, 75)), gbc);
 		// add toolTipText for each table cell
 		table.addMouseMotionListener(new MouseMotionAdapter() { 
 		    public void mouseMoved(MouseEvent e) { 	
@@ -141,39 +129,8 @@ private void initialize() {
 		gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 0, 4, 0);
+		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
-		
-//		showLinkedEntityCheckBox = new JCheckBox("Show linked pathway entities");
-//		showLinkedEntityCheckBox.setBackground(Color.white);
-//		showLinkedEntityCheckBox.addActionListener(eventHandler);
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 4; 
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(4, 10, 4, 0);
-//		add(showLinkedEntityCheckBox, gbc);	
-		
-//		bringItInButton = new JButton("Bring it in");
-//		bringItInButton.addActionListener(eventHandler);
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 5; 
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(4, 0, 4, 0);
-//		add(bringItInButton, gbc);
-		
-//		resetButton = new JButton("Reset");
-//		resetButton.addActionListener(eventHandler);
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 6; 
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(4, 0, 4, 0);
-//		add(resetButton, gbc);
 		
 		setBackground(Color.white);		
 	} catch (java.lang.Throwable ivjExc) {
@@ -244,7 +201,7 @@ public BioModelEditorConversionTableModel getTableModel(){
 }
 
 public void showSelectionDialog() {
-    int returnCode = DialogUtils.showComponentOKCancelDialog(this, this, "Convert to BioModel");
+    int returnCode = DialogUtils.showComponentOKCancelDialog(this, this, "Import into Physiology");
 	if (returnCode == JOptionPane.OK_OPTION) {
 		bringItIn();
 	}

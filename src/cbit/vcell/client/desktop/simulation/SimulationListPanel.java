@@ -3,8 +3,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -26,8 +26,6 @@ import javax.swing.table.TableCellEditor;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Executable;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DownArrowIcon;
@@ -763,73 +761,15 @@ private void stopSimulations() {
 				System.out.println(commandLine);
 				ProcessBuilder processBuilder = new ProcessBuilder(cmd);
 				Process process = processBuilder.start();
+				InputStream is = process.getInputStream();
+				InputStreamReader isr = new InputStreamReader(is);
+				BufferedReader br = new BufferedReader(isr);
+//				String line;
 				
-//				long t = System.currentTimeMillis();
-//				long timeoutMS = 0;
-//				long pollingIntervalMS = 1000;
-//				char charArrayOut[] = new char[10000];
-//				char charArrayErr[] = new char[10000];
-//				String outString = new String();
-//				String errString = new String();
-//				int numReadOut = 0; int numReadErr = 0; int exitValue = 0;
-//				InputStream inputStreamOut = process.getInputStream();
-//				InputStream inputStreamErr = process.getErrorStream();
-//				InputStreamReader inputStreamReaderOut = new InputStreamReader(inputStreamOut);
-//				InputStreamReader inputStreamReaderErr = new InputStreamReader(inputStreamErr);
-//
-//				boolean running = true;
-//				while (running || (numReadOut > 0) || (numReadErr > 0)) {
-//					if (timeoutMS > 0 && System.currentTimeMillis() - t > timeoutMS) {
-//						throw new ExecutableException("Process timed out");
-//					}
-//					try {
-//						exitValue = process.exitValue();
-//						running = false;
-//					} catch (IllegalThreadStateException e) {
-//						// process didn't exit yet, do nothing
-//					}
-//					try {
-//						if (pollingIntervalMS > 0) Thread.sleep(pollingIntervalMS);
-//					} catch (InterruptedException e) {
-//					}
-//					try {
-//						if (inputStreamOut.available() > 0) {
-//							numReadOut = inputStreamReaderOut.read(charArrayOut, 0, charArrayOut.length);
-//						} else {
-//							numReadOut = 0;
-//						}
-//					} catch (IOException ioexc) {
-//						System.out.println("EXCEPTION (process " + commandLine + ") - IOException while reading StdOut: " + ioexc.getMessage());
-//						numReadOut = 0;
-//					}
-//					try {
-//						if (inputStreamErr.available() > 0) {
-//							numReadErr = inputStreamReaderErr.read(charArrayErr, 0, charArrayErr.length);
-//						} else {
-//							numReadErr = 0;
-//						}
-//					} catch (IOException ioexc) {
-//						System.out.println("EXCEPTION (process " + commandLine + ") - IOException while reading StdErr: " + ioexc.getMessage());
-//						numReadErr = 0;
-//					}
-//					if (numReadOut > 0) {
-//						String newInput = new String(charArrayOut, 0, numReadOut);
-//						outString += newInput;
-//						if (outString.contains("[[[progress:0%]]]")) {
-//							return;
-//						}
-//						if (numReadOut == charArrayOut.length) {
-//							outString += "\n(standard output truncated...)";
-//						}
-//					}
-//					if (numReadErr > 0) {
-//						String newInput = new String(charArrayErr, 0, numReadErr);
-//						errString += newInput;
-//						if (numReadErr == charArrayErr.length) {
-//							errString += "\n(standard output truncated...)";
-//						}
-//					}
-//				}
+				while (br.readLine() != null) {
+					//System.out.println(line);
+					//Thread.sleep(100);
+				}
 			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);

@@ -5,10 +5,10 @@ package cbit.vcell.client.desktop.biomodel;
  * All rights reserved.
 ©*/
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
 import org.vcell.util.gui.VCellIcons;
@@ -26,6 +26,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	
 	public BioModelEditorTreeCellRenderer(JTree tree) {
 		super(tree);
+		setPreferredSize(new Dimension(150, 30));	
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -86,6 +87,13 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		}
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
+	    		case PATHWAY_NODE:
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "(00000)";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getPathwayModel().getBiopaxObjects().size() + ")";
+	    			}
+	    			break;
 	    		case REACTIONS_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {

@@ -75,7 +75,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	public void importPathway() {
 		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
 		for (int i = 0; i < table.getRowCount(); i ++) {
-			EntitySelectionTableRow entitySelectionTableRow = tableModel.getValueAt(i);
+			PhysiologyRelationshipTableRow entitySelectionTableRow = tableModel.getValueAt(i);
 			if (entitySelectionTableRow.selected()) { 
 				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}

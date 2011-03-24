@@ -26,7 +26,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntitySelectionTableRow> implements PathwayListener, RelationshipListener {
+public class PhysiologyRelationshipTableModel extends VCellSortTableModel<PhysiologyRelationshipTableRow> implements PathwayListener, RelationshipListener {
 
 
 	public static final int colCount = 3;
@@ -43,7 +43,7 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	private BioModelEntityObject bioModelEntityObject;
 	private boolean bShowLinkOnly = false;
 
-	public BioModelEditorPathwayTableModel(ScrollTable table) {
+	public PhysiologyRelationshipTableModel(ScrollTable table) {
 		super(table, new String[] {"Link", "Entity Name", "Type"});
 	}
 	
@@ -53,7 +53,7 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	}
 	
 	public Object getValueAt(int iRow, int iCol) {
-		EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+		PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
 		BioPaxObject bpObject = entitySelectionTableRow.getBioPaxObject();
 		switch(iCol) {		
 			case iColSelected:{
@@ -77,7 +77,7 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+			PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
 			if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
 				RelationshipObject reObject = new RelationshipObject(bioModelEntityObject, entitySelectionTableRow.getBioPaxObject());
 				bioModel.getRelationshipModel().addRelationshipObject(reObject);
@@ -94,9 +94,9 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	}
 	
 	// generate the sortable table. Set up the functions for each column
-	public Comparator<EntitySelectionTableRow> getComparator(final int col, final boolean ascending) {
-		return new Comparator<EntitySelectionTableRow>() {
-		    public int compare(EntitySelectionTableRow o1, EntitySelectionTableRow o2){
+	public Comparator<PhysiologyRelationshipTableRow> getComparator(final int col, final boolean ascending) {
+		return new Comparator<PhysiologyRelationshipTableRow>() {
+		    public int compare(PhysiologyRelationshipTableRow o1, PhysiologyRelationshipTableRow o2){
 		    	if (col == iColSelected) {
 		    		int c  = o1.selected().compareTo(o2.selected());
 		    		return ascending ? c : -c;
@@ -117,11 +117,11 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 		};
 	}
 	
-	private String getType(BioPaxObject bpObject){
+	private static String getType(BioPaxObject bpObject){
 		return bpObject.getTypeLabel();
 	}
 	
-	private String getLabel(BioPaxObject bpObject){
+	public static String getLabel(BioPaxObject bpObject){
 		if (bpObject instanceof Conversion){
 			Conversion conversion =(Conversion)bpObject;
 			if (conversion.getName().size()>0){
@@ -151,17 +151,17 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 	}
 
 	private void refreshData() {
-		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
+		ArrayList<PhysiologyRelationshipTableRow> pathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 		if (bioModel != null) {		
 			HashSet<RelationshipObject> relationshipObjects = null;
 			if (bioModelEntityObject != null) {
 				relationshipObjects = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
 			}
-			List<EntitySelectionTableRow> allPathwayObjectList = new ArrayList<EntitySelectionTableRow>();
+			List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 			for (BioPaxObject bpObject1 : bioModel.getPathwayModel().getBiopaxObjects()){
 				if (bpObject1 instanceof PhysicalEntity && (bioModelEntityObject == null || bioModelEntityObject instanceof SpeciesContext)
 						|| bpObject1 instanceof Conversion && (bioModelEntityObject == null || bioModelEntityObject instanceof ReactionStep)) {
-					EntitySelectionTableRow entityRow = new EntitySelectionTableRow(bpObject1);
+					PhysiologyRelationshipTableRow entityRow = new PhysiologyRelationshipTableRow(bpObject1);
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {
 							if (ro.getBioPaxObject() == entityRow.getBioPaxObject()) {
@@ -176,12 +176,16 @@ public class BioModelEditorPathwayTableModel extends VCellSortTableModel<EntityS
 				}
 			}
 			
-			for (EntitySelectionTableRow rs : allPathwayObjectList){
-				BioPaxObject bpObject = rs.getBioPaxObject();
-				if (searchText == null || searchText.length() == 0 
-						|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
-						|| getType(bpObject).toLowerCase().contains(searchText.toLowerCase()) ) {
-					pathwayObjectList.add(rs);
+			if (searchText == null || searchText.length() == 0) {
+				pathwayObjectList.addAll(allPathwayObjectList);
+			} else {
+				for (PhysiologyRelationshipTableRow rs : allPathwayObjectList){
+					BioPaxObject bpObject = rs.getBioPaxObject();
+					String lowerCaseSearchText = searchText.toLowerCase();
+					if (getLabel(bpObject).toLowerCase().contains(lowerCaseSearchText)
+						|| getType(bpObject).toLowerCase().contains(lowerCaseSearchText) ) {
+						pathwayObjectList.add(rs);
+					}
 				}
 			}
 		}

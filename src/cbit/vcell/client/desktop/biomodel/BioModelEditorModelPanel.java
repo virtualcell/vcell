@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -16,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -23,8 +25,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -38,14 +42,19 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
@@ -61,6 +70,7 @@ import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
@@ -112,7 +122,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 
 	private JButton newButton = null;
 	private JButton deleteButton = null;
-	private JButton showAllButton = null;
+	private JButton pathwayButton = null;
+	private JPopupMenu pathwayPopupMenu = null;
+	private JMenuItem showPathwayMenuItem = null;
+	private JMenuItem editPathwayMenuItem = null;
 	private EditorScrollTable structuresTable = null;
 	private EditorScrollTable reactionsTable = null;
 	private EditorScrollTable speciesTable = null;
@@ -131,6 +144,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
 	private JPanel buttonPanel;
+	private PhysiologyRelationshipPanel relationshipPanel;
 	
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener, DocumentListener {
 
@@ -150,8 +164,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
-			} else if (e.getSource() == showAllButton) {
-				showAllButtonPressed();
+			} else if (e.getSource() == pathwayButton) {
+				getPathwayPopupMenu().show(pathwayButton, 0, pathwayButton.getHeight());
+			} else if (e.getSource() == showPathwayMenuItem) {
+				showPathwayLinks();
+			} else if (e.getSource() == editPathwayMenuItem) {
+				editPathwayLinks();
 			}
 		}
 
@@ -203,17 +221,46 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		initialize();
 	}
 	
-	private void refreshDeleteButton() {
+	private BioModelEntityObject getSelectedBioModelEntityObject() {
+		BioModelEntityObject selectedBioModelEntityObject = null;
+		ArrayList<Object> selectedObjects = selectionManager.getSelectedObjects(BioModelEntityObject.class);
+		if (selectedObjects.size() == 1) {				
+			if (selectedObjects.size() == 1 && selectedObjects.get(0) instanceof BioModelEntityObject) {
+				selectedBioModelEntityObject = (BioModelEntityObject) selectedObjects.get(0);
+			}
+		}
+		return selectedBioModelEntityObject;
+	}
+	private void refreshButtons() {
+		deleteButton.setEnabled(false);
+		pathwayButton.setEnabled(false);
+		getShowPathwayMenuItem().setEnabled(false);
+		Object[] selectedObjects = null;
 		int selectedIndex = tabbedPane.getSelectedIndex();
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
-			deleteButton.setEnabled(reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects().length > 0);			
+			selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
 		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			deleteButton.setEnabled(cartoonEditorPanel.getStructureCartoon().getSelectedObjects().length > 0);
+			selectedObjects = cartoonEditorPanel.getStructureCartoon().getSelectedObjects();
 		} else {
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
 				int[] rows = currentSelectedTable.getSelectedRows();
-				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));			
+				ArrayList<Object> objectList = new ArrayList<Object>();
+				for (int r = 0; r < rows.length; r ++) {
+					if (rows[r] < currentSelectedTableModel.getDataSize()) {
+						objectList.add(currentSelectedTableModel.getValueAt(rows[r]));
+					}
+				}
+				selectedObjects = objectList.toArray(new Object[0]);
+			}
+		}
+		if (selectedObjects != null) {				
+			deleteButton.setEnabled(selectedObjects.length > 0);
+			if (selectedObjects.length == 1 && selectedObjects[0] instanceof BioModelEntityObject) {
+				pathwayButton.setEnabled(true);
+				if (bioModel.getRelationshipModel().getRelationshipObjects((BioModelEntityObject) selectedObjects[0]).size() > 0) {
+					getShowPathwayMenuItem().setEnabled(true);
+				}
 			}
 		}
 	}
@@ -253,7 +300,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} else {
 			newButton.setVisible(true);
 		}
-		refreshDeleteButton();
+		refreshButtons();
 	}
 
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
@@ -262,16 +309,37 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		setTableSelections(selectedObjects, structuresTable, structureTableModel);
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
 		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
-		refreshDeleteButton();
+		refreshButtons();
 	}
 
+	private JMenuItem getShowPathwayMenuItem() {
+		if (showPathwayMenuItem == null) {
+			showPathwayMenuItem = new JMenuItem("Show Linked Pathway Objects");
+			showPathwayMenuItem.addActionListener(eventHandler);			
+		}
+		return showPathwayMenuItem;
+	}
+	private JPopupMenu getPathwayPopupMenu() {
+		if (pathwayPopupMenu == null) {
+			pathwayPopupMenu = new JPopupMenu();
+			editPathwayMenuItem = new JMenuItem("Edit Pathway Links...");
+			editPathwayMenuItem.addActionListener(eventHandler);
+			pathwayPopupMenu.add(getShowPathwayMenuItem());
+			pathwayPopupMenu.add(editPathwayMenuItem);
+		}
+		return pathwayPopupMenu;
+	}
+	
 	private void initialize(){
 		newButton = new JButton("Add New");
 		deleteButton = new JButton("Delete Selected");
+		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
+		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
 		
 		structuresTable = new EditorScrollTable();
 		reactionsTable = new EditorScrollTable();
+
 		speciesTable = new EditorScrollTable();
 		structureTableModel = new BioModelEditorStructureTableModel(structuresTable);
 		reactionTableModel = new BioModelEditorReactionTableModel(reactionsTable);
@@ -326,6 +394,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(deleteButton, gbc);
 				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(pathwayButton, gbc);
+		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, VCellIcons.diagramIcon);
@@ -349,6 +424,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
+		pathwayButton.addActionListener(eventHandler);
+		pathwayButton.setEnabled(false);
 		textFieldSearch.addActionListener(eventHandler);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
@@ -376,6 +453,42 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		
 		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
+		
+		DefaultScrollTableCellRenderer tableCellRenderer = new DefaultScrollTableCellRenderer() {
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				BioModelEntityObject bioModelEntityObject = null;
+				if (table.getModel() instanceof DefaultSortTableModel<?> && row < ((DefaultSortTableModel<?>)table.getModel()).getDataSize()) {
+					if (table.getModel() == reactionTableModel) {
+						bioModelEntityObject = reactionTableModel.getValueAt(row);
+					} else if (table.getModel() == speciesTableModel){
+						bioModelEntityObject = speciesTableModel.getValueAt(row);
+					}
+					if (bioModelEntityObject != null) {
+						Set<RelationshipObject> relationshipSet = bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject);
+						if (relationshipSet.size() > 0) {
+							StringBuilder tooltip = new StringBuilder("<html>Links to Pathway objects:<br>");
+							for (RelationshipObject ro : relationshipSet) {
+								tooltip.append("<li>" + ro.getBioPaxObject() + "</li>");
+							}
+							if (!isSelected) {
+								setForeground(Color.blue);
+							}
+							setText("<html><u>" + bioModelEntityObject.getName() + "</u></html>");						
+							setToolTipText(tooltip.toString());
+						}
+					}
+				}
+				return this;
+			}
+			
+		};
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -401,15 +514,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				currentSelectedTableModel.setSearchText(searchText);
 			}
 		}
-	}
-	
-	private void showAllButtonPressed() {
-		if (textFieldSearch.getText() == null || textFieldSearch.getText().length() == 0) {
-			return;
-		}
-		textFieldSearch.setText(null);
-		computeCurrentSelectedTable();
-		currentSelectedTableModel.setSearchText(null);
 	}
 	
 	private void newButtonPressed() {
@@ -655,5 +759,31 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionTableModel.setIssueManager(issueManager);
 		speciesTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
+	}
+
+	private void showPathwayLinks() {
+		BioModelEntityObject selectedBioModelEntityObject = getSelectedBioModelEntityObject();
+		if (selectedBioModelEntityObject != null) {
+			Set<RelationshipObject> relationshipSet = bioModel.getRelationshipModel().getRelationshipObjects(selectedBioModelEntityObject);
+			if (relationshipSet.size() > 0) {
+				ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
+				for(RelationshipObject re: relationshipSet){
+					selectedBioPaxObjects.add(re.getBioPaxObject());
+				}
+				selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
+				selectionManager.setSelectedObjects(selectedBioPaxObjects.toArray(new BioPaxObject[0]));
+			}
+		}
+	}
+
+	private void editPathwayLinks() {
+		BioModelEntityObject selectedBioModelEntityObject = getSelectedBioModelEntityObject();
+		if (relationshipPanel == null) {
+			relationshipPanel = new PhysiologyRelationshipPanel();
+			relationshipPanel.setBioModel(bioModel);
+		}
+		relationshipPanel.setBioModelEntityObject(selectedBioModelEntityObject);
+		DialogUtils.showComponentCloseDialog(BioModelEditorModelPanel.this, relationshipPanel, "Edit Pathway Links");
+		refreshButtons();
 	}
 }

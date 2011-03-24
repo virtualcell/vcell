@@ -93,10 +93,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
-	// Set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+	// Set the default file filter...
+	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");

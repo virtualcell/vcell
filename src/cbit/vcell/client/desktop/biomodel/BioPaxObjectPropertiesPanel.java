@@ -127,13 +127,16 @@ protected void refreshInterface() {
 	ArrayList<BioPaxObjectProperty> propertyList = new ArrayList<BioPaxObjectProperty>();
 	
 	if(bioPaxObject instanceof PhysicalEntity){
-		if(((PhysicalEntity)bioPaxObject).getName() != null){
-			propertyList.add(new BioPaxObjectProperty("name", ((PhysicalEntity)bioPaxObject).getName().get(0)));
-			if(((PhysicalEntity)bioPaxObject).getName().size()>1){
+		ArrayList<String> name = ((PhysicalEntity)bioPaxObject).getName();
+		if(name != null){
+			if (name.size() > 0) {
+				propertyList.add(new BioPaxObjectProperty("name", name.get(0)));
+			}
+			if(name.size()>1){
 				if(((PhysicalEntity)bioPaxObject).getTypeLabel().equals("Complex")){ 
-					String location  = ((PhysicalEntity)bioPaxObject).getName().get(1);
+					String location  = name.get(1);
 					location = location.substring(location.indexOf("[")+1, location.indexOf("]"));
-					propertyList.add(new BioPaxObjectProperty("Cellular Location", ((PhysicalEntity)bioPaxObject).getName().get(0)));
+					propertyList.add(new BioPaxObjectProperty("Cellular Location", location));
 				}
 			}
 		}

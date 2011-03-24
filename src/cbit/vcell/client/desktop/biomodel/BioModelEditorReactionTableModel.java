@@ -2,13 +2,13 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
@@ -30,10 +30,10 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private static String[] columnNames = new String[] {"Equation", "Name", "Structure", "Kinetics"};
-
+	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
-		setColumns(columnNames);
+		setColumns(columnNames);		
 	}
 
 	public Class<?> getColumnClass(int column) {
@@ -56,11 +56,11 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	protected ArrayList<ReactionStep> computeData() {
 		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		if (getModel() != null){
-			for (ReactionStep rs : getModel().getReactionSteps()){
-				if (searchText == null || searchText.length() == 0) {
-					reactionStepList.add(rs);
-				} else {
-					String lowerCaseSearchText = searchText.toLowerCase();	
+			if (searchText == null || searchText.length() == 0) {
+				reactionStepList.addAll(Arrays.asList(getModel().getReactionSteps()));
+			} else {
+				String lowerCaseSearchText = searchText.toLowerCase();	
+				for (ReactionStep rs : getModel().getReactionSteps()){
 					if (rs.getName().toLowerCase().contains(lowerCaseSearchText)
 						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)
 						|| rs.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)

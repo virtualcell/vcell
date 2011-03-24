@@ -10,12 +10,14 @@ import java.util.List;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.PathwayEvent;
+import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.util.gui.ScrollTable;
 
 @SuppressWarnings("serial")
-public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableRow> {
+public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshipTableRow> implements PathwayListener {
 
 
 	public static final int colCount = 3;
@@ -33,11 +35,18 @@ public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableR
 		super(table, new String[] {"Select", "Entity Name", "Type"});
 	}
 	
-	public void setPathwayModel(PathwayModel pathwayModel){
-		if (this.pathwayModel == pathwayModel){
+	public void setPathwayModel(PathwayModel newValue){
+		if (this.pathwayModel == newValue){
 			return;
 		}
-		this.pathwayModel = pathwayModel;
+		PathwayModel oldValue = pathwayModel;
+		if (oldValue != null) {
+			oldValue.removePathwayListener(this);
+		}
+		if (newValue != null) {
+			newValue.addPathwayListener(this);
+		}
+		this.pathwayModel = newValue;
 		refreshData();
 	}
 	
@@ -47,7 +56,7 @@ public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableR
 	}
 	
 	public Object getValueAt(int iRow, int iCol) {
-		EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+		PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
 		BioPaxObject bpObject = entitySelectionTableRow.getBioPaxObject();
 		switch(iCol) {		
 			case iColSelected:{
@@ -71,15 +80,15 @@ public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableR
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+			PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
 			entitySelectionTableRow.setSelected((Boolean) valueNew);
 		}
 	}
 	
 	// generate the sortable table. Set up the functions for each column
-	public Comparator<EntitySelectionTableRow> getComparator(final int col, final boolean ascending) {
-		return new Comparator<EntitySelectionTableRow>() {
-		    public int compare(EntitySelectionTableRow o1, EntitySelectionTableRow o2){
+	public Comparator<PhysiologyRelationshipTableRow> getComparator(final int col, final boolean ascending) {
+		return new Comparator<PhysiologyRelationshipTableRow>() {
+		    public int compare(PhysiologyRelationshipTableRow o1, PhysiologyRelationshipTableRow o2){
 		    	if (col == iColSelected) {
 		    		int c  = o1.selected().compareTo(o2.selected());
 		    		return ascending ? c : -c;
@@ -139,14 +148,14 @@ public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableR
 			return;
 		}
 		
-		List<EntitySelectionTableRow> allPathwayObjectList = new ArrayList<EntitySelectionTableRow>();
+		List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 		for (BioPaxObject bpObject1 : pathwayModel.getBiopaxObjects()){
 			if (bpObject1 instanceof PhysicalEntity || bpObject1 instanceof Conversion){
-				allPathwayObjectList.add(new EntitySelectionTableRow(bpObject1));
+				allPathwayObjectList.add(new PhysiologyRelationshipTableRow(bpObject1));
 			}
 		}
-		ArrayList<EntitySelectionTableRow> pathwayObjectList = new ArrayList<EntitySelectionTableRow>();
-		for (EntitySelectionTableRow rs : allPathwayObjectList){
+		ArrayList<PhysiologyRelationshipTableRow> pathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
+		for (PhysiologyRelationshipTableRow rs : allPathwayObjectList){
 			BioPaxObject bpObject = rs.getBioPaxObject();
 			if (searchText == null || searchText.length() == 0 
 					|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
@@ -155,5 +164,9 @@ public class PathwayTableModel extends VCellSortTableModel<EntitySelectionTableR
 			}
 		}
 		setData(pathwayObjectList);
+	}
+
+	public void pathwayChanged(PathwayEvent event) {
+		refreshData();		
 	}
 }
