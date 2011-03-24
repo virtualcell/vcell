@@ -111,10 +111,12 @@ public class PathwayReader {
 	}
 
 	public PathwayModel parse(Element rootElement) {
+		int counterObjects = 0;
 		
 		for (Object child : rootElement.getChildren()){
 			if (child instanceof Element){
 				Element childElement = (Element)child;
+				counterObjects++;
 				if (childElement.getName().equals("pathway")){
 					pathwayModel.add(addObjectPathway(childElement));
 				}else if (childElement.getName().equals("modulation")){
@@ -134,6 +136,9 @@ public class PathwayReader {
 				}else if (childElement.getName().equals("Ontology")){
 					showIgnored(childElement, "Ontology not implemented in BioPAX 3.");
 				}else if (childElement.getName().equals("interaction")){
+					addObjectInteraction(childElement);
+				// we deal with physicalInteraction as if it's a v3 interaction
+				}else if (childElement.getName().equals("physicalInteraction")){
 					addObjectInteraction(childElement);
 				}else if (childElement.getName().equals("transport")){
 					addObjectTransport(childElement);
@@ -156,6 +161,7 @@ public class PathwayReader {
 				}
 			}
 		}
+		System.out.println("Parsed " + counterObjects + " objects");
 		return pathwayModel;
 	}
 
@@ -166,7 +172,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentComplexAssembly(complexAssembly, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, complexAssembly);
 				}
 			}
 		}
@@ -181,7 +187,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDegradation(degradation, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, degradation);
 				}
 			}
 		}
@@ -196,7 +202,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentTransportWithBiochemicalReaction(transportWithBiochemicalReaction, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, transportWithBiochemicalReaction);
 				}
 			}
 		}
@@ -209,7 +215,7 @@ public class PathwayReader {
 			Attribute attribute = (Attribute)attr;
 			if (attribute.getName().equals("ID")){
 				if (bioPaxObject instanceof RdfObjectProxy){
-					showUnexpected(attribute);
+					showUnexpected(attribute, bioPaxObject);
 				}else{
 					bioPaxObject.setID(attribute.getValue());
 				}
@@ -217,10 +223,10 @@ public class PathwayReader {
 				if (bioPaxObject instanceof RdfObjectProxy){
 					((RdfObjectProxy)bioPaxObject).setResource(attribute.getValue());
 				}else{
-					showUnexpected(attribute);
+					showUnexpected(attribute, bioPaxObject);
 				}
 			}else{
-				showUnexpected(attribute);
+				showUnexpected(attribute, bioPaxObject);
 			}
 		}
 
@@ -233,7 +239,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentTransport(transport, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, transport);
 				}
 			}
 		}
@@ -389,6 +395,9 @@ public class PathwayReader {
 			}
 			//entityReference.getName().add(childElement.getTextTrim());
 			return false;
+		}else if (childElement.getName().equals("XREF")){
+			evidence.getxRef().add(addObjectXref(childElement));
+			return true;
 		}else{
 			return false; // no match
 		}
@@ -626,7 +635,7 @@ public class PathwayReader {
 				return true;
 			} else {
 				// it's a real stepProcess object nested here - we ignore this situation for now
-				showIgnored(childElement, "Found NESTED child.");
+				showIgnored(childElement, "Found NESTED child.", pathwayStep);
 			}
  			return false;
 //		}else if (childElement.getName().equals("EVIDENCE")) {
@@ -831,9 +840,11 @@ public class PathwayReader {
 		 * ArrayList<EntityFeature> notFeature
 		 */
 		if (childElement.getName().equals("ORGANISM")){
-			showIgnored(childElement,"organism is not in physical entity in level 3");
+			// TODO: is that not Provenance in v3?
+			showIgnored(childElement,"organism is not in physical entity in level 3", physicalEntity);
 			return true;
-		}else if (childElement.getName().equals("SYNONYMS")){
+		}
+	else if (childElement.getName().equals("SYNONYMS")){
 			physicalEntity.getName().add(childElement.getTextTrim());
 			return true;
 		}else if (childElement.getName().equals("SHORT-NAME")){
@@ -900,7 +911,7 @@ public class PathwayReader {
 //				}else{
 //					conversion.getRightSide().add(physicalEntityProxy);
 //				}
-				showIgnored(childElement, "complex/COMPONENTS assuming redundant sequenceParticipant or physicalEntityParticipant");
+				showIgnored(childElement, "complex/COMPONENTS assuming redundant sequenceParticipant or physicalEntityParticipant", complex);
 				return true;
 			}
 			return false;
@@ -937,7 +948,7 @@ public class PathwayReader {
 		 * EntityReference entityReference
 		 */
 		if (childElement.getName().equals("SEQUENCE")){
-			showIgnored(childElement,"sequence is in proteinReference, not protein in level 3");
+			showIgnored(childElement,"sequence is in proteinReference, not protein in level 3", protein);
 			return true;
 		}else{
 			return false; // no match
@@ -992,45 +1003,62 @@ public class PathwayReader {
 			}
 			return false;
 		}else if (childElement.getName().equals("PATHWAY-COMPONENTS")){
-			Element pathwayStepElement = childElement.getChild("pathwayStep",bp);
-			if (pathwayStepElement!=null){
-				PathwayStep pathwayStep = addObjectPathwayStep(pathwayStepElement);
-				pathway.getPathwayOrder().add(pathwayStep);
-				pathwayModel.add(pathwayStep);
+			if (childElement.getChildren().size() == 0){			// no children, means it's a proxy
+/*		
+ * We do NOT solve references to pathway and pathway steps because of infinite recursion
+ * Ex: Pathway "E-cadherin signalling in the nascent..."  
+ * http://www.pathwaycommons.org/pc/webservice.do?cmd=get_record_by_cpath_id&version=2.0&q=826249&output=biopax
+ * The paths CPATH-826249 and CPATH-826243 cross reference each other
+ * 				// TODO: need a better solution
+				InteractionProxy proxyI = new InteractionProxy();
+				addAttributes(proxyI, childElement);
+				pathwayModel.add(proxyI);
+				pathway.getPathwayComponentInteraction().add(proxyI);
+				PathwayProxy proxyP = new PathwayProxy();
+				addAttributes(proxyP, childElement);
+				pathwayModel.add(proxyP);
+				pathway.getPathwayComponentPathway().add(proxyP);
+				// in v3 PathwayStep objects become pathwayOrder (instead of pathwayComponent)
+				PathwayStepProxy proxyS = new PathwayStepProxy();
+				addAttributes(proxyS, childElement);
+				pathwayModel.add(proxyS);
+				pathway.getPathwayOrder().add(proxyS);
 				return true;
-			} else if (childElement.getChildren().size() == 0){
-				PathwayStepProxy componentPathwayStep = new PathwayStepProxy();
-				addAttributes(componentPathwayStep,childElement);
-				pathway.getPathwayOrder().add(componentPathwayStep);
-				pathwayModel.add(componentPathwayStep);
-				return true;
-			} else {
+ */
 				return false;
+			} else {
+				Element pathwayElement = childElement.getChild("pathway",bp);
+				if (pathwayElement != null){
+					Pathway thing = addObjectPathway(pathwayElement);
+					pathway.getPathwayComponentPathway().add(thing);
+					pathwayModel.add(thing);
+					return true;
+				}
+				Element interactionElement = childElement.getChild("interaction",bp);
+				if (interactionElement != null){
+					Interaction thing = addObjectInteraction(interactionElement);
+					pathway.getPathwayComponentInteraction().add(thing);
+					pathwayModel.add(thing);
+					return true;
+				}
+				Element pathwayStepElement = childElement.getChild("pathwayStep",bp);
+				if (pathwayStepElement != null){
+					PathwayStep thing = addObjectPathwayStep(pathwayStepElement);
+					pathway.getPathwayOrder().add(thing);
+					pathwayModel.add(thing);
+					return true;
+				}
 			}
-//			Interaction interaction = new InteractionOrPathwayProxy();
-//			addAttributes(interaction, childElement);
-//			pathwayModel.add(interaction);
-//			pathway.getPathwayComponentInteraction().add(interaction);
-//			return true;
-//		}else if(childElement.getChildren().size() == 0) {	// no children mean proxy
-//			InteractionProxy proxyI = new InteractionProxy();
-//			addAttributes(proxyI, childElement);
-//			pathwayModel.add(proxyI);
-//			pathway.getPathwayComponentInteraction().add(proxyI);
-//			PathwayProxy proxyP = new PathwayProxy();
-//			addAttributes(proxyP, childElement);
-//			pathwayModel.add(proxyP);
-//			pathway.getPathwayComponentPathway().add(proxyP);
-//			return true;
-		}else{
 			return false;
 		}
+		return false;
 	}
-	
+
 	private boolean addContentInteraction(Interaction interaction, Element element, Element childElement){
 		if (addContentEntity(interaction,element,childElement)){
 			return true;
 		}
+
 		if (childElement.getName().equals("PARTICIPANTS")){
 			Element physicalEntityParticipantElement = childElement.getChild("physicalEntityParticipant",bp);
 			if (physicalEntityParticipantElement!=null){
@@ -1045,9 +1073,9 @@ public class PathwayReader {
 					}
 				}
 			}
-			physicalEntityParticipantElement = childElement.getChild("sequenceParticipant",bp);
-			if (physicalEntityParticipantElement!=null){
-				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
+			Element sequenceParticipantElement = childElement.getChild("sequenceParticipant",bp);
+			if (sequenceParticipantElement!=null){
+				Element physicalEntityPropertyElement = sequenceParticipantElement.getChild("PHYSICAL-ENTITY",bp);
 				if (physicalEntityPropertyElement!=null){
 					if (physicalEntityPropertyElement.getChildren().size()==0){
 						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
@@ -1059,7 +1087,10 @@ public class PathwayReader {
 				}
 			}
 			return false;
-		}else{
+		} else if(childElement.getName().equals("INTERACTION-TYPE")){
+			showIgnored(childElement, "Can't convert openControlledVocabulary (v2) to InteractionVocabulary (v3).", interaction);
+			return false;
+		} else {
 			return false;
 		}
 	}
@@ -1219,7 +1250,7 @@ public class PathwayReader {
 //				}else{
 //					conversion.getRightSide().add(physicalEntityProxy);
 //				}
-				showIgnored(childElement, "conversion/LEFT or conversion/RIGHT assuming redundant sequenceParticipant or physicalEntityParticipant");
+				showIgnored(childElement, "conversion/LEFT or conversion/RIGHT assuming redundant sequenceParticipant or physicalEntityParticipant", conversion);
 				return true;
 			}
 			return false;
@@ -1302,6 +1333,9 @@ public class PathwayReader {
 		if (childElement.getName().equals("DIRECTION")){
 			catalysis.setCatalysisDirection(childElement.getTextTrim());
 			return true;
+		}else if(childElement.getName().equals("COFACTOR")) {
+			catalysis.addCofactor(addObjectPhysicalEntity(childElement));
+			return true;
 		}else{
 			return false;
 		}
@@ -1337,7 +1371,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentGene(gene,element,(Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, gene);
 				}
 			}
 		}
@@ -1351,7 +1385,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentBioSource(bioSource,element,(Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, bioSource);
 				}
 			}
 		}
@@ -1365,7 +1399,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentChemicalStructure(chemicalStructure,element,(Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, chemicalStructure);
 				}
 			}
 		}
@@ -1378,7 +1412,7 @@ public class PathwayReader {
 		addAttributes(interaction, element);
 		for (Object child : element.getChildren()){
 			if (!addContentInteraction(interaction,element,(Element)child)){
-				showUnexpected((Element)child);
+				showUnexpected((Element)child, interaction);
 			}
 		}
 		pathwayModel.add(interaction);
@@ -1390,7 +1424,7 @@ public class PathwayReader {
 		addAttributes(geneticInteraction, element);
 		for (Object child : element.getChildren()){
 			if (!addContentGeneticInteraction(geneticInteraction,element,(Element)child)){
-				showUnexpected((Element)child);
+				showUnexpected((Element)child, geneticInteraction);
 			}
 		}
 		pathwayModel.add(geneticInteraction);
@@ -1402,7 +1436,7 @@ public class PathwayReader {
 		addAttributes(molecularInteraction, element);
 		for (Object child : element.getChildren()){
 			if (!addContentMolecularInteraction(molecularInteraction,element,(Element)child)){
-				showUnexpected((Element)child);
+				showUnexpected((Element)child, molecularInteraction);
 			}
 		}
 		pathwayModel.add(molecularInteraction);
@@ -1414,7 +1448,7 @@ public class PathwayReader {
 		addAttributes(templateReaction, element);
 		for (Object child : element.getChildren()){
 			if (!addContentTemplateReaction(templateReaction,element,(Element)child)){
-				showUnexpected((Element)child);
+				showUnexpected((Element)child, templateReaction);
 			}
 		}
 		pathwayModel.add(templateReaction);
@@ -1432,7 +1466,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentPhysicalEntity(physicalEntity, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, physicalEntity);
 				}
 			}
 		}
@@ -1446,7 +1480,7 @@ public class PathwayReader {
 		for (Object child : controlElement.getChildren()){
 			if (child instanceof Element){
 				if (!addContentControl(control,controlElement,(Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, control);
 				}
 			}
 		}
@@ -1460,7 +1494,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentCatalysis(catalysis, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, catalysis);
 				}
 			}
 		}
@@ -1474,7 +1508,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentModulation(modulation, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, modulation);
 				}
 			}
 		}
@@ -1488,7 +1522,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				if (!addContentTemplateReactionRegulation(templateReactionRegulation, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, templateReactionRegulation);
 				}
 			}
 		}
@@ -1503,7 +1537,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentComplex(complex, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, complex);
 				}
 			}
 		}
@@ -1518,7 +1552,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDna(dna, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, dna);
 				}
 			}
 		}
@@ -1533,7 +1567,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDnaRegion(dnaRegion, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, dnaRegion);
 				}
 			}
 		}
@@ -1555,18 +1589,26 @@ public class PathwayReader {
 			PublicationXref xref = addObjectPublicationXref(element.getChild("publicationXref",bp));
 			return xref;
 		}
-		Xref xref = new Xref();
-		addAttributes(xref, element);
-		for (Object child : element.getChildren()){
-			if (child instanceof Element){
-				Element childElement = (Element)child;
-				if (!addContentXref(xref, element, childElement)){
-					showUnexpected(childElement);
+		
+		if (element.getChildren().size() == 0){
+			XrefProxy xref = new XrefProxy();
+			addAttributes(xref, element);
+			pathwayModel.add(xref);
+			return xref;
+		}else{
+			Xref xref = new Xref();
+			for (Object child : element.getChildren()){
+				if (child instanceof Element){
+					Element childElement = (Element)child;
+					if (!addContentXref(xref, element, childElement)){
+						showUnexpected(childElement, xref);
+					}
 				}
 			}
+			pathwayModel.add(xref);
+			System.out.println("should never happen");
+			return xref;
 		}
-		pathwayModel.add(xref);
-		return xref;
 	}
 
 	private Protein addObjectProtein(Element element) {
@@ -1576,7 +1618,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentProtein(protein, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, protein);
 				}
 			}
 		}
@@ -1591,7 +1633,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentRna(rna, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, rna);
 				}
 			}
 		}
@@ -1606,7 +1648,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentRnaRegion(rnaRegion, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, rnaRegion);
 				}
 			}
 		}
@@ -1621,7 +1663,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentSmallMolecule(smallMolecule, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, smallMolecule);
 				}
 			}
 		}
@@ -1637,7 +1679,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentBiochemicalReaction(biochemicalReaction, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, biochemicalReaction);
 				}
 			}
 		}
@@ -1652,7 +1694,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentBioSource(bioSource, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, bioSource);
 				}
 			}
 		}
@@ -1667,7 +1709,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentChemicalStructure(chemicalStructure, element, (Element)child)){
-					showUnexpected((Element)child);
+					showUnexpected((Element)child, chemicalStructure);
 				}
 			}
 		}
@@ -1682,7 +1724,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDeltaG(deltaG, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, deltaG);
 				}
 			}
 		}
@@ -1697,7 +1739,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(controlledVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, controlledVocabulary);
 				}
 			}
 		}
@@ -1712,7 +1754,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(cellularLocationVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, cellularLocationVocabulary);
 				}
 			}
 		}
@@ -1727,7 +1769,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(cellVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, cellVocabulary);
 				}
 			}
 		}
@@ -1742,7 +1784,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentEntityFeature(entityFeature, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, entityFeature);
 				}
 			}
 		}
@@ -1763,7 +1805,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentEvidence(evidence, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, evidence);
 				}
 			}
 		}
@@ -1778,7 +1820,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentExperimentalForm(experimentalForm, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, experimentalForm);
 				}
 			}
 		}
@@ -1793,7 +1835,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentKPrime(kPrime, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, kPrime);
 				}
 			}
 		}
@@ -1808,7 +1850,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDnaReference(dnaReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, dnaReference);
 				}
 			}
 		}
@@ -1823,7 +1865,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentDnaRegionReference(dnaRegionReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, dnaRegionReference);
 				}
 			}
 		}
@@ -1838,7 +1880,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentProteinReference(proteinReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, proteinReference);
 				}
 			}
 		}
@@ -1853,7 +1895,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentRnaReference(rnaReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, rnaReference);
 				}
 			}
 		}
@@ -1868,7 +1910,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentRnaRegionReference(rnaRegionReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, rnaRegionReference);
 				}
 			}
 		}
@@ -1883,7 +1925,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentSmallMoleculeReference(smallMoleculeReference, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, smallMoleculeReference);
 				}
 			}
 		}
@@ -1898,7 +1940,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentBindingFeature(bindingFeature, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, bindingFeature);
 				}
 			}
 		}
@@ -1913,7 +1955,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentFragmentFeature(fragmentFeature, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, fragmentFeature);
 				}
 			}
 		}
@@ -1928,7 +1970,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentCovalentBindingFeature(covalentBindingFeature, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, covalentBindingFeature);
 				}
 			}
 		}
@@ -1943,7 +1985,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(entityReferenceTypeVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, entityReferenceTypeVocabulary);
 				}
 			}
 		}
@@ -1958,7 +2000,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(evidenceCodeVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, evidenceCodeVocabulary);
 				}
 			}
 		}
@@ -1973,7 +2015,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(experimentalFormVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, experimentalFormVocabulary);
 				}
 			}
 		}
@@ -1988,7 +2030,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(interactionVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, interactionVocabulary);
 				}
 			}
 		}
@@ -2003,7 +2045,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentPhenotypeVocabulary(phenotypeVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, phenotypeVocabulary);
 				}
 			}
 		}
@@ -2018,7 +2060,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(relationshipTypeVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, relationshipTypeVocabulary);
 				}
 			}
 		}
@@ -2033,7 +2075,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(sequenceModificationVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, sequenceModificationVocabulary);
 				}
 			}
 		}
@@ -2048,7 +2090,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(sequenceRegionVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, sequenceRegionVocabulary);
 				}
 			}
 		}
@@ -2063,7 +2105,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentControlledVocabulary(tissueVocabulary, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, tissueVocabulary);
 				}
 			}
 		}
@@ -2078,7 +2120,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentPathway(pathway, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, pathway);
 				}
 			}
 		}
@@ -2093,7 +2135,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentPathwayStep(pathwayStep, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, pathwayStep);
 				}
 			}
 		}
@@ -2108,7 +2150,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentBiochemicalPathwayStep(biochemicalPathwayStep, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, biochemicalPathwayStep);
 				}
 			}
 		}
@@ -2123,7 +2165,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentProvenance(provenance, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, provenance);
 				}
 			}
 		}
@@ -2138,7 +2180,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentScore(score, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, score);
 				}
 			}
 		}
@@ -2153,7 +2195,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentSequenceLocation(sequenceLocation, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, sequenceLocation);
 				}
 			}
 		}
@@ -2168,7 +2210,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentSequenceInterval(sequenceInterval, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, sequenceInterval);
 				}
 			}
 		}
@@ -2183,7 +2225,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentSequenceSite(sequenceSite, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, sequenceSite);
 				}
 			}
 		}
@@ -2198,7 +2240,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentStoichiometry(stoichiometry, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, stoichiometry);
 				}
 			}
 		}
@@ -2213,7 +2255,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentXref(xRef, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, xRef);
 				}
 			}
 		}
@@ -2228,7 +2270,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentPublicationXref(publicationXref, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, publicationXref);
 				}
 			}
 		}
@@ -2243,7 +2285,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentRelationshipXref(relationshipXref, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, relationshipXref);
 				}
 			}
 		}
@@ -2258,7 +2300,7 @@ public class PathwayReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (!addContentUnificationXref(unificationXref, element, childElement)){
-					showUnexpected(childElement);
+					showUnexpected(childElement, unificationXref);
 				}
 			}
 		}

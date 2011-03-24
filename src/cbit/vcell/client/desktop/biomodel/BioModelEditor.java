@@ -523,9 +523,12 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			}
 		}
 		Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
-		String pathwayName = "ID = "+topLevelPathway.getID();
-		if (topLevelPathway.getName().size()>0){
-			pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
+		String pathwayName = "no-name";
+		if(topLevelPathway != null) {
+			pathwayName = "ID = "+topLevelPathway.getID();
+			if (topLevelPathway.getName().size()>0){
+				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
+			}
 		}
 		String tabTitle = "Pathway " + pathwayName;
 		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
