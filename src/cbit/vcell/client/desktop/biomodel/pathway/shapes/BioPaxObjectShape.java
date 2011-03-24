@@ -8,9 +8,7 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Entity;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.ShapeSpaceManager;
 
@@ -20,13 +18,9 @@ public class BioPaxObjectShape extends BioPaxShape {
 	private Color darkerBackground = null;
 	private Area icon = null;
 
-	private static final int SCS_LABEL_WIDTHPARM = 3;
-	private static final String SCS_LABEL_TRUCATED = "...";
 	private String smallLabel = null;
 	protected Dimension smallLabelSize = new Dimension();
 	protected Point smallLabelPos = new Point(0,0);
-
-	private boolean bTruncateLabelName = true;
 
 	public BioPaxObjectShape(BioPaxObject bioPaxObject, GraphModel graphModel) {
 		super(bioPaxObject, graphModel);
@@ -91,31 +85,6 @@ public class BioPaxObjectShape extends BioPaxShape {
 					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
 					absPosX, getLabelPos().y + absPosY);
 		}
-	}
-
-	@Override
-	public void refreshLabel() {
-		String name = "no-name";
-		if (bioPaxObject instanceof Entity){
-			ArrayList<String> names = ((Entity)bioPaxObject).getName();
-			if (names.size()>0){
-				name = names.get(0);
-			}
-		}
-		setLabel(name);
-
-		smallLabel = getLabel();
-		if(bTruncateLabelName && getLabel().length() > (2*SCS_LABEL_WIDTHPARM + SCS_LABEL_TRUCATED.length())){
-			smallLabel =
-				getLabel().substring(0,SCS_LABEL_WIDTHPARM)+
-				SCS_LABEL_TRUCATED+
-				getLabel().substring(getLabel().length()-SCS_LABEL_WIDTHPARM);
-		}
-	}
-
-	public void truncateLabelName(boolean bTruncate) {
-
-		bTruncateLabelName = bTruncate;
 	}
 
 	@Override
