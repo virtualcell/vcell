@@ -142,7 +142,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private void initialize(){
 		addNewButton = new JButton("Add New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
-		deleteButton = new JButton("Delete Selected");
+		deleteButton = new JButton("Delete Selected Global Parameter(s)");
+		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
@@ -181,14 +182,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}
 				
-		setLayout(new GridBagLayout());
+		JPanel buttonPanel = new JPanel(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
+		buttonPanel.add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -198,31 +199,25 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
+		buttonPanel.add(textFieldSearch, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addNewButton, gbc);
+		buttonPanel.add(addNewButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
+		buttonPanel.add(deleteButton, gbc);
 				
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 5;
-		gbc.fill = GridBagConstraints.BOTH;
-		add(tabbedPane, gbc);	
+		setLayout(new BorderLayout());
+		add(tabbedPane, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
 
 		parametersFunctionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
@@ -436,10 +431,11 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 		
 		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
-			addNewButton.setEnabled(true);
+			addNewButton.setVisible(true);
+			deleteButton.setVisible(true);
 		} else {
-			addNewButton.setEnabled(false);
-			deleteButton.setEnabled(false);			
+			addNewButton.setVisible(false);
+			deleteButton.setVisible(false);			
 		}
 	}
 	
