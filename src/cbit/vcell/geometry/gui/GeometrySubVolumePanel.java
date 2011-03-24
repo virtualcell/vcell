@@ -5,6 +5,7 @@ package cbit.vcell.geometry.gui;
  * All rights reserved.
 ©*/
 import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -514,21 +515,43 @@ private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getButtonPanel() {
 	if (buttonPanel == null) {
 		try {
 			addShapeButton = new JButton("Add Subdomain...");
 			
+			getFrontButton().putClientProperty("JButton.buttonType", "roundRect");
+			getBackButton().putClientProperty("JButton.buttonType", "roundRect");
+			addShapeButton.putClientProperty("JButton.buttonType", "roundRect");
+			getDeleteButton().putClientProperty("JButton.buttonType", "roundRect");
+			
 			buttonPanel = new javax.swing.JPanel();
 			buttonPanel.setName("JPanel1");
 			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
-			gridBagLayout.rowHeights = new int[] {0,0,0,7};
-			buttonPanel.setLayout(new GridLayout(0,1));
-			buttonPanel.add(getFrontButton());
-			buttonPanel.add(getBackButton());
-			buttonPanel.add(addShapeButton);
-			buttonPanel.add(getDeleteButton());
+			buttonPanel.setLayout(gridBagLayout);
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			buttonPanel.add(getFrontButton(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			buttonPanel.add(getBackButton(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			buttonPanel.add(addShapeButton, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 3;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			buttonPanel.add(getDeleteButton(), gbc);
 
 			addShapeButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
