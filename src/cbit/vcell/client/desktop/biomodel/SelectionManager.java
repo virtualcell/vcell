@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.util.ArrayList;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -153,6 +155,18 @@ public class SelectionManager {
 		return selectedObjects;
 	}
 
+	public final ArrayList<Object> getSelectedObjects(Class<?> cls) {
+		ArrayList<Object> objectList = new ArrayList<Object>();
+		if (selectedObjects != null) {
+			for (Object object : selectedObjects) {
+				if (cls.isAssignableFrom(object.getClass())) {
+					objectList.add(object);
+				}
+			}
+		}
+		return objectList;
+	}
+	
 	public final ActiveView getActiveView() {
 		return activeView;
 	}

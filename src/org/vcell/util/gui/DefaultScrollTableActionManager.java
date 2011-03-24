@@ -139,7 +139,7 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 			popupMenu = new JPopupMenu();
 			columnMenus = new JMenu[numColumns];
 			popupLabel = new javax.swing.JLabel();
-			popupLabel.setText(" Set Selected");
+			popupLabel.setText(" Specify Column Value for Selected Row(s)");
 		}
 		popupMenu.removeAll();
 		popupMenu.add(popupLabel);

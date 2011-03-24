@@ -2,13 +2,13 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
@@ -44,12 +44,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 
 	protected ArrayList<SpeciesContext> computeData() {
 		ArrayList<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
-		if (getModel() != null){
-			for (SpeciesContext s : getModel().getSpeciesContexts()){
-				if (searchText == null || searchText.length() == 0) {
-					speciesContextList.add(s);
-				} else {
-					String lowerCaseSearchText = searchText.toLowerCase();
+		if (getModel() != null) {
+			if (searchText == null || searchText.length() == 0) {
+				speciesContextList.addAll(Arrays.asList(getModel().getSpeciesContexts()));
+			} else {
+				String lowerCaseSearchText = searchText.toLowerCase();
+					for (SpeciesContext s : getModel().getSpeciesContexts()){
 					if (s.getName().toLowerCase().contains(lowerCaseSearchText)		
 						|| s.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
 						speciesContextList.add(s);

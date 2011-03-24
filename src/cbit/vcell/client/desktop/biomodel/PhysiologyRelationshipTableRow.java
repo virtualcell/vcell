@@ -3,11 +3,11 @@ package cbit.vcell.client.desktop.biomodel;
 
 import org.vcell.pathway.BioPaxObject;
 
-public class EntitySelectionTableRow {
+public class PhysiologyRelationshipTableRow {
 	protected BioPaxObject bioPaxObject;
 	protected Boolean selected = new Boolean(false);
 	
-	public EntitySelectionTableRow(BioPaxObject bpObject) {
+	public PhysiologyRelationshipTableRow(BioPaxObject bpObject) {
 		this.bioPaxObject = bpObject;
 	}
 	

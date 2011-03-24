@@ -62,11 +62,20 @@ public class RelationshipModel {
 		getRelationshipListeners().remove(listener);
 	}
 
+	private boolean contains(RelationshipObject relationshipObject) {
+		for (RelationshipObject ro : relationshipObjects) {
+			if (ro.getBioModelEntityObject() == relationshipObject.getBioModelEntityObject()
+					&& ro.getBioPaxObject() == relationshipObject.getBioPaxObject()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public RelationshipObject addRelationshipObject(RelationshipObject relationshipObject){
 		if (relationshipObject==null){
 			throw new RuntimeException("added a null object to relationship model");
 		}
-		if(!getRelationshipObjects().contains(relationshipObject)){
+		if(!contains(relationshipObject)){
 			getRelationshipObjects().add(relationshipObject);
 			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
 		}
@@ -77,7 +86,7 @@ public class RelationshipModel {
 		if (relationshipObject==null){
 			throw new RuntimeException("remove a null object to relationship model");
 		}
-		if(getRelationshipObjects().contains(relationshipObject)){
+		if(contains(relationshipObject)){
 			getRelationshipObjects().remove(relationshipObject);
 			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
 		}

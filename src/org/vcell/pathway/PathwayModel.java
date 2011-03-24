@@ -312,4 +312,19 @@ public class PathwayModel {
 		return findFromResourceID(rdfId);
 	}
 
+	public BioPaxObject remove(BioPaxObject bioPaxObject) {
+		if (bioPaxObject==null){
+			throw new RuntimeException("added a null object to pathway model");
+		}
+		biopaxObjects.remove(bioPaxObject);
+		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
+		return bioPaxObject;		
+	}
+	public void remove(List<BioPaxObject> bioPaxObjects) {
+		if (bioPaxObjects==null){
+			throw new RuntimeException("added a null object to pathway model");
+		}
+		biopaxObjects.removeAll(bioPaxObjects);
+		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
+	}
 }

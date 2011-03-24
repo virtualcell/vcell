@@ -908,4 +908,8 @@ public Expression substitueKineticParameter(Expression exp, boolean substituteCo
 	}
 	return result;
 }
+
+public String getTypeLabel() {
+	return "Reaction";
+}
 }

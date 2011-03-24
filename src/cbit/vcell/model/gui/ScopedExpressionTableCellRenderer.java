@@ -81,7 +81,7 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 			graphics.setColor(getBackground());
 			graphics.fillRect(0,0,size.width,size.height);
 			if (icon!=null){
-				icon.paintIcon(this,graphics,0,0);
+				icon.paintIcon(this,graphics,borderInsets.left, borderInsets.top);
 			}
 		}
 	};
@@ -231,8 +231,8 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 			templateJLabel.setText(null);
 			templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if (tableModel instanceof DefaultSortTableModel) {
-				if (row < ((DefaultSortTableModel) tableModel).getDataSize()) {
-					Object rowObject = ((DefaultSortTableModel) tableModel).getValueAt(row);
+				if (row < ((DefaultSortTableModel<?>) tableModel).getDataSize()) {
+					Object rowObject = ((DefaultSortTableModel<?>) tableModel).getValueAt(row);
 					if (rowObject instanceof SpeciesContextSpecParameter) {
 						templateJLabel.setText(((SpeciesContextSpecParameter) rowObject).getNullExpressionDescription());
 					}

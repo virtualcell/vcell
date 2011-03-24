@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,22 +20,18 @@ import java.util.Set;
 
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 
-import org.vcell.sybil.gui.pcsearch.test.PCKeywordQueryPanel;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
-import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
@@ -63,8 +58,6 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea;
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField nameTextField = null;
-	
-	private RelationshipPanel relationshipPanel = null;
 	
 	public void saveSelectedXRef(final XRef selectedXRef, final MIRIAMQualifier miriamQualifier) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving metadata", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -274,21 +267,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(jsp, gbc);		
-		
-		relationshipPanel = new RelationshipPanel();		
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Link/unlink Species to Pathway Here");
-		collapsiblePanel.getContentPanel().setLayout(new BorderLayout());
-		collapsiblePanel.getContentPanel().add(relationshipPanel, BorderLayout.CENTER);
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 4, 0, 4);
-		add(collapsiblePanel, gbc);
+		add(jsp, gbc);
 	
 		setBackground(Color.white);
 		initConnections();
@@ -325,9 +304,6 @@ public void setBioModel(BioModel newValue) {
 		return;
 	}
 	bioModel = newValue;
-	if (newValue != null) {
-		relationshipPanel.setBioModel(bioModel);
-	}
 }
 
 
@@ -351,18 +327,8 @@ void setSpeciesContext(SpeciesContext newValue) {
 	fieldSpeciesContext = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
-		relationshipPanel.setBioModelEntityObject(fieldSpeciesContext);
 	}
 	updateInterface();
-}
-
-private void showPCKeywordQueryPanel() {
-	 PCKeywordQueryPanel aPCKeywordQueryPanel = new PCKeywordQueryPanel();
-	 int returnVal = DialogUtils.showComponentOKCancelDialog(this, aPCKeywordQueryPanel, "Search External Database");
-	 
-	 if (returnVal == JOptionPane.OK_OPTION) {
-		 saveSelectedXRef(aPCKeywordQueryPanel.getSelectedXRef(),aPCKeywordQueryPanel.getMiriamQualifier());
-	 }
 }
 
 /**
@@ -429,7 +395,6 @@ private void updateInterface() {
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
-		relationshipPanel.setSelectionManager(selectionManager);
 	}
 
 }

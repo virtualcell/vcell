@@ -5,7 +5,7 @@ package cbit.vcell.geometry.gui;
  * All rights reserved.
 ©*/
 import java.awt.Component;
-import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -49,7 +49,6 @@ public class GeometrySubVolumePanel extends DocumentEditorSubPanel {
 	private javax.swing.JButton ivjDeleteButton = null;
 	private javax.swing.JButton ivjFrontButton = null;
 	private Geometry ivjGeometry = null;
-	private javax.swing.JPanel ivjPanel1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private GeometrySubVolumeTableModel ivjgeometrySubVolumeTableModel = null;
 	private javax.swing.JPanel buttonPanel = null;
@@ -59,7 +58,7 @@ public class GeometrySubVolumePanel extends DocumentEditorSubPanel {
 	private javax.swing.JLabel ivjJWarningLabel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private GeometrySpec ivjGeometrySpec = null;
-	private final JButton addShapeButton = new JButton();
+	private JButton addShapeButton = null;
 
 	private AddShapeJPanel addShapeJPanel = null;
 
@@ -519,27 +518,18 @@ private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
 private javax.swing.JPanel getButtonPanel() {
 	if (buttonPanel == null) {
 		try {
+			addShapeButton = new JButton("Add Subdomain...");
+			
 			buttonPanel = new javax.swing.JPanel();
 			buttonPanel.setName("JPanel1");
 			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,0,0,7};
-			buttonPanel.setLayout(gridBagLayout);
+			buttonPanel.setLayout(new GridLayout(0,1));
+			buttonPanel.add(getFrontButton());
+			buttonPanel.add(getBackButton());
+			buttonPanel.add(addShapeButton);
+			buttonPanel.add(getDeleteButton());
 
-			java.awt.GridBagConstraints constraintsFrontButton = new java.awt.GridBagConstraints();
-			constraintsFrontButton.gridx = 0; constraintsFrontButton.gridy = 0;
-			constraintsFrontButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			buttonPanel.add(getFrontButton(), constraintsFrontButton);
-
-			java.awt.GridBagConstraints constraintsBackButton = new java.awt.GridBagConstraints();
-			constraintsBackButton.gridx = 0; constraintsBackButton.gridy = 1;
-			constraintsBackButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			buttonPanel.add(getBackButton(), constraintsBackButton);
-
-			java.awt.GridBagConstraints constraintsDeleteButton = new java.awt.GridBagConstraints();
-			constraintsDeleteButton.gridx = 0; constraintsDeleteButton.gridy = 3;
-			constraintsDeleteButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-
-			addShapeButton.setText("Add Subdomain...");
 			addShapeButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					if(addShapeJPanel == null){
@@ -622,13 +612,6 @@ private javax.swing.JPanel getButtonPanel() {
 					}
 				}
 			});
-			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.weightx = 0;
-			gridBagConstraints.gridy = 2;
-			gridBagConstraints.gridx = 0;
-			buttonPanel.add(addShapeButton, gridBagConstraints);
-			buttonPanel.add(getDeleteButton(), constraintsDeleteButton);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -658,42 +641,6 @@ private javax.swing.JLabel getJWarningLabel() {
 		}
 	}
 	return ivjJWarningLabel;
-}
-/**
- * Return the Panel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getPanel1() {
-	if (ivjPanel1 == null) {
-		try {
-			ivjPanel1 = new javax.swing.JPanel();
-			ivjPanel1.setName("Panel1");
-			ivjPanel1.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
-			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJScrollPane1.weightx = 1.0;
-			constraintsJScrollPane1.weighty = 1.0;
-			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getPanel1().add(getScrollPaneTable().getEnclosingScrollPane(), constraintsJScrollPane1);
-
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 0;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.weighty = 1.0;
-			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getPanel1().add(getButtonPanel(), constraintsJPanel1);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjPanel1;
 }
 /**
  * Return the ScrollPaneTable property value.
@@ -765,14 +712,21 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(426, 185);
 
-		java.awt.GridBagConstraints constraintsPanel1 = new java.awt.GridBagConstraints();
-		constraintsPanel1.gridx = 0; constraintsPanel1.gridy = 0;
-		constraintsPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsPanel1.weightx = 1.0;
-		constraintsPanel1.weighty = 1.0;
-		constraintsPanel1.insets = new java.awt.Insets(5, 5, 5, 3);
-		add(getPanel1(), constraintsPanel1);
+		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
+		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
+		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJScrollPane1.weightx = 1.0;
+		constraintsJScrollPane1.weighty = 1.0;
+		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsJScrollPane1);
 
+		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 0;
+		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJPanel1.weighty = 1.0;
+		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getButtonPanel(), constraintsJPanel1);
+		
 		java.awt.GridBagConstraints constraintsJWarningLabel = new java.awt.GridBagConstraints();
 		constraintsJWarningLabel.gridx = 0; constraintsJWarningLabel.gridy = 1;
 		constraintsJWarningLabel.gridwidth = 2;

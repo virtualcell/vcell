@@ -261,7 +261,7 @@ private ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			ivjJButtonChangeDomain = new javax.swing.JButton("Edit Domain...");
+			ivjJButtonChangeDomain = new javax.swing.JButton("Edit...");
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -322,7 +322,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel1.insets = new java.awt.Insets(2, 4, 0, 0);
+		constraintsJLabel1.insets = new java.awt.Insets(2, 2, 0, 0);
 		JLabel label = new javax.swing.JLabel("Domain:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, constraintsJLabel1);
@@ -331,20 +331,20 @@ private void initialize() {
 		constraintsSizeLabel.gridx = 1; constraintsSizeLabel.gridy = 0;
 		constraintsSizeLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsSizeLabel.weightx = 1.0;
-		constraintsSizeLabel.insets = new java.awt.Insets(2, 4, 0, 4);
+		constraintsSizeLabel.insets = new java.awt.Insets(2, 2, 0, 2);
 		add(getSizeLabel(), constraintsSizeLabel);
 
 		java.awt.GridBagConstraints constraintsJButtonChangeDomain = new java.awt.GridBagConstraints();
 		constraintsJButtonChangeDomain.gridx = 3; constraintsJButtonChangeDomain.gridy = 0;
 		constraintsJButtonChangeDomain.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJButtonChangeDomain.insets = new java.awt.Insets(2, 4, 0, 4);
+		constraintsJButtonChangeDomain.insets = new java.awt.Insets(2, 2, 0, 2);
 		add(getJButtonChangeDomain(), constraintsJButtonChangeDomain);
 		
 		if (bShowReplaceButton) {
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 4; gbc.gridy = 0;
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(2, 4, 0, 4);
+			gbc.insets = new java.awt.Insets(2, 0, 0, 2);
 			add(getJButtonReplace(), gbc);
 		}
 
@@ -462,6 +462,7 @@ private void refreshSize() {
 				", origin=("+originX+(dim>1?","+originY:"")+(dim>2?","+originZ:"")+")";
 	}
 	getSizeLabel().setText(text);
+	getSizeLabel().setToolTipText(text);
 }
 
 /**

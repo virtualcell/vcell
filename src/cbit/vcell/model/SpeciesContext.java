@@ -242,4 +242,8 @@ public void writeTokens(PrintWriter pw) {
 	
 	pw.println("\t"+VCMODL.EndBlock+" ");
 }
+
+public String getTypeLabel() {
+	return "Species";
+}
 }

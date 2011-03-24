@@ -53,7 +53,6 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel electricalPropertiesLabel;
 	// wei's code
 	private BioModel bioModel = null;
-	private RelationshipPanel relationshipPanel = null;
 	// done
 	
 	private final static KineticsDescription[] Simple_Reaction_Kinetic_Types = {
@@ -159,7 +158,6 @@ private void initialize() {
 
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
 		reactionElectricalPropertiesPanel.setVisible(false);
-		relationshipPanel = new RelationshipPanel();
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -243,22 +241,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(collapsiblePanel, gbc);
-		
-		// wei's code
-		CollapsiblePanel collapsiblePanel2 = new CollapsiblePanel("Link/unlink Reaction to Pathway Here", false);
-		collapsiblePanel2.getContentPanel().setLayout(new BorderLayout());
-		collapsiblePanel2.getContentPanel().add(relationshipPanel, BorderLayout.CENTER);
-		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.gridwidth = 3;
-		gbc.weightx = 1;
-		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		add(collapsiblePanel2, gbc);
-		
+				
 		setBackground(Color.white);
 		
 		getKineticsTypeComboBox().addActionListener(eventHandler);
@@ -317,7 +300,6 @@ private void setReactionStep(ReactionStep newValue) {
 	}
 	getParameterTableModel().setReactionStep(reactionStep);
 	updateInterface();
-	relationshipPanel.setBioModelEntityObject(reactionStep);
 }
 
 private javax.swing.JComboBox getKineticsTypeComboBox() {
@@ -573,12 +555,10 @@ public void setBioModel(BioModel newValue) {
 		return;
 	}
 	bioModel = newValue;
-	relationshipPanel.setBioModel(newValue);
 }
 @Override
 public void setSelectionManager(SelectionManager selectionManager) {
 	super.setSelectionManager(selectionManager);
-	relationshipPanel.setSelectionManager(selectionManager);
 }
 
 
