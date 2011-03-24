@@ -8,14 +8,15 @@ import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.util.Matchable;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
-	public final static String spaces = "                                                                                        ";
+	public final static String spaces = "                                                                                                                                                                                                                                                                        ";
+	private final static int MAX_DEPTH = 30;
 	private String ID;
 	private ArrayList<String> comments = new ArrayList<String>();
+	private ArrayList<String> parserWarnings = new ArrayList<String>();
 	
 	public ArrayList<String> getComments() {
 		return comments;
 	}
-	
 	public void setComments(ArrayList<String> comments) {
 		this.comments = comments;
 	}
@@ -26,7 +27,6 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public void setID(String value) {
 		this.ID = value;
 	}
-	
 	public String resourceFromID() {
 		if (ID != null){
 			String resourceID = "#" + this.getID();
@@ -43,7 +43,14 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 			return false;
 		}
 	}
-	
+
+	public ArrayList<String> getParserWarnings() {
+		return parserWarnings;
+	}
+	public void addParserWarning(String comment) {
+		parserWarnings.add(comment);
+	}
+
 	public String getTypeLabel(){
 		String typeName = getClass().getName();
 		typeName = typeName.replace(getClass().getPackage().getName(),"");
@@ -79,10 +86,10 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		if (level==0){
 			return "";
 		}
-		if (level>15){
+		if (level>MAX_DEPTH){
 			throw new RuntimeException("unchecked recursion in pathway.show()");
 		}
-		return spaces.substring(0,3*level);
+		return spaces.substring(0, 2*level);
 	}
 	
 	public final boolean fullCompare(HashSet<BioPaxObject> theirBiopaxObjects){
@@ -119,6 +126,7 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	
 	public final void show(StringBuffer sb){
 		sb.append(getPad(0)+toString()+"\n");
+//		System.out.print(getPad(0)+toString()+"\n");
 		showChildren(sb,1);
 	}
 

@@ -29,23 +29,53 @@ public class PathwayXMLHelper {
 		}
 		return buffer.toString();
 	}
+	public static void showUnexpected(Attribute attribute, BioPaxObject bpObject) {
+		String message = "Unexpected attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
+		bpObject.addParserWarning(message);
+		System.out.println(message);
+	}
+	public static void showUnexpected(Object object, BioPaxObject bpObject) {
+		String message = "Unexpected object " + object.toString();
+		bpObject.addParserWarning(message);
+		System.out.println(message);
+	}
+	public static void showIgnored(Attribute attribute, BioPaxObject bpObject) {
+		String message = "Ignored attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
+		bpObject.addParserWarning(message);
+		System.out.println(message);
+	}
+	public static void showUnexpected(Element childElement, BioPaxObject bpObject) {
+		String message = "Unexpected element " + getElementPathString(childElement);
+		bpObject.addParserWarning(message);
+		System.out.println(message);
+	}
+	public static void showIgnored(Element childElement, String reason, BioPaxObject bpObject) {
+//		if (!reason.contains("?")){
+//			return;
+//		}
+		String message = "Ignoring element " + getElementPathString(childElement) + "   " + reason;
+		bpObject.addParserWarning(message);
+		System.out.println(message);
+	}
 	public static void showUnexpected(Attribute attribute) {
-		System.out.println("Unexpected attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName());
+		String message = "Unexpected attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
+		System.out.println(message);
 	}
 	public static void showUnexpected(Object object) {
-		System.out.println("Unexpected object " + object.toString());
+		String message = "Unexpected object " + object.toString();
+		System.out.println(message);
 	}
 	public static void showIgnored(Attribute attribute) {
-		System.out.println("Ignored attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName());
+		String message = "Ignored attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
+		System.out.println(message);
 	}
 	public static void showUnexpected(Element childElement) {
-		System.out.println("Unexpected element " + getElementPathString(childElement));
+		String message = "Unexpected element " + getElementPathString(childElement);
+		System.out.println(message);
 	}
 	public static void showIgnored(Element childElement, String reason) {
-		if (!reason.contains("?")){
-			return;
-		}
-		System.out.println("Ignoring element " + getElementPathString(childElement) + "   " + reason);
+		String message = "Ignoring element " + getElementPathString(childElement) + "   " + reason;
+		System.out.println(message);
 	}
 	
 }

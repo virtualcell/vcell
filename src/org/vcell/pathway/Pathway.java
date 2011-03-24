@@ -51,6 +51,7 @@ public class Pathway extends EntityImpl {
 		if(organism == objectProxy) {
 			organism = (BioSource) concreteObject;
 		}
+		
 		for (int i=0;i<pathwayComponentInteraction.size();i++){
 			Interaction thing = pathwayComponentInteraction.get(i);
 			if (thing == objectProxy && concreteObject instanceof Interaction){
@@ -59,6 +60,13 @@ public class Pathway extends EntityImpl {
 				pathwayComponentInteraction.remove(i);
 			}
 		}
+/*		
+ * We do NOT solve references to pathway and pathway steps because of infinite recursion
+ * Ex: Pathway "E-cadherin signalling in the nascent..."  
+ * http://www.pathwaycommons.org/pc/webservice.do?cmd=get_record_by_cpath_id&version=2.0&q=826249&output=biopax
+ * The paths CPATH-826249 and CPATH-826243 cross reference each other
+ * 
+		// TODO: add another loop for pathway step
 		for (int i=0;i<pathwayComponentPathway.size();i++){
 			Pathway thing = pathwayComponentPathway.get(i);
 			if (thing == objectProxy && concreteObject instanceof Pathway){
@@ -67,9 +75,10 @@ public class Pathway extends EntityImpl {
 				pathwayComponentPathway.remove(i);
 			}
 		}
+		*/
 		for (int i=0; i<pathwayOrder.size(); i++) {
 			PathwayStep thing = pathwayOrder.get(i);
-			if(thing == objectProxy) {
+			if(thing == objectProxy && concreteObject instanceof PathwayStep) {
 				pathwayOrder.set(i, (PathwayStep)concreteObject);
 			}
 		}

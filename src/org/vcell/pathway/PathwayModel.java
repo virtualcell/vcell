@@ -144,6 +144,7 @@ public class PathwayModel {
 			}
 		}
 		biopaxObjects.removeAll(proxiesToDelete);
+		
 		// get rid of all UtilityClass objects for display purposes
 		// the producer will recreate them from memory at the time when we save
 		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
@@ -153,6 +154,20 @@ public class PathwayModel {
 			}
 		}
 		biopaxObjects = newBiopaxObjects;
+		
+		// get rid of all unresolved proxies
+		HashSet<BioPaxObject> new2BiopaxObjects = new HashSet<BioPaxObject>();
+		int unresolvedProxiesCount = 0;
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(!(bpObject instanceof RdfObjectProxy)) {
+				new2BiopaxObjects.add(bpObject);
+			} else {
+				unresolvedProxiesCount++;
+			}
+		}
+		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
+		biopaxObjects = new2BiopaxObjects;
+		
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
 

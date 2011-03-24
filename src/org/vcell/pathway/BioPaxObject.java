@@ -16,6 +16,9 @@ public interface BioPaxObject extends Identifiable, Matchable {
 	
 	String resourceFromID();
 
+	public ArrayList<String> getParserWarnings();
+	public void addParserWarning(String comment);
+
 	public ArrayList<String> getComments();
 	public void setComments(ArrayList<String> comment);
 	
