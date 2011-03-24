@@ -2049,61 +2049,60 @@ public void write(PrintStream out)
 	// 'Version 1.1' added membrane connectivity
 	// 'Version 1.2' added regions
 	//
-	out.println("Version 1.2\n");
-	out.println("CartesianMesh {\n");//Begin CartesianMesh
+	out.println("Version 1.2");
+	out.println("CartesianMesh {");//Begin CartesianMesh
 	//
 	writeCartesianMeshHeader(out);
-	out.println("\n");
+	out.println();
 	writeVolumeRegionsMapSubvolume(out);
-	out.println("\n");
+	out.println();
 	writeMembraneRegionMapVolumeRegion(out);
-	out.println("\n");
+	out.println();
 	writeVolumeElementsMapVolumeRegion(out);
-	out.println("\n");
+	out.println();
 	writeMembraneElements_Connectivity_Region(out);
-	out.println("\n");
 //	writeContourElements(out);
 	//
-	out.println("}\n");//End CartesianMesh
+	out.println("}");//End CartesianMesh
 }
 
 private void writeVolumeRegionsMapSubvolume(PrintStream out)
 {
 	int numVolumeRegions = getMeshRegionInfo().getNumVolumeRegions();	
-	out.println("\tVolumeRegionsMapSubvolume {\n");
-	out.println("\t"+numVolumeRegions+"\n");
-	out.println("// VolRegID   SubvolID     Volume");
+	out.println("\tVolumeRegionsMapSubvolume {");
+	out.println("\t"+numVolumeRegions+"");
+	out.println("\t// VolRegID   SubvolID     Volume");
 	for(int c = 0;c < numVolumeRegions;c+= 1){
 		VolumeRegionMapSubvolume volRegionMapSubvolume = getMeshRegionInfo().getVolumeRegionMapSubvolume().get(c);
 		out.println("\t"+volRegionMapSubvolume.volumeRegionID+" "+
 				volRegionMapSubvolume.subvolumeID+" "+
 				volRegionMapSubvolume.volumeRegionVolume);
 	}
-	out.println("\t}\n");
+	out.println("\t}");
 }
 private void writeVolumeElementsMapVolumeRegion(PrintStream out)
 {
 	int numVolumeElements = getNumVolumeElements();
 	byte[] compressedBytes = meshRegionInfo.getCompressedVolumeElementMapVolumeRegion();
 	out.println("\tVolumeElementsMapVolumeRegion {");
-	out.println("\t"+numVolumeElements+" Compressed");
+	out.print("\t"+numVolumeElements+" Compressed");
 	byte[] tempBuffer = new byte[1];
 	for(int c = 0;c < compressedBytes.length;c+= 1){
 		if(c%40 == 0){
-			out.println("\n\t");
+			out.print("\n\t");
 		}
 		tempBuffer[0] = compressedBytes[c];
 		out.print(Hex.toString(tempBuffer));
 	}
-	out.println("\n\t}\n");
+	out.println("\n\t}");
 }
 
 private void writeMembraneRegionMapVolumeRegion(PrintStream out)
 {
 	int numMembraneRegions = getNumMembraneRegions();
-	out.println("\tMembraneRegionsMapVolumeRegion {\n");
+	out.println("\tMembraneRegionsMapVolumeRegion {");
 	out.println("\t"+numMembraneRegions);
-	out.println("\t//MemRegID  VolReg0  VolReg1  Surface\n");
+	out.println("\t//MemRegID  VolReg0  VolReg1  Surface");
 //	if (numMembraneRegions>0){
 //		throw new RuntimeException("membrane regions not supported for write()");
 //	}
@@ -2149,7 +2148,7 @@ private void writeCartesianMeshHeader(PrintStream out)
 
 private void writeMembraneElements_Connectivity_Region(PrintStream out)
 {
-	out.println("\tMembraneElements {\n");
+	out.println("\tMembraneElements {");
 	out.println("\t"+getNumMembraneElements());
 	out.println("\t//Indx  VIn  VOut  Conn0  Conn1  Conn2  Conn3  MemRegID");
 	MembraneElement[] memEl = getMembraneElements();
@@ -2161,7 +2160,7 @@ private void writeMembraneElements_Connectivity_Region(PrintStream out)
 				memEl[i].getMembraneNeighborIndexes()[3]+" "+
 				meshRegionInfo.getMembraneRegionForMembraneElement(i));
 	}
-	out.println("    }\n");
+	out.println("\t}");
 }
 
 //private void writeContourElements(OutputStream out)
