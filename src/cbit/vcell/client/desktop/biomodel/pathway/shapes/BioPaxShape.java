@@ -58,12 +58,13 @@ public abstract class BioPaxShape extends Shape {
 	
 	@Override
 	public void refreshLabel() {
-		String name = "no-name";
+		String name = "[" + bioPaxObject.getID() + "]";
 		if (bioPaxObject instanceof Entity){
-			ArrayList<String> names = ((Entity)bioPaxObject).getName();
+			Entity entity = (Entity)bioPaxObject;
+			ArrayList<String> names = entity.getName();
 			if (names.size()>0){
 				name = names.get(0);
-			}
+			} 
 		}
 		setLabel(name);
 

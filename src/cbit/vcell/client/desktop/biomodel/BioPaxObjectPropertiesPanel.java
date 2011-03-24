@@ -2,13 +2,8 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Comparator;
-
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Complex;
@@ -16,7 +11,6 @@ import org.vcell.pathway.Entity;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Xref;
-import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -152,7 +146,10 @@ protected void refreshInterface() {
 			}
 		}	
 	}else if(bioPaxObject instanceof Interaction){
-		propertyList.add(new BioPaxObjectProperty("name", ((Interaction)bioPaxObject).getName().get(0)));
+		ArrayList<String> nameList = ((Interaction)bioPaxObject).getName();
+		if(nameList.size() > 0) {
+			propertyList.add(new BioPaxObjectProperty("name", nameList.get(0)));
+		}
 		propertyList.add(new BioPaxObjectProperty("Type", bioPaxObject.getTypeLabel()));
 	}
 	if (bioPaxObject instanceof Entity) {
