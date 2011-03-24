@@ -10,13 +10,13 @@ import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.sybil.util.gui.ArrowPainter;
 
-import cbit.gui.graph.Shape;
+import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.visualstate.EdgeVisualState;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.DefaultEdgeVisualState;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
-public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisualState.Owner {
+public class BioPaxInteractionParticipantShape extends EdgeShape implements EdgeVisualState.Owner {
 
 	public static final float ARROW_LENGTH = 12f;
 	public static final float ARROW_WIDTH = 7f;
@@ -33,29 +33,16 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 			BioPaxConversionShape conversionShape,
 			BioPaxPhysicalEntityShape physicalEntityShape, 
 			PathwayGraphModel graphModel) {
-		super(graphModel);
+		super(conversionShape, physicalEntityShape, graphModel);
 		this.participant = participant;
 		this.conversionShape = conversionShape;
 		this.physicalEntityShape = physicalEntityShape;
-	}
-	public Shape getStartShape() {
-		return conversionShape;
-	}
-
-	public Shape getEndShape() {
-		return physicalEntityShape;
 	}
 
 	@Override
 	public Dimension getPreferedSizeSelf(Graphics2D g) {
 		// TODO Auto-generated method stub
 		return new Dimension(0, 0);
-	}
-
-	@Override
-	protected boolean isInside(Point p) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
@@ -102,7 +89,10 @@ public class BioPaxInteractionParticipantShape extends Shape implements EdgeVisu
 	@Override
 	public void refreshLabel() {
 		// TODO Auto-generated method stub
-		
+	}
+
+	public boolean isDirectedForward() { 
+		return !participant.getType().equals(InteractionParticipant.Type.LEFT); 
 	}
 
 }

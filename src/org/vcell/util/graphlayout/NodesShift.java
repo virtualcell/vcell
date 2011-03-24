@@ -18,9 +18,9 @@ public interface NodesShift {
 	public Vector2D getDelta(Node node);
 	public double getDeltaX(Node node);
 	public double getDeltaY(Node node);
-	public Point2D getPos(Node node);
-	public double getX(Node node);
-	public double getY(Node node);
+	public Point2D getShiftedCenter(Node node);
+	public double getShiftedX(Node node);
+	public double getShiftedY(Node node);
 	public void apply();
 	
 	public static class Default implements NodesShift {
@@ -51,12 +51,12 @@ public interface NodesShift {
 			return v != null ? v.y : 0;
 		}
 
-		public Point2D getPos(Node node) {
+		public Point2D getShiftedCenter(Node node) {
 			return new Point2D(node.x + getDeltaX(node), node.y + getDeltaY(node));
 		}
 		
-		public double getX(Node node) { return node.x + getDeltaX(node); }
-		public double getY(Node node) { return node.y + getDeltaY(node); }
+		public double getShiftedX(Node node) { return node.x + getDeltaX(node); }
+		public double getShiftedY(Node node) { return node.y + getDeltaY(node); }
 
 		public void apply() {
 			for(Map.Entry<Node, Vector2D> shift : shifts.entrySet()) {
@@ -93,12 +93,12 @@ public interface NodesShift {
 		public double getDeltaX(Node node) { return this.node == node ? shift.x : 0; }
 		public double getDeltaY(Node node) { return this.node == node ? shift.y : 0; }
 
-		public Point2D getPos(Node node) {
-			return new Point2D(node.x + getDeltaX(node), node.y + getDeltaY(node));
+		public Point2D getShiftedCenter(Node node) {
+			return new Point2D(node.getCenterX() + getDeltaX(node), node.getCenterY() + getDeltaY(node));
 		}
 		
-		public double getX(Node node) { return node.x + getDeltaX(node); }
-		public double getY(Node node) { return node.y + getDeltaY(node); }
+		public double getShiftedX(Node node) { return node.getCenterX() + getDeltaX(node); }
+		public double getShiftedY(Node node) { return node.getCenterY() + getDeltaY(node); }
 
 		public void apply() { node.move(shift);	}
 

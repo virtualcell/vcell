@@ -7,6 +7,8 @@ import java.util.Set;
 
 
 public class PathwaySelectionExpander {
+	
+	public boolean includeAllComponents = false;
 
 	public void expandSelection(PathwayModel pathwayModel, List<BioPaxObject> selectedList) {
 		Set<BioPaxObject> selectedSet = new HashSet<BioPaxObject> (selectedList);
@@ -43,7 +45,7 @@ public class PathwaySelectionExpander {
 						if(controlledInteraction != null && !selectedSet.contains(controlledInteraction)) {
 							selectedToAdd.add(controlledInteraction);
 						}
-					} else if(selected instanceof Complex) {
+					} else if(selected instanceof Complex && includeAllComponents) {
 						ArrayList<PhysicalEntity> components = ((Complex) selected).getComponents();
 						for(PhysicalEntity component : components) {
 							if(!selectedSet.contains(component)) {

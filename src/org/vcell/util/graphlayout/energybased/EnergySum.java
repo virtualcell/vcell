@@ -60,7 +60,7 @@ public interface EnergySum {
 			public double getEnergy(NodesShift shift) {
 				ArrayList<Point2D> ps = new ArrayList<Point2D>();
 				for(Node node : nodes) {
-					ps.add(shift.getPos(node));
+					ps.add(shift.getShiftedCenter(node));
 				}
 				return function.getEnergy(ps); 
 			}
@@ -72,7 +72,7 @@ public interface EnergySum {
 				for(Node node : nodes) {
 					if(shift.isMovedNode(node)) { isAffectedByShift = true; }
 					ps.add(node.getCenter());
-					psShifted.add(shift.getPos(node));
+					psShifted.add(shift.getShiftedCenter(node));
 				}
 				if(isAffectedByShift) {
 					return function.getEnergy(psShifted) - function.getEnergy(ps);

@@ -15,6 +15,7 @@ import javax.swing.JViewport;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
@@ -39,6 +40,8 @@ public class PathwayGraphTool extends BioCartoonTool {
 	public GraphModel getGraphModel() {
 		return getGraphPane().getGraphModel();
 	}
+	
+	public GraphLayoutManager getGraphLayoutManager() { return graphEmbeddingManager; }
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
@@ -237,8 +240,8 @@ public class PathwayGraphTool extends BioCartoonTool {
 		if(getGraphModel() == null){ return; }
 		try {
 			// Pick shape
-			Point worldPoint = screenToWorld(event.getX(), event.getY());
-			Shape endShape = getGraphModel().pickWorld(worldPoint);
+//			Point worldPoint = screenToWorld(event.getX(), event.getY());
+//			Shape endShape = getGraphModel().pickWorld(worldPoint);
 			// if mouse popupMenu event, popup menu
 			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getGraphModel().getSelectedShape(), event.getX(), event.getY());
