@@ -6,8 +6,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.util.gui.ActionSpecs;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 
@@ -24,8 +22,7 @@ public interface PathwayImportSelectionTool {
 		protected final PathwayEditor editor;
 		protected final PathwayImportSelectionTool tool;
 		
-		public BringItInAction(ActionSpecs specs, PathwayEditor editor, PathwayImportSelectionTool tool) { 
-			specs.set(this);
+		public BringItInAction(PathwayEditor editor, PathwayImportSelectionTool tool) { 
 			this.editor = editor;
 			this.tool = tool; 
 		}

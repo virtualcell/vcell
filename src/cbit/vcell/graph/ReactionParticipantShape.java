@@ -18,6 +18,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionParticipant;
 
 public abstract class ReactionParticipantShape extends EdgeShape {
+	
 	protected ReactionParticipant reactionParticipant = null;
 
 	private Point2D.Double lastp2ctrl = null;
@@ -113,6 +114,7 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 	
 	public ReactionParticipant getReactionParticipant() { return reactionParticipant; }
 	
+	public SpeciesContextShape getSpeciesContextShape() { return (SpeciesContextShape) startShape; }
 	public ReactionStepShape getReactionStepShape() { return (ReactionStepShape) endShape; }
 
 	@Override

@@ -1,16 +1,19 @@
 package cbit.gui.graph;
 
-import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 
 import com.genlogic.GraphLayout.GlgCube;
@@ -19,14 +22,6 @@ import com.genlogic.GraphLayout.GlgGraphLayout;
 import com.genlogic.GraphLayout.GlgGraphNode;
 import com.genlogic.GraphLayout.GlgPoint;
 
-import cbit.vcell.graph.CatalystShape;
-import cbit.vcell.graph.FluxShape;
-import cbit.vcell.graph.ProductShape;
-import cbit.vcell.graph.ReactantShape;
-import cbit.vcell.graph.ReactionParticipantShape;
-import cbit.vcell.graph.ReactionStepShape;
-import cbit.vcell.graph.SpeciesContextShape;
-import cbit.vcell.model.SpeciesContext;
 import edu.rpi.graphdrawing.Annealer;
 import edu.rpi.graphdrawing.Blackboard;
 import edu.rpi.graphdrawing.Circularizer;
@@ -91,6 +86,8 @@ public class GraphLayoutManager {
 			layouter = new EdgeTugLayouter();
 		} else if(ShootAndCutLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new ShootAndCutLayouter();
+		} else if(StretchToBoundaryLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new StretchToBoundaryLayouter();
 		}
 		if(layouter != null) {
 			layouter.layout(mapper.getContainedGraph());
@@ -104,10 +101,7 @@ public class GraphLayoutManager {
 		HashMap<String, Shape> nodeShapeMap = new HashMap<String, Shape>();
 		for(Shape shape : graphView.getGraphModel().getShapes()) {
 			Node newNode = null;
-			if (shape instanceof SpeciesContextShape) {
-				newNode = bb.addNode(shape.getLabel());
-			}
-			if (shape instanceof ReactionStepShape) {
+			if (ShapeUtil.isMovable(shape)) {
 				newNode = bb.addNode(shape.getLabel());
 			}
 			// initialize node location to current absolute position
@@ -117,32 +111,16 @@ public class GraphLayoutManager {
 			}
 		}
 		for(Shape shape : graphView.getGraphModel().getShapes()) {
-			if (shape instanceof ReactionParticipantShape) {
-				ReactionParticipantShape rpShape = (ReactionParticipantShape) shape;
-				SpeciesContextShape scShape = (SpeciesContextShape) rpShape
-						.getStartShape();
-				ReactionStepShape rsShape = (ReactionStepShape) rpShape
-						.getEndShape();
-				if (rpShape instanceof ReactantShape) {
-					bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-				} else if (rpShape instanceof ProductShape) {
-					bb.addEdge(rsShape.getLabel(), scShape.getLabel());
-				} else if (rpShape instanceof CatalystShape) {
-					bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-				} else if (rpShape instanceof FluxShape) {
-					//
-					// check if coming or going
-					//
-					SpeciesContext sc = scShape.getSpeciesContext();
-					if (sc.getStructure() == 
-						rsShape.getReactionStep().getStructure().getParentStructure()) {
-						bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-					} else {
-						bb.addEdge(rsShape.getLabel(), scShape.getLabel());
-					}
+			if (shape instanceof EdgeShape) {
+				EdgeShape edgeShape = (EdgeShape) shape;
+				Shape startShape = edgeShape.getStartShape();
+				Shape endShape = edgeShape.getEndShape();
+				if(edgeShape.isDirectedForward()) {
+					bb.addEdge(startShape.getLabel(), endShape.getLabel());
+				} else {
+					bb.addEdge(endShape.getLabel(), startShape.getLabel());					
 				}
 			}
-			// edge doesn't need any init now.
 		}
 
 		bb.setArea(0, 0, graphView.getWidth(), graphView.getHeight());
@@ -160,11 +138,6 @@ public class GraphLayoutManager {
 		bb.setEmbedding(layoutName);
 		@SuppressWarnings("unchecked")
 		List<Node> nodeList = bb.nodes();
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.get(i);
-			System.out.println("Node " + node.label() + " @ (" + node.x() + ","
-					+ node.y() + ")");
-		}
 		bb.PreprocessNodes();
 		Embedder embedder = bb.embedder();
 		embedder.Init();
@@ -187,20 +160,14 @@ public class GraphLayoutManager {
 			lowY = Math.min(lowY, node.y());
 			highY = Math.max(highY, node.y());
 		}
-		double scaleX = graphView.getWidth() / (1.5 * (highX - lowX));
-		double scaleY = graphView.getHeight() / (1.5 * (highY - lowY));
-		int offsetX = graphView.getWidth() / 6;
-		int offsetY = graphView.getHeight() / 6;
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node node = nodeList.get(i);
 			Shape shape = nodeShapeMap.get(node.label());
-			Point parentLoc = shape.getParent().getSpaceManager().getAbsLoc();
-			shape.getSpaceManager().setRelPos(
-			(int) (scaleX * (node.x() - lowX)) + offsetX + parentLoc.x,
-			(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y));
-			System.out.println("Shape " + shape.getLabel() + " @ "
-					+ shape.getSpaceManager().getAbsLoc());
+			if(shape != null) {
+				shape.setAbsPos((int) node.x(), (int) node.y());				
+			}
 		}
+		layoutContainedGraph(StretchToBoundaryLayouter.LAYOUT_NAME);
 		graphView.repaint();
 	}
 	
@@ -218,10 +185,10 @@ public class GraphLayoutManager {
 		graphDim.p2 = newPoint;
 		graph.dimensions = graphDim;
 		// Add nodes (Vertex) to the graph
-		Collection<Shape> shapeEnum = graphView.getGraphModel().getShapes();
+		Collection<Shape> shapes = graphView.getGraphModel().getShapes();
 		GlgGraphNode graphNode;
 		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
-		for(Shape shape : shapeEnum) {
+		for(Shape shape : shapes) {
 			// add to the graph
 			if (ShapeUtil.isMovable(shape)) {
 				graphNode = graph.AddNode(null, 0, null);
@@ -232,32 +199,19 @@ public class GraphLayoutManager {
 			nodeMap.put(shape, graphNode);
 		}
 		// Add edges
-		shapeEnum = graphView.getGraphModel().getShapes();
+		shapes = graphView.getGraphModel().getShapes();
 		for(Shape shape : graphView.getGraphModel().getShapes()) {
-			if (shape instanceof ReactionParticipantShape) {
-				ReactionParticipantShape rpShape = (ReactionParticipantShape) shape;
-				SpeciesContextShape scShape = (SpeciesContextShape) rpShape.getStartShape();
-				ReactionStepShape rsShape = (ReactionStepShape) rpShape.getEndShape();
-				GlgGraphNode speciesContextNode = nodeMap.get(scShape);
-				GlgGraphNode reactionNode = nodeMap.get(rsShape);
-				if(!graph.NodesConnected(speciesContextNode, reactionNode)) {
-					if (rpShape instanceof ReactantShape) {
-						graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
-					} else if (rpShape instanceof ProductShape) {
-						graph.AddEdge(reactionNode, speciesContextNode, null, 0, null);
-					} else if (rpShape instanceof CatalystShape) {
-						graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
-					} else if (rpShape instanceof FluxShape) {
-						// check if coming or going
-						SpeciesContext sc = scShape.getSpeciesContext();
-						if (sc.getStructure() == rsShape.getReactionStep()
-								.getStructure().getParentStructure()) {
-							graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
-						} else {
-							graph.AddEdge(speciesContextNode, reactionNode, null, 0, null);
-						}
+			if (shape instanceof EdgeShape) {
+				EdgeShape edgeShape = (EdgeShape) shape;
+				Shape startShape = edgeShape.getStartShape();
+				Shape endShape = edgeShape.getEndShape();
+				GlgGraphNode startNode = nodeMap.get(startShape);
+				GlgGraphNode endNode = nodeMap.get(endShape);
+				if(!graph.NodesConnected(startNode, endNode)) {
+					if(edgeShape.isDirectedForward()) {
+						graph.AddEdge(startNode, endNode, null, 0, null);						
 					} else {
-						continue;
+						graph.AddEdge(endNode, startNode, null, 0, null);						
 					}
 				}
 			}
@@ -286,7 +240,7 @@ public class GraphLayoutManager {
 			ratio = 40.0 / minDistance;
 		}
 		// Update positions
-		shapeEnum = graphView.getGraphModel().getShapes();
+		shapes = graphView.getGraphModel().getShapes();
 		Point place;
 		com.genlogic.GraphLayout.GlgPoint glgPoint;
 		for(Shape shape : graphView.getGraphModel().getShapes()) {
@@ -301,9 +255,32 @@ public class GraphLayoutManager {
 				shape.getSpaceManager().setRelPos(place);
 			}
 		}
-		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,
-				(int) (1600 * ratio) + 50);
-		graphView.setSize(graphSize);
+		layoutContainedGraph(StretchToBoundaryLayouter.LAYOUT_NAME);
+		graphView.repaint();
+	}
+	
+	public void layoutGLGNew(GraphContainerLayout containerLayout) {
+		GraphModel graphModel = graphView.getGraphModel();
+		Shape topShape = graphModel.getTopShape();
+		Set<ContainerShape> containerShapes = new HashSet<ContainerShape>();
+		for(Shape topShapeChild : topShape.getChildren()) {
+			if(topShapeChild instanceof ContainerShape) {
+				containerShapes.add((ContainerShape) topShapeChild);
+			}
+		}
+		if(containerShapes.isEmpty() && topShape instanceof ContainerShape) {
+			containerShapes.add((ContainerShape) topShape);
+		}
+		for(ContainerShape containerShape : containerShapes) {
+			Rectangle boundary = 
+				graphModel.getContainerLayout().getBoundaryForAutomaticLayout(containerShape);
+			GlgCube glgBoundary = new GlgCube();
+			glgBoundary.p1 = new GlgPoint(boundary.getMinX(), boundary.getMinY(), 0);
+			glgBoundary.p2 = new GlgPoint(boundary.getMaxX(), boundary.getMaxY(), 0);
+			GlgGraphLayout graphLayout = new GlgGraphLayout();
+			graphLayout.dimensions = glgBoundary;
+			
+		}
 	}
 	
 }

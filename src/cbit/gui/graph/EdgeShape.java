@@ -304,4 +304,6 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		return end;
 	}
 	
+	public boolean isDirectedForward() { return true; }
+	
 }

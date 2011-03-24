@@ -6,6 +6,8 @@ package cbit.vcell.graph;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 
 public class FluxShape extends ReactionParticipantShape {
 
@@ -28,4 +30,10 @@ public class FluxShape extends ReactionParticipantShape {
 
 	@Override public void refreshLabel() { setLabel(""); }
 	
+	public boolean isDirectedForward() { 
+		SpeciesContext speciesContext = getSpeciesContextShape().getSpeciesContext();
+		ReactionStep reactionStep = getReactionStepShape().getReactionStep();
+		return speciesContext.getStructure() == reactionStep.getStructure().getParentStructure();
+	}
+
 }

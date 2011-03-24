@@ -23,4 +23,7 @@ public class ProductShape extends ReactionParticipantShape {
 			setLabel("("+reactionParticipant.getStoichiometry()+")");
 		}
 	}
+	
+	public boolean isDirectedForward() { return false; }
+
 }

@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -12,10 +11,13 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Icon;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -40,6 +42,10 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.util.graphlayout.EdgeTugLayouter;
+import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+import org.vcell.util.gui.ActionBuilder;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -47,6 +53,7 @@ import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
 import cbit.vcell.biomodel.BioModel;
@@ -63,7 +70,14 @@ import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
 import cbit.vcell.model.BioModelEntityObject;
 
 @SuppressWarnings("serial")
-public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel implements PathwayEditor {
+public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel 
+implements PathwayEditor, ActionBuilder.Generator {
+	
+	public static enum ActionID implements ActionBuilder.ID {
+		select, zoomIn, zoomOut, randomLayout, edgeTugLayout, werewolfLayout, shootAndCutLayout, 
+		circularLayout, annealedLayout, levelledLayout, relaxedLayout, glgLayout, reactionsOnlyShown, 
+		reactionNetworkShown, componentsShown;
+	}
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private EventHandler eventHandler = new EventHandler();
@@ -169,62 +183,59 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		bioModel.getPathwayModel().remove(selectedBioPaxObjects);
 	}
 
-	private JButton createToolBarButton(ToolBarButton toolButton) {
-		JButton button = new JButton();
+	private JButton createToolBarButton(Action action) {
+		JButton button = new JButton(action);
 		button.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 		button.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 		button.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 		button.setMargin(new Insets(2, 2, 2, 2));
-		button.setToolTipText(toolButton.shortDescrString);
-		button.setIcon(toolButton.icon);
 		return button;
 	}
 
-	private JToolBar createToolBar(ToolBarButton[] layouts, int orientation) {
+	private JToolBar createToolBar(int orientation) {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.setBorder(new javax.swing.border.EtchedBorder());
 		toolBar.setOrientation(orientation);
-		for (int i = 0; i < layouts.length; i ++) {
-			toolBar.add(createToolBarButton(layouts[i]));
+		for (ActionID id : ActionID.values()) {
+			ActionBuilder actionBuilder = actionBuilderMap.get(id);
+			if(actionBuilder != null) {
+				Action action = actionBuilder.buildAction(this);
+				if(action != null) {
+					toolBar.add(createToolBarButton(action));					
+				}
+			}
 		}
 		return toolBar;
 	}
 	
-	private static enum ToolBarButton {
-		select("Select", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
-		zoomin("Zoom In", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
-		zoomout("Zoom Out", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
-		random("Random", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
-		circular("Circular", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
-		annealed("Annealed", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
-		levelled("Levelled", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
-		relaxed("Relaxed", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
-		reactions_only("Reactions Only", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
-		reaction_network("Reaction Network", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
-		components("Components", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon),
-		
-		reaction("Reaction", "Biochemical Reaction", "Biochemical Reaction", VCellIcons.pathwayReactionIcon),
-		transport("Transport", "Transport", "Transport", VCellIcons.pathwayTransportIcon),
-		reaction_wt("Reaction WT", "Biochemical Reaction with Transport", "Biochemical Reaction with Transport", VCellIcons.pathwayReactionWtIcon),
-		entity("Entity", "Physical Entity", "Physical Entity", VCellIcons.pathwayEntityIcon),
-		small_molecule("Small Molecule", "Small Molecule", "Small Molecule", VCellIcons.pathwaySmallMoleculeIcon),
-		protein("Protein", "Protein", "Protein", VCellIcons.pathwayProteinIcon),
-		complex("Complex", "Complex", "Complex", VCellIcons.pathwayComplexIcon),
-		participant("Participant", "Participant", "Physical Entity Participant", VCellIcons.pathwayParticipantsIcon);
-
-
-		String name, shortDescrString, longDescription;
-		Icon icon;
-		private ToolBarButton(String name, String shortDescrString,
-				String longDescription, Icon icon) {
-			this.name = name;
-			this.shortDescrString = shortDescrString;
-			this.longDescription = longDescription;
-			this.icon = icon;
-		}		
+	protected static Map<ActionBuilder.ID, ActionBuilder> 
+	createActionBuilderMap(ActionBuilder ... builders) {
+		Map<ActionBuilder.ID, ActionBuilder> builderMap = new HashMap<ActionBuilder.ID, ActionBuilder>();
+		for(ActionBuilder builder : builders) {
+			builderMap.put(builder.id, builder);
+		}
+		return builderMap;
 	}
-
+	
+	protected static Map<ActionBuilder.ID, ActionBuilder> actionBuilderMap = createActionBuilderMap(
+		new ActionBuilder(ActionID.select, "Select", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
+		new ActionBuilder(ActionID.zoomIn, "Zoom In", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
+		new ActionBuilder(ActionID.zoomOut, "Zoom Out", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
+		new ActionBuilder(ActionID.randomLayout, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.edgeTugLayout, "", "Edge Tug Layout", "Perform Edge Tug Graph Layout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.shootAndCutLayout, "", "Shoot And Cut Layout", "Perform Shoot And Cut Graph Layout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.werewolfLayout, "", "Werewolf Layout", "Perform Werewolf Graph Layout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.randomLayout, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.circularLayout, "", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
+		new ActionBuilder(ActionID.annealedLayout, "", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
+		new ActionBuilder(ActionID.levelledLayout, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
+		new ActionBuilder(ActionID.relaxedLayout, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
+		new ActionBuilder(ActionID.glgLayout, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.reactionsOnlyShown, "Reactions Only", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
+		new ActionBuilder(ActionID.reactionNetworkShown, "Reaction Network", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
+		new ActionBuilder(ActionID.componentsShown, "Components", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
+		
 	private JPopupMenu getPhysiologyLinksPopupMenu() {
 		if (physiologyLinkPopupMenu == null) {
 			physiologyLinkPopupMenu = new JPopupMenu();
@@ -243,33 +254,7 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 	}
 	
 	private void initialize() {
-		ToolBarButton[] layouts = new ToolBarButton[] {
-				ToolBarButton.select,
-				ToolBarButton.zoomin,
-				ToolBarButton.zoomout,
-				ToolBarButton.random,
-				ToolBarButton.circular,
-				ToolBarButton.annealed,
-				ToolBarButton.levelled,
-				ToolBarButton.relaxed,
-				ToolBarButton.reactions_only,
-				ToolBarButton.reaction_network,
-				ToolBarButton.components,				
-		};
-
-		ToolBarButton[] interactions = new ToolBarButton[] {
-				ToolBarButton.reaction,
-				ToolBarButton.transport,
-				ToolBarButton.reaction_wt,
-				ToolBarButton.entity,
-				ToolBarButton.small_molecule,
-				ToolBarButton.protein,
-				ToolBarButton.complex,
-				ToolBarButton.participant,
-		};
-		
-		JToolBar layoutToolBar = createToolBar(layouts, javax.swing.SwingConstants.VERTICAL);
-		JToolBar nodesToolBar = createToolBar(interactions, javax.swing.SwingConstants.HORIZONTAL);
+		JToolBar layoutToolBar = createToolBar(SwingConstants.HORIZONTAL);
 		sourceTextArea = new JTextArea();
 		
 		graphPane =  new GraphPane();
@@ -279,14 +264,13 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		
 		graphCartoonTool = new PathwayGraphTool();
 		graphCartoonTool.setGraphPane(graphPane);		
-				
 		graphTabPanel = new JPanel(new BorderLayout());
 		JScrollPane graphScrollPane = new JScrollPane(graphPane);
 		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		graphScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		graphTabPanel.add(graphScrollPane, BorderLayout.CENTER);
-		graphTabPanel.add(layoutToolBar, BorderLayout.WEST);
-		graphTabPanel.add(nodesToolBar, BorderLayout.NORTH);
+
+		graphTabPanel.add(layoutToolBar, BorderLayout.NORTH);
 		
 		sourceTabPanel = new JPanel(new BorderLayout());
 		sourceTabPanel.add(new JScrollPane(sourceTextArea), BorderLayout.CENTER);
@@ -467,6 +451,55 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 
 	public BioModel getBioModel() { return bioModel; }
 	
+	public PathwayGraphTool getCartoonTool() { return graphCartoonTool; }
+
+	protected class LayoutAction extends AbstractAction {
+
+		protected final String layoutName;
+		
+		public LayoutAction(String layoutName) { this.layoutName = layoutName; }
+		
+		public void actionPerformed(ActionEvent arg0) {
+			System.out.println(layoutName);
+			try { getCartoonTool().getGraphLayoutManager().layout(layoutName); } 
+			catch (Exception e) { e.printStackTrace(); }
+		}
+		
+	}
+	
+	public Action generateAction(ActionBuilder.ID id) {
+		// TODO Auto-generated method stub
+		if(id instanceof ActionID) {
+			switch((ActionID)id) {
+			case randomLayout: {
+				return new LayoutAction(RandomLayouter.LAYOUT_NAME);
+			}
+			case edgeTugLayout: {
+				return new LayoutAction(EdgeTugLayouter.LAYOUT_NAME);
+			}
+			case shootAndCutLayout: {
+				return new LayoutAction(ShootAndCutLayouter.LAYOUT_NAME);
+			}
+			case circularLayout: {
+				return new LayoutAction(GraphLayoutManager.OldLayouts.CIRCULARIZER);
+			}
+			case annealedLayout: {
+				return new LayoutAction(GraphLayoutManager.OldLayouts.ANNEALER);
+			}
+			case levelledLayout: {
+				return new LayoutAction(GraphLayoutManager.OldLayouts.LEVELLER);
+			}
+			case relaxedLayout: {
+				return new LayoutAction(GraphLayoutManager.OldLayouts.RELAXER);
+			}
+			case glgLayout : {
+				return new LayoutAction(GraphLayoutManager.OldLayouts.GLG);
+			}
+			}
+		}
+		return null;
+	}
+	
 	private BioPaxObject getSelectedBioPaxObject() {
 		ArrayList<Object> selectedObjects = selectionManager.getSelectedObjects(BioPaxObject.class);
 		BioPaxObject selectedBioPaxObject = null;
@@ -508,5 +541,4 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel im
 		}
 		refreshButtons();
 	}
-	
 }

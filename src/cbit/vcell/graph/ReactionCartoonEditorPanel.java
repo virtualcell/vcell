@@ -247,7 +247,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getRandomLayoutButton(), getRandomLayoutButton().getName());
-				toolBar.add(getEdgeTugLayoutButton(), getEdgeTugLayoutButton().getName());
+//				toolBar.add(getEdgeTugLayoutButton(), getEdgeTugLayoutButton().getName());
 				toolBar.add(getShootAndCutLayoutButton(), getShootAndCutLayoutButton().getName());
 				toolBar.add(getCircleLayoutButton(), getCircleLayoutButton().getName());
 				toolBar.add(getAnnealLayoutButton(), getAnnealLayoutButton().getName());
@@ -371,7 +371,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				shootAndCutLayoutButton.setName("ShootAndCutLayoutButton");
 				shootAndCutLayoutButton.setToolTipText("Shoot And Cut Layout");
 				shootAndCutLayoutButton.setIcon(randomLayoutIcon);
-				shootAndCutLayoutButton.setActionCommand("Layout");
+				shootAndCutLayoutButton.setActionCommand(ShootAndCutLayouter.LAYOUT_NAME);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
