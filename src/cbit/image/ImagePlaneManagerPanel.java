@@ -909,7 +909,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
-			ivjInfoJlabel.setBorder(BorderFactory.createEtchedBorder());
+//			ivjInfoJlabel.setBorder(BorderFactory.createEtchedBorder());
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 			// user code begin {1}
@@ -1035,7 +1035,7 @@ private void initialize() {
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
 		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel2.weightx = 1.0;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 0);
+		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 0, 0);
 		add(getImagePaneScroller1(), constraintsJPanel2);
 
 		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
@@ -1050,7 +1050,7 @@ private void initialize() {
 		constraintsInfoJlabel.gridx = 0; constraintsInfoJlabel.gridy = 1;
 		constraintsInfoJlabel.gridwidth = 2;
 		constraintsInfoJlabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsInfoJlabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsInfoJlabel.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(getInfoJlabel(), constraintsInfoJlabel);
 		initConnections();
 		connEtoC4();
@@ -1413,6 +1413,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 		//mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_ENTERED){
 			//getInfoJlabel().setText((infoS == null?defaultInfoString:infoS));
 	//}
+	getimagePaneView1().setToolTipText(infoS == null?defaultInfoString:infoS);
 	getInfoJlabel().setText((infoS == null?defaultInfoString:infoS));
 }
 /**
