@@ -334,6 +334,7 @@ private void initialize() {
 			
 		};
 		documentEditorTree.setEditable(true);
+		documentEditorTree.setLargeModel(true);
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
