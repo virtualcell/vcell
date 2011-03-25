@@ -31,11 +31,11 @@ if (includeVarNumber>0):
 
 simID=inputFilePathRoot[inputFilePathRoot.find("SimID"):]
 visitFramesDir=outputImageFileRoot
-visitFramesDir="/share/apps/vcell/visit/visitframes/"
+#visitFramesDir="/share/apps/vcell/visit/visitframes/"
 
-# Hardcoded for now:
-smoldynWorkOutputDir="/share/apps/vcell/visit/smoldynWorkFiles/"
-
+# Hardcoded for now:  (actually not anymore)
+#smoldynWorkOutputDir="/share/apps/vcell/visit/smoldynWorkFiles/"
+smoldynWorkOutputDir=visitFramesDir
 
 particleTypeList=[]
 particleTypeNumber=0
