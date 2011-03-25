@@ -26,7 +26,7 @@ public class TestSmoldynViz {
 				args.add("/share/apps/vcell/visit/convertSmoldyn.py");//location of the script
 				args.add("/share/apps/vcell/users/edboyce/SimID_55458019_0__"); //location of the SimID 
 				//  /share/apps/vcell/visit/smoldynWorkFiles   
-				args.add("/share/apps/vcell/visit/");  // where frames are dumped 
+				args.add("/share/apps/vcell/visit/visitframes/");  // where frames are dumped 
 				args.add("3"); //dimension
 				args.add("0"); // 0 = show all the particles.  >0 == show n different particles, to be listed below
 				args.add(""); //specific particle 1
