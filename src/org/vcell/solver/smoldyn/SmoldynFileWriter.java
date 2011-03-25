@@ -868,16 +868,19 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
-				VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
-				int volRegionID = volRegion1.getRegionID();
+				VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
+				VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[1];
+				int volRegionID0 = volRegion0.getRegionID();
+				int volRegionID1 = volRegion1.getRegionID();
 				SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 				for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
 					Surface surface = surfaceCollection.getSurfaces(j);
-					if (surface.getInteriorRegionIndex() == volRegionID || surface.getExteriorRegionIndex() == volRegionID) { // my triangles
+					if ((surface.getInteriorRegionIndex() == volRegionID0 && surface.getExteriorRegionIndex() == volRegionID1) || 
+						(surface.getInteriorRegionIndex() == volRegionID1 && surface.getExteriorRegionIndex() == volRegionID0)) { // my triangles
 						for(int k = 0; k < surface.getPolygonCount(); k++) {
 							Polygon polygon = surface.getPolygons(k);
 							Node[] nodes = polygon.getNodes();
-							if (surface.getExteriorRegionIndex() == volRegionID) { // interior	
+							if (surface.getExteriorRegionIndex() == volRegionID0) { // interior	
 								if (dimension == 2){
 									// ignore z
 									Vect3d unitNormal = new Vect3d();
