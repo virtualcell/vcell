@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
@@ -28,7 +27,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.UserRegistrationOP;
 /**
  * Insert the type's description here.
@@ -106,9 +104,8 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
 	try {
 		/* Set Look and Feel */
-		if (!ResourceUtil.bLinux) {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		}
+		VCellLookAndFeel.setVCellLookAndFeel();
+		
 		/* Create the first document desktop */
 		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
