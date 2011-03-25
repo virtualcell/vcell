@@ -4,6 +4,7 @@ package org.vcell.relationship;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
@@ -91,6 +92,30 @@ public class RelationshipModel {
 			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
 		}
 		return relationshipObject;
+	}
+	
+	public void removeRelationshipObjects(List<BioPaxObject> bioPaxObjects){
+		if (bioPaxObjects==null){
+			throw new RuntimeException("remove a null object from relationship model");
+		}
+		
+		for(BioPaxObject bpObject : bioPaxObjects){
+			for(RelationshipObject relationshipObject : getRelationshipObjects(bpObject)){
+				removeRelationshipObject(relationshipObject);
+			}
+		}
+	}
+	
+	public void removeRelationshipObjects(ArrayList<BioModelEntityObject> biomodelEntityObjects){
+		if (biomodelEntityObjects==null){
+			throw new RuntimeException("remove a null object from relationship model");
+		}
+		
+		for(BioModelEntityObject bmObject : biomodelEntityObjects){
+			for(RelationshipObject relationshipObject : getRelationshipObjects(bmObject)){
+				removeRelationshipObject(relationshipObject);
+			}
+		}
 	}
 	
 	public void addRelationshipObjects(HashSet<RelationshipObject> reObjects){
