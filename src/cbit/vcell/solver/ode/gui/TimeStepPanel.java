@@ -15,6 +15,7 @@ import cbit.vcell.solver.TimeStep;
  * Creation date: (11/2/2000 4:46:05 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class TimeStepPanel extends javax.swing.JPanel {
 	private SolverTaskDescription solverTaskDescription = null;
 	private javax.swing.JLabel ivjDefaultTimeStepLabel = null;
@@ -69,9 +70,10 @@ public TimeStepPanel() {
 
 public void setNewTimeStep() {
 	try {
-		double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? 0 : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
-		double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
-		double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
+		TimeStep oldTimeStep = solverTaskDescription.getTimeStep();
+		double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? oldTimeStep.getDefaultTimeStep() : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
+		double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? oldTimeStep.getMinimumTimeStep() : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
+		double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? oldTimeStep.getMaximumTimeStep() : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
 		TimeStep newTimeStep = new TimeStep(minTimeStep, defaultTimeStep, maxTimeStep);
 		solverTaskDescription.setTimeStep(newTimeStep);
 	} catch (java.lang.Throwable ivjExc) {
