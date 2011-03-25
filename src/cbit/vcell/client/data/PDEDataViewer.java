@@ -913,7 +913,7 @@ private void roiAction(){
 		roiTable.setModel(tableModel);
 		roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		
-		roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
+		roiTable.setPreferredScrollableViewportSize(new Dimension(500, 200));
 	
 		final JPanel mainJPanel = new JPanel();
 		BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
@@ -1037,9 +1037,19 @@ private void roiAction(){
 		mainJPanel.add(roiTable.getEnclosingScrollPane());
 		mainJPanel.add(okCancelJPanel);
 	
-		showComponentInFrame(mainJPanel,
-			"Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
-			"  Choose times and 1 or more ROI(s).");
+//		showComponentInFrame(mainJPanel,
+//			"Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
+//			"  Choose times and 1 or more ROI(s).");
+		Frame dialogOwner = JOptionPane.getFrameForComponent(this);
+		JOptionPane inputDialog = new JOptionPane(mainJPanel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[0]);
+		final JDialog d = inputDialog.createDialog(dialogOwner, "Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
+				"  Choose times and 1 or more ROI(s).");
+		d.setResizable(true);
+		try {
+			ZEnforcer.showModalDialogOnTop(d,PDEDataViewer.this);
+		}finally {
+			d.dispose();
+		}		
 	
 	} finally {
 		BeanUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
