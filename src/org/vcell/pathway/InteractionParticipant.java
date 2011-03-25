@@ -31,6 +31,34 @@ public class InteractionParticipant {
 		}
 		return false;
 	}
+	
+	public String getLevel3PropertyName(){
+		switch (type) {
+		case PARTICIPANT: {
+			return "Participant";
+		}
+		case COFACTOR: {
+			return "Cofactor";
+		}
+		case CONTROLLED: {
+			return "Controlled";
+		}
+		case CONTROLLER: {
+			return "Controller";
+		}
+		case LEFT: {
+			return "Left";
+		}
+		case RIGHT: {
+			return "Right";
+		}
+		case TEMPLATE: {
+			return "Template";
+		}
+		default:
+			return "";
+		}
+	}
 
 	public int hashCode() {
 		return interaction.hashCode() + physicalEntity.hashCode() + type.hashCode();

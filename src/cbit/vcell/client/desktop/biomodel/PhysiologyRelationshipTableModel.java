@@ -83,11 +83,15 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 				bioModel.getRelationshipModel().addRelationshipObject(reObject);
 			} else {// if the row is unchecked and the link is in the relationshipModel, 
 				   // then remove the link from the relationshipModel
+				ArrayList<RelationshipObject> relationshipObjectsToRemove = new ArrayList<RelationshipObject>();
 				for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
 					if (re.getBioModelEntityObject() == bioModelEntityObject
 							&& re.getBioPaxObject() == (entitySelectionTableRow.getBioPaxObject())){
-						bioModel.getRelationshipModel().removeRelationshipObject(re);
+						relationshipObjectsToRemove.add(re);
 					}
+				}
+				for (RelationshipObject re : relationshipObjectsToRemove){
+					bioModel.getRelationshipModel().removeRelationshipObject(re);
 				}
 			}			
 		}
