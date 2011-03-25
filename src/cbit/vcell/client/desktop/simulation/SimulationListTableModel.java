@@ -293,7 +293,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						try {
 							boolean bValid = true;
 							double outputTime = Double.parseDouble((String)aValue);
-							if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+							if (solverTaskDescription.getOutputTimeSpec().isUniform()) {
 								double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
 								
 								double suggestedInterval = outputTime;
