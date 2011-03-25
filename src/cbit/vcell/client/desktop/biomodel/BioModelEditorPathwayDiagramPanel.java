@@ -21,6 +21,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -39,13 +40,16 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.PhysicalEntity;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 import org.vcell.util.gui.ActionBuilder;
+import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -160,13 +164,97 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 	
 	public void importIntoModel() {
+		if (bioModel == null) {
+			return;
+		}
+		String warningMessage = "";
+		int warningCount = 0;
+		String infoMessage = "";
+		ArrayList <BioPaxObject> importedBPObjects = new ArrayList <BioPaxObject>();
+		
+		warningMessage = "The following pathway object(s) have been associated with object(s) in the physiology model:\n";
+		warningCount = 0;
+		infoMessage = "The following pathway object(s) have been coverted in the physiology model:\n\n";
+		
+		for(BioPaxObject bpo : getSelectedBioPaxObjects()){
+			  if(bpo instanceof Conversion){
+				  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
+					  importedBPObjects.add(bpo);
+				  }else{
+					  warningCount ++;
+					  warningMessage += "\nReaction: \'" + ((Conversion)bpo).getName().get(0) + "\' =>\n";
+					  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
+						  warningMessage += "\t=> \'" + r.getBioModelEntityObject().getName()+"\'\n";
+					  }
+				  }
+			  }else if(bpo instanceof PhysicalEntity){
+				  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
+					  importedBPObjects.add(bpo);
+				  }else{
+					  warningCount ++;
+					  warningMessage += "\nSpecies: \'" + ((PhysicalEntity)bpo).getName().get(0) + "\' =>\n";
+					  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
+						  warningMessage += "\t=> \'" + r.getBioModelEntityObject().getName()+"\'\n";
+					  }
+				  }
+			  }	  
+		}
+		
+		// show warning message 
+		warningMessage += "\nThey will NOT be converted to the physiology model.\n";
+		  if(warningCount > 0){
+			  DialogUtils.showWarningDialog(conversionPanel, warningMessage);
+		  }
+		  
+		if(importedBPObjects.size() == 0){
+			return;
+		}
+		// create import panel
 		if (conversionPanel == null) {
 			conversionPanel = new ConversionPanel();
 			conversionPanel.setBioModel(bioModel);
 			conversionPanel.setSelectionManager(getSelectionManager());
 		}		
 		conversionPanel.setBioPaxObjects(getSelectedBioPaxObjects());
-		conversionPanel.showSelectionDialog(); 
+		int returnCode = DialogUtils.showComponentOKCancelDialog(this, conversionPanel, "Import into Physiology");
+		if (returnCode == JOptionPane.OK_OPTION) {
+			PathwayMapping pathwayMapping = new PathwayMapping();
+			try{
+				
+				// function I:
+				// pass the table rows that contains user edited values to create Vcell object
+				pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, conversionPanel.getTableRows());
+				// function II:
+				// pass the bioPax objects to generate Vcell objects
+				// pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, tableModel.getBioPaxObjects().toArray());
+				// show import info
+				for(BioPaxObject bpo : importedBPObjects){
+					  if(bpo instanceof Conversion){
+							  infoMessage += "Reaction: \t\'";
+							  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
+								  infoMessage += r.getBioModelEntityObject().getName()+"\'\n";
+							  }
+							  infoMessage += "\n";
+					  }else if(bpo instanceof PhysicalEntity){
+							  infoMessage += "SpeciesContext: \t\'";
+							  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
+								  infoMessage += r.getBioModelEntityObject().getName()+"\'\n";
+							  }
+							  infoMessage += "\n";
+					  }	  
+				}
+				DialogUtils.showInfoDialog(this, infoMessage);
+				
+				if (selectionManager != null){
+					selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
+			//							selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
+				}
+			}catch(Exception e)
+			{
+				e.printStackTrace(System.out);
+				DialogUtils.showErrorDialog(this, "Errors occur when converting pathway objects to VCell bioModel objects.\n" + e.getMessage());
+			}
+		}
 	}
 
 	public void deleteButtonPressed() {

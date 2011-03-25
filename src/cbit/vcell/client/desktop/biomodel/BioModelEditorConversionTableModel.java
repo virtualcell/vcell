@@ -21,13 +21,17 @@ import org.vcell.pathway.Complex;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Entity;
 import org.vcell.pathway.InteractionParticipant;
+import org.vcell.pathway.Pathway;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
+import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.AutoCompleteTableModel;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
@@ -152,7 +156,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			case iColID: {
 				if(valueNew instanceof String) {
 					ConversionTableRow conversonTableRow = getValueAt(iRow);
-					conversonTableRow.setId(((String)valueNew).trim());
+					if(isValid(((String)valueNew).trim()))
+						conversonTableRow.setId(((String)valueNew).trim());
+					else
+						conversonTableRow.setId((changeID(((String)valueNew).trim())));
 				}
 				break;
 			}
@@ -167,6 +174,23 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			}
 			
 		}
+	}
+	
+	private boolean isValid(String id){
+		boolean valid = true;
+		if(bioModel.getModel().getSpeciesContext(id) != null )
+			valid = false;
+		else if( bioModel.getModel().getReactionStep(id) != null)
+			valid = false;
+		return valid;
+	}
+	
+	private String changeID(String oldID){
+		String newID = oldID +"X";
+		while(!isValid(newID)){
+			newID += "X";
+		}
+		return newID;
 	}
 	
 	public SymbolTable getSymbolTable(int row, int column) {
@@ -310,70 +334,111 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	}
 	
 	private void refreshData() {
-		if(bioModel == null) return;
-		if (bioModel.getPathwayModel() == null) {
+		if (bioModel == null || bioModel.getPathwayModel() == null || bioPaxObjects == null) {
 			setData(null);
 			return;
 		}
-		if(bioPaxObjects == null) return;
 		
 		// function I :: get selected objects only
 		// create ConversionTableRow objects
 		allPathwayObjectList = new ArrayList<ConversionTableRow>();
 		HashSet<BioPaxObject> newSelectedObjects = new HashSet<BioPaxObject>();
+		
 		for(BioPaxObject bpo : bioPaxObjects){
 		  if(bpo instanceof Conversion){
-			Conversion interaction = (Conversion)bpo;
-			ArrayList<String> nameList = interaction.getName();
-			String interactionName = nameList.isEmpty() ? "[no name]" : nameList.get(0);
-			ConversionTableRow newConversionTableRow = createTableRow(interaction, interactionName,
-					"Conversion", 1.0 );
-			allPathwayObjectList.add(newConversionTableRow);
-			newSelectedObjects.add(interaction);
-			ArrayList<Stoichiometry> stoichiometryList =  interaction.getParticipantStoichiometry();
-			// stoichiometryMap problem: 
-			//			how to deal with the case that the same object occurs on both left and right sides
-			HashMap <PhysicalEntity, Double> stoichiometryMap = createStoichiometryMap(stoichiometryList);
-			// reactant
-			for(BioPaxObject bpObject1: interaction.getLeft()){
-				Double stoich = 1.0;
-				if(stoichiometryMap.get((PhysicalEntity)bpObject1) != null){
-					stoich = stoichiometryMap.get((PhysicalEntity)bpObject1);
+			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
+				Conversion interaction = (Conversion)bpo;
+				ArrayList<String> nameList = interaction.getName();
+				String interactionName = nameList.isEmpty() ? "[no name]" : nameList.get(0);
+				ConversionTableRow newConversionTableRow = createTableRow(interaction, interactionName,
+						"Conversion", 1.0 , null);
+				allPathwayObjectList.add(newConversionTableRow);
+				newSelectedObjects.add(interaction);
+				ArrayList<Stoichiometry> stoichiometryList =  interaction.getParticipantStoichiometry();
+				// stoichiometryMap problem: 
+				//			how to deal with the case that the same object occurs on both left and right sides
+				HashMap <PhysicalEntity, Double> stoichiometryMap = createStoichiometryMap(stoichiometryList);
+				// reactant
+				for(BioPaxObject bpObject1: interaction.getLeft()){
+					Double stoich = 1.0;
+					if(stoichiometryMap.get((PhysicalEntity)bpObject1) != null){
+						stoich = stoichiometryMap.get((PhysicalEntity)bpObject1);
+					}
+					ConversionTableRow conversionTableRow;
+					if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).isEmpty()){
+						 conversionTableRow = createTableRow(bpObject1, interactionName,
+							"Reactant", stoich , null);
+					}else{
+						 conversionTableRow = createTableRow(bpObject1, interactionName,
+								"Reactant", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).iterator().next());
+					}
+					allPathwayObjectList.add(conversionTableRow);
+					newSelectedObjects.add(bpObject1);
 				}
-				ConversionTableRow conversionTableRow = createTableRow(bpObject1, interactionName,
-						"Reactant", stoich );
-				allPathwayObjectList.add(conversionTableRow);
-				newSelectedObjects.add(bpObject1);
-			}
-			// product
-			for(BioPaxObject bpObject1: interaction.getRight()){
-				Double stoich = 1.0;
-				if(stoichiometryMap.get((PhysicalEntity)bpObject1) != null){
-					stoich = stoichiometryMap.get((PhysicalEntity)bpObject1);
+				// product
+				for(BioPaxObject bpObject1: interaction.getRight()){
+					Double stoich = 1.0;
+					if(stoichiometryMap.get((PhysicalEntity)bpObject1) != null){
+						stoich = stoichiometryMap.get((PhysicalEntity)bpObject1);
+					}
+					ConversionTableRow conversionTableRow;
+					if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).isEmpty()){
+						conversionTableRow = createTableRow(bpObject1, interactionName,
+								"Product", stoich , null);
+					}else{
+						conversionTableRow = createTableRow(bpObject1, interactionName,
+								"Product", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).iterator().next());
+					}
+					allPathwayObjectList.add(conversionTableRow);
+					newSelectedObjects.add(bpObject1);
 				}
-				ConversionTableRow conversionTableRow = createTableRow(bpObject1, interactionName,
-						"Product", stoich );
-				allPathwayObjectList.add(conversionTableRow);
-				newSelectedObjects.add(bpObject1);
-			}
-			// catalyst
-			for(BioPaxObject bpObject: bioModel.getPathwayModel().getBiopaxObjects()){
-				if(bpObject instanceof Catalysis){
-					if(((Catalysis) bpObject).getControlledInteraction() == interaction){
-						for(PhysicalEntity pe : ((Catalysis) bpObject).getPhysicalControllers()){
-							ConversionTableRow conversionTableRow = createTableRow(pe, interactionName,
-									"Catalyst", 1.0 );
-							allPathwayObjectList.add(conversionTableRow);
-							newSelectedObjects.add(bpObject);
+				// catalyst
+				for(BioPaxObject bpObject: bioModel.getPathwayModel().getBiopaxObjects()){
+					if(bpObject instanceof Catalysis){
+						if(((Catalysis) bpObject).getControlledInteraction() == interaction){
+							for(PhysicalEntity pe : ((Catalysis) bpObject).getPhysicalControllers()){
+								ConversionTableRow conversionTableRow;
+								if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject).isEmpty()){
+									conversionTableRow = createTableRow(pe, interactionName,
+											"Catalyst", 1.0 , null);
+								}else{
+									conversionTableRow = createTableRow(pe, interactionName,
+											"Catalyst", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(bpObject).iterator().next());
+								} 
+								allPathwayObjectList.add(conversionTableRow);
+								newSelectedObjects.add(bpObject);
+							}
 						}
 					}
 				}
-			}
+				
+			  }else{
+
+			  }
 		  }else if(bpo instanceof PhysicalEntity){
-			  PhysicalEntity physicalEntityObject = (PhysicalEntity)bpo;
-			  ConversionTableRow conversionTableRow = createTableRow(physicalEntityObject, "", "", 1.0 );
-				allPathwayObjectList.add(conversionTableRow);
-				newSelectedObjects.add(physicalEntityObject);
+			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
+				  PhysicalEntity physicalEntityObject = (PhysicalEntity)bpo;
+				  ConversionTableRow conversionTableRow = createTableRow(physicalEntityObject, "", "", 1.0 , null);
+					allPathwayObjectList.add(conversionTableRow);
+					newSelectedObjects.add(physicalEntityObject);
+			  }else{
+			  }
+		  }else if(bpo instanceof Catalysis){
+			  for(PhysicalEntity pe : ((Catalysis) bpo).getPhysicalControllers()){
+					ConversionTableRow conversionTableRow;
+					if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).isEmpty()){
+						conversionTableRow = createTableRow(pe, "",
+								"Catalyst", 1.0 , null);
+					}else{
+						conversionTableRow = createTableRow(pe, "",
+								"Catalyst", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(bpo).iterator().next());
+					} 
+					allPathwayObjectList.add(conversionTableRow);
+					newSelectedObjects.add(bpo);
+				}
+			  for(Pathway pathway : ((Catalysis) bpo).getPathwayControllers()){
+				  // TODO
+			  }
 		  }
 		}
 		
@@ -439,7 +504,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			}
 		}
 		*/
-
+		
 
 		convertedBPObjects = new ArrayList<BioPaxObject>();
 		for(BioPaxObject bp : newSelectedObjects){
@@ -448,14 +513,18 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		
 		// apply text search function for particular columns
 		ArrayList<ConversionTableRow> pathwayObjectList = new ArrayList<ConversionTableRow>();
-		for (ConversionTableRow rs : allPathwayObjectList){
-			BioPaxObject bpObject = rs.getBioPaxObject();
-			if (searchText == null || searchText.length() == 0 
-					|| rs.interactionName().toLowerCase().contains(searchText.toLowerCase())
-					|| rs.participantType().toLowerCase().contains(searchText.toLowerCase())
-					|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
-					|| getType(bpObject).toLowerCase().contains(searchText.toLowerCase()) ) {
-				pathwayObjectList.add(rs);
+		if (searchText == null || searchText.length() == 0) {
+			pathwayObjectList.addAll(allPathwayObjectList);
+		} else {
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for (ConversionTableRow rs : allPathwayObjectList){
+				BioPaxObject bpObject = rs.getBioPaxObject();
+				if (rs.interactionName().toLowerCase().contains(lowerCaseSearchText)
+					|| rs.participantType().toLowerCase().contains(lowerCaseSearchText)
+					|| getLabel(bpObject).toLowerCase().contains(lowerCaseSearchText)
+					|| getType(bpObject).toLowerCase().contains(lowerCaseSearchText) ) {
+					pathwayObjectList.add(rs);
+				}
 			}
 		}
 		setData(pathwayObjectList);
@@ -463,7 +532,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	}
 	
 	private ConversionTableRow createTableRow(BioPaxObject bpObject, String interactionName, String participantType, 
-			double  stoich) {
+			double  stoich, RelationshipObject relationshipObject) {
 		String location = "";
 		ConversionTableRow conversionTableRow = new ConversionTableRow(bpObject);
 		
@@ -494,11 +563,21 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			conversionTableRow.setLocation(location);
 		}
 		// id
-		if(bpObject instanceof Entity) {
-			ArrayList<String> nameList = ((Entity)bpObject).getName();
-			if(!nameList.isEmpty()) {
-				conversionTableRow.setId(nameList.get(0)+"_"+location);				
+		if(relationshipObject == null){
+			if(bpObject instanceof Entity) {
+				ArrayList<String> nameList = ((Entity)bpObject).getName();
+				if(!nameList.isEmpty()) {
+					String id = (getSafetyName(nameList.get(0))+"_"+location).trim();
+					if(isValid(id))
+						conversionTableRow.setId(id);
+					else
+						conversionTableRow.setId(changeID(id));		
+				}else{
+					conversionTableRow.setId("O_"+location);
+				}
 			}
+		}else{
+			conversionTableRow.setId(relationshipObject.getBioModelEntityObject().getName());
 		}
 		
 		return conversionTableRow;
@@ -529,7 +608,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			return;
 		}
 		bioPaxObjects = newValue;
-		refreshData();
+		refreshData(); 
 	}
 	
 	public ArrayList<BioPaxObject> getBioPaxObjects(){
@@ -541,7 +620,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	}
 
 	public void pathwayChanged(PathwayEvent event) {
-		refreshData();		
+		refreshData();
 	}
 	
 	private HashMap <PhysicalEntity, Double> createStoichiometryMap(ArrayList<Stoichiometry> stoichiometryList){
@@ -650,5 +729,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		}
 		return null;
 	}
+	
+	//convert the name of biopax object to safety vcell object name
+	private static String getSafetyName(String oldValue){
+		return TokenMangler.fixTokenStrict(oldValue, 60);
+	} 
 	
 }

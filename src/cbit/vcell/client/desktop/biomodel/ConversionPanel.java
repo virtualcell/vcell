@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -28,23 +29,16 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayImportSelectionTool;
 
 @SuppressWarnings("serial")
-public class ConversionPanel extends DocumentEditorSubPanel implements PathwayImportSelectionTool {
+public class ConversionPanel extends DocumentEditorSubPanel  {
 	private List<BioPaxObject> bioPaxObjects= null;
 	private EventHandler eventHandler = new EventHandler();
 	private BioModel bioModel = null;
 	private BioModelEditorConversionTableModel tableModel = null; 
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
-	private JButton bringItInButton = null;
-	private JButton resetButton = null;
 	
 	private class EventHandler implements ActionListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if(e.getSource() == bringItInButton){
-				bringItIn();
-			}else if(e.getSource() == resetButton){
-				resetValues();
-			}
 		}
 		public void insertUpdate(DocumentEvent e) {
 			searchTable();
@@ -62,6 +56,9 @@ public ConversionPanel() {
 	initialize();
 }
 
+public ArrayList<ConversionTableRow> getTableRows() {
+	return tableModel.getTableRows();
+}
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -200,40 +197,6 @@ public BioModelEditorConversionTableModel getTableModel(){
 	return tableModel;
 }
 
-public void showSelectionDialog() {
-    int returnCode = DialogUtils.showComponentOKCancelDialog(this, this, "Import into Physiology");
-	if (returnCode == JOptionPane.OK_OPTION) {
-		bringItIn();
-	}
-}
-
-public void bringItIn(){
-	if(bioModel == null){
-		return;
-	}
-	if(bioModel.getRelationshipModel() == null){
-		return;
-	}
-	PathwayMapping pathwayMapping = new PathwayMapping();
-	try{
-		
-		// function I:
-		// pass the table rows that contains user edited values to create Vcell object
-		pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, tableModel.getTableRows());
-		// function II:
-		// pass the bioPax objects to generate Vcell objects
-		// pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, tableModel.getBioPaxObjects().toArray());
-		
-		if (selectionManager != null){
-			selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
-//			selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
-		}
-	}catch(Exception e)
-	{
-		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, "Errors occur when converting pathway objects to VCell bioModel objects.\n" + e.getMessage());
-	}
-}
 
 private void resetValues(){
 	
