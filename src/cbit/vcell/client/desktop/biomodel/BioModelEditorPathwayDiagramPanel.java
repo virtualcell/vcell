@@ -40,7 +40,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Complex;
+import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
@@ -258,17 +261,87 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 
 	public void deleteButtonPressed() {
+		List<BioPaxObject> allSelectedBioPaxObjects = getSelectedBioPaxObjects(); // all objects required by user
+		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
+		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the all objects that will be deleted from the pathway model
+		StringBuilder warning = new StringBuilder("You can NOT delete the following pathway objects:\n\n");
+		for (BioPaxObject bpObject : allSelectedBioPaxObjects) {
+			if(canDelete(bpObject)){
+				selectedBioPaxObjects.add(bpObject);
+				completeSelectedBioPaxObjects.add(bpObject);
+				if(bpObject instanceof Conversion){// all its participants and its catalysts will be deleted if deleting a conversion
+					// check each participant
+					for(InteractionParticipant ip : ((Conversion)bpObject).getParticipants()){
+						if(canDelete(ip.getPhysicalEntity())) {
+							completeSelectedBioPaxObjects.add(ip.getPhysicalEntity());
+							// the complex of the pysicalEntity will be removed
+							for(Complex complex : getComplex(ip.getPhysicalEntity())){
+								if(canDelete(complex))
+									completeSelectedBioPaxObjects.add(complex);
+							}
+						}
+					}
+					// check catalysts
+					for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
+						if(bp instanceof Control){
+							if(((Control)bp).getControlledInteraction() == bpObject){
+								completeSelectedBioPaxObjects.add(bp);
+								for(PhysicalEntity pe : ((Control)bp).getPhysicalControllers()){
+									if(canDelete(pe)) completeSelectedBioPaxObjects.add(pe);
+								}
+							}
+						}
+					}
+				}
+			}else{
+				warning.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
+			}
+		}
+		warning.append("\nThey are required by other reactions.\n\n");
+		if(allSelectedBioPaxObjects.size() > selectedBioPaxObjects.size()){
+			PopupGenerator.showWarningDialog(this, warning.toString());
+		}
+		if(selectedBioPaxObjects.size() > 0){
+			StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
+			for (BioPaxObject bpObject : selectedBioPaxObjects) {
+				text.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
+			}
+			text.append("\nContinue?");
+			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting pathway objects", text.toString());
+			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+				return;
+			}
+			bioModel.getPathwayModel().remove(completeSelectedBioPaxObjects);
+			bioModel.getRelationshipModel().removeRelationshipObjects(completeSelectedBioPaxObjects);
+		}
+	}
+	
+	private ArrayList<Complex> getComplex(PhysicalEntity physicalEntity){
+		ArrayList<Complex> complexList = new ArrayList<Complex>();
+		for(BioPaxObject bpObject: bioModel.getPathwayModel().getBiopaxObjects()){
+			if(bpObject instanceof Complex){
+				if(((Complex)bpObject).getComponents().contains(physicalEntity))
+					complexList.add((Complex)bpObject);
+			}
+		}
+		return complexList;
+	}
+	
+	private boolean canDelete(BioPaxObject bpObject){
 		List<BioPaxObject> selectedBioPaxObjects = getSelectedBioPaxObjects();
-		StringBuilder text = new StringBuilder("You are going to delete the following pathway objects:\n\n");
-		for (BioPaxObject bpObject : selectedBioPaxObjects) {
-			text.append("    " + bpObject.getTypeLabel() + ":" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\n");
+		for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
+			if(bp instanceof Conversion){ // CANNOT delete any participants before deleting the reaction
+				if(!selectedBioPaxObjects.contains(bp)) {
+					if (((Conversion)bp).getLeft().contains(bpObject)) return false;
+					if (((Conversion)bp).getRight().contains(bpObject)) return false;
+				}
+			}else if(bp instanceof Control){  // CANNOT delete any catalysts before deleting the reaction
+				if(((Control)bp).getPhysicalControllers().contains(bpObject) 
+						&& !selectedBioPaxObjects.contains(((Control)bp).getControlledInteraction())) return false;
+
+			}
 		}
-		text.append("\nContinue?");
-		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting pathway objects", text.toString());
-		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-			return;
-		}
-		bioModel.getPathwayModel().remove(selectedBioPaxObjects);
+		return true;
 	}
 
 	private JButton createToolBarButton(Action action) {
