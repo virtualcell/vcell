@@ -5,7 +5,6 @@ package cbit.vcell.client.desktop.biomodel;
  * All rights reserved.
 ©*/
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 
 import javax.swing.Icon;
@@ -26,7 +25,6 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	
 	public BioModelEditorTreeCellRenderer(JTree tree) {
 		super(tree);
-		setPreferredSize(new Dimension(150, 30));	
 	}
 	
 	public void setBioModel(BioModel newValue) {
