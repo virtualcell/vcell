@@ -415,14 +415,16 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,0);
 		add(showPathwayButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,0,4,4);
 		add(gotoPathwayButton, gbc);
 		
 		responseTree.getSelectionModel().addTreeSelectionListener(eventHandler);
