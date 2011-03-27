@@ -58,6 +58,7 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:28:34 PM)
@@ -140,12 +141,11 @@ public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
-	
-	ParticleInfo particleInfo = checkParticles(exportSpecs,user,exportSpecs.getVCDataIdentifier());
+	ParticleInfo particleInfo = checkParticles(exportSpecs,user,exportSpecs.getVCDataIdentifier(),dataServerImpl);
 	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo);
 }
 
-private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCDataIdentifier vcDataID) throws Exception{
+private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCDataIdentifier vcDataID,DataServerImpl dataServerImpl) throws Exception{
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
 		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
@@ -157,6 +157,8 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	}
 	
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	CartesianMesh cartesianMesh = dataServerImpl.getMesh(user, vcdID);
+	int dimension = cartesianMesh.getGeometryDimension();
 	
 	File visitExeLocation =
 		new File(PropertyLoader.getRequiredProperty(
@@ -187,7 +189,7 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	args.add(visitDataPathFragment.getAbsolutePath()); //location of the SimID 
 	//  /share/apps/vcell/visit/smoldynWorkFiles   
 	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
-	args.add("3"); //dimension
+	args.add(dimension+""); //dimension
 	args.add("0"); // 0 = show all the particles.  >0 == show n different particles, to be listed below
 	//args.add(""); //specific particle 1
 	//args.add(""); //specific particle 2 
