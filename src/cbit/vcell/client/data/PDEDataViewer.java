@@ -131,6 +131,7 @@ import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
@@ -341,6 +342,16 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
 					createDataProcessingResultsPanel();
+					//set Smoldyn flag for exports to create "particle" media
+					boolean isSmoldyn = false;
+					if(getSimulation() != null &&
+						getSimulation().getSolverTaskDescription() != null &&
+						getSimulation().getSolverTaskDescription().getSolverDescription() != null){
+						SolverDescription solverDescription =
+							getSimulation().getSolverTaskDescription().getSolverDescription();
+						isSmoldyn = solverDescription.equals(SolverDescription.Smoldyn);
+					}
+					getPDEExportPanel1().setIsSmoldyn(isSmoldyn);
 				}
 //				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
 //					setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());

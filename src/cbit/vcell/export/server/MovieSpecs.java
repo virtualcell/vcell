@@ -4,9 +4,9 @@ package cbit.vcell.export.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.simdata.gui.*;
-import java.io.*;
-import cbit.image.*;
+import java.io.Serializable;
+
+import cbit.vcell.simdata.gui.DisplayPreferences;
 /**
  * This type was created in VisualAge.
  */
@@ -23,6 +23,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private int compressionType;
 	private float compressionQuality;
 	private boolean bQTVR;
+	private int particleMode;
 
 
 /**
@@ -35,7 +36,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
 		int mirroringType, int volVarMembrOutlineThickness,
-		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR) {
+		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR,int particleMode) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
@@ -48,6 +49,7 @@ public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] dis
 	this.compressionType = compressionType;
 	this.compressionQuality = compressionQuality;
 	this.bQTVR = bQTVR;
+	this.particleMode = particleMode;
 }
 
 public boolean isQTVR(){
@@ -59,7 +61,9 @@ public float getcompressionQuality(){
 public int getCompressionType(){
 	return compressionType;
 }
-
+public int getParticleMode(){
+	return particleMode;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 1:20:28 AM)

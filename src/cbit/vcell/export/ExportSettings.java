@@ -632,6 +632,9 @@ public void setTimeSpecs(TimeSpecs timeSpecs){
 public void setImageSizeCalculationInfo(CartesianMesh mesh,int normalAxis){
 	getMediaSettingsPanel1().setImageSizeCalculationInfo(mesh, normalAxis);
 }
+public void setIsSmoldyn(boolean isSmoldyn){
+	getMediaSettingsPanel1().setIsSmoldyn(isSmoldyn);
+}
 /**
  * Comment
  */

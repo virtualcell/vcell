@@ -4,9 +4,9 @@ package cbit.vcell.export.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.simdata.gui.*;
-import java.io.*;
-import cbit.image.*;
+import java.io.Serializable;
+
+import cbit.vcell.simdata.gui.DisplayPreferences;
 /**
  * This type was created in VisualAge.
  */
@@ -23,7 +23,7 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private int meshMode;
 	private float compressionQuality;
 	private boolean bOverlay;
-
+	private int particleMode;
 /**
  * Insert the method's description here.
  * Creation date: (3/1/2001 12:13:46 PM)
@@ -37,7 +37,7 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
 		int compression, int mirroringType,
 		double duration, int loopingMode, int volVarMembrOutlineThickness,
-		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay) {
+		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay,int particleMode) {
 	this.displayPreferences = displayPreferences;
 	this.format = format;
 	this.compression = compression;
@@ -50,6 +50,7 @@ public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
 	this.meshMode = meshMode;
 	this.compressionQuality = compressionQuality;
 	this.bOverlay = bOverlay;
+	this.particleMode = particleMode;
 }
 public boolean getOverlayMode(){
 	return bOverlay;
@@ -57,7 +58,9 @@ public boolean getOverlayMode(){
 public float getcompressionQuality(){
 	return compressionQuality;
 }
-
+public int getParticleMode(){
+	return particleMode;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 1:11:26 AM)

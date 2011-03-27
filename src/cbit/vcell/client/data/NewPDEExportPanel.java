@@ -2176,6 +2176,10 @@ private PDEDataViewer.DataInfoProvider dataInfoProvider;
 public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider){
 	this.dataInfoProvider = dataInfoProvider;
 }
+private boolean isSmoldyn = false;
+public void setIsSmoldyn(boolean isSmoldyn){
+	this.isSmoldyn = isSmoldyn;
+}
 /**
  * Comment
  */
@@ -2299,6 +2303,7 @@ private void startExport() {
 	getExportSettings1().setDisplayPreferences(displayPreferences,Arrays.asList(variableSelections).toArray(new String[0]),viewZoom);
 	getExportSettings1().setSliceCount(FormatSpecificSpecs.getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
 	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());
+	getExportSettings1().setIsSmoldyn(isSmoldyn);
 	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
 			
 	if (!okToExport) {

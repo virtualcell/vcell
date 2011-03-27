@@ -43,13 +43,16 @@ fileIterator=1
 print "inputFilePathRoot=" + inputFilePathRoot+"\n"
 print "SimID = "+simID+"\n"
 
-inputFilePathRootPartition=inputFilePathRoot.rpartition('/')[2]
-outputFileRoot=smoldynWorkOutputDir+inputFilePathRootPartition
+#inputFilePathRootPartition=inputFilePathRoot.rpartition('/')[2]
+inputFilePathRootPartition= os.path.split(inputFilePathRoot)[1]
+#outputFileRoot=smoldynWorkOutputDir+inputFilePathRootPartition
+outputFileRoot=os.path.join(smoldynWorkOutputDir,inputFilePathRootPartition)
 print "starting with: " + (inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput")
 while os.path.exists(inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput"):
     print "Processing "+inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput"
     ifile=open((inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput"),'r')
     ofile=open(outputFileRoot+'p3d-'+('%03d' %fileIterator),'w')
+    print "Outputting "+ofile.name
     ofile.write('x y z particle\n')
     for line in ifile.readlines():
         lineTokens=string.split(line)
@@ -86,8 +89,9 @@ print("Done processing Smoldyn data into Point3D.  Now opening databases in Visi
 
 meshFilePathRoot=inputFilePathRoot[:inputFilePathRoot.index('__')+1]
 
-print("Opening the .log file: "+ meshFilePathRoot+".log\n")
+#print("Opening the .log file: "+ meshFilePathRoot+".log\n")
 visitMeshDB=meshFilePathRoot+".log"
+print("Opening .log file "+visitMeshDB)
 success=OpenDatabase(visitMeshDB,0,"VCellMTMD_1.0")
 AddPlot("Mesh", "membrMesh")
 

@@ -47,6 +47,7 @@ import javax.swing.event.ChangeListener;
 import org.vcell.util.gui.DialogUtils;
 
 import com.sun.swing.internal.plaf.basic.resources.basic_zh_CN;
+import javax.swing.JCheckBox;
 
 public class MediaSettingsPanel extends JPanel {
 	private JTextField movieDurationTextField;
@@ -63,9 +64,9 @@ public class MediaSettingsPanel extends JPanel {
 	public MediaSettingsPanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0,1.0};
-		gridBagLayout.rowWeights = new double[]{0, 0.0, 0,0,0, 0.0, 0.0, 0.0, 0.0,0.0};
+		gridBagLayout.rowWeights = new double[]{0, 0.0, 0,0,0, 0.0, 0.0, 0.0, 0.0, 1.0,0.0};
 		setLayout(gridBagLayout);
 		
 		JLabel lblEncodingFormat = new JLabel("Encoding Format:");
@@ -291,12 +292,56 @@ public class MediaSettingsPanel extends JPanel {
 		add(movieDurationTextField, gbc_movieDurationTextField);
 		movieDurationTextField.setColumns(10);
 		
+		particleModeLabel = new JLabel("Particle Mode:");
+		GridBagConstraints gbc_particleModeLabel = new GridBagConstraints();
+		gbc_particleModeLabel.anchor = GridBagConstraints.EAST;
+		gbc_particleModeLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_particleModeLabel.gridx = 0;
+		gbc_particleModeLabel.gridy = 9;
+		add(particleModeLabel, gbc_particleModeLabel);
+		
+		panel_5 = new JPanel();
+		GridBagConstraints gbc_panel_5 = new GridBagConstraints();
+		gbc_panel_5.fill = GridBagConstraints.BOTH;
+		gbc_panel_5.insets = new Insets(0, 0, 5, 0);
+		gbc_panel_5.gridx = 1;
+		gbc_panel_5.gridy = 9;
+		add(panel_5, gbc_panel_5);
+		GridBagLayout gbl_panel_5 = new GridBagLayout();
+		gbl_panel_5.columnWidths = new int[]{0, 0, 0, 0};
+		gbl_panel_5.rowHeights = new int[]{0, 0};
+		gbl_panel_5.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_5.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panel_5.setLayout(gbl_panel_5);
+		
+		particleRadioButton = new JRadioButton("Selected");
+		particleRadioButton.setSelected(true);
+		GridBagConstraints gbc_particleRadioButton = new GridBagConstraints();
+		gbc_particleRadioButton.insets = new Insets(0, 0, 0, 5);
+		gbc_particleRadioButton.gridx = 0;
+		gbc_particleRadioButton.gridy = 0;
+		panel_5.add(particleRadioButton, gbc_particleRadioButton);
+		
+		particleCountsRadiobutton = new JRadioButton("Histogram");
+		GridBagConstraints gbc_particleCountsRadiobutton = new GridBagConstraints();
+		gbc_particleCountsRadiobutton.insets = new Insets(0, 0, 0, 5);
+		gbc_particleCountsRadiobutton.gridx = 1;
+		gbc_particleCountsRadiobutton.gridy = 0;
+		panel_5.add(particleCountsRadiobutton, gbc_particleCountsRadiobutton);
+		
+		particleAllRadioButton = new JRadioButton("All");
+		GridBagConstraints gbc_particleAllRadioButton = new GridBagConstraints();
+		gbc_particleAllRadioButton.gridx = 2;
+		gbc_particleAllRadioButton.gridy = 0;
+		panel_5.add(particleAllRadioButton, gbc_particleAllRadioButton);
+		
 		panel_4 = new JPanel();
 		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
+		gbc_panel_4.weighty = 1.0;
 		gbc_panel_4.gridwidth = 2;
 		gbc_panel_4.fill = GridBagConstraints.BOTH;
 		gbc_panel_4.gridx = 0;
-		gbc_panel_4.gridy = 9;
+		gbc_panel_4.gridy = 10;
 		add(panel_4, gbc_panel_4);
 		
 		continueButton = new JButton("Continue...");
@@ -321,6 +366,7 @@ public class MediaSettingsPanel extends JPanel {
 	private ButtonGroup compositionButtonGroup = new ButtonGroup();
 	private ButtonGroup qtFormatButtonGroup = new ButtonGroup();
 	private ButtonGroup membrOutlineButtonGroup = new ButtonGroup();
+	private ButtonGroup particleButtonGroup = new ButtonGroup();
 	private double duration;
 	ActionListener buttonActionListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -441,6 +487,8 @@ public class MediaSettingsPanel extends JPanel {
 				}
 				exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
 				
+				exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
+
 				exportInfoJTextArea.append("\nVariable Display Preferences:\n");
 				for (int i = 0; i < variableNames.length; i++) {
 					boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
@@ -527,6 +575,10 @@ public class MediaSettingsPanel extends JPanel {
 		cancelButton.addActionListener(buttonActionListener);
 		
 		movieDurationTextField.setText("10");
+		
+		particleButtonGroup.add(particleRadioButton);
+		particleButtonGroup.add(particleCountsRadiobutton);
+		particleButtonGroup.add(particleAllRadioButton);
 	}
 	
 	private static final double MOVIE_DURATION_MIN_SECONDS = .1;
@@ -586,6 +638,11 @@ public class MediaSettingsPanel extends JPanel {
 		compositionLabel.setEnabled((variableNames == null || variableNames.length > 1?true:false));
 		compositionSeparate.setEnabled(compositionLabel.isEnabled());
 		compositionCombined.setEnabled(compositionLabel.isEnabled());
+		
+		particleModeLabel.setEnabled(isSmoldyn);
+		particleRadioButton.setEnabled(isSmoldyn);
+		particleCountsRadiobutton.setEnabled(isSmoldyn);
+		particleAllRadioButton.setEnabled(isSmoldyn);
 	}
 	
 	private int sliceCount = 0;
@@ -620,7 +677,15 @@ public class MediaSettingsPanel extends JPanel {
 		this.mesh = mesh;
 		this.normalAxis = normalAxis;
 	}
-	
+	private boolean isSmoldyn = false;
+	private JLabel particleModeLabel;
+	private JPanel panel_5;
+	private JRadioButton particleRadioButton;
+	private JRadioButton particleCountsRadiobutton;
+	private JRadioButton particleAllRadioButton;
+	public void setIsSmoldyn(boolean isSmoldyn){
+		this.isSmoldyn = isSmoldyn;
+	}
 	public FormatSpecificSpecs getSpecs() {
 		int scaleMode = ImagePaneModel.MESH_MODE;
 		if(!scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)){
@@ -633,6 +698,9 @@ public class MediaSettingsPanel extends JPanel {
 		boolean bOverLay = compositionCombined.isEnabled() && compositionCombined.isSelected();
 		int volVarMembrOutlineThickness =
 			(volVarMembrOutlineThicknessSlider.isEnabled()?volVarMembrOutlineThicknessSlider.getValue():0);
+		int particleMode =
+			(isSmoldyn && !particleCountsRadiobutton.isSelected()?(particleRadioButton.isSelected()?FormatSpecificSpecs.PARTICLE_SELECT:FormatSpecificSpecs.PARTICLE_ALL):FormatSpecificSpecs.PARTICLE_NONE);
+		
 		if(mediaType == ExportConstants.FORMAT_QUICKTIME){
 			return new MovieSpecs(
 				duration,
@@ -646,7 +714,8 @@ public class MediaSettingsPanel extends JPanel {
 				scaleMode,
 				FormatSpecificSpecs.CODEC_JPEG,
 				compressionQuality,
-				qtFormatQTVR.isSelected()
+				qtFormatQTVR.isSelected(),
+				particleMode
 			);
 		}else{
 			return new ImageSpecs(
@@ -661,7 +730,9 @@ public class MediaSettingsPanel extends JPanel {
 					membrScaling, 
 					scaleMode, 
 					compressionQuality,
-					bOverLay);
+					bOverLay,
+					particleMode
+				);
 		}
 	}
 	
