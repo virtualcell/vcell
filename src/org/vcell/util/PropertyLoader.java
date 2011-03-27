@@ -47,6 +47,14 @@ public class PropertyLoader {
 	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
 	public static final String hybridMilAdaptiveExecutableProperty = "vcell.hybridMilAdaptive.executable";
 	
+	public static final String visitServerExeName			= "visit";
+	public static final String visitSmoldynScriptName		= "convertSmoldyn.py";
+	public static final String visitMDServerHostProperty			= "vcell.visit.mdserverhost";
+	public static final String visitServerUsersDirProperty			= "vcell.visit.datalocation";
+	public static final String visitServerExecutableDirProperty		= "vcell.visit.servervisitexecutable";
+	public static final String visitSmoldynScriptPathProperty		= "vcell.visit.smoldynscript";
+	public static final String visitSmoldynScriptTempDirProperty	= "vcell.visit.smoldynscripttempdir";
+	
 	// Smoldyn
 	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
 	

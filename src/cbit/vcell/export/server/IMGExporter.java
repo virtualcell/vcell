@@ -1,25 +1,45 @@
 package cbit.vcell.export.server;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Executable;
+import org.vcell.util.ExecutableStatus;
+import org.vcell.util.NullSessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.Range;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+
+import com.hp.hpl.jena.rdf.model.impl.AltImpl;
 
 import GIFUtils.GIFFormatException;
 import GIFUtils.GIFImage;
 import GIFUtils.GIFOutputStream;
+import cbit.image.DisplayAdapterService;
+import cbit.image.ImagePaneModel;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
@@ -32,9 +52,12 @@ import cbit.vcell.export.gloworm.quicktime.VRMediaMovie;
 import cbit.vcell.export.gloworm.quicktime.VRWorld;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
+import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.gui.DisplayPreferences;
-import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:28:34 PM)
@@ -54,6 +77,62 @@ public IMGExporter(ExportServiceImpl exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
+public static void main(String [] args) throws Exception{
+	if(args.length != 4){
+		System.out.println("Usage: IMGExporter username userkey simulationkey userdatadir");
+		System.exit(0);
+	}
+	String userName = args[0];
+	String userKey = args[1];
+	String SimulationKey = args[2];
+	String primaryDirStr = args[3];
+	String varName = "";
+	
+	PropertyLoader.loadProperties();
+	
+	User user = new User(userName, new KeyValue(userKey));
+	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(SimulationKey), user);
+	VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 0);
+	
+	StdoutSessionLog sessionLog = new StdoutSessionLog(user.getName());
+	ExportServiceImpl exportServiceImpl = new ExportServiceImpl(sessionLog);
+	Cachetable cachetable = new Cachetable(10*Cachetable.minute);
+	File primaryDir = new File(primaryDirStr);
+	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,cachetable,primaryDir,null);
+	DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, exportServiceImpl);
+	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
+	TimeSpecs timeSpecs = new TimeSpecs(0, allTimes.length-1, allTimes, ExportConstants.TIME_RANGE);
+	VariableSpecs variableSpecs = new VariableSpecs(new String[] {varName}, ExportConstants.VARIABLE_MULTI);
+	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_SLICE);
+	DisplayPreferences displayPreferences =
+		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors());
+	MovieSpecs movieSpecs = new MovieSpecs(
+		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,
+		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false, FormatSpecificSpecs.PARTICLE_ALL);
+	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs);
+	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
+}
+
+private static class ParticleInfo{
+	public File imageFrameDir;
+	public ParticleInfo(File imageFrameDir){
+		this.imageFrameDir = imageFrameDir;
+	}
+	public File getImageFrameDir(){
+		return imageFrameDir;
+	}
+	public Dimension getImageFrameSize(VCDataIdentifier vcDataID){
+		File[] imageFrameDirList = imageFrameDir.listFiles();
+		for (int i = 0; i < imageFrameDirList.length; i++) {
+			if(imageFrameDirList[i].getName().startsWith(vcDataID.getID()) &&
+				imageFrameDirList[i].getName().endsWith(".jpeg")){
+				ImageIcon imgIcon = new ImageIcon(imageFrameDirList[i].getAbsolutePath());
+				return new Dimension(imgIcon.getIconWidth(), imgIcon.getIconHeight());
+			}
+		}
+		return null;
+	}
+}
 /**
  * This method was created in VisualAge.
  */
@@ -61,12 +140,90 @@ public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
-			return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport);
+	
+	ParticleInfo particleInfo = checkParticles(exportSpecs,user,exportSpecs.getVCDataIdentifier());
+	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo);
+}
+
+private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCDataIdentifier vcDataID) throws Exception{
+	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
+	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
+		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+	}else if (exportSpecs.getFormatSpecificSpecs() instanceof MovieSpecs){
+		particleMode = ((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
+	}
+	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
+		return null;
+	}
+	
+	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	
+	File visitExeLocation =
+		new File(PropertyLoader.getRequiredProperty(
+			PropertyLoader.visitServerExecutableDirProperty),PropertyLoader.visitServerExeName);
+	File visitSmoldynScriptLocation =
+		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
+	File visitSmoldynScriptTempDir =
+		new File(PropertyLoader.getRequiredProperty(
+				PropertyLoader.visitSmoldynScriptTempDirProperty));
+	File visitUserDataParentDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitServerUsersDirProperty));
+	File visitUserDataDir = new File(visitUserDataParentDir,user.getName());
+	File visitDataPathFragment = new File(visitUserDataDir,vcdID.getID()+"_");
+	System.out.println(visitExeLocation.getAbsolutePath());
+	System.out.println(visitSmoldynScriptLocation.getAbsolutePath());
+	System.out.println(visitSmoldynScriptTempDir.getAbsolutePath());
+	System.out.println(visitDataPathFragment.getAbsolutePath());
+	
+	
+//if(true){return new ParticleInfo(visitSmoldynScriptTempDir);}
+
+
+	ArrayList<String> args = new ArrayList<String>();
+	args.add(visitExeLocation.getAbsolutePath());//location of visit
+	args.add("-nowin");
+	args.add("-cli");
+	args.add("-s");
+	args.add(visitSmoldynScriptLocation.getAbsolutePath());//location of the script
+	args.add(visitDataPathFragment.getAbsolutePath()); //location of the SimID 
+	//  /share/apps/vcell/visit/smoldynWorkFiles   
+	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
+	args.add("3"); //dimension
+	args.add("0"); // 0 = show all the particles.  >0 == show n different particles, to be listed below
+	//args.add(""); //specific particle 1
+	//args.add(""); //specific particle 2 
+	//args.add(""); // ...
+	try{
+		long startTime = System.currentTimeMillis();
+		Executable executable = new Executable(args.toArray(new String[0]));
+		executable.start();
+		while (!executable.getStatus().isError() && !executable.getStatus().equals(ExecutableStatus.COMPLETE) && !executable.getStatus().equals(ExecutableStatus.STOPPED)){
+			Thread.sleep(1000);
+			if((System.currentTimeMillis()-startTime) > 300000/*5 minutes*/){
+				executable.stop();
+				throw new Exception("Particle data exporter timed out.");
+			}
+		}
+		if(executable.getStatus().isError()){
+			System.out.println(executable.getStderrString());
+			System.out.println(executable.getStdoutString());
+			throw new Exception("Particle data exporter had error.");
+		}
+	}finally{
+		//Remove temp files created by smoldyn script
+		String tempFilePrefix = vcDataID.getID()+"_p3d";
+		File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
+		for (int i = 0; i < tempFiles.length; i++) {
+			if(tempFiles[i].getName().startsWith(tempFilePrefix)){
+				tempFiles[i].delete();
+			}
+		}
+	}
+	return new ParticleInfo(visitSmoldynScriptTempDir);
 }
 
 private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport)
+		ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,ParticleInfo particleInfo)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	boolean bOverLay = false;
@@ -117,11 +274,20 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 	Dimension imageDimension = FormatSpecificSpecs.getImageDimension(meshMode,imageScale,dataServerImpl.getMesh(user, vcdID),exportSpecs.getGeometrySpecs().getAxis());
 	int originalWidth = (int)imageDimension.getWidth();
 	int originalHeight = (int)imageDimension.getHeight();
+	ExportRenderInfo exportRenderInfo = null;
+try{
 for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNumber++) {
-
-	PDEOffscreenRenderer offScreenRenderer = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
-	offScreenRenderer.setNormalAxis(exportSpecs.getGeometrySpecs().getAxis());
-	offScreenRenderer.setSlice(sliceNumber);
+	if(particleInfo == null){
+		PDEOffscreenRenderer offScreenRenderer = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
+		offScreenRenderer.setNormalAxis(exportSpecs.getGeometrySpecs().getAxis());
+		offScreenRenderer.setSlice(sliceNumber);
+		exportRenderInfo = new ExportRenderInfo(offScreenRenderer);
+	}else{
+		exportRenderInfo = new ExportRenderInfo(particleInfo, allTimes, vcdID);
+		Dimension particleImageSize = particleInfo.getImageFrameSize(vcdID);
+		originalWidth = particleImageSize.width;
+		originalHeight = particleImageSize.height;
+	}
 	
 	int varNameIndex0 = 0;
 	int timeIndex0 = beginTimeIndex;
@@ -138,7 +304,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", progress);
 		progress+= progressIncr;
 		MirrorInfo currentSliceTimeMirrorInfo =
-			renderAndMirrorSliceTimePixels(offScreenRenderer, varNames[varNameIndex0], allTimes[timeIndex0],
+			renderAndMirrorSliceTimePixels(exportRenderInfo, varNames[varNameIndex0], allTimes[timeIndex0],
 				displayPreferences[varNameIndex0],imageScale, membraneScale,
 				meshMode, volVarMembrOutlineThickness,originalWidth, originalHeight, mirroringType);
 		if(bOverLay){
@@ -189,6 +355,11 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		}
 	}
 	}
+}finally{
+	if(exportRenderInfo != null){
+		exportRenderInfo.cleanup();
+	}
+}
 	return exportOutputV.toArray(new ExportOutput[0]);
 }
 	private static class MirrorInfo {
@@ -210,12 +381,116 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 			return mirrorWidth;
 		}
 	}
+	
+	private static class ExportRenderInfo {
+		private PDEOffscreenRenderer pdeOffscreenRenderer;
+		private ParticleInfo particleInfo;
+		private double[] allTimes;
+		private String varName;
+		private double timePoint;
+		private DisplayPreferences displayPreferences;
+		private VCDataIdentifier vcDataID;
+		private File[] imageFrames;
+		
+		public ExportRenderInfo(PDEOffscreenRenderer pdeOffscreenRenderer){
+			this.pdeOffscreenRenderer = pdeOffscreenRenderer;
+		}
+		public ExportRenderInfo(ParticleInfo particleInfo,double[] allTimes,final VCDataIdentifier vcDataID){
+			this.particleInfo = particleInfo;
+			this.allTimes = allTimes;
+			this.vcDataID = vcDataID;
+			TreeSet<File> imageFramesTreeSet = new TreeSet<File>(new Comparator<File>() {
+				public int compare(File o1, File o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			
+			File[] imageFrameDirList = particleInfo.getImageFrameDir().listFiles();
+			for (int i = 0; i < imageFrameDirList.length; i++) {
+				if(imageFrameDirList[i].getName().startsWith(vcDataID.getID()) &&
+					imageFrameDirList[i].getName().endsWith(".jpeg")){
+					imageFramesTreeSet.add(imageFrameDirList[i]);
+				}
+			}
+			imageFrames = imageFramesTreeSet.toArray(new File[0]);
+		}
+		public void cleanup(){
+			if(imageFrames == null){
+				return;
+			}
+			//Remove files created by Visit
+			for (int i = 0; i < imageFrames.length; i++) {
+				imageFrames[i].delete();
+			}
+		}
+		public void setVarAndTimeAndDisplay(String varName,double timePoint, DisplayPreferences displayPreference) throws DataAccessException{
+			this.varName = varName;
+			this.timePoint = timePoint;
+			this.displayPreferences = displayPreferences;
+			if(pdeOffscreenRenderer != null){
+				pdeOffscreenRenderer.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
+			}
+		}
+		public int[] getPixelsRGB(int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness) throws Exception{
+			if(pdeOffscreenRenderer != null){
+				return pdeOffscreenRenderer.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
+			}else{
+				int timeIndex = -1;
+				for (int i = 0; i < allTimes.length; i++) {
+					if(allTimes[i] == timePoint){
+						timeIndex = i;
+						break;
+					}
+				}
+				if(timeIndex == -1){
+					throw new DataAccessException("TimePoint "+timePoint+" not found");
+				}
+//				System.out.println("Found index "+timeIndex+" for time "+timePoint);
+//				System.out.println("Reading "+imageFrames[timeIndex].getAbsolutePath());
+				
+				
+				BufferedImage bufferedImage = ImageIO.read(imageFrames[timeIndex]);
+				int[] pixels = new int[bufferedImage.getWidth()*bufferedImage.getHeight()];
+				int index = 0;
+				for (int y = 0; y < bufferedImage.getWidth(); y++) {
+					for (int x = 0; x < bufferedImage.getHeight(); x++) {
+						pixels[index] = bufferedImage.getRGB(x,y);
+						index++;
+					}
+				}
+				
+//				ImageIcon imgIcon = new ImageIcon(imageFrames[timeIndex].getAbsolutePath());//provides observer
+//				BufferedImage bufferedImage = new BufferedImage(imgIcon.getIconWidth(), imgIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+//				boolean bDrawStatus =
+//					bufferedImage.getGraphics().drawImage(imgIcon.getImage(), imgIcon.getIconWidth(), imgIcon.getIconHeight(), imgIcon.getImageObserver());
+//				System.out.println("bDrawStatus ImageIcon->BufferedImage="+bDrawStatus);
+//				try{
+//					String tempName = "temp_"+timeIndex+".jpg";
+//					File tempFile = new File(imageFrames[timeIndex].getParentFile(),tempName);
+//					ImageIO.write(bufferedImage, "jpg", tempFile);
+//					System.out.println("Wrote temp jpg "+tempFile.getAbsolutePath());
+//				}catch(Exception e){
+//					e.printStackTrace();
+//				}
+//				int[] pixels = ((DataBufferInt)(bufferedImage.getRaster().getDataBuffer())).getData();
+//				boolean bAllZero = true;
+//				for (int i = 0; i < pixels.length; i++) {
+//					if(pixels[i] != 0){
+//						bAllZero = false;
+//					}
+//				}
+//				System.out.println("Had all zeros="+bAllZero);
+				return pixels;
+			}
+		}
+	};
+	
 private static MirrorInfo renderAndMirrorSliceTimePixels(
-		PDEOffscreenRenderer offScreenRenderer,String varName,double timePoint,DisplayPreferences displayPreference,
+		ExportRenderInfo exportRenderInfo,String varName,double timePoint,DisplayPreferences displayPreference,
 		int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness,
 		int originalWidth,int originalHeight,int mirroringType) throws Exception{
-	offScreenRenderer.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
-	int[] pixels = offScreenRenderer.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
+	exportRenderInfo.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
+	int[] pixels = exportRenderInfo.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
 	pixels = ExportUtils.extendMirrorPixels(pixels,originalWidth,originalHeight, mirroringType);
 	
 	Dimension mirrorDim = FormatSpecificSpecs.getMirrorDimension(mirroringType, originalWidth, originalHeight);
