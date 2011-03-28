@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
@@ -17,6 +18,10 @@ public class VCellErrorMessages {
 //			exception.printStackTrace(System.out);
 //		}
 //	}
+	
+	public static String getSmoldynUnexpectedSurface(CompartmentSubDomain compart0, CompartmentSubDomain compart1) {
+		return "Found an unexpected surface between compartment '" + compart0.getName() + "' and compartment '" + compart1.getName() + "'. Finer mesh is recommended";
+	}
 	
 	public static String getSmoldynMaxMolReachedErrorMessage(long estimateMaxMol, int maxMolLimit) {
 		return "Estimated total number of molecules ("+estimateMaxMol+") exceeded limit(" + maxMolLimit + ")";
