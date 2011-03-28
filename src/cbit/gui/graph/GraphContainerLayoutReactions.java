@@ -11,10 +11,15 @@ import cbit.vcell.graph.ContainerContainerShape;
 import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.ReactionStepShape;
 import cbit.vcell.graph.SpeciesContextShape;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Structure;
 
 public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	
-	public static final Dimension REACTION_CONTAINER_MIN_SIZE = new Dimension(200, 250);
+	public static final int MEMBRANE_MIN_WIDTH = 100;
+	public static final int FEATURE_MIN_WIDTH = 200;
+	public static final int TOTAL_MIN_WIDTH = 500;
+	public static final int MIN_HEIGHT = 250;
 	public static final int TOP_LABEL_HEIGHT = 20;
 	public static final int HEIGHT_PADDING = 14;
 	public static final int WIDTH_PADDING = 14;
@@ -49,11 +54,24 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 			}
 			preferredSize.width = preferredSize.width + WIDTH_PADDING;
 			preferredSize.height = preferredSize.height + HEIGHT_PADDING;
-			if(preferredSize.width < REACTION_CONTAINER_MIN_SIZE.width) {
-				preferredSize.width = REACTION_CONTAINER_MIN_SIZE.width;
+			Structure structure = shape.getStructure();
+			int minWidthSum = 0;
+			for(Structure structure2 : shape.getStructureSuite().getStructures()) {
+				if(structure2 instanceof Feature) { minWidthSum += FEATURE_MIN_WIDTH; }
+				else { minWidthSum += MEMBRANE_MIN_WIDTH; }
 			}
-			if(preferredSize.height < REACTION_CONTAINER_MIN_SIZE.height) {
-				preferredSize.height = REACTION_CONTAINER_MIN_SIZE.height;
+			int compartmentMinWidth = 0;
+			if(structure instanceof Feature) { compartmentMinWidth = FEATURE_MIN_WIDTH; }
+			else { compartmentMinWidth = MEMBRANE_MIN_WIDTH; }
+			int apportionedWidth = compartmentMinWidth*TOTAL_MIN_WIDTH / minWidthSum;			
+			if(preferredSize.width < compartmentMinWidth) {
+				preferredSize.width = compartmentMinWidth;
+			}
+			if(preferredSize.width < apportionedWidth) {
+				preferredSize.width = apportionedWidth;
+			}
+			if(preferredSize.height < MIN_HEIGHT) {
+				preferredSize.height = MIN_HEIGHT;
 			}
 			return preferredSize;
 		} finally {
@@ -164,7 +182,9 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 			if (i==0){ // add extra width to first element.
 				extraWidth += remainingWidth % shape.getStructureContainers().size();
 			}
-			resize(shape.getStructureContainers().get(i), new Dimension(widths[i] + extraWidth, 
+			ReactionContainerShape reactionContainerShape = shape.getStructureContainers().get(i);
+			Dimension reactionContainerPreferedSize = getPreferedSize(reactionContainerShape, g);
+			resize(reactionContainerShape, new Dimension(reactionContainerPreferedSize.width, 
 			shape.getSpaceManager().getSize().height), g);
 		}
 		refreshLayoutChildren(shape);

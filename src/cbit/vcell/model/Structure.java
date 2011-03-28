@@ -3,10 +3,10 @@ package cbit.vcell.model;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.parser.ExpressionBindingException;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.beans.*;
 import java.io.Serializable;
 import java.util.*;
@@ -21,6 +21,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
+@SuppressWarnings("serial")
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
 		Identifiable
 {

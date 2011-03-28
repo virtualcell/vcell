@@ -144,7 +144,6 @@ public class ReactionCartoon extends ModelCartoon {
 				new ArrayList<ReactionContainerShape>();
 			List<Structure> structureList = new ArrayList<Structure>(getStructureSuite().getStructures());
 			Collections.sort(structureList, new Comparator<Structure>() {
-
 				public int compare(Structure o1, Structure o2) {
 					 return getStructureLevel(o1).compareTo(getStructureLevel(o2));
 				}
@@ -156,12 +155,14 @@ public class ReactionCartoon extends ModelCartoon {
 					ReactionContainerShape membraneShape = 
 						(ReactionContainerShape) getShapeFromModelObject(membrane);
 					if (membraneShape == null) {
-						membraneShape = new ReactionContainerShape(membrane, this);
+						membraneShape = new ReactionContainerShape(membrane, structureSuite, this);
 						addShape(membraneShape);
 						membrane.removePropertyChangeListener(this);
 						membrane.addPropertyChangeListener(this);
 						membrane.getMembraneVoltage().removePropertyChangeListener(this);
 						membrane.getMembraneVoltage().addPropertyChangeListener(this);
+					} else {
+						membraneShape.setStructureSuite(structureSuite);
 					}
 					membraneShape.refreshLabel();
 					membraneShape.setDirty(false);
@@ -171,10 +172,12 @@ public class ReactionCartoon extends ModelCartoon {
 					ReactionContainerShape featureShape = 
 						(ReactionContainerShape) getShapeFromModelObject(feature);
 					if (featureShape == null) {
-						featureShape = new ReactionContainerShape(feature, this);
+						featureShape = new ReactionContainerShape(feature, structureSuite, this);
 						addShape(featureShape);
 						feature.removePropertyChangeListener(this);
 						feature.addPropertyChangeListener(this);
+					} else {
+						featureShape.setStructureSuite(structureSuite);
 					}
 					featureShape.refreshLabel();
 					featureShape.setDirty(false);
