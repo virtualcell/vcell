@@ -159,6 +159,12 @@ DrawPlots()
 pc=PseudocolorAttributes()
 pc.pointType=4
 pc.pointSizePixels = 8
+if (includeVarNumber==0):
+     pc.max=(len(particleTypeList))
+     else:
+          pc.max=(len(particleIncludeList))
+          pc.maxFlag=1
+          
 SetPlotOptions(pc)
 
 s=SaveWindowAttributes()
