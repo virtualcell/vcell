@@ -18,10 +18,6 @@ public class BioPaxObjectShape extends BioPaxShape {
 	private Color darkerBackground = null;
 	private Area icon = null;
 
-	private String smallLabel = null;
-	protected Dimension smallLabelSize = new Dimension();
-	protected Point smallLabelPos = new Point(0,0);
-
 	public BioPaxObjectShape(BioPaxObject bioPaxObject, GraphModel graphModel) {
 		super(bioPaxObject, graphModel);
 		defaultBG = Color.pink;

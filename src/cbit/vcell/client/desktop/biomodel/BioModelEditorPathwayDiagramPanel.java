@@ -48,9 +48,8 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
-import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
-import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.ActionBuilder;
 import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
@@ -63,6 +62,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
@@ -81,9 +81,8 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel
 implements PathwayEditor, ActionBuilder.Generator {
 	
 	public static enum ActionID implements ActionBuilder.ID {
-		select, zoomIn, zoomOut, randomLayout, edgeTugLayout, werewolfLayout, shootAndCutLayout, 
-		circularLayout, annealedLayout, levelledLayout, relaxedLayout, glgLayout, reactionsOnlyShown, 
-		reactionNetworkShown, componentsShown;
+		select, zoomIn, zoomOut, randomLayout, circularLayout, annealedLayout, levelledLayout, 
+		relaxedLayout, glgLayout, reactionsOnlyShown, reactionNetworkShown, componentsShown;
 	}
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
@@ -380,22 +379,18 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 	
 	protected static Map<ActionBuilder.ID, ActionBuilder> actionBuilderMap = createActionBuilderMap(
-		new ActionBuilder(ActionID.select, "Select", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
-		new ActionBuilder(ActionID.zoomIn, "Zoom In", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
-		new ActionBuilder(ActionID.zoomOut, "Zoom Out", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
-		new ActionBuilder(ActionID.randomLayout, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.edgeTugLayout, "", "Edge Tug Layout", "Perform Edge Tug Graph Layout", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.shootAndCutLayout, "", "Shoot And Cut Layout", "Perform Shoot And Cut Graph Layout", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.werewolfLayout, "", "Werewolf Layout", "Perform Werewolf Graph Layout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.select, "", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
+		new ActionBuilder(ActionID.zoomIn, "", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
+		new ActionBuilder(ActionID.zoomOut, "", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
 		new ActionBuilder(ActionID.randomLayout, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
 		new ActionBuilder(ActionID.circularLayout, "", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
 		new ActionBuilder(ActionID.annealedLayout, "", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
 		new ActionBuilder(ActionID.levelledLayout, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
 		new ActionBuilder(ActionID.relaxedLayout, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
 		new ActionBuilder(ActionID.glgLayout, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.reactionsOnlyShown, "Reactions Only", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
-		new ActionBuilder(ActionID.reactionNetworkShown, "Reaction Network", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
-		new ActionBuilder(ActionID.componentsShown, "Components", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
+		new ActionBuilder(ActionID.reactionsOnlyShown, "", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
+		new ActionBuilder(ActionID.reactionNetworkShown, "", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
+		new ActionBuilder(ActionID.componentsShown, "", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
 		
 	private JPopupMenu getPhysiologyLinksPopupMenu() {
 		if (physiologyLinkPopupMenu == null) {
@@ -632,17 +627,35 @@ implements PathwayEditor, ActionBuilder.Generator {
 		// TODO Auto-generated method stub
 		if(id instanceof ActionID) {
 			switch((ActionID)id) {
+			case zoomIn: {
+				return new AbstractAction() {
+					public void actionPerformed(ActionEvent arg0) {
+						try {
+							getCartoonTool().getGraphModel()
+							.getResizeManager().zoomIn();
+						} catch (ZoomRangeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+			}
+			case zoomOut: {
+				return new AbstractAction() {
+					public void actionPerformed(ActionEvent arg0) {
+						try {
+							getCartoonTool().getGraphModel()
+							.getResizeManager().zoomOut();
+						} catch (ZoomRangeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+			}
 			case randomLayout: {
 				return new LayoutAction(RandomLayouter.LAYOUT_NAME);
 			}
-			case edgeTugLayout: {
-				return new LayoutAction(EdgeTugLayouter.LAYOUT_NAME);
-			}
-			case shootAndCutLayout: {
-				return new LayoutAction(ShootAndCutLayouter.LAYOUT_NAME);
-			}
 			case circularLayout: {
-				return new LayoutAction(GraphLayoutManager.OldLayouts.CIRCULARIZER);
+				return new LayoutAction(SimpleElipticalLayouter.LAYOUT_NAME);
 			}
 			case annealedLayout: {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.ANNEALER);

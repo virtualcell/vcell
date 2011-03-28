@@ -83,22 +83,8 @@ public class ContainerContainerShape extends ContainerShape {
 		g.drawRect(absPosX,absPosY, spaceManager.getSize().width, spaceManager.getSize().height);
 	}
 
-	@Override
-	public void randomize() {
-		for (int i = 0; i < structureContainers.size(); i++) {
-			structureContainers.get(i).randomize();
-		}
-	}
-	
 	public List<ReactionContainerShape> getStructureContainers() {
 		return structureContainers;
-	}
-
-	@Override
-	public void setRandomLayout(boolean isRandom) {
-		for(ReactionContainerShape structureContainer : structureContainers) {
-			structureContainer.setRandomLayout(isRandom);
-		}
 	}
 
 	@Override

@@ -30,9 +30,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
-import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
-import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.CartoonTool.Mode;
@@ -63,8 +62,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton circleLayoutButton = null;
 	private JButton levellerLayoutButton = null;
 	private JButton randomLayoutButton = null;
-	private JButton edgeTugLayoutButton = null;
-	private JButton shootAndCutLayoutButton = null;
 	private JButton relaxerLayoutButton = null;
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
@@ -99,14 +96,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getReactionCartoonTool().setModeString(event.getActionCommand());
 			else if (source == getRandomLayoutButton())
 				getReactionCartoonTool().layout(RandomLayouter.LAYOUT_NAME);
-			else if (source == getEdgeTugLayoutButton())
-				getReactionCartoonTool().layout(EdgeTugLayouter.LAYOUT_NAME);
-			else if (source == getShootAndCutLayoutButton())
-				getReactionCartoonTool().layout(ShootAndCutLayouter.LAYOUT_NAME);
 			else if (source == getAnnealLayoutButton())
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.ANNEALER);
 			else if (source == getCircleLayoutButton())
-				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.CIRCULARIZER);
+				getReactionCartoonTool().layout(SimpleElipticalLayouter.LAYOUT_NAME);
 			else if (source == getRelaxerLayoutButton())
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
@@ -248,7 +241,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getRandomLayoutButton(), getRandomLayoutButton().getName());
 //				toolBar.add(getEdgeTugLayoutButton(), getEdgeTugLayoutButton().getName());
-				toolBar.add(getShootAndCutLayoutButton(), getShootAndCutLayoutButton().getName());
 				toolBar.add(getCircleLayoutButton(), getCircleLayoutButton().getName());
 				toolBar.add(getAnnealLayoutButton(), getAnnealLayoutButton().getName());
 				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
@@ -347,36 +339,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			}
 		}
 		return randomLayoutButton;
-	}
-
-	private JButton getEdgeTugLayoutButton() {
-		if (edgeTugLayoutButton == null) {
-			try {
-				edgeTugLayoutButton = createToolBarButton();
-				edgeTugLayoutButton.setName("EdgeTugLayoutButton");
-				edgeTugLayoutButton.setToolTipText("EdgeTug Layout");
-				edgeTugLayoutButton.setIcon(randomLayoutIcon);
-				edgeTugLayoutButton.setActionCommand("Layout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return edgeTugLayoutButton;
-	}
-
-	private JButton getShootAndCutLayoutButton() {
-		if (shootAndCutLayoutButton == null) {
-			try {
-				shootAndCutLayoutButton = createToolBarButton();
-				shootAndCutLayoutButton.setName("ShootAndCutLayoutButton");
-				shootAndCutLayoutButton.setToolTipText("Shoot And Cut Layout");
-				shootAndCutLayoutButton.setIcon(randomLayoutIcon);
-				shootAndCutLayoutButton.setActionCommand(ShootAndCutLayouter.LAYOUT_NAME);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return shootAndCutLayoutButton;
 	}
 
 	public ReactionCartoon getReactionCartoon() { return reactionCartoon; }
@@ -528,8 +490,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			getReactionCartoonTool().setMode(Mode.SELECT);
 		}
 		getRandomLayoutButton().addActionListener(this);
-		getEdgeTugLayoutButton().addActionListener(this);
-		getShootAndCutLayoutButton().addActionListener(this);
 		getAnnealLayoutButton().addActionListener(this);
 		getCircleLayoutButton().addActionListener(this);
 		getRelaxerLayoutButton().addActionListener(this);

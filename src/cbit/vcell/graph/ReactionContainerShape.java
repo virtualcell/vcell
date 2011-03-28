@@ -18,7 +18,6 @@ public class ReactionContainerShape extends ContainerShape {
 	public ReactionContainerShape(Structure structure, GraphModel graphModel) {
 		super(graphModel);
 		this.structure = structure;
-		setRandomLayout(false);
 		bNoFill = true;
 		defaultFGselect = Color.red;
 		defaultBG = Color.lightGray;

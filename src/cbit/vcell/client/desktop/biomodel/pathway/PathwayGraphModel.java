@@ -14,6 +14,7 @@ import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
 
+import cbit.gui.graph.GraphContainerLayoutPathways;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
@@ -28,6 +29,10 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 	private PathwayModel pathwayModel;
 	protected Random random = new Random();
 
+	public PathwayGraphModel() {
+		this.containerLayout = new GraphContainerLayoutPathways();
+	}
+	
 	public PathwayModel getPathwayModel() {
 		return pathwayModel;
 	}

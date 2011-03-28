@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -19,13 +20,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 @SuppressWarnings("serial")
 public class GraphPane extends JPanel implements GraphListener, MouseListener, Scrollable {
-	
+
 	private GraphModel graphModel = null;
 	protected boolean needsLayout = true;
 	
@@ -33,6 +35,8 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		super();
 		initialize();
 		addMouseListener(this);
+//		setToolTipText("Graph Panel");
+		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 
 	public void clear(java.awt.Graphics g) {
@@ -329,6 +333,23 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		}catch (Exception e){
 			handleException(e);
 		}			
+	}
+	
+	public String getToolTipText() {
+		return "Graph";
+	}
+
+	public String getToolTipText(MouseEvent event) {
+		if(graphModel == null) {
+			return getToolTipText();
+		}
+		Point unzoomedMousePos = 
+			graphModel.getResizeManager().unzoom(event.getPoint());
+		Shape pickedShape = graphModel.pickWorld(unzoomedMousePos);
+		if(pickedShape == null) {
+			return getToolTipText();
+		}
+		return pickedShape.getLabel();
 	}
 
 }

@@ -1,6 +1,5 @@
 package cbit.gui.graph;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,16 +7,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
-
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 
 import com.genlogic.GraphLayout.GlgCube;
-import com.genlogic.GraphLayout.GlgGraphEdge;
 import com.genlogic.GraphLayout.GlgGraphLayout;
 import com.genlogic.GraphLayout.GlgGraphNode;
 import com.genlogic.GraphLayout.GlgPoint;
@@ -88,6 +85,8 @@ public class GraphLayoutManager {
 			layouter = new ShootAndCutLayouter();
 		} else if(StretchToBoundaryLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new StretchToBoundaryLayouter();
+		} else if(SimpleElipticalLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new SimpleElipticalLayouter();
 		}
 		if(layouter != null) {
 			layouter.layout(mapper.getContainedGraph());
@@ -176,22 +175,23 @@ public class GraphLayoutManager {
 		graph.SetUntangle(true); // true
 		// specify dimensions for the graph! 400x400
 		// System.out.println("H:"+getGraphPane().getHeight()+" W"+getGraphPane().getWidth());
+		GraphModel graphModel = graphView.getGraphModel();
+		Rectangle boundary = 
+			graphModel.getContainerLayout().getBoundaryForAutomaticLayout(graphModel.getTopShape());
 		GlgCube graphDim = new GlgCube();
-		GlgPoint newPoint = new GlgPoint(0, 0, 0);
-		graphDim.p1 = newPoint;
-		// newPoint = new com.genlogic.GlgPoint(getGraphPane().getWidth()-20,
-		// getGraphPane().getHeight()-10, 0);//400,400,0
-		newPoint = new GlgPoint(1600, 1600, 0);
-		graphDim.p2 = newPoint;
+		graphDim.p1 = new GlgPoint(boundary.getMinX(), boundary.getMinY(), 0);
+		graphDim.p2 = new GlgPoint(boundary.getMaxX(), boundary.getMaxY(), 0);
 		graph.dimensions = graphDim;
 		// Add nodes (Vertex) to the graph
-		Collection<Shape> shapes = graphView.getGraphModel().getShapes();
 		GlgGraphNode graphNode;
 		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
+		Collection<Shape> shapes = graphModel.getShapes();
 		for(Shape shape : shapes) {
 			// add to the graph
 			if (ShapeUtil.isMovable(shape)) {
 				graphNode = graph.AddNode(null, 0, null);
+				graph.SetNodePosition(graphNode, ShapeUtil.getAbsCenterX(shape), 
+						ShapeUtil.getAbsCenterY(shape), 0);
 			} else {
 				continue;
 			}
@@ -199,8 +199,7 @@ public class GraphLayoutManager {
 			nodeMap.put(shape, graphNode);
 		}
 		// Add edges
-		shapes = graphView.getGraphModel().getShapes();
-		for(Shape shape : graphView.getGraphModel().getShapes()) {
+		for(Shape shape : shapes) {
 			if (shape instanceof EdgeShape) {
 				EdgeShape edgeShape = (EdgeShape) shape;
 				Shape startShape = edgeShape.getStartShape();
@@ -221,38 +220,13 @@ public class GraphLayoutManager {
 			;
 		}
 		graph.Update();
-		// resize and scale the graph
-		// com.genlogic.GlgObject edgeArray = graph.edge_array;
-		@SuppressWarnings("unchecked")
-		Vector<GlgGraphEdge> edgeVector = graph.edge_array;
-		double distance, minDistance = Double.MAX_VALUE;
-		for (int i = 0; i < edgeVector.size(); i++) {
-			GlgGraphEdge edge = edgeVector.elementAt(i);
-			distance = java.awt.geom.Point2D.distance(
-					edge.start_node.display_position.x,
-					edge.start_node.display_position.y,
-					edge.end_node.display_position.x,
-					edge.end_node.display_position.y);
-			minDistance = distance < minDistance ? distance : minDistance;
-		}
-		double ratio = 1.0;
-		if (minDistance > 40) {
-			ratio = 40.0 / minDistance;
-		}
 		// Update positions
-		shapes = graphView.getGraphModel().getShapes();
-		Point place;
 		com.genlogic.GraphLayout.GlgPoint glgPoint;
-		for(Shape shape : graphView.getGraphModel().getShapes()) {
-			// test if it is contained in the nodeMap
+		for(Shape shape : graphModel.getShapes()) {
 			graphNode = nodeMap.get(shape);
 			if (graphNode != null) {
 				glgPoint = graph.GetNodePosition(graphNode);
-				// glgPoint = graphNode.display_position;
-				place = new Point();
-				place.setLocation(glgPoint.x * ratio + 30, glgPoint.y * ratio
-						+ 30);
-				shape.getSpaceManager().setRelPos(place);
+				shape.setAbsPos((int) glgPoint.x, (int) glgPoint.y);
 			}
 		}
 		layoutContainedGraph(StretchToBoundaryLayouter.LAYOUT_NAME);

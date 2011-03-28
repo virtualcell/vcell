@@ -11,7 +11,7 @@ public interface ContainedGraphLayouter {
 	public static class DefaultLayouters {
 		public static final List<String> NAMES = 
 			Arrays.asList(RandomLayouter.LAYOUT_NAME, EdgeTugLayouter.LAYOUT_NAME, 
-					ShootAndCutLayouter.LAYOUT_NAME);		
+					ShootAndCutLayouter.LAYOUT_NAME, SimpleElipticalLayouter.LAYOUT_NAME);		
 	}
 	
 	public String getLayoutName();

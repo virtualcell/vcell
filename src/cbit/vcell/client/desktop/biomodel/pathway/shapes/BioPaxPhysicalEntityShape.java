@@ -19,10 +19,6 @@ public class BioPaxPhysicalEntityShape extends BioPaxShape {
 	private Color darkerBackground = null;
 	private Area icon = null;
 
-	private String smallLabel = null;
-	protected Dimension smallLabelSize = new Dimension();
-	protected Point smallLabelPos = new Point(0,0);
-
 	public BioPaxPhysicalEntityShape(PhysicalEntity physicalEntity, GraphModel graphModel) {
 		super(physicalEntity, graphModel);
 		defaultBG = Color.pink;

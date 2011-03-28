@@ -106,5 +106,12 @@ public class ShapeUtil {
 		return new VCEdgeBundle(name, edges);
 
 	}
+	
+	public static int getAbsCenterX(Shape shape) { return shape.getAbsX() + shape.getWidth() / 2; }
+	public static int getAbsCenterY(Shape shape) { return shape.getAbsY() + shape.getHeight() / 2; }
+	
+	public static void setAbsCenter(Shape shape, int x, int y) { 
+		shape.setAbsPos(x - shape.getWidth() / 2, y - shape.getHeight());
+	}
 
 }

@@ -9,7 +9,7 @@ import java.util.Random;
  */
 
 public abstract class ContainerShape extends RectangleShape {
-	protected boolean bRandomize = false;
+
 	private Random rand = new Random();
 
 	public ContainerShape(GraphModel graphModel) {
@@ -38,21 +38,9 @@ public abstract class ContainerShape extends RectangleShape {
 		return randPos;
 	}
 
-	protected boolean isRandom() {
-		return bRandomize;
-	}
-
-	public void randomize() {
-		return;
-	}
-
 	@Override
 	public void refreshLabel() {
-		setLabel(null);
-	}
-
-	public void setRandomLayout(boolean isRandom) {
-		this.bRandomize = isRandom;
+		setLabel("Graph");
 	}
 
 }
