@@ -6,7 +6,6 @@ package cbit.vcell.geometry.gui;
 ©*/
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -625,7 +624,7 @@ private javax.swing.JPanel getButtonPanel() {
 										getGeometry().precomputeAll();
 									}
 								};
-								ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
+								ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, true, false, false, null, true);
 							}
 							break;
 						} catch (Exception e1) {

@@ -99,9 +99,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private static class TrianglePanel {
 		String name;
 		Triangle triangle;		
-		private TrianglePanel(String name, Triangle triangle) {
+		private TrianglePanel(SurfaceClass surfaceClass, int triIndex, Triangle triangle) {
 			super();
-			this.name = name;
+			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + surfaceClass.getName() + "_" + triIndex;
 			this.triangle = triangle;
 		}
 	}
@@ -124,13 +124,13 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
-	private static final int Default_Display_Size = 5;
 	enum SmoldynKeyword {
 		species,
 		difc,
 		
 		graphics,
 		opengl,
+		opengl_good,
 		color,
 		display_size,
 		grid_color,
@@ -184,6 +184,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 //		the possible molecular states
 		up,
 		down,
+		solution,
 //		front,
 //		back,
 		fsoln,
@@ -325,11 +326,11 @@ private void writeGraphicsOpenGL() throws MathException {
 	if (!bGraphicOpenGL) {
 		return;
 	}
-	printWriter.println("# runtime command");	
+	printWriter.println("# graphics command");	
 	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
-	Color bg = new Color(0xffffff);
+	Color bg = new Color(0x0);
 	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
-	printWriter.println(SmoldynKeyword.frame_color + " 0.8 0.8 0.9");
+	printWriter.println(SmoldynKeyword.frame_color + " 0.8 0.9 0.0");
 //	printWriter.println(SmoldynKeyword.grid_thickness + " 1");
 //	printWriter.println(SmoldynKeyword.grid_color + " 0 0 0");
 	printWriter.println(SmoldynKeyword.background_color + " " + bg.getRed()/255.0 + " " + bg.getGreen()/255.0 + " " + bg.getBlue()/255.0);
@@ -337,8 +338,8 @@ private void writeGraphicsOpenGL() throws MathException {
 	for (int i = 0; i < particleVariableList.size(); i ++) {
 		Color c = colors[i];
 		String variableName = getVariableName(particleVariableList.get(i),null);
-		printWriter.println(SmoldynKeyword.color + " " + variableName + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
-		printWriter.println(SmoldynKeyword.display_size + " " + variableName + " " + Default_Display_Size);
+		printWriter.println(SmoldynKeyword.color + " " + variableName + "(" + SmoldynKeyword.all + ") " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
+		printWriter.println(SmoldynKeyword.display_size + " " + variableName  + "(" + SmoldynKeyword.all + ") 3");
 	}
 	printWriter.println();
 }
@@ -848,21 +849,30 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	printWriter.println(SmoldynKeyword.dim + " " + dimension);
 	if (bHasNoSurface) {
 		printWriter.println(SmoldynKeyword.max_compartment + " " + subVolumes.length);
-		printWriter.println(SmoldynKeyword.max_surface + " 0 ");
 	} else {
 		printWriter.println(SmoldynKeyword.max_compartment + " " + (subVolumes.length + 1));
 		printWriter.println(SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
 	}
 	printWriter.println();
 
-	// write boundaries and wall surfaces
+	// write boundaries and wall surfaces	
 	writeWallSurfaces();
 	
+	// membrane subdomain inside and outside determine the surface normals for Smoldyn
+	// VCell surfaces normals already point to exterior geometric region (right hand rule with quads).
+	// If the vcell surface normals point to inside compartment subdomain, we flip the vcell surface normals when writing to smoldyn panels. 
+	// bsoln maps to inside compartment subdomain. 
+	// fsoln maps to outside compartment subdomain.
+	//
+	// for 2D ... smoldyn normal convension is (V1-V0).cross.([0 0 1]) points to the outside compartment subdomain.
+	// for 3D ... smoldyn normal convension is triangle right-hand-rule normal points to the outside compartment subdomain.
 	if (!bHasNoSurface) {
 		membraneSubdomainTriangleMap = new HashMap<MembraneSubDomain, ArrayList<TrianglePanel> >();
 		// write surfaces
 		printWriter.println("# surfaces");
+		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
+			int triangleCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
 			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
@@ -870,89 +880,70 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 				VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
 				VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[1];
-				int volRegionID0 = volRegion0.getRegionID();
-				int volRegionID1 = volRegion1.getRegionID();
-				SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
+				SubVolume subVolume0 = volRegion0.getSubVolume();
+				SubVolume subVolume1 = volRegion1.getSubVolume();
+				CompartmentSubDomain compart0 = mathDesc.getCompartmentSubDomain(subVolume0.getName());
+				CompartmentSubDomain compart1 = mathDesc.getCompartmentSubDomain(subVolume1.getName());
+				MembraneSubDomain membraneSubDomain = mathDesc.getMembraneSubDomain(compart0, compart1);
+				int exteriorRegionID = volRegion0.getRegionID();
+				int interiorRegionID = volRegion1.getRegionID();
+				if (membraneSubDomain.getInsideCompartment() == compart0) {
+					exteriorRegionID = volRegion1.getRegionID();
+					interiorRegionID = volRegion0.getRegionID();					
+				}
 				for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
 					Surface surface = surfaceCollection.getSurfaces(j);
-					if ((surface.getInteriorRegionIndex() == volRegionID0 && surface.getExteriorRegionIndex() == volRegionID1) || 
-						(surface.getInteriorRegionIndex() == volRegionID1 && surface.getExteriorRegionIndex() == volRegionID0)) { // my triangles
+					if ((surface.getInteriorRegionIndex() == exteriorRegionID && surface.getExteriorRegionIndex() == interiorRegionID) || 
+						(surface.getInteriorRegionIndex() == interiorRegionID && surface.getExteriorRegionIndex() == exteriorRegionID)) { // my triangles
 						for(int k = 0; k < surface.getPolygonCount(); k++) {
 							Polygon polygon = surface.getPolygons(k);
 							Node[] nodes = polygon.getNodes();
-							if (surface.getExteriorRegionIndex() == volRegionID0) { // interior	
-								if (dimension == 2){
-									// ignore z
-									Vect3d unitNormal = new Vect3d();
-									polygon.getUnitNormal(unitNormal);
-									unitNormal.set(unitNormal.getX(), unitNormal.getY(), 0);
-									Vect3d v0 = new Vect3d(nodes[0].getX(),nodes[0].getY(),0);
-									Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),0);
-									Vect3d v2 = new Vect3d(nodes[2].getX(),nodes[2].getY(),0);
-									Vect3d v01 = Vect3d.sub(v1, v0);
-									Vect3d unit01n = v01.cross(unitNormal);
-									unit01n.unit();
-									if (Math.abs(unit01n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
-										// first two indices are ok
-										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
-									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
-										// first two are opposite
-										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[1], nodes[2], nodes[0])));
-									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
-										// same plane ... do we use 0 and 2 or 2 and 0?
-										Vect3d v02 = Vect3d.sub(v2, v0);
-										Vect3d unit02n = v02.cross(unitNormal);
-										unit02n.unit();
-										if (Math.abs(unit02n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
-											// first two indices are ok
-											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[1])));
-										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
-											// first two are opposite
-											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[2], nodes[0], nodes[1])));
-										}else{
-											throw new RuntimeException("failed to generate surface");
-										}
+							if (dimension == 2){
+								// ignore z
+								Vect3d unitNormal = new Vect3d();
+								polygon.getUnitNormal(unitNormal);
+								unitNormal.set(unitNormal.getX(), unitNormal.getY(), 0);
+								int point0 = 0;
+								Vect3d v0 = new Vect3d(nodes[point0].getX(),nodes[point0].getY(),0);
+								int point1 = 1;
+								Vect3d v1 = null;
+								for (point1 = 1; point1 < nodes.length; point1 ++) {
+									if (v0.getX() != nodes[point1].getX() || v0.getY() != nodes[point1].getY()) {
+										v1 = new Vect3d(nodes[point1].getX(),nodes[point1].getY(),0);
+										break;
 									}
-								}else{
-									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
-									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[3])));
+								}								
+								if (v1 == null) {
+									throw new RuntimeException("failed to generate surface");
 								}
-							} else {
-								if (dimension == 2){
-									// ignore z
-									Vect3d unitNormal = new Vect3d();
-									polygon.getUnitNormal(unitNormal);
-									unitNormal.set(unitNormal.getX(), unitNormal.getY(), 0);
-									Vect3d v0 = new Vect3d(nodes[2].getX(),nodes[2].getY(),0);
-									Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),0);
-									Vect3d v2 = new Vect3d(nodes[0].getX(),nodes[0].getY(),0);
-									Vect3d v01 = Vect3d.sub(v1, v0);
-									Vect3d unit01n = v01.cross(unitNormal);
-									unit01n.unit();
-									if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
-										// first two indices are ok
-										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
-									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
-										// first two are opposite
-										triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[1], nodes[2], nodes[0])));
-									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
-										// same plane ... do we use 0 and 2 or 2 and 0?
-										Vect3d v02 = Vect3d.sub(v2, v0);
-										Vect3d unit02n = v02.cross(unitNormal);
-										unit02n.unit();
-										if (Math.abs(unit02n.getZ()-1.0) < 1e-6){
-											// first two indices are ok
-											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[1])));
-										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
-											// first two are opposite
-											triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[2], nodes[0], nodes[1])));
-										}else{
-											throw new RuntimeException("failed to generate surface");
-										}
+								Vect3d v01 = Vect3d.sub(v1, v0);								
+								Vect3d unit01n = v01.cross(unitNormal);
+								unit01n.unit();
+								if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
+									// v0 to v1 opposes vcell surface normal. it's already flipped.
+									if (surface.getInteriorRegionIndex() == interiorRegionID) {
+										// we have to flipped it back
+										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+									} else {
+										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
 									}
+								}else if (Math.abs(unit01n.getZ()+1.0) < 1e-6){
+									// v0 to v1 is in direction of vcell surface normal.
+									if (surface.getInteriorRegionIndex() == interiorRegionID) {
+										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
+									} else {
+										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+									}
+								}else {
+									throw new RuntimeException("failed to generate surface");
+								}
+							} else if (dimension == 3) {
+								if (surface.getInteriorRegionIndex() == interiorRegionID) { // interior	
+									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[0], nodes[1], nodes[2])));
+									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[0], nodes[2], nodes[3])));
 								}else{
-									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[1], nodes[2])));
-									triList.add(new TrianglePanel(PANEL_TRIANGLE_NAME_PREFIX + triList.size(), new Triangle(nodes[0], nodes[2], nodes[3])));
+									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[2], nodes[1], nodes[0])));
+									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[3], nodes[2], nodes[0])));
 								}
 							}
 						}
@@ -966,7 +957,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
 			
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.solution + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
 			if (DEBUG) tmppw.println("verts" + sci + "=[");
@@ -981,13 +974,8 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
 					if (DEBUG) tmppw.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
 	
-					if (triangle.getNodes(0).getX() == triangle.getNodes(1).getX() && triangle.getNodes(0).getY() == triangle.getNodes(1).getY()) {
-						printWriter.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
-						if (DEBUG) tmppw.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
-					} else {
-						printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
-						if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
-					}
+					printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
+					if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
 					break;
 				case 3:
 					for (Node node : triangle.getNodes()) {
@@ -1351,8 +1339,10 @@ private void writeWallSurfaces() throws SolverException {
 		printWriter.println("# bounding wall surface");
 		// X walls
 		printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[0]);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[1]);
+		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 		// yz walls
 		switch (dimension) {
@@ -1375,8 +1365,10 @@ private void writeWallSurfaces() throws SolverException {
 		if (dimension > 1) {
 			// Y walls
 			printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[2]);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[3]);
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 			// xz walls
 			switch (dimension) {
@@ -1395,8 +1387,10 @@ private void writeWallSurfaces() throws SolverException {
 			if (dimension > 2) {
 				// Z walls
 				printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[4]);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[5]);
+				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both  + " 0.8 0.9 0 0.1");
 				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 				// xy walls
 				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
