@@ -2,6 +2,7 @@ package cbit.gui.graph;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -172,10 +173,18 @@ public class GraphResizeManager {
 		return new Dimension((int) zoom(dim.width), (int) zoom(dim.height)); 
 	}
 	
+	public Point zoom(Point point) {
+		return new Point((int) zoom(point.x), (int) zoom(point.y)); 
+	}
+	
 	public double unzoom(double x) { return x*(100.0/zoomPercent); }
 	
 	public Dimension unzoom(Dimension dim) {
 		return new Dimension((int) unzoom(dim.width), (int) unzoom(dim.height)); 
+	}
+	
+	public Point unzoom(Point point) {
+		return new Point((int) unzoom(point.x), (int) unzoom(point.y)); 
 	}
 	
 	public State getState() {

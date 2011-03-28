@@ -18,10 +18,6 @@ public class BioPaxConversionShape extends BioPaxShape {
 	private Color darkerBackground = null;
 	private Area icon = null;
 
-	private String smallLabel = null;
-	protected Dimension smallLabelSize = new Dimension();
-	protected Point smallLabelPos = new Point(0,0);
-
 	public BioPaxConversionShape(Conversion conversion, GraphModel graphModel) {
 		super(conversion, graphModel);
 		defaultBG = Color.yellow;

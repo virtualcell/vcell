@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphPane;
@@ -116,7 +115,6 @@ public class ReactionCartoon extends ModelCartoon {
 
 	public void paint(Graphics2D g, GraphPane canvas) {
 		super.paint(g, canvas);
-		setRandomLayout(false);
 	}
 	
 	public void propertyChange(PropertyChangeEvent event) {
@@ -352,20 +350,6 @@ public class ReactionCartoon extends ModelCartoon {
 			}
 		}
 		diagram.setNodeReferences((NodeReference[]) nodeList.toArray(new NodeReference[0]));
-	}
-
-	public void setRandomLayout(boolean bRandomize) {
-		try {
-			// assert random characteristics
-			Shape topShape = getTopShape();
-			if (topShape instanceof ContainerShape) {
-				ContainerShape containerShape = (ContainerShape) topShape;
-				containerShape.setRandomLayout(bRandomize);
-			}
-		} catch (Exception e){
-			System.out.println("top shape not found");
-			e.printStackTrace(System.out);
-		}
 	}
 
 	public void setStructureSuite(StructureSuite structureSuite) {

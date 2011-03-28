@@ -28,25 +28,27 @@ public class EdgeTugLayouter implements ContainedGraphLayouter {
 			}
 			List<Node> closestNodes = new ArrayList<Node>();
 			int closestNodesCount = nodeEdges.size();
-			for(Node node2 : graph.getNodes()) {
-				if(closestNodes.size() < closestNodesCount) {
-					closestNodes.add(node2);
-				} else if(distanceSquared(node, node2) < 
-						distanceSquared(node, closestNodes.get(closestNodesCount - 1))) {
-					closestNodes.set(closestNodesCount - 1, node2);
-				}
-				for(int i = closestNodes.size() - 1; i > 0; --i) {
-					if(distanceSquared(node, closestNodes.get(i)) < 
-							distanceSquared(node, closestNodes.get(i - 1))) {
-						Collections.swap(closestNodes, i, i - 1);
-					} else {
-						break;
+			if(closestNodesCount > 0) {
+				for(Node node2 : graph.getNodes()) {
+					if(closestNodes.size() < closestNodesCount) {
+						closestNodes.add(node2);
+					} else if(distanceSquared(node, node2) < 
+							distanceSquared(node, closestNodes.get(closestNodesCount - 1))) {
+						closestNodes.set(closestNodesCount - 1, node2);
+					}
+					for(int i = closestNodes.size() - 1; i > 0; --i) {
+						if(distanceSquared(node, closestNodes.get(i)) < 
+								distanceSquared(node, closestNodes.get(i - 1))) {
+							Collections.swap(closestNodes, i, i - 1);
+						} else {
+							break;
+						}
 					}
 				}
-			}
-			for(Node closeNode : closestNodes) {
-				node.move(Math.signum(node.getCenterX() - closeNode.getCenterX()), 
-						Math.signum(node.getCenterY() - closeNode.getCenterY()));				
+				for(Node closeNode : closestNodes) {
+					node.move(Math.signum(node.getCenterX() - closeNode.getCenterX()), 
+							Math.signum(node.getCenterY() - closeNode.getCenterY()));				
+				}
 			}
 		}
 		stretchLayouter.layout(graph);

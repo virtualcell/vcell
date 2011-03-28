@@ -16,7 +16,7 @@ import cbit.vcell.model.InUseException;
 
 public abstract class BioPaxShape extends Shape {
 	BioPaxObject bioPaxObject = null;
-	private static final int SCS_LABEL_WIDTHPARM = 3;
+	private static final int SCS_LABEL_WIDTHPARM = 7;
 	private static final String SCS_LABEL_TRUCATED = "...";
 	protected String smallLabel = null;
 	protected Dimension smallLabelSize = new Dimension();

@@ -13,7 +13,6 @@ public class PathwayContainerShape extends ContainerShape {
 	public PathwayContainerShape(PathwayGraphModel graphModel, PathwayModel pathwayModel) {
 		super(graphModel);
 		this.pathwayModel = pathwayModel;
-		setLabel(" ");
 	}
 
 	@Override

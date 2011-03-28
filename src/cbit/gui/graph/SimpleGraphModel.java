@@ -4,7 +4,6 @@ import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.ContainerShape;
-import cbit.gui.graph.Shape;
 import cbit.util.graph.Graph;
 /**
  * Insert the type's description here.
@@ -102,6 +101,7 @@ public class SimpleGraphModel extends GraphModel {
 		}
 		fireGraphChanged(new GraphEvent(this));
 	}
+
 	/**
 	 * Sets the graph property (cbit.vcell.mapping.potential.Graph) value.
 	 * @param graph The new value for the property.
@@ -113,31 +113,13 @@ public class SimpleGraphModel extends GraphModel {
 		firePropertyChange("graph", oldValue, graph);
 		refreshAll();
 	}
-	/**
-	 * This method was created in VisualAge.
-	 */
-	public void setRandomLayout(boolean bRandomize) {
 
-		try {
-			//
-			// assert random characteristics
-			//
-			Shape topShape = getTopShape();
-			if (topShape instanceof ContainerShape){
-				ContainerShape containerShape = (ContainerShape)topShape;
-				containerShape.setRandomLayout(bRandomize);
-			}
-
-		}catch (Exception e){
-			System.out.println("top shape not found");
-			e.printStackTrace(System.out);
-		}
-
-	}
 	public GraphShapeFactory getGraphShapeFactory() {
 		return graphShapeFactory;
 	}
+
 	public void setGraphShapeFactory(GraphShapeFactory graphShapeFactory) {
 		this.graphShapeFactory = graphShapeFactory;
 	}
+
 }

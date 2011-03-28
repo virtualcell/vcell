@@ -25,7 +25,6 @@ import javax.swing.JViewport;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
-import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.SimpleTransferable;
@@ -33,7 +32,6 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
@@ -263,30 +261,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	public void layout(String layoutName) throws Exception {
 		System.out.println(layoutName);
-		if (!ContainedGraphLayouter.DefaultLayouters.NAMES.contains(layoutName) &&
-				getReactionCartoon().getStructureSuite().getStructures().size() != 1) {
-			if (GraphLayoutManager.OldLayouts.RANDOMIZER.equals(layoutName)) {
-				getReactionCartoon().setRandomLayout(true);
-				getGraphPane().repaint();
-			} else {
-				System.out.println(layoutName
-						+ " only implemented for single compartment");
-			}
-			saveDiagram();
-			return;
-		}
 		graphEmbeddingManager.layout(layoutName);
 		saveDiagram();
 	}
 
 	public void layoutGlg() throws Exception {
-		// ****In the case of Membranes DO as before!****
-		if (getReactionCartoon().getStructureSuite().getStructures().size() != 1) {
-			getReactionCartoon().setRandomLayout(true);
-			getGraphPane().repaint();
-			saveDiagram();
-			return;
-		}
 		// Create graph object
 		graphEmbeddingManager.layoutGLG();
 		saveDiagram();

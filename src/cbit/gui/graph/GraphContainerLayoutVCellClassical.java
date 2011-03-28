@@ -475,8 +475,6 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 			refreshLayoutChildrenSimpleContainerShape((SimpleContainerShape) shape);
 		} else if(shape instanceof ContainerContainerShape) {
 			refreshLayoutChildrenContainerContainerShape((ContainerContainerShape) shape);
-		} else if(shape instanceof ContainerShape) {
-			refreshLayoutChildrenContainerShape((ContainerShape) shape);
 		} else if(shape instanceof StructureMappingFeatureShape) {
 			refreshLayoutChildrenStructureMappingFeatureShape((StructureMappingFeatureShape) shape);
 		} else if(shape instanceof FeatureShape) {
@@ -529,9 +527,6 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 
 	public void refreshLayoutChildrenGeometryContextStructureShape(GeometryContextStructureShape shape) {
-		if (shape.isRandom()){
-			shape.randomize();
-		}
 		// calculate total height and max width of SubVolumeContainerShape
 		int childHeight = 0;
 		int childWidth = 0;
@@ -551,9 +546,6 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 
 	public void refreshLayoutChildrenSimpleContainerShape(SimpleContainerShape shape) {
-		if (shape.isRandom()){
-			shape.randomize();
-		}
 		int width = shape.getSpaceManager().getSize().width;
 		int height = shape.getSpaceManager().getSize().height;
 		for (int i = 0; i < shape.childShapeList.size(); i++){
@@ -595,9 +587,6 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 
 	public void refreshLayoutChildrenContainerShape(ContainerShape shape) {
-		if (shape.isRandom()){
-			shape.randomize();
-		}
 	}
 
 	public void refreshLayoutChildrenStructureMappingFeatureShape(StructureMappingFeatureShape shape) {
