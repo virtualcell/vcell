@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel.pathway;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.List;
 import java.util.Random;
 
@@ -71,10 +72,10 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 			pathwayContainerShape.addChildShape(bpObjectShape);
 			addShape(bpObjectShape);
 			Dimension shapeSize = bpObjectShape.getSpaceManager().getSize();
-			Dimension containerSize = pathwayContainerShape.getSpaceManager().getSize();
-			int xPos = random.nextInt(containerSize.width - shapeSize.width);
-			int yPos = random.nextInt(containerSize.height - shapeSize.height);
-			bpObjectShape.getSpaceManager().setRelPos(xPos, yPos);
+			Rectangle boundary = getContainerLayout().getBoundaryForAutomaticLayout(pathwayContainerShape);
+			int xPos = boundary.x + random.nextInt(boundary.width - shapeSize.width);
+			int yPos = boundary.y + random.nextInt(boundary.height - shapeSize.height);
+			bpObjectShape.setAbsPos(xPos, yPos);
 		}
 		for (BioPaxObject bpObject : pathwayModel.getBiopaxObjects()) {
 			if (bpObject instanceof Conversion) {
