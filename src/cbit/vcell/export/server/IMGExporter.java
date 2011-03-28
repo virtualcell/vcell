@@ -79,16 +79,20 @@ public IMGExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 public static void main(String [] args) throws Exception{
-	if(args.length != 4){
-		System.out.println("Usage: IMGExporter username userkey simulationkey userdatadir");
+	if(args.length < 5){
+		System.out.println("Usage: IMGExporter username userkey simulationkey userdatadir {varName1 varName2 ...}");
 		System.exit(0);
 	}
 	String userName = args[0];
 	String userKey = args[1];
 	String SimulationKey = args[2];
 	String primaryDirStr = args[3];
-	String varName = "";
-	
+	String[] varNames = new String[args.length-4];
+	if(args.length > 4){
+		for (int i = 4; i < args.length; i++) {
+			varNames[i-4] = args[i];
+		}
+	}
 	PropertyLoader.loadProperties();
 	
 	User user = new User(userName, new KeyValue(userKey));
@@ -103,13 +107,13 @@ public static void main(String [] args) throws Exception{
 	DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, exportServiceImpl);
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
 	TimeSpecs timeSpecs = new TimeSpecs(0, allTimes.length-1, allTimes, ExportConstants.TIME_RANGE);
-	VariableSpecs variableSpecs = new VariableSpecs(new String[] {varName}, ExportConstants.VARIABLE_MULTI);
+	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportConstants.VARIABLE_MULTI);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_SLICE);
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors());
 	MovieSpecs movieSpecs = new MovieSpecs(
 		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,
-		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false, FormatSpecificSpecs.PARTICLE_ALL);
+		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
 	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs);
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
 }
@@ -160,6 +164,8 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	CartesianMesh cartesianMesh = dataServerImpl.getMesh(user, vcdID);
 	int dimension = cartesianMesh.getGeometryDimension();
 	
+	String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
+	
 	File visitExeLocation =
 		new File(PropertyLoader.getRequiredProperty(
 			PropertyLoader.visitServerExecutableDirProperty),PropertyLoader.visitServerExeName);
@@ -190,10 +196,10 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	//  /share/apps/vcell/visit/smoldynWorkFiles   
 	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
 	args.add(dimension+""); //dimension
-	args.add("0"); // 0 = show all the particles.  >0 == show n different particles, to be listed below
-	//args.add(""); //specific particle 1
-	//args.add(""); //specific particle 2 
-	//args.add(""); // ...
+	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
+	for (int i = 0; i < variableNames.length; i++) {
+		args.add(variableNames[i]);
+	}
 	try{
 		long startTime = System.currentTimeMillis();
 		Executable executable = new Executable(args.toArray(new String[0]));
@@ -229,7 +235,10 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	boolean bOverLay = false;
-	int sliceIndicator = (exportSpecs.getGeometrySpecs().getModeID() == ExportConstants.GEOMETRY_FULL?FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
+	int sliceIndicator = 0;
+	if(particleInfo == null){
+		sliceIndicator = (exportSpecs.getGeometrySpecs().getModeID() == ExportConstants.GEOMETRY_FULL?FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
+	}
 	int imageScale = 0;
 	int meshMode = 0;
 	int mirroringType = 0;
@@ -265,7 +274,7 @@ private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 	int beginTimeIndex = exportSpecs.getTimeSpecs().getBeginTimeIndex();
 	int endTimeIndex = exportSpecs.getTimeSpecs().getEndTimeIndex();
 	boolean bSingleTimePoint = beginTimeIndex==endTimeIndex;
-	String[] varNames = exportSpecs.getVariableSpecs().getVariableNames();
+	String[] varNames = (particleInfo == null?exportSpecs.getVariableSpecs().getVariableNames():new String[] {"smoldynParticleDummy"});
 
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	int startSlice = (sliceIndicator==FULL_MODE_ALL_SLICES?0:sliceIndicator);

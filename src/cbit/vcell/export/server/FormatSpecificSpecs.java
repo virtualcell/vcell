@@ -23,7 +23,6 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public abstract class FormatSpecificSpecs implements Serializable {
 	public static final int PARTICLE_NONE = 0;
-	public static final int PARTICLE_ALL = 1;
 	public static final int PARTICLE_SELECT = 2;	
 	
 	public final static int CODEC_NONE = 0;

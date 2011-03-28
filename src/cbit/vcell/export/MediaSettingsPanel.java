@@ -314,7 +314,7 @@ public class MediaSettingsPanel extends JPanel {
 		gbl_panel_5.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel_5.setLayout(gbl_panel_5);
 		
-		particleRadioButton = new JRadioButton("Selected");
+		particleRadioButton = new JRadioButton("Particles");
 		particleRadioButton.setSelected(true);
 		GridBagConstraints gbc_particleRadioButton = new GridBagConstraints();
 		gbc_particleRadioButton.insets = new Insets(0, 0, 0, 5);
@@ -328,12 +328,6 @@ public class MediaSettingsPanel extends JPanel {
 		gbc_particleCountsRadiobutton.gridx = 1;
 		gbc_particleCountsRadiobutton.gridy = 0;
 		panel_5.add(particleCountsRadiobutton, gbc_particleCountsRadiobutton);
-		
-		particleAllRadioButton = new JRadioButton("All");
-		GridBagConstraints gbc_particleAllRadioButton = new GridBagConstraints();
-		gbc_particleAllRadioButton.gridx = 2;
-		gbc_particleAllRadioButton.gridy = 0;
-		panel_5.add(particleAllRadioButton, gbc_particleAllRadioButton);
 		
 		panel_4 = new JPanel();
 		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
@@ -578,7 +572,6 @@ public class MediaSettingsPanel extends JPanel {
 		
 		particleButtonGroup.add(particleRadioButton);
 		particleButtonGroup.add(particleCountsRadiobutton);
-		particleButtonGroup.add(particleAllRadioButton);
 	}
 	
 	private static final double MOVIE_DURATION_MIN_SECONDS = .1;
@@ -642,7 +635,6 @@ public class MediaSettingsPanel extends JPanel {
 		particleModeLabel.setEnabled(isSmoldyn);
 		particleRadioButton.setEnabled(isSmoldyn);
 		particleCountsRadiobutton.setEnabled(isSmoldyn);
-		particleAllRadioButton.setEnabled(isSmoldyn);
 	}
 	
 	private int sliceCount = 0;
@@ -682,7 +674,6 @@ public class MediaSettingsPanel extends JPanel {
 	private JPanel panel_5;
 	private JRadioButton particleRadioButton;
 	private JRadioButton particleCountsRadiobutton;
-	private JRadioButton particleAllRadioButton;
 	public void setIsSmoldyn(boolean isSmoldyn){
 		this.isSmoldyn = isSmoldyn;
 	}
@@ -699,7 +690,7 @@ public class MediaSettingsPanel extends JPanel {
 		int volVarMembrOutlineThickness =
 			(volVarMembrOutlineThicknessSlider.isEnabled()?volVarMembrOutlineThicknessSlider.getValue():0);
 		int particleMode =
-			(isSmoldyn && !particleCountsRadiobutton.isSelected()?(particleRadioButton.isSelected()?FormatSpecificSpecs.PARTICLE_SELECT:FormatSpecificSpecs.PARTICLE_ALL):FormatSpecificSpecs.PARTICLE_NONE);
+			(isSmoldyn && !particleCountsRadiobutton.isSelected()?FormatSpecificSpecs.PARTICLE_SELECT:FormatSpecificSpecs.PARTICLE_NONE);
 		
 		if(mediaType == ExportConstants.FORMAT_QUICKTIME){
 			return new MovieSpecs(
