@@ -15,9 +15,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -34,6 +35,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -678,6 +680,10 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 }
 
 public static CartesianMesh createSimpleCartesianMesh(Geometry geometry) throws IOException, MathFormatException {
+	return createSimpleCartesianMesh(geometry, null);
+}
+
+public static CartesianMesh createSimpleCartesianMesh(Geometry geometry, Map<Polygon, MembraneElement> polygonMembaneElementMap) throws IOException, MathFormatException {
 	GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
 	RegionImage regionImage = geometrySurfaceDescription.getRegionImage();
 	ISize iSize = new ISize(regionImage.getNumX(),regionImage.getNumY(),regionImage.getNumZ());
@@ -731,6 +737,9 @@ public static CartesianMesh createSimpleCartesianMesh(Geometry geometry) throws 
 				}				
 				mesh.membraneElements[memCount] = new MembraneElement(memCount, polygon.getVolIndexNeighbor1(), polygon.getVolIndexNeighbor2(),
 						0, 0, 0, 0, MembraneElement.AREA_UNDEFINED,0,0,0,0,0,0);
+				if (polygonMembaneElementMap != null) {
+					polygonMembaneElementMap.put(polygon, mesh.membraneElements[memCount]);
+				}
 				memCount ++;
 			}
 		}

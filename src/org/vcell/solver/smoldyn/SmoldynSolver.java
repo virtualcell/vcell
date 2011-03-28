@@ -1,23 +1,14 @@
 package org.vcell.solver.smoldyn;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFormatException;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -29,7 +20,6 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MathExecutable;
 
 /**
@@ -88,10 +78,8 @@ protected void initialize() throws SolverException
 	sessionLog.print("SmoldynSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
-	writeMeshFile();
-
-	String inputFilename = getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;
-	File outputFile = new File(getBaseName() + SMOLDYN_OUTPUT_FILE_EXTENSION);
+	
+	String inputFilename = getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;	
 	sessionLog.print("SmoldynSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
@@ -100,7 +88,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, outputFile, simulationJob, true);
+		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simulationJob, true);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
@@ -139,71 +127,31 @@ public void propertyChange(java.beans.PropertyChangeEvent event)
 	}
 }
 
-private void writeMeshFile() throws SolverException {
-	Geometry origvcellgeometry = simulationJob.getSimulation().getMathDescription().getGeometry();
-	Geometry geometry = null;
-	// clone and resample geometry
-	try {
-		geometry = (Geometry) BeanUtils.cloneSerializable(origvcellgeometry);
-		GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
-		ISize newSize = simulationJob.getSimulation().getMeshSpecification().getSamplingSize();
-		geoSurfaceDesc.setVolumeSampleSize(newSize);
-		geoSurfaceDesc.updateAll();		
-	} catch (Exception e) {
-		e.printStackTrace();
-		throw new RuntimeException(e.getMessage());
-	}
-	FileOutputStream fos = null;
-	try {
-		CartesianMesh mesh = CartesianMesh.createSimpleCartesianMesh(geometry);
-		//Write Mesh file
-		File meshFile = new File(getBaseName() + ".mesh");
-		fos = new FileOutputStream(meshFile);
-		mesh.write(new PrintStream(fos));
-	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
-	} catch (MathFormatException e) {
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
-	}finally{
-		try {
-			if(fos != null){
-				fos.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			//ignore
-		}
-	}
-	
-}
-
 public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	// add appropriate Function columns to result set
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
-	Function functions[] = simSymbolTable.getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			Domain domain = null;
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
-			funcList.add(af);
-		}
-	}
+//	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+//	Function functions[] = simSymbolTable.getFunctions();
+//	for (int i = 0; i < functions.length; i++){
+//		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
+//			Expression exp1 = new Expression(functions[i].getExpression());
+//			try {
+//				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
+//			} catch (MathException e) {
+//				e.printStackTrace(System.out);
+//				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+//			} catch (ExpressionException e) {
+//				e.printStackTrace(System.out);
+//				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+//			}
+//			Domain domain = null;
+//			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
+//			funcList.add(af);
+//		}
+//	}
 	return funcList;
 }
 
