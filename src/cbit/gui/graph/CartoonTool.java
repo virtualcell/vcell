@@ -46,6 +46,8 @@ import javax.swing.MenuSelectionManager;
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
 
+	public static final boolean GROUPS_ARE_ENABLED = false;
+	
 	private GraphPane graphPane = null;
 	private ButtonGroup buttonGroup = null;
 	
@@ -102,10 +104,12 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 			paintingMenuItems.add(new JMenuItem(paintingAction));
 		}
 		menuItems.addAll(paintingMenuItems);
-		for(GraphViewAction groupAction : groupActions) {
-			groupMenuItems.add(new JMenuItem(groupAction));
+		if(GROUPS_ARE_ENABLED) {
+			for(GraphViewAction groupAction : groupActions) {
+				groupMenuItems.add(new JMenuItem(groupAction));
+			}
+			menuItems.addAll(groupMenuItems);			
 		}
-		menuItems.addAll(groupMenuItems);
 	}
 
 	public int getWidth() { return graphPane.getWidth(); }
