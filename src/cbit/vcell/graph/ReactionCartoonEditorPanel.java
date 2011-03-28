@@ -28,11 +28,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
+import org.vcell.util.gui.ViewPortStabilizer;
 
 import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphLayoutManager;
@@ -58,6 +60,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	protected List<JToolBarToggleButton> modeButtons = null;
 	private ButtonGroup modeButtonGroup = new ButtonGroup();
 	private JScrollPane scrollPane = null;
+	protected ViewPortStabilizer viewPortStabilizer = null;
 	private JButton annealLayoutButton = null;
 	private JButton circleLayoutButton = null;
 	private JButton levellerLayoutButton = null;
@@ -104,10 +107,24 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
-			else if (source == getZoomInButton())
+			else if (source == getZoomInButton()) {				
+				viewPortStabilizer.saveViewPortPosition();
 				getReactionCartoon().getResizeManager().zoomIn();
-			else if (source == getZoomOutButton())
-				this.getReactionCartoon().getResizeManager().zoomOut();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						viewPortStabilizer.restoreViewPortPosition();						
+					}
+				});
+			}
+			else if (source == getZoomOutButton()) {
+				viewPortStabilizer.saveViewPortPosition();
+				this.getReactionCartoon().getResizeManager().zoomOut();				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						viewPortStabilizer.restoreViewPortPosition();						
+					}
+				});
+			}
 			else if (source == getGlgLayoutJButton())
 				getReactionCartoonTool().layoutGlg();
 			else if (source == getFloatRequestButton()) 
@@ -508,6 +525,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			setSize(472, 422);
 //			setMinimumSize(new Dimension(54, 425));
 			add(getJScrollPane(), BorderLayout.CENTER);
+			viewPortStabilizer = new ViewPortStabilizer(getJScrollPane());
 			
 			
 			JPanel panel = new JPanel(new GridBagLayout());

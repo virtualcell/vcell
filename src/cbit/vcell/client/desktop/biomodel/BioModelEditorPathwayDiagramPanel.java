@@ -32,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -57,6 +58,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.gui.ViewPortStabilizer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.graph.GraphLayoutManager;
@@ -99,6 +101,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private JPanel graphTabPanel;
 	private JPanel sourceTabPanel;
 	private PathwayGraphModel pathwayGraphModel;
+	protected JScrollPane graphScrollPane;
+	protected ViewPortStabilizer viewPortStabilizer;
 	
 	private JButton deleteButton, physiologyLinkButton;
 	private JMenuItem showPhysiologyLinksMenuItem, editPhysiologyLinksMenuItem;
@@ -421,10 +425,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 		graphCartoonTool = new PathwayGraphTool();
 		graphCartoonTool.setGraphPane(graphPane);		
 		graphTabPanel = new JPanel(new BorderLayout());
-		JScrollPane graphScrollPane = new JScrollPane(graphPane);
+		graphScrollPane = new JScrollPane(graphPane);
 		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		graphScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		graphTabPanel.add(graphScrollPane, BorderLayout.CENTER);
+		viewPortStabilizer = new ViewPortStabilizer(graphScrollPane);
 
 		graphTabPanel.add(layoutToolBar, BorderLayout.NORTH);
 		
@@ -631,8 +636,13 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
-							getCartoonTool().getGraphModel()
-							.getResizeManager().zoomIn();
+							viewPortStabilizer.saveViewPortPosition();
+							getCartoonTool().getGraphModel().getResizeManager().zoomIn();
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									viewPortStabilizer.restoreViewPortPosition();						
+								}
+							});
 						} catch (ZoomRangeException e) {
 							e.printStackTrace();
 						}
@@ -643,8 +653,13 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
-							getCartoonTool().getGraphModel()
-							.getResizeManager().zoomOut();
+							viewPortStabilizer.saveViewPortPosition();
+							getCartoonTool().getGraphModel().getResizeManager().zoomOut();
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									viewPortStabilizer.restoreViewPortPosition();						
+								}
+							});
 						} catch (ZoomRangeException e) {
 							e.printStackTrace();
 						}
