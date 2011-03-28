@@ -907,6 +907,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				CompartmentSubDomain compart0 = mathDesc.getCompartmentSubDomain(subVolume0.getName());
 				CompartmentSubDomain compart1 = mathDesc.getCompartmentSubDomain(subVolume1.getName());
 				MembraneSubDomain membraneSubDomain = mathDesc.getMembraneSubDomain(compart0, compart1);
+				if (membraneSubDomain == null) {
+					throw new SolverException(VCellErrorMessages.getSmoldynUnexpectedSurface(compart0, compart1));
+				}
 				int exteriorRegionID = volRegion0.getRegionID();
 				int interiorRegionID = volRegion1.getRegionID();
 				if (membraneSubDomain.getInsideCompartment() == compart0) {
