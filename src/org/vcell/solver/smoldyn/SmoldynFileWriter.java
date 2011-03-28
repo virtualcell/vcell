@@ -4,13 +4,16 @@ package org.vcell.solver.smoldyn;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -48,6 +51,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
@@ -70,6 +74,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
@@ -84,6 +89,7 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MembraneElement;
 
 
 /**
@@ -99,9 +105,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private static class TrianglePanel {
 		String name;
 		Triangle triangle;		
-		private TrianglePanel(SurfaceClass surfaceClass, int triIndex, Triangle triangle) {
+		private TrianglePanel(int membraneIndex, int triIndex, Triangle triangle) {
 			super();
-			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + surfaceClass.getName() + "_" + triIndex;
+			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + triIndex + (membraneIndex >= 0 ? "_" + membraneIndex : "");
 			this.triangle = triangle;
 		}
 	}
@@ -237,19 +243,17 @@ public class SmoldynFileWriter extends SolverFileWriter
 //		vcellReact1KillMolecules,
 	}
 	
-/**
- * StochFileWriter constructor comment.
- */
-public SmoldynFileWriter(PrintWriter pw, File outputFile, SimulationJob arg_simulationJob, boolean bMessaging) 
-{
-	this(pw, false, outputFile, arg_simulationJob, bMessaging);
-}
+	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
+	private CartesianMesh cartesianMesh = null;
+	private String baseFileName = null;
 
-public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, File outputFile, SimulationJob arg_simulationJob, boolean bMessaging) 
+public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationJob arg_simulationJob, boolean bMessaging) 
 {
 	super(pw, arg_simulationJob, bMessaging);
-	bGraphicOpenGL = bGraphic;
-	this.outputFile = outputFile;
+	this.bGraphicOpenGL = bGraphic;
+	baseFileName = baseName;
+	this.outputFile = new File(baseFileName + SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION); 
+	
 	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
 	SmoldynSimulationOptions smoldynSimulationOptions = arg_simulationJob.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
 	if (smoldynSimulationOptions.getRandomSeed() != null) {
@@ -259,6 +263,34 @@ public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, File outputFile, Simu
 	}
 	//We add jobindex to the random seed in case there is a parameter scan.
 	randomSeed = randomSeed + simulationJob.getJobIndex();
+}
+
+private void writeMeshFile() throws SolverException {
+	polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
+	FileOutputStream fos = null;
+	try {		 
+		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);
+		//Write Mesh file
+		File meshFile = new File(baseFileName + ".mesh");
+		fos = new FileOutputStream(meshFile);
+		cartesianMesh.write(new PrintStream(fos));
+	} catch (IOException e) {
+		e.printStackTrace(System.out);
+		throw new SolverException(e.getMessage());
+	} catch (MathFormatException e) {
+		e.printStackTrace(System.out);
+		throw new SolverException(e.getMessage());
+	}finally{
+		try {
+			if(fos != null){
+				fos.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			//ignore
+		}
+	}
+	
 }
 
 private void init() throws SolverException {
@@ -272,7 +304,7 @@ private void init() throws SolverException {
 		if (variable instanceof ParticleVariable) {
 			particleVariableList.add((ParticleVariable)variable);
 		}
-	}
+	}	
 	
 	// write geometry	
 	Geometry geometry = mathDesc.getGeometry();	
@@ -288,6 +320,9 @@ private void init() throws SolverException {
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new SolverException(e.getMessage());
+	}
+	if (!bGraphicOpenGL) {
+		writeMeshFile();
 	}
 }
 
@@ -363,22 +398,9 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 	
 	printWriter.println("# runtime command");
 	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
-	if (outputFile != null) {
+	if (outputFile != null && cartesianMesh != null) {
 		OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
-		if (ots.isUniform()) {
-			GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
-			ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
-			ArrayList<VolumeGeometricRegion> volumeRegionList = new ArrayList<VolumeGeometricRegion>();
-			for (GeometricRegion geometricRegion : AllGeometricRegions) {
-				if (geometricRegion instanceof SurfaceGeometricRegion){
-					surfaceRegionList.add((SurfaceGeometricRegion)geometricRegion);
-				} else if (geometricRegion instanceof VolumeGeometricRegion){
-					volumeRegionList.add((VolumeGeometricRegion)geometricRegion);
-				} else {
-					throw new SolverException("unsupported geometric region type " + geometricRegion.getClass());
-				}
-			}
-			
+		if (ots.isUniform()) {			
 			printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
 			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
@@ -390,15 +412,14 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			// DataProcess must be before vcellWriteOutput
 			if (simulation.getDataProcessingInstructions() != null) {
 				writeDataProcessor();
-			}		
-			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
+			}
+			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + cartesianMesh.getNumMembraneElements() + " " + sampleSize.getX());
 			if (dimension > 1) {
 				printWriter.print(" " + sampleSize.getY());
 				if (dimension > 2) {
 					printWriter.print(" " + sampleSize.getZ());			
 				}
 			}
-			printWriter.print(" " + volumeRegionList.size());
 			printWriter.println();
 		} else {
 			throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
@@ -414,43 +435,43 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		return;
 	}
 	
-	FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
-	if (fdis == null) {
-		throw new DataAccessException("Can't find sample image in data processing instructions");
-	}
-	File userDirectory = outputFile.getParentFile();
-	
-	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
-	CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
-	SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
-	VariableType varType = fdis.getFieldFuncArgs().getVariableType();
-	VariableType dataVarType = simDataBlock.getVariableType();
-	if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
-		throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
-	}
-	double[] origData = simDataBlock.getData();	
-	String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
-	
-	File fdatFile = new File(userDirectory, filename);
-	
-	
-	DataSet.writeNew(fdatFile,
-			new String[] {fdis.getFieldFuncArgs().getVariableName()},
-			new VariableType[]{simDataBlock.getVariableType()},
-			new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
-			new double[][]{origData});
-	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + dpi.getScriptName());
-	StringTokenizer st = new StringTokenizer(dpi.getScriptInput(), "\n\r");
-	while (st.hasMoreTokens()) {
-		String str = st.nextToken();
-		if (str.trim().length() > 0) {
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " " + str);
+		FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
+		if (fdis == null) {
+			throw new DataAccessException("Can't find sample image in data processing instructions");
 		}
+		File userDirectory = outputFile.getParentFile();
+		
+		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
+		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
+		VariableType varType = fdis.getFieldFuncArgs().getVariableType();
+		VariableType dataVarType = simDataBlock.getVariableType();
+		if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
+			throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+		}
+		double[] origData = simDataBlock.getData();	
+		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+		
+		File fdatFile = new File(userDirectory, filename);
+		
+		
+		DataSet.writeNew(fdatFile,
+				new String[] {fdis.getFieldFuncArgs().getVariableName()},
+				new VariableType[]{simDataBlock.getVariableType()},
+				new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
+				new double[][]{origData});
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + dpi.getScriptName());
+		StringTokenizer st = new StringTokenizer(dpi.getScriptInput(), "\n\r");
+		while (st.hasMoreTokens()) {
+			String str = st.nextToken();
+			if (str.trim().length() > 0) {
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " " + str);
+			}
+		}
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
 	}
-	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
-	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");	
-}
 
 private void writeReactions() throws ExpressionException, MathException {
 	printWriter.println("# reaction in compartments");
@@ -870,9 +891,10 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		membraneSubdomainTriangleMap = new HashMap<MembraneSubDomain, ArrayList<TrianglePanel> >();
 		// write surfaces
 		printWriter.println("# surfaces");
+		int triangleCount = 0;
+		int membraneIndex = -1;
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
-			int triangleCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
 			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
@@ -897,6 +919,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 						(surface.getInteriorRegionIndex() == interiorRegionID && surface.getExteriorRegionIndex() == exteriorRegionID)) { // my triangles
 						for(int k = 0; k < surface.getPolygonCount(); k++) {
 							Polygon polygon = surface.getPolygons(k);
+							if (polygonMembaneElementMap != null) {
+								membraneIndex = polygonMembaneElementMap.get(polygon).getMembraneIndex();
+							} 
 							Node[] nodes = polygon.getNodes();
 							if (dimension == 2){
 								// ignore z
@@ -923,27 +948,27 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									// v0 to v1 opposes vcell surface normal. it's already flipped.
 									if (surface.getInteriorRegionIndex() == interiorRegionID) {
 										// we have to flipped it back
-										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
 									} else {
-										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
+										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
 									}
 								}else if (Math.abs(unit01n.getZ()+1.0) < 1e-6){
 									// v0 to v1 is in direction of vcell surface normal.
 									if (surface.getInteriorRegionIndex() == interiorRegionID) {
-										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
+										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
 									} else {
-										triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
 									}
 								}else {
 									throw new RuntimeException("failed to generate surface");
 								}
 							} else if (dimension == 3) {
 								if (surface.getInteriorRegionIndex() == interiorRegionID) { // interior	
-									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[0], nodes[1], nodes[2])));
-									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[0], nodes[2], nodes[3])));
+									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[0], nodes[1], nodes[2])));
+									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[0], nodes[2], nodes[3])));
 								}else{
-									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[2], nodes[1], nodes[0])));
-									triList.add(new TrianglePanel(surfaceClass, triangleCount++, new Triangle(nodes[3], nodes[2], nodes[0])));
+									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[2], nodes[1], nodes[0])));
+									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[3], nodes[2], nodes[0])));
 								}
 							}
 						}
