@@ -49,7 +49,13 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 	@Override
 	public void refreshAll() {
 		{
+			if (getGeometryContext() == null || getGeometryContext().getGeometry() == null) {
+				return;
+			}
 			GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
+			if (geometryClasses == null) {
+				return;
+			}
 			for (int i=0;i<geometryClasses.length;i++){
 				Shape testShape = getShapeFromModelObject(geometryClasses[i]);
 				if(testShape instanceof GeometryClassLegendShape){

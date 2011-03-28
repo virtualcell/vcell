@@ -49,7 +49,11 @@ public class ClientTaskManager {
 		String baseName = "Copy of " + simulationContext.getName();
 		int count = 0;
 		while (true) {
-			newApplicationName = baseName + " " + count;
+			if (count == 0) {
+				newApplicationName = baseName;
+			} else {
+				newApplicationName = baseName + " " + count;
+			}
 			if (bioModel.getSimulationContext(newApplicationName) == null) {
 				break;
 			}

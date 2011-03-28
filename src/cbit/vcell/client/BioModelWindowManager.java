@@ -12,7 +12,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -119,7 +118,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		
-		AsynchClientTask oldEditorTask = new AsynchClientTask("Show Old Editor",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask oldEditorTask = new AsynchClientTask("creating new geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");
@@ -149,7 +148,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			}
 		};
 
-		AsynchClientTask setGeomOnSimContextTask = new AsynchClientTask("Set Geometry On SimContext",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask setGeomOnSimContextTask = new AsynchClientTask("Setting geometry on application",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");

@@ -25,6 +25,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -246,7 +247,7 @@ private void copyApplication(final boolean bSpatial, final boolean bStochastic) 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-			selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
+			selectionManager.setActiveView(new ActiveView(newSimulationContext, null, null));
 		}
 	};
 	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);

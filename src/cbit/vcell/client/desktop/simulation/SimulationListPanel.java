@@ -738,7 +738,7 @@ private void stopSimulations() {
 			tasks = new AsynchClientTask[1];
 		}
 		
-		tasks[tasks.length - 1] = new AsynchClientTask("start simulating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		tasks[tasks.length - 1] = new AsynchClientTask("starting particle view", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
