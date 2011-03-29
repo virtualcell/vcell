@@ -163,6 +163,8 @@ if (includeVarNumber==0):
     pc.max=(len(particleTypeList))
 else:
     pc.max=(len(particleIncludeList))
+if (pc.max==1):
+    pc.max=2
 pc.maxFlag=1
           
 SetPlotOptions(pc)
