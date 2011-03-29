@@ -8,7 +8,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
-import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -151,7 +151,7 @@ DocumentManager getDocumentManager();
  */
 MergedDatasetViewerController getMergedDatasetViewerController(OutputContext outputContext, VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException;
 
-SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
+OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulations) throws DataAccessException;
 
 /**
  * Insert the method's description here.
