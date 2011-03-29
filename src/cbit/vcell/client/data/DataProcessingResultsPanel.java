@@ -191,7 +191,11 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 					throw new IOException("Can not read volVar data.");
 				}
 				for (int i = 0; i < numRegions; i++) {
-					plotNames[v * numRegions + i] = varName + ": region " + i;
+					String plotName = varName;
+					if (i > 0) {
+						plotName += ": region " + (i-1);
+					}
+					plotNames[v * numRegions + i] = plotName;
 					for (int j = 0; j < numTimes; j++) {
 						plotDatas[v * numRegions + 1 + i][j] = data.get(j, i);
 					}

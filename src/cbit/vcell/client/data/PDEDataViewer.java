@@ -338,10 +338,9 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
 						}
 					}
-					createDataProcessingResultsPanel();
+					dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
-					createDataProcessingResultsPanel();
 					//set Smoldyn flag for exports to create "particle" media
 					boolean isSmoldyn = false;
 					if(getSimulation() != null &&
@@ -1639,6 +1638,8 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.setName("JTabbedPane1");
 			ivjJTabbedPane1.insertTab("View Data", null, getViewData(), null, 0);
 			ivjJTabbedPane1.insertTab(EXPORT_DATA_TABNAME, null, getExportData(), null, 1);
+			dataProcessingResultsPanel = new DataProcessingResultsPanel();
+			ivjJTabbedPane1.addTab("Post Processing Data", dataProcessingResultsPanel);
 			ivjJTabbedPane1.addChangeListener(
 				new ChangeListener(){
 					public void stateChanged(ChangeEvent e) {
@@ -2553,17 +2554,6 @@ public void removeDataJobListener(DataJobListener listener) {
 public void showTimePlotMultipleScans(DataManager dataManager) {
 	// TODO Auto-generated method stub
 	
-}
-
-private void createDataProcessingResultsPanel() {
-	if (getSimulation() != null && getSimulation().getDataProcessingInstructions() != null) {		
-		if (dataProcessingResultsPanel == null || getJTabbedPane1().indexOfComponent(dataProcessingResultsPanel) < 0) {
-			dataProcessingResultsPanel = new DataProcessingResultsPanel();
-			getJTabbedPane1().addTab("Post Processing Data", dataProcessingResultsPanel);
-		}
-		dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
-	}
-
 }
 
 }

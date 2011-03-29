@@ -1,4 +1,6 @@
 package org.vcell.solver.smoldyn;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Vector;
 
@@ -6,21 +8,16 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.MathExecutable;
+import cbit.vcell.solvers.SubdomainInfo;
 
 /**
  * Gibson solver 
@@ -79,6 +76,17 @@ protected void initialize() throws SolverException
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	
+	// write subdomains file
+	try {
+		SubdomainInfo.write(new File(getBaseName() + FVSolver.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
+	} catch (IOException e1) {
+		e1.printStackTrace();
+		throw new SolverException(e1.getMessage());
+	} catch (MathException e1) {
+		e1.printStackTrace();
+		throw new SolverException(e1.getMessage());
+	}
+
 	String inputFilename = getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;	
 	sessionLog.print("SmoldynSolver.initialize() baseName = " + getBaseName());
 
