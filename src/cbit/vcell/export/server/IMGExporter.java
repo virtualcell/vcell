@@ -33,6 +33,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import progress.message.zclient.xonce.SecondaryStateResolver;
+
 import com.hp.hpl.jena.rdf.model.impl.AltImpl;
 
 import GIFUtils.GIFFormatException;
@@ -55,6 +57,7 @@ import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -167,15 +170,22 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
 	
 	File visitExeLocation =
-		new File(PropertyLoader.getRequiredProperty(
-			PropertyLoader.visitServerExecutableDirProperty),PropertyLoader.visitServerExeName);
+		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynVisitExecutableProperty));
 	File visitSmoldynScriptLocation =
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
 	File visitSmoldynScriptTempDir =
 		new File(PropertyLoader.getRequiredProperty(
-				PropertyLoader.visitSmoldynScriptTempDirProperty));
-	File visitUserDataParentDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitServerUsersDirProperty));
-	File visitUserDataDir = new File(visitUserDataParentDir,user.getName());
+				PropertyLoader.tempDirProperty));
+	File visitUserDataDir =
+		new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),user.getName());
+	if(!(new File(visitUserDataDir,vcdID.getID()+SimDataConstants.LOGFILE_EXTENSION)).exists()){
+		System.out.println("couldn't find primary data dir log file "+visitUserDataDir.getAbsolutePath());
+		visitUserDataDir =
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty),user.getName());
+		if(!(new File(visitUserDataDir,vcdID.getID()+SimDataConstants.LOGFILE_EXTENSION)).exists()){
+			throw new Exception("Couldn't find lsecondary data dir og file "+visitUserDataDir.getAbsolutePath());
+		}
+	}
 	File visitDataPathFragment = new File(visitUserDataDir,vcdID.getID()+"_");
 	System.out.println(visitExeLocation.getAbsolutePath());
 	System.out.println(visitSmoldynScriptLocation.getAbsolutePath());
@@ -202,19 +212,12 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	}
 	try{
 		long startTime = System.currentTimeMillis();
-		Executable executable = new Executable(args.toArray(new String[0]));
-		executable.start();
-		while (!executable.getStatus().isError() && !executable.getStatus().equals(ExecutableStatus.COMPLETE) && !executable.getStatus().equals(ExecutableStatus.STOPPED)){
-			Thread.sleep(1000);
-			if((System.currentTimeMillis()-startTime) > 300000/*5 minutes*/){
-				executable.stop();
-				throw new Exception("Particle data exporter timed out.");
-			}
-		}
-		if(executable.getStatus().isError()){
+		Executable executable = new Executable(args.toArray(new String[0]),300000/*5 minutes*/);
+		executable.start();//blocking, internal monitoring, return after timeout
+		if(!executable.getStatus().equals(ExecutableStatus.COMPLETE)){
 			System.out.println(executable.getStderrString());
 			System.out.println(executable.getStdoutString());
-			throw new Exception("Particle data exporter had error.");
+			throw new Exception("Particle data exporter did not complete.");
 		}
 	}finally{
 		//Remove temp files created by smoldyn script
