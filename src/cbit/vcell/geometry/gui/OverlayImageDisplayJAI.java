@@ -262,7 +262,9 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			if(contrastFactor > 0){
 				//Contrast stretch
 				double[][] minmaxArr = null;
+				boolean bAlreadyScaled = false;
 				if(allPixelValuesRange != null){
+					bAlreadyScaled = (allPixelValuesRange.getScaleFactor()< 1.0?true:false);
 					minmaxArr = new double[][] {{allPixelValuesRange.getMin()},{allPixelValuesRange.getMax()}};
 				}else{
 					minmaxArr = (double[][])ExtremaDescriptor.create(underlyingImage, null, 1, 1, false, 1, null).getProperty("extrema");
@@ -275,8 +277,12 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 							underlyingImage.getType());
 					byte[] fromData = ((DataBufferByte)underlyingImage.getRaster().getDataBuffer()).getData();
 					byte[] toData = ((DataBufferByte)contrastEnhancedUnderlyingImage.getRaster().getDataBuffer()).getData();
-					for (int i = 0; i < toData.length; i++) {
-						toData[i] = (byte)((int)((0x000000FF&fromData[i])*scale+offset));
+					if(bAlreadyScaled){
+						System.arraycopy(fromData, 0, toData, 0, toData.length);
+					}else{
+						for (int i = 0; i < toData.length; i++) {
+							toData[i] = (byte)((int)((0x000000FF&fromData[i])*scale+offset));
+						}
 					}
 				}
 				//enhance with gamma function
