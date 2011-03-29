@@ -19,6 +19,8 @@ import cbit.vcell.model.Flux;
 import cbit.vcell.model.Flux.FluxDirection;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
@@ -196,9 +198,9 @@ public class MassActionSolver {
 					// if these conditions are satisfied, duplicatedExpr = expr1 (where catalystName was substituted with 1).
 					// duplicatedExp = new Expression(expr1);
 				}
+				
 				// catalyst added as both product and reactant. When catalyst considered as a reaction participant
 				// the stoichiometry should be set to 1.
-				
 				ReactionParticipant catalystRP = new ReactionParticipant(null, rs, rp[i].getSpeciesContext(), 1) {
 					public boolean compareEqual(Matchable obj) {
 						ReactionParticipant rp = (ReactionParticipant)obj;
@@ -227,6 +229,34 @@ public class MassActionSolver {
 				reactants.add(catalystRP);
 			}
 		}
+		//for Massaction reaction without catalysts,if the forward rate and reverse rate both can be
+		//evaluated to a constant finally, we'll create the mass action function directly from the kinetic expressions.
+		if(rs.getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) && (!rs.hasCatalyst()))
+		{
+			Expression forwardRate = rs.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
+			Expression reverseRate = rs.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
+			try{
+				Expression testForwardRateConst = rs.substitueKineticParameter(forwardRate, true);
+				Expression testReverseRateConst = rs.substitueKineticParameter(reverseRate, true);
+				testForwardRateConst.evaluateConstant();
+				testReverseRateConst.evaluateConstant();
+				maFunc.setForwardRate(forwardRate);
+				maFunc.setReverseRate(reverseRate);
+				maFunc.setReactants(reactants);
+				maFunc.setProducts(products);
+				
+				return maFunc;
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Cannot resolve MassAction directly, need to go through MassAction solver." + ex.getMessage());
+			}
+		}
+		
+		/**
+		 * The code below is going to solve reaction with kinetics that are NOT Massaction. Or Massaction with catalysts involved.
+		 */
+		
 		//get the overlaps (reactionParticipants that are both reactant & product, could be a catalyst), nonOverlapReactants 
 		for(int i=0; i<reactants.size(); i++)
 		{

@@ -704,18 +704,21 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 
 		for (ReactionParticipant rp : reactants){
 			SpeciesContext sc = rp.getSpeciesContext();
+			SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 			GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 			String varName = getMathSymbol(sc, scGeometryClass);
 			Variable var = mathDesc.getVariable(varName);
 			if (var instanceof ParticleVariable){
 				ParticleVariable particle = (ParticleVariable)var;
 				reactantParticles.add(particle);
-				for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
-					if (forwardRate!=null) {
-						forwardActions.add(Action.createDestroyAction(particle));
-					}					 
-					if (reverseRate!=null) {
-						reverseActions.add(Action.createCreateAction(particle));
+				if (!scs.isConstant()) {
+					for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+						if (forwardRate!=null) {
+							forwardActions.add(Action.createDestroyAction(particle));
+						}					 
+						if (reverseRate!=null) {
+							reverseActions.add(Action.createCreateAction(particle));
+						}
 					}
 				}
 			}else{
@@ -724,18 +727,21 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 		for (ReactionParticipant rp : products){
 			SpeciesContext sc = rp.getSpeciesContext();
+			SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 			GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 			String varName = getMathSymbol(sc, scGeometryClass);
 			Variable var = mathDesc.getVariable(varName);
 			if (var instanceof ParticleVariable){
 				ParticleVariable particle = (ParticleVariable)var;
 				productParticles.add(particle);
-				for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
-					if (forwardRate!=null) {
-						forwardActions.add(Action.createCreateAction(particle));
-					}					 
-					if (reverseRate!=null) {
-						reverseActions.add(Action.createDestroyAction(particle));
+				if (!scs.isConstant()) {
+					for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+						if (forwardRate!=null) {
+							forwardActions.add(Action.createCreateAction(particle));
+						}					 
+						if (reverseRate!=null) {
+							reverseActions.add(Action.createDestroyAction(particle));
+						}
 					}
 				}
 			}else{
@@ -856,7 +862,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
 		scm.setHasEventAssignment(false);		
-		if (scs.isConstant()){
+		/*if (scs.isConstant()){
 			Expression initCount = null;
 			if(getSimulationContext().isUsingConcentration()) {
 				SpeciesContextSpec.SpeciesContextSpecParameter initConcParm =  scs.getInitialConcentrationParameter();
@@ -864,27 +870,27 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 			} else {
 				SpeciesContextSpec.SpeciesContextSpecParameter initCountParm = scs.getInitialCountParameter();
 				initCount = new Expression(initCountParm, getNameScope());
-			}
+			}*/
 			
-			scm.setDependencyExpression(initCount);
-		}
+		scm.setDependencyExpression(null);
+		/*}*/
 		//
 		// test if participant in fast reaction step, request elimination if possible
 		//
-//		scm.setFastParticipant(false);
-//		ReactionSpec reactionSpecs[] = getSimulationContext().getReactionContext().getReactionSpecs();
-//		for (int j=0;j<reactionSpecs.length;j++){
-//			ReactionSpec reactionSpec = reactionSpecs[j];
-//			if (reactionSpec.isExcluded()){
-//				continue;
-//			}
-//			ReactionStep rs = reactionSpec.getReactionStep();
-//			if (rs instanceof SimpleReaction && rs.countNumReactionParticipants(scs.getSpeciesContext()) > 0){
-//				if (reactionSpec.isFast()){
-//					scm.setFastParticipant(true);
-//				}
-//			}
-//		}
+/*		scm.setFastParticipant(false);
+		ReactionSpec reactionSpecs[] = getSimulationContext().getReactionContext().getReactionSpecs();
+		for (int j=0;j<reactionSpecs.length;j++){
+			ReactionSpec reactionSpec = reactionSpecs[j];
+			if (reactionSpec.isExcluded()){
+				continue;
+			}
+			ReactionStep rs = reactionSpec.getReactionStep();
+			if (rs instanceof SimpleReaction && rs.countNumReactionParticipants(scs.getSpeciesContext()) > 0){
+				if (reactionSpec.isFast()){*/
+		scm.setFastParticipant(false);
+/*				}
+			}
+		}*/
 		speciesContextMappingList.addElement(scm);
 	}
 }
@@ -897,21 +903,8 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 @Override
 protected void refreshVariables() throws MappingException {
 
-//System.out.println("MathMapping.refreshVariables()");
-
-	//
-	// non-constant dependent variables require a function
-	//
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
-	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = enum1.nextElement();
-		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
-		if (scm.getDependencyExpression() != null && !scs.isConstant()){
-			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));
-			scm.setVariable(null);
-		}
-	}
-	
+		
 	//
 	// non-constant independent variables require either a membrane or volume variable
 	//
@@ -919,7 +912,7 @@ protected void refreshVariables() throws MappingException {
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
-		if (scm.getDependencyExpression() == null && (!scs.isConstant() || getSimulationContext().hasEventAssignment(scs.getSpeciesContext()))){
+//		if (scm.getDependencyExpression() == null && (!scs.isConstant() || getSimulationContext().hasEventAssignment(scs.getSpeciesContext()))){
 			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 			Structure struct = scm.getSpeciesContext().getStructure();
 			Domain domain = null;
@@ -946,7 +939,7 @@ protected void refreshVariables() throws MappingException {
 				throw new MappingException("class "+scm.getSpeciesContext().getStructure().getClass()+" not supported");
 			}
 			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
-		}
+//		}
 	}
 
 }
