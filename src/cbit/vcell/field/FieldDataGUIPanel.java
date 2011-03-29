@@ -38,6 +38,8 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
@@ -47,11 +49,15 @@ import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.FieldDataWindowManager.FDSimBioModelInfo;
+import cbit.vcell.client.FieldDataWindowManager.FDSimMathModelInfo;
+import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
@@ -677,6 +683,7 @@ private javax.swing.JPanel getJPanel1() {
 			getJPanel1().add(getJButtonFDFromSim(), constraintsJButtonFDFromSim);
 
 			final JButton fromPslidExperimentalButton = new JButton();
+			fromPslidExperimentalButton.setVisible(false);//PSLID disabled because not working
 			fromPslidExperimentalButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					getPslidSelections(modePslidExperimentalData);
@@ -690,6 +697,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.add(fromPslidExperimentalButton, gridBagConstraintsE);
 			
 			final JButton fromPslidGeneratedButton = new JButton();
+			fromPslidGeneratedButton.setVisible(false);//PSLID disabled because not working
 			fromPslidGeneratedButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					getPslidSelections(modePslidGeneratedModel);
@@ -923,7 +931,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	try{
 		final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
-		final FieldDataWindowManager.SimInfoHolder simInfoHolder = fieldDataWindowManager.selectSimulationFromDesktop(this);
+		final FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = fieldDataWindowManager.selectOpenModelsFromDesktop(this,true,"Select Simulation for Field Data");
 		if(simInfoHolder == null){
 			PopupGenerator.showErrorDialog(this, "Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
 			return;
@@ -1112,14 +1120,23 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 
 }
 
-private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	if(actionEvent.getSource() == getJButtonCreateGeom()){
-		DocumentWindow.showGeometryCreationWarning(FieldDataGUIPanel.this);
-		return;
+private class SelectedTimes{
+	 private double[] times;
+	 private int selectedIndex;
+	public SelectedTimes(double[] times, int selectedIndex) {
+		super();
+		this.times = times;
+		this.selectedIndex = selectedIndex;
 	}
-	TreePath selPath = getJTree1().getSelectionPath();
-	final DefaultMutableTreeNode varNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
-	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
+	public double[] getTimes() {
+		return times;
+	}
+	public int getSelectedIndex() {
+		return selectedIndex;
+	}
+	 
+}
+private SelectedTimes selectTimeFromNode(DefaultMutableTreeNode mainNode){
 	Enumeration<DefaultMutableTreeNode> children = mainNode.children();
 	double[] times = null;
 	while(children.hasMoreElements()){
@@ -1130,7 +1147,6 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		}
 	}
 
-	int begIndex = 0;
 	if(times != null && times.length > 1){
 		String[] timesStr = new String[times.length];
 		for(int i=0;i<times.length;i+= 1){
@@ -1142,24 +1158,42 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		JComboBox jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new String[0]));
 		jp.add(jcBeg);
 		
-		if(PopupGenerator.showComponentOKCancelDialog(this, jp,"Select Field Data time for function") ==JOptionPane.OK_OPTION){
-			begIndex = jcBeg.getSelectedIndex();
-		}else{
-			return;
+		if(PopupGenerator.showComponentOKCancelDialog(this, jp,"Select Field Data timepoint") ==JOptionPane.OK_OPTION){
+			return new SelectedTimes(times, jcBeg.getSelectedIndex());
 		}
+		throw UserCancelException.CANCEL_GENERIC;
 	}
+	return new SelectedTimes(new double[] {0.0}, 0);
+}
+
+private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	if(actionEvent.getSource() == getJButtonCreateGeom()){
+		DocumentWindow.showGeometryCreationWarning(FieldDataGUIPanel.this);
+		return;
+	}
+	TreePath selPath = getJTree1().getSelectionPath();
+	final DefaultMutableTreeNode varNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
+	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
+	
+	SelectedTimes selectedTimes = null;
+	try{
+		selectedTimes = selectTimeFromNode(mainNode);
+	}catch(UserCancelException e){
+		return;
+	}
+	double selectedTime = selectedTimes.getTimes()[selectedTimes.getSelectedIndex()];
+	
 	if(actionEvent.getSource() == getJButtonFDCopyRef()){
 		String fieldFunctionReference =
 			SimulationData.createCanonicalFieldFunctionSyntax(
 					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName(),
 					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
-					times[begIndex],((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());
+					selectedTime,((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());
 	
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
 	}
 	
 }
-
 private void jTree1_TreeExpanded(final javax.swing.event.TreeExpansionEvent treeExpansionEvent) {
 	if(fieldDataWindowManager == null){
 		return;
@@ -1545,7 +1579,88 @@ private JButton getJButtonCreateGeom() {
 		jButtonCreateGeom.setText("Create Geom");
 		jButtonCreateGeom.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
-				jButtonFDCopyRef_ActionPerformed(e);
+				try {
+					RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
+					javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
+					javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+					if(lastPathComponent.getUserObject() instanceof FieldDataVarList){
+						DataIdentifier dataIdentifier =
+						((FieldDataVarList)lastPathComponent.getUserObject()).dataIdentifier;
+						
+						TreePath ppPath = selPath.getParentPath().getParentPath();
+						javax.swing.tree.DefaultMutableTreeNode ppLastPathComp = (javax.swing.tree.DefaultMutableTreeNode)ppPath.getLastPathComponent();
+						if(ppLastPathComp.getUserObject() instanceof FieldDataMainList){
+							ExternalDataIdentifier extDataID =
+								((FieldDataMainList)ppLastPathComp.getUserObject()).externalDataIdentifier;
+							SelectedTimes selectedTimes = null;
+							try{
+								selectedTimes = selectTimeFromNode(ppLastPathComp);
+							}catch(UserCancelException uce){
+								return;
+							}
+							
+							final OpenModelInfoHolder openModelInfoHolder =
+								fieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this, false,"Select BioModel or MathModel to receive new geometry");
+							if(openModelInfoHolder == null){
+								DialogUtils.showErrorDialog(FieldDataGUIPanel.this,
+										"Before proceeding, please open a Biomodel application or Mathmodel you wish to apply a new Field Data Geometry to");
+								return;
+							}
+
+							AsynchClientTask applyGeomTask = new AsynchClientTask("apply geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+								@Override
+								public void run(Hashtable<String, Object> hashTable) throws Exception {
+									Geometry newGeom = (Geometry)hashTable.get("doc");
+									final String OK_OPTION = "Ok";
+									if(openModelInfoHolder instanceof FDSimMathModelInfo){
+										Version version = ((FDSimMathModelInfo)openModelInfoHolder).getMathModelVersion();
+										String modelName = (version==null?"NoName":version.getName());
+										if(newGeom.getName() == null){
+											newGeom.setName(modelName+"_"+ClientRequestManager.generateDateTimeString());
+										}
+										String message = "Set new FieldData derived geometry on MathModel '"+modelName+"'";
+										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){
+											((FDSimMathModelInfo)openModelInfoHolder).getMathDescription().setGeometry(newGeom);											
+										}
+									}else if(openModelInfoHolder instanceof FDSimBioModelInfo){
+										Version version = ((FDSimBioModelInfo)openModelInfoHolder).getBioModelVersion();
+										String modelName = (version==null?"NoName":version.getName());
+										String simContextName = ((FDSimBioModelInfo)openModelInfoHolder).getSimulationContext().getName();
+										if(newGeom.getName() == null){
+											newGeom.setName(modelName+"_"+simContextName+"_"+ClientRequestManager.generateDateTimeString());
+										}
+										String message = "Set new FieldData derived geometry on BioModel '"+modelName+"' , Application '"+simContextName+"'";
+										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){
+											((FDSimBioModelInfo)openModelInfoHolder).getSimulationContext().setGeometry(newGeom);
+										}
+									}
+								}
+							};
+							VCDocument.GeomFromFieldDataCreationInfo geomFromFieldDataCreationInfo =
+								new VCDocument.GeomFromFieldDataCreationInfo(
+									extDataID,dataIdentifier.getName(),selectedTimes.getSelectedIndex());
+							AsynchClientTask[] createGeomTask = clientRequestManager.createNewGeometryTasks(fieldDataWindowManager,
+									geomFromFieldDataCreationInfo,
+									new AsynchClientTask[] {applyGeomTask},
+									"Apply Geometry");
+
+							ClientTaskDispatcher.dispatch(FieldDataGUIPanel.this, new Hashtable<String, Object>(),
+									createGeomTask, false,false,null,true);
+
+						}
+						
+					}
+				}catch (UserCancelException e1) {
+					//ignore
+				}catch (Exception e1) {
+					e1.printStackTrace();
+					DialogUtils.showErrorDialog(FieldDataGUIPanel.this, e1.getMessage());
+				}
+
+//				jButtonFDCopyRef_ActionPerformed(e);
+				
+				
+				
 				//fieldDataWindowManager.newDocument(VCDocument.GEOMETRY_DOC, option);
 //				copyMethod(COPY_CRNL);
 ////				javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
