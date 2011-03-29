@@ -997,16 +997,16 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			SpeciesCountParameter spCountParam = getSpeciesCountParameter(speciesContextSpecs[i].getSpeciesContext());
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
-			if (scSpecs[i].isConstant()) {
-				continue;
-			}
+//			if (scSpecs[i].isConstant()) {
+//				continue;
+//			}
 			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null)
 			{
 				VarIniCondition varIni = null;
-				if(getSimulationContext().isUsingConcentration())
+				if(getSimulationContext().isUsingConcentration() && !scSpecs[i].isConstant())
 				{
 					varIni = new VarIniPoissonExpectedCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
 				}

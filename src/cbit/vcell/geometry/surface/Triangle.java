@@ -32,20 +32,34 @@ public double getArea() {
 	//
 	// triangles are always convex and planar ... just use half the cross product.
 	//
+	double area = 0;
 	Node node_0 = getNodes(0);
 	Node node_1 = getNodes(1);
 	Node node_2 = getNodes(2);
-	double vect1x = node_0.getX()-node_1.getX(); 
-	double vect1y = node_0.getY()-node_1.getY(); 
-	double vect1z = node_0.getZ()-node_1.getZ();
-	double vect2x = node_0.getX()-node_2.getX(); 
-	double vect2y = node_0.getY()-node_2.getY(); 
-	double vect2z = node_0.getZ()-node_2.getZ(); 
-	double crossx = vect1y*vect2z - vect1z*vect2y;
-	double crossy = -(vect1x*vect2z - vect1z*vect2x);
-	double crossz = vect1x*vect2y - vect1y*vect2x;
-	double area = Math.sqrt(crossx*crossx + crossy*crossy + crossz*crossz)/2.0;
-	
+	if(node_2 != null)
+	{
+		double vect1x = node_0.getX()-node_1.getX(); 
+		double vect1y = node_0.getY()-node_1.getY(); 
+		double vect1z = node_0.getZ()-node_1.getZ();
+		double vect2x = node_0.getX()-node_2.getX(); 
+		double vect2y = node_0.getY()-node_2.getY(); 
+		double vect2z = node_0.getZ()-node_2.getZ(); 
+		double crossx = vect1y*vect2z - vect1z*vect2y;
+		double crossy = -(vect1x*vect2z - vect1z*vect2x);
+		double crossz = vect1x*vect2y - vect1y*vect2x;
+		area = Math.sqrt(crossx*crossx + crossy*crossy + crossz*crossz)/2.0;
+	}
+	else//two dimensional geometry assume z dimension to be unity
+	{
+		double vect1x = node_0.getX()-node_1.getX(); 
+		double vect1y = node_0.getY()-node_1.getY(); 
+		double vect1z = node_0.getZ()-node_1.getZ();
+		if(vect1z != 0)
+		{
+			System.err.println("Expecting 2D triangle to be in line segament X,Y plane from node0 to node1");
+		}
+		area = Math.sqrt(vect1x*vect1x + vect1y*vect1y);
+	}
 	return area;
 }
 

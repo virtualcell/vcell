@@ -912,4 +912,16 @@ public Expression substitueKineticParameter(Expression exp, boolean substituteCo
 public String getTypeLabel() {
 	return "Reaction";
 }
+
+public boolean hasCatalyst()
+{
+	for(ReactionParticipant rp : fieldReactionParticipants)
+	{
+		if(rp instanceof Catalyst)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 }
