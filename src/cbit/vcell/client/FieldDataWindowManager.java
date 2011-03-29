@@ -23,6 +23,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
@@ -44,6 +45,8 @@ import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
@@ -61,12 +64,12 @@ public class FieldDataWindowManager
 	private JFrame currentlyViewedJFrame;
 	private PDEDataViewer currentlyViewedPDEDV;
 	
-	public static abstract class SimInfoHolder{
+	public static abstract class OpenModelInfoHolder{
 		public final SimulationInfo simInfo;
 		public final int jobIndex;
 		//public final boolean isTimeUniform;
 		public final boolean isCompartmental;
-		protected SimInfoHolder(
+		protected OpenModelInfoHolder(
 				SimulationInfo argSimInfo,
 				int argJobIndex,
 				//boolean argistu,
@@ -79,41 +82,48 @@ public class FieldDataWindowManager
 			
 		}
 	}
-	public static class FDSimMathModelInfo extends SimInfoHolder{
-		private KeyValue mathModelKey;
+	public static class FDSimMathModelInfo extends OpenModelInfoHolder{
+		private Version version;
+		private MathDescription mathDescription;
 		public FDSimMathModelInfo(
-				KeyValue mmK,
+				Version version,
+				MathDescription mathDescription,
 				SimulationInfo argSI,
 				int jobIndex,
 				//boolean argistu,
 				boolean argisc
 				){
 			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
-			mathModelKey = mmK;
+			this.version = version;
+			this.mathDescription = mathDescription;
 		}
-		public KeyValue getMathModelKey(){
-			return mathModelKey;
+		public Version getMathModelVersion(){
+			return version;
+		}
+		public MathDescription getMathDescription(){
+			return mathDescription;
 		}
 	}
-	public static class FDSimBioModelInfo extends SimInfoHolder{
-		private KeyValue bioModelKey;
-		private String simulationContextName;
+	public static class FDSimBioModelInfo extends OpenModelInfoHolder{
+		private Version version;
+		private SimulationContext simulationContext;
 		public FDSimBioModelInfo(
-				KeyValue bmK,String scName,
+				Version version,
+				SimulationContext simulationContext,
 				SimulationInfo argSI,
 				int jobIndex,
 				//boolean argistu,
 				boolean argisc
 			){
 			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
-			bioModelKey = bmK;
-			simulationContextName = scName;
+			this.version = version;
+			this.simulationContext = simulationContext;
 		}
-		public KeyValue getBioModelKey(){
-			return bioModelKey;
+		public Version getBioModelVersion(){
+			return version;
 		}
-		public String getSimulationContextName(){
-			return simulationContextName;
+		public SimulationContext getSimulationContext(){
+			return simulationContext;
 		}
 	}
 	
@@ -154,44 +164,58 @@ public class FieldDataWindowManager
 		fieldDataGUIPanel.updateJTree(getRequestManager());
 	}
 	
-	public SimInfoHolder selectSimulationFromDesktop(Container c) throws UserCancelException,DataAccessException{
+	public OpenModelInfoHolder selectOpenModelsFromDesktop(Container c,boolean bIncludeSimulations,String title) throws UserCancelException,DataAccessException{
 		try {
 			BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			SimInfoHolder[] simInfoHolders = getRequestManager().getOpenDesktopDocumentInfos();
+			OpenModelInfoHolder[] simInfoHolders = getRequestManager().getOpenDesktopDocumentInfos(bIncludeSimulations);
 			if(simInfoHolders == null || simInfoHolders.length == 0){
 				return null;
 			}
-			String[] colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
+			String[] colNames = null;
+			if(bIncludeSimulations){
+				colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
+			}else{
+				colNames = new String[] {"Model","Type","Application","Owner","Date"};
+			}
 			Vector<String[]> rowsV = new Vector<String[]>();
-			Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
+			Vector<OpenModelInfoHolder> simInfoHolderV = new Vector<OpenModelInfoHolder>();
 			for(int i=0;i<simInfoHolders.length;i+= 1){
-				if(simInfoHolders[i].isCompartmental){
+				if(bIncludeSimulations && simInfoHolders[i].isCompartmental){
 					continue;//skip, only spatial simInfos are used for Field Data
 				}
 				String[] rows = new String[colNames.length];
+				int colIndex = 0;
 				if(simInfoHolders[i] instanceof FDSimMathModelInfo){
-					MathModelInfo mmInfo =
-						getRequestManager().getDocumentManager().getMathModelInfo(
-								((FDSimMathModelInfo)simInfoHolders[i]).getMathModelKey());
-					rows[0] = simInfoHolders[i].simInfo.getName();
-					rows[1] = simInfoHolders[i].jobIndex+"";
-					rows[2] = mmInfo.getVersion().getName();
-					rows[3] = "MathModel";
-					rows[4] = "";
-					rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
-					rows[6] = mmInfo.getVersion().getDate().toString();
+					MathModelInfo mmInfo = null;
+					if(((FDSimMathModelInfo)simInfoHolders[i]).getMathModelVersion() != null){
+						mmInfo = getRequestManager().getDocumentManager().getMathModelInfo(
+								((FDSimMathModelInfo)simInfoHolders[i]).getMathModelVersion().getVersionKey());
+					}
+					if(bIncludeSimulations){
+						rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+						rows[colIndex++] = simInfoHolders[i].jobIndex+"";
+					}
+					rows[colIndex++] = (mmInfo==null?"New Document":mmInfo.getVersion().getName());
+					rows[colIndex++] = "MathModel";
+					rows[colIndex++] = "";
+					rows[colIndex++] = (simInfoHolders[i].simInfo==null?"never saved":simInfoHolders[i].simInfo.getOwner().getName());
+					rows[colIndex++] = (mmInfo==null?"never saved":mmInfo.getVersion().getDate().toString());
 					
 				}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
-					BioModelInfo bmInfo =
-						getRequestManager().getDocumentManager().getBioModelInfo(
-								((FDSimBioModelInfo)simInfoHolders[i]).getBioModelKey());					
-					rows[0] = simInfoHolders[i].simInfo.getName();
-					rows[1] = simInfoHolders[i].jobIndex+"";
-					rows[2] = bmInfo.getVersion().getName();
-					rows[3] = "BioModel";
-					rows[4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
-					rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
-					rows[6] = bmInfo.getVersion().getDate().toString();
+					BioModelInfo bmInfo = null;
+					if(((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion() != null){
+						bmInfo = getRequestManager().getDocumentManager().getBioModelInfo(
+								((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion().getVersionKey());
+					}
+					if(bIncludeSimulations){
+						rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+						rows[colIndex++] = simInfoHolders[i].jobIndex+"";
+					}
+					rows[colIndex++] = (bmInfo==null?"New Document":bmInfo.getVersion().getName());
+					rows[colIndex++] = "BioModel";
+					rows[colIndex++] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContext().getName();
+					rows[colIndex++] = (simInfoHolders[i].simInfo==null?"never saved":simInfoHolders[i].simInfo.getOwner().getName());
+					rows[colIndex++] = (bmInfo==null?"never saved":bmInfo.getVersion().getDate().toString());
 				}
 				rowsV.add(rows);
 				simInfoHolderV.add(simInfoHolders[i]);
@@ -203,7 +227,7 @@ public class FieldDataWindowManager
 			rowsV.copyInto(rows);
 			BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
-					getComponent(), "Select Simulation for Field Data",
+					getComponent(), title,
 					colNames, rows, ListSelectionModel.SINGLE_SELECTION);
 			if(selectionIndexArr != null && selectionIndexArr.length > 0){
 				return simInfoHolderV.elementAt(selectionIndexArr[0]);//simInfoHolders[selectionIndexArr[0]];

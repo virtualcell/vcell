@@ -41,7 +41,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Origin;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelChildSummary;
@@ -77,9 +76,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
@@ -2942,64 +2940,85 @@ public void updateStatusNow() {
 	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 }
 
-public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
-	Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
+public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulations) throws DataAccessException{
+	Vector<OpenModelInfoHolder> simInfoHolderV = new Vector<OpenModelInfoHolder>();
 	Enumeration<TopLevelWindowManager> dwmEnum = getMdiManager().getWindowManagers();
 	while(dwmEnum.hasMoreElements()){
 		TopLevelWindowManager tlwm = dwmEnum.nextElement();
 		if(tlwm instanceof DocumentWindowManager){
 			DocumentWindowManager dwm = (DocumentWindowManager)tlwm;
 			VCDocument vcDoc = dwm.getVCDocument();
-			if(vcDoc.getVersion() != null){
+			//if(vcDoc.getVersion() != null){
 				if(vcDoc.getDocumentType() == VCDocument.BIOMODEL_DOC){
-					BioModel bioModel =
-						getDocumentManager().getBioModel(vcDoc.getVersion().getVersionKey());
+					BioModel bioModel = (BioModel)vcDoc;
+						//getDocumentManager().getBioModel(vcDoc.getVersion().getVersionKey());
 					SimulationContext[] simContexts = bioModel.getSimulationContexts();
 					for(int i=0;i<simContexts.length;i+= 1){
-						if(simContexts[i].getGeometry() == null){
-							throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen BioModel document "+bioModel.getName()+" has no Geometry");
+						if(bIncludeSimulations){
+							if(simContexts[i].getGeometry() == null){
+								throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen BioModel document "+bioModel.getName()+" has no Geometry");
+							}
+							Simulation[] sims = simContexts[i].getSimulations();
+							for(int j=0;j<sims.length;j+= 1){
+								for(int k=0;k<sims[j].getScanCount();k+= 1){
+									FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
+										new FieldDataWindowManager.FDSimBioModelInfo(
+												bioModel.getVersion(),
+												simContexts[i],sims[j].getSimulationInfo(),
+												k,
+												//!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+												simContexts[i].getGeometry().getDimension() == 0
+										);
+									simInfoHolderV.add(simInfoHolder);
+								}
+							}
+						}else{
+							FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
+								new FieldDataWindowManager.FDSimBioModelInfo(
+										bioModel.getVersion(),
+										simContexts[i],
+										null,-1,simContexts[i].getGeometry().getDimension() == 0
+							);
+							simInfoHolderV.add(simInfoHolder);
 						}
-						Simulation[] sims = simContexts[i].getSimulations();
-						for(int j=0;j<sims.length;j+= 1){
-							for(int k=0;k<sims[j].getScanCount();k+= 1){
-								FieldDataWindowManager.SimInfoHolder simInfoHolder =
-									new FieldDataWindowManager.FDSimBioModelInfo(
-											bioModel.getVersion().getVersionKey(),
-											simContexts[i].getName(),sims[j].getSimulationInfo(),
+					}
+				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC) {
+					MathModel mathModel = (MathModel) vcDoc;
+						//getDocumentManager().getMathModel(vcDoc.getVersion().getVersionKey());
+					if(bIncludeSimulations){
+						if(mathModel.getMathDescription() == null || mathModel.getMathDescription().getGeometry() == null){
+							throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen MathModel document "+mathModel.getName()+" has either no MathDescription or no Geometry");
+						}
+						Simulation[] sims = mathModel.getSimulations();
+						for(int i=0;i<sims.length;i+= 1){
+							for(int k=0;k<sims[i].getScanCount();k+= 1){
+								FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
+									new FieldDataWindowManager.FDSimMathModelInfo(
+											mathModel.getVersion(),
+											mathModel.getMathDescription(),
+											sims[i].getSimulationInfo(),
 											k,
-											//!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
-											simContexts[i].getGeometry().getDimension() == 0
+											//!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+											mathModel.getMathDescription().getGeometry().getDimension() == 0
 									);
 								simInfoHolderV.add(simInfoHolder);
 							}
 						}
-					}
-				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC) {
-					MathModel mathModel =
-						getDocumentManager().getMathModel(vcDoc.getVersion().getVersionKey());
-					if(mathModel.getMathDescription() == null || mathModel.getMathDescription().getGeometry() == null){
-						throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen MathModel document "+mathModel.getName()+" has either no MathDescription or no Geometry");
-					}
-					Simulation[] sims = mathModel.getSimulations();
-					for(int i=0;i<sims.length;i+= 1){
-						for(int k=0;k<sims[i].getScanCount();k+= 1){
-							FieldDataWindowManager.SimInfoHolder simInfoHolder =
-								new FieldDataWindowManager.FDSimMathModelInfo(
-										mathModel.getVersion().getVersionKey(),
-										sims[i].getSimulationInfo(),
-										k,
-										//!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
-										mathModel.getMathDescription().getGeometry().getDimension() == 0
-								);
-							simInfoHolderV.add(simInfoHolder);
-						}
+					}else{
+						FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
+							new FieldDataWindowManager.FDSimMathModelInfo(
+									mathModel.getVersion(),
+									mathModel.getMathDescription(),
+									null,-1,mathModel.getMathDescription().getGeometry().getDimension() == 0
+						);
+						simInfoHolderV.add(simInfoHolder);
 					}
 				}
-			}
+			//}
 		}
 		
 	}
-	SimInfoHolder[] simInfoHolderArr = new SimInfoHolder[simInfoHolderV.size()];
+	OpenModelInfoHolder[] simInfoHolderArr = new OpenModelInfoHolder[simInfoHolderV.size()];
 	simInfoHolderV.copyInto(simInfoHolderArr);
 	return simInfoHolderArr;
 }
