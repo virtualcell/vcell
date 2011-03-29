@@ -1369,6 +1369,7 @@ private JButton ivjButtonVisit;
 private JButton getJButtonVisit(){
 	if (ivjButtonVisit == null) {
 		ivjButtonVisit = new javax.swing.JButton();
+		ivjButtonVisit.setVisible(false);
 		ivjButtonVisit.setName("JButtonVisit");
 		ivjButtonVisit.setText("Open in VisIt");
 		ivjButtonVisit.addActionListener(ivjEventHandler);
