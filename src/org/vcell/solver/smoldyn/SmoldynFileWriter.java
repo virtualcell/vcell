@@ -397,7 +397,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 		while (subDomainEnumeration.hasMoreElements()) {
 			SubDomain subDomain = subDomainEnumeration.nextElement();
 			if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + " " + subDomain.getName());
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynKeyword.all + ") " + subDomain.getName());
 			}
 		}
 	}	
@@ -523,7 +523,7 @@ private void writeReactions() throws ExpressionException, MathException {
 			if(subdomain instanceof CompartmentSubDomain) {
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 			} else if (subdomain instanceof MembraneSubDomain){
-				printWriter.print(SmoldynKeyword.reaction + " " + pjp.getName() + " ");
+				printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 			}
 			// reactants
 			if (reactants.size() == 0) {
