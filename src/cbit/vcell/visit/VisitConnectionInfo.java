@@ -28,7 +28,7 @@ public class VisitConnectionInfo implements Serializable {
 	// only use on server ... to be removed.
 	@Deprecated
 	public static VisitConnectionInfo createHardCodedVisitConnectionInfo(User user){
-		return new VisitConnectionInfo("10",PropertyLoader.getRequiredProperty("vcell.visit.mdserverhost"),user,new Date(),PropertyLoader.getRequiredProperty("vcell.visit.datalocation"));
+		return new VisitConnectionInfo("10",PropertyLoader.getRequiredProperty(PropertyLoader.visitMDServerHostProperty),user,new Date(),PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
 	}
 	
 	public String getAuxSessionKey() {
