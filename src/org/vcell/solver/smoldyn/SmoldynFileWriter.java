@@ -239,8 +239,15 @@ public class SmoldynFileWriter extends SolverFileWriter
 		
 		vcellPrintProgress,
 		vcellWriteOutput,
-		vcellDataProcess,
+		vcellDataProcess,		
 //		vcellReact1KillMolecules,
+		
+		dimension,
+		sampleSize,
+		numMembraneElements,
+		variable,
+		membrane,
+		volume,
 	}
 	
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
@@ -410,17 +417,25 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 	
 			// DON'T CHANGE THE ORDER HERE.
 			// DataProcess must be before vcellWriteOutput
-			if (simulation.getDataProcessingInstructions() != null) {
-				writeDataProcessor();
-			}
-			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + cartesianMesh.getNumMembraneElements() + " " + sampleSize.getX());
-			if (dimension > 1) {
+			writeDataProcessor();
+
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " begin");
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.dimension + " " + dimension);
+			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.sampleSize + " " + sampleSize.getX());
+			if (dimension > 1) {				
 				printWriter.print(" " + sampleSize.getY());
 				if (dimension > 2) {
 					printWriter.print(" " + sampleSize.getZ());			
 				}
 			}
 			printWriter.println();
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.numMembraneElements + " " + cartesianMesh.getNumMembraneElements());
+			for (ParticleVariable pv : particleVariableList) {
+				String domainName = pv.getDomain().getName();
+				String type = simulation.getMathDescription().getCompartmentSubDomain(domainName) == null ? VCellSmoldynKeyword.membrane.name() : VCellSmoldynKeyword.volume.name();
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.variable + " " + pv.getName() + " " + type + " " + domainName);
+			}
+			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " end");
 		} else {
 			throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 		}
@@ -432,9 +447,9 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
-		return;
-	}
-	
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + DataProcessingInstructions.ROI_TIME_SERIES);
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
+	} else {
 		FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
 		if (fdis == null) {
 			throw new DataAccessException("Can't find sample image in data processing instructions");
@@ -472,6 +487,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
 	}
+}
 
 private void writeReactions() throws ExpressionException, MathException {
 	printWriter.println("# reaction in compartments");
