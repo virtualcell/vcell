@@ -47,7 +47,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.solvers.LocalSolverController;
 /**
@@ -669,7 +668,7 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
  * @param simID java.lang.String
  */
 private synchronized File getSubdomainFile() throws FileNotFoundException {
-	File subdomainFile = new File(userDirectory,vcDataId.getID()+FVSolver.SUBDOMAINS_FILE_SUFFIX);
+	File subdomainFile = new File(userDirectory,vcDataId.getID()+SimDataConstants.SUBDOMAINS_FILE_SUFFIX);
 	if (subdomainFile.exists()){
 		return subdomainFile;
 	}
@@ -1661,6 +1660,12 @@ public static String createCanonicalFunctionsFileName(KeyValue fieldDataKey,int 
 	return
 		createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
 		SimDataConstants.FUNCTIONFILE_EXTENSION;
+}
+
+public static String createCanonicalSubdomainFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	SimDataConstants.SUBDOMAINS_FILE_SUFFIX;
 }
 
 public static String createCanonicalResampleFileName(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFuncArgs){

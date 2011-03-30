@@ -52,5 +52,9 @@ public interface SimDataConstants {
 	
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
+
+	public static final String SUBDOMAINS_FILE_SUFFIX = ".subdomains";
+
+	public static final String VCG_FILE_EXTENSION = ".vcg";
 	
 }

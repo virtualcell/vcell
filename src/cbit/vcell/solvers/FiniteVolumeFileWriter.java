@@ -936,7 +936,7 @@ private void writeMeshFile() throws IOException {
 	if (bInlineVCG) {
 		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + FVSolver.VCG_FILE_EXTENSION).getAbsolutePath());
+		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
 	printWriter.println("MESH_END");
 	printWriter.println();

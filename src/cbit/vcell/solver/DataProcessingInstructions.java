@@ -19,6 +19,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XMLTags;
 
+@SuppressWarnings("serial")
 public final class DataProcessingInstructions implements Matchable, Serializable {
 	public static final String VFRAP = "VFRAP";
 	public static final String ROI_TIME_SERIES = "RoiTimeSeries";
@@ -129,6 +130,9 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 					} catch (ExpressionException e) {
 						e.printStackTrace();
 						throw new RuntimeException(e.getMessage());
+					} catch (Exception e){
+						e.printStackTrace();
+						throw new RuntimeException("Failed to load data processing script.");
 					}
 				}
 			}
