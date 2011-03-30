@@ -125,7 +125,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
-	private JMenu pluginMenu = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjSybilMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
@@ -890,26 +889,6 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 	return ivjAbout_BoxMenuItem;
 }
 
-/**
- * Return the BNGMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JMenu getPluginMenu() {
-	if (pluginMenu == null) {
-		try {
-			pluginMenu = new javax.swing.JMenu();
-			pluginMenu.setName("Plugins");
-			pluginMenu.setText("Plugins");
-			pluginMenu.add(getRunBNGMenuItem());
-			pluginMenu.add(getSybilMenuItem());
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
-	}
-	return pluginMenu;
-}
-
 private void startSybil(){
 	if (getWindowManager() instanceof BioModelWindowManager){
 		((BioModelWindowManager)getWindowManager()).showSybilWindow();
@@ -926,7 +905,9 @@ private javax.swing.JMenu getToolMenu() {
 		try {
 			toolMenu = new javax.swing.JMenu();
 			toolMenu.setName("ToolMenu");
-			toolMenu.setText("Tool");
+			toolMenu.setText("Tools");
+			toolMenu.add(getRunBNGMenuItem());
+			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
 			// user code begin {1}
 			// user code end
@@ -1081,7 +1062,6 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
-			ivjDocumentWindowJMenuBar.add(getPluginMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}

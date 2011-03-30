@@ -102,10 +102,7 @@ private VCellClient() {
  */
 private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
-	try {
-		/* Set Look and Feel */
-		VCellLookAndFeel.setVCellLookAndFeel();
-		
+	try {		
 		/* Create the first document desktop */
 		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
@@ -239,6 +236,9 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
 public static VCellClient startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
+	/* Set Look and Feel */
+	VCellLookAndFeel.setVCellLookAndFeel();
+
 	// instantiate app
 	final VCellClient vcellClient = new VCellClient();
 	
