@@ -9,13 +9,13 @@ import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
-import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SubdomainInfo;
 
@@ -78,7 +78,7 @@ protected void initialize() throws SolverException
 	
 	// write subdomains file
 	try {
-		SubdomainInfo.write(new File(getBaseName() + FVSolver.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
+		SubdomainInfo.write(new File(getBaseName() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
 	} catch (IOException e1) {
 		e1.printStackTrace();
 		throw new SolverException(e1.getMessage());

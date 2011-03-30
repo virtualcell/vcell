@@ -94,8 +94,8 @@ private void editDataProcessor(boolean bEdit) {
 	JLabel nameLabel = new JLabel("Name");			
 	panel.add(nameLabel);
 	JComboBox nameComboBox = new JComboBox();
-	nameComboBox.addItem(DataProcessingInstructions.VFRAP);
 	nameComboBox.addItem(DataProcessingInstructions.ROI_TIME_SERIES);
+	nameComboBox.addItem(DataProcessingInstructions.VFRAP);
 	if (dpi != null) {
 		nameComboBox.setSelectedItem(dpi.getScriptName());
 	}

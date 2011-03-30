@@ -969,6 +969,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 				meshFile_orig = new File(sourceDir,SimulationData.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
 			}
 			File funcFile_orig = new File(sourceDir,SimulationData.createCanonicalFunctionsFileName(origSimKey,simJobIndex,isOldStyle));
+			File subdomainFile_orig = new File(sourceDir,SimulationData.createCanonicalSubdomainFileName(origSimKey,simJobIndex,isOldStyle));
 			File fdLogFile_orig = new File(sourceDir,SimulationData.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
 			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle));
 			if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
@@ -978,6 +979,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
 			File meshFile_new = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+			File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false));
 			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists()){
@@ -990,6 +992,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			//Simple copy of mesh and funcfile because they do not have to be changed
 			FileUtils.copyFile(meshFile_orig, meshFile_new, false, false, 8*1024);
 			FileUtils.copyFile(funcFile_orig, funcFile_new, false, false, 8*1024);
+			FileUtils.copyFile(subdomainFile_orig, subdomainFile_new, false, false, 8*1024);
 			
 			//Copy Log file and replace original simID with ExternalDataIdentifier id
 	        BufferedWriter writer = null;

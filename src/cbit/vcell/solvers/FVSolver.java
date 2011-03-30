@@ -37,9 +37,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * 
  */
 public class FVSolver extends AbstractCompiledSolver {
-	public static final String SUBDOMAINS_FILE_SUFFIX = ".subdomains";
-	public static final String VCG_FILE_EXTENSION = ".vcg";
-	
 	protected CppCoderVCell cppCoderVCell = null;
 	private SimResampleInfoProvider simResampleInfoProvider;
 	private Geometry resampledGeometry = null;
@@ -395,9 +392,9 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 	
 	try {
 		// write subdomains file
-		SubdomainInfo.write(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
+		SubdomainInfo.write(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
 		
-		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+VCG_FILE_EXTENSION)));
+		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+SimDataConstants.VCG_FILE_EXTENSION)));
 		GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
 				

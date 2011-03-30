@@ -25,6 +25,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -145,6 +146,15 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					if (result == null || !result.equals(UserMessage.OPTION_OK)) {
 						continue;
 					}
+				}
+				DataProcessingInstructions dataProcessingInstructions = sim.getDataProcessingInstructions();
+				try{
+					if (dataProcessingInstructions != null) {
+						dataProcessingInstructions.getSampleImageFieldData(sim.getVersion().getOwner());
+					}
+				}catch(Exception ex){
+					DialogUtils.showErrorDialog(documentWindowManager.getComponent(), "Problem found in simulation '" + sim.getName() + "':\n" + ex.getMessage());
+					continue;
 				}
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
