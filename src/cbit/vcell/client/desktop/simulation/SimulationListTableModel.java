@@ -292,30 +292,34 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						try {
 							boolean bValid = true;
 							double outputTime = Double.parseDouble((String)aValue);
-							if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
-								double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
-								
-								double suggestedInterval = outputTime;
-								if (outputTime < timeStep) {
-									suggestedInterval = timeStep;
-									bValid = false;
-								} else {
-									double n = outputTime/timeStep;
-									int intn = (int)Math.round(n);
-									if (intn != n) {
-										bValid = false;
-										suggestedInterval = (intn * timeStep);
-									}
-								} 
-								if (bValid) {
+							if (solverTaskDescription.getOutputTimeSpec().isUniform()) {
+								if (solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
 									newOts = new UniformOutputTimeSpec(outputTime);
-								} else {		
-									String ret = PopupGenerator.showWarningDialog(ownerTable, "Output Interval", "Output Interval must " +
-											"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
-											new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
-									if (ret.equals(UserMessage.OPTION_YES)) {
-										newOts = new UniformOutputTimeSpec(suggestedInterval);
+								} else {
+									double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
+									
+									double suggestedInterval = outputTime;
+									if (outputTime < timeStep) {
+										suggestedInterval = timeStep;
+										bValid = false;
+									} else {
+										double n = outputTime/timeStep;
+										int intn = (int)Math.round(n);
+										if (intn != n) {
+											bValid = false;
+											suggestedInterval = (intn * timeStep);
+										}
 									} 
+									if (bValid) {
+										newOts = new UniformOutputTimeSpec(outputTime);
+									} else {		
+										String ret = PopupGenerator.showWarningDialog(ownerTable, "Output Interval", "Output Interval must " +
+												"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
+												new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+										if (ret.equals(UserMessage.OPTION_YES)) {
+											newOts = new UniformOutputTimeSpec(suggestedInterval);
+										} 
+									}
 								}
 							}
 						} catch (NumberFormatException ex) {
