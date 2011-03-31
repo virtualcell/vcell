@@ -34,7 +34,6 @@
 	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="oracle_classes12.jar"/>
 	<classpathentry exported="true" kind="lib" path="copasi_build30.jar"/>
 	<classpathentry exported="true" kind="lib" path="js.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-api.jar"/>
@@ -42,5 +41,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
 	<classpathentry kind="lib" path="apache_commons_math_2.2.jar"/>
+	<classpathentry kind="lib" path="ojdbc5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
