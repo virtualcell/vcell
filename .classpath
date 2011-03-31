@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_4.8/nativelibs/Win32"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="lib" path="arq-2.8.1.jar"/>
+	<classpathentry kind="lib" path="xercesImpl-2.7.1.jar"/>
+	<classpathentry kind="lib" path="icu4j-3.4.4.jar"/>
+	<classpathentry kind="lib" path="iri-0.7.jar"/>
+	<classpathentry kind="lib" path="jena-2.6.2.jar"/>
+	<classpathentry kind="lib" path="log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="lucene-core-2.3.1.jar"/>
+	<classpathentry kind="lib" path="slf4j-api-1.5.6.jar"/>
+	<classpathentry kind="lib" path="slf4j-log4j12-1.5.6.jar"/>
+	<classpathentry kind="lib" path="stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="wstx-asl-3.2.9.jar"/>
+	<classpathentry kind="lib" path="xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="ome-xml_2009March15.zip"/>
+	<classpathentry exported="true" kind="lib" path="loci-common_2009March15.jar"/>
+	<classpathentry exported="true" kind="lib" path="bio-formats_2009March15.jar" sourcepath="/bio-formats"/>
+	<classpathentry kind="lib" path="sbmlj.jar"/>
+	<classpathentry kind="lib" path="JLink.jar"/>
+	<classpathentry kind="lib" path="new_activation.jar"/>
+	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
+	<classpathentry kind="lib" path="new_mail.jar"/>
+	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20080421.jar"/>
+	<classpathentry kind="lib" path="ojdbc5.jar"/>
+	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
+	<classpathentry kind="lib" path="sonic_Client.jar"/>
+	<classpathentry kind="lib" path="sonic_XA.jar"/>
+	<classpathentry kind="lib" path="sonic_Crypto.jar"/>
+	<classpathentry kind="lib" path="sonic_Selector.jar"/>
+	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
+	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
