@@ -454,16 +454,20 @@ public String toString() {
 }
 
 public void precomputeAll() throws GeometryException, ImageException, ExpressionException {
-	precomputeAll(false);
+	precomputeAll(true, false);
 }
 
-public void precomputeAll(boolean bForcePrecomputeSurfaces) throws GeometryException, ImageException, ExpressionException {
-	getGeometrySpec().updateSampledImage();
+public void precomputeAll(boolean bUpdateSampledImage, boolean bForcePrecomputeSurfaces) throws GeometryException, ImageException, ExpressionException {
+	if (bUpdateSampledImage) {
+		getGeometrySpec().updateSampledImage();
+	}
 	if (getDimension()>0 && (bForcePrecomputeSurfaces || getGeometrySurfaceDescription().getGeometricRegions()==null)) {
 		getGeometrySurfaceDescription().updateAll();					
 	}
 	
-	getGeometrySpec().fireAll();
+	if (bUpdateSampledImage) {
+		getGeometrySpec().fireAll();
+	}
 	if (getDimension()>0) {
 		getGeometrySurfaceDescription().fireAll();
 	}

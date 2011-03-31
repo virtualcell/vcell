@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Hashtable;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -12,18 +13,16 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
-import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.modeldb.ModelTable;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
@@ -159,11 +158,25 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			newValue.addPropertyChangeListener(eventHandler);
 		}
 		simulationContext = newValue;
-		applicationGeometryPanel.setSimulationContext(simulationContext);
-		applicationSettingsPanel.setSimulationContext(simulationContext);
-		applicationProtocolsPanel.setSimulationContext(simulationContext);
-		applicationSimulationsPanel.setSimulationContext(simulationContext);
-		showOrHideFittingPanel();
+		AsynchClientTask task1 = new AsynchClientTask("loading application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				bioModelWindowManager.prepareApplicationToLoad(simulationContext);
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask("showing application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				applicationGeometryPanel.setSimulationContext(simulationContext);
+				applicationSettingsPanel.setSimulationContext(simulationContext);
+				applicationProtocolsPanel.setSimulationContext(simulationContext);
+				applicationSimulationsPanel.setSimulationContext(simulationContext);
+				showOrHideFittingPanel();
+			}
+		};		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
 	}
 
 	private void showOrHideFittingPanel() {

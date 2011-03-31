@@ -881,6 +881,25 @@ public void showSybilWindow() {
 	}
 }
 
+public void prepareApplicationToLoad(SimulationContext simContext) throws Exception {
+	simContext.getGeometry().precomputeAll();
+	
+	Simulation[] simulations = simContext.getSimulations();
+	if (simulations.length > 0) {	
+		// preload simulation status
+		ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
+		for (Simulation sim : simulations){
+			SimulationInfo simulationInfo = sim.getSimulationInfo();
+			if (simulationInfo != null) {
+				simIDs.add(simulationInfo.getAuthoritativeVCSimulationIdentifier());
+			}
+		}
+		if (simIDs.size() > 0) {
+			getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
+		}
+	}
+}
+
 void prepareToLoad(BioModel doc) throws Exception {
 	if (applicationsHash.size() == 0) {
 		return;

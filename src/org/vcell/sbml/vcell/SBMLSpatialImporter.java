@@ -2646,7 +2646,7 @@ protected void addGeometry() {
 		
 		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
 		vcGsd.updateAll();
-		vcGeometry.precomputeAll();
+		vcGeometry.precomputeAll(false, false);
 	}   catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage());

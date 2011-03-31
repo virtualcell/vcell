@@ -515,22 +515,21 @@ private void showSizeDialog() {
 }
 
 public void stateChanged(ChangeEvent e) {
-	if (e.getSource() == tabbedPane) {
-		if (tabbedPane.getSelectedComponent() == surfaceViewer) {
-			try {
-				AsynchClientTask surfaceGenerationTask = new AsynchClientTask ("creating new smoothed surface", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-					
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						getGeometry().precomputeAll(true);
-					}
-				};
-				AsynchClientTask tasks[] = new AsynchClientTask[] {surfaceGenerationTask};
-				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
-			} catch (Exception e1) {
-				DialogUtils.showErrorDialog(this, e1.getMessage());
-				e1.printStackTrace();
+	if (e.getSource() == tabbedPane) {		
+		updateSurfaceView();
+	}
+}
+
+private void updateSurfaceView() {
+	if (tabbedPane.getSelectedComponent() == surfaceViewer) {	
+		AsynchClientTask surfaceGenerationTask = new AsynchClientTask ("creating new smoothed surface", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+			
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getGeometry().precomputeAll(true, true);
 			}
-		}
+		};
+		AsynchClientTask tasks[] = new AsynchClientTask[] {surfaceGenerationTask};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 	}
 }
 
@@ -617,6 +616,7 @@ public void onGeometryChange() {
 			getJButtonChangeDomain().setVisible(true);
 			tabbedPane.setVisible(true);
 		}
+		updateSurfaceView();
 	}
 }
 

@@ -255,14 +255,6 @@ public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCr
 
 public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws Exception {
 	if (doc instanceof BioModel) {
-		if (!bInNewWindow) {
-			// don't have to preload when opening a biomodel.			
-			// only preload when there are open applications which could only happen 
-			// when the document is loaded into the same window 
-			// for saveAs, save, save new edition and revert to saved
-			((BioModelWindowManager)this).prepareToLoad((BioModel)doc); 
-			return;
-		}
 	} else if (doc instanceof MathModel) {
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
 		geometry.precomputeAll();
@@ -273,7 +265,7 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 		}
 		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 	} else if (doc instanceof Geometry) {
-		((Geometry)doc).precomputeAll();		
+		((Geometry)doc).precomputeAll();
 	}
 }
 
