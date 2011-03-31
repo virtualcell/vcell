@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 
+import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
@@ -19,6 +20,9 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class ClientTaskManager {
 	public static AsynchClientTask[] newApplication(final BioModel bioModel, final boolean isStoch) {		
@@ -136,5 +140,27 @@ public class ClientTaskManager {
 		}
 		destSimContext.setName(newSimulationContextName);	
 		return destSimContext;
+	}
+	
+	public static void changeEndTime(JComponent requester, SolverTaskDescription solverTaskDescription, double newEndTime) throws PropertyVetoException {
+		TimeBounds oldTimeBounds = solverTaskDescription.getTimeBounds();
+		TimeBounds timeBounds = new TimeBounds(oldTimeBounds.getStartingTime(), newEndTime);
+		solverTaskDescription.setTimeBounds(timeBounds);
+		
+		if (solverTaskDescription.getOutputTimeSpec() instanceof UniformOutputTimeSpec) {
+			UniformOutputTimeSpec uniformOutputTimeSpec = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+			if (timeBounds.getEndingTime() < uniformOutputTimeSpec.getOutputTimeStep()) {
+				double outputTime = solverTaskDescription.getTimeBounds().getEndingTime()/20.0;
+				String ret = PopupGenerator.showWarningDialog(requester, "Output Interval", 
+						"Output interval(" + uniformOutputTimeSpec.getOutputTimeStep() + "s) is greater than end time(" + timeBounds.getEndingTime() + "s) which will not output any results. Do you want to change " +
+						"output interval to every " + outputTime + "s (20 time points)?\n\nIf not, output interval will change to " + timeBounds.getEndingTime() + "s(the end time).",
+						new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+				if (ret.equals(UserMessage.OPTION_YES)) {
+					solverTaskDescription.setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				} else {
+					solverTaskDescription.setOutputTimeSpec(new UniformOutputTimeSpec(timeBounds.getEndingTime()));
+				}
+			}
+		}
 	}
 }
