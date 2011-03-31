@@ -61,6 +61,8 @@ public class MediaSettingsPanel extends JPanel {
 	private JComboBox mirrorComboBox;
 	private JComboBox scalingCombobox;
 	private JLabel membrVarThicknessLabel;
+	private JLabel lblMirroring;
+	private JLabel lblImageScale;
 	public MediaSettingsPanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
@@ -224,7 +226,7 @@ public class MediaSettingsPanel extends JPanel {
 		gbc_volVarMembrOutlineThicknessSlider.gridy = 0;
 		panel_3.add(volVarMembrOutlineThicknessSlider, gbc_volVarMembrOutlineThicknessSlider);
 		
-		JLabel lblMirroring = new JLabel("Variables Mirroring:");
+		lblMirroring = new JLabel("Variables Mirroring:");
 		GridBagConstraints gbc_lblMirroring = new GridBagConstraints();
 		gbc_lblMirroring.anchor = GridBagConstraints.EAST;
 		gbc_lblMirroring.insets = new Insets(0, 0, 5, 5);
@@ -240,7 +242,7 @@ public class MediaSettingsPanel extends JPanel {
 		gbc_mirrorComboBox.gridy = 5;
 		add(mirrorComboBox, gbc_mirrorComboBox);
 		
-		JLabel lblImageScale = new JLabel("Image Size Scaling:");
+		lblImageScale = new JLabel("Image Size Scaling:");
 		GridBagConstraints gbc_lblImageScale = new GridBagConstraints();
 		gbc_lblImageScale.anchor = GridBagConstraints.EAST;
 		gbc_lblImageScale.insets = new Insets(0, 0, 5, 5);
@@ -572,6 +574,13 @@ public class MediaSettingsPanel extends JPanel {
 		
 		particleButtonGroup.add(particleRadioButton);
 		particleButtonGroup.add(particleCountsRadiobutton);
+		
+		particleRadioButton.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				configureGUI();
+			}
+		});
+
 	}
 	
 	private static final double MOVIE_DURATION_MIN_SECONDS = .1;
@@ -603,9 +612,16 @@ public class MediaSettingsPanel extends JPanel {
 	}
 
 	private int mediaType;
+	private boolean selectionHasVolumeVars;
+	private boolean selectionHasMembraneVars;
 	private boolean bMovie;
 	public void configure(int mediaType,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars){
 		this.mediaType = mediaType;
+		this.selectionHasVolumeVars = selectionHasVolumeVars;
+		this.selectionHasMembraneVars = selectionHasMembraneVars;
+		configureGUI();
+	}
+	private void configureGUI(){
 		bMovie = mediaType == ExportConstants.FORMAT_QUICKTIME || mediaType == ExportConstants.FORMAT_ANIMATED_GIF;
 		jSliderEnable(mediaType == ExportConstants.FORMAT_QUICKTIME || mediaType == ExportConstants.FORMAT_JPEG,compressionSlider);
 		compressionLabel.setEnabled(compressionSlider.isEnabled());
@@ -635,6 +651,33 @@ public class MediaSettingsPanel extends JPanel {
 		particleModeLabel.setEnabled(isSmoldyn);
 		particleRadioButton.setEnabled(isSmoldyn);
 		particleCountsRadiobutton.setEnabled(isSmoldyn);
+		if(isSmoldyn){
+			if(particleRadioButton.isSelected()){
+				jSliderEnable(false, volVarMembrOutlineThicknessSlider);
+				volvarMembrOutlineLabel.setEnabled(false);
+				
+				jSliderEnable(false, membrVarThicknessSlider);
+				membrVarThicknessLabel.setEnabled(false);
+				
+				compositionLabel.setEnabled(false);
+				compositionSeparate.setEnabled(compositionLabel.isEnabled());
+				compositionCombined.setEnabled(compositionLabel.isEnabled());
+	
+				qtFormatRegular.setEnabled(false);
+				qtFormatQTVR.setEnabled(false);
+				qtLabel.setEnabled(false);
+	
+				lblMirroring.setEnabled(false);
+				mirrorComboBox.setEnabled(false);
+				lblImageScale.setEnabled(false);
+				scalingCombobox.setEnabled(false);
+			}else{
+				lblMirroring.setEnabled(true);
+				mirrorComboBox.setEnabled(true);
+				lblImageScale.setEnabled(true);
+				scalingCombobox.setEnabled(true);
+			}
+		}
 	}
 	
 	private int sliceCount = 0;
