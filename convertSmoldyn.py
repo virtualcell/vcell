@@ -4,8 +4,8 @@
     # /path/to/SimID_xxxxxxxxxxx_0_
     # /path/to/outputfolder/ImageOutputRootFileName
     # {2|3 dimension}
-    # {0=allTimes, 1 or more sets beginTimeIndex}
-    # {1 or more sets endTimeIndex} 
+    # {sets beginTimeIndex, index 0 is beginning}
+    # {sets endTimeIndex, last index numTimes-1, must be > endTimeIndex} 
     # {0=all variables, 1 or more means number of specified variables} varname1 varname2 
     
     
@@ -36,11 +36,12 @@ try:
     else:
         dimension="3"
     
-    beginTimeIndex = int(sys.argv[argStart+4]);
-    endTimeIndex = int(sys.argv[argStart+5]);
-    
-    print "begineTimeIndex="+str(beginTimeIndex)+" endTimeIndex="+str(endTimeIndex); 
-    
+    vcellBeginTimeIndex = int(sys.argv[argStart+4]);
+    vcellEndTimeIndex = int(sys.argv[argStart+5]);
+    print "vcellBeginTimeIndex="+str(vcellBeginTimeIndex)+" vcellEndTimeIndex="+str(vcellEndTimeIndex); 
+    if vcellEndTimeIndex < vcellBeginTimeIndex:
+        raise ValueError('vcellEndTimeIndex must be >= vcellBeginTimeIndex')
+
     particleIncludeList=[]
     includeVarNumber=int(sys.argv[argStart+6])
     if (includeVarNumber>0):
@@ -48,12 +49,6 @@ try:
             particleIncludeList.append(sys.argv[(argStart+6+vari)])
     
     simID=inputFilePathRoot[inputFilePathRoot.find("SimID"):]
-    visitFramesDir=outputImageFileRoot
-    #visitFramesDir="/share/apps/vcell/visit/visitframes/"
-    
-    # Hardcoded for now:  (actually not anymore)
-    #smoldynWorkOutputDir="/share/apps/vcell/visit/smoldynWorkFiles/"
-    smoldynWorkOutputDir=visitFramesDir
     
     particleTypeList=[]
     particleTypeNumber=0
@@ -61,13 +56,11 @@ try:
     print "inputFilePathRoot=" + inputFilePathRoot+"\n"
     print "SimID = "+simID+"\n"
     
-    #inputFilePathRootPartition=inputFilePathRoot.rpartition('/')[2]
     inputFilePathRootPartition= os.path.split(inputFilePathRoot)[1]
-    #outputFileRoot=smoldynWorkOutputDir+inputFilePathRootPartition
-    outputFileRoot=os.path.join(smoldynWorkOutputDir,inputFilePathRootPartition)
+    outputFileRoot=os.path.join(outputImageFileRoot,inputFilePathRootPartition)
     print "starting with: " + (inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput")
     while os.path.exists(inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput"):
-        if beginTimeIndex != 0 and (fileIterator < beginTimeIndex or fileIterator > endTimeIndex):
+        if fileIterator < (vcellBeginTimeIndex+1) or fileIterator > (vcellEndTimeIndex+1):
             print "Skipping "+inputFilePathRoot+('%03d' %fileIterator)+".smoldynOutput"
             fileIterator = fileIterator+1;
             continue;
@@ -193,7 +186,7 @@ try:
     
     s=SaveWindowAttributes()
     s.outputToCurrentDirectory=0
-    s.outputDirectory = visitFramesDir
+    s.outputDirectory = outputImageFileRoot
     s.fileName=simID+"-visitOutputFrame"
     
     # 2=JPEG from the possible enumerated list: format = # BMP, CURVE, JPEG, OBJ, PNG, POSTSCRIPT, POVRAY, PPM, RGB, STL, TIFF, ULTRA, VTK, PLY 

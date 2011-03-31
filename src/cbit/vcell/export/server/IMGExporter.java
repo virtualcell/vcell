@@ -1,7 +1,6 @@
 package cbit.vcell.export.server;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -24,24 +23,21 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableStatus;
-import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
+import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import progress.message.zclient.xonce.SecondaryStateResolver;
-
-import com.hp.hpl.jena.rdf.model.impl.AltImpl;
-
 import GIFUtils.GIFFormatException;
 import GIFUtils.GIFImage;
 import GIFUtils.GIFOutputStream;
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
+import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
@@ -105,7 +101,17 @@ public static void main(String [] args) throws Exception{
 	VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 0);
 	
 	StdoutSessionLog sessionLog = new StdoutSessionLog(user.getName());
-	ExportServiceImpl exportServiceImpl = new ExportServiceImpl(sessionLog);
+	class PrintingExportServiceImpl extends ExportServiceImpl {
+		public PrintingExportServiceImpl(SessionLog sessionLog){
+			super(sessionLog);
+		}
+		@Override
+		protected void fireExportEvent(ExportEvent event) {
+			super.fireExportEvent(event);
+			System.out.println("Event type="+event.getEventTypeID()+" JobID="+event.getJobID()+" progress="+event.getProgress());
+		}
+	}
+	ExportServiceImpl exportServiceImpl = new PrintingExportServiceImpl(sessionLog);
 	Cachetable cachetable = new Cachetable(10*Cachetable.minute);
 	File primaryDir = new File(primaryDirStr);
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,cachetable,primaryDir,null);
@@ -154,7 +160,7 @@ public ExportOutput[] makeMediaData(
 	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo);
 }
 
-private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
+private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
 		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
@@ -199,9 +205,7 @@ private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServer
 		throw new IllegalArgumentException("Time zero not valid for smoldyn particle data");
 	}
 	int beginIndexTime = exportSpecs.getTimeSpecs().getBeginTimeIndex();
-	beginIndexTime = (beginIndexTime==0?1:beginIndexTime);
 	int endIndexTime = exportSpecs.getTimeSpecs().getEndTimeIndex();
-	endIndexTime = (endIndexTime==0?1:endIndexTime);
 	
 	System.out.println("beginIndexTime="+beginIndexTime+" endIndexTime="+endIndexTime);
 	
@@ -230,7 +234,7 @@ private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServer
 	final int numTimePoints = exportSpecs.getTimeSpecs().getEndTimeIndex()-exportSpecs.getTimeSpecs().getBeginTimeIndex()+1;
 	Thread progressThread = new Thread(new Runnable() {
 		public void run() {
-			System.out.println("progress monitor started");
+			System.out.println("smoldyn progress monitor started");
 			while(!finishedFlag[0]){
 				int count = 0;
 				File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
@@ -242,7 +246,7 @@ private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServer
 					}
 				}
 				double progress = .5 * (double)count / (double)(2*numTimePoints);
-				exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", 0.0);
+				exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", progress);
 				//System.out.println("All files read="+tempFiles.length+" Files counted="+count+" progress="+progress);
 				try {
 					Thread.sleep(1000);
@@ -251,20 +255,20 @@ private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServer
 					return;//This shouldn't happen but if so just quit
 				}
 			}
-			System.out.println("progress monitor finished");
+			System.out.println("smoldyn progress monitor finished");
 		}
 	});
 	progressThread.start();
 	
 	
 	try{
-		long startTime = System.currentTimeMillis();
-		Executable executable = new Executable(args.toArray(new String[0]),1200000/*20 minutes*/);
+		final long TIME_OUT = 1200000; //20 minutes
+		Executable executable = new Executable(args.toArray(new String[0]),TIME_OUT);
 		executable.start();//blocking, internal monitoring, return after timeout
 		if(!executable.getStatus().equals(ExecutableStatus.COMPLETE)){
 			System.out.println(executable.getStderrString());
 			System.out.println(executable.getStdoutString());
-			throw new Exception("Particle data exporter did not complete.");
+			throw new Exception("Particle data exporter did not complete normally. "+(executable.getStatus()==null?"":executable.getStatus().toString()));
 		}
 	}finally{
 		finishedFlag[0] = true;
