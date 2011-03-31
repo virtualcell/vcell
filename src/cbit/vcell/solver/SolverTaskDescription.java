@@ -535,12 +535,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	try {
-		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_TIME_BOUNDS))) {
-			if (getOutputTimeSpec() instanceof UniformOutputTimeSpec) {
-				double outputTime = getTimeBounds().getEndingTime()/20;
-				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-			}
-		} else if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
+		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 			SolverDescription solverDescription = getSolverDescription();
 			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();

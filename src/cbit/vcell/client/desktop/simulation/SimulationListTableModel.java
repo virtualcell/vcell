@@ -20,6 +20,7 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -274,10 +275,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			case COLUMN_ENDTIME:
 				if (aValue instanceof Double){
 					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
-					double newTime = (Double) aValue;
-					TimeBounds oldTimeBounds = solverTaskDescription.getTimeBounds();
-					TimeBounds timeBounds = new TimeBounds(oldTimeBounds.getStartingTime(), newTime);
-					solverTaskDescription.setTimeBounds(timeBounds);
+					double newEndTime = (Double) aValue;
+					ClientTaskManager.changeEndTime(ownerTable, solverTaskDescription, newEndTime);
 					simulation.setIsDirty(true);
 				}
 				break;

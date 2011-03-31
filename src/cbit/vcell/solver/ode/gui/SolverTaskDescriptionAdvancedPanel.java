@@ -22,11 +22,13 @@ import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 
@@ -200,7 +202,7 @@ private void connPtoP2SetSource() {
 		if (ivjConnPtoP2Aligning == false) {
 			ivjConnPtoP2Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
-				getTornOffSolverTaskDescription().setTimeBounds(getTimeBoundsPanel().getTimeBounds());
+				ClientTaskManager.changeEndTime(this, getTornOffSolverTaskDescription(), getTimeBoundsPanel().getTimeBounds().getEndingTime());
 			}
 			ivjConnPtoP2Aligning = false;
 		}
