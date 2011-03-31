@@ -1,10 +1,13 @@
 package org.vcell.util.gui;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Frame;
 import java.util.EventObject;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
@@ -128,7 +131,7 @@ private ProgressDialog getDialog() {
 		}else{
 			dialog.setCancelButtonVisible(false);
 		}
-		dialog.setLocationRelativeTo(requester);
+		BeanUtils.centerOnComponent(dialog, owner);
 		dialog.setResizable(false);
 		if (title != null) {
 			dialog.setTitle(title);

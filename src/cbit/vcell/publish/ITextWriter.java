@@ -525,7 +525,8 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
 		IndexColorModel icm = GeometrySpec.getHandleColorMap();
-		VCImage geomImage = geomSpec.getSampledImage().getCurrentValue();
+		geom.precomputeAll();
+		VCImage geomImage = geomSpec.getSampledImage().getCurrentValue();		
 		if(geomImage == null){
 			throw new Exception("generateGeometryImage error : No Image");
 		}

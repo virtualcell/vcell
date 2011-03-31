@@ -1719,7 +1719,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	}
 	
 	try {
-		newgeometry.precomputeAll();
+		newgeometry.precomputeAll(false, false);
 	} catch (GeometryException e) {
 		e.printStackTrace(System.out);
 	} catch (ImageException e) {
