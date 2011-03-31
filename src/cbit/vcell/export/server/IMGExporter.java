@@ -82,18 +82,20 @@ public IMGExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 public static void main(String [] args) throws Exception{
-	if(args.length < 5){
-		System.out.println("Usage: IMGExporter username userkey simulationkey userdatadir {varName1 varName2 ...}");
+	if(args.length < 7){
+		System.out.println("Usage: IMGExporter username userkey simulationkey userdatadir beginTimeIndex endTimeIndex {varName1 varName2 ...}");
 		System.exit(0);
 	}
 	String userName = args[0];
 	String userKey = args[1];
 	String SimulationKey = args[2];
 	String primaryDirStr = args[3];
-	String[] varNames = new String[args.length-4];
-	if(args.length > 4){
-		for (int i = 4; i < args.length; i++) {
-			varNames[i-4] = args[i];
+	int beginTimeIndex = Integer.valueOf(args[4]);
+	int endTimeIndex = Integer.valueOf(args[5]);
+	String[] varNames = new String[args.length-6];
+	if(args.length > 6){
+		for (int i = 6; i < args.length; i++) {
+			varNames[i-6] = args[i];
 		}
 	}
 	PropertyLoader.loadProperties();
@@ -109,7 +111,7 @@ public static void main(String [] args) throws Exception{
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,cachetable,primaryDir,null);
 	DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, exportServiceImpl);
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
-	TimeSpecs timeSpecs = new TimeSpecs(0, allTimes.length-1, allTimes, ExportConstants.TIME_RANGE);
+	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportConstants.TIME_RANGE);
 	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportConstants.VARIABLE_MULTI);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_SLICE);
 	DisplayPreferences displayPreferences =
@@ -148,11 +150,11 @@ public ExportOutput[] makeMediaData(
 		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
-	ParticleInfo particleInfo = checkParticles(exportSpecs,user,exportSpecs.getVCDataIdentifier(),dataServerImpl);
+	ParticleInfo particleInfo = checkParticles(exportSpecs,user,dataServerImpl,jobRequest.getJobID());
 	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo);
 }
 
-private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCDataIdentifier vcDataID,DataServerImpl dataServerImpl) throws Exception{
+private ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
 	int particleMode = FormatSpecificSpecs.PARTICLE_NONE;
 	if(exportSpecs.getFormatSpecificSpecs() instanceof ImageSpecs){
 		particleMode = ((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getParticleMode();
@@ -163,7 +165,7 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 		return null;
 	}
 	
-	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	CartesianMesh cartesianMesh = dataServerImpl.getMesh(user, vcdID);
 	int dimension = cartesianMesh.getGeometryDimension();
 	
@@ -173,7 +175,7 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynVisitExecutableProperty));
 	File visitSmoldynScriptLocation =
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
-	File visitSmoldynScriptTempDir =
+	final File visitSmoldynScriptTempDir =
 		new File(PropertyLoader.getRequiredProperty(
 				PropertyLoader.tempDirProperty));
 	File visitUserDataDir =
@@ -192,27 +194,72 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 	System.out.println(visitSmoldynScriptTempDir.getAbsolutePath());
 	System.out.println(visitDataPathFragment.getAbsolutePath());
 	
-	
 //if(true){return new ParticleInfo(visitSmoldynScriptTempDir);}
-
-
+	if(exportSpecs.getTimeSpecs().getAllTimes().length == 1){
+		throw new IllegalArgumentException("Time zero not valid for smoldyn particle data");
+	}
+	int beginIndexTime = exportSpecs.getTimeSpecs().getBeginTimeIndex();
+	beginIndexTime = (beginIndexTime==0?1:beginIndexTime);
+	int endIndexTime = exportSpecs.getTimeSpecs().getEndTimeIndex();
+	endIndexTime = (endIndexTime==0?1:endIndexTime);
+	
+	System.out.println("beginIndexTime="+beginIndexTime+" endIndexTime="+endIndexTime);
+	
 	ArrayList<String> args = new ArrayList<String>();
 	args.add(visitExeLocation.getAbsolutePath());//location of visit
 	args.add("-nowin");
 	args.add("-cli");
 	args.add("-s");
+	
 	args.add(visitSmoldynScriptLocation.getAbsolutePath());//location of the script
 	args.add(visitDataPathFragment.getAbsolutePath()); //location of the SimID 
-	//  /share/apps/vcell/visit/smoldynWorkFiles   
 	args.add(visitSmoldynScriptTempDir.getAbsolutePath());  // where frames are dumped 
 	args.add(dimension+""); //dimension
+	args.add(beginIndexTime+"");
+	args.add(endIndexTime+"");
 	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
 	for (int i = 0; i < variableNames.length; i++) {
 		args.add(variableNames[i]);
 	}
+	
+	final String tempFilePrefix = vcdID.getID()+"_p3d";
+	
+	//Monitor progress of smoldyn script
+	exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", 0.0);
+	final boolean[] finishedFlag = new boolean[] {false};
+	final int numTimePoints = exportSpecs.getTimeSpecs().getEndTimeIndex()-exportSpecs.getTimeSpecs().getBeginTimeIndex()+1;
+	Thread progressThread = new Thread(new Runnable() {
+		public void run() {
+			System.out.println("progress monitor started");
+			while(!finishedFlag[0]){
+				int count = 0;
+				File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
+				for (int i = 0; i < tempFiles.length; i++) {
+					if(tempFiles[i].getName().startsWith(tempFilePrefix) ||
+						(tempFiles[i].getName().startsWith(vcdID.getID()) &&
+								tempFiles[i].getName().endsWith(".jpeg"))){
+						count+= 1;
+					}
+				}
+				double progress = .5 * (double)count / (double)(2*numTimePoints);
+				exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", 0.0);
+				//System.out.println("All files read="+tempFiles.length+" Files counted="+count+" progress="+progress);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					return;//This shouldn't happen but if so just quit
+				}
+			}
+			System.out.println("progress monitor finished");
+		}
+	});
+	progressThread.start();
+	
+	
 	try{
 		long startTime = System.currentTimeMillis();
-		Executable executable = new Executable(args.toArray(new String[0]),300000/*5 minutes*/);
+		Executable executable = new Executable(args.toArray(new String[0]),1200000/*20 minutes*/);
 		executable.start();//blocking, internal monitoring, return after timeout
 		if(!executable.getStatus().equals(ExecutableStatus.COMPLETE)){
 			System.out.println(executable.getStderrString());
@@ -220,8 +267,8 @@ private static ParticleInfo checkParticles(ExportSpecs exportSpecs,User user,VCD
 			throw new Exception("Particle data exporter did not complete.");
 		}
 	}finally{
+		finishedFlag[0] = true;
 		//Remove temp files created by smoldyn script
-		String tempFilePrefix = vcDataID.getID()+"_p3d";
 		File[] tempFiles = visitSmoldynScriptTempDir.listFiles();
 		for (int i = 0; i < tempFiles.length; i++) {
 			if(tempFiles[i].getName().startsWith(tempFilePrefix)){
@@ -297,7 +344,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		offScreenRenderer.setSlice(sliceNumber);
 		exportRenderInfo = new ExportRenderInfo(offScreenRenderer);
 	}else{
-		exportRenderInfo = new ExportRenderInfo(particleInfo, allTimes, vcdID);
+		exportRenderInfo = new ExportRenderInfo(particleInfo, allTimes, vcdID,beginTimeIndex);
 		Dimension particleImageSize = particleInfo.getImageFrameSize(vcdID);
 		originalWidth = particleImageSize.width;
 		originalHeight = particleImageSize.height;
@@ -315,7 +362,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
-		exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", progress);
+		exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", (particleInfo==null?progress:.5+(progress/2.0)));
 		progress+= progressIncr;
 		MirrorInfo currentSliceTimeMirrorInfo =
 			renderAndMirrorSliceTimePixels(exportRenderInfo, varNames[varNameIndex0], allTimes[timeIndex0],
@@ -405,14 +452,16 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		private DisplayPreferences displayPreferences;
 		private VCDataIdentifier vcDataID;
 		private File[] imageFrames;
+		private int beginIndexTime;
 		
 		public ExportRenderInfo(PDEOffscreenRenderer pdeOffscreenRenderer){
 			this.pdeOffscreenRenderer = pdeOffscreenRenderer;
 		}
-		public ExportRenderInfo(ParticleInfo particleInfo,double[] allTimes,final VCDataIdentifier vcDataID){
+		public ExportRenderInfo(ParticleInfo particleInfo,double[] allTimes,final VCDataIdentifier vcDataID,int beginIndexTime){
 			this.particleInfo = particleInfo;
 			this.allTimes = allTimes;
 			this.vcDataID = vcDataID;
+			this.beginIndexTime = beginIndexTime;
 			TreeSet<File> imageFramesTreeSet = new TreeSet<File>(new Comparator<File>() {
 				public int compare(File o1, File o2) {
 					return o1.getName().compareTo(o2.getName());
@@ -463,7 +512,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 //				System.out.println("Reading "+imageFrames[timeIndex].getAbsolutePath());
 				
 				
-				BufferedImage bufferedImage = ImageIO.read(imageFrames[timeIndex]);
+				BufferedImage bufferedImage = ImageIO.read(imageFrames[timeIndex-beginIndexTime]);
 				int[] pixels = new int[bufferedImage.getWidth()*bufferedImage.getHeight()];
 				int index = 0;
 				for (int y = 0; y < bufferedImage.getWidth(); y++) {

@@ -85,7 +85,8 @@ public class VisitSession {
 		 // Change these for your remote system.
         String host = ipAddress;;
         String user = new String("visit");
-        String remotevisitPath = PropertyLoader.getRequiredProperty("vcell.visit.servervisitexecutable");
+        String remotevisitPath =
+        	PropertyLoader.getRequiredProperty(PropertyLoader.visitServerExecutableProperty);
  
         // Create a new host profile object and set it up for serial
         MachineProfile profile = new MachineProfile();
