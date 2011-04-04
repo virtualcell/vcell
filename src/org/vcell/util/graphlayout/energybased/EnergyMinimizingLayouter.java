@@ -8,7 +8,7 @@ import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
 import org.vcell.util.graphlayout.energybased.EnergySum.EnergyTerm;
 import org.vcell.util.graphlayout.energybased.EnergySum.Minimizer;
 
-public class EnergyMinimizingLayouter implements ContainedGraphLayouter {
+public class EnergyMinimizingLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layouter Energy Minimizing";
 

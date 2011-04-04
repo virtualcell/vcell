@@ -1,20 +1,19 @@
 package org.vcell.util.graphlayout;
 
-import java.util.Arrays;
-import java.util.List;
+import cbit.gui.graph.VCellGraphToContainedGraphMapper;
 
-import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+public abstract class ContainedGraphLayouter implements GraphLayouter {
 
+	public abstract String getLayoutName();
 
-public interface ContainedGraphLayouter {
-
-	public static class DefaultLayouters {
-		public static final List<String> NAMES = 
-			Arrays.asList(RandomLayouter.LAYOUT_NAME, EdgeTugLayouter.LAYOUT_NAME, 
-					ShootAndCutLayouter.LAYOUT_NAME, SimpleElipticalLayouter.LAYOUT_NAME);		
+	public void layout(Client client) {
+		VCellGraphToContainedGraphMapper mapper = 
+			new VCellGraphToContainedGraphMapper(client.getGraphModel());
+		mapper.updateContainedGraphFromVCellGraph();
+		layout(mapper.getContainedGraph());
+		mapper.updateVCellGraphFromContainedGraph();
 	}
 	
-	public String getLayoutName();
-	public void layout(ContainedGraph graph);
+	public abstract void layout(ContainedGraph graph);
 	
 }

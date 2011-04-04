@@ -5,7 +5,7 @@ import java.util.Random;
 import org.vcell.util.graphlayout.ContainedGraph.Container;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
 
-public class RandomLayouter implements ContainedGraphLayouter {
+public class RandomLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layout Random";
 	

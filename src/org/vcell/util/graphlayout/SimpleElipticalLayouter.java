@@ -6,7 +6,7 @@ import java.util.Random;
 import org.vcell.util.graphlayout.ContainedGraph.Container;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
 
-public class SimpleElipticalLayouter implements ContainedGraphLayouter {
+public class SimpleElipticalLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layout Simple Eliptical";
 	

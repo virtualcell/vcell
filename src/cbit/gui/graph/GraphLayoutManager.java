@@ -12,7 +12,11 @@ import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
+import org.vcell.util.graphlayout.GraphLayouter.Client;
+import org.vcell.util.graphlayout.GraphLayouter.Client.Default;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 import com.genlogic.GraphLayout.GlgCube;
 import com.genlogic.GraphLayout.GlgGraphLayout;
@@ -36,7 +40,23 @@ import edu.rpi.graphdrawing.Stabilizer;
  */
 
 public class GraphLayoutManager {
+	
+	public static class VCellTaskClient extends Default implements Client {
+		protected final AsynchClientTask task;
 
+		public VCellTaskClient(GraphView graphView, String layoutName, AsynchClientTask task) { 
+			super(graphView, layoutName); 
+			this.task = task;
+		}
+		
+		public boolean isRequestingStop() { 
+			ClientTaskStatusSupport taskSupport = task.getClientTaskStatusSupport();
+			return taskSupport != null ? taskSupport.isInterrupted() : false; 
+		}
+
+	}
+
+	
 	public static class OldLayouts {
 		
 		public static final String ANNEALER = "Annealer (RPI)";
@@ -54,29 +74,25 @@ public class GraphLayoutManager {
 			
 	}
 	
-	protected final GraphView graphView;
-	
-	public GraphLayoutManager(GraphView graphView) {
-		this.graphView = graphView;
-	}
-	
-	public void layout(String layoutName) throws Exception {
+	public void layout(Client client) throws Exception {
+		String layoutName = client.getLayoutName();
 		if(ContainedGraphLayouter.DefaultLayouters.NAMES.contains(layoutName)) {
-			layoutContainedGraph(layoutName);
+			layoutContainedGraph(client);
 		} else if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
-			layoutRPI(layoutName);
+			layoutRPI(client);
 		} else if(OldLayouts.GLG.equals(layoutName)) {
-			layoutGLG();
+			layoutGLG(client);
 		} else {
 			throw new Exception("Unsupported Layout " + layoutName);
 		}
 	}
 
-	public void layoutContainedGraph(String layoutName) {
+	public void layoutContainedGraph(Client client) {
 		VCellGraphToContainedGraphMapper mapper = 
-			new VCellGraphToContainedGraphMapper(graphView.getGraphModel());
+			new VCellGraphToContainedGraphMapper(client.getGraphModel());
 		mapper.updateContainedGraphFromVCellGraph();
 		ContainedGraphLayouter layouter = null;
+		String layoutName = client.getLayoutName();
 		if(RandomLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new RandomLayouter();				
 		} else if(EdgeTugLayouter.LAYOUT_NAME.equals(layoutName)) {
@@ -89,16 +105,14 @@ public class GraphLayoutManager {
 			layouter = new SimpleElipticalLayouter();
 		}
 		if(layouter != null) {
-			layouter.layout(mapper.getContainedGraph());
-			mapper.updateVCellGraphFromContainedGraph();
-			graphView.repaint();				
+			layouter.layout(client);
 		}
 	}
 	
-	public void layoutRPI(String layoutName) throws Exception {
+	public void layoutRPI(Client client) throws Exception {
 		Blackboard bb = new Blackboard();
 		HashMap<String, Shape> nodeShapeMap = new HashMap<String, Shape>();
-		for(Shape shape : graphView.getGraphModel().getShapes()) {
+		for(Shape shape : client.getGraphModel().getShapes()) {
 			Node newNode = null;
 			if (ShapeUtil.isMovable(shape)) {
 				newNode = bb.addNode(shape.getLabel());
@@ -109,7 +123,7 @@ public class GraphLayoutManager {
 				nodeShapeMap.put(newNode.label(), shape);
 			}
 		}
-		for(Shape shape : graphView.getGraphModel().getShapes()) {
+		for(Shape shape : client.getGraphModel().getShapes()) {
 			if (shape instanceof EdgeShape) {
 				EdgeShape edgeShape = (EdgeShape) shape;
 				Shape startShape = edgeShape.getStartShape();
@@ -122,7 +136,7 @@ public class GraphLayoutManager {
 			}
 		}
 
-		bb.setArea(0, 0, graphView.getWidth(), graphView.getHeight());
+		bb.setArea(0, 0, client.getWidth(), client.getHeight());
 		bb.globals.D(20);
 
 		bb.addEmbedder(GraphLayoutManager.OldLayouts.ANNEALER, new Annealer(bb));
@@ -134,7 +148,7 @@ public class GraphLayoutManager {
 		bb.addEmbedder(GraphLayoutManager.OldLayouts.RELAXER, new Relaxer(bb));
 		bb.addEmbedder(GraphLayoutManager.OldLayouts.STABILIZER, new Stabilizer(bb));
 
-		bb.setEmbedding(layoutName);
+		bb.setEmbedding(client.getLayoutName());
 		@SuppressWarnings("unchecked")
 		List<Node> nodeList = bb.nodes();
 		bb.PreprocessNodes();
@@ -166,16 +180,15 @@ public class GraphLayoutManager {
 				shape.setAbsPos((int) node.x(), (int) node.y());				
 			}
 		}
-		layoutContainedGraph(StretchToBoundaryLayouter.LAYOUT_NAME);
-		graphView.repaint();
+		new StretchToBoundaryLayouter().layout(client);
 	}
 	
-	public void layoutGLG() throws Exception {
+	public void layoutGLG(Client client) throws Exception {
 		GlgGraphLayout graph = new GlgGraphLayout();
 		graph.SetUntangle(true); // true
 		// specify dimensions for the graph! 400x400
 		// System.out.println("H:"+getGraphPane().getHeight()+" W"+getGraphPane().getWidth());
-		GraphModel graphModel = graphView.getGraphModel();
+		GraphModel graphModel = client.getGraphModel();
 		Rectangle boundary = 
 			graphModel.getContainerLayout().getBoundaryForAutomaticLayout(graphModel.getTopShape());
 		GlgCube graphDim = new GlgCube();
@@ -229,12 +242,11 @@ public class GraphLayoutManager {
 				shape.setAbsPos((int) glgPoint.x, (int) glgPoint.y);
 			}
 		}
-		layoutContainedGraph(StretchToBoundaryLayouter.LAYOUT_NAME);
-		graphView.repaint();
+		new StretchToBoundaryLayouter().layout(client);
 	}
 	
-	public void layoutGLGNew(GraphContainerLayout containerLayout) {
-		GraphModel graphModel = graphView.getGraphModel();
+	public void layoutGLGNew(Client client) {
+		GraphModel graphModel = client.getGraphModel();
 		Shape topShape = graphModel.getTopShape();
 		Set<ContainerShape> containerShapes = new HashSet<ContainerShape>();
 		for(Shape topShapeChild : topShape.getChildren()) {

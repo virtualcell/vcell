@@ -41,6 +41,7 @@ import cbit.gui.graph.actions.ActionUtil;
 import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
+import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.server.ClientServerManager;
@@ -261,13 +262,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	public void layout(String layoutName) throws Exception {
 		System.out.println(layoutName);
-		graphEmbeddingManager.layout(layoutName);
-		saveDiagram();
-	}
-
-	public void layoutGlg() throws Exception {
-		// Create graph object
-		graphEmbeddingManager.layoutGLG();
+		GraphLayoutTasks.dispatchTasks(getGraphPane(), graphEmbeddingManager, this, layoutName);
 		saveDiagram();
 	}
 

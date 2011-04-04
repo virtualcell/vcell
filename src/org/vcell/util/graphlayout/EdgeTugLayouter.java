@@ -9,7 +9,7 @@ import java.util.Random;
 import org.vcell.util.graphlayout.ContainedGraph.Edge;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
 
-public class EdgeTugLayouter implements ContainedGraphLayouter {
+public class EdgeTugLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layouter Edge Tug";
 
