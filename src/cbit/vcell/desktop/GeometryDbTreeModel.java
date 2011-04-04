@@ -64,7 +64,7 @@ protected void createBaseTree() throws DataAccessException {
 	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
 	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
 		User owner = (User)ownerList.elementAt(ownerIndex);
-		BioModelNode ownerNode = createOwnerSubTree(owner);
+		BioModelNode ownerNode = createOwnerSubTree(owner, geometryInfos);
 		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
 			treeMap.put(owner.getName(),ownerNode);
 		}
@@ -94,8 +94,7 @@ protected void createBaseTree() throws DataAccessException {
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
-	GeometryInfo geometryInfos[] = getDocumentManager().getGeometryInfos();
+private BioModelNode createOwnerSubTree(User owner, GeometryInfo geometryInfos[]) throws DataAccessException {
 	//
 	// for each user
 	//

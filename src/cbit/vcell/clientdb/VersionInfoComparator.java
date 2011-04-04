@@ -4,6 +4,7 @@ package cbit.vcell.clientdb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 /**
  * Insert the type's description here.
@@ -45,17 +46,19 @@ public int compare(VersionInfo v1, VersionInfo v2) {
 	//
 	// first, compare by names
 	//
-	int result = v1.getVersion().getName().compareToIgnoreCase(v2.getVersion().getName());
+	Version version1 = v1.getVersion();
+	Version version2 = v2.getVersion();
+	int result = version1.getName().compareToIgnoreCase(version2.getName());
 	if (result != 0){
 		return result;
 	}
 	// second, compare by branchID
-	result = v1.getVersion().getBranchID().compareTo(v2.getVersion().getBranchID());
+	result = version1.getBranchID().compareTo(version2.getBranchID());
 	if(result != 0){
 		return result;
 	}
 	// third, compare by date
-	return v1.getVersion().getDate().compareTo(v2.getVersion().getDate());
+	return version1.getDate().compareTo(version2.getDate());
 
 }
 }
