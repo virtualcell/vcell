@@ -4285,9 +4285,9 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 
 	String results;
 	
-	String temp = (String) DbDriver.getLOB(rset,clobField.getUnqualifiedColName());
+	String temp = rset.getString(varchar2Field.getUnqualifiedColName());
 	if(rset.wasNull() || temp == null || temp.length() == 0){
-		temp = rset.getString(varchar2Field.getUnqualifiedColName());
+		temp = (String) DbDriver.getLOB(rset,clobField.getUnqualifiedColName());
 		if(rset.wasNull() || temp == null || temp.length() == 0){
 			results = null;
 		}else{
