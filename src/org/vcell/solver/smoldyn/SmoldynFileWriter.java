@@ -545,10 +545,7 @@ private void writeReactions() throws ExpressionException, MathException {
 					printWriter.print(" + " + getVariableName(products.get(i),subdomain));
 				}
 			}
-			if (reactants.size() == 2) {
-				macroscopicRateConstant *= ReservedSymbol.KMOLE.getExpression().evaluateConstant();
-			}
-			
+						
 			printWriter.println(" " + macroscopicRateConstant);
 		}
 	}	
