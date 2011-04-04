@@ -65,6 +65,7 @@ import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
+import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
@@ -622,14 +623,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 		
 		public void actionPerformed(ActionEvent arg0) {
 			System.out.println(layoutName);
-			try { getCartoonTool().getGraphLayoutManager().layout(layoutName); } 
+			try { 
+				GraphLayoutTasks.dispatchTasks(BioModelEditorPathwayDiagramPanel.this, 
+						getCartoonTool().getGraphLayoutManager(), getCartoonTool(), layoutName);
+			} 
 			catch (Exception e) { e.printStackTrace(); }
 		}
 		
 	}
 	
 	public Action generateAction(ActionBuilder.ID id) {
-		// TODO Auto-generated method stub
 		if(id instanceof ActionID) {
 			switch((ActionID)id) {
 			case zoomIn: {

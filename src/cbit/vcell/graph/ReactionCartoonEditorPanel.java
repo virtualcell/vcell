@@ -126,7 +126,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				});
 			}
 			else if (source == getGlgLayoutJButton())
-				getReactionCartoonTool().layoutGlg();
+				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.GLG);
 			else if (source == getFloatRequestButton()) 
 				setFloatingRequested(!bFloatingRequested);
 		} catch (Throwable throwable) {

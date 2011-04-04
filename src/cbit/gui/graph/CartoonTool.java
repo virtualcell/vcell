@@ -51,7 +51,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	private GraphPane graphPane = null;
 	private ButtonGroup buttonGroup = null;
 	
-	protected final GraphLayoutManager graphEmbeddingManager = new GraphLayoutManager(this);
+	protected final GraphLayoutManager graphEmbeddingManager = new GraphLayoutManager();
 	protected final VCGroupManager groupManager = new VCGroupManager(this);
 
 	protected final List<GraphViewAction> groupActions = 

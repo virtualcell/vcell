@@ -6,7 +6,7 @@ import java.util.Iterator;
 import org.vcell.util.graphlayout.ContainedGraph.Container;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
 
-public class StretchToBoundaryLayouter implements ContainedGraphLayouter {
+public class StretchToBoundaryLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layout Stretch To Boundary";
 
