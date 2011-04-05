@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
@@ -263,6 +264,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				toolBar.add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				toolBar.add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
+				toolBar.add(Box.createHorizontalGlue());
+				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -272,9 +275,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 
 	private JButton createToolBarButton() {
 		JButton button = new JButton();
-		button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-		button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-		button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+		setToolBarButtonSizes(button);
 		button.setMargin(new Insets(2, 2, 2, 2));
 //		button.setFont(new Font("Arial", 1, 10));
 		button.setBorder(new EtchedBorder(EtchedBorder.RAISED));
@@ -461,13 +462,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton getFloatRequestButton() {
 		if (floatRequestButton == null) {
 			try {
-				floatRequestButton = new JButton();
+				floatRequestButton = createToolBarButton();
 				floatRequestButton.setText("\u21b1");
 				floatRequestButton.setName("FloatingButton");
 				floatRequestButton.setFont(floatRequestButton.getFont().deriveFont(Font.BOLD));
 				floatRequestButton.setToolTipText("\u21b1 Float");
-				setToolBarButtonSizes(floatRequestButton);
-				floatRequestButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -525,27 +524,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			setSize(472, 422);
 //			setMinimumSize(new Dimension(54, 425));
 			add(getJScrollPane(), BorderLayout.CENTER);
-			viewPortStabilizer = new ViewPortStabilizer(getJScrollPane());
+			viewPortStabilizer = new ViewPortStabilizer(getJScrollPane());			
 			
-			
-			JPanel panel = new JPanel(new GridBagLayout());
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.anchor = GridBagConstraints.LINE_START;
-			panel.add(getJToolBar(), gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			panel.add(getFloatRequestButton(), gbc);
-			
-			panel.setBorder(new EtchedBorder());
-			
-			add(panel, BorderLayout.NORTH);
+			add(getJToolBar(), BorderLayout.NORTH);
 			initConnections();
 			//getModeButtonGroup().add(getStepButton());
 			//getModeButtonGroup().add(getFluxButton());
