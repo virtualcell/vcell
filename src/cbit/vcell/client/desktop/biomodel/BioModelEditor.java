@@ -58,7 +58,7 @@ import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 @SuppressWarnings("serial")
 public class BioModelEditor extends DocumentEditor {
 	private BioModelWindowManager bioModelWindowManager = null;
-	private BioModel bioModel = new BioModel(null);
+	private BioModel bioModel = null;
 	
 	private BioModelEditorModelPanel bioModelEditorModelPanel = null;
 	private ScriptingPanel scriptingPanel = null;

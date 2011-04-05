@@ -723,7 +723,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			diagramViewInternalFrame.add(panel);
 			diagramViewInternalFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 			diagramViewInternalFrame.pack();
-			BeanUtils.centerOnComponent(diagramViewInternalFrame, this);
+			diagramViewInternalFrame.setLocation(20,20);
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
 		} else {
 			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);

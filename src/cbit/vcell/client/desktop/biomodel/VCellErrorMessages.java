@@ -20,7 +20,7 @@ public class VCellErrorMessages {
 //	}
 	
 	public static String getSmoldynUnexpectedSurface(CompartmentSubDomain compart0, CompartmentSubDomain compart1) {
-		return "Found an unexpected surface between compartment '" + compart0.getName() + "' and compartment '" + compart1.getName() + "'. Finer mesh is recommended";
+		return "Found an unexpected surface between compartment '" + compart0.getName() + "' and compartment '" + compart1.getName() + "'. Finer mesh is recommended.";
 	}
 	
 	public static String getSmoldynMaxMolReachedErrorMessage(long estimateMaxMol, int maxMolLimit) {
