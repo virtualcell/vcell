@@ -46,6 +46,17 @@ public class JDesktopPaneEnhanced extends javax.swing.JDesktopPane {
 				}
 			}			
 		}
+
+		@Override
+		public void activateFrame(JInternalFrame f) {
+			if (f == null) {
+				return;
+			}
+			// TODO Auto-generated method stub
+			super.activateFrame(f);
+		}
+		
+		
 	}
 	
 	private InternalDesktopManager internalDesktopManager = new InternalDesktopManager();
