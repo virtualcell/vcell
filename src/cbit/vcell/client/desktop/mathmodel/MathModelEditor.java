@@ -95,6 +95,8 @@ private void initialize() {
 		mathModelEditorTreeModel.setSelectionManager(selectionManager);		
 		simulationListPanel.setSelectionManager(selectionManager);
 		simulationSummaryPanel.setSelectionManager(selectionManager);
+		
+		outputFunctionsPanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -312,5 +314,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		break;
 	}	
 }
+
+
 
 }

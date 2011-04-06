@@ -7,7 +7,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -41,7 +41,12 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		}
 		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
 		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
-		setSelectedObjects(new Object[0]);
+		
+		ActiveView activeView = getActiveView();
+		if (activeView != null) {
+			setActiveView(activeView);
+		}
+		
 	}
 	
 	public ApplicationSubPanel() {
@@ -79,5 +84,5 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		bioModelWindowManager = newValue;
 	}
 	
-	public abstract ActiveViewID getActiveViewID();
+	public abstract ActiveView getActiveView();
 }

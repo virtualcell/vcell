@@ -217,7 +217,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 				}
 
 				BioModelNode geometryNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.GEOMETRY_NODE, true), false);
-				BioModelNode settingsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SETTINGS_NODE, true), false);
+				BioModelNode settingsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, true), false);
 				BioModelNode protocolsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PROTOCOLS_NODE, true), false); 
 				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, true), false);
 				BioModelNode fittingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.FITTING_NODE, true), false);

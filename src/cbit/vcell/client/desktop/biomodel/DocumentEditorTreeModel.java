@@ -35,7 +35,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			this.bSupported = bSupported;
 		}
 		public final String getName() {
-			return folderClass.name;
+			return folderClass.title;
 		}
 		public final DocumentEditorTreeFolderClass getFolderClass() {
 			return folderClass;
@@ -63,7 +63,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		SPECIES_NODE("Species"),
 		
 		GEOMETRY_NODE("Geometry"),
-		SETTINGS_NODE("Specifications"),
+		SPECIFICATIONS_NODE("Specifications"),
 		PROTOCOLS_NODE("Protocols"),
 		SIMULATIONS_NODE("Simulations"),
 		FITTING_NODE("Fitting"),
@@ -74,10 +74,14 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		MATH_SIMULATIONS_NODE("Simulations"),
 		MATH_OUTPUT_FUNCTIONS_NODE("Output Functions");
 		
-		private String name = null;
+		private String title = null;
 		DocumentEditorTreeFolderClass(String n) {
-			name = n;
+			title = n;
 		}
+		public final String getTitle() {
+			return title;
+		}
+		
 	}
 	
 	protected boolean bPopulatingRoot = false;

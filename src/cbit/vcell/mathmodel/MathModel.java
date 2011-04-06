@@ -18,11 +18,13 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
@@ -711,13 +713,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	
 	public void gatherIssues(List<Issue> issueList) {
 		fieldMathDescription.gatherIssues(issueList);
+		outputFunctionContext.gatherIssues(issueList);
 	}
 
 	public String getObjectPathDescription(Object object) {
 		if (object instanceof Geometry) {
-			return "Geometry";
+			return DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE.getTitle();
+		} else if (object instanceof OutputFunctionIssueSource) {
+			return DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE.getTitle();
 		} else {
-			return "VCML";
+			return DocumentEditorTreeFolderClass.MATH_VCML_NODE.getTitle();
 		}
 	}
 
@@ -730,6 +735,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			description = ((SubDomain)object).getName();
 		} else if (object instanceof Geometry) {
 			description = ((Geometry)object).getName();
+		} else if (object instanceof OutputFunctionIssueSource) {
+			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		}
 		return description;		
 	}

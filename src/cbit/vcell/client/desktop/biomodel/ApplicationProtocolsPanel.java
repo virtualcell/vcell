@@ -6,6 +6,8 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
@@ -75,18 +77,17 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 
 	@Override
-	public ActiveViewID getActiveViewID() {
+	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
+		ActiveViewID activeViewID = null;
 		if (selectedComponent == eventsDisplayPanel) {
-			return ActiveViewID.events;
+			activeViewID = ActiveViewID.events;
+		} else if (selectedComponent == electricalMembraneMappingPanel) {
+			activeViewID =  ActiveViewID.electrical;
+		} else if (selectedComponent == microscopeMeasurementPanel) {
+			activeViewID = ActiveViewID.microscope_measuremments;
 		}
-		if (selectedComponent == electricalMembraneMappingPanel) {
-			return ActiveViewID.electrical;
-		}
-		if (selectedComponent == microscopeMeasurementPanel) {
-			return ActiveViewID.microscope_measuremments;
-		}
-		return null;
+		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, activeViewID);
 	}
 	
 }

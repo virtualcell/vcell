@@ -6,6 +6,8 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
@@ -71,14 +73,14 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	}
 	
 	@Override
-	public ActiveViewID getActiveViewID() {
+	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
+		ActiveViewID activeViewID = null;
 		if (selectedComponent == initialConditionsPanel) {
-			return ActiveViewID.species_settings;
+			activeViewID = ActiveViewID.species_settings;
+		} else if (selectedComponent == reactionSpecsPanel) {
+			activeViewID = ActiveViewID.reaction_setting;
 		}
-		if (selectedComponent == reactionSpecsPanel) {
-			return ActiveViewID.reaction_setting;
-		}
-		return null;
+		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, activeViewID);
 	}
 }

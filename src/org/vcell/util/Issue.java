@@ -64,6 +64,8 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_SpatialModel_Variable,
 		MathDescription_SpatialModel_Event,
 		MathDescription_StochasticModel,
+		
+		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 	}
 
 	//

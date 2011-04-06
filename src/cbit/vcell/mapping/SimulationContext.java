@@ -828,6 +828,7 @@ public void gatherIssues(List<Issue> issueVector) {
 			analysisTask.gatherIssues(issueVector);
 		}
 	}
+	getOutputFunctionContext().gatherIssues(issueVector);
 }
 
 

@@ -27,7 +27,7 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private ApplicationGeometryPanel applicationGeometryPanel = null;
-	private ApplicationSpecificationsPanel applicationSettingsPanel;
+	private ApplicationSpecificationsPanel applicationSpecificationsPanel;
 	private ApplicationProtocolsPanel applicationProtocolsPanel;
 	private ApplicationSimulationsPanel applicationSimulationsPanel;
 	private ApplicationFittingPanel applicationFittingPanel;
@@ -47,6 +47,9 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		String title = null;
 		ApplicationPanelTabID(String name) {
 			this.title = name;
+		}
+		public final String getTitle() {
+			return title;
 		}		
 	}
 	
@@ -93,13 +96,13 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private void initialize(){
 		applicationGeometryPanel = new ApplicationGeometryPanel();
 		applicationProtocolsPanel = new ApplicationProtocolsPanel();
-		applicationSettingsPanel = new ApplicationSpecificationsPanel();
+		applicationSpecificationsPanel = new ApplicationSpecificationsPanel();
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
 		applicationFittingPanel = new ApplicationFittingPanel();
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
-		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSettingsPanel, VCellIcons.settingsIcon);
+		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSpecificationsPanel, VCellIcons.settingsIcon);
 		appPanelTabs[ApplicationPanelTabID.protocols.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.protocols, applicationProtocolsPanel, VCellIcons.protocolsIcon);
 		appPanelTabs[ApplicationPanelTabID.simulations.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.simulations, applicationSimulationsPanel, VCellIcons.simulationIcon);
 		appPanelTabs[ApplicationPanelTabID.fitting.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.fitting, applicationFittingPanel, VCellIcons.fittingIcon);
@@ -107,7 +110,9 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		
 		for (ApplicationPanelTab tab : appPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			if (tab.id != ApplicationPanelTabID.fitting) {
+				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			}
 		}
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
@@ -127,15 +132,15 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		
 		ActiveView activeView = null;
 		if (selectedIndex == ApplicationPanelTabID.geometry.ordinal()) {
-			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, applicationGeometryPanel.getActiveViewID());
+			activeView = applicationGeometryPanel.getActiveView();
 		} else if (selectedIndex == ApplicationPanelTabID.settings.ordinal()) {
-			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SETTINGS_NODE, applicationSettingsPanel.getActiveViewID());
+			activeView = applicationSpecificationsPanel.getActiveView();
 		} else if (selectedIndex == ApplicationPanelTabID.protocols.ordinal()) {
-			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, applicationProtocolsPanel.getActiveViewID());
+			activeView = applicationProtocolsPanel.getActiveView();
 		} else if (selectedIndex == ApplicationPanelTabID.simulations.ordinal()) {
-			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, applicationSimulationsPanel.getActiveViewID());
+			activeView = applicationSimulationsPanel.getActiveView();
 		} else if (selectedIndex == ApplicationPanelTabID.fitting.ordinal()) {
-			activeView = new ActiveView(simulationContext, DocumentEditorTreeFolderClass.FITTING_NODE, applicationFittingPanel.getActiveViewID());
+			activeView = applicationFittingPanel.getActiveView();
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -170,7 +175,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				applicationGeometryPanel.setSimulationContext(simulationContext);
-				applicationSettingsPanel.setSimulationContext(simulationContext);
+				applicationSpecificationsPanel.setSimulationContext(simulationContext);
 				applicationProtocolsPanel.setSimulationContext(simulationContext);
 				applicationSimulationsPanel.setSimulationContext(simulationContext);
 				showOrHideFittingPanel();
@@ -208,7 +213,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		applicationGeometryPanel.setSelectionManager(selectionManager);
-		applicationSettingsPanel.setSelectionManager(selectionManager);
+		applicationSpecificationsPanel.setSelectionManager(selectionManager);
 		applicationProtocolsPanel.setSelectionManager(selectionManager);
 		applicationSimulationsPanel.setSelectionManager(selectionManager);
 		applicationFittingPanel.setSelectionManager(selectionManager);
@@ -230,7 +235,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		case GEOMETRY_NODE:
 			selectTab(ApplicationPanelTabID.geometry);
 			break;
-		case SETTINGS_NODE:
+		case SPECIFICATIONS_NODE:
 			selectTab(ApplicationPanelTabID.settings);
 			break;
 		case PROTOCOLS_NODE:
@@ -249,7 +254,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
 		applicationGeometryPanel.setIssueManager(issueManager);
-		applicationSettingsPanel.setIssueManager(issueManager);
+		applicationSpecificationsPanel.setIssueManager(issueManager);
 		applicationSimulationsPanel.setIssueManager(issueManager);
 		applicationFittingPanel.setIssueManager(issueManager);
 	}

@@ -80,9 +80,6 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 
 	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
-		if (activeView.getSimulationContext() != simulationContext) {
-			return;
-		}
 		super.onActiveViewChange(activeView);
 		if (DocumentEditorTreeFolderClass.GEOMETRY_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
 			if (activeView.getActiveViewID() != null) {
@@ -96,15 +93,15 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	}
 
 	@Override
-	public ActiveViewID getActiveViewID() {
+	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
+		ActiveViewID activeViewID = null;
 		if (selectedComponent == structureMappingCartoonPanel) {
-			return ActiveViewID.structure_mapping;
+			activeViewID = ActiveViewID.structure_mapping;
+		} else if (selectedComponent == geometryViewer) {
+			activeViewID = ActiveViewID.geometry_definition;
 		}
-		if (selectedComponent == geometryViewer) {
-			return ActiveViewID.geometry_definition;
-		}
-		return null;
+		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, activeViewID);
 	}
 	
 	@Override

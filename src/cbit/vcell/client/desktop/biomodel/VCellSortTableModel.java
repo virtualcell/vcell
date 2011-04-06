@@ -9,6 +9,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
 public abstract class VCellSortTableModel<T> extends DefaultSortTableModel<T> implements IssueEventListener {
@@ -36,8 +37,13 @@ public abstract class VCellSortTableModel<T> extends DefaultSortTableModel<T> im
 		if (row < getDataSize() && issueManager != null) {
 			List<Issue> allIssueList = issueManager.getIssueList();
 			for (Issue issue: allIssueList) {
-				if (getValueAt(row) == issue.getSource() && issue.getSeverity() == Issue.SEVERITY_ERROR) {
-					issueList.add(issue);					
+				Object source = issue.getSource();
+				Object rowAt = getValueAt(row);
+				if (issue.getSeverity() == Issue.SEVERITY_ERROR) {
+					if (rowAt == source || 
+							source instanceof OutputFunctionIssueSource && ((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) {
+						issueList.add(issue);
+					}
 				}
 			}
 		}

@@ -5,6 +5,8 @@ import javax.swing.JComponent;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 
@@ -68,7 +70,7 @@ public class ApplicationFittingPanel extends ApplicationSubPanel {
 	}
 
 	@Override
-	public ActiveViewID getActiveViewID() {
-		return ActiveViewID.parameter_estimation;
+	public ActiveView getActiveView() {
+		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.FITTING_NODE, ActiveViewID.parameter_estimation);
 	}
 }

@@ -29,12 +29,15 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model;
@@ -1109,6 +1112,10 @@ public SimulationContext getSimulationContext(String name) {
 		} else if (source instanceof StructureMapping) {
 			StructureMapping structureMapping = (StructureMapping) source;
 			description = ((StructureMappingNameScope)structureMapping.getNameScope()).getPathDescription();
+		} else if (source instanceof OutputFunctionIssueSource) {
+			SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
+			description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / " 
+				+ ApplicationPanelTabID.simulations.getTitle() + " / " + SimulationsPanelTabID.output_functions.getTitle();
 		} else if (source instanceof UnmappedGeometryClass) {
 			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
 			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
@@ -1134,6 +1141,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((Geometry)object).getName();
 		} else if (object instanceof StructureMapping) {
 			description = ((StructureMapping)object).getStructure().getName();
+		} else if (object instanceof OutputFunctionIssueSource) {
+			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		} else if (object instanceof UnmappedGeometryClass) {
 			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
 		}
