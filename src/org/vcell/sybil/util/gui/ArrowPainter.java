@@ -7,7 +7,6 @@ package org.vcell.sybil.util.gui;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
 public class ArrowPainter {
@@ -29,7 +28,7 @@ public class ArrowPainter {
 		arrow.lineTo((float)X3,(float)Y3);
 		arrow.lineTo((float)X4,(float)Y4);
 		arrow.lineTo((float)X1,(float)Y1);
-		arrow.setWindingRule(Path2D.WIND_NON_ZERO);
+		arrow.setWindingRule(GeneralPath.WIND_NON_ZERO);
 		return arrow;
 	}
 
