@@ -696,5 +696,12 @@ public class TextFieldAutoCompletion extends JTextField {
 			bSetText = false;
 		}
 	}
-	
+
+	@Override
+	protected void fireActionPerformed() {
+		if (isPopupVisible()) {
+			return;
+		}
+		super.fireActionPerformed();
+	}	
 }
