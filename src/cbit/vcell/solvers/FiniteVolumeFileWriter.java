@@ -221,6 +221,9 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
+		printWriter.println("DATA_PROCESSOR_BEGIN " + DataProcessingInstructions.ROI_TIME_SERIES);
+		printWriter.println("DATA_PROCESSOR_END");
+		printWriter.println();
 		return;
 	}
 	
