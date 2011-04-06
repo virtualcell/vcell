@@ -50,7 +50,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 				if (text.trim().length() > 0) {
 					try {
 						Expression exp = new Expression(text);
-						if (scopedExpression.isValidateBinding()) {
+						if (scopedExpression == null || scopedExpression.isValidateBinding()) {
 							exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
 						}
 					} catch (ExpressionBindingException ex) {

@@ -268,6 +268,9 @@ private void changeUnit() {
 
 private void changeExpression() {
 	try{
+		if (expressionTextField.isPopupVisible()) {
+			return;
+		}
 		if (parameter == null) {
 			return;
 		}
