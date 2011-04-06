@@ -23,12 +23,15 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 
 @SuppressWarnings("serial")
@@ -99,6 +102,15 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
 							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
 							setSelectedObjects(new Object[] {object});
+						} else if (object instanceof OutputFunctionIssueSource) {
+							SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
+							if (simulationOwner instanceof SimulationContext) {
+								SimulationContext simulationContext = (SimulationContext) simulationOwner;
+								setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions));								
+							} else if (simulationOwner instanceof MathModel) {
+								setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
+							}
+							setSelectedObjects(new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
 						}
 					}
 				}

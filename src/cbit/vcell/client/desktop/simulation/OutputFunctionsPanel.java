@@ -33,6 +33,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
@@ -559,4 +560,10 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, getFnScrollPaneTable(), outputFnsListTableModel);
 	}
+
+	@Override
+	public void setIssueManager(IssueManager newValue) {
+		super.setIssueManager(newValue);
+		outputFnsListTableModel.setIssueManager(newValue);
+	}	
 }

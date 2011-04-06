@@ -620,7 +620,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = dataSymbolsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
-		} else if (folderClass == DocumentEditorTreeFolderClass.SETTINGS_NODE) {
+		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
 		} else if (folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE) {

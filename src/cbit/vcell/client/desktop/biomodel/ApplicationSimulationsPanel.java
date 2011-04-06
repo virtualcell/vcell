@@ -7,6 +7,8 @@ import javax.swing.JComponent;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
@@ -19,7 +21,7 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private MathematicsPanel mathematicsPanel;
 	
-	private enum SimulationsPanelTabID {
+	public enum SimulationsPanelTabID {
 		simulations("Simulations"),
 		output_functions("Output Functions"),
 		generated_math("Generated Math");
@@ -27,6 +29,9 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		String title = null;
 		SimulationsPanelTabID(String name) {
 			this.title = name;
+		}
+		public final String getTitle() {
+			return title;
 		}
 	}
 	
@@ -96,17 +101,39 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	}
 
 	@Override
-	public ActiveViewID getActiveViewID() {
+	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
+		ActiveViewID activeViewID = null;
 		if (selectedComponent == simulationListPanel) {
-			return ActiveViewID.simulations;
+			activeViewID = ActiveViewID.simulations;
+		} else if (selectedComponent == outputFunctionsPanel) {
+			activeViewID = ActiveViewID.output_functions;
+		} else if (selectedComponent == mathematicsPanel) {
+			activeViewID = ActiveViewID.generated_math;
 		}
-		if (selectedComponent == outputFunctionsPanel) {
-			return ActiveViewID.output_functions;
-		}
-		if (selectedComponent == mathematicsPanel) {
-			return ActiveViewID.generated_math;
-		}
-		return null;
+		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, activeViewID);
 	}
+	
+	@Override
+	protected void onActiveViewChange(ActiveView activeView) {
+		super.onActiveViewChange(activeView);
+		if (DocumentEditorTreeFolderClass.SIMULATIONS_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
+			if (activeView.getActiveViewID() != null) {
+				if (activeView.getActiveViewID().equals(ActiveViewID.simulations)) {
+					tabbedPane.setSelectedIndex(SimulationsPanelTabID.simulations.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.output_functions)) {
+					tabbedPane.setSelectedIndex(SimulationsPanelTabID.output_functions.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.generated_math)) {
+					tabbedPane.setSelectedIndex(SimulationsPanelTabID.generated_math.ordinal());
+				}
+			}
+		}
+	}
+
+	@Override
+	public void setIssueManager(IssueManager newValue) {		
+		super.setIssueManager(newValue);
+		outputFunctionsPanel.setIssueManager(newValue);
+	}
+	
 }

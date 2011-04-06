@@ -8,11 +8,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.document.SimulationOwner;
@@ -33,6 +36,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.solver.SimulationSymbolTable;
 
+@SuppressWarnings("serial")
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
 	public static final String PROPERTY_OUTPUT_FUNCTIONS = "outputFunctions";
@@ -534,6 +538,35 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			}
 		};
 		return stef;
+	}
+
+	public static class OutputFunctionIssueSource {
+		private OutputFunctionContext outputFunctionContext;
+		private AnnotatedFunction function;
+		private OutputFunctionIssueSource(
+				OutputFunctionContext outputFunctionContext,
+				AnnotatedFunction function) {
+			super();
+			this.outputFunctionContext = outputFunctionContext;
+			this.function = function;
+		}
+		public final OutputFunctionContext getOutputFunctionContext() {
+			return outputFunctionContext;
+		}
+		public final AnnotatedFunction getAnnotatedFunction() {
+			return function;
+		}		
+	}
+	
+	public void gatherIssues(List<Issue> issueList) {
+		for (AnnotatedFunction af : outputFunctionsList) {
+			try {
+				af.bind(this);
+			} catch (ExpressionException ex) {
+				issueList.add(new Issue(new OutputFunctionIssueSource(this, af), IssueCategory.OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING, ex.getMessage(), Issue.SEVERITY_ERROR));
+			}
+		}
+		
 	}
 
 }
