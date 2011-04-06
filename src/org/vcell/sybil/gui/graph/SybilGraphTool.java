@@ -45,7 +45,7 @@ public class SybilGraphTool implements MouseListener, MouseMotionListener {
 		Point screenPoint = new Point(event.getX(), event.getY());
 		screenToWorld(screenPoint);
 		try {
-			if ((event.getModifiers() & (MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK)) != 0) { 
+			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) { 
 				return; 
 			}
 			if (event.getClickCount() == 2){ graph().setChoice(event.getPoint()); }
@@ -59,7 +59,7 @@ public class SybilGraphTool implements MouseListener, MouseMotionListener {
 
 
 	public void mouseDragged(MouseEvent event) {
-		if ((event.getModifiers() & (MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK)) != 0){ return; }
+		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0){ return; }
 		boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 		boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
 		try {
@@ -184,7 +184,7 @@ public class SybilGraphTool implements MouseListener, MouseMotionListener {
 		if(graph() == null) { return; }
 		try {
 			if (event.isPopupTrigger()){ return; }
-			if ((event.getModifiers() & (MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK)) != 0) { 
+			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) { 
 				return; 
 			}
 			graphPane().setCursor(Cursor.getDefaultCursor());

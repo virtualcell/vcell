@@ -23,6 +23,7 @@ public class CellNewThingOption<T extends SBBox.NamedThing> extends CellActionOp
 		this.factory = factory;
 	}
 	
+	@Override
 	public CellOption eventSelect(Cell cell, CellOption.Selector selector) { 
 		CellThingOption<T> sbViewOption;
 		try { 

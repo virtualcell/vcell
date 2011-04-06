@@ -45,6 +45,7 @@ public class SyBiLInfoDialog extends InfoDialog {
 	protected void init() {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) { finished(); }
 		});
 		setTitle(SybilSpecs.shortText);
@@ -54,11 +55,13 @@ public class SyBiLInfoDialog extends InfoDialog {
 		pack();
 	}
 
+	@Override
 	public void showDialog() {
 		setLocationRelativeTo(getOwner());
 		setVisible(true);
 	}
 
+	@Override
 	public void finished() { dispose(); }
 	
 	static protected class InfoToolBar extends ToolBar {

@@ -21,6 +21,7 @@ public class DependentCellDefaultGroup extends DependentCellGroup {
 		super(cell.table(), cell.column(), columnDependencyNew, null, defaultOptions);
 	}
 	
+	@Override
 	public Iterator<Cell> cellIter() { return new IterOfOne<Cell>(cell); }
 	
 }

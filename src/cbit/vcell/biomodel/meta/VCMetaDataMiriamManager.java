@@ -110,10 +110,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			all.put(urnPrefix,this);
 		}
 		
+		@Override
 		public int hashCode(){
 			return urnPrefix.hashCode();
 		}
 		
+		@Override
 		public boolean equals(Object object){
 			if (object instanceof VCMetaDataDataType){
 				VCMetaDataDataType dataType = (VCMetaDataDataType)object;
@@ -175,10 +177,6 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				set.add(new VCMetaDataMiriamResource(miriamRef));
 			}
 			return set;
-		}
-
-		public RefGroup getSybilRefGroup() {
-			return sybilRefGroup;
 		}
 
 	}
@@ -258,21 +256,6 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		return matchingRefGroups;
 	}
 		
-	private Set<MiriamRefGroup> queryMiriamRefGroups(Identifiable identifiable, MIRIAMQualifier miriamQualifier) {
-		// get from jena. (not used currently).
-		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
-		if (entry.getNamedThing() == null){
-			return null;
-		}
-		MIRIAMizer miriamizer = new MIRIAMizerImp();
-		Set<RefGroup> refGroups = miriamizer.getRefGroups(entry.getNamedThing(),miriamQualifier);
-		Set<MiriamRefGroup> newRefGroups = new HashSet<MiriamRefGroup>();
-		for (RefGroup sybilRefGroup : refGroups){
-			newRefGroups.add(new VCMetaDataMiriamRefGroup(sybilRefGroup));
-		}
-		return newRefGroups;
-	}
-	
 	private Map<MiriamRefGroup,MIRIAMQualifier> queryAllMiriamRefGroups(Identifiable identifiable) {
 		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
 		if (entry.getNamedThing() == null){

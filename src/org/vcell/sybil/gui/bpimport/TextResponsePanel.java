@@ -24,6 +24,7 @@ public class TextResponsePanel extends ResponsePanel {
 		add(new JScrollPane(textArea));
 	}
 	
+	@Override
 	public PCTextResponse response() { return (PCTextResponse) super.response(); }
 	
 }

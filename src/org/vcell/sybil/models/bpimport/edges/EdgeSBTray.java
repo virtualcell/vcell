@@ -6,18 +6,18 @@ package org.vcell.sybil.models.bpimport.edges;
 
 import java.util.Vector;
 
-import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 
 public class EdgeSBTray  {
 
-	protected SBBox box;
+	protected SBInferenceBox box;
 	protected Vector<MutableEdge> edges = new Vector<MutableEdge>();
 
-	public EdgeSBTray(SBBox box) { 
+	public EdgeSBTray(SBInferenceBox box) { 
 		this.box = box;
 	}
 	
-	public SBBox box() { return box; }
+	public SBInferenceBox box() { return box; }
 	public Vector<MutableEdge> edges() { return edges; }
 		
 }

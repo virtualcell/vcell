@@ -31,6 +31,7 @@ public abstract class BaseAction extends SpecAction implements ActionBranch {
 		return new OneElementEnum<ActionBranch>(this);
 	}
 	
+	@Override
 	public Component requester(ActionEvent event) { return RequesterProvider.requester(event, coreManager); }
 	
 }

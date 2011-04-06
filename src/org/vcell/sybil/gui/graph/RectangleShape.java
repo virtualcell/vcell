@@ -19,17 +19,20 @@ public abstract class RectangleShape extends Shape {
 		super(graphNew, sybCompNew);
 	}
 
+	@Override
 	public void updatePrerequisites(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(label());
 	}
 	
+	@Override
 	public void updateOtherSizes(Graphics2D g) {
 		labelPos.x = (size.width/2) - labelSize.width/2;
 		labelPos.y = (size.height/2) - labelSize.height/2;		
 	}
 	
+	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		preferedSize.height = labelSize.height + 10;
 		preferedSize.width = labelSize.width + 10;
@@ -70,12 +73,14 @@ public abstract class RectangleShape extends Shape {
 
 	public Font getLabelFont(Graphics2D g) { return getBoldFont(g); }
 
+	@Override
 	protected boolean isInside (Point p) {
 		int x = p.x - location.x() + size.width/2;
 		int y = p.y - location.y() + size.height/2;
 		return x > 0 && x < size.width && y > 0 && y < size.height;
 	}
 
+	@Override
 	public void paint (Graphics2D g2D) {
 		int absPosX = location.x() - size.width/2;
 		int absPosY = location.y() - size.height/2;

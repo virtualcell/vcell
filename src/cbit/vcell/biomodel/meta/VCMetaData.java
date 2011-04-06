@@ -90,7 +90,7 @@ public class VCMetaData implements Serializable {
 
 	public SBBox getSBbox() { return rdfBox; }
 	
-	Model getRdfData() { return rdfBox.getData(); }
+	Model getRdfData() { return rdfBox.getRdf(); }
 	
 	public Model getRdfDataCopy() {
 		Model rdfModelCopy = ModelFactory.createDefaultModel();
@@ -111,7 +111,7 @@ public class VCMetaData implements Serializable {
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
-		if (!rdfBox.getData().isIsomorphicWith(vcMetaData.rdfBox.getData())) {
+		if (!getRdfData().isIsomorphicWith(vcMetaData.getRdfData())) {
 			return false; 
 		}
 		if (!registry.compareEquals(vcMetaData.registry)) {
@@ -175,7 +175,7 @@ public class VCMetaData implements Serializable {
 	}
 		
 	public void add(Model jenaModel){
-		rdfBox.getData().add(jenaModel);
+		getRdfData().add(jenaModel);
 		miriamManager.invalidateCache();
 	}
 	
@@ -302,7 +302,7 @@ public class VCMetaData implements Serializable {
 	
 	public String printRdfStatements(){
 		StringBuffer strBuffer = new StringBuffer();
-		StmtIterator statementIterator = rdfBox.getData().listStatements();
+		StmtIterator statementIterator = getRdfData().listStatements();
 		while (statementIterator.hasNext()) {
 			Statement st = statementIterator.nextStatement();
 			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
@@ -311,14 +311,14 @@ public class VCMetaData implements Serializable {
 	}
 	
 	public String printRdfPretty(){
-		RDFWriter writer = rdfBox.getData().getWriter("N3");
+		RDFWriter writer = getRdfData().getWriter("N3");
 		StringWriter sw = new StringWriter();
-		writer.write(rdfBox.getData(), sw, getBaseURI());
+		writer.write(getRdfData(), sw, getBaseURI());
 		return sw.getBuffer().toString();
 	}
 
 	public void addPathwayModel(BioModel bioModel, Model model) {
-		getSBbox().getData().add(model);
+		getRdfData().add(model);
 		fireAnnotationEventListener(new AnnotationEvent(bioModel, true));
 	}
 

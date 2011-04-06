@@ -14,6 +14,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 public class PropertyComparatorBioPAX2 extends ComparatorScore<Property> {
 
 	
+	@Override
 	public int score(Property p) {
 		if(RDF.type.equals(p)) { return 5; }
 		else if(RDFS.label.equals(p)) { return 4; }

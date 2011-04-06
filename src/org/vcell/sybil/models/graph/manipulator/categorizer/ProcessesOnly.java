@@ -49,6 +49,7 @@ extends EvaluatorGraphManipulator<S, G> {
 		return false;
 	}
 	
+	@Override
 	public void applyToGraph(G graph) throws GraphManipulationException {
 		if(evaluator == null) { throw new GraphManipulationException(new NoEvaluatorException()); }
 		Iterator<S> shapeIter = graph.shapeIter();

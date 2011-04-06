@@ -31,6 +31,7 @@ implements GraphModelSelectionInfo.Listener, ListSelectionListener {
 	public static class Table extends JTable {
 		private static final long serialVersionUID = 7946719652978679311L;
 		public Table(ResourcesTableModel model) { super(model); }
+		@Override
 		public ResourcesTableModel getModel() { return (ResourcesTableModel) super.getModel(); }
 	}
 

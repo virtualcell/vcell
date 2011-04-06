@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class UnitFactory extends ThingFactory<SBBox.Unit> {
 
 	public UnitFactory(SBBox box) { super(box, SBPAX.Unit); }
+	@Override
 	public SBBox.Unit newThing(Resource node) { return new UnitImp(box, node); }
+	@Override
 	public String baseLabel() { return "Unit"; }
 
 }

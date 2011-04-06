@@ -54,6 +54,7 @@ public class SystemMonitorDialog extends InfoDialog {
 	protected void init() {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) { finished(); }
 		});
 		setTitle("System Monitor");
@@ -65,6 +66,7 @@ public class SystemMonitorDialog extends InfoDialog {
 		pack();
 	}
 
+	@Override
 	public void showDialog() {
 		setLocationRelativeTo(getOwner());
 		setVisible(true);
@@ -77,6 +79,7 @@ public class SystemMonitorDialog extends InfoDialog {
 		System.out.println(textArea.getText());
 	}
 	
+	@Override
 	public void finished() { dispose(); }
 	
 	public void indicateMesageSent() {

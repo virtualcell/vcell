@@ -14,12 +14,15 @@ public class StageModelsWorker extends PortWorker {
 		super(view, acceptor);
 	}
 
+	@Override
 	public Object doConstruct() { 
 		StageModelsBuilder.build(view()); 
 		return new Result(view(), PortStage.stageModels);
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "Creating SBPAX system model"; }
+	@Override
 	public String getSwingTaskName() { return "Done creating SBPAX system model"; }
 	
 };

@@ -40,6 +40,7 @@ public class SBWrapper extends ResourceWrapper implements SBBox.NamedThing {
 	
 	public String name() { return nameByList(namingListLong); }
 	public String shortName() { return nameByList(namingListShort); }
+	@Override
 	public SBBox box() { return (SBBox) super.box(); }
 
 

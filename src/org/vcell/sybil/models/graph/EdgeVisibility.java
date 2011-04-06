@@ -36,6 +36,7 @@ extends DefaultVisibility<S> implements DependentVisibility<S> {
 		(depEndIsHidden == edgeShape().endShape().visibility().isHidden());
 	}
 	
+	@Override
 	public boolean calculateIsHiddenNew() {
 		/*System.out.println("Edge is hidden: " + 
 				(hidesItself || isHiddenFamily || depStartIsHidden || depEndIsHidden || isTooShort)
@@ -45,6 +46,7 @@ extends DefaultVisibility<S> implements DependentVisibility<S> {
 		return hasHiders || isHiddenFamily || depStartIsHidden || depEndIsHidden || isTooShort;
 	}
 	
+	@Override
 	public void dump() {
 		System.out.println("depStartIsHidden = " + depStartIsHidden);
 		System.out.println("depEndIsHidden = " + depEndIsHidden);

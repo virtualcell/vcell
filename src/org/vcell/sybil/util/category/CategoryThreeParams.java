@@ -12,11 +12,13 @@ public abstract class CategoryThreeParams<C extends Category<C>, P1, P2, P3> ext
 	
 	public P3 p3() { return p3; }
 	
+	@Override
 	public int hashCode() { 
 		int p3HashCode = p3 != null ? p3.hashCode() : 0;
 		return super.hashCode() + p3HashCode; 
 	}
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof CategoryThreeParams<?, ?, ?, ?>) {
 			Object c2 = ((CategoryThreeParams<?, ?, ?, ?>) o).c();
@@ -32,6 +34,7 @@ public abstract class CategoryThreeParams<C extends Category<C>, P1, P2, P3> ext
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		String cString = c.toString();
 		String p1String = p1 != null ? p1.toString() : "null";

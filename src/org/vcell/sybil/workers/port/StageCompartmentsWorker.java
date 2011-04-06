@@ -14,15 +14,18 @@ public class StageCompartmentsWorker extends PortWorker {
 		super(view, acceptor);
 	}
 
+	@Override
 	public Object doConstruct() { 
 		StageCompartmentsBuilder.build(view()); 
 		return new Result(view(), PortStage.stageCompartments);
 	}
 
+	@Override
 	public String getNonSwingTaskName() {
 		return "Going through compartment stage - which is nothing any more, really";
 	}
 	
+	@Override
 	public String getSwingTaskName() { return "Done going through compartment stage"; }
 	
 };

@@ -20,6 +20,7 @@ import org.vcell.sybil.models.graphcomponents.RDFGraphCompThing;
 import org.vcell.sybil.models.graphcomponents.tag.RDFGraphCompTag;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.util.graphlayout.LayoutType;
 import org.vcell.sybil.util.iterators.BufferedIterator;
 
@@ -41,7 +42,7 @@ implements GraphModel.Listener {
 	protected RDFGraphCompContainer containerComp;
 	protected S containerShape;
 
-	public UIGraph(SBBox box) { 
+	public UIGraph(SBInferenceBox box) { 
 		this.model = new GraphModel(box);
 		model.listeners().add(this);
 	}

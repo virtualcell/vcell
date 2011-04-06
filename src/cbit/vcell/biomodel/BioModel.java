@@ -4,7 +4,6 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -125,7 +124,7 @@ public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoE
 	if (getNumSimulations()==0){
 		setSimulations(new Simulation[] { simulation });
 	}else{
-		setSimulations((Simulation[])BeanUtils.addElement(fieldSimulations,simulation));
+		setSimulations(BeanUtils.addElement(fieldSimulations,simulation));
 	}
 	
 }
@@ -144,7 +143,7 @@ public void addSimulationContext(SimulationContext simulationContext) throws jav
 	if (getNumSimulationContexts()==0){
 		setSimulationContexts(new SimulationContext[] { simulationContext });
 	}else{
-		setSimulationContexts((SimulationContext[])BeanUtils.addElement(fieldSimulationContexts,simulationContext));
+		setSimulationContexts(BeanUtils.addElement(fieldSimulationContexts,simulationContext));
 	}
 }
 
@@ -189,7 +188,7 @@ public boolean compareEqual(Matchable obj) {
 	if (!getPathwayModel().compare((HashSet<BioPaxObject>) bioModel.getPathwayModel().getBiopaxObjects())){
 		return false;
 	}
-	if (!((RelationshipModel) getRelationshipModel()).compare((HashSet<RelationshipObject>) bioModel.getRelationshipModel().getRelationshipObjects(), bioModel)){
+	if (!(getRelationshipModel()).compare((HashSet<RelationshipObject>) bioModel.getRelationshipModel().getRelationshipObjects(), bioModel)){
 		return false;
 	}
 	if (!Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
@@ -674,7 +673,7 @@ public void removeSimulation(Simulation simulation) throws java.beans.PropertyVe
 	if (!contains(simulation)){
 		throw new IllegalArgumentException("BioModel.removeSimulation() simulation not present in BioModel");
 	}
-	setSimulations((Simulation[])BeanUtils.removeElement(fieldSimulations,simulation));
+	setSimulations(BeanUtils.removeElement(fieldSimulations,simulation));
 }
 
 
@@ -688,7 +687,7 @@ public void removeSimulationContext(SimulationContext simulationContext) throws 
 	if (!contains(simulationContext)){
 		throw new IllegalArgumentException("BioModel.removeSimulationContext() simulationContext not present in BioModel");
 	}
-	setSimulationContexts((SimulationContext[])BeanUtils.removeElement(fieldSimulationContexts,simulationContext));
+	setSimulationContexts(BeanUtils.removeElement(fieldSimulationContexts,simulationContext));
 }
 
 
@@ -809,6 +808,7 @@ private void setVersion(Version version) throws PropertyVetoException {
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
+@Override
 public String toString() {
 	String desc = (getVersion()==null)?getName():getVersion().toString();
 	return "BioModel@"+Integer.toHexString(hashCode())+"("+desc+")";
@@ -1040,8 +1040,8 @@ public Set<Identifiable> getAllIdentifiables() {
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
 //	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
-	ArrayList<BioPaxObject> biopaxObjects = (ArrayList<BioPaxObject>) getPathwayModel().getBiopaxObjects();
-	allIdenfiables.addAll(Arrays.asList(biopaxObjects.toArray(new BioPaxObject[biopaxObjects.size()])));
+	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
+	allIdenfiables.addAll(biopaxObjects);
 	allIdenfiables.add(this);
 	return allIdenfiables;
 }

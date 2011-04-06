@@ -17,7 +17,7 @@ extends HashMap<Class<? extends ActionBranch>, ActionBranch> implements ActionMa
 
 	public ActionBranch simplePut(ActionBranch newActionBranch) {
 		Class<? extends ActionBranch> class1 = 
-			(Class<? extends ActionBranch>) newActionBranch.getClass();
+			newActionBranch.getClass();
 		return put(class1, newActionBranch);
 	}
 

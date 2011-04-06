@@ -28,6 +28,7 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 	
 	public Set<ListDataListener> listeners() { return listeners; }
 
+	@Override
 	public boolean add(E e) {
 		int sizeOld = size();
 		super.add(e);
@@ -35,11 +36,13 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 		return true;
 	}
 
+	@Override
 	public void add(int ind, E e) {
 		super.add(ind, e);
 		fireIntervalAdded(ind, ind);
 	}
 
+	@Override
 	public boolean addAll(Collection<? extends E> c) {
 		int sizeOld = size();
 		int num = c.size();
@@ -48,40 +51,48 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public boolean addAll(int ind, Collection<? extends E> c) {
 		boolean hasChanged = super.addAll(ind, c);
 		if(hasChanged) { fireIntervalAdded(ind, ind + c.size() -1); }
 		return hasChanged;
 	}
 
+	@Override
 	public void clear() {
 		int sizeOld = size();
 		super.clear();
 		fireIntervalRemoved(0, sizeOld - 1);
 	}
 
+	@Override
 	public Iterator<E> iterator() { return new BoundedListIterator<E>(this, super.listIterator()); }
 
+	@Override
 	public ListIterator<E> listIterator() { 
 		return new BoundedListIterator<E>(this, super.listIterator()); 
 	}
 
+	@Override
 	public ListIterator<E> listIterator(int index) {
 		return new BoundedListIterator<E>(this, super.listIterator(index)); 
 	}
 
+	@Override
 	public boolean remove(Object o) {
 		boolean hasChanged = super.remove(o);
 		if(hasChanged) { fireContentsChanged(0, size()); }
 		return hasChanged;
 	}
 
+	@Override
 	public E remove(int ind) {
 		E element = super.remove(ind);
 		fireIntervalRemoved(ind, ind);
 		return element;
 	}
 
+	@Override
 	public boolean removeAll(Collection<?> c) {
 		int sizeOld = size();
 		boolean hasChanged = super.removeAll(c);
@@ -89,6 +100,7 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public boolean retainAll(Collection<?> c) {
 		int sizeOld = size();
 		boolean hasChanged = super.retainAll(c);
@@ -96,12 +108,14 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public E set(int ind, E eNew) {
 		E eOld = super.set(ind, eNew);
 		fireContentsChanged(ind, ind);
 		return eOld;
 	}
 
+	@Override
 	public void removeRange(int ind1, int ind2) {
 		if(ind1 < ind2) {
 			super.removeRange(ind1, ind2);
@@ -109,15 +123,24 @@ public class BoundedVector<E> extends Vector<E> implements BoundedList<E> {
 		}
 	}
 	
+	@Override
 	public void setSize(int sizeNew) { super.setSize(sizeNew); }
+	@Override
 	public void setElementAt(E e, int ind) { set(ind, e); }
+	@Override
 	public void removeElementAt(int ind) { remove(ind); }
+	@Override
 	public void insertElementAt(E e, int ind) { add(ind, e); }
+	@Override
 	public void addElement(E e) { add(e); }
+	@Override
 	public boolean removeElement(Object o) { return remove(o); }
+	@Override
 	public void removeAllElements() { clear(); }
+	@Override
 	public Object clone() { return new BoundedVector<E>(this); }
 		
+	@Override
 	public List<E> subList(int ind1, int ind2) { 
 		return new BoundedSubList<E>(this, subList(ind1, ind2), ind1 < ind2 ? ind1 : ind2); 
 	}

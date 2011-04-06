@@ -35,9 +35,11 @@ public class XRefListWrapper extends NodeDataWrapper<List<XRef>> {
 		return false;
 	}
 
-	public List<XRef> data() { return (List<XRef>) super.data(); }
-	public List<XRef> xRefs() { return (List<XRef>) super.data(); }
+	@Override
+	public List<XRef> data() { return super.data(); }
+	public List<XRef> xRefs() { return super.data(); }
 	
+	@Override
 	public String toString() {
 		String string = NumberText.soMany(xRefs().size(), "cross reference");
 		if(obsoletes != null) {

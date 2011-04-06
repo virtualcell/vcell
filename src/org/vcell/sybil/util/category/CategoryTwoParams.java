@@ -12,11 +12,13 @@ public abstract class CategoryTwoParams<C extends Category<C>, P1, P2> extends C
 	
 	public P2 p2() { return p2; }
 	
+	@Override
 	public int hashCode() { 
 		int p2HashCode = p2 != null ? p2.hashCode() : 0;
 		return super.hashCode() + p2HashCode; 
 	}
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof CategoryTwoParams<?, ?, ?>) {
 			Object c2 = ((CategoryTwoParams<?, ?, ?>) o).c();
@@ -30,6 +32,7 @@ public abstract class CategoryTwoParams<C extends Category<C>, P1, P2> extends C
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		String cString = c.toString();
 		String p1String = p1 != null ? p1.toString() : "null";

@@ -56,6 +56,7 @@ public class SpeciesImp extends SBWrapper implements SBBox.MutableSpecies {
 		return this;
 	}
 	
+	@Override
 	public String name() { 
 		String name;
 		
@@ -71,6 +72,7 @@ public class SpeciesImp extends SBWrapper implements SBBox.MutableSpecies {
 		return name; 
 	}
 	
+	@Override
 	public String shortName() { 
 		String shortName;
 		Substance substance = substance();

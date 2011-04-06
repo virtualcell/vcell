@@ -12,11 +12,13 @@ public abstract class CategoryOneParam<C extends Category<C>, P1> extends Catego
 	
 	public P1 p1() { return p1; }
 	
+	@Override
 	public int hashCode() { 
 		int p1HashCode = p1 != null ? p1.hashCode() : 0;
 		return super.hashCode() + p1HashCode; 
 	}
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof CategoryOneParam<?, ?>) {
 			Class<?> c2 = ((CategoryOneParam<?, ?>) o).c();
@@ -28,6 +30,7 @@ public abstract class CategoryOneParam<C extends Category<C>, P1> extends Catego
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		String cString = super.toString();
 		String p1String = p1 != null ? p1.toString() : "null";

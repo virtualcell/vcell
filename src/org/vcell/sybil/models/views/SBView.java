@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.sybil.models.io.Exporter;
-import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.Location;
 import org.vcell.sybil.models.sbbox.SBBox.Process;
 import org.vcell.sybil.models.sbbox.SBBox.Substance;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.util.keys.KeyOfTwo;
 
 public interface SBView {
@@ -25,7 +25,7 @@ public interface SBView {
 		public Exporter exporterDefault() { return b(); }
 	}
 	
-	public SBBox box();
+	public SBInferenceBox box();
 	public Set<Process> processes();
 	public Set<Location> locations();
 	public Set<Substance> substances();

@@ -15,7 +15,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class LocationFactory extends ThingFactory<SBBox.MutableLocation> {
 
 	public LocationFactory(SBBox box) { super(box, SBPAX.Location); }
+	@Override
 	public MutableLocation newThing(Resource node) { return new LocationImp(box, node); }
+	@Override
 	public String baseLabel() { return "Location"; }
 
 }

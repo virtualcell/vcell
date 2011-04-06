@@ -24,6 +24,7 @@ public class SetOfNone<E> implements Set<E> {
 		else { return false; }
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof Set) {
 			Set<?> set = (Set<?>) object;
@@ -32,6 +33,7 @@ public class SetOfNone<E> implements Set<E> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return 0; }
 
 	public boolean isEmpty() { return true; }

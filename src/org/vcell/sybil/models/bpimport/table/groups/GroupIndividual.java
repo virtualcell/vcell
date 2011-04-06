@@ -24,6 +24,7 @@ public class GroupIndividual extends GroupManager {
 			cell = cellNew;
 		}
 
+		@Override
 		public Iterator<Cell> cellIter() { return new IterOfOne<Cell>(cell); }
 		
 	}
@@ -32,8 +33,10 @@ public class GroupIndividual extends GroupManager {
 	
 	public GroupIndividual(Collection<? extends CellOption> defaultOptions) { super(defaultOptions); }
 
+	@Override
 	public SingleCellGroup determineGroup(Cell cell) { return defaultGroup(cell); }
 
+	@Override
 	public SingleCellGroup defaultGroup(Cell cell) {
 		SingleCellGroup group = cellToGroup.get(cell);
 		if(group == null) { 

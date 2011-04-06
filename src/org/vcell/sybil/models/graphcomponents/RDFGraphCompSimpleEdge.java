@@ -39,6 +39,7 @@ public class RDFGraphCompSimpleEdge implements RDFGraphCompEdge {
 	public Statement statement() { return edgeComp.statement(); }
 	public Set<Statement> statements() { return edgeComp.statements(); 	};
 
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof RDFGraphCompSimpleEdge) {
 			RDFGraphCompSimpleEdge edge = (RDFGraphCompSimpleEdge) object;
@@ -47,6 +48,7 @@ public class RDFGraphCompSimpleEdge implements RDFGraphCompEdge {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return edgeComp.hashCode(); }
 	public String label() { return edgeComp.label(); }
 	public String name() { return toString(); }

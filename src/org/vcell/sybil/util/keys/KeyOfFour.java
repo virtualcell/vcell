@@ -18,6 +18,7 @@ public class KeyOfFour<A, B, C, D> {
 	public C c() { return c; }
 	public D d() { return d; }
 	
+	@Override
 	public int hashCode() { 
 		int aHashCode = a != null ? a.hashCode() : 0;
 		int bHashCode = b != null ? b.hashCode() : 0;
@@ -26,6 +27,7 @@ public class KeyOfFour<A, B, C, D> {
 		return aHashCode + bHashCode + cHashCode + dHashCode; 
 	}
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof KeyOfFour<?, ?, ?, ?>) {
 			Object a2 = ((KeyOfFour<?, ?, ?, ?>) o).a();
@@ -41,6 +43,7 @@ public class KeyOfFour<A, B, C, D> {
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		String aString = a != null ? a.toString() : "null";
 		String bString = b != null ? b.toString() : "null";

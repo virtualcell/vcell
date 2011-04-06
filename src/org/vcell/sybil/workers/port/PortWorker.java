@@ -40,6 +40,7 @@ public abstract class PortWorker extends SystemWorker {
 	
 	public Result getResult() { return (Result) get(); }
 	
+	@Override
 	public void doFinished() { 
 		resultAcceptor.accept(getResult()); 
 	}

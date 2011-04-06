@@ -27,6 +27,7 @@ public class PCIDRequest extends PathwayCommonsRequest {
 		paras().add(PCRParameter.Output.biopax);
 	}
 
+	@Override
 	public PathwayCommonsResponse response() {
 		try { 
 			URL url = url();
@@ -39,6 +40,7 @@ public class PCIDRequest extends PathwayCommonsRequest {
 		catch (IOException e) { return new PCExceptionResponse(this, e); } 
 	}
 
+	@Override
 	public String description() { return "cpath id search for " + id; }
 	@Override public String shortTitle() { return "ID " + id; }
 	

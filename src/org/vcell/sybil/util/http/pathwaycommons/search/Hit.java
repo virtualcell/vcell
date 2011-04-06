@@ -54,6 +54,7 @@ public class Hit {
 	public Organism organism() { return organism; }
 	public List<Pathway> pathways() { return pathways; }
 	
+	@Override
 	public String toString() {
 		return "[Hit: \n" + 
 		"primaryID=\"" + primaryID + "\";\n" + 

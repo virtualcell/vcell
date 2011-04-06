@@ -18,17 +18,21 @@ public class FileSaveWorker extends SystemWorker {
 		this.fileManager = fileMan;
 	}
 
+	@Override
 	public Object doConstruct() {
 		try { event = fileManager.saveFile(); } 
 		catch (Exception e) { CatchUtil.handle(e); }
 		return null;
 	}
 
+	@Override
 	public void doFinished() { 
 		if(event != null) { fileManager.listeners().fileEvent(event); }
 	}
 	
+	@Override
 	public String getNonSwingTaskName() { return "start saving file"; }
+	@Override
 	public String getSwingTaskName() { return "finish saving file"; }
 };
 

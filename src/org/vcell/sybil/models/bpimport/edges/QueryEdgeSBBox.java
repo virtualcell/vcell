@@ -1,6 +1,6 @@
 package org.vcell.sybil.models.bpimport.edges;
 
-/*   ueryEdgeSBBox  --- by Oliver Ruebenacker, UCHC --- July to November 2009
+/*   QueryEdgeSBBox  --- by Oliver Ruebenacker, UCHC --- July to November 2009
  *   An SBBox containing process edges from a process query
  */
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.vcell.sybil.models.arq.ProcessQuery;
-import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 
 import com.hp.hpl.jena.datatypes.DatatypeFormatException;
 import com.hp.hpl.jena.graph.Node;
@@ -24,7 +24,7 @@ import com.hp.hpl.jena.sparql.engine.binding.Binding;
 
 public class QueryEdgeSBBox extends EdgeSBTray {
 
-	public QueryEdgeSBBox(SBBox box) {
+	public QueryEdgeSBBox(SBInferenceBox box) {
 		super(box);
 		Op op = ProcessQuery.op();
 		QueryIterator qIter = Algebra.exec(op, box().getRdf());

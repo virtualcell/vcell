@@ -19,6 +19,7 @@ public class NodeShapeParticipant extends NodeShape {
 		setColorBG(java.awt.Color.black);
 	}
 
+	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();

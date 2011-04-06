@@ -17,6 +17,7 @@ public class GUIGraphInit extends ActionsGraphInit<Shape, Graph> implements GUIM
 		graphManager = new ModelGraphManager<Shape, Graph>();
 	}
 	
+	@Override
 	public ModelGraphManager<Shape, Graph> graphManager() {
 		return graphManager;
 	}

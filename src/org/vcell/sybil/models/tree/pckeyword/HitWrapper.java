@@ -35,13 +35,15 @@ public class HitWrapper extends NodeDataWrapper<Hit> {
 		append(new PathwayListWrapper(hit.pathways()));
 	}
 
-	public Hit data() { return (Hit) super.data(); }
-	public Hit hit() { return (Hit) super.data(); }
+	@Override
+	public Hit data() { return super.data(); }
+	public Hit hit() { return super.data(); }
 	
 	protected void addIfNotEmpty(List<String> list, String string) {
 		if(StringUtil.notEmpty(string)) { list.add(string); }
 	}
 	
+	@Override
 	public String toString() {
 		Iterator<String> nameIter = hit().names().iterator();
 		String name = "no name";

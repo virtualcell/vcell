@@ -15,6 +15,7 @@ import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.SpeciesType;
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.views.SBWorkView;
 import org.vcell.sybil.util.sbml.LibSBMLUtil;
 import org.vcell.sybil.util.sbml.LibSBMLUtil.LibSBMLException;
@@ -48,7 +49,7 @@ public class StageSBMLBuilder {
 	    view.setSBMLDoc(LibSBMLUtil.newDoc());
 	    
 	    SBBox.MutableSystemModel systemModel = view.systemModel();
-	    SBBox box = view.box();
+	    SBInferenceBox box = view.box();
 	    box.performSYBREAMReasoning();
 	    BuilderTray tray = new BuilderTray(view, new SBMLNamespaces());
 	    

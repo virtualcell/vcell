@@ -37,13 +37,16 @@ public class BiHashMap<A, B> extends HashMap<A, B> implements BiMap<A, B> {
 	
 	public A getKey(B b) { return pam.get(b); }
 	
+	@Override
 	public boolean containsValue(Object b) { return pam.containsKey(b); }
 	
+	@Override
 	public void clear() {
 		super.clear();
 		pam.clear();
 	}
 	
+	@Override
 	@SuppressWarnings("unchecked")
 	public BiHashMap<A, B> clone() {
 		BiHashMap<A, B> newMap = (BiHashMap<A, B>) super.clone();
@@ -51,6 +54,7 @@ public class BiHashMap<A, B> extends HashMap<A, B> implements BiMap<A, B> {
 		return newMap;
 	}
 	
+	@Override
 	public B put(A a, B b) {
 		A oldA = pam.get(b);
 		B oldB = get(a);
@@ -61,12 +65,14 @@ public class BiHashMap<A, B> extends HashMap<A, B> implements BiMap<A, B> {
 		return oldB;
 	}
 	
+	@Override
 	public B remove(Object a) {
 		B b = super.remove(a);
 		pam.remove(b);
 		return b;
 	}
 	
+	@Override
 	public void putAll(Map<? extends A, ? extends B> map) {
 		Set<B> values = new HashSet<B>();
 		// BiMap<A, B> entries = new BiHashMap<A, B>();

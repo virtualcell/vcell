@@ -29,6 +29,7 @@ public class StatementsSPTableModel extends StatementsTableModel {
 	
 	public int getColumnCount() { return 2; }
 
+	@Override
 	public Class<? extends RDFToken> getColumnClass(int iCol) { 
 		switch(iCol) {
 		case iColSubject : return SubjectToken.class;
@@ -37,6 +38,7 @@ public class StatementsSPTableModel extends StatementsTableModel {
 		return RDFToken.class; 
 	}
 	
+	@Override
 	public String getColumnName(int iCol) { 
 		switch(iCol) {
 		case iColSubject: return "Subject";

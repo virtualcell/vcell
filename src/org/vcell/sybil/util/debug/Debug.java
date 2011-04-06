@@ -4,8 +4,6 @@ package org.vcell.sybil.util.debug;
  *   A few simple static methods to support debugging
  */
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;

@@ -27,6 +27,7 @@ public class GroupCollective extends GroupManager {
 			column = columnNew;
 		}
 
+		@Override
 		public Iterator<Cell> cellIter() { return new ColumnCellIter(table, column); }
 		
 	}
@@ -35,8 +36,10 @@ public class GroupCollective extends GroupManager {
 	
 	public GroupCollective(Collection<? extends CellOption> defaultOptions) { super(defaultOptions); }
 
+	@Override
 	public CellGroup determineGroup(Cell cell) { return defaultGroup(cell); }
 
+	@Override
 	public CellGroup defaultGroup(Cell cell) { 
 		Column col = cell.column();
 		CellGroup group = colToGroup.get(col);

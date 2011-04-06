@@ -6,7 +6,7 @@ package org.vcell.sybil.models.graph;
 
 import org.vcell.sybil.models.graph.SybilGraphFactory;
 import org.vcell.sybil.models.graphcomponents.tag.RDFGraphCompTagCreator;
-import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.sbbox.imp.SBWrapper;
 import org.vcell.sybil.models.views.SBView;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -19,7 +19,7 @@ public class SybilGraphFactory {
 
 	public static <S extends UIShape<S>, G extends UIGraph<S, G>> 
 	void createGraph(UIGraph<S, G> graph, SBView view) throws InterruptedException {
-		SBBox box = view.box();
+		SBInferenceBox box = view.box();
 		Model model = box.getData();
 		graph.startNewGraph();
 		StmtIterator stmtIter = model.listStatements();

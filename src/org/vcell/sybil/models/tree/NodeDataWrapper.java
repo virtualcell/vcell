@@ -33,9 +33,12 @@ public class NodeDataWrapper<T>  {
 	
 	public T data() { return data; }
 	public MutableTreeNode node() { return node; }
+	@Override
 	public String toString() { return data.toString(); }
+	@Override
 	public int hashCode() { return data.hashCode() + node.hashCode(); }
 	
+	@Override
 	public boolean equals(Object o) {
 		boolean equals = false;
 		if(o instanceof NodeDataWrapper<?>) {

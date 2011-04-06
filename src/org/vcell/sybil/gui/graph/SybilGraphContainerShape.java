@@ -22,11 +22,13 @@ public class SybilGraphContainerShape extends ContainerShape {
 		this.setColorBG(java.awt.Color.white);
 	}
 
+	@Override
 	public void updateOtherSizes(Graphics2D g) {
 		location.setP(size.width/2, size.height/2);
 		super.updateOtherSizes(g);
 	}
 	
+	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		Dimension emptySize = super.getPreferedSize(g);
 		boolean successful = false;

@@ -14,9 +14,11 @@ public class USTAssumptionFactory
 extends ThingFactory<SBBox.MutableUSTAssumption> {
 
 	public USTAssumptionFactory(SBBox box) { super(box, SYBREAMO.UnmodifiableSubstancesClass); }
+	@Override
 	public SBBox.MutableUSTAssumption newThing(Resource node) { 
 		return new USTAssumptionImp(box, node); 
 	}
+	@Override
 	public String baseLabel() { return "UnmodSubstanceTypeAssumption"; }
 
 }

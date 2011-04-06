@@ -36,6 +36,7 @@ public class DependentCellGroup extends CellGroup implements FilterIter.Tester<C
 		catch (NullPointerException e) { return false; }
 	}
 
+	@Override
 	public Iterator<Cell> cellIter() {
 		return new FilterIter<Cell>(new ColumnCellIter(table, column), this);
 	}

@@ -24,8 +24,10 @@ public abstract class DependentGroupManager extends GroupManager {
 		columnDependency.groupManager().deps().add(this);
 	}
 	
+	@Override
 	public DependentCellGroup determineGroup(Cell cell) { return defaultGroup(cell); }
 
+	@Override
 	public DependentCellGroup defaultGroup(Cell cell) { 
 		Row row = cell.row();
 		Cell cellDep = row.cell(columnDependency);

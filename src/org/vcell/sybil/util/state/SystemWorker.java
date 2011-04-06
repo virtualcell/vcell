@@ -47,11 +47,13 @@ public abstract class SystemWorker {
 	
 	public AsynchClientTask[] getTasks(){
 		AsynchClientTask nonswingTask = new AsynchClientTask(getNonSwingTaskName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true,true) {
+			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				result = doConstruct();
 			}
 		};
 		AsynchClientTask swingTask = new AsynchClientTask(getNonSwingTaskName(), AsynchClientTask.TASKTYPE_SWING_BLOCKING,true,true) {
+			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				doFinished();
 			}

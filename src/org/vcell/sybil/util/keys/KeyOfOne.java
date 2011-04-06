@@ -11,8 +11,10 @@ public class KeyOfOne<A> {
 	public KeyOfOne(A a) { this.a = a; }
 	
 	public A a() { return a; }
+	@Override
 	public int hashCode() { return a != null ? a.hashCode() : 0; }
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof KeyOfOne<?>) {
 			Object a2 = ((KeyOfOne<?>) o).a();
@@ -21,6 +23,7 @@ public class KeyOfOne<A> {
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		return "(" + (a != null ? a.toString() : "null") + ")"; 
 	}

@@ -7,9 +7,10 @@ package org.vcell.sybil.models.sbbox;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.factories.Factories;
+import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.sybil.util.label.LabelMan;
 
-public interface SBBox extends InferenceBox {
+public interface SBBox extends RDFBox {
 	
 	public static interface NamedThing extends RDFThing {
 		public String name();

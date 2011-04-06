@@ -35,6 +35,7 @@ public class ChainTwoQuery extends LegoQuery<ChainTwoQuery.Vars> {
 		superRelation2 = superRelation2New; type3 = type3New;
 	}
 	
+	@Override
 	public ElementTriplesBlock element() {
 		ElementTriplesBlock block = new ElementTriplesBlock();
 		block.addTriple(JenaUtil.triple(vars.coreVar(Node1), RDF.type, type1));
@@ -45,6 +46,7 @@ public class ChainTwoQuery extends LegoQuery<ChainTwoQuery.Vars> {
 		return block;
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof ChainTwoQuery) {
 			ChainTwoQuery query = (ChainTwoQuery) object;
@@ -55,6 +57,7 @@ public class ChainTwoQuery extends LegoQuery<ChainTwoQuery.Vars> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { 
 		return type1.hashCode() + superRelation1.hashCode() + type2.hashCode() + superRelation2.hashCode() + type3.hashCode(); 
 	}

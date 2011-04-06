@@ -13,8 +13,9 @@ public class PropertyVar extends ResourceVar {
 	public PropertyVar(Var varNew) { super(varNew); }
 	public PropertyVar(String varNameNew) { super(varNameNew); }
 
+	@Override
 	public Property node(Binding binding) { 
-		return (Property) model.asRDFNode(binding.get(var)).as(Property.class); 
+		return model.asRDFNode(binding.get(var)).as(Property.class); 
 	}
 
 	

@@ -13,21 +13,27 @@ public interface TokenCategory extends Category<TokenCategory> {
 	public class SubjectToken extends CategoryNoParams<TokenCategory> implements TokenCategory {
 
 		public SubjectToken() { super(SubjectToken.class); }
+		@Override
 		public int rank() { return 0; }
+		@Override
 		public String toString() { return "Subject"; }
 	}
 	
 	public class PredicateToken extends CategoryNoParams<TokenCategory> implements TokenCategory {
 
 		public PredicateToken() { super(PredicateToken.class); }
+		@Override
 		public int rank() { return 1; }
+		@Override
 		public String toString() { return "Predicate"; }
 	}
 	
 	public class ObjectToken extends CategoryNoParams<TokenCategory> implements TokenCategory {
 
 		public ObjectToken() { super(ObjectToken.class); }
+		@Override
 		public int rank() { return 2; }
+		@Override
 		public String toString() { return "Object"; }
 	}
 	

@@ -57,10 +57,12 @@ public class VCID {
 		return localName;
 	}
 	
+	@Override
 	public int hashCode(){
 		return id.hashCode();
 	}
 	
+	@Override
 	public boolean equals(Object obj){
 		if (obj instanceof VCID){
 			VCID vcid = (VCID)obj;

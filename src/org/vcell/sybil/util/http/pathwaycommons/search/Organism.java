@@ -21,6 +21,7 @@ public class Organism {
 	public String commonName() { return commonName; }
 	public String speciesName() { return speciesName; }
 	
+	@Override
 	public String toString() {
 		return "[Organism: ncbiOrganismId=\"" + ncbiOrganismId + "\"; commonName=\"" + commonName + 
 		"\"; speciesName=\"" + speciesName + "\"]"; 

@@ -17,6 +17,7 @@ public class NameSpace {
 		return "PREFIX " + prefix + ": <" + uri + ">\n"; 
 	}
 
+	@Override
 	public String toString() { return uri; }
 
 	public static NSMap defaultMap = new NSMap();

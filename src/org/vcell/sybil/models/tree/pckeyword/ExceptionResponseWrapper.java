@@ -20,11 +20,13 @@ public class ExceptionResponseWrapper extends ResponseWrapper {
 		}
 	}
 	
+	@Override
 	public String toString() {
 		Exception exception = data().exception();
 		return "Exception " + exception.getClass().getSimpleName() + ": " + exception.getMessage();
 	}
 	
+	@Override
 	public PCExceptionResponse data() { return (PCExceptionResponse) super.data(); }
 
 }

@@ -42,8 +42,10 @@ public interface OrganismRef {
 		public int id() { return id; }
 		public String taxonName() { return taxonName; }
 		public List<String> names() { return names; }
+		@Override
 		public int hashCode() { return id(); }
 
+		@Override
 		public boolean equals(Object o) {
 			boolean equals = false;
 			if(o instanceof OrganismRef) { equals = id() == ((OrganismRef) o).id(); }

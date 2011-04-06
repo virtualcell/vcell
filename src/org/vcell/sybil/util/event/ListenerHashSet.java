@@ -15,6 +15,7 @@ HashSet<Listener<V>> implements ListenerSet<V> {
 	
 	public ListenerHashSet(Bounded<V> bounded) { this.bounded = bounded; }
 	
+	@Override
 	public boolean add(Listener<V> listener) {
 		boolean result = super.add(listener);
 		listener.setValue(bounded.value());

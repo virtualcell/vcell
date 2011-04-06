@@ -14,12 +14,14 @@ public class KeyOfTwo<A, B> {
 	public A a() { return a; }
 	public B b() { return b; }
 	
+	@Override
 	public int hashCode() { 
 		int aHashCode = a != null ? a.hashCode() : 0;
 		int bHashCode = b != null ? b.hashCode() : 0;
 		return aHashCode + bHashCode; 
 	}
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof KeyOfTwo<?, ?>) {
 			Object a2 = ((KeyOfTwo<?, ?>) o).a();
@@ -31,6 +33,7 @@ public class KeyOfTwo<A, B> {
 		return false;
 	}
 	
+	@Override
 	public String toString() { 
 		String aString = a != null ? a.toString() : "null";
 		String bString = b != null ? b.toString() : "null";

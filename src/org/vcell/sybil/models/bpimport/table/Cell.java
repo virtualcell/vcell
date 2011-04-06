@@ -93,6 +93,7 @@ public class Cell {
 	}
 
 	public ProcessTableModel table() { return table; }
+	@Override
 	public String toString() { return selected() != null ? selected().toString() : ""; }
 
 }

@@ -13,6 +13,7 @@ public class ResourceVar extends RDFNodeVar {
 	public ResourceVar(Var varNew) { super(varNew); }
 	public ResourceVar(String varNameNew) { super(varNameNew); }
 
+	@Override
 	public Resource node(Binding binding) { return (Resource) super.node(binding); }
 
 	

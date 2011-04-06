@@ -17,6 +17,7 @@ public class GroupOntoColumn extends DependentGroupManager {
 		super(columnNew, defaultOptions); 
 	}
 	
+	@Override
 	public void updateOptions(DependentCellGroup group) {
 		try {
 			Iterator<Cell> cellDepIter = group.groupDependency().cellIter();

@@ -20,6 +20,7 @@ public class Error {
 	public String msg() { return msg; }
 	public String details() { return details; }
 	
+	@Override
 	public String toString() { return "[Error: code=\"" + code + "\"; msg=\"" + msg 
 		+ "\"; details=\"" + details + "\""; }
 }

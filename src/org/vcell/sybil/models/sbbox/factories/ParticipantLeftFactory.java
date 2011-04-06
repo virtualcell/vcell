@@ -15,10 +15,12 @@ public class ParticipantLeftFactory extends ThingFactory<SBBox.MutableParticipan
 
 	public ParticipantLeftFactory(SBBox box) { super(box, SBPAX.ProcessParticipantLeft); }
 	
+	@Override
 	public SBBox.MutableParticipantLeft newThing(Resource node) { 
 		return new ParticipantLeftImp(box, node); 
 	}
 	
+	@Override
 	public String baseLabel() { return "ParticipantLeft"; }
 
 }

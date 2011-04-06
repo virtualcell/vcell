@@ -20,11 +20,13 @@ public class SelectedStatementsTable extends JTable {
 	
 	protected boolean columnLayoutManual = false;
 	
+	@Override
 	public void doLayout() { 
 		if(tableHeader.getResizingColumn() != null) { columnLayoutManual = true; }
 		super.doLayout(); 
 	}
 	
+	@Override
 	public StatementsPOTableModel getModel() { return (StatementsPOTableModel) super.getModel(); }
 	
 	public void doColumnSizes() {
@@ -48,6 +50,7 @@ public class SelectedStatementsTable extends JTable {
 		}
 	}
 	
+	@Override
 	public void tableChanged(TableModelEvent event) {
 		doColumnSizes();
 		super.tableChanged(event);

@@ -31,7 +31,7 @@ public class TableGUI implements TableUI {
 	}
 
 	public CellLiteralOption askForCellLiteralOption(Literal sampleNode) throws NoProperInputException {
-		return new CellLiteralOption(askForLiteral((Literal) sampleNode));			
+		return new CellLiteralOption(askForLiteral(sampleNode));			
 	}
 
 	protected Resource askForResource(Resource sampleNode) 

@@ -22,9 +22,11 @@ public class XRefObsoleteListWrapper extends NodeDataWrapper<List<XRef>> {
 		append(new XRefWrapper(xRef));
 	}
 	
-	public List<XRef> data() { return (List<XRef>) super.data(); }
-	public List<XRef> xRefs() { return (List<XRef>) super.data(); }
+	@Override
+	public List<XRef> data() { return super.data(); }
+	public List<XRef> xRefs() { return super.data(); }
 	
+	@Override
 	public String toString() {
 		return NumberText.soMany(xRefs().size(), "obsolete cross reference");
 	}

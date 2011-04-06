@@ -20,17 +20,21 @@ public class EvaluatorWorker extends SystemWorker {
 		this.view = view;
 	}
 	
+	@Override
 	public Object doConstruct() {
 		try { event = evaluator.createDataSet(view); } 
 		catch (Exception e) { CatchUtil.handle(e); }
 		return null;
 	}
 	
+	@Override
 	public void doFinished() {
 		if(event != null) { evaluator.listeners().evaluatorEvent(event); }
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "evaluating data"; }
+	@Override
 	public String getSwingTaskName() { return "applying data evaluation"; }
 
 };

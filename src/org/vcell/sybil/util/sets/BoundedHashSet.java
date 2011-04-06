@@ -19,6 +19,7 @@ public class BoundedHashSet<E> extends HashSet<E> implements BoundedSet<E> {
 	
 	public Set<Listener<E>> listeners() { return listeners; }
 
+	@Override
 	public boolean add(E element) {
 		boolean hasChanged = super.add(element);
 		if(hasChanged) {
@@ -28,6 +29,7 @@ public class BoundedHashSet<E> extends HashSet<E> implements BoundedSet<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public boolean addAll(Collection<? extends E> collection) {
 		boolean hasChanged = super.addAll(collection);
 		if(hasChanged) {
@@ -37,14 +39,17 @@ public class BoundedHashSet<E> extends HashSet<E> implements BoundedSet<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public void clear() {
 		super.clear();
 		EventClear<E> event = new EventClear<E>(this);
 		for(Listener<E> listener : listeners) { listener.fireEvent(event); }				
 	}
 
+	@Override
 	public Iterator<E> iterator() { return new BoundedSetIterator<E>(this, super.iterator()); }
 
+	@Override
 	public boolean remove(Object object) {
 		boolean hasChanged = super.remove(object);
 		if(hasChanged) {
@@ -54,6 +59,7 @@ public class BoundedHashSet<E> extends HashSet<E> implements BoundedSet<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public boolean removeAll(Collection<?> collection) {
 		boolean hasChanged = super.removeAll(collection);
 		if(hasChanged) {
@@ -63,6 +69,7 @@ public class BoundedHashSet<E> extends HashSet<E> implements BoundedSet<E> {
 		return hasChanged;
 	}
 
+	@Override
 	public boolean retainAll(Collection<?> collection) {
 		boolean hasChanged = super.retainAll(collection);
 		if(hasChanged) {

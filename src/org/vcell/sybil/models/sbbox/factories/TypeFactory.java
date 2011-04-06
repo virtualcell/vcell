@@ -14,7 +14,9 @@ import com.hp.hpl.jena.vocabulary.OWL;
 public class TypeFactory extends ThingFactory<MutableRDFType> {
 
 	public TypeFactory(SBBox box) { super(box, OWL.Class); }
+	@Override
 	public SBBox.MutableRDFType newThing(Resource node) { return new RDFTypeImp(box, node); }
+	@Override
 	public String baseLabel() { return "Type"; }
 	
 }

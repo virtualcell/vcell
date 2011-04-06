@@ -19,6 +19,7 @@ public class GUIJInternalFrameSpace extends GUIFrameSpace implements UIFrameSpac
 		this.dialogParentProvider = dialogParentProvider;
 	}
 	
+	@Override
 	public JInternalFrame frame() { return (JInternalFrame) super.frame(); }
 	
 	public void prepare() { 
@@ -32,7 +33,9 @@ public class GUIJInternalFrameSpace extends GUIFrameSpace implements UIFrameSpac
 	}
 	
 	public String title() { return frame().getTitle(); }
+	@Override
 	public void setTitle(String titleNew) { frame().setTitle(titleNew); }
+	@Override
 	public void setMenuBar(JMenuBar barNew) { frame().setJMenuBar(barNew); }
 
 	@Override

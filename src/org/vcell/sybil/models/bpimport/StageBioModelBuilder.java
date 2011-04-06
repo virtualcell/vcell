@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.sbbox.util.LocationUtil;
 import org.vcell.sybil.models.views.SBWorkView;
 import org.vcell.sybil.util.exception.CatchUtil;
@@ -59,7 +60,6 @@ public class StageBioModelBuilder {
 		}
 		
 		public SBBox box() { return box; }
-		public com.hp.hpl.jena.rdf.model.Model rdf() { return box.getRdf(); }
 		public BioModel bio() { return bio; }
 		public Model model() { return bio.getModel(); }
 	}
@@ -67,7 +67,7 @@ public class StageBioModelBuilder {
 	public static void build(SBWorkView view) {
 
 		SBBox.MutableSystemModel systemModel = view.systemModel();
-		SBBox box = view.box();
+		SBInferenceBox box = view.box();
 		box.performSYBREAMReasoning();
 		BuilderTray tray = new BuilderTray(box, view.bioModel());
 

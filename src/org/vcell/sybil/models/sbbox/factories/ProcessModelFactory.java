@@ -14,8 +14,10 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class ProcessModelFactory extends ThingFactory<SBBox.MutableProcessModel> {
 
 	public ProcessModelFactory(SBBox box) { super(box, SBPAX.ProcessModel); }
+	@Override
 	public SBBox.MutableProcessModel newThing(Resource node) { return new ProcessModelImp(box, node); }
 
+	@Override
 	public String baseLabel() { return "ProcessModel"; }
 	
 }

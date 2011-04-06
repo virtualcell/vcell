@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class SubstanceFactory extends ThingFactory<SBBox.MutableSubstance> {
 
 	public SubstanceFactory(SBBox box) { super(box, SBPAX.Substance); }
+	@Override
 	public SBBox.MutableSubstance newThing(Resource node) { return new SubstanceImp(box, node); }
+	@Override
 	public String baseLabel() { return "Substance"; }
 
 }

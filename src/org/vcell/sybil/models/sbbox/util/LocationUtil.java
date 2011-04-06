@@ -18,6 +18,7 @@ public class LocationUtil {
 	
 	@SuppressWarnings("serial")
 	protected static class LocationScoreMap extends HashMap<SBBox.Location, LocationScore> {
+		@Override
 		public LocationScore get(Object object) {
 			LocationScore locationScore = super.get(object);
 			if(locationScore == null && object instanceof SBBox.Location) {

@@ -32,6 +32,7 @@ public class ImportAcceptWorker extends SystemWorker {
 		client = clientNew; 
 	}
 
+	@Override
 	public Model doConstruct() { 
 		Model model = client.response().model();
 		if(client.requestsSmelting()) { model = new BioPAX2Smelter().smelt(model); }
@@ -43,11 +44,14 @@ public class ImportAcceptWorker extends SystemWorker {
 		return modelSelection; 
 	}
 
+	@Override
 	public void doFinished() { 
 		if(event != null) { client.fileManager().listeners().fileEvent(event); }
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "start processing selected data"; }
+	@Override
 	public String getSwingTaskName() { return "finish processing selected data"; }
 	
 }

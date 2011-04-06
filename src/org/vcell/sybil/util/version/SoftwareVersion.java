@@ -7,7 +7,9 @@ package org.vcell.sybil.util.version;
 public class SoftwareVersion {
 	
 	public static abstract class Product {		
+		@Override
 		public abstract boolean equals(Object object);
+		@Override
 		public abstract int hashCode();
 	}
 	
@@ -51,6 +53,7 @@ public class SoftwareVersion {
 		&& minor == version.minor; 
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof SoftwareVersion) {
 			SoftwareVersion version = (SoftwareVersion) object;
@@ -60,11 +63,13 @@ public class SoftwareVersion {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() {
 		return product.hashCode() + build + 31*edition.ordinal() + 31*31*minor 
 		+ 31*31*31*major;
 	}
 	
+	@Override
 	public String toString() { return shortText(); }
 
 	public String shortText() { 

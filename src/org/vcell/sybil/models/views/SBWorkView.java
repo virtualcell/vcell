@@ -14,10 +14,10 @@ import org.vcell.sybil.models.bpimport.table.ProcessTableModel;
 import org.vcell.sybil.models.io.Exporter;
 import org.vcell.sybil.models.io.Exporter.ExporterSBML;
 import org.vcell.sybil.models.io.Exporter.ExporterSBPAX;
-import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.MutableSystemModel;
 import org.vcell.sybil.models.sbbox.SBBox.MutableUSTAssumption;
 import org.vcell.sybil.models.sbbox.SBBox.RDFType;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.util.lists.ListOfOne;
 import org.vcell.sybil.util.lists.ListOfTwo;
 import cbit.vcell.biomodel.BioModel;
@@ -35,7 +35,7 @@ public class SBWorkView extends SBBasicView {
 	protected SBMLDocument sbmlDoc;
 	protected BioModel bioModel;
 	
-	public SBWorkView(SBBox box, BioModel bioModel) { 
+	public SBWorkView(SBInferenceBox box, BioModel bioModel) { 
 		super(box);
 		this.bioModel = bioModel;
 		ustAssumption = box.factories().ustAssumptionFactory().createWithDefaultLabel();

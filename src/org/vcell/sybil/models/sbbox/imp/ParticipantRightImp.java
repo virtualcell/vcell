@@ -11,11 +11,13 @@ public class ParticipantRightImp extends ParticipantImp implements SBBox.Mutable
 
 	public ParticipantRightImp(SBBox man, Resource resource) { super(man, resource); }
 
+	@Override
 	public SBBox.MutableParticipantRight setSpecies(SBBox.Species species) { 
 		super.setSpecies(species);		
 		return this;
 	}
 
+	@Override
 	public SBBox.MutableParticipantRight setStoichiometry(SBBox.Stoichiometry stoichiometry) {
 		super.setStoichiometry(stoichiometry);
 		return this;

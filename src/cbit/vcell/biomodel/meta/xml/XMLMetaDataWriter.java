@@ -40,7 +40,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		Element bindingListElement = new Element(XMLMetaData.URI_BINDING_LIST_TAG);
 		Set<Registry.Entry> resources = metaData.getRegistry().getAllEntries();
 		for (Registry.Entry entry : resources) {
-			VCID vcid = identifiableProvider.getVCID((Identifiable)entry.getIdentifiable());
+			VCID vcid = identifiableProvider.getVCID(entry.getIdentifiable());
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 			if (identifiable != null && entry.getNamedThing()!=null){
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
@@ -70,7 +70,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 			Entry<OpenEntry, NonRDFAnnotation> mapEntry = iter.next();
 			OpenEntry openEntry = mapEntry.getKey();
 			NonRDFAnnotation nonRDFAnnotation = mapEntry.getValue();
-			VCID vcid = identifiableProvider.getVCID((Identifiable)openEntry.getIdentifiable());
+			VCID vcid = identifiableProvider.getVCID(openEntry.getIdentifiable());
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 			// only write out nonRDF annotation if identifiable in identifiableProvider is not null
 			if (identifiable != null) {

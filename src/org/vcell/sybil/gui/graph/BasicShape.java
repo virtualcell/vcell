@@ -72,12 +72,14 @@ extends SimpleModelShape<S, G> implements Location.Owner<S> {
 		graph.model().listenersUpdate(); 
 	}
 
+	@Override
 	public String toString() {
 		return StringUtil.trimJavaIdentifier(getClass().getName()) + "@" + Integer.toHexString(hashCode()) 
 		+ "(" + label() + ")   " + StringUtil.trimJavaIdentifier(this.graphComp().getClass().getName()) 
 		+ "@" + Integer.toHexString(graphComp().hashCode()) + "(" + graphComp.label()+")"; 
 	}
 
+	@Override
 	public void setParent(S shape) {
 		parent = shape;
 		shape.visibility().updateAfterNewParent();

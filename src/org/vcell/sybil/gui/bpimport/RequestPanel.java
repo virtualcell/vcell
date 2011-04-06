@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+
 import org.vcell.sybil.actions.ActionSpecs;
 import org.vcell.sybil.actions.SpecAction;
 import org.vcell.sybil.models.io.FileManager;
@@ -47,7 +49,7 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 		request = requestNew;
 		setLayout(new BorderLayout());
 		new PathwayCommonsWorker(this).run(this);
-		busyLabel.setHorizontalAlignment(JLabel.CENTER);
+		busyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));// set a waiting cursor
 		add(busyLabel);
 		JButton buttonRemove = new JButton(new RemoveAction(this));

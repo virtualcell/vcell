@@ -17,11 +17,13 @@ public class ErrorResponseWrapper extends ResponseWrapper {
 		append("Details: " + error.details());
 	}
 	
+	@Override
 	public String toString() {
 		Error error = data().error();
 		return "Error " + error.code() + ": " + error.msg();
 	}
 	
+	@Override
 	public PCErrorResponse data() { return (PCErrorResponse) super.data(); }
 
 }

@@ -9,8 +9,11 @@ public class CellNoneOption extends CellSelectableOption {
 	public static final String LABEL = "[none]";
 	
 	public String label() { return LABEL; }
+	@Override
 	public String toString() { return LABEL; }
+	@Override
 	public boolean equals(Object o) { return o instanceof CellNoneOption; }
+	@Override
 	public int hashCode() { return LABEL.hashCode(); }
 
 }

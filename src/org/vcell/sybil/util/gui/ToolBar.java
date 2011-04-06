@@ -39,6 +39,7 @@ public class ToolBar extends JToolBar {
 		setOrientation(javax.swing.SwingConstants.HORIZONTAL);
 	}
 	
+	@Override
 	public Button add(Action action) { return (Button) add(new Button(action)); }
 	
 }

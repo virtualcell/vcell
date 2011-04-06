@@ -24,6 +24,7 @@ implements UIFrameSpace, DialogParentProvider {
 		frame().getContentPane().setLayout(new java.awt.BorderLayout());
 	}
 	
+	@Override
 	public JFrame frame() { return (JFrame) super.frame(); }
 	
 	public void prepare() { 
@@ -32,8 +33,11 @@ implements UIFrameSpace, DialogParentProvider {
 	}
 	public JFrame topFrame() { return frame(); }
 	public String title() { return frame().getTitle(); }
+	@Override
 	public void setTitle(String titleNew) { frame().setTitle(titleNew); }
+	@Override
 	public void setMenuBar(JMenuBar barNew) { frame().setJMenuBar(barNew); }
+	@Override
 	public void setVisible(final boolean newVisible) { 
 		frame().setVisible(newVisible);
 	}
@@ -41,6 +45,7 @@ implements UIFrameSpace, DialogParentProvider {
 	public Component getDialogParent() {
 		return topFrame;
 	}
+	@Override
 	public DialogParentProvider getDialogParentProvider() {
 		return this;
 	}

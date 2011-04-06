@@ -18,6 +18,7 @@ extends EvaluatorGraphManipulator<S, G> {
 	public GraphGrouper() { }
 	public GraphGrouper(Evaluator evaluator) { super(evaluator); }
 
+	@Override
 	public void applyToGraph(G graph) throws GraphManipulationException {
 		if(evaluator == null) { throw new GraphManipulationException(new NoEvaluatorException()); }
 		try {

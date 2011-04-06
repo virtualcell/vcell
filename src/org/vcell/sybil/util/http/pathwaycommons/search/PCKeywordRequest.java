@@ -31,6 +31,7 @@ public class PCKeywordRequest extends PathwayCommonsRequest {
 		paras().add(PCRParameter.Output.xml);
 	}
 
+	@Override
 	public PathwayCommonsResponse response() {
 		Document document = null;
 		try { 
@@ -50,6 +51,7 @@ public class PCKeywordRequest extends PathwayCommonsRequest {
 	}
 
 	public String keyword() { return keyword; }
+	@Override
 	public String description() { return "Keyword search result for \"" + keyword + "\""; }
 	@Override public String shortTitle() { return "Keyword \"" + keyword + "\""; }
 	

@@ -15,6 +15,7 @@ public class CellNewLiteralOption extends CellActionOption {
 	
 	public CellNewLiteralOption() { super(id, "new"); }
 	
+	@Override
 	public CellOption eventSelect(Cell cell, CellOption.Selector selector) { 
 		CellLiteralOption literalOption;
 		try { literalOption = 

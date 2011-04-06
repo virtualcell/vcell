@@ -16,9 +16,11 @@ public class PathwayListWrapper extends NodeDataWrapper<List<Pathway>> {
 		for(Pathway pathway : pathways) { append(new PathwayWrapper(pathway)); }
 	}
 
-	public List<Pathway> data() { return (List<Pathway>) super.data(); }
-	public List<Pathway> pathways() { return (List<Pathway>) super.data(); }
+	@Override
+	public List<Pathway> data() { return super.data(); }
+	public List<Pathway> pathways() { return super.data(); }
 	
+	@Override
 	public String toString() {
 		return NumberText.soMany(pathways().size(), "pathway");
 	}
