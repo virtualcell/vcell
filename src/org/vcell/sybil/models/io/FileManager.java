@@ -18,6 +18,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import org.vcell.sybil.models.ontology.Evaluator;
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.sybil.models.systemproperty.SystemPropertyRDFFormat;
 import org.vcell.sybil.models.views.SBWorkView;
@@ -28,7 +29,7 @@ public class FileManager {
 	protected File file;
 	protected Evaluator evaluator;
 	// TODO remove this field
-	protected SBBox box;
+	protected SBInferenceBox box;
 	protected SBWorkView view;
 	// TODO remove this field
 	protected BioModel bioModel;
@@ -37,8 +38,12 @@ public class FileManager {
 
 	public FileManager(BioModel bioModel) { 
 		this.bioModel = bioModel; 
-		if(bioModel != null) { box = bioModel.getVCMetaData().getSBbox(); }
-		else { box = SBBoxFactory.create(); }
+		if(bioModel != null) { 
+			box = SBBoxFactory.createSBInferenceBox(bioModel.getVCMetaData().getSBbox()); 
+		}
+		else { 
+			box = SBBoxFactory.createSBInferenceBox(); 
+		}
 		view = new SBWorkView(box, bioModel);
 		evaluator = new Evaluator(view);
 	} 
@@ -54,10 +59,17 @@ public class FileManager {
 	
 	public File file() { return file; }
 	public void setFile(File file) { this.file = file; }
-	public void setBox(SBBox box) { this.box = box; }
+	
+	public void setBox(SBBox box) { 
+		if(box instanceof SBInferenceBox) {
+			this.box = (SBInferenceBox) box;
+		} else {
+			this.box = SBBoxFactory.createSBInferenceBox(box); 			
+		}
+	}
 	
 	public SBWorkView view() { return view; }
-	public SBBox box() { return box; }
+	public SBInferenceBox box() { return box; }
 	public BioModel bioModel() { return bioModel; }
 	
 	public Evaluator evaluator() { return evaluator; }

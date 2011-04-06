@@ -64,6 +64,7 @@ public class SimpleLargeTextDialog extends InfoDialog {
 	protected void init(String text) {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) { finished(); }
 		});
 		add(new JScrollPane(new JTextArea(text)));
@@ -71,11 +72,13 @@ public class SimpleLargeTextDialog extends InfoDialog {
 		pack();
 	}
 
+	@Override
 	public void showDialog() {
 		setLocationRelativeTo(getOwner());
 		setVisible(true);
 	}
 
+	@Override
 	public void finished() { dispose(); }
 	
 	static protected class OKButtonBar extends ToolBar {

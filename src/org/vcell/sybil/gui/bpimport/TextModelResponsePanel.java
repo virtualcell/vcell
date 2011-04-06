@@ -85,6 +85,7 @@ public class TextModelResponsePanel extends ResponsePanel {
 		tabPanel.addTab("Source", new JScrollPane(textArea));		
 	}
 	
+	@Override
 	public PCTextModelResponse response() { return (PCTextModelResponse) super.response(); }
 	public Set<Resource> selectedEntities() { 
 		Set<Resource> selectedEntities = new HashSet<Resource>();

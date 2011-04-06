@@ -15,10 +15,12 @@ public class ParticipantCatalystFactory extends ThingFactory<SBBox.MutablePartic
 
 	public ParticipantCatalystFactory(SBBox box) { super(box, SBPAX.ProcessParticipantCatalyst); }
 	
+	@Override
 	public SBBox.MutableParticipantCatalyst newThing(Resource node) { 
 		return new ParticipantCatalystImp(box, node); 
 	}
 	
+	@Override
 	public String baseLabel() { return "ParticipantCatalyst"; }
 
 }

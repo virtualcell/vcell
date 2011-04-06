@@ -16,6 +16,7 @@ public class GroupByColumn extends DependentGroupManager {
 		super(columnNew, defaultOptions); 
 	}
 
+	@Override
 	public void updateOptions(DependentCellGroup group) {
 		Iterator<Cell> cellIter = group.cellIter();
 		while(cellIter.hasNext()) {

@@ -14,9 +14,11 @@ public class KeywordResponseWrapper extends ResponseWrapper {
 		for(Hit hit : response.hits()) { append(new HitWrapper(hit)); }
 	}
 	
+	@Override
 	public PCKeywordResponse data() { return (PCKeywordResponse) super.data(); }
 	public PCKeywordResponse response() { return (PCKeywordResponse) super.data(); }
 
+	@Override
 	public String toString() {
 		String keyword = response().request().keyword();
 		int nHitsReported = response().hits().size();

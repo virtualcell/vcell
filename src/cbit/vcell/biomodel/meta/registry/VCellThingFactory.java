@@ -22,6 +22,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
 
+@SuppressWarnings("serial")
 public class VCellThingFactory implements Registry.IdentifiableSBThingFactory, Serializable {
 
 	protected SBBox box;

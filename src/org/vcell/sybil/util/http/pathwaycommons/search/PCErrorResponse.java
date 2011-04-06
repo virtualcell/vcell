@@ -39,6 +39,7 @@ public class PCErrorResponse extends PathwayCommonsResponse {
 	
 	public Error error() { return error; }
 	
+	@Override
 	public String toString() {
 		return "[Error response: \n" + (error != null ? "error=" + error.toString() + ";\n" : "") + "]\n";
 	}

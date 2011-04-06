@@ -7,12 +7,13 @@ package org.vcell.sybil.models.bpimport;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.views.SBWorkView;
 
 public class StageModelsBuilder {
 	
 	static public void build(SBWorkView view) {
-		SBBox box = view.box();
+		SBInferenceBox box = view.box();
 		box.performSYBREAMReasoning();
 		if(view.systemModel() == null) {
 			view.setSystemModel(box.factories().systemModelFactory().createWithDefaultLabel());			

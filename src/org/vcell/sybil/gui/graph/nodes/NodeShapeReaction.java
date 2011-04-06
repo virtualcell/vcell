@@ -28,6 +28,7 @@ public class NodeShapeReaction extends NodeShape {
 		setColorBG(java.awt.Color.yellow);
 	}
 
+	@Override
 	public Point getEdgeHook(EdgeShape edge) {
 		Point edgeHook = super.getEdgeHook(edge);
 		if(edgeHook != null) {
@@ -41,6 +42,7 @@ public class NodeShapeReaction extends NodeShape {
 		return edgeHook;
 	}
 	
+	@Override
 	public void paint (Graphics2D g) {
 
 		int absPosX = location.x();
@@ -50,7 +52,7 @@ public class NodeShapeReaction extends NodeShape {
 		//
 		int diameter = size.height;
 		int hOval = diameter/2;
-		Graphics2D g2D = (Graphics2D)g;
+		Graphics2D g2D = g;
 		g2D.setColor(colorFG());
 		if (icon == null){
 			icon = new Area();

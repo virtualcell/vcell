@@ -11,6 +11,7 @@ public class CatchUtil {
 	public static class HandleMode extends KeyOfOne<String> {
 		public HandleMode(String label) { super(label); }
 		public String label() { return a(); }
+		@Override
 		public String toString() { return "HandleMode(" + label() + ")"; }
 	} 
 	

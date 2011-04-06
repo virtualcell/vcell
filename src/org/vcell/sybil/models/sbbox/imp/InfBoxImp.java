@@ -6,8 +6,6 @@ package org.vcell.sybil.models.sbbox.imp;
 
 import org.vcell.sybil.models.sbbox.InferenceBox;
 import org.vcell.sybil.rdf.reason.SYBREAMFactory;
-import org.vcell.sybil.rdf.schemas.SBPAX;
-
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -36,7 +34,6 @@ public class InfBoxImp implements InferenceBox {
 		rdf = ModelFactory.createUnion(data, infered);
 	}
 	
-	public Model getSbpax() { return SBPAX.schema; }
 	public Model getSchema() { return schema; }
 	public Model getData() { return data; }
 	public Model getRdf() { return rdf; }

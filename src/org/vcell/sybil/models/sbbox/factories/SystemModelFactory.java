@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class SystemModelFactory extends ThingFactory<SBBox.MutableSystemModel> {
 
 	public SystemModelFactory(SBBox box) { super(box, SBPAX.SystemModel); }
+	@Override
 	public SBBox.MutableSystemModel newThing(Resource node) { return new SystemModelImp(box, node); }
+	@Override
 	public String baseLabel() { return "SystemModel"; }
 
 }

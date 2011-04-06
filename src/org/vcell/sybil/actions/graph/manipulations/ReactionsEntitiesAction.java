@@ -24,6 +24,7 @@ EvaluatorManipulationAction<S, G, ReactionsManipulator<S, G>> {
 		super(newSpecs, coreManager, graphManager);
 	}
 
+	@Override
 	public ReactionsManipulator<S, G> graphManipulation(G graph) {
 		ReactionsManipulator<S, G> manip = new ReactionsManipulator<S, G>(evaluator(graph));
 		manip.setWithReactants(true);

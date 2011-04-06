@@ -22,6 +22,7 @@ import org.vcell.sybil.models.graphcomponents.tag.RDFGraphCompTag;
 import org.vcell.sybil.models.graphcomponents.tag.RDFGraphCompTagModel;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.util.exception.CatchUtil;
 import com.hp.hpl.jena.rdf.model.Statement;
 
@@ -32,11 +33,12 @@ public class Graph extends UIGraph<Shape, Graph> {
 
 	private int zoomPercent = 100;
 
-	public Graph(SBBox box) {
+	public Graph(SBInferenceBox box) {
 		super(box);
 		startNewGraph();
 	}
 
+	@Override
 	public Shape createShape(RDFGraphComponent syCo) { return ShapeFactory.createShape(this, syCo); }
 	
 	public Dimension getPreferedSize(Graphics2D g) {
@@ -118,6 +120,7 @@ public class Graph extends UIGraph<Shape, Graph> {
 		if(shape != null) { model.setChosenComp(shape.graphComp()); }
 	}
 
+	@Override
 	public void startNewGraph() {
 		containerComp = new RDFGraphCompSimpleContainer(new RDFGraphCompTagModel(model()));
 		containerShape = new SybilGraphContainerShape(this, containerComp);
@@ -127,6 +130,7 @@ public class Graph extends UIGraph<Shape, Graph> {
 	
 	public void clear() { shapeMap.clear(); updateView(); }
 
+	@Override
 	public void addEdge(SBBox box, NamedThing thing1, NamedThing thing2, Statement statement, RDFGraphCompTag tag) {
 		RDFGraphCompEdge compEdge = new RDFGraphCompSimpleEdge(new RDFGraphCompSingleThing(thing1, tag), new RDFGraphCompSingleThing(thing2, tag), 
 				new RDFGraphCompSimpleRelation(box, statement, tag), tag);

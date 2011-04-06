@@ -49,6 +49,7 @@ public class RDFGraphCompSingleThing implements RDFGraphCompThing {
 	
 	public Resource type() { return type; }
 
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof RDFGraphCompThing) {
 			return ((RDFGraphCompThing)object).thing().equals(this.thing());
@@ -57,6 +58,7 @@ public class RDFGraphCompSingleThing implements RDFGraphCompThing {
 		}
 	}
 
+	@Override
 	public int hashCode() { return thing().hashCode(); }
 
 	protected String shortString(RDFNode node) {

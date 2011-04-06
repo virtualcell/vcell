@@ -51,6 +51,7 @@ public class RDFGraphCompSimpleRelation implements RDFGraphCompRelation {
 	public Statement statement() { return statement; }
 	public Set<Statement> statements() { return new SetOfOne<Statement>(statement); }
 
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof RDFGraphCompSimpleRelation) {
 			return ((RDFGraphCompSimpleRelation)object).statement().equals(this.statement());
@@ -59,6 +60,7 @@ public class RDFGraphCompSimpleRelation implements RDFGraphCompRelation {
 		}
 	}
 
+	@Override
 	public int hashCode() { return statement().hashCode(); }
 
 	public String label() { return statement().getPredicate().getLocalName(); }

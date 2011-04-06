@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class ParticipantFactory extends ThingFactory<SBBox.MutableParticipant> {
 
 	public ParticipantFactory(SBBox box) { super(box, SBPAX.ProcessParticipant); }
+	@Override
 	public SBBox.MutableParticipant newThing(Resource node) { return new ParticipantImp(box, node); }
+	@Override
 	public String baseLabel() { return "Participant"; }
 
 }

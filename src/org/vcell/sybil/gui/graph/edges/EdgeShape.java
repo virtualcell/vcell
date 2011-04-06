@@ -56,10 +56,14 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 	
 	public NodeShape startShape() { return startShape; }
 	public NodeShape endShape() { return endShape; }
+	@Override
 	public RDFGraphCompEdge graphComp() { return (RDFGraphCompEdge) super.graphComp(); }
+	@Override
 	public EdgeVisibility<Shape> visibility() { return (EdgeVisibility<Shape>) visibility; }
+	@Override
 	public Set<Shape> dependencies() { return dependencies; }
 
+	@Override
 	public void updatePrerequisites(Graphics2D g) {
 		haveHooks = (startShape != null) && (endShape != null);
 		if (haveHooks) { 
@@ -75,10 +79,12 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 		labelSize.width = fm.stringWidth(label());
 	}
 	
+	@Override
 	public void updatePreferedSize(Graphics2D g) {
 		preferedSize = getPreferedSize(g);
 	}
 
+	@Override
 	public void updateScreenSize(Graphics2D g) {
 		if(haveHooks && start != null && end != null) {
 			size.width = Math.abs(start.x-end.x);
@@ -86,6 +92,7 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 		}
 	}
 	
+	@Override
 	public void updatePositions(Graphics2D g) {
 		if(haveHooks && start != null && end != null) {
 			location.setP((start.x + end.x) / 2, (start.y + end.y)/2);
@@ -94,6 +101,7 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 		}
 	}
 	
+	@Override
 	public Dimension getPreferedSize(java.awt.Graphics2D g) {
 		return new Dimension(labelSize.height + 10, labelSize.width + 10);
 	}
@@ -103,6 +111,7 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 		visibility().setIsTooShort(Math.abs(start.x - end.x) + Math.abs(start.y -end.y) <5);
 	}
 
+	@Override
 	public final boolean isInside (Point p ) {
 		return haveHooks && curve.intersects(p.getX()-2,p.getY()-2,4,4);
 	}
@@ -122,6 +131,7 @@ public abstract class EdgeShape extends GraphShape implements ModelEdgeShape<Sha
 		}
 	}
 	
+	@Override
 	public PaintLevel paintLevel() { return PaintLevel.Edge; }
 
 }

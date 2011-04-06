@@ -28,11 +28,13 @@ public class ProcessTable extends JTable {
 	
 	protected boolean columnLayoutManual = false;
 	
+	@Override
 	public void doLayout() { 
 		if(tableHeader.getResizingColumn() != null) { columnLayoutManual = true; }
 		super.doLayout(); 
 	}
 	
+	@Override
 	public void setModel(TableModel model) {
 		super.setModel(model);
 		if(model instanceof ProcessTableModel) { ((ProcessTableModel) model).setUI(tableGUI); }

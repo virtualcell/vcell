@@ -41,6 +41,7 @@ public class GroupByLiteral extends GroupManager {
 			return false;
 		}
 
+		@Override
 		public Iterator<Cell> cellIter() {
 			return new FilterIter<Cell>(new ColumnCellIter(table, column), this);
 		}
@@ -51,6 +52,7 @@ public class GroupByLiteral extends GroupManager {
 	
 	protected Map<Literal, CellGroup> nodeToGroup = new HashMap<Literal, CellGroup>();
 	
+	@Override
 	public CellGroup determineGroup(Cell cell) {
 		CellOption.Selection selected = cell.selected();
 		if(selected instanceof CellLiteralOption) {
@@ -65,6 +67,7 @@ public class GroupByLiteral extends GroupManager {
 		return defaultGroup(cell);
 	}
 	
+	@Override
 	public CellGroup defaultGroup(Cell cell) { 
 		return new GroupIndividual.SingleCellGroup(cell, defaultOptions); 
 	}

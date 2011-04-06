@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class StoichiometryFactory extends ThingFactory<SBBox.MutableStoichiometry> {
 
 	public StoichiometryFactory(SBBox box) { super(box, SBPAX.Stoichiometry); }
+	@Override
 	public SBBox.MutableStoichiometry newThing(Resource node) { return new StoichiometryImp(box, node); }
+	@Override
 	public String baseLabel() { return "Stoichiometry"; }
 
 }

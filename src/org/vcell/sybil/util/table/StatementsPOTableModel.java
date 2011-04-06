@@ -28,6 +28,7 @@ public class StatementsPOTableModel extends StatementsTableModel {
 	
 	public int getColumnCount() { return columnCount; }
 
+	@Override
 	public String getColumnName(int colInd) { 
 		switch(colInd) {
 		case iColumnPredicate: return "Property";

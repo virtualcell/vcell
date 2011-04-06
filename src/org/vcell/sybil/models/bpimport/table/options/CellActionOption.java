@@ -19,12 +19,15 @@ public abstract class CellActionOption implements CellOption {
 	
 	public ID id() { return id; }
 	public String name() { return name; }
+	@Override
 	public String toString() { return "[" + name + "]"; }
 
+	@Override
 	public boolean equals(Object o) { 
 		return o instanceof CellActionOption ? id.equals(((CellActionOption) o).id()) : false; 
 	}
 	
+	@Override
 	public int hashCode() { return id.hashCode(); }
 
 }

@@ -22,17 +22,21 @@ public class FileOpenWorker extends SystemWorker {
 		this.file = file;
 	}
 	
+	@Override
 	public Object doConstruct() {
 		try { event = fileManager.openFile(file, null); } 
 		catch (Exception e) { CatchUtil.handle(e); }
 		return null;
 	}
 	
+	@Override
 	public void doFinished() {
 		if(event != null) { fileManager.listeners().fileEvent(event); }
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "start opening file"; }
+	@Override
 	public String getSwingTaskName() { return "finish opening file"; }
 
 };

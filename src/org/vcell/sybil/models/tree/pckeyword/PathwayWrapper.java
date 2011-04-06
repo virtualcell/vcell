@@ -14,16 +14,14 @@ public class PathwayWrapper extends NodeDataWrapper<Pathway> {
 		super(pathways);
 	}
 
-	public Pathway data() { return (Pathway) super.data(); }
-	public Pathway pathway() { return (Pathway) super.data(); }
+	@Override
+	public Pathway data() { return super.data(); }
+	public Pathway pathway() { return super.data(); }
 	
+	@Override
 	public String toString() {
 		String primaryId = pathway().primaryId();
 		DataSource dataSource = pathway().dataSource();
-//wei		String dataSourceText = "";
-//wei		if(dataSource != null) {
-//wei			dataSourceText = ", " + dataSource.name();
-//wei		}
 		return primaryId + ":  " + pathway().name() + "  [" + dataSource.name() + "]"; //wei's code
 	}
 	

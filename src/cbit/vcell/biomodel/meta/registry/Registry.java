@@ -9,8 +9,6 @@ package cbit.vcell.biomodel.meta.registry;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.RDFBox.RDFThing;
-
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 

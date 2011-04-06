@@ -13,10 +13,12 @@ public class FileFilterOWL extends FileFilter implements UIFileFilter {
 		return name.toLowerCase().endsWith("." + extension.toLowerCase());
 	}
 	
+	@Override
 	public boolean accept(File file) {
 		return file.isDirectory() || hasExtension(file.getName(), "owl");
 	}
 
+	@Override
 	public String getDescription() { return "OWL files"; };
 
 }

@@ -6,13 +6,12 @@ import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
-
-import cbit.vcell.biomodel.meta.VCMetaData;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelMetaData implements Versionable, java.io.Serializable{
 	
 
@@ -229,6 +228,7 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * Creation date: (11/15/2002 10:20:24 AM)
  * @return java.lang.String
  */
+@Override
 public String toString() {
 	return super.toString()+"("+version+")";
 }

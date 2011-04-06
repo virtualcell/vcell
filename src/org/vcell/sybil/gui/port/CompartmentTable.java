@@ -21,6 +21,7 @@ public class CompartmentTable extends JTable {
 		setCellEditors();
 	}
 	
+	@Override
 	public void setModel(TableModel model) {
 		super.setModel(model);
 		if(model instanceof CompartmentTableModel) { setCellEditors(); }

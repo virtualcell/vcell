@@ -41,6 +41,7 @@ public class ChainOneQuery extends LegoQuery<ChainOneQuery.Vars> {
 		type2 = category2New;
 	}
 	
+	@Override
 	public ElementGroup element() {
 		ElementGroup group = new ElementGroup();
 		ElementTriplesBlock block = new ElementTriplesBlock();
@@ -55,6 +56,7 @@ public class ChainOneQuery extends LegoQuery<ChainOneQuery.Vars> {
 		return group;
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof ChainOneQuery) {
 			ChainOneQuery query = (ChainOneQuery) object;
@@ -64,6 +66,7 @@ public class ChainOneQuery extends LegoQuery<ChainOneQuery.Vars> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return type1.hashCode() + superRelation.hashCode() + type2.hashCode(); }
 	
 }

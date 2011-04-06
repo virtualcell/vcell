@@ -20,6 +20,7 @@ public abstract class ContainerShape extends RectangleShape {
 		updatePreferedSize = false;
 	}
 	
+	@Override
 	public PaintLevel paintLevel() { return PaintLevel.Container; }
 
 }

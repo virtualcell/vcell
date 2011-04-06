@@ -14,6 +14,7 @@ import org.vcell.sybil.models.sbbox.SBBox.RDFType;
 import org.vcell.sybil.models.sbbox.imp.RDFTypeImp;
 import org.vcell.sybil.rdf.crawl.TypeCrawler;
 import org.vcell.sybil.rdf.crawl.TypeCrawler.InstanceWithOntclass;
+import org.vcell.sybil.rdf.schemas.SBPAX;
 import org.vcell.sybil.util.keys.KeyOfTwo;
 
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -110,7 +111,7 @@ public abstract class ThingFactory<T extends NamedThing> implements Serializable
 	public Set<ThingWithType<T>> openThingsWithTypes() {
 		Set<ThingWithType<T>> thingsWithTypes = new HashSet<ThingWithType<T>>();
 		Set<InstanceWithOntclass> instancesWithClass = 
-			TypeCrawler.instancesWithClass(box.getRdf(), ontClass, box.getSbpax());
+			TypeCrawler.instancesWithClass(box.getRdf(), ontClass, SBPAX.schema);
 		for(TypeCrawler.InstanceWithOntclass instanceWithClass : instancesWithClass) {
 			T thing = open(instanceWithClass.instance());
 			RDFType type = new RDFTypeImp(box, instanceWithClass.ontclass());

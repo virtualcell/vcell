@@ -42,6 +42,7 @@ public class GroupByResource extends GroupManager {
 			return false;
 		}
 
+		@Override
 		public Iterator<Cell> cellIter() {
 			return new FilterIter<Cell>(new ColumnCellIter(table, column), this);
 		}
@@ -52,6 +53,7 @@ public class GroupByResource extends GroupManager {
 	
 	public GroupByResource(Collection<? extends CellOption> defaultOptions) { super(defaultOptions); }
 	
+	@Override
 	public CellGroup determineGroup(Cell cell) {
 		CellOption.Selection selected = cell.selected();
 		if(selected instanceof CellThingOption<?>) {
@@ -66,6 +68,7 @@ public class GroupByResource extends GroupManager {
 		return defaultGroup(cell);
 	}
 	
+	@Override
 	public CellGroup defaultGroup(Cell cell) { 
 		return new GroupIndividual.SingleCellGroup(cell, defaultOptions); 
 	}

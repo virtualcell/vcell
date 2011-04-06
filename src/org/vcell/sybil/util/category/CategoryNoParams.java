@@ -10,9 +10,12 @@ public abstract class CategoryNoParams<C extends Category<C>> extends SimpleCate
 	
 	public CategoryNoParams(Class<?> c) { this.c = c; }
 	
+	@Override
 	public Class<?> c() { return c; }
+	@Override
 	public int hashCode() { return c.hashCode(); }
 	
+	@Override
 	public boolean equals(Object o) { 
 		if(o instanceof CategoryNoParams<?>) {
 			Class<?> c2 = ((CategoryNoParams<?>) o).c();
@@ -21,6 +24,7 @@ public abstract class CategoryNoParams<C extends Category<C>> extends SimpleCate
 		return false;
 	}
 	
+	@Override
 	public String toString() { return "(" +  c.toString() + ")"; }
 
 }

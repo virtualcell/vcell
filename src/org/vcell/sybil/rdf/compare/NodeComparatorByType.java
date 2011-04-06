@@ -9,6 +9,7 @@ import org.vcell.sybil.util.comparator.ComparatorScore;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 public class NodeComparatorByType extends ComparatorScore<RDFNode> {
+	@Override
 	public int score(RDFNode node) {
 		if(node.isURIResource()) { return 2; }
 		else if(node.isResource()) { return 1; }

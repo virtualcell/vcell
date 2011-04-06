@@ -34,6 +34,7 @@ public interface BoundedList<E> extends List<E> {
 		}
 		
 		public Type type() { return type; }
+		@Override
 		@SuppressWarnings("unchecked")
 		public BoundedList<E> getSource() { return (BoundedList<E>) super.getSource(); }
 		

@@ -10,8 +10,11 @@ public class TileSpot<S extends Location.Owner<S>>  {
 
 	public static class NoShapeSpot<S extends Location.Owner<S>> extends TileSpot<S> {
 		public NoShapeSpot(int iXNew, int iYNew, int xNew, int yNew) { super(iXNew, iYNew, xNew, yNew); }
+		@Override
 		public boolean isVacant() { return false; }
+		@Override
 		public boolean hasShape() { return false; }
+		@Override
 		public boolean canHaveShape() { return false; }
 	}
 	

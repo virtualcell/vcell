@@ -58,6 +58,7 @@ public class ParticipantImp extends SBWrapper implements SBBox.MutableParticipan
 		return this;
 	}
 	
+	@Override
 	public String shortName() {
 		String name = "";
 		if(box().getRdf().contains(resource(), RDF.type, SBPAX.ProcessParticipantLeft)) {

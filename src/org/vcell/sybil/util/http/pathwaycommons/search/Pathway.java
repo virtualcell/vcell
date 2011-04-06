@@ -23,6 +23,7 @@ public class Pathway {
 	public String name() { return name; }
 	public DataSource dataSource() { return dataSource; }
 	
+	@Override
 	public String toString() {
 		return "[Pathway: primaryId=\"" + primaryId + "\"; name=\"" + name + "\";\n" + 
 		"dataSource=" + (dataSource != null ? dataSource.toString() : "null") + "]"; 

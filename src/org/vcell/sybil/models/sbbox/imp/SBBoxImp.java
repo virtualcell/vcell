@@ -14,8 +14,9 @@ import org.vcell.sybil.util.label.LabelMan;
 import com.hp.hpl.jena.rdf.model.Model;
 
 @SuppressWarnings("serial")
-public class SBBoxImp extends InfBoxImp implements SBBox, Serializable {
+public class SBBoxImp implements SBBox, Serializable {
 	
+	protected Model rdf;
 	protected String baseURI;
 	protected LabelMan<SBBox.NamedThing> labelMan;
 	
@@ -24,13 +25,14 @@ public class SBBoxImp extends InfBoxImp implements SBBox, Serializable {
 	protected LocationFactory locaFac = new LocationFactory(this);
 	protected SubstanceFactory subsFac = new SubstanceFactory(this);
 	
-	public SBBoxImp(Model coreNew, Model schemaNew, String baseURI, LabelMan<SBBox.NamedThing> labelMan) {
-		super(coreNew, schemaNew);
+	public SBBoxImp(Model rdf, String baseURI, LabelMan<SBBox.NamedThing> labelMan) {
+		this.rdf = rdf;
 		this.baseURI = baseURI;
 		this.labelMan = labelMan;
 		facs = new FactoriesImp(this);
 	}
 	
+	public Model getRdf() { return rdf; }
 	public String baseURI() { return baseURI; }
 	public LabelMan<SBBox.NamedThing> labelMan() { return labelMan; }
 	

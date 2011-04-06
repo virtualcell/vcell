@@ -10,7 +10,6 @@ import java.util.Map;
 import org.vcell.sybil.models.bpimport.edges.EdgeSBTray;
 import org.vcell.sybil.models.bpimport.edges.MutableEdge;
 import org.vcell.sybil.models.bpimport.edges.ProcessEdge;
-import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.Location;
 import org.vcell.sybil.models.sbbox.SBBox.MutableLocation;
 import org.vcell.sybil.models.sbbox.SBBox.MutableParticipant;
@@ -23,6 +22,7 @@ import org.vcell.sybil.models.sbbox.SBBox.MutableStoichiometry;
 import org.vcell.sybil.models.sbbox.SBBox.MutableSubstance;
 import org.vcell.sybil.models.sbbox.SBBox.MutableRDFType;
 import org.vcell.sybil.models.sbbox.SBBox.Substance;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.models.views.SBWorkView;
 import org.vcell.sybil.util.keys.KeyOfTwo;
 
@@ -35,7 +35,7 @@ public class StageProcessesBuilder {
 	}
 	
 	public static void build(SBWorkView view) {
-		SBBox box = view.box();
+		SBInferenceBox box = view.box();
 		EdgeSBTray edgeBox = new EdgeSBTray(box);
 		for(ProcessEdge edgeRaw : view.tableModel().rows()) {
 			MutableEdge edge = new MutableEdge(edgeBox, edgeRaw);

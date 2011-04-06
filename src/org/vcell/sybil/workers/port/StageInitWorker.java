@@ -14,12 +14,15 @@ public class StageInitWorker extends PortWorker {
 		super(view, acceptor);
 	}
 
+	@Override
 	public Object doConstruct() { 
 		StageInitBuilder.createStageInit(view()); 
 		return new Result(view(), PortStage.stageInit);
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "Performing SYBREAM reasoning"; }
+	@Override
 	public String getSwingTaskName() { return "Done performing SYBREAM reasoning"; }
 	
 };

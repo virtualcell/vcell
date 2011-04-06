@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 
 import org.vcell.sybil.gui.PopupManager;
 import org.vcell.sybil.gui.graphinfo.SelectedResourcesPane;
@@ -23,6 +24,7 @@ import org.vcell.sybil.gui.graphinfo.SelectedStatementsPane;
 import org.vcell.sybil.gui.util.Sizer;
 import org.vcell.sybil.models.graph.GraphModelSelectionInfo;
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.actions.ActionMap;
 import org.vcell.sybil.actions.BaseAction;
 import org.vcell.sybil.actions.graph.components.GraphCompActions;
@@ -48,7 +50,7 @@ public class GraphEditorPanel extends JPanel {
 	private PopupManager popupManager;
 	protected GraphModelSelectionInfo dataRelations;
 		
-	public GraphEditorPanel(SBBox box, ActionMap actionMapNew) {
+	public GraphEditorPanel(SBInferenceBox box, ActionMap actionMapNew) {
 		super();
 		this.box = box;
 		graphPane = createGraphPane();
@@ -59,8 +61,8 @@ public class GraphEditorPanel extends JPanel {
 		layoutToolBar = createLayoutToolBar(actionMapNew);
 		nodesToolBar = createNodesToolBar(actionMapNew);
 		graphScrollPane = createGraphScrollPane(graphPane);
-		graphScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		graphScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		graphScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		dataRelations = new GraphModelSelectionInfo(graphPane.graph().model());
 		resourcesPane = createResourcesPane();
 		// resourcesScrollPane = new JScrollPane(resourcesPane);

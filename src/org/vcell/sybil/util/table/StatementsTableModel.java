@@ -76,8 +76,10 @@ public abstract class StatementsTableModel extends AbstractTableModel implements
 	
 	public int getRowCount() { return rows.size(); }
 	
+	@Override
 	public Class<? extends RDFToken> getColumnClass(int iCol) { return RDFToken.class; }
 	
+	@Override
 	public void setValueAt(Object valueNew, int rowInd, int colInd) { }
 
 }

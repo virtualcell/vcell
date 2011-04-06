@@ -20,7 +20,9 @@ public class CellLiteralOption extends CellSelectableOption implements CellOptio
 	public Literal node() { return literal; }
 
 	public String label() { return label; }
+	@Override
 	public String toString() { return label; }
+	@Override
 	public boolean equals(Object o) {
 		if(o instanceof CellLiteralOption) {
 			return literal.equals(((CellLiteralOption) o).node());
@@ -28,6 +30,7 @@ public class CellLiteralOption extends CellSelectableOption implements CellOptio
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return literal.hashCode(); }
 
 	

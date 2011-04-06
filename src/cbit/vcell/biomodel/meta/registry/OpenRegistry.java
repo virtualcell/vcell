@@ -24,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
  *   @author: Oliver Ruebenacker
  */
 
+@SuppressWarnings("serial")
 public class OpenRegistry implements Registry, Serializable {
 
 	public class OpenEntry implements Entry, Serializable {
@@ -78,6 +79,7 @@ public class OpenRegistry implements Registry, Serializable {
 			setNamedThing(newNamedThing);
 			return newNamedThing;
 		}
+		@Override
 		public String toString(){
 			return getIdentifiable().toString()+" <==> " + getNamedThing();
 		}

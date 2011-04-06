@@ -15,6 +15,7 @@ public class StageSBMLWorker extends PortWorker {
 		super(view, acceptor);
 	}
 
+	@Override
 	public Result doConstruct() { 
 		try {
 			StageSBMLBuilder.build(view());
@@ -25,7 +26,9 @@ public class StageSBMLWorker extends PortWorker {
 		}
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "Creating SBML model"; }
+	@Override
 	public String getSwingTaskName() { return "Done creating SBML model"; }
 	
 };

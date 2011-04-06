@@ -28,6 +28,7 @@ public class RDFTokenRenderer extends DefaultTableCellRenderer {
 		return font;
 	}
 
+	@Override
 	public void setValue(Object value) {
 		RDFToken token = (RDFToken) value;
 		setFont(font(RDFNodeStyle.fontStyle(token.statement().getPredicate())));

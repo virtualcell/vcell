@@ -22,17 +22,21 @@ public class FileSaveAsWorker extends SystemWorker {
 		file = newFile;
 	}
 	
+	@Override
 	public Object doConstruct() {
 		try { event = fileManager.saveFileAs(file); } 
 		catch (FileNotFoundException e) { CatchUtil.handle(e); }
 		return null;
 	}
 
+	@Override
 	public void doFinished() { 
 		if(event != null) { fileManager.listeners().fileEvent(event); }
 	}
 	
+	@Override
 	public String getNonSwingTaskName() { return "start saving file under new name"; }
+	@Override
 	public String getSwingTaskName() { return "finish saving file under new name"; }
 };
 

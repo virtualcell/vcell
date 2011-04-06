@@ -18,17 +18,21 @@ public class FileInheritedWorker extends SystemWorker {
 		this.fileManager = fileMan;
 	}
 	
+	@Override
 	public Object doConstruct() {
 		try { event = fileManager.inheritedFile(); } 
 		catch (Exception e) { CatchUtil.handle(e); }
 		return null;
 	}
 	
+	@Override
 	public void doFinished() {
 		if(event != null) { fileManager.listeners().fileEvent(event); }
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "fetching data"; }
+	@Override
 	public String getSwingTaskName() { return "done fetching data"; }
 
 };

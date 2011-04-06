@@ -19,6 +19,7 @@ public class DataSource {
 	public String primaryId() { return primaryId; }
 	public String name() { return name; }
 	
+	@Override
 	public String toString() {
 		return "[DataSource: primaryId=\"" + primaryId + "\"; name=\"" + name + "\"]"; 
 	}

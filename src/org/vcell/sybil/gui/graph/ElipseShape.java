@@ -17,19 +17,23 @@ public class ElipseShape extends GraphShape {
 		super(graph, newSybComp);
 	}
 		
+	@Override
 	public void updatePrerequisites(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(label());		
 	}
 
+	@Override
 	public void updatePreferedSize(Graphics2D g) { preferedSize = getPreferedSize(g); }
 	
+	@Override
 	public void updatePositions(Graphics2D g) { 
 		labelPos.x = location.x() - labelSize.width/2;
 		labelPos.y = location.y() - labelSize.height/2;
 	}
 	
+	@Override
 	public Dimension getPreferedSize(java.awt.Graphics2D g) {
 		preferedSize.height = labelSize.height + 10;
 		preferedSize.width = labelSize.width + 10;
@@ -44,8 +48,10 @@ public class ElipseShape extends GraphShape {
 		return radiusX*radiusX/(a*a) + radiusY*radiusY/(b*b);
 	}
 
+	@Override
 	public final boolean isInside (Point p ) { return getRadius(p) < 1.0; }
 
+	@Override
 	public void paint(Graphics2D g2D) {
 
 		int absPosX = location.x();
@@ -64,5 +70,6 @@ public class ElipseShape extends GraphShape {
 		return;
 	}
 	
+	@Override
 	public PaintLevel paintLevel() { return PaintLevel.Node; }
 }

@@ -54,8 +54,10 @@ public class PCKeywordResponse extends PathwayCommonsResponse {
 	
 	public int totalNumHits() { return totalNumHits; }
 	public List<Hit> hits() { return hits; }
+	@Override
 	public PCKeywordRequest request() { return (PCKeywordRequest) super.request(); }
 	
+	@Override
 	public String toString() {
 		return "[Response: totalNumHits=" + totalNumHits + ";\n" +
 		"hits=(" + StringUtil.concat(hits, ";\n") +

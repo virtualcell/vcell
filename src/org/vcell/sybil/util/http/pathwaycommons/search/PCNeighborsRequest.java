@@ -31,6 +31,7 @@ public class PCNeighborsRequest extends PathwayCommonsRequest {
 		paras().add(PCRParameter.Output.biopax);
 	}
 
+	@Override
 	public PathwayCommonsResponse response() {
 		PathwayCommonsResponse response = null;
 		try { 
@@ -53,6 +54,7 @@ public class PCNeighborsRequest extends PathwayCommonsRequest {
 		return response;
 	}
 
+	@Override
 	public String description() { return "neighbor search for " + id; }
 	@Override public String shortTitle() { return "neighbors of " + id; }
 	

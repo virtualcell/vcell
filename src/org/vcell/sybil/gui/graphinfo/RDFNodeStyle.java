@@ -68,7 +68,7 @@ public class RDFNodeStyle {
 	
 	public static FontStyle fontStyle(RDFNode node) {
 		if(node.isResource()) {
-			FontStyle style = styleMap.get((Resource) node);
+			FontStyle style = styleMap.get(node);
 			if(style != null) { return style; }
 			else { return Bold; }
 		}
@@ -77,7 +77,7 @@ public class RDFNodeStyle {
 	
 	public static Color color(RDFNode node) {
 		if(node.isResource()) {
-			Color color = colorMap.get((Resource) node);
+			Color color = colorMap.get(node);
 			if(color != null) { return color; }
 			else { return Color.blue; }
 		}

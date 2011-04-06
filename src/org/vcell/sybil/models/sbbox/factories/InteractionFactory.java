@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class InteractionFactory extends ThingFactory<SBBox.MutableInteraction> {
 
 	public InteractionFactory(SBBox box) { super(box, SBPAX.Interaction); }
+	@Override
 	public SBBox.MutableInteraction newThing(Resource node) { return new InteractionImp(box, node); }
+	@Override
 	public String baseLabel() { return "Interaction"; }
 
 }

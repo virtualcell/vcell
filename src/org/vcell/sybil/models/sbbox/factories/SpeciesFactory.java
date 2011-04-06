@@ -14,7 +14,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class SpeciesFactory extends ThingFactory<SBBox.MutableSpecies> {
 
 	public SpeciesFactory(SBBox box) { super(box, SBPAX.Species); }
+	@Override
 	public SBBox.MutableSpecies newThing(Resource node) { return new SpeciesImp(box, node); }
+	@Override
 	public String baseLabel() { return "Species"; }
 
 }

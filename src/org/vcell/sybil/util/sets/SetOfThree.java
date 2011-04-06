@@ -40,6 +40,7 @@ public class SetOfThree<E> implements Set<E> {
 		return true;
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		if(object instanceof Set) {
 			Set<?> set = (Set<?>) object;
@@ -49,6 +50,7 @@ public class SetOfThree<E> implements Set<E> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return element1.hashCode() + element2.hashCode() + element3.hashCode(); }
 
 	public boolean isEmpty() { return false; }

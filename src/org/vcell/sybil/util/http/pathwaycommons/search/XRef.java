@@ -21,6 +21,7 @@ public class XRef {
 	public String id() { return id; }
 	public String url() { return url; }
 	
+	@Override
 	public String toString() {
 		return "[XRef: db=\"" + db + "\"; id=\"" + id + "\"; url=\"" + url + "\"]"; 
 	}

@@ -33,9 +33,11 @@ public class ResourcesTableModel extends AbstractTableModel implements TableMode
 	}
 	
 	public int getColumnCount() { return 1; }
+	@Override
 	public String getColumnName(int colInd) { return "Resources"; }
 	public int getRowCount() { return sbs.size(); }
 
+	@Override
 	public Class<SBWrapper> getColumnClass(int iCol) { return SBWrapper.class; }
 	
 	public SBWrapper getValueAt(int rowInd, int colInd) { 
@@ -51,7 +53,9 @@ public class ResourcesTableModel extends AbstractTableModel implements TableMode
 		catch(Throwable t) { return null; }
 	}
 
+	@Override
 	public boolean isCellEditable(int arg0, int arg1) { return false; }
+	@Override
 	public void setValueAt(Object valueNew, int rowInd, int colInd) { }
 
 }

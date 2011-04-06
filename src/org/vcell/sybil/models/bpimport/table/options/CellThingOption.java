@@ -14,7 +14,9 @@ public class CellThingOption<T extends SBBox.NamedThing> extends CellSelectableO
 	
 	public T thing() { return thing; }
 	public String label() { return thing.label(); }
+	@Override
 	public String toString() { return thing.label(); }
+	@Override
 	public boolean equals(Object o) {
 		if(o instanceof CellThingOption<?>) {
 			return thing.equals(((CellThingOption<?>) o).thing());
@@ -22,6 +24,7 @@ public class CellThingOption<T extends SBBox.NamedThing> extends CellSelectableO
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return thing.hashCode(); }
 
 }

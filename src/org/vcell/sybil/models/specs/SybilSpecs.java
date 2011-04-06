@@ -11,10 +11,13 @@ import org.vcell.sybil.util.version.SoftwareVersion.Product;
 public class SybilSpecs {
 
 	public static class SybilProduct extends Product {
+		@Override
 		public boolean equals(Object object) { return object instanceof SybilProduct; }
 		public static final String name = "Systems Biology Linker (SyBiL)";
 		public static final String shortName = "Sybil";
+		@Override
 		public int hashCode() { return name.hashCode(); }
+		@Override
 		public String toString() { return name; }
 	}
 

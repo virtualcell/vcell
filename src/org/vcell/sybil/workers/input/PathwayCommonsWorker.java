@@ -23,10 +23,12 @@ public class PathwayCommonsWorker extends SystemWorker {
 		this.request = client.request();
 	}
 	
+	@Override
 	public Object doConstruct() {
 		return request.response();
 	}
 	public PathwayCommonsResponse getResponse() { return (PathwayCommonsResponse) result; }
+	@Override
 	public void doFinished() {
 		client.setResponse(getResponse());
 	}

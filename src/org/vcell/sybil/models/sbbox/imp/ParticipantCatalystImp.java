@@ -11,11 +11,13 @@ public class ParticipantCatalystImp extends ParticipantImp implements SBBox.Muta
 
 	public ParticipantCatalystImp(SBBox man, Resource resource) { super(man, resource); }
 
+	@Override
 	public SBBox.MutableParticipantCatalyst setSpecies(SBBox.Species species) { 
 		super.setSpecies(species);		
 		return this;
 	}
 
+	@Override
 	public SBBox.MutableParticipantCatalyst setStoichiometry(SBBox.Stoichiometry stoichiometry) {
 		super.setStoichiometry(stoichiometry);
 		return this;

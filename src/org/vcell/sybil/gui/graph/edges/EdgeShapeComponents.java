@@ -17,6 +17,7 @@ public class EdgeShapeComponents extends EdgeShape {
 		super(graphNew, sybCompNew); 
 	}
 
+	@Override
 	public void paint(Graphics2D g2D) {
 		if((!haveHooks) || start == null || end == null) { return; }
 		Stroke oldStroke = g2D.getStroke();

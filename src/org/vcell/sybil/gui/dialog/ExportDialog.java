@@ -71,6 +71,7 @@ public class ExportDialog extends JDialog {
 	protected void init(List<Exporter> exporters, Exporter exporterSelected) {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) { finished(); }
 		});
 		fileChooser.setControlButtonsAreShown(false);

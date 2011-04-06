@@ -31,6 +31,7 @@ public abstract class Shape extends BasicShape<Shape, Graph> {
 		visibility = new DefaultVisibility<Shape>(this); 
 	}
 
+	@Override
 	public Shape getThisShape() { return this; }
 	
 	public Shape pick(Point point) {
@@ -87,6 +88,7 @@ public abstract class Shape extends BasicShape<Shape, Graph> {
 				location.y() - labelSize.height/2);
 	}
 	
+	@Override
 	public abstract void paint(Graphics2D g);
 
 	public abstract PaintLevel paintLevel();

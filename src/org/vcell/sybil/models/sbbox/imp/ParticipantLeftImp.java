@@ -11,11 +11,13 @@ public class ParticipantLeftImp extends ParticipantImp implements SBBox.MutableP
 
 	public ParticipantLeftImp(SBBox man, Resource resource) { super(man, resource); }
 
+	@Override
 	public SBBox.MutableParticipantLeft setSpecies(SBBox.Species species) { 
 		super.setSpecies(species);		
 		return this;
 	}
 
+	@Override
 	public SBBox.MutableParticipantLeft setStoichiometry(SBBox.Stoichiometry stoichiometry) {
 		super.setStoichiometry(stoichiometry);
 		return this;

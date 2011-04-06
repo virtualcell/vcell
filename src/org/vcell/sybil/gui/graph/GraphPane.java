@@ -43,6 +43,7 @@ public class GraphPane extends JPanel implements Scrollable, GraphListener<Shape
 
 	public java.awt.Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
 
+	@Override
 	public Dimension getPreferredSize() {
 		if (graph!=null){
 			Dimension prefSize = graph.getPreferedSize((java.awt.Graphics2D)getGraphics());
@@ -68,8 +69,10 @@ public class GraphPane extends JPanel implements Scrollable, GraphListener<Shape
 	public boolean getScrollableTracksViewportHeight() { return false; }
 	public boolean getScrollableTracksViewportWidth() { return false; }
 	public int getScrollableUnitIncrement(java.awt.Rectangle visibleRect, int orientation, int direction) { return 1; }
+	@Override
 	public boolean isFocusTraversable() { return true; }
 
+	@Override
 	public void paintComponent(java.awt.Graphics argGraphics) {
 		super.paintComponent(argGraphics);
 		java.awt.Graphics2D g = (java.awt.Graphics2D)argGraphics;
@@ -85,7 +88,7 @@ public class GraphPane extends JPanel implements Scrollable, GraphListener<Shape
 	public void setGraph(Graph graphNew) {
 		if (graph != null) { graph.listeners().remove(this); }
 		if(graphNew instanceof UIGraph<?, ?>) { 
-			graph = (Graph) graphNew; 
+			graph = graphNew; 
 		} else {
 			graph = null;
 		}

@@ -24,6 +24,7 @@ extends EvaluatorManipulationAction<S, G, ReactionsManipulator<S, G>> {
 		super(newSpecs, coreManager, graphManager);
 	}
 
+	@Override
 	public ReactionsManipulator<S, G> graphManipulation(G graph) {
 		return new ReactionsManipulator<S, G>(evaluator(graph));
 	}

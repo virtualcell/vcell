@@ -61,6 +61,7 @@ public class EntitySelectionTableModel extends DefaultSortTableModel<EntitySelec
 		return rowList;
 	}
 	
+	@Override
 	public Class<?> getColumnClass(int iCol) {
 		if(iCol == iColSelected) { return Boolean.class; }
 		else { return String.class; }
@@ -85,10 +86,12 @@ public class EntitySelectionTableModel extends DefaultSortTableModel<EntitySelec
 		}
 	}
 	
+	@Override
 	public boolean isCellEditable(int iRow, int iCol) {
 		return iCol == iColSelected;
 	}
 	
+	@Override
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		if(valueNew instanceof Boolean && iCol == iColSelected) {
 			EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
@@ -97,6 +100,7 @@ public class EntitySelectionTableModel extends DefaultSortTableModel<EntitySelec
 	}
 	
 	// generate the sortable table. Set up the functions for each column
+	@Override
 	public Comparator<EntitySelectionTableRow> getComparator(final int col, final boolean ascending) {
 		return new Comparator<EntitySelectionTableRow>() {
 		    public int compare(EntitySelectionTableRow o1, EntitySelectionTableRow o2){

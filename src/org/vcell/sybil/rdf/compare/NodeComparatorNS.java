@@ -15,6 +15,7 @@ public class NodeComparatorNS extends ComparatorScore<RDFNode> {
 	
 	public NodeComparatorNS(String namespace) { this.namespace = namespace; }
 	
+	@Override
 	public int score(RDFNode node) {
 		int score = 0;
 		if(node instanceof Resource) {

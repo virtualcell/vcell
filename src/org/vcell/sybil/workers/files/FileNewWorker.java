@@ -16,17 +16,21 @@ public class FileNewWorker extends SystemWorker {
 	
 	public FileNewWorker(FileManager fileMan) { this.fileManager = fileMan; }
 	
+	@Override
 	public Object doConstruct() {
 		try { event = fileManager.newFile(); } 
 		catch (Exception e) { CatchUtil.handle(e); }
 		return null;
 	}
 	
+	@Override
 	public void doFinished() {
 		if(event != null) { fileManager.listeners().fileEvent(event); }
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "start creating blank data set"; }
+	@Override
 	public String getSwingTaskName() { return "done creating blank data set"; }
 
 };

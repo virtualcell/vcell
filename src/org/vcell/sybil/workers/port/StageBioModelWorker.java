@@ -14,12 +14,15 @@ public class StageBioModelWorker extends PortWorker {
 		super(view, acceptor);
 	}
 
+	@Override
 	public Object doConstruct() { 
 		StageBioModelBuilder.build(view());
 		return new Result(view(), PortStage.stageBioModel);
 	}
 
+	@Override
 	public String getNonSwingTaskName() { return "Constructing BioModel from SBPAX data"; }
+	@Override
 	public String getSwingTaskName() { return "Finished constructing BioModel from SBPAX data"; }
 	
 };

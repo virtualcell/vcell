@@ -20,6 +20,7 @@ public class EntitySelectionTable extends JSortTable {
 		doColumnSizes();
 	}
 	
+	@Override
 	public void doLayout() { 
 		if(tableHeader.getResizingColumn() != null) { columnLayoutManual = true; }
 		super.doLayout(); 
@@ -48,6 +49,7 @@ public class EntitySelectionTable extends JSortTable {
 		}
 	}
 	
+	@Override
 	public void tableChanged(TableModelEvent event) {
 		doColumnSizes();
 		super.tableChanged(event);

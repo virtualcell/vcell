@@ -18,6 +18,7 @@ public class DocumentOutputStream extends OutputStream {
 	public DocumentOutputStream() { document = new PlainDocument(); }
 	public DocumentOutputStream(Document newDocument) { document = newDocument; }
 	
+	@Override
 	public void write(int character) throws IOException {
 		try { document.insertString(document.getLength(), "" + ((char) character), null);
 		} catch (BadLocationException e) { e.printStackTrace(); } // Should never happen

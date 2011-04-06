@@ -14,6 +14,7 @@ public class SBLabelGenerator extends NumberedLabelGenerator<SBBox.NamedThing> {
 	public static char filler = '_';
 	public static int maxBaseLength = 56;
 	
+	@Override
 	public String baseLabel(NamedThing sbView) {
 		StringBuffer labelBuffer = new StringBuffer();
 		String name = sbView.shortName();

@@ -19,19 +19,23 @@ public class NodeShape extends ElipseShape {
 		setLocationIndependent(true);
 	}
 
+	@Override
 	public void updatePositions(Graphics2D g) {
 		labelPos.x = (size.width/2) - labelSize.width/2;
 		labelPos.y = 0;		
 	}
 
+	@Override
 	public void resize(Graphics2D g, Dimension newSize) { return; }
 
+	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		preferedSize.width = 20;
 		preferedSize.height = 16;
 		return preferedSize;
 	}
 
+	@Override
 	public void updateOtherSizes(Graphics2D g) {
 		labelSize.width = g.getFontMetrics().stringWidth(label());
 		labelSize.height = g.getFontMetrics().getMaxAscent()+g.getFontMetrics().getMaxDescent();

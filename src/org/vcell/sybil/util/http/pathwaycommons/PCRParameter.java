@@ -11,6 +11,7 @@ public class PCRParameter {
 	public PCRParameter(String keyNew, String valueNew) { key = keyNew; value = valueNew; }
 	public String key() { return key; }
 	public String value() { return value; }
+	@Override
 	public String toString() { return key + "=" + value; }
 
 	public static class Command extends PCRParameter { 

@@ -14,9 +14,11 @@ public class XRefWrapper extends NodeDataWrapper<XRef> {
 		super(xRefs);
 	}
 
-	public XRef data() { return (XRef) super.data(); }
-	public XRef xRef() { return (XRef) super.data(); }
+	@Override
+	public XRef data() { return super.data(); }
+	public XRef xRef() { return super.data(); }
 	
+	@Override
 	public String toString() {
 		String string = xRef().db() + ":" + xRef().id();
 		String url = xRef().url();

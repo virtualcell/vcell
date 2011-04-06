@@ -40,23 +40,28 @@ public class GUIBase extends UserInterface implements UserInterfaceGraph<Shape, 
 		actionMap = actionMapNew; 
 	}
 	
+	@Override
 	public GUIFrameSpace frameSpace() { return frameSpace; }
 
 	public Container frame() { return frameSpace().component(); }
 
+	@Override
 	public GUITabbedSpace<JTabbedPane> createTabbedSpace() { 
 		return new GUITabbedSpace<JTabbedPane>(new JTabbedPane()); 
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public GUIScrollSpace<JScrollPane> createScrollSpace(UIComponent comp) { 
 		return new GUIScrollSpace<JScrollPane>(new JScrollPane(((GUIComponent<JScrollPane>)comp).component())); 
 	}
 
+	@Override
 	public GUIImportSpace<ImportPanel> createImportSpace() { 
 		return new GUIImportSpace<ImportPanel>(new ImportPanel(coreManager.fileManager())); 
 	}
 
+	@Override
 	public GUITextSpace<JTextArea> createTextSpace() { 
 		return new GUITextSpace<JTextArea>(new JTextArea(new PlainDocument())); 
 	}
@@ -65,21 +70,25 @@ public class GUIBase extends UserInterface implements UserInterfaceGraph<Shape, 
 		return new GUIGraphSpace<GraphEditorPanel>(new GraphEditorPanel(coreManager.fileManager().box(), actionMap)); 
 	}
 
+	@Override
 	public GUIFileChooserSpace<JFileChooser> createFileChooserSpace() { 
 		return new GUIFileChooserSpace<JFileChooser>(frameSpace.getDialogParentProvider(), 
 				new JFileChooser());
 	}
 
+	@Override
 	public GUIPortSpace<PortPanel> createPortSpace() {
 		return new GUIPortSpace<PortPanel>(new PortPanel(coreManager.fileManager()));
 	}
 
+	@Override
 	public GUIInfoDialogSpace<SyBiLInfoDialog> createInfoDialogSpace() {
 		Component topFrame = frameSpace().getDialogParentProvider().getDialogParent();
 		InfoDialog.Factory<SyBiLInfoDialog> factory = new SyBiLInfoDialog.Factory();
 		return new GUIInfoDialogSpace<SyBiLInfoDialog>(factory.create(topFrame));
 	}
 
+	@Override
 	public GUIInfoDialogSpace<SystemMonitorDialog> createSystemMonitorDialogSpace() {
 		Component topFrame = frameSpace().getDialogParentProvider().getDialogParent();
 		InfoDialog.Factory<SystemMonitorDialog> factory = new SystemMonitorDialog.Factory();

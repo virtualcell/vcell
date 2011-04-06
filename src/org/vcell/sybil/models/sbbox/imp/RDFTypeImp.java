@@ -72,7 +72,7 @@ public class RDFTypeImp extends SBWrapper implements SBBox.MutableRDFType, Seria
 		while(subIter.hasNext()) {
 			Statement statement = subIter.nextStatement();
 			Resource superTypeNode = statement.getSubject();
-			subTypes.add(new RDFTypeImp(box(), (Resource) superTypeNode));				
+			subTypes.add(new RDFTypeImp(box(), superTypeNode));				
 		}
 		return subTypes;
 	}

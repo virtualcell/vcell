@@ -20,13 +20,16 @@ public abstract class RDFToken {
 	
 	public static abstract class ResourceToken extends RDFToken {
 		public ResourceToken(Statement statementNew) { super(statementNew); }
+		@Override
 		public abstract Resource node();
 	}
 	
 	public static class SubjectToken extends ResourceToken {
 		public SubjectToken(Statement statementNew) { super(statementNew); }
+		@Override
 		public Resource node() { return statement.getSubject(); }
 
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof SubjectToken) { return statement.equals(((SubjectToken) o).statement()); } 
 			else { return false; }
@@ -36,8 +39,10 @@ public abstract class RDFToken {
 	
 	public static class PredicateToken extends ResourceToken {
 		public PredicateToken(Statement statementNew) { super(statementNew); }
+		@Override
 		public Property node() { return statement.getPredicate(); }
 
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof PredicateToken) { return statement.equals(((PredicateToken) o).statement()); } 
 			else { return false; }
@@ -47,13 +52,16 @@ public abstract class RDFToken {
 	
 	public static class ObjectToken extends RDFToken {
 		public ObjectToken(Statement statementNew) { super(statementNew); }
+		@Override
 		public RDFNode node() { return statement.getObject(); }
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof ObjectToken) { return statement.equals(((ObjectToken) o).statement()); } 
 			else { return false; }
 		}		
 	}
 	
+	@Override
 	public int hashCode() { return statement.hashCode(); }
 	
 }

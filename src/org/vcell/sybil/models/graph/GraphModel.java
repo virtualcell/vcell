@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.sybil.models.graphcomponents.RDFGraphComponent;
-import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 import org.vcell.sybil.util.collections.MultiHashMap;
 import org.vcell.sybil.util.collections.MultiMap;
 
@@ -22,16 +22,16 @@ public class GraphModel {
 		public void clear();
 	}
 	
-	protected SBBox box;
+	protected SBInferenceBox box;
 	protected Set<Listener> listeners = new HashSet<Listener>();
 	protected Set<RDFGraphComponent> selectedComps = new HashSet<RDFGraphComponent>();
 	protected RDFGraphComponent chosenComp;
 	protected MultiMap<NamedThing, RDFGraphComponent> thingToComponentMap = 
 		new MultiHashMap<NamedThing, RDFGraphComponent>();
 	
-	public GraphModel(SBBox box) { this.box = box; }
+	public GraphModel(SBInferenceBox box) { this.box = box; }
 	
-	public SBBox box() { return box; }
+	public SBInferenceBox box() { return box; }
 	public Set<Listener> listeners() { return listeners; }
 	public void listenersUpdate() { for(Listener listener : listeners) { listener.updateView(); } }
 	public void listenersClear() { for(Listener listener : listeners) { listener.clear(); } }

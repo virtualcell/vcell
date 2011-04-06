@@ -5,7 +5,6 @@ package org.vcell.sybil.gui.bpimport;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
@@ -15,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 
 import org.vcell.sybil.actions.ActionSpecs;
 import org.vcell.sybil.actions.SpecAction;
@@ -39,7 +39,7 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 		importManager = new ImportManager(this, fileManNew); 
 		setLayout(new BorderLayout());
 		JToolBar entryBar = new JToolBar();
-		entryBar.setOrientation(JToolBar.HORIZONTAL);
+		entryBar.setOrientation(SwingConstants.HORIZONTAL);
 		entryBar.add(new JLabel("Enter keyword: "));
 		SearchAction searchAction = new SearchAction(this);
 		searchTextField.addActionListener(searchAction);
@@ -51,7 +51,7 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 		entryBar.add(buttonSearch);
 		add(entryBar, "North");
 		searchTextField.requestFocusInWindow();
-		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
+		emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		add(emptyLabel);
 	}
 	

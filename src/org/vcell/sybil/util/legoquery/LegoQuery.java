@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.vcell.sybil.models.arq.InferenceDataset;
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.SBInferenceBox;
 
 import com.hp.hpl.jena.sparql.algebra.Algebra;
 import com.hp.hpl.jena.sparql.algebra.Op;
@@ -28,7 +29,7 @@ public abstract class LegoQuery<V extends QueryVars> {
 		return new ResultIter<V>(box, vars(), Algebra.exec(op(), dataset.asDatasetGraph()));
 	}
 		
-	public Set<QueryResult<V>> results(SBBox box) {
+	public Set<QueryResult<V>> results(SBInferenceBox box) {
 		Set<QueryResult<V>> results = new HashSet<QueryResult<V>>();
 		ResultIter<V> resultIter = 
 			resultIter(box, new InferenceDataset(box.getRdf(), box.getData(), box.getSchema()));

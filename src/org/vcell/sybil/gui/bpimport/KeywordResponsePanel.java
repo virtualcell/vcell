@@ -14,8 +14,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.IOException;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -39,8 +37,6 @@ import org.vcell.sybil.util.http.pathwaycommons.search.PCIDPathwayRequest;
 import org.vcell.sybil.util.http.pathwaycommons.search.PCKeywordResponse;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.util.gui.DialogUtils;
-
-import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel;
 
 public class KeywordResponsePanel extends ResponsePanel {
 	
@@ -103,7 +99,8 @@ public class KeywordResponsePanel extends ResponsePanel {
 		// mouse action for response tree
 
 		responseTree.addMouseMotionListener(new MouseMotionAdapter() { 
-		    public void mouseMoved(MouseEvent e) { 		
+		    @Override
+			public void mouseMoved(MouseEvent e) { 		
 		    	TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
 		    	if(path != null){
 		    		if(responseTree.getModel().isLeaf(path.getLastPathComponent())){
@@ -166,6 +163,7 @@ public class KeywordResponsePanel extends ResponsePanel {
 		// adding hyperlink to tree leaves
 		// when double clicking the node, a web browser will be launched
 		responseTree.addMouseListener( new MouseAdapter(){
+			@Override
 			public void mouseClicked(MouseEvent e){
 				TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
 		    	if(path != null){
@@ -249,6 +247,7 @@ public class KeywordResponsePanel extends ResponsePanel {
 		return url;
 	}
 	//done
+	@Override
 	public PCKeywordResponse response() { return (PCKeywordResponse) super.response(); }
 	
 }

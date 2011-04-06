@@ -48,6 +48,7 @@ public class CompartmentTableModel extends AbstractTableModel {
 	public int getColumnCount() { return 3; }
 	public int getRowCount() { return rows.size(); }
 
+	@Override
 	public void setValueAt(Object valueNew, int rowInd, int colInd) {
 		try {
 			switch(colInd) {
@@ -74,6 +75,7 @@ public class CompartmentTableModel extends AbstractTableModel {
 		return null;
 	}
 	
+	@Override
 	public String getColumnName(int colInd) {
 		switch(colInd) {
 			case 0: return "<html><b>Compartment name (SBML)/<br>derived from location in BioPAX</html>";
@@ -83,6 +85,7 @@ public class CompartmentTableModel extends AbstractTableModel {
 		return null;
 	}
 
+	@Override
 	public Class<?> getColumnClass(int colInd) {
 		switch(colInd) {
 			case 0: return String.class;
@@ -92,6 +95,7 @@ public class CompartmentTableModel extends AbstractTableModel {
 		return null;
 	}
 
+	@Override
 	public boolean isCellEditable(int rowInd, int colInd) { return colInd > 0; }
 	public Map<String, SBBox.MutableLocation> locDir() { return locDirectory; }
 	

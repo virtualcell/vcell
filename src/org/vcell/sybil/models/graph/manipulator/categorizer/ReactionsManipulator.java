@@ -152,6 +152,7 @@ extends EvaluatorGraphManipulator<S, G> {
 		}
 	}
 
+	@Override
 	public void applyToGraph(G graph) throws GraphManipulationException {
 		if(evaluator == null) { throw new GraphManipulationException(new NoEvaluatorException()); }
 		collapse(graph, PatternGroup.INTERACTION_WITH_CONTROLLED, collapseSubProcesses);

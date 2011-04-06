@@ -27,6 +27,7 @@ public final class RubberBandRectShape extends RectangleShape {
 		usePreferedForScreenSize = true;
 	}
 	
+	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		preferedSize.width = Math.abs(end.x - start.x);
 		preferedSize.height = Math.abs(end.y - start.y);
@@ -40,6 +41,7 @@ public final class RubberBandRectShape extends RectangleShape {
 	
 	public void drag(Point end, Graphics2D g) { setEnd(end); this.updateSizes(g); }
 
+	@Override
 	public PaintLevel paintLevel() { return PaintLevel.Container; }
 
 }

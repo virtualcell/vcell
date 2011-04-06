@@ -17,6 +17,7 @@ public class EntryImp extends ThingImp implements UniProtBox.Entry {
 
 	public String id() { return id; }
 
+	@Override
 	public boolean equals(Object object) {
 		boolean equals = false;
 		if(object instanceof UniProtBox.Entry) {
@@ -25,6 +26,7 @@ public class EntryImp extends ThingImp implements UniProtBox.Entry {
 		return equals;
 	}
 	
+	@Override
 	public int hashCode() { return id.hashCode(); }
 
 	public void addReplacedEntry(Entry entry) { box().setReplaces(this, entry); }

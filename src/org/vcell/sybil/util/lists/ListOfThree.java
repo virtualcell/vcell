@@ -105,6 +105,7 @@ public class ListOfThree<E> implements List<E> {
 	public boolean retainAll(Collection<?> c) { throw new UnsupportedOperationException(); }
 	public E set(int index, E element) { throw new UnsupportedOperationException(); }
 
+	@Override
 	public boolean equals(Object o) {
 		if(o instanceof List<?>) {
 			List<?> l = (List<?>) o;
@@ -115,6 +116,7 @@ public class ListOfThree<E> implements List<E> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() {
 		int hashCode = 31 + (e0==null ? 0 : e0.hashCode());
 		hashCode = 31*hashCode + (e1==null ? 0 : e1.hashCode());

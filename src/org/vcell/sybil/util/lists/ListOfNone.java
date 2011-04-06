@@ -56,6 +56,7 @@ public class ListOfNone<E> implements List<E> {
 	public boolean retainAll(Collection<?> c) { throw new UnsupportedOperationException(); }
 	public E set(int index, E element) { throw new UnsupportedOperationException(); }
 	
+	@Override
 	public boolean equals(Object o) {
 		if(o instanceof List<?>) { 
 			List<?> l = (List<?>) o;
@@ -64,5 +65,6 @@ public class ListOfNone<E> implements List<E> {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() { return 1; }
 }

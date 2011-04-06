@@ -27,6 +27,7 @@ public class SBWrapperRenderer extends DefaultTableCellRenderer {
 		return font;
 	}
 
+	@Override
 	public void setValue(Object value) {
 		SBWrapper sb = (SBWrapper) value;
 		setFont(font(RDFNodeStyle.fontStyle(sb.resource())));

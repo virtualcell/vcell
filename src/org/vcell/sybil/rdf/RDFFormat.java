@@ -12,6 +12,7 @@ import org.vcell.sybil.util.keys.KeyOfOne;
 public class RDFFormat extends KeyOfOne<String>{
 
 	public RDFFormat(String name) { super(name); }
+	@Override
 	public String toString() { return a(); }
 
 	public static final Set<RDFFormat> all = new HashSet<RDFFormat>();
