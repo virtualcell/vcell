@@ -168,21 +168,26 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 			lastSelectedIdxArray = varJList.getSelectedIndices();
 			Object[] selectedObjects = varJList.getSelectedValues();
 			int numSelectedVars = selectedObjects.length;
-			double[][] plotDatas = null;
-			String[] plotNames = null;
+			int totalColumns = 1;
 			for (int v = 0; v < numSelectedVars; v ++) {
 				String varName = (String)selectedObjects[v];
 				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
 				int[] shape = volVar.getShape();
-				int numRegions = shape[1];
-				int numTimes = shape[0];
+				int numColumns = shape[1];
+				
+				totalColumns += numColumns;
+			}
+			int numTimes = timeArray.length;
+			double[][] plotDatas = new double[totalColumns][numTimes];
+			plotDatas[0] = timeArray;
+			String[] plotNames = new String[totalColumns - 1];
+			int columnCount = 0;
+			for (int v = 0; v < numSelectedVars; v ++) {
+				String varName = (String)selectedObjects[v];
+				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
+				int[] shape = volVar.getShape();
+				int numColumns = shape[1];
 				int[] origin = new int[2];
-				if (plotDatas == null) {
-					plotDatas = new double[numSelectedVars * numRegions + 1][numTimes];
-					plotDatas[0] = timeArray;
-					plotNames = new String[numSelectedVars * numRegions];
-				}
-	
 				ArrayDouble.D2 data = null;
 				try {
 					data = (ArrayDouble.D2) volVar.read(origin, shape);
@@ -190,15 +195,16 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 					e.printStackTrace(System.err);
 					throw new IOException("Can not read volVar data.");
 				}
-				for (int i = 0; i < numRegions; i++) {
+				for (int i = 0; i < numColumns; i++) {
 					String plotName = varName;
 					if (i > 0) {
 						plotName += ": region " + (i-1);
 					}
-					plotNames[v * numRegions + i] = plotName;
+					plotNames[columnCount] = plotName;
 					for (int j = 0; j < numTimes; j++) {
-						plotDatas[v * numRegions + 1 + i][j] = data.get(j, i);
+						plotDatas[columnCount + 1][j] = data.get(j, i);
 					}
+					columnCount ++;
 				}
 			}
 			Plot2D plot2D = new SingleXPlot2D(null, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
