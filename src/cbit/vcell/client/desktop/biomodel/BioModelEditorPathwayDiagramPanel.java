@@ -269,9 +269,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
 		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the all objects that will be deleted from the pathway model
 		StringBuilder warning = new StringBuilder("You can NOT delete the following pathway objects:\n\n");
+		StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
 		for (BioPaxObject bpObject : allSelectedBioPaxObjects) {
 			if(canDelete(bpObject)){
 				selectedBioPaxObjects.add(bpObject);
+				text.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
+				
 				completeSelectedBioPaxObjects.add(bpObject);
 				if(bpObject instanceof Conversion){// all its participants and its catalysts will be deleted if deleting a conversion
 					// check each participant
@@ -301,20 +304,24 @@ implements PathwayEditor, ActionBuilder.Generator {
 				warning.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
 			}
 		}
-		warning.append("\nThey are required by other reactions.\n\n");
+		warning.append("\nThey are either required by other reactions or linked with other physiological objects.\n\n");
+		
+		StringBuilder finalWarningMessage = new StringBuilder();
 		if(allSelectedBioPaxObjects.size() > selectedBioPaxObjects.size()){
-			PopupGenerator.showWarningDialog(this, warning.toString());
+			finalWarningMessage.append( warning.toString() + "\n\n");
 		}
 		if(selectedBioPaxObjects.size() > 0){
-			StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
-			for (BioPaxObject bpObject : selectedBioPaxObjects) {
-				text.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
-			}
 			text.append("\nContinue?");
-			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting pathway objects", text.toString());
-			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-				return;
-			}
+			finalWarningMessage.append(text.toString());			
+		}
+		if (finalWarningMessage.length() == 0) {
+			return;
+		}
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting pathway objects", finalWarningMessage.toString());
+		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			return;
+		}
+		if (completeSelectedBioPaxObjects.size() > 0) {
 			bioModel.getPathwayModel().remove(completeSelectedBioPaxObjects);
 			bioModel.getRelationshipModel().removeRelationshipObjects(completeSelectedBioPaxObjects);
 		}
@@ -332,6 +339,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 	
 	private boolean canDelete(BioPaxObject bpObject){
+		// CANNOT deleted an pathway object if it has been linked to a bioModel object
+		if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject).size() > 0){
+			return false;
+		}
 		List<BioPaxObject> selectedBioPaxObjects = getSelectedBioPaxObjects();
 		for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
 			if(bp instanceof Conversion){ // CANNOT delete any participants before deleting the reaction

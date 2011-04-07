@@ -605,17 +605,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
 			}
-			
-			// remove relationship objects
-			ArrayList <BioModelEntityObject> removeBioModelEntityObjects = new ArrayList <BioModelEntityObject>();
-			for(Object object : deleteList){
-				if(object instanceof BioModelEntityObject){
-					BioModelEntityObject bmObject = (BioModelEntityObject) object;
-					removeBioModelEntityObjects.add(bmObject);
-				}
-			}
-			bioModel.getRelationshipModel().removeRelationshipObjects(removeBioModelEntityObjects);
-			
 			for (Object object : deleteList) {
 				bioModel.getModel().removeObject(object);
 			}
