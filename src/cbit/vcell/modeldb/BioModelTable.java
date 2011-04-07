@@ -122,15 +122,8 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
-
 	
-	
-	BioModelChildSummary bioModelChildSummary = null;
-	if (serialDbChildSummary!=null){
-		bioModelChildSummary = BioModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
-	}
-	
-	return new org.vcell.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
+	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary);
 }
 /**
  * This method was created in VisualAge.

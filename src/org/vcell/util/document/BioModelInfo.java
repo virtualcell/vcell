@@ -1,5 +1,7 @@
 package org.vcell.util.document;
 
+import org.vcell.util.BigString;
+
 /*�
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -15,6 +17,7 @@ public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue modelKey = null;
 	private BioModelChildSummary bioModelChildSummary = null;
+	private BigString bioModelChildSummaryString = null;
 /**
  * BioModelInfo constructor comment.
  */
@@ -22,6 +25,13 @@ public BioModelInfo(Version argVersion, KeyValue argModelKey, BioModelChildSumma
 	this.version = argVersion;
 	this.modelKey = argModelKey;
 	this.bioModelChildSummary = argBioModelChildSummary;
+}
+public BioModelInfo(Version argVersion, KeyValue argModelKey, String argBioModelChildSummaryString) {
+	this.version = argVersion;
+	this.modelKey = argModelKey;
+	if (argBioModelChildSummaryString != null) {
+		this.bioModelChildSummaryString = new BigString(argBioModelChildSummaryString);
+	}
 }
 /**
  * Insert the method's description here.
@@ -44,6 +54,10 @@ public boolean equals(Object object) {
  * @return cbit.vcell.biomodel.BioModelChildSummary
  */
 public BioModelChildSummary getBioModelChildSummary() {
+	if (bioModelChildSummary == null && bioModelChildSummaryString != null) {
+		bioModelChildSummary = BioModelChildSummary.fromDatabaseSerialization(bioModelChildSummaryString.toString());
+		bioModelChildSummaryString = null;
+	}
 	return bioModelChildSummary;
 }
 /**

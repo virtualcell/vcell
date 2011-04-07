@@ -4,62 +4,22 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
-
-import cbit.image.VCImageInfo;
-import cbit.sql.*;
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationDriver;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable;
-import cbit.vcell.numericstest.AddTestCasesOP;
-import cbit.vcell.numericstest.AddTestCasesOPBioModel;
-import cbit.vcell.numericstest.AddTestCasesOPMathModel;
-import cbit.vcell.numericstest.AddTestCriteriaOPBioModel;
-import cbit.vcell.numericstest.AddTestCriteriaOPMathModel;
-import cbit.vcell.numericstest.AddTestResultsOP;
-import cbit.vcell.numericstest.AddTestSuiteOP;
-import cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP;
-import cbit.vcell.numericstest.EditTestCasesOP;
-import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
-import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
-import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
-import cbit.vcell.numericstest.EditTestSuiteOP;
-import cbit.vcell.numericstest.LoadTestInfoOpResults;
-import cbit.vcell.numericstest.LoadTestInfoOP;
-import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
-import cbit.vcell.numericstest.RemoveTestCasesOP;
-import cbit.vcell.numericstest.RemoveTestCriteriaOP;
-import cbit.vcell.numericstest.RemoveTestResultsOP;
-import cbit.vcell.numericstest.RemoveTestSuiteOP;
-import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestCaseNewBioModel;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
-import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
-import cbit.vcell.numericstest.TestCriteriaNew;
-import cbit.vcell.numericstest.TestCriteriaNewBioModel;
-import cbit.vcell.numericstest.TestCriteriaNewMathModel;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.numericstest.TestSuiteOP;
-import cbit.vcell.numericstest.TestSuiteOPResults;
-import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.test.VariableComparisonSummary;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Hashtable;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -89,6 +49,59 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+
+import cbit.image.VCImageInfo;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.KeyFactory;
+import cbit.sql.RecordChangedException;
+import cbit.sql.StarField;
+import cbit.sql.Table;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationDriver;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable;
+import cbit.vcell.numericstest.AddTestCasesOP;
+import cbit.vcell.numericstest.AddTestCasesOPBioModel;
+import cbit.vcell.numericstest.AddTestCasesOPMathModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPMathModel;
+import cbit.vcell.numericstest.AddTestResultsOP;
+import cbit.vcell.numericstest.AddTestSuiteOP;
+import cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP;
+import cbit.vcell.numericstest.EditTestCasesOP;
+import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
+import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
+import cbit.vcell.numericstest.EditTestSuiteOP;
+import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
+import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
+import cbit.vcell.numericstest.RemoveTestCasesOP;
+import cbit.vcell.numericstest.RemoveTestCriteriaOP;
+import cbit.vcell.numericstest.RemoveTestResultsOP;
+import cbit.vcell.numericstest.RemoveTestSuiteOP;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
+import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOP;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 
 /**
  * This type was created in VisualAge.
@@ -863,7 +876,6 @@ protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.
 	return null;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (11/19/2001 3:24:17 PM)
@@ -872,58 +884,80 @@ protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.
  */
 public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigDecimal groupid) throws SQLException{
 
-	if(groupAccessHash.contains(groupid)){
-		return groupAccessHash.get(groupid);
-	}
-
-	GroupAccess groupAccess = null;
-	
-	if(groupid.equals(GroupAccess.GROUPACCESS_ALL)){
-		groupAccess = new GroupAccessAll();
-	}else if(groupid.equals(GroupAccess.GROUPACCESS_NONE)){
-		groupAccess = new GroupAccessNone();
-	}
-	else{
-		GroupTable groupTable = GroupTable.table;
-		StarField groupAllFields = new StarField(groupTable);
-		UserTable userTable = UserTable.table;
-		String sql =
-				"SELECT "+	groupAllFields.getQualifiedColName()+","+
-							userTable.userid.getQualifiedColName()+
-				" FROM "+	groupTable.getTableName()+","+
-							userTable.getTableName()+
-				" WHERE "+	groupTable.groupid.getQualifiedColName() + " = " + groupid.toString() +
-				" AND "+	userTable.id.getQualifiedColName()+ " = "+groupTable.userRef.getQualifiedColName();
-		//
-		java.sql.Statement stmt = con.createStatement();
-		Vector<User> groupMembers = new Vector<User>();
-		Vector<Boolean> hiddenFromOwner= new Vector<Boolean>();
-		BigDecimal groupMemberHash = null;
-		try {
-			java.sql.ResultSet rset = stmt.executeQuery(sql);
-			while (rset.next()) {
-				if(groupMemberHash == null){
-					groupMemberHash = rset.getBigDecimal(groupTable.groupMemberHash.toString());
+	GroupAccess groupAccess = groupAccessHash.get(groupid);
+	if(groupAccess == null){
+		if(groupid.equals(GroupAccess.GROUPACCESS_ALL)){
+			groupAccess = new GroupAccessAll();
+		}else if(groupid.equals(GroupAccess.GROUPACCESS_NONE)){
+			groupAccess = new GroupAccessNone();
+		}
+		else{
+			GroupTable groupTable = GroupTable.table;
+			StarField groupAllFields = new StarField(groupTable);
+			UserTable userTable = UserTable.table;
+			// getting all group access objects to avoid multiple database calls.
+			// store group access objects in static hash table.
+			String sql =
+					"SELECT "+	groupAllFields.getQualifiedColName()+","+
+								userTable.userid.getQualifiedColName()+
+					" FROM "+	groupTable.getTableName()+","+
+								userTable.getTableName()+
+					" WHERE "/*+	groupTable.groupid.getQualifiedColName() + " = " + groupid.toString() +	" AND "*/
+							+	userTable.id.getQualifiedColName()+ " = "+groupTable.userRef.getQualifiedColName()
+							+ " ORDER BY " + groupTable.groupid.getQualifiedColName();
+			//
+			System.out.println("getGroupAccessFromGroupID(), sql = " + sql);
+			java.sql.Statement stmt = con.createStatement();
+			BigDecimal currGroupId = null;
+			BigDecimal rowGroupId = null;
+			ArrayList<User> groupMembers = new ArrayList<User>();
+			ArrayList<Boolean> hiddenFromOwner= new ArrayList<Boolean>();
+			BigDecimal groupMemberHash = null;
+			try {
+				java.sql.ResultSet rset = stmt.executeQuery(sql);
+				while (true) {
+					boolean hasNext = rset.next();
+					if (hasNext) {
+						rowGroupId = rset.getBigDecimal(groupTable.groupid.toString());
+						if(rowGroupId.equals(GroupAccess.GROUPACCESS_ALL) 
+								|| rowGroupId.equals(GroupAccess.GROUPACCESS_NONE)){
+							continue;
+						}
+						if (currGroupId == null) {
+							currGroupId = rowGroupId;
+						}
+					}
+					if (!hasNext || !currGroupId.equals(rowGroupId)) {
+						boolean[] hiddenArr = new boolean[hiddenFromOwner.size()];
+						for(int i = 0;i<hiddenArr.length;i+=1){
+							hiddenArr[i] = ((hiddenFromOwner.get(i))).booleanValue();
+						}
+						User[] groupMembersArr = new User[groupMembers.size()];
+						groupMembers.toArray(groupMembersArr);
+						groupAccess = new GroupAccessSome(currGroupId,groupMemberHash,groupMembersArr,hiddenArr);
+						groupAccessHash.put(currGroupId,groupAccess);
+					
+						groupMembers.clear();
+						hiddenFromOwner.clear();
+					}
+					
+					if (hasNext) {					
+						currGroupId = rowGroupId;				
+						groupMemberHash = rset.getBigDecimal(groupTable.groupMemberHash.toString());
+						User user = new User(rset.getString(userTable.userid.toString()),new KeyValue(rset.getBigDecimal(groupTable.userRef.toString())));
+						groupMembers.add(user);
+						boolean bHidden = (rset.getInt(groupTable.isHiddenFromOwner.toString())) == 1;
+						hiddenFromOwner.add(new Boolean(bHidden));
+					} else {
+						break;
+					}
 				}
-				User user = new User(rset.getString(userTable.userid.toString()),new KeyValue(rset.getBigDecimal(groupTable.userRef.toString())));
-				groupMembers.add(user);
-				boolean bHidden = (rset.getInt(groupTable.isHiddenFromOwner.toString())) == 1;
-				hiddenFromOwner.add(new Boolean(bHidden));
+			} finally {
+				stmt.close();
 			}
-		} finally {
-			stmt.close();
+			groupAccess = groupAccessHash.get(groupid);
 		}
-		//
-		boolean[] hiddenArr = new boolean[hiddenFromOwner.size()];
-		for(int i = 0;i<hiddenArr.length;i+=1){
-			hiddenArr[i] = ((hiddenFromOwner.get(i))).booleanValue();
-		}
-		User[] groupMembersArr = new User[groupMembers.size()];
-		groupMembers.toArray(groupMembersArr);
-		groupAccess = new GroupAccessSome(groupid,groupMemberHash,groupMembersArr,hiddenArr);
-	}
-	//
-	groupAccessHash.put(groupid,groupAccess);
+	}	
 	return groupAccess; 
 }
 
@@ -1132,7 +1166,6 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
 	return user;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (9/24/2003 12:54:32 PM)
@@ -1151,8 +1184,6 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 	StringBuffer sql = null;
 	String special = null;
 	ResultSet rset = null;
-	Vector<VersionInfo> tempInfos = null;
-	Vector<String> distinctV = null;
 	boolean enableSpecial = true;
 	boolean enableDistinct = true;
 	
@@ -1170,8 +1201,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(BioModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector<VersionInfo>();
-			distinctV = new Vector<String>();
+			ArrayList<BioModelInfo> tempInfos = new ArrayList<BioModelInfo>();
+			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
 				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
@@ -1182,7 +1213,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			rset.close();
 			if(tempInfos.size() > 0){
 				bioModelInfos = new BioModelInfo[tempInfos.size()];
-				tempInfos.copyInto(bioModelInfos);
+				tempInfos.toArray(bioModelInfos);
 			}
 			System.out.println("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 		}
@@ -1199,8 +1230,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(MathModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector<VersionInfo>();
-			distinctV = new Vector<String>();
+			ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
+			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
 				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
@@ -1211,7 +1242,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			rset.close();
 			if(tempInfos.size() > 0){
 				mathModelInfos = new MathModelInfo[tempInfos.size()];
-				tempInfos.copyInto(mathModelInfos);
+				tempInfos.toArray(mathModelInfos);
 			}
 			System.out.println("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 		}
@@ -1228,8 +1259,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(ImageTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector<VersionInfo>();
-			distinctV = new Vector<String>();
+			ArrayList<VCImageInfo> tempInfos = new ArrayList<VCImageInfo>();
+			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
 				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
@@ -1240,7 +1271,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			rset.close();
 			if(tempInfos.size() > 0){
 				vcImageInfos = new VCImageInfo[tempInfos.size()];
-				tempInfos.copyInto(vcImageInfos);
+				tempInfos.toArray(vcImageInfos);
 			}
 			System.out.println("ImageInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 		}
@@ -1257,8 +1288,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(GeometryTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
 			sql.insert(7,Table.SQL_GLOBAL_HINT+(enableDistinct?"DISTINCT ":""));
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector<VersionInfo>();
-			distinctV = new Vector<String>();
+			ArrayList<GeometryInfo> tempInfos = new ArrayList<GeometryInfo>();
+			Set<String> distinctV = new HashSet<String>();
 			while(rset.next()){
 				GeometryInfo versionInfo = (GeometryInfo)GeometryTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
@@ -1269,7 +1300,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			rset.close();
 			if(tempInfos.size() > 0){
 				geometryInfos = new GeometryInfo[tempInfos.size()];
-				tempInfos.copyInto(geometryInfos);
+				tempInfos.toArray(geometryInfos);
 			}
 			System.out.println("GeometryInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 		}

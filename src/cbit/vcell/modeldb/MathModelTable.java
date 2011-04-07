@@ -60,15 +60,9 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
-	String serialDbChildSummary =
-		DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge);
+	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge);
 
-	MathModelChildSummary mathModelChildSummary = null;
-	if (serialDbChildSummary!=null){
-		mathModelChildSummary = mathModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
-	}
-
-	return new MathModelInfo(version, mathRef, mathModelChildSummary);
+	return new MathModelInfo(version, mathRef, serialDbChildSummary);
 }
 
 
