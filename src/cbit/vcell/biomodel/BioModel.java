@@ -4,6 +4,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStep.ReactionNameScope;
@@ -79,9 +81,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 	public BioModel(Version version) {
 		super();
 		fieldName = new String("NoName");		
-		fieldModel = new Model("unnamed");
 		vcMetaData = new VCMetaData(this, null); 
-		fieldModel.setVcMetaData(vcMetaData);
+		setModel(new Model("unnamed"));
 		addVetoableChangeListener(this);
 		addPropertyChangeListener(this);
 		try {
@@ -622,6 +623,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 
+	// wei's code
+	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS) 
+			|| evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS))){
+		//remove the relationship objects if the biomodelEntity objects were removed
+		Set<BioModelEntityObject> removedObjects = relationshipModel.getBioModelEntityObjects();
+		for(SpeciesContext sc : fieldModel.getSpeciesContexts()){
+			removedObjects.remove(sc);
+		}
+		for(ReactionStep rs : fieldModel.getReactionSteps()){
+			removedObjects.remove(rs);
+		}
+		relationshipModel.removeRelationshipObjects(removedObjects);
+	}
+	// done
 }
 
 
@@ -725,8 +740,12 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 public void setModel(Model model) {
 	Model oldValue = fieldModel;
 	fieldModel = model;
+	if (oldValue != null){
+		oldValue.removePropertyChangeListener(this);
+	}
 	if (model!=null){
 		model.setVcMetaData(getVCMetaData());
+		model.addPropertyChangeListener(this);
 	}
 	firePropertyChange("model", oldValue, model);
 }
