@@ -1,5 +1,7 @@
 package org.vcell.util.document;
 
+import org.vcell.util.BigString;
+
 /*�
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -15,6 +17,7 @@ public class MathModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue mathKey = null;
 	private MathModelChildSummary mathModelChildSummary = null;
+	private BigString mathModelChildSummaryString = null;
 /**
  * BioModelInfo constructor comment.
  */
@@ -22,6 +25,14 @@ public MathModelInfo(Version argVersion, KeyValue argMathKey, MathModelChildSumm
 	this.version = argVersion;
 	this.mathKey = argMathKey;
 	this.mathModelChildSummary = argMathModelChildSummary;
+}
+
+public MathModelInfo(Version argVersion, KeyValue argMathKey, String argMathModelChildSummaryString) {
+	this.version = argVersion;
+	this.mathKey = argMathKey;
+	if (argMathModelChildSummaryString != null) {
+		this.mathModelChildSummaryString = new BigString(argMathModelChildSummaryString);
+	}
 }
 /**
  * Insert the method's description here.
@@ -52,6 +63,10 @@ public KeyValue getMathKey() {
  * @return cbit.vcell.mathmodel.MathModelChildSummary
  */
 public MathModelChildSummary getMathModelChildSummary() {
+	if (mathModelChildSummary == null && mathModelChildSummaryString != null) {
+		mathModelChildSummary = MathModelChildSummary.fromDatabaseSerialization(mathModelChildSummaryString.toString());
+		mathModelChildSummaryString = null;
+	}
 	return mathModelChildSummary;
 }
 /**
