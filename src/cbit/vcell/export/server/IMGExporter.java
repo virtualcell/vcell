@@ -221,6 +221,9 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 	args.add(dimension+""); //dimension
 	args.add(beginIndexTime+"");
 	args.add(endIndexTime+"");
+	args.add(4+"");//particle sphere size
+	args.add(800+"");//frame size X
+	args.add(800+"");//frame size Y
 	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
 	for (int i = 0; i < variableNames.length; i++) {
 		args.add(variableNames[i]);

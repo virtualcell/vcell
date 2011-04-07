@@ -5,8 +5,11 @@
     # /path/to/outputfolder/ImageOutputRootFileName
     # {2|3 dimension}
     # {sets beginTimeIndex, index 0 is beginning}
-    # {sets endTimeIndex, last index numTimes-1, must be > endTimeIndex} 
-       # {0=all variables, 1 or more means number of specified variables} varname1 varname2 
+    # {sets endTimeIndex, last index numTimes-1, must be > endTimeIndex}
+    # particle sphere size
+    # frame size X
+    # frame size Y
+    # {0=all variables, 1 or more means number of specified variables} varname1 varname2 
 
     
     # by Ed Boyce - March 15, 2011
