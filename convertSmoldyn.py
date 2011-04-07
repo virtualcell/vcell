@@ -6,8 +6,8 @@
     # {2|3 dimension}
     # {sets beginTimeIndex, index 0 is beginning}
     # {sets endTimeIndex, last index numTimes-1, must be > endTimeIndex} 
-    # {0=all variables, 1 or more means number of specified variables} varname1 varname2 
-    
+       # {0=all variables, 1 or more means number of specified variables} varname1 varname2 
+
     
     # by Ed Boyce - March 15, 2011
     # University of Connecticut Health Center
@@ -41,15 +41,21 @@ try:
     print "vcellBeginTimeIndex="+str(vcellBeginTimeIndex)+" vcellEndTimeIndex="+str(vcellEndTimeIndex); 
     if vcellEndTimeIndex < vcellBeginTimeIndex:
         raise ValueError('vcellEndTimeIndex must be >= vcellBeginTimeIndex')
-
+    
+    pointSphereSize = int(sys.argv[argStart+6])
+    frameXSize = int(sys.argv[argStart+7])
+    frameYSize = int(sys.argv[argStart+8])
+    
     particleIncludeList=[]
-    includeVarNumber=int(sys.argv[argStart+6])
+    includeVarNumber=int(sys.argv[argStart+9])
     if (includeVarNumber>0):
         for vari in range(1,includeVarNumber+1):
-            particleIncludeList.append(sys.argv[(argStart+6+vari)])
+            particleIncludeList.append(sys.argv[(argStart+9+vari)])  
     
     simID=inputFilePathRoot[inputFilePathRoot.find("SimID"):]
     
+    
+
     particleTypeList=[]
     particleTypeNumber=0
     fileIterator=1
@@ -173,7 +179,7 @@ try:
     
     pc=PseudocolorAttributes()
     pc.pointType=4
-    pc.pointSizePixels = 8
+    pc.pointSizePixels = pointSphereSize
     if (includeVarNumber==0):
         pc.max=(len(particleTypeList))
     else:
@@ -181,6 +187,8 @@ try:
     if (pc.max==1):
         pc.max=2
     pc.maxFlag=1
+    pc.min=1
+    
               
     SetPlotOptions(pc)
     
@@ -191,6 +199,9 @@ try:
     
     # 2=JPEG from the possible enumerated list: format = # BMP, CURVE, JPEG, OBJ, PNG, POSTSCRIPT, POVRAY, PPM, RGB, STL, TIFF, ULTRA, VTK, PLY 
     s.format=2 
+    s.resConstraint = s.NoConstraint
+    s.width = frameXSize
+    s.height = frameYSize
     SetSaveWindowAttributes(s)
     
     aa=AnnotationAttributes()
