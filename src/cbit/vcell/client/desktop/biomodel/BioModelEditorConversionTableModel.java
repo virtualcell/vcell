@@ -38,7 +38,9 @@ import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
 
@@ -47,7 +49,6 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	implements PathwayListener, RelationshipListener, PropertyChangeListener, AutoCompleteTableModel{
 
 	public static final int colCount = 7;
-//	public static final int iColModifiable = 0;
 	public static final int iColInteraction = 0;
 	public static final int iColParticipant = 1;
 	public static final int iColEntity = 2;
@@ -70,7 +71,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 
 	private DefaultScrollTableComboBoxEditor defaultScrollTableComboBoxEditor = null;
 	public BioModelEditorConversionTableModel(EditorScrollTable table) {
-		super(table, new String[] {//"Modifiable", 
+		super(table, new String[] {
 				"Interaction", "Type", "Entity Name", "Entity Type", 
 				"Stoich.\nCoef.", "  ID  ", "Location/Compartment"});
 	}
@@ -99,10 +100,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	public Object getValueAt(int iRow, int iCol) {
 		ConversionTableRow conversionTableRow = getValueAt(iRow);
 		BioPaxObject bpObject = conversionTableRow.getBioPaxObject();
-		switch(iCol) {		
-//			case iColModifiable:{
-//				return conversionTableRow.modifiable();
-//			}
+		switch(iCol) {
 			case iColInteraction:{
 				return conversionTableRow.interactionName();
 			}
@@ -213,7 +211,6 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	}
 	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
-//		super.propertyChange(evt);
 		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			updateStructureComboBox();
 			refreshData();
@@ -247,14 +244,6 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		structureComboBoxCellEditor.setRenderer(defaultListCellRenderer);
 		structureComboBoxCellEditor.setModel(aModel);
 		structureComboBoxCellEditor.setSelectedIndex(0);
-//		structureComboBoxCellEditor.addItemListener(new ItemListener() {
-//			
-//			public void itemStateChanged(ItemEvent e) {
-//				// TODO Auto-generated method stub
-//				setValueAt(valueNew, iRow, iCol);
-//			}
-//		});
-
 	}
 
 	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
@@ -572,7 +561,24 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				}
 			}
 		}else{
-			conversionTableRow.setId(relationshipObject.getBioModelEntityObject().getName());
+			if(relationshipObject.getBioModelEntityObject().getStructure().getName().equalsIgnoreCase(location)){
+				// the linked bmObject with the same location will be used
+				conversionTableRow.setId(relationshipObject.getBioModelEntityObject().getName());
+			}else{
+				// a new bmObject will be created if no linked bmObject in the same location
+				if(bpObject instanceof Entity) {
+					ArrayList<String> nameList = ((Entity)bpObject).getName();
+					if(!nameList.isEmpty()) {
+						String id = (getSafetyName(nameList.get(0))+"_"+location).trim();
+						if(isValid(id))
+							conversionTableRow.setId(id);
+						else
+							conversionTableRow.setId(changeID(id));		
+					}else{
+						conversionTableRow.setId("O_"+location);
+					}
+				}
+			}
 		}
 		
 		return conversionTableRow;

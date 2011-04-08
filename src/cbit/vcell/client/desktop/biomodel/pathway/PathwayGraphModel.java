@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Interaction;
@@ -69,8 +70,10 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener {
 			} else {
 				bpObjectShape = new BioPaxObjectShape(bpObject, this);				
 			}
-			pathwayContainerShape.addChildShape(bpObjectShape);
-			addShape(bpObjectShape);
+			if(!(bpObject instanceof Catalysis)){ // the Catalysis objects will not be displayed on the diagram
+				pathwayContainerShape.addChildShape(bpObjectShape);
+				addShape(bpObjectShape);
+			}
 			Dimension shapeSize = bpObjectShape.getSpaceManager().getSize();
 			Rectangle boundary = getContainerLayout().getBoundaryForAutomaticLayout(pathwayContainerShape);
 			int xPos = boundary.x + random.nextInt(boundary.width - shapeSize.width);
