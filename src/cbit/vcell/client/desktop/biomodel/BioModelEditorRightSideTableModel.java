@@ -13,7 +13,6 @@ import javax.swing.SwingConstants;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.vcell.biomodel.BioModel;
@@ -62,7 +61,8 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	 */
 	@Override
 	public int getRowCount() {
-		return super.getRowCount() + (searchText == null || searchText.length() == 0 ? 1 : 0);
+		int rowCount = getDataSize() + (searchText == null || searchText.length() == 0 ? 1 : 0);
+		return rowCount;
 	}
 	
 	protected abstract List<T> computeData();
@@ -82,8 +82,6 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}
-		} else if (containedByModel() && evt.getSource() == bioModel.getModel() || evt.getSource() == bioModel) {
-			refreshData();
 		}
 	}
 
@@ -130,37 +128,37 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 		return bioModel == null ? null : bioModel.getModel();
 	}
 	
-	private DefaultScrollTableComboBoxEditor defaultScrollTableComboBoxEditor = null;
-	protected void updateStructureComboBox() {
-		JComboBox structureComboBoxCellEditor = (JComboBox) getStructureComboBoxEditor().getComponent();
-		if (structureComboBoxCellEditor == null) {
-			structureComboBoxCellEditor = new JComboBox();
-		}
-		Structure[] structures = bioModel.getModel().getStructures();
-		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
-		for (Structure s : structures) {
-			aModel.addElement(s);
-		}
-		structureComboBoxCellEditor.setRenderer(new DefaultListCellRenderer() {
-			
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setHorizontalTextPosition(SwingConstants.LEFT);
-				if (value instanceof Structure) {
-					setText(((Structure)value).getName());
-				}
-				return this;
-			}
-		});
-		structureComboBoxCellEditor.setModel(aModel);
-		structureComboBoxCellEditor.setSelectedIndex(0);
-	}
-	
-	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
-		if (defaultScrollTableComboBoxEditor == null) {
-			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox());
-		}
-		return defaultScrollTableComboBoxEditor;
-	}
+//	private DefaultScrollTableComboBoxEditor defaultScrollTableComboBoxEditor = null;
+//	protected void updateStructureComboBox() {
+//		JComboBox structureComboBoxCellEditor = (JComboBox) getStructureComboBoxEditor().getComponent();
+//		if (structureComboBoxCellEditor == null) {
+//			structureComboBoxCellEditor = new JComboBox();
+//		}
+//		Structure[] structures = bioModel.getModel().getStructures();
+//		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+//		for (Structure s : structures) {
+//			aModel.addElement(s);
+//		}
+//		structureComboBoxCellEditor.setRenderer(new DefaultListCellRenderer() {
+//			
+//			public Component getListCellRendererComponent(JList list, Object value,
+//					int index, boolean isSelected, boolean cellHasFocus) {
+//				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//				setHorizontalTextPosition(SwingConstants.LEFT);
+//				if (value instanceof Structure) {
+//					setText(((Structure)value).getName());
+//				}
+//				return this;
+//			}
+//		});
+//		structureComboBoxCellEditor.setModel(aModel);
+//		structureComboBoxCellEditor.setSelectedIndex(0);
+//	}
+//	
+//	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
+//		if (defaultScrollTableComboBoxEditor == null) {
+//			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox());
+//		}
+//		return defaultScrollTableComboBoxEditor;
+//	}
 }

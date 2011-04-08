@@ -1,6 +1,7 @@
 package org.vcell.util.gui;
 
 import java.awt.AWTException;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -20,7 +21,9 @@ import java.util.EventObject;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -60,6 +63,8 @@ public class ScrollTable extends JTable {
 	private static final Color tableHeaderColor = new Color(0xb9c9fe);
 	private static final String javaVersion = System.getProperty("java.version");
 	
+	private JPanel contentPanel = new JPanel();
+	private JPanel pageToolBarPanel = null;
 	private JScrollPane enclosingScrollPane = null;
 	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
@@ -159,10 +164,15 @@ public class ScrollTable extends JTable {
 		// make it bigger on Mac
 		setRowHeight(getRowHeight() + 4);
 		putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+		putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
 		scrollTableActionManager = new DefaultScrollTableActionManager(this);
 		
 		enclosingScrollPane = new JScrollPane(this);
 		enclosingScrollPane.getViewport().setBackground(Color.WHITE);
+		
+		contentPanel = new JPanel(new BorderLayout());
+		contentPanel.add(enclosingScrollPane, BorderLayout.CENTER);
+		
 		setPreferredScrollableViewportSize(new Dimension(200,100));
 		setIntercellSpacing(new Dimension(2,2));
 		
@@ -256,8 +266,8 @@ public class ScrollTable extends JTable {
 		addMouseMotionListener(mouseMotionListener);
 	}
 
-	public final JScrollPane getEnclosingScrollPane() {
-		return enclosingScrollPane;
+	public final JComponent getEnclosingScrollPane() {
+		return contentPanel;
 	}
 
 	public void installCellEditors() {

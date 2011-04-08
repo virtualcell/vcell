@@ -17,13 +17,15 @@ import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
@@ -188,11 +190,126 @@ public boolean isCellEditable(int row, int col) {
 
 @Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	super.propertyChange(evt);
+	super.propertyChange(evt);	
 	if (evt.getSource() instanceof Parameter) {
 		int changeRow = getRowIndex((Parameter) evt.getSource());
 		if (changeRow >= 0) {
 			fireTableRowsUpdated(changeRow, changeRow);
+		}
+	} else {
+		String propertyName = evt.getPropertyName();
+		if (evt.getSource() == bioModel.getModel()) {
+			if (propertyName.equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
+				ModelParameter[] oldValue = (ModelParameter[])evt.getOldValue();
+				if (oldValue!=null){
+					for (Parameter parameter : oldValue) {
+						parameter.removePropertyChangeListener(this);
+					}
+				}
+				ModelParameter[] newValue = (ModelParameter[])evt.getNewValue();
+				if (newValue!=null){
+					for (Parameter parameter : newValue) {
+						parameter.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
+			} else if (propertyName.equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)) {
+				SpeciesContext[] oldValue = (SpeciesContext[])evt.getOldValue();
+				if (oldValue!=null){
+					for (SpeciesContext sc : oldValue) {
+						sc.removePropertyChangeListener(this);
+					}
+				}
+				SpeciesContext[] newValue = (SpeciesContext[])evt.getNewValue();
+				if (newValue!=null){
+					for (SpeciesContext sc : newValue) {
+						sc.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
+			} else if (propertyName.equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
+				ReactionStep[] oldValue = (ReactionStep[])evt.getOldValue();
+				if (oldValue!=null){
+					for (ReactionStep reactionStep : oldValue){
+						reactionStep.removePropertyChangeListener(this);
+						reactionStep.getKinetics().removePropertyChangeListener(this);
+						for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+							kineticsParameter.removePropertyChangeListener(this);
+						}
+						for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+							proxyParameter.removePropertyChangeListener(this);
+						}
+						for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+							unresolvedParameter.removePropertyChangeListener(this);
+						}
+					}
+				}
+				ReactionStep[] newValue = (ReactionStep[])evt.getNewValue();
+				if (newValue!=null){
+					for (ReactionStep reactionStep : newValue){
+						reactionStep.addPropertyChangeListener(this);
+						reactionStep.getKinetics().addPropertyChangeListener(this);
+						for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+							kineticsParameter.addPropertyChangeListener(this);
+						}
+						for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+							proxyParameter.addPropertyChangeListener(this);
+						}
+						for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+							unresolvedParameter.addPropertyChangeListener(this);
+						}
+					}
+				}
+				refreshData();
+			}
+		} else if (evt.getSource() == bioModel) {
+			if (propertyName.equals(BioModel.PROPERTY_NAME_SIMULATION_CONTEXTS)) {
+				SimulationContext[] oldValue = (SimulationContext[])evt.getOldValue();
+				for (SimulationContext simulationContext : oldValue) {
+					simulationContext.removePropertyChangeListener(this);
+					simulationContext.getGeometryContext().removePropertyChangeListener(this);
+					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+						for (Parameter parameter : mapping.getParameters()) {
+							parameter.removePropertyChangeListener(this);
+						}
+					}
+					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+						spec.removePropertyChangeListener(this);
+						for (Parameter parameter : spec.getParameters()) {
+							parameter.removePropertyChangeListener(this);
+						}
+					}
+					for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
+						elect.removePropertyChangeListener(this);
+						for (Parameter parameter : elect.getParameters()) {
+							parameter.removePropertyChangeListener(this);
+						}
+					}
+				}
+				SimulationContext[] newValue = (SimulationContext[])evt.getNewValue();
+				for (SimulationContext simulationContext : newValue) {
+					simulationContext.removePropertyChangeListener(this);
+					simulationContext.getGeometryContext().removePropertyChangeListener(this);
+					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+						for (Parameter parameter : mapping.getParameters()) {
+							parameter.addPropertyChangeListener(this);
+						}
+					}
+					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+						spec.removePropertyChangeListener(this);
+						for (Parameter parameter : spec.getParameters()) {
+							parameter.addPropertyChangeListener(this);
+						}
+					}
+					for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
+						elect.removePropertyChangeListener(this);
+						for (Parameter parameter : elect.getParameters()) {
+							parameter.addPropertyChangeListener(this);
+						}
+					}
+				}
+				refreshData();
+			}
 		}
 	}
 }
@@ -291,6 +408,9 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
 			parameter.removePropertyChangeListener(this);
 		}
+		for (SpeciesContext sc : oldValue.getModel().getSpeciesContexts()) {
+			sc.removePropertyChangeListener(this);
+		}
 		for (ReactionStep reactionStep : oldValue.getModel().getReactionSteps()){
 			reactionStep.removePropertyChangeListener(this);
 			reactionStep.getKinetics().removePropertyChangeListener(this);
@@ -328,10 +448,15 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	}
 	BioModel newValue = (BioModel)evt.getNewValue();
 	if (newValue != null){
+		newValue.removePropertyChangeListener(this);
+		newValue.getModel().removePropertyChangeListener(this);
 		newValue.addPropertyChangeListener(this);
 		newValue.getModel().addPropertyChangeListener(this);
 		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
 			modelParameter.addPropertyChangeListener(this);
+		}
+		for (SpeciesContext sc : newValue.getModel().getSpeciesContexts()) {
+			sc.addPropertyChangeListener(this);
 		}
 		for (ReactionStep reactionStep : newValue.getModel().getReactionSteps()){
 			reactionStep.addPropertyChangeListener(this);

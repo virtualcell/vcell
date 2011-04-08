@@ -88,18 +88,30 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 
 	public boolean isCellEditable(int row, int column) {
-		if (row < getDataSize()) {
-			//return column != COLUMN_STRUCTURE;
-			return true;
-		}
 		return column == COLUMN_NAME;
 	}
 
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
-		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
-			updateStructureComboBox();
+		if (evt.getSource() == bioModel.getModel()) {
+			if (evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+				//updateStructureComboBox();
+			} else if (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)) {
+				SpeciesContext[] oldValue = (SpeciesContext[]) evt.getOldValue();
+				if (oldValue != null) {
+					for (SpeciesContext sc : oldValue) {
+						sc.removePropertyChangeListener(this);
+					}
+				}
+				SpeciesContext[] newValue = (SpeciesContext[]) evt.getNewValue();
+				if (newValue != null) {
+					for (SpeciesContext sc : newValue) {
+						sc.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
+			}
 		} else if (evt.getSource() instanceof SpeciesContext) {
 			SpeciesContext speciesContext = (SpeciesContext) evt.getSource();
 			int changeRow = getRowIndex(speciesContext);
@@ -219,8 +231,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {		
 		super.bioModelChange(evt);
-		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
-		updateStructureComboBox();
+//		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
+//		updateStructureComboBox();
 		
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
@@ -234,5 +246,13 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				sc.addPropertyChangeListener(this);
 			}
 		}
+	}
+	
+	@Override
+	public int getRowCount() {
+		if (bioModel == null || bioModel.getModel().getNumStructures() == 1) {
+			return super.getRowCount();
+		}
+		return getDataSize();
 	}
 }

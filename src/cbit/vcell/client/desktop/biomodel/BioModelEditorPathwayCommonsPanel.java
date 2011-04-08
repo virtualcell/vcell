@@ -356,7 +356,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	
 	private void initialize() {
 		searchTextField = new JTextField(10);
-		searchTextField.setText("egfr");
 		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);

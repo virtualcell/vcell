@@ -115,6 +115,7 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 					simulationContext.addPropertyChangeListener(this);
 				}
 			}
+			refreshData();
 		}
 		if (evt.getSource() instanceof SimulationContext) {
 			int changeRow = getRowIndex((SimulationContext) evt.getSource());
