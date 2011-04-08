@@ -232,11 +232,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		return selectedBioModelEntityObject;
 	}
 	private void refreshButtons() {
+		int selectedIndex = tabbedPane.getSelectedIndex();		
+		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
+			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
+			|| (selectedIndex == ModelPanelTabID.reaction_table.ordinal() || selectedIndex == ModelPanelTabID.species_table.ordinal()) 
+						&& (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
+			newButton.setVisible(false);
+		} else {
+			newButton.setVisible(true);
+		}
+		
 		deleteButton.setEnabled(false);
 		pathwayButton.setEnabled(false);
 		getShowPathwayMenuItem().setEnabled(false);
 		Object[] selectedObjects = null;
-		int selectedIndex = tabbedPane.getSelectedIndex();
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 			selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
 		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
@@ -293,12 +302,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
-		}
-		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() ||
-				selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			newButton.setVisible(false);
-		} else {
-			newButton.setVisible(true);
 		}
 		refreshButtons();
 	}

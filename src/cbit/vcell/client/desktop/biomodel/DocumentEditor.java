@@ -36,6 +36,7 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -50,6 +51,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -432,7 +434,9 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			}
 			ActiveView activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
 			selectionManager.setActiveView(activeView);
-			if (selectedObject instanceof SimulationContext) { // selected object is Simulation Context
+			if (selectedObject instanceof SimulationContext 
+					|| selectedObject instanceof BioModel
+					|| selectedObject instanceof MathModel) { 
 				selectionManager.setSelectedObjects(new Object[]{selectedObject});
 			}
 		}

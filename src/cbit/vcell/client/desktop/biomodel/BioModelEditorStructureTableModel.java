@@ -2,12 +2,13 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
@@ -57,14 +58,16 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 		return Object.class;
 	}
 
-	protected ArrayList<Structure> computeData() {
-		ArrayList<Structure> structureList = new ArrayList<Structure>();
+	protected List<Structure> computeData() {
+		List<Structure> structureList = null;
 		if (getModel() != null){
-			for (Structure s : getModel().getStructures()){
-				if (searchText == null || searchText.length() == 0) {
-					structureList.add(s);
-				} else {
-					String lowerCaseSearchText = searchText.toLowerCase();	
+			Structure[] structures = getModel().getStructures();
+			if (searchText == null || searchText.length() == 0) {
+				structureList = Arrays.asList(structures);
+			} else {
+				structureList = new ArrayList<Structure>();
+				String lowerCaseSearchText = searchText.toLowerCase();	
+				for (Structure s : structures){
 					if (s.getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getTypeName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getParentStructure() != null && s.getParentStructure().getName().toLowerCase().contains(lowerCaseSearchText)
@@ -72,7 +75,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 							|| (s instanceof Membrane && (((Membrane)s).getInsideFeature().getName().toLowerCase().contains(lowerCaseSearchText)
 									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText)))) {
 						structureList.add(s);
-					}
+					}					
 				}
 			}
 		}
@@ -123,25 +126,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	@Override
 	public boolean isCellEditable(int row, int column) {
-		if (column == COLUMN_NAME) {
-			return true;
-		}
-		if (row < getDataSize()) {
-			if (column == COLUMN_TYPE || column == COLUMN_SIZE_NAME || column == COLUMN_VOLTAGE_NAME) {
-				return false;
-			}
-			if (bioModel != null && bioModel.getModel().getNumStructures() < 2) {
-				return false;
-			}
-			if (column == COLUMN_INSIDE_COMPARTMENT) {	
-				if (row >= 0 && row < getDataSize()) {
-					Structure s = getValueAt(row);
-					return s instanceof Membrane;
-				}
-			}
-			return true;
-		}
-		return false;
+		return column == COLUMN_NAME;
 	}
 
 	@Override
@@ -154,14 +139,14 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					s.removePropertyChangeListener(this);
 				}
 			}
-			Structure[] newValue = (Structure[]) evt.getOldValue();
+			Structure[] newValue = (Structure[]) evt.getNewValue();
 			if (newValue != null) {
 				for (Structure s : newValue) {
 					s.addPropertyChangeListener(this);
 				}
 			}
 			refreshData();
-			updateStructureComboBox();
+//			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
 			Structure structure = (Structure) evt.getSource();
 			int changeRow = getRowIndex(structure);
@@ -321,9 +306,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {		
 		super.bioModelChange(evt);
-		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
-		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
-		updateStructureComboBox();
+//		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
+//		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
+//		updateStructureComboBox();
 		
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {

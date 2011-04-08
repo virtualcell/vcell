@@ -105,15 +105,41 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		}
 	}
 
+	
 	public boolean isCellEditable(int row, int column) {
-		return (column != COLUMN_KINETICS) && (row < getDataSize() || column == COLUMN_EQUATION);
+		if (bioModel == null) {
+			return false;
+		}
+		if (column == COLUMN_NAME && row < getDataSize()) {
+			return true;
+		}
+		if (column == COLUMN_EQUATION) {
+			return bioModel.getModel().getNumStructures() == 1;
+		}
+		return false;
 	}
 	
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
-		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
-			updateStructureComboBox();
+		if (evt.getSource() == bioModel.getModel()) {
+			if (evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+				//updateStructureComboBox();
+			} else if (evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
+				ReactionStep[] oldValue = (ReactionStep[]) evt.getOldValue();
+				if (oldValue != null) {
+					for (ReactionStep rs : oldValue) {
+						rs.removePropertyChangeListener(this);
+					}
+				}
+				ReactionStep[] newValue = (ReactionStep[]) evt.getNewValue();
+				if (newValue != null) {
+					for (ReactionStep rs : newValue) {
+						rs.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
+			}
 		} else if (evt.getSource() instanceof ReactionStep) {
 			ReactionStep reactionStep = (ReactionStep) evt.getSource();
 			int changeRow = getRowIndex(reactionStep);
@@ -259,8 +285,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {		
 		super.bioModelChange(evt);
-		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
-		updateStructureComboBox();
+//		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
+//		updateStructureComboBox();
 		
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
@@ -274,5 +300,13 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				rs.addPropertyChangeListener(this);
 			}
 		}
+	}
+
+	@Override
+	public int getRowCount() {
+		if (bioModel == null || bioModel.getModel().getNumStructures() == 1) {
+			return super.getRowCount();
+		}
+		return getDataSize();
 	}
 }
