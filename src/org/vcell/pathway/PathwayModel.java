@@ -17,6 +17,7 @@ import cbit.vcell.biomodel.meta.Identifiable;
 
 public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
+	private HashSet<String> diagramObjectsID = new HashSet<String>();
 	protected transient ArrayList<PathwayListener> aPathwayListeners = new ArrayList<PathwayListener>();
 
 	protected Map<BioPaxObject, HashSet<BioPaxObject>> parentMap = 
@@ -29,6 +30,30 @@ public class PathwayModel {
 //		return Collections.unmodifiableSet(biopaxObjects);
 //	}
 
+	public Set<String> getDiagramObjects(){
+		return diagramObjectsID;
+	}
+
+	public void populateDiagramObjects() {
+		diagramObjectsID.clear();
+		for (BioPaxObject bpObject : biopaxObjects){
+			diagramObjectsID.add(bpObject.getID());
+		}
+	}
+
+	public void filterDiagramObjects() {
+		if(diagramObjectsID.size() == 0) {
+			return;
+		}
+		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(diagramObjectsID.contains(bpObject.getID())) {
+				newBiopaxObjects.add(bpObject);
+			}
+		}
+		biopaxObjects = newBiopaxObjects;
+	}
+	
 	public String show(boolean bIncludeChildren) {
 		StringBuffer stringBuffer = new StringBuffer();
 		for (BioPaxObject bpObject : biopaxObjects){
@@ -70,6 +95,7 @@ public class PathwayModel {
 	}
 
 	public void merge(PathwayModel pathwayModel) {
+		diagramObjectsID.addAll(pathwayModel.diagramObjectsID);
 		biopaxObjects.addAll(pathwayModel.biopaxObjects);
 		firePathwayChanged(new PathwayEvent(this, PathwayEvent.CHANGED));
 	}
@@ -342,4 +368,6 @@ public class PathwayModel {
 		biopaxObjects.removeAll(bioPaxObjects);
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
+
+
 }

@@ -94,8 +94,8 @@ import static org.vcell.pathway.PathwayXMLHelper.*;
 public class PathwayReaderBiopax3 {
 	
 	private PathwayModel pathwayModel = new PathwayModel();
-	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
-	private Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
+	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
 
 	public final Namespace getNamespaceBp() {
 		return bp;
@@ -253,6 +253,12 @@ public class PathwayReaderBiopax3 {
 					pathwayModel.add(addObjectScore(childElement));
 				}else if (childElement.getName().equals("SequenceLocation")){
 					pathwayModel.add(addObjectSequenceLocation(childElement));
+					
+				}else if (childElement.getName().equals("DiagramObjectsID")){
+					String id = childElement.getTextTrim();
+					if(id != null && !id.equals("")) {
+						pathwayModel.getDiagramObjects().add(id);
+					}
 				}else{
 					showUnexpected(childElement);
 				}
