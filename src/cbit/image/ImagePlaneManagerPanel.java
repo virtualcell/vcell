@@ -1286,6 +1286,7 @@ public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
 	SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
+	getImagePaneScroller1().repaint();
 }
 /**
  * Insert the method's description here.
