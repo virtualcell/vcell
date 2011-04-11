@@ -75,6 +75,8 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
 import org.vcell.sybil.rdf.NameSpace;
+
+import cbit.vcell.xml.XMLTags;
 import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayProducerBiopax3 {
@@ -105,6 +107,16 @@ public class PathwayProducerBiopax3 {
 		biopaxElement = rootElement;
 		biopaxElement.addNamespaceDeclaration(bp);
 		biopaxElement.addNamespaceDeclaration(rdf);
+		
+		if(pathwayModel.getDiagramObjects().size() > 0) {
+			for(String diagramObjectID : pathwayModel.getDiagramObjects()) {
+				if(diagramObjectID != null) {
+					Element e = new Element("DiagramObjectsID");
+					e.setText(diagramObjectID);
+					biopaxElement.addContent(e);
+				}
+			}
+		}
 
 		while (objectsToPrint.size()>0){
 			BioPaxObject bpObject = objectsToPrint.iterator().next();

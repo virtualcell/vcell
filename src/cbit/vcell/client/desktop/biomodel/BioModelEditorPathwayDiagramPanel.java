@@ -586,6 +586,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 				PathwayModel pathwayModel = bioModel.getPathwayModel();			
 				sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)
 						+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");
+				pathwayModel.populateDiagramObjects();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				DialogUtils.showErrorDialog(this, ex.getMessage());

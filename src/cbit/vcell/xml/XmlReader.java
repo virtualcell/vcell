@@ -411,6 +411,8 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
 			PathwayModel pathwayModel = pathwayReader.parse(rdfElement);
 			pathwayModel.reconcileReferences();		// ??? is this needed ???
+			// we keep as lvl 1 only the objects which we want to show in the diagram
+			pathwayModel.filterDiagramObjects();
 			biomodel.getPathwayModel().merge(pathwayModel);
 		} else {
 			throw new XmlParseException("expecting RDF element as child of pathwayModel within VCML document");
