@@ -104,7 +104,7 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 
 	protected void tableSelectionChanged() {
 		int[] rows = table.getSelectedRows();
-		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
+		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || tableModel.getValueAt(rows[0]) != null));
 		setSelectedObjectsFromTable(table, tableModel);
 	}
 

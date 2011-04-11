@@ -36,4 +36,26 @@ public int getSortedColumnIndex() {
 public boolean isSortedColumnAscending() {
 	return fieldSortedColumnAscending;
 }
+
+
+@Override
+public int hashCode() {
+	return new Integer(fieldSortedColumnIndex).hashCode() + new Boolean(fieldSortedColumnAscending).hashCode();
+}
+
+
+@Override
+public boolean equals(Object obj) {
+	if (!(obj instanceof SortPreference)) {
+		return false;
+	}
+	SortPreference sortPreference = (SortPreference) obj;
+	if (fieldSortedColumnIndex != sortPreference.fieldSortedColumnIndex) {
+		return false;
+	}
+	if (fieldSortedColumnAscending != sortPreference.fieldSortedColumnAscending) {
+		return false;
+	}
+	return true;
+}
 }

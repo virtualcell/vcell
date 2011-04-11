@@ -68,11 +68,6 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-@Override
-public int getRowCount() {
-	return getDataSize();
-}
-
 protected List<DataSymbol> computeData() {
 	if (simulationContext == null){
 		return null;

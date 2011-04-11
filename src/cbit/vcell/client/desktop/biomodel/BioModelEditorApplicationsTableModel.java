@@ -131,6 +131,9 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 		}
 		try{
 			SimulationContext simulationContext = getValueAt(row);
+			if (simulationContext == null) {
+				return;
+			}
 			String inputValue = (String)value;
 			switch (column) {
 			case COLUMN_NAME: {
@@ -143,9 +146,6 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 				simulationContext.setDescription(inputValue);
 				break;
 			}
-			}
-			if (row == getDataSize()) {
-				bioModel.addSimulationContext(simulationContext);
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
@@ -164,10 +164,7 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	}
 	
 	public String checkInputValue(String inputValue, int row, int column) {
-		SimulationContext simulationContext = null;
-		if (row >= 0 && row < getDataSize()) {
-			simulationContext = getValueAt(row);
-		}
+		SimulationContext simulationContext = getValueAt(row);
 		switch (column) {
 		case COLUMN_NAME:
 			if (simulationContext != null && simulationContext.getName().equals(inputValue)) {
@@ -191,11 +188,6 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		return null;
-	}
-
-	@Override
-	public int getRowCount() {
-		return getDataSize();
 	}
 
 	@Override

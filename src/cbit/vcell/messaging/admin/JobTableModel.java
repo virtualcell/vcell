@@ -1,18 +1,18 @@
 package cbit.vcell.messaging.admin;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
 import org.vcell.util.ComparableObject;
 import org.vcell.util.gui.sorttable.ColumnComparator;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 1:38:32 PM)
  * @author: Fei Gao
  */
-public class JobTableModel extends DefaultSortTableModel<ComparableObject> {
+public class JobTableModel extends VCellSortTableModel<ComparableObject> {
 	private final static int columnIndex_UserID = 0;
 	private final static int columnIndex_SimID = 1;
 	private final static int columnIndex_JobIndex = 2;

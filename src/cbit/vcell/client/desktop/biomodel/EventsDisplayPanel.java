@@ -85,8 +85,11 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		int[] rows = table.getSelectedRows();
 		ArrayList<BioEvent> deleteList = new ArrayList<BioEvent>();
 		for (int r : rows) {
-			if (r < tableModel.getDataSize()) {
-				deleteList.add(tableModel.getValueAt(r));
+			if (r < tableModel.getRowCount()) {
+				BioEvent bioEvent = tableModel.getValueAt(r);
+				if (bioEvent != null) {
+					deleteList.add(bioEvent);
+				}
 			}
 		}
 		try {

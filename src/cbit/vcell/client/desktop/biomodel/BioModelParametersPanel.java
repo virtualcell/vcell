@@ -337,7 +337,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			return;
 		}
 		for (int r : rows) {
-			if (r < parametersFunctionsTableModel.getDataSize()) {
+			if (r < parametersFunctionsTableModel.getRowCount()) {
 				Parameter parameter = parametersFunctionsTableModel.getValueAt(r);
 				if (parameter instanceof ModelParameter) {
 					deleteButton.setEnabled(true);
@@ -362,7 +362,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			String deleteListText = "";
 			ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
 			for (int r : rows) {
-				if (r < parametersFunctionsTableModel.getDataSize()) {
+				if (r < parametersFunctionsTableModel.getRowCount()) {
 					Parameter parameter = parametersFunctionsTableModel.getValueAt(r);
 					if (parameter instanceof ModelParameter) {
 						deleteList.add((ModelParameter)parameter);

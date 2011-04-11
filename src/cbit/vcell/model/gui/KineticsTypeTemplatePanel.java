@@ -460,7 +460,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	} else if (selectedObjects[0] instanceof KineticsParameter) {
 		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
 		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
-		for (int i = 0; i < getParameterTableModel().getDataSize(); i ++) {
+		for (int i = 0; i < getParameterTableModel().getRowCount(); i ++) {
 			if (kineticsParameter == getParameterTableModel().getValueAt(i)) {
 				getScrollPaneTable().setRowSelectionInterval(i, i);
 				break;

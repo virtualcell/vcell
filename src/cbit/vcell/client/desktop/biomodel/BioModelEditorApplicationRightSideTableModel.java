@@ -41,11 +41,7 @@ public abstract class BioModelEditorApplicationRightSideTableModel<T> extends VC
 		addPropertyChangeListener(this);
 	}
 	
-	/**
-	 * getRowCount method comment.
-	 */
-	@Override
-	public int getRowCount() {
+	protected int getRowCountWithAddNew() {
 		return super.getRowCount() + (searchText == null || searchText.length() == 0 ? 1 : 0);
 	}
 	

@@ -122,10 +122,4 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		return null;
 	}
-
-	@Override
-	public int getRowCount() {
-		return getDataSize();
-	}
-
 }

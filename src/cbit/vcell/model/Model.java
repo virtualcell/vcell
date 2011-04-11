@@ -1605,21 +1605,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	
-	if ((evt.getSource() == this) && evt.getPropertyName().equals(PROPERTY_NAME_MODEL_PARAMETERS)) {
-		ModelParameter oldValue[] = (ModelParameter[])evt.getOldValue();
-		if (oldValue!=null){
-			for (int i = 0; i < oldValue.length; i++){
-				oldValue[i].removePropertyChangeListener(this);
-			}
-		}
-		ModelParameter newValue[] = (ModelParameter[])evt.getNewValue();
-		if (newValue!=null){
-			for (int i = 0; i < newValue.length; i++){
-				newValue[i].addPropertyChangeListener(this);
-			}
-		}
-	}
-	
 	if (evt.getSource() instanceof ModelParameter && evt.getPropertyName().equals("name")){
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
@@ -2074,11 +2059,25 @@ public void setDiagrams(int index, Diagram diagrams) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getModelParameters
  */
-public void setModelParameters(Model.ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
-	Model.ModelParameter[] oldValue = fieldModelParameters;
+public void setModelParameters(ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
+	ModelParameter[] oldValue = fieldModelParameters;
 	fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
 	fieldModelParameters = modelParameters;
 	firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
+	
+	ModelParameter newValue[] = modelParameters;
+	if (oldValue != null) {
+		for (int i=0;i<oldValue.length;i++){	
+			oldValue[i].removePropertyChangeListener(this);
+			oldValue[i].removeVetoableChangeListener(this);
+		}
+	}
+	if (newValue != null) {
+		for (int i=0;i<newValue.length;i++){
+			newValue[i].addPropertyChangeListener(this);
+			newValue[i].addVetoableChangeListener(this);
+		}
+	}
 }
 
 
@@ -2443,7 +2442,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
 			if (getModelParameter(newName)!=null){
-				throw new PropertyVetoException("Model Parameter with name '"+newName+"' already exists",e);
+				throw new PropertyVetoException("Model Parameter with name '"+newName+"' already exists.",e);
 			}
 			validateNamingConflicts("Model Parameter", ModelParameter.class, newName, e);
 		}
@@ -2778,13 +2777,13 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	// validate lexicon
 	//
 	if (newSymbolName==null){
-		throw new PropertyVetoException(symbolDescription+" name is null",e);
+		throw new PropertyVetoException(symbolDescription+" name is null.",e);
 	}
 	if (newSymbolName.length()<1){
-		throw new PropertyVetoException(symbolDescription+" name is empty (zero length)",e);
+		throw new PropertyVetoException(symbolDescription+" name is empty (zero length).",e);
 	}
 	if (!newSymbolName.equals(TokenMangler.fixTokenStrict(newSymbolName))){
-		throw new PropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'",e);
+		throw new PropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'.",e);
 	}
 	
 	//
@@ -2793,7 +2792,7 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	if (!newSymbolClass.equals(ReactionStep.class)){
 		for (int j = 0; j < fieldReactionSteps.length; j++){
 			if (fieldReactionSteps[j].getName().equals(newSymbolName)){
-				throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'",e);
+				throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
 			}
 		}
 	}

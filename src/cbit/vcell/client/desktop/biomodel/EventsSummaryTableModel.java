@@ -73,8 +73,8 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 
 	public Object getValueAt(int row, int column) {
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				BioEvent event = getValueAt(row);
+			BioEvent event = getValueAt(row);
+			if (event != null) {
 				switch (column) {
 					case COLUMN_EVENT_NAME: {
 						return event.getName();
@@ -152,11 +152,11 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
 				return;
 			}
-			BioEvent bioEvent = null;
-			if (row >= 0 && row < getDataSize()) {
-				bioEvent = getValueAt(row);
-			} else {
+			BioEvent bioEvent = getValueAt(row);
+			if (bioEvent == null) {
 				bioEvent = simulationContext.createBioEvent();
+			} else {
+				bioEvent = getValueAt(row);
 			}
 			switch (column) {
 				case COLUMN_EVENT_NAME: {
@@ -179,10 +179,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {
-		BioEvent bioEvent = null;
-		if (row >= 0 && row < getDataSize()) {
-			bioEvent = getValueAt(row);
-		}
+		BioEvent bioEvent = getValueAt(row);
 		switch (column) {
 		case COLUMN_EVENT_NAME: {
 			if (bioEvent == null || !bioEvent.getName().equals(inputValue)) {
@@ -208,5 +205,10 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		return null;
+	}
+	
+	@Override
+	public int getRowCount() {
+		return getRowCountWithAddNew();
 	}
 }

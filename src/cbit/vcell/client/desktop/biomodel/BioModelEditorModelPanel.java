@@ -42,11 +42,9 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableModel;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.relationship.RelationshipObject;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -54,7 +52,6 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.VCellIcons;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
@@ -256,9 +253,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				int[] rows = currentSelectedTable.getSelectedRows();
 				ArrayList<Object> objectList = new ArrayList<Object>();
 				for (int r = 0; r < rows.length; r ++) {
-					if (rows[r] < currentSelectedTableModel.getDataSize()) {
-						objectList.add(currentSelectedTableModel.getValueAt(rows[r]));
-					}
+					Object object = currentSelectedTableModel.getValueAt(rows[r]);
+					if (object != null) {
+						objectList.add(object);;
+					}					
 				}
 				selectedObjects = objectList.toArray(new Object[0]);
 			}
@@ -465,7 +463,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				BioModelEntityObject bioModelEntityObject = null;
-				if (table.getModel() instanceof DefaultSortTableModel<?> && row < ((DefaultSortTableModel<?>)table.getModel()).getDataSize()) {
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					if (table.getModel() == reactionTableModel) {
 						bioModelEntityObject = reactionTableModel.getValueAt(row);
 					} else if (table.getModel() == speciesTableModel){
@@ -544,7 +542,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			newObject = reactionStep;
 		}
 		if (newObject != null) {
-			for (int i = 0; i < currentSelectedTableModel.getDataSize(); i ++) {
+			for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
 				if (currentSelectedTableModel.getValueAt(i) == newObject) {
 					currentSelectedTable.setRowSelectionInterval(i, i);
 					break;
@@ -568,14 +566,16 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				if (currentSelectedTable == speciesTable) {
 					for (int r : rows) {
-						if (r < speciesTableModel.getDataSize()) {
+						if (r < speciesTableModel.getRowCount()) {
 							SpeciesContext speciesContext = speciesTableModel.getValueAt(r);
-							deleteList.add(speciesContext);
+							if (speciesContext != null) {
+								deleteList.add(speciesContext);
+							}
 						}
 					}
 				} else if (currentSelectedTable == structuresTable) {
 					for (int r : rows) {
-						if (r < structureTableModel.getDataSize()) {
+						if (r < structureTableModel.getRowCount()) {
 							Structure rowValue = structureTableModel.getValueAt(r);
 							if (rowValue instanceof Feature) {
 								deleteList.add((Feature) rowValue);
@@ -584,9 +584,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 				} else if (currentSelectedTable == reactionsTable) {
 					for (int r : rows) {
-						if (r < reactionTableModel.getDataSize()) {
+						if (r < reactionTableModel.getRowCount()) {
 							ReactionStep reaction = reactionTableModel.getValueAt(r);
-							deleteList.add(reaction);
+							if (reaction != null) {
+								deleteList.add(reaction);
+							}
 						}
 					}
 				}
@@ -651,17 +653,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void tableSelectionChanged() {
 		computeCurrentSelectedTable();
 		if (currentSelectedTableModel != null) {
+			setSelectedObjectsFromTable(currentSelectedTable, currentSelectedTableModel);
 			int[] rows = currentSelectedTable.getSelectedRows();
-			if (rows != null) {
-				ArrayList<Object> selectedObjects = new ArrayList<Object>();
-				for (int row : rows) {
-					if (row < currentSelectedTableModel.getDataSize()) {
-						selectedObjects.add(currentSelectedTableModel.getValueAt(row));
-					}
-				}
-				setSelectedObjects(selectedObjects.toArray());
-			}
-			deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));			
+			deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || currentSelectedTableModel.getValueAt(rows[0]) != null));			
 		}
 	}
 	

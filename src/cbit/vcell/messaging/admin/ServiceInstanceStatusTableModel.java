@@ -6,7 +6,8 @@ import java.util.Date;
 import org.vcell.util.ComparableObject;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.gui.sorttable.ColumnComparator;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 
 /**
@@ -15,7 +16,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
  * @author: Fei Gao
  */
 @SuppressWarnings("serial")
-public class ServiceInstanceStatusTableModel extends DefaultSortTableModel<ComparableObject> {
+public class ServiceInstanceStatusTableModel extends VCellSortTableModel<ComparableObject> {
 
 public ServiceInstanceStatusTableModel() {
 	super(new String[]{"Site", "Type", "Ordinal", "Host", "Start Date", "Running"});

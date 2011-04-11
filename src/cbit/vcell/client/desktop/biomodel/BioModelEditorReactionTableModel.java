@@ -78,8 +78,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return null;
 		}
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				ReactionStep reactionStep = getValueAt(row);
+			ReactionStep reactionStep = getValueAt(row);
+			if (reactionStep != null) {
 				switch (column) {
 					case COLUMN_NAME: {
 						return reactionStep.getName();
@@ -110,7 +110,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		if (bioModel == null) {
 			return false;
 		}
-		if (column == COLUMN_NAME && row < getDataSize()) {
+		ReactionStep rs = getValueAt(row);
+		if (column == COLUMN_NAME && rs != null) {
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
@@ -154,8 +155,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return;
 		}
 		try{
-			if (row < getDataSize()) {
-				ReactionStep reactionStep = getValueAt(row);
+			ReactionStep reactionStep = getValueAt(row);
+			if (reactionStep != null) {
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = ((String)value);
@@ -190,7 +191,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
 						return;
 					}
-					ReactionStep reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
+					reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
 					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
 					for (ReactionParticipant rp : rpArray) {
 						SpeciesContext speciesContext = rp.getSpeciesContext();
@@ -235,10 +236,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 	
 	public String checkInputValue(String inputValue, int row, int column) {
-		ReactionStep reactionStep = null;
-		if (row >= 0 && row < getDataSize()) {
-			reactionStep = getValueAt(row);
-		}
+		ReactionStep reactionStep = getValueAt(row);
 		switch (column) {
 		case COLUMN_NAME:
 			if (reactionStep == null || !reactionStep.getName().equals(inputValue)) {
@@ -305,8 +303,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	@Override
 	public int getRowCount() {
 		if (bioModel == null || bioModel.getModel().getNumStructures() == 1) {
-			return super.getRowCount();
+			return getRowCountWithAddNew();
 		}
-		return getDataSize();
+		return super.getRowCount();
 	}
 }

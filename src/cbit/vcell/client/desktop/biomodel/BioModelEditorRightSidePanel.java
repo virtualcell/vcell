@@ -131,14 +131,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 
 	protected void tableSelectionChanged() {
 		int[] rows = table.getSelectedRows();
-		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
-		Object[] selectedObjects = null;
-		if (rows != null) {
-			selectedObjects = new Object[rows.length];
-			for (int i = 0; i < selectedObjects.length; i++) {
-				selectedObjects[i] = tableModel.getValueAt(rows[i]);
-			}		
-		}
-		setSelectedObjects(selectedObjects);
+		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || tableModel.getValueAt(rows[0]) != null));
+		setSelectedObjectsFromTable(table, tableModel);
 	}
 }
