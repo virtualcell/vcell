@@ -191,7 +191,12 @@ try:
         pc.max=2
     pc.maxFlag=1
     pc.min=1
+    pc.minFlag=1
     
+    if (includeVarNumber==0):
+        pc.max = max (pc.max,len(particleTypeList))
+    else:
+        pc.max = max (pc.max,len(particleIncludeList))    
               
     SetPlotOptions(pc)
     
