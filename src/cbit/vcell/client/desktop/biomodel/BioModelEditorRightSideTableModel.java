@@ -56,12 +56,8 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 		addPropertyChangeListener(this);
 	}
 	
-	/**
-	 * getRowCount method comment.
-	 */
-	@Override
-	public int getRowCount() {
-		int rowCount = getDataSize() + (searchText == null || searchText.length() == 0 ? 1 : 0);
+	protected int getRowCountWithAddNew() {
+		int rowCount = super.getRowCount() + (searchText == null || searchText.length() == 0 ? 1 : 0);
 		return rowCount;
 	}
 	

@@ -3,14 +3,15 @@ import java.util.Comparator;
 
 import org.vcell.util.ComparableObject;
 import org.vcell.util.gui.sorttable.ColumnComparator;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 /**
  * Insert the type's description here.
  * Creation date: (2/27/2006 10:21:21 AM)
  * @author: Fei Gao
  */
 @SuppressWarnings("serial")
-public class UserConnectionTableModel extends DefaultSortTableModel<ComparableObject> {
+public class UserConnectionTableModel extends VCellSortTableModel<ComparableObject> {
 	private final static int columnIndex_UserID = 0;
 	//private final static int columnIndex_ElapsedTime = 2;
 	//private final static int columnIndex_ConnectedTime = 1;

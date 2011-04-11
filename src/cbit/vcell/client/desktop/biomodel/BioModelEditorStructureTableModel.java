@@ -10,6 +10,8 @@ import java.util.Set;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
+import com.hp.hpl.jena.sparql.pfunction.library.str;
+
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;
@@ -87,8 +89,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			return null;
 		}
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				Structure structure = getValueAt(row);
+			Structure structure = getValueAt(row);
+			if (structure != null) {
 				switch (column) {
 					case COLUMN_NAME: {
 						return structure.getName();
@@ -161,8 +163,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			return;
 		}
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				Structure structure = getValueAt(row);
+			Structure structure = getValueAt(row);
+			if (structure != null) {
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = (String)value;
@@ -255,10 +257,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {
-		Structure structure = null;
-		if (row >= 0 && row < getDataSize()) {
-			structure = getValueAt(row);
-		}
+		Structure structure = getValueAt(row);
 		switch (column) {
 		case COLUMN_NAME:
 			if (structure == null || !structure.getName().equals(inputValue)) {
@@ -322,5 +321,10 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				s.addPropertyChangeListener(this);
 			}
 		}
+	}
+	
+	@Override
+	public int getRowCount() {
+		return getRowCountWithAddNew();
 	}
 }

@@ -15,9 +15,10 @@ import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.SBBox.RDFType;
 import org.vcell.sybil.models.sbbox.factories.ThingFactory;
 import org.vcell.sybil.models.sbbox.factories.ThingFactory.ThingWithType;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
-public class EntitySelectionTableModel extends DefaultSortTableModel<EntitySelectionTableRow> {
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+
+public class EntitySelectionTableModel extends VCellSortTableModel<EntitySelectionTableRow> {
 
 	private static final long serialVersionUID = 8218151513808885665L;
 

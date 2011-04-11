@@ -551,9 +551,4 @@ public final void setIncludeFunctions(boolean newValue) {
 	refreshData();
 }
 
-@Override
-public int getRowCount() {
-	return getDataSize();
-}
-
 }

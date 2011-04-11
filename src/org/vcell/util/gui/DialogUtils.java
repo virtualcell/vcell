@@ -31,10 +31,10 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
 import edu.stanford.ejalbert.BrowserLauncher;
@@ -484,7 +484,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 					rowDataHiddenIndex[i][hiddenColumnIndex] = i;
 				}
 			}
-			DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(columnNames) {
+			VCellSortTableModel<Object[]> tableModel = new VCellSortTableModel<Object[]>(columnNames) {
 				@Override
 				public boolean isSortable(int col) {
 					if (rowSortComparator != null) {

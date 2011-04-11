@@ -5,11 +5,10 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
-
 import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
@@ -28,7 +27,7 @@ import cbit.vcell.units.VCUnitException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ModelParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class ModelParameterTableModel extends VCellSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 
 	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;

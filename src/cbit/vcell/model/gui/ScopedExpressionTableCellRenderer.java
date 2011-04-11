@@ -21,7 +21,6 @@ import javax.swing.table.TableModel;
 
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
@@ -230,9 +229,9 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 			templateJLabel.setIcon(null);
 			templateJLabel.setText(null);
 			templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			if (tableModel instanceof DefaultSortTableModel) {
-				if (row < ((DefaultSortTableModel<?>) tableModel).getDataSize()) {
-					Object rowObject = ((DefaultSortTableModel<?>) tableModel).getValueAt(row);
+			if (tableModel instanceof VCellSortTableModel) {
+				if (row < ((VCellSortTableModel<?>) tableModel).getRowCount()) {
+					Object rowObject = ((VCellSortTableModel<?>) tableModel).getValueAt(row);
 					if (rowObject instanceof SpeciesContextSpecParameter) {
 						templateJLabel.setText(((SpeciesContextSpecParameter) rowObject).getNullExpressionDescription());
 					}

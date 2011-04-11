@@ -5,9 +5,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
@@ -19,13 +22,17 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.EventObject;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -38,6 +45,7 @@ import javax.swing.table.TableModel;
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 /**
@@ -64,12 +72,15 @@ public class ScrollTable extends JTable {
 	private static final String javaVersion = System.getProperty("java.version");
 	
 	private JPanel contentPanel = new JPanel();
-	private JPanel pageToolBarPanel = null;
+	private JToolBar pageToolBar = null;
+	private JLabel pageLabel = null;
+	private JButton firstPageButton, previousPageButton, nextPageButton, lastPageButton; 
 	private JScrollPane enclosingScrollPane = null;
 	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
 	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
 	private ScrollTableActionManager scrollTableActionManager = null;
+	private VCellSortTableModel<?> vcellSortTableModel = null;	
 	
 	class ScrollTableBooleanEditor extends DefaultCellEditor {
 		static final int CHECKBOX_WIDTH = 20;
@@ -310,6 +321,9 @@ public class ScrollTable extends JTable {
 	@Override
 	public void setModel(TableModel dataModel) {
 		super.setModel(dataModel);
+		if (dataModel instanceof VCellSortTableModel<?>) {
+			vcellSortTableModel = (VCellSortTableModel<?>) dataModel;
+		}
 		
 		// setting up listeners 
 		boolean bHasScopedExpressionColumn = false;
@@ -334,11 +348,73 @@ public class ScrollTable extends JTable {
 	}
 
 	@Override
-	public void tableChanged(TableModelEvent e) {
+	public void tableChanged(TableModelEvent e) {		
 		super.tableChanged(e);
 		if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
 			ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
 		}
+		if (vcellSortTableModel != null) {
+			if (vcellSortTableModel.getNumPages() == 1) {
+				if (getPageToolBar().getParent() != null) {
+					contentPanel.remove(getPageToolBar());
+					contentPanel.repaint();
+				}
+			} else if (vcellSortTableModel.getNumPages() > 1) {
+				if (getPageToolBar().getParent() == null) {
+					contentPanel.add(getPageToolBar(), BorderLayout.SOUTH);
+					contentPanel.repaint();
+				}
+				updatePageToolBar();
+			}
+		}
+	}
+	
+	private ActionListener pageButtonActionListener = new ActionListener() {
+		
+		public void actionPerformed(ActionEvent e) {
+			if (vcellSortTableModel == null) {
+				return;
+			}
+			Object source = e.getSource();
+			if (source == firstPageButton) {
+				vcellSortTableModel.gotoFirstPage();
+			} else if (source == previousPageButton) {
+				vcellSortTableModel.gotoPreviousPage();
+			} else if (source == nextPageButton) {
+				vcellSortTableModel.gotoNextPage();
+			} else if (source == lastPageButton) {
+				vcellSortTableModel.gotoLastPage();
+			}
+			updatePageToolBar();
+		}
+	};
+	
+	private JButton createToolBarButton(Icon icon) {
+		JButton button = new JButton(icon);
+		button.addActionListener(pageButtonActionListener);
+		button.setMargin(new Insets(2, 5, 2, 2));
+		return button;
+	}
+	private JToolBar getPageToolBar() {
+		if (pageToolBar == null) {
+			
+			pageLabel = new JLabel();
+			pageLabel.setBorder(new EmptyBorder(2, 5, 2, 2));
+			firstPageButton = createToolBarButton(VCellIcons.firstPageIcon);
+			previousPageButton = createToolBarButton(VCellIcons.previousPageIcon);
+			nextPageButton = createToolBarButton(VCellIcons.nextPageIcon);
+			lastPageButton = createToolBarButton(VCellIcons.lastPageIcon);
+			
+			pageToolBar = new JToolBar();
+			pageToolBar.setFloatable(false);
+			pageToolBar.add(Box.createHorizontalGlue());
+			pageToolBar.add(firstPageButton);
+			pageToolBar.add(previousPageButton);
+			pageToolBar.add(pageLabel);
+			pageToolBar.add(nextPageButton);
+			pageToolBar.add(lastPageButton);
+		}
+		return pageToolBar;
 	}
 
 	public final int getHoverRow() {
@@ -354,5 +430,13 @@ public class ScrollTable extends JTable {
 			throw new RuntimeException("ScrollTableActionManager ownerTable doesn't match ScrollTable.this.");
 		}
 		this.scrollTableActionManager = scrollTableActionManager;
+	}
+
+	private void updatePageToolBar() {
+		firstPageButton.setEnabled(vcellSortTableModel.hasPreviousPage());
+		previousPageButton.setEnabled(vcellSortTableModel.hasPreviousPage());
+		nextPageButton.setEnabled(vcellSortTableModel.hasNextPage());
+		lastPageButton.setEnabled(vcellSortTableModel.hasNextPage());
+		pageLabel.setText(vcellSortTableModel.getPageDescription());
 	}	
 }

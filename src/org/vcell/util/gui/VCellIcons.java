@@ -21,6 +21,11 @@ public abstract class VCellIcons {
 	
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
+	// table
+	public final static Icon firstPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/first_page.png"));
+	public final static Icon previousPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/previous_page.png"));
+	public final static Icon nextPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/next_page.png"));
+	public final static Icon lastPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/last_page.png"));
 	
 	// pathway
 	public final static Icon pathwaySelectIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/select.gif"));

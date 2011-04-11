@@ -65,8 +65,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			return null;
 		}
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				SpeciesContext speciesContext = getValueAt(row);
+			SpeciesContext speciesContext = getValueAt(row);
+			if (speciesContext != null) {
 				switch (column) {
 					case COLUMN_NAME: {
 						return speciesContext.getName();
@@ -126,8 +126,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			return;
 		}
 		try{
-			if (row >= 0 && row < getDataSize()) {
-				SpeciesContext speciesContext = getValueAt(row);
+			SpeciesContext speciesContext = getValueAt(row);
+			if (speciesContext != null) {
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = ((String)value);
@@ -187,10 +187,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {
-		SpeciesContext speciesContext = null;
-		if (row >= 0 && row < getDataSize()) {
-			speciesContext = getValueAt(row);
-		}
+		SpeciesContext speciesContext = getValueAt(row);
 		String errMsg = null;
 		switch (column) {
 		case COLUMN_NAME:
@@ -251,8 +248,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	@Override
 	public int getRowCount() {
 		if (bioModel == null || bioModel.getModel().getNumStructures() == 1) {
-			return super.getRowCount();
+			return getRowCountWithAddNew();
 		}
-		return getDataSize();
+		return super.getRowCount();
 	}
 }

@@ -39,7 +39,6 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.rmi.event.DataJobEvent;
@@ -50,6 +49,7 @@ import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
@@ -2043,7 +2043,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 //				}
 //			);
 		
-		final DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(colNames){
+		final VCellSortTableModel<Object[]> tableModel = new VCellSortTableModel<Object[]>(colNames){
 			public Class<?> getColumnClass(int columnIndex) {
 				if(columnIndex==TSDATE_OFFSET){
 					return Date.class;

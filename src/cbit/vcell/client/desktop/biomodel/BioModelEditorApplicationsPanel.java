@@ -165,7 +165,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 
 	private void moreActionsButtonPressed() {
 		int[] rows = table.getSelectedRows();
-		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
+		if (rows != null && rows.length == 1) {					
 			getMoreActionsPopupMenu().show(moreActionsButton, 0, addNewButton.getHeight());
 		}
 	}
@@ -181,8 +181,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		}
 		ArrayList<SimulationContext> deleteList = new ArrayList<SimulationContext>();
 		for (int r : rows) {
-			if (r < tableModel.getDataSize()) {
-				deleteList.add(tableModel.getValueAt(r));
+			SimulationContext simContext = tableModel.getValueAt(r);
+			if (simContext != null) {
+				deleteList.add(simContext);
 			}
 		}
 		try {
@@ -202,14 +203,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 
 	@Override
 	protected void tableSelectionChanged() {
-//		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		super.tableSelectionChanged();
-		int[] rows = table.getSelectedRows();
-		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
-			moreActionsButton.setEnabled(true);
-		} else {
-			moreActionsButton.setEnabled(false);
-		}
+		int[] rows = table.getSelectedRows();			
+		moreActionsButton.setEnabled(rows != null && rows.length == 1);
 	}
 
 	private javax.swing.JPopupMenu getMoreActionsPopupMenu() {
@@ -373,7 +369,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	
 	private SimulationContext getSelectedSimulationContext() {
 		int[] rows = table.getSelectedRows();
-		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
+		if (rows != null && rows.length == 1) {					
 			return tableModel.getValueAt(rows[0]);
 		}
 		return null;
