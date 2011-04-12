@@ -30,6 +30,7 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
@@ -169,6 +170,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		predefinedSymbolsTable = new EditorScrollTable();
 		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
 		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
+		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
 
 		tabbedPane = new JTabbedPane();
 		tabbedPane.addChangeListener(eventHandler);
