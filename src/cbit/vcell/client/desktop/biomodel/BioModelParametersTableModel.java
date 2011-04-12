@@ -14,6 +14,7 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -310,6 +311,26 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 				refreshData();
 			}
+		} else if (evt.getSource() instanceof GeometryContext && evt.getPropertyName().equals(GeometryContext.PROPERTY_STRUCTURE_MAPPINGS)) {
+			StructureMapping[] oldValue = (StructureMapping[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (StructureMapping mapping : oldValue) {
+					mapping.removePropertyChangeListener(this);
+					for (Parameter parameter : mapping.getParameters()) {
+						parameter.removePropertyChangeListener(this);
+					}
+				}
+			}
+			StructureMapping[] newValue = (StructureMapping[]) evt.getNewValue();
+			if (newValue != null) {
+				for (StructureMapping mapping : newValue) {
+					mapping.addPropertyChangeListener(this);
+					for (Parameter parameter : mapping.getParameters()) {
+						parameter.addPropertyChangeListener(this);
+					}
+				}
+			}
+			refreshData();
 		}
 	}
 }
@@ -428,6 +449,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			simulationContext.removePropertyChangeListener(this);
 			simulationContext.getGeometryContext().removePropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+				mapping.removePropertyChangeListener(this);
 				for (Parameter parameter : mapping.getParameters()) {
 					parameter.removePropertyChangeListener(this);
 				}
@@ -475,6 +497,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 			simulationContext.addPropertyChangeListener(this);
 			simulationContext.getGeometryContext().addPropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+				mapping.addPropertyChangeListener(this);
 				for (Parameter parameter : mapping.getParameters()) {
 					parameter.addPropertyChangeListener(this);
 				}
