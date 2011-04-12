@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.PredefinedSymbolTableFunctionEntry;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -19,14 +21,15 @@ import cbit.vcell.parser.SymbolTableEntry;
 public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableModel<SymbolTableEntry> {
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_DESCRIPTION = 1;
-	public final static int COLUMN_UNIT = 2;
+	public final static int COLUMN_EXPRESSION = 2;
+	public final static int COLUMN_UNIT = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Description", "Unit"};
+	private static String[] columnNames = new String[] {"Name", "Description", "Expression", "Unit"};
 	
 	public PredefinedSymbolsTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
-		setData(computeData());
+		setData(computeData());		
 	}
 	
 	private String getDescription(SymbolTableEntry symbolTableEntry) {
@@ -36,6 +39,15 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		if (symbolTableEntry instanceof PredefinedSymbolTableFunctionEntry) {
 			return ((PredefinedSymbolTableFunctionEntry) symbolTableEntry).getDescription();
 		}
+		return null;
+	}
+	private String getExpression(SymbolTableEntry symbolTableEntry) {
+		if (symbolTableEntry instanceof ReservedSymbol) {
+			Expression expression = ((ReservedSymbol) symbolTableEntry).getExpression();
+			if (expression != null) {
+				return expression.infix();
+			}
+		} 
 		return null;
 	}
 	private String getName(SymbolTableEntry symbolTableEntry) {
@@ -60,8 +72,10 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 			String lowerCaseSearchText = searchText.toLowerCase();
 			searchList = new ArrayList<SymbolTableEntry>();
 			for (SymbolTableEntry ste: predefinedSymbolList) {					
+				String expression = getExpression(ste);
 				if (getName(ste).toLowerCase().contains(lowerCaseSearchText)
 					|| getDescription(ste).toLowerCase().contains(lowerCaseSearchText)
+					|| expression != null && expression.toLowerCase().contains(lowerCaseSearchText)
 					|| ste.getUnitDefinition() != null && ste.getUnitDefinition().getSymbol().toLowerCase().contains(lowerCaseSearchText)) {					
 					searchList.add(ste);
 				}				
@@ -77,6 +91,8 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 			return getName(ste);
 		case COLUMN_DESCRIPTION:
 			return getDescription(ste);
+		case COLUMN_EXPRESSION:
+			return getExpression(ste);
 		case COLUMN_UNIT:
 			if (ste.getUnitDefinition() != null) {
 				return ste.getUnitDefinition().getSymbol();
@@ -94,13 +110,23 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 				int scale = ascending ? 1 : -1;
 				switch (col){
 				case COLUMN_NAME:
-					return scale * getName(o1).compareTo(getName(o2));
+					return scale * getName(o1).compareToIgnoreCase(getName(o2));
 				case COLUMN_DESCRIPTION:
-					return scale * getDescription(o1).compareTo(getDescription(o2));
+					return scale * getDescription(o1).compareToIgnoreCase(getDescription(o2));
+				case COLUMN_EXPRESSION:
+					String exp1 = getExpression(o1);
+					String exp2 = getExpression(o2);
+					if (exp1 == null) {
+						exp1 = "";
+					}
+					if (exp2 == null) {
+						exp2 = "";
+					}
+					return scale * exp1.compareToIgnoreCase(exp2);
 				case COLUMN_UNIT:
 					String u1 = o1.getUnitDefinition() == null ? "" : o1.getUnitDefinition().getSymbol();
 					String u2 = o2.getUnitDefinition() == null ? "" : o2.getUnitDefinition().getSymbol();
-					return scale * u1.compareTo(u2);
+					return scale * u1.compareToIgnoreCase(u2);
 				}
 				return 0;
 			}
