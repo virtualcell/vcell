@@ -84,6 +84,7 @@ public class CartesianMesh implements Serializable, Matchable {
 		private int[][] ucdMembraneQuads;
 		private Vector<Coordinate> reducedUCDGridNodesV;
 		
+		private static final String UCD_LINE_CELL_TYPE = "line"; //line (line, 1 edges, 2 corners)
 		private static final String UCD_QUAD_CELL_TYPE = "quad"; //quadrilateral (box, 4 edges, 4 corners)
 		private static final String UCD_HEX_CELL_TYPE = "hex"; // hexahedron (cube, 12 edges, 6 faces, 8 corners)
 
@@ -180,16 +181,19 @@ public class CartesianMesh implements Serializable, Matchable {
 					for (int x = 0; x < (getNumVolumeNodesX()-1); x++) {
 						int hexCornerX = hexCornerY+x;
 						volCellsSB.append(
-								(bVTK?"8":volCellID+" "+getVolumeRegionIndex(getVolumeIndex(x, y, z))+" "+UCD_HEX_CELL_TYPE)+" "+
+								(bVTK?(getNumVolumeNodesZ() == 1?"4":"8"):volCellID+" "+getVolumeRegionIndex(getVolumeIndex(x, y, z))+" "+(getNumVolumeNodesZ() == 1?UCD_QUAD_CELL_TYPE:UCD_HEX_CELL_TYPE))+" "+
 								(hexCornerX)+" "+
 								(hexCornerX+1)+" "+
 								(hexCornerX+1+getNumVolumeNodesX())+" "+
-								(hexCornerX+getNumVolumeNodesX())+" "+
+								(hexCornerX+getNumVolumeNodesX()));
+						if(getNumVolumeNodesZ() > 1){
+							volCellsSB.append(" "+
 								(hexCornerX+getNumVolumeNodesXY())+" "+
 								(hexCornerX+1+getNumVolumeNodesXY())+" "+
 								(hexCornerX+1+getNumVolumeNodesX()+getNumVolumeNodesXY())+" "+
-								(hexCornerX+getNumVolumeNodesX()+getNumVolumeNodesXY())+
-								"\n");
+								(hexCornerX+getNumVolumeNodesX()+getNumVolumeNodesXY()));
+						}
+						volCellsSB.append("\n");
 						volCellID++;
 					}
 				}
@@ -201,8 +205,12 @@ public class CartesianMesh implements Serializable, Matchable {
 			int MembCellID = 0;
 			for (int i = 0; i < ucdMembraneQuads.length; i++) {
 				membrCellsString.append(
-						(bVTK?"4":(MembCellID+cellIDStart)+" "+(getMembraneRegionIndex(i)+1)+" "+UCD_QUAD_CELL_TYPE)+" "+
-					ucdMembraneQuads[i][0]+" "+ucdMembraneQuads[i][1]+" "+ucdMembraneQuads[i][2]+" "+ucdMembraneQuads[i][3]+"\n");
+						(bVTK?(getNumVolumeNodesZ() == 1?"2":"4"):(MembCellID+cellIDStart)+" "+(getMembraneRegionIndex(i)+1)+" "+(getNumVolumeNodesZ() == 1?UCD_LINE_CELL_TYPE:UCD_QUAD_CELL_TYPE))+" "+
+					ucdMembraneQuads[i][0]+" "+ucdMembraneQuads[i][1]);
+				if(getNumVolumeNodesZ() > 1){
+					membrCellsString.append(" "+ucdMembraneQuads[i][2]+" "+ucdMembraneQuads[i][3]);
+				}
+				membrCellsString.append("\n");
 				MembCellID++;
 			}
 			return membrCellsString.toString();
@@ -336,7 +344,7 @@ public class CartesianMesh implements Serializable, Matchable {
 			CoordinateIndex coordIndex = new CoordinateIndex(0,0,0);
 			for (int z = 0; z < getSizeZ(); z++) {
 				coordIndex.z = z;
-				boolean bZEnd = z+1 == getSizeZ();
+				boolean bZEnd = (z+1 == getSizeZ()) && (getSizeZ() > 1);
 				for (int y = 0; y < getSizeY(); y++) {
 					coordIndex.y = y;
 					boolean bYEnd = y+1 == getSizeY();
@@ -384,6 +392,7 @@ public class CartesianMesh implements Serializable, Matchable {
 			return ucdMeshNodes;
 		}
 		private int[][] calcUCDMembraneQuads(){
+			int ZOFFSET = (getSizeZ()==1?0:1);
 			int[][] membrQuadNodes = new int[getMembraneElements().length][4];
 			final int xNodeCount = calcNodeCount(Coordinate.X_AXIS);
 			final int yNodeCount = calcNodeCount(Coordinate.Y_AXIS);
@@ -395,15 +404,15 @@ public class CartesianMesh implements Serializable, Matchable {
 					int xBase = Math.max(coordIndex0.x, coordIndex1.x);
 					membrQuadNodes[i][0] = xBase +(coordIndex0.y*xNodeCount) +(coordIndex0.z*xyNodeCount);
 					membrQuadNodes[i][1] = xBase +((coordIndex0.y+1)*xNodeCount) +(coordIndex0.z*xyNodeCount);
-					membrQuadNodes[i][2] = xBase +((coordIndex0.y+1)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-					membrQuadNodes[i][3] = xBase +((coordIndex0.y)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+					membrQuadNodes[i][2] = xBase +((coordIndex0.y+1)*xNodeCount) +((coordIndex0.z+ZOFFSET)*xyNodeCount);
+					membrQuadNodes[i][3] = xBase +((coordIndex0.y)*xNodeCount) +((coordIndex0.z+ZOFFSET)*xyNodeCount);
 
 				}else if(coordIndex0.x == coordIndex1.x && coordIndex0.z == coordIndex1.z){//perpendicular y-axis
 					int yBase = Math.max(coordIndex0.y, coordIndex1.y);
 					membrQuadNodes[i][0] = coordIndex0.x +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
 					membrQuadNodes[i][1] = coordIndex0.x+1 +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
-					membrQuadNodes[i][2] = coordIndex0.x+1 +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-					membrQuadNodes[i][3] = coordIndex0.x +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+					membrQuadNodes[i][2] = coordIndex0.x+1 +(yBase*xNodeCount) +((coordIndex0.z+ZOFFSET)*xyNodeCount);
+					membrQuadNodes[i][3] = coordIndex0.x +(yBase*xNodeCount) +((coordIndex0.z+ZOFFSET)*xyNodeCount);
 
 				}else if(coordIndex0.x == coordIndex1.x && coordIndex0.y == coordIndex1.y){//perpendicular z-axis
 					int zBase = Math.max(coordIndex0.z, coordIndex1.z);

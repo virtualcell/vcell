@@ -28,6 +28,7 @@ public class RasterExporter implements ExportConstants {
 
 	private static final int VTK_HEXAHEDRON = 12;
 	private static final int VTK_QUAD = 9;
+	private static final int VTK_LINE = 3;
 
 /**
  * Insert the method's description here.
@@ -479,9 +480,10 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 		}
 		StringWriter stringWriter = new StringWriter();
 		writeVTKUnstructuredHeader(ucdInfo,vcdID,stringWriter);
-		stringWriter.write("CELLS "+ucdInfo.getNumVolumeCells()+" "+(ucdInfo.getNumVolumeCells()*9)+"\n");
+		int CELL_INFO_COUNT = 1 + 4 + (ucdInfo.getNumVolumeNodesZ()>1?4:0);
+		stringWriter.write("CELLS "+ucdInfo.getNumVolumeCells()+" "+(ucdInfo.getNumVolumeCells()*CELL_INFO_COUNT)+"\n");
 		stringWriter.write(ucdInfo.getVolumeCellsString(true));
-		writeVTKCellTypes(ucdInfo,ucdInfo.getNumVolumeCells(),VTK_HEXAHEDRON,stringWriter);
+		writeVTKCellTypes(ucdInfo,ucdInfo.getNumVolumeCells(),(ucdInfo.getNumVolumeNodesZ()>1?VTK_HEXAHEDRON:VTK_QUAD),stringWriter);
 		writeVTKCellData(volumeDataV.toArray(new double[0][]), regionIDs,volumeDataNameV.toArray(new String[0]), stringWriter);
 //	AVS_UCD_Exporter.writeUCDVolume(
 //	ucdInfo,
@@ -489,7 +491,6 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 //	volumeDataUnitV.toArray(new String[0]),
 //	volumeDataV.toArray(new double[0][]),
 //	stringWriter);
-	
 	ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"vol_"+j,stringWriter.toString().getBytes());
 	exportOutV.add(exportOut);				
 	}
@@ -500,9 +501,10 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 		}
 		StringWriter stringWriter = new StringWriter();
 		writeVTKUnstructuredHeader(ucdInfoReduced/*ucdInfo*/,vcdID,stringWriter);
-		stringWriter.write("CELLS "+ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()+" "+(ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()*5)+"\n");
+		int MEMBR_INFO_COUNT = 1 + 2 + (ucdInfo.getNumVolumeNodesZ()>1?2:0);
+		stringWriter.write("CELLS "+ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()+" "+(ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()*MEMBR_INFO_COUNT)+"\n");
 		stringWriter.write(ucdInfoReduced/*ucdInfo*/.getMembraneCellsString(0,true));
-		writeVTKCellTypes(ucdInfoReduced/*ucdInfo*/,ucdInfoReduced/*ucdInfo*/.getNumMembraneCells(),VTK_QUAD,stringWriter);
+		writeVTKCellTypes(ucdInfoReduced/*ucdInfo*/,ucdInfoReduced/*ucdInfo*/.getNumMembraneCells(),(ucdInfo.getNumVolumeNodesZ()>1?VTK_QUAD:VTK_LINE),stringWriter);
 		writeVTKCellData(membraneDataV.toArray(new double[0][]), regionIDs,membraneDataNameV.toArray(new String[0]), stringWriter);
 
 //	AVS_UCD_Exporter.writeUCDMembrane(
