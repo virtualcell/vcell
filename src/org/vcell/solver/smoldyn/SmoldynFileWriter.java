@@ -52,10 +52,12 @@ import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -64,6 +66,8 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -181,6 +185,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 		reaction,
 		reaction_cmpt,
 		reaction_surface,
+		//The rate constant for transitions from state1 to state2 of molecules at surface;
+		//The membrane reaction with reactants and products all in volume, use 'rate' instead of using 'reaction' keyword.
+		rate,
 		
 		max_mol,
 		compartment_mol,
@@ -520,37 +527,92 @@ private void writeReactions() throws ExpressionException, MathException {
 				continue;
 			}
 			
-			if(subdomain instanceof CompartmentSubDomain) {
+			if(subdomain instanceof CompartmentSubDomain) 
+			{
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+				writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 			} else if (subdomain instanceof MembraneSubDomain){
-				printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-			}
-			// reactants
-			if (reactants.size() == 0) {
-				printWriter.print(0);
-			} else {
-				// find state for each molecule ... (up) for membrane, (fsoln) for front soluble, (bsoln) for back soluble
-				printWriter.print(getVariableName(reactants.get(0),subdomain));
-				for (int i = 1; i < reactants.size(); i ++) {
-					printWriter.print(" + " + getVariableName(reactants.get(i),subdomain));
+				//if there is mambrane bound product, and there is at least one mambrane reactant
+				if(hasMembraneVariable(products) && hasMembraneVariable(reactants))
+				{
+					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+				}
+				else if(!hasMembraneVariable(products) && !hasMembraneVariable(reactants))
+				{
+					writeFluxCommand(reactants, products, subdomain, macroscopicRateConstant);
 				}
 			}
-			printWriter.print(" -> ");
-			// products
-			if (products.size() == 0) {
-				printWriter.print(0);
-			} else {
-				printWriter.print(getVariableName(products.get(0),subdomain));
-				for (int i = 1; i < products.size(); i ++) {
-					printWriter.print(" + " + getVariableName(products.get(i),subdomain));
-				}
-			}
-						
-			printWriter.println(" " + macroscopicRateConstant);
 		}
 	}	
 	printWriter.println();
 
+}
+
+private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
+{
+	if (reacts.size() == 0) {
+		printWriter.print(0);
+	} else {
+		// find state for each molecule ... (up) for membrane, (fsoln) for front soluble, (bsoln) for back soluble
+		printWriter.print(getVariableName(reacts.get(0),subdomain));
+		for (int i = 1; i < reacts.size(); i ++) {
+			printWriter.print(" + " + getVariableName(reacts.get(i),subdomain));
+		}
+	}
+	printWriter.print(" -> ");
+	// products
+	if (prods.size() == 0) {
+		printWriter.print(0);
+	} else {
+		printWriter.print(getVariableName(prods.get(0),subdomain));
+		for (int i = 1; i < prods.size(); i ++) {
+			printWriter.print(" + " + getVariableName(prods.get(i),subdomain));
+		}
+	}
+				
+	printWriter.println(" " + rateConstant);
+}
+//used to write flux command, or a membrane reaction with a reactant and product from its inner and outer volumn
+//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c", 
+private void writeFluxCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
+{
+	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
+	if (reacts.size() == 1) 
+	{
+		
+		printWriter.print(reacts.get(0).getName() + " ");
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.bsoln + " ");
+		}
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.fsoln + " ");
+		}
+		printWriter.print(rateConstant + " ");
+
+	} else {
+		//TODO: handle multiple reactants
+	}
+	// products
+	if (prods.size() == 1) {
+		printWriter.println(prods.get(0).getName());
+	} else {
+		//TODO: handle multiple products		
+	}
+}
+
+private boolean hasMembraneVariable(List<Variable> variables)
+{
+	for(Variable var : variables)
+	{
+		if(var instanceof MembraneParticleVariable)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 private String getVariableName(Variable var, SubDomain subdomain) throws MathException {
@@ -1462,7 +1524,15 @@ private void writeDiffusions() throws ExpressionBindingException,
 		SubDomain subDomain = subDomainEnumeration.nextElement();
 		List<ParticleProperties> particlePropertiesList = subDomain.getParticleProperties();
 		for (ParticleProperties pp : particlePropertiesList) {
-			String variableName = getVariableName(pp.getVariable(),null);
+			String variableName = null;
+			if(subDomain instanceof MembraneSubDomain)
+			{
+				variableName = getVariableName(pp.getVariable(), subDomain); 
+			}
+			else
+			{
+				variableName = getVariableName(pp.getVariable(), null);
+			}
 			try {
 				double diffConstant = subsituteFlatten(pp.getDiffusion());
 				printWriter.println(SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
