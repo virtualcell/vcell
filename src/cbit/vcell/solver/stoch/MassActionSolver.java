@@ -9,16 +9,9 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.util.xml.VCLogger;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Flux;
-import cbit.vcell.model.Flux.FluxDirection;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Model;
@@ -30,7 +23,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.gui.TransformMassActions;
+import cbit.vcell.model.Flux.FluxDirection;
 import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -38,7 +31,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.stoch.FluxSolver.FluxFunction;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class MassActionSolver {
@@ -127,7 +119,7 @@ public class MassActionSolver {
 				}else if (ste instanceof Parameter){
 					Parameter kp = (Parameter)ste;
 					try {
-						Expression expKP = substituteParameters(kp.getExpression(), true);
+						Expression expKP = kp.getExpression();
 						if (!expKP.flatten().isNumeric() || substituteConst) {
 							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
 							bSubstituted = true;
@@ -153,11 +145,19 @@ public class MassActionSolver {
 		Vector<ReactionParticipant> nonOverlapReacts = new Vector<ReactionParticipant>(); 
 		Vector<ReactionParticipant> nonOverlapProds = new Vector<ReactionParticipant>();
 		ReactionParticipant[] rp = rs.getReactionParticipants();
+		//should use this one to compare functional equavalent since this duplicatedExp has all params substituted.
 		Expression duplicatedExp = substituteParameters(orgExp, false);
 		Expression forwardExp = new Expression(duplicatedExp);
 		Expression reverseExp = new Expression(duplicatedExp);
 		//separate the reactants and products, fluxes, catalysts
 		String rxnName = rs.getName();
+		
+		//reaction with membrane current can not be transformed to mass action
+		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
+		{
+			throw new MathException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+		}
+		
 		for(int i=0; i<rp.length; i++)
 		{
 			if(rp[i] instanceof Reactant) {
@@ -236,10 +236,21 @@ public class MassActionSolver {
 			Expression forwardRate = rs.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
 			Expression reverseRate = rs.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
 			try{
-				Expression testForwardRateConst = rs.substitueKineticParameter(forwardRate, true);
-				Expression testReverseRateConst = rs.substitueKineticParameter(reverseRate, true);
-				testForwardRateConst.evaluateConstant();
-				testReverseRateConst.evaluateConstant();
+				//checking if forward rate constant can be evaluated to a number after all parameters and reactants are substituted 
+				Expression forwardRateCopy = substituteParameters(forwardRate, true);
+				for(int i=0; i<reactants.size(); i++)
+				{
+					forwardRateCopy = forwardRateCopy.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(1)).flatten();
+				}
+				forwardRateCopy.flatten().evaluateConstant();
+				//checking if reverse rate constant can be evaluated to a number after all parameters and products are substituted
+				Expression reverseRateCopy = substituteParameters(reverseRate, true);
+				for(int i=0; i<products.size(); i++)
+				{
+					reverseRateCopy = reverseRateCopy.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(1)).flatten();
+				}
+				reverseRateCopy.flatten().evaluateConstant();
+				//if no exception occurs, the mass action function can be obtained 			
 				maFunc.setForwardRate(forwardRate);
 				maFunc.setReverseRate(reverseRate);
 				maFunc.setReactants(reactants);
@@ -247,7 +258,7 @@ public class MassActionSolver {
 				
 				return maFunc;
 			}
-			catch(Exception ex)
+			catch(ExpressionException ex)
 			{
 				System.out.println("Cannot resolve MassAction directly, need to go through MassAction solver." + ex.getMessage());
 			}
@@ -277,45 +288,114 @@ public class MassActionSolver {
 				nonOverlapProds.add(products.get(i));
 			}
 		}
-		//reaction with membrane current can not be transformed to mass action
-		if(rs.getKinetics().getKineticsDescription().isElectrical())
+		//reaction in which reactants and products are not overlaping
+		if(overlaps.size() == 0)
 		{
-			throw new MathException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+			//get forward rate by substituting reactants to 1 and products to 0.
+			for(int i=0; i<reactants.size(); i++)
+			{
+				forwardExp = forwardExp.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(1)).flatten();
+			}
+			for(int i=0; i<products.size(); i++)
+			{
+				forwardExp = forwardExp.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(0)).flatten();
+			}
+			//get reverse rate by substituting reactants to 0 and products to 1.
+			for(int i=0; i<reactants.size(); i++)
+			{
+				reverseExp = reverseExp.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(0)).flatten();
+			}
+			for(int i=0; i<products.size(); i++)
+			{
+				reverseExp = reverseExp.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(1)).flatten();
+			}
+			//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
+			reverseExp = Expression.mult(reverseExp, new Expression(-1)).flatten();
+			//check if "t" is in forward or reverse rate. Probability can not be a function of time.
+			if(forwardExp.hasSymbol(ReservedSymbol.TIME.getName())||reverseExp.hasSymbol(ReservedSymbol.TIME.getName()) )
+			{
+				throw new MathException("Reaction: "+rxnName+" has symbol \'t\' in reaction rate. Propensity of a stochastic jump process should not be a functon of time.");
+			}
+			//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
+			Expression forwardExpCopy = new Expression(forwardExp);
+			Expression reverseExpCopy = new Expression(reverseExp);
+			try{
+				substituteParameters(forwardExpCopy, true).evaluateConstant();
+				substituteParameters(reverseExpCopy, true).evaluateConstant();
+			}catch(ExpressionException e)
+			{
+				throw new MathException("Reaction: "+rxnName+" has unsolvable symbols in reaction rate. Propensity of a stochastic jump process can not be calculated.");
+			}
+			//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
+			//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
+			Expression constructedExp = reconstructedRate(forwardExp, reverseExp, reactants, products, rs.getNameScope());
+			Expression orgExp_withoutCatalyst = removeCatalystFromExp(duplicatedExp, rs);
+			Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
+			if(ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
+			{
+				maFunc.setForwardRate(forwardExp);
+				maFunc.setReverseRate(reverseExp);
+				maFunc.setReactants(reactants);
+				maFunc.setProducts(products);
+			}
+			else
+			{
+				throw new MathException("Transform failed in reaction: " + rxnName + "." + TransformedReaction.Label_expectedReacForm);
+			}
 		}
 		else
 		{
-			//reaction in which reactants and products are not overlaping
-			if(overlaps.size() == 0)
+			//reaction in which reactans and products are partially  overlaping
+			if(overlaps.size() < Math.max(reactants.size(), products.size()))
 			{
-				//get forward rate by substituting reactants to 1 and products to 0.
-				for(int i=0; i<reactants.size(); i++)
+				//substitute the overlapping reatants/products with "1" to simplify the rate expression
+				for(int i=0; i< overlaps.size(); i++)
 				{
-					forwardExp = forwardExp.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(1)).flatten();
+					forwardExp = forwardExp.getSubstitutedExpression(new Expression(overlaps.elementAt(i).getName()), new Expression(1));
 				}
-				for(int i=0; i<products.size(); i++)
+				Expression simplifiedExp = new Expression(forwardExp);
+				
+				//get forward rate by substituting non-overlap reactants to 1 and non-overlap products to 0.
+				for(int i=0; i<nonOverlapReacts.size(); i++)
 				{
-					forwardExp = forwardExp.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(0)).flatten();
+					forwardExp = forwardExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(1)).flatten();
 				}
+				for(int i=0; i<nonOverlapProds.size(); i++)
+				{
+					forwardExp = forwardExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(0)).flatten();
+				}
+								
 				//get reverse rate by substituting reactants to 0 and products to 1.
-				for(int i=0; i<reactants.size(); i++)
+				reverseExp = new Expression(simplifiedExp);
+				for(int i=0; i<nonOverlapReacts.size(); i++)
 				{
-					reverseExp = reverseExp.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(0)).flatten();
+					reverseExp = reverseExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(0)).flatten();
 				}
-				for(int i=0; i<products.size(); i++)
+				for(int i=0; i<nonOverlapProds.size(); i++)
 				{
-					reverseExp = reverseExp.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(1)).flatten();
+					reverseExp = reverseExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(1)).flatten();
 				}
 				//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
 				reverseExp = Expression.mult(reverseExp, new Expression(-1)).flatten();
 				//check if "t" is in forward or reverse rate. Probability can not be a function of time.
 				if(forwardExp.hasSymbol(ReservedSymbol.TIME.getName())||reverseExp.hasSymbol(ReservedSymbol.TIME.getName()) )
 				{
-					throw new MathException("Reaction: "+rxnName+" has symbol \'t\' in reaction rate. Propensity of a stochastic jump process should not be a functon of time.");
+					throw new MathException("Reaction: "+rxnName+" has symbol \'t\' in reafction rate. Propensity of a stochastic jump process should not be a functon of time.");
+				}
+				//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
+				Expression forwardExpCopy = new Expression(forwardExp);
+				Expression reverseExpCopy = new Expression(reverseExp);
+				try{
+					substituteParameters(forwardExpCopy, true).evaluateConstant();
+					substituteParameters(reverseExpCopy, true).evaluateConstant();
+				}catch(ExpressionException e)
+				{
+					throw new MathException("Reaction: "+rxnName+" has unsolvable symbols in reaction rate. Propensity of a stochastic jump process can not be calculated.");
 				}
 				//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
 				//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
-				Expression constructedExp = reconstructedRate(forwardExp, reverseExp, reactants, products, rs.getNameScope());
-				Expression orgExp_withoutCatalyst = removeCatalystFromExp(orgExp, rs);
+				Expression constructedExp = reconstructedRate(forwardExp, reverseExp,  reactants, products, rs.getNameScope());
+				Expression orgExp_withoutCatalyst = removeCatalystFromExp(duplicatedExp, rs);
 				Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
 				if(ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
 				{
@@ -329,67 +409,10 @@ public class MassActionSolver {
 					throw new MathException("Transform failed in reaction: " + rxnName + "." + TransformedReaction.Label_expectedReacForm);
 				}
 			}
+			//reaction in which reactants and products are totally overlaping, throw exception
 			else
 			{
-				//reaction in which reactans and products are partially  overlaping
-				if(overlaps.size() < Math.max(reactants.size(), products.size()))
-				{
-					//substitute the overlapping reatants/products with "1" to simplify the rate expression
-					for(int i=0; i< overlaps.size(); i++)
-					{
-						forwardExp = forwardExp.getSubstitutedExpression(new Expression(overlaps.elementAt(i).getName()), new Expression(1));
-					}
-					Expression simplifiedExp = new Expression(forwardExp);
-					
-					//get forward rate by substituting non-overlap reactants to 1 and non-overlap products to 0.
-					for(int i=0; i<nonOverlapReacts.size(); i++)
-					{
-						forwardExp = forwardExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(1)).flatten();
-					}
-					for(int i=0; i<nonOverlapProds.size(); i++)
-					{
-						forwardExp = forwardExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(0)).flatten();
-					}
-									
-					//get reverse rate by substituting reactants to 0 and products to 1.
-					reverseExp = new Expression(simplifiedExp);
-					for(int i=0; i<nonOverlapReacts.size(); i++)
-					{
-						reverseExp = reverseExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(0)).flatten();
-					}
-					for(int i=0; i<nonOverlapProds.size(); i++)
-					{
-						reverseExp = reverseExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(1)).flatten();
-					}
-					//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
-					reverseExp = Expression.mult(reverseExp, new Expression(-1)).flatten();
-					//check if "t" is in forward or reverse rate. Probability can not be a function of time.
-					if(forwardExp.hasSymbol(ReservedSymbol.TIME.getName())||reverseExp.hasSymbol(ReservedSymbol.TIME.getName()) )
-					{
-						throw new MathException("Reaction: "+rxnName+" has symbol \'t\' in reafction rate. Propensity of a stochastic jump process should not be a functon of time.");
-					}
-					//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
-					//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
-					Expression constructedExp = reconstructedRate(forwardExp, reverseExp,  reactants, products, rs.getNameScope());
-					Expression orgExp_withoutCatalyst = removeCatalystFromExp(orgExp, rs);
-					Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
-					if(ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
-					{
-						maFunc.setForwardRate(forwardExp);
-						maFunc.setReverseRate(reverseExp);
-						maFunc.setReactants(reactants);
-						maFunc.setProducts(products);
-					}
-					else
-					{
-						throw new MathException("Transform failed in reaction: " + rxnName + "." + TransformedReaction.Label_expectedReacForm);
-					}
-				}
-				//reaction in which reactants and products are totally overlaping, throw exception
-				else
-				{
-					throw new MathException("The reactants and products in a reaction are completely the same, it is hard to figure out whether the kinetic law of reaction " + rxnName + " is equivalent to MassAction or not");
-				}
+				throw new MathException("The reactants and products in a reaction are completely the same, it is hard to figure out whether the kinetic law of reaction " + rxnName + " is equivalent to MassAction or not");
 			}
 		}
 		return maFunc;

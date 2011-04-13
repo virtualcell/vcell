@@ -16,12 +16,13 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
@@ -44,7 +45,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.stoch.FluxSolver;
 import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -715,7 +715,6 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
 					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					rateExp = reactionStep.substitueKineticParameter(rateExp, false);
 					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{
@@ -869,26 +868,28 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
 				{
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					fluxRate = reactionStep.substitueKineticParameter(fluxRate, false);
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(fluxRate, (FluxReaction)reactionStep);
+					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
-					if(fluxFunc.getRateToInside() != null && !fluxFunc.getRateToInside().isZero()) 
+					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 											
-						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
-						Expression rate = fluxFunc.getRateToInside();
+						Expression rate = fluxFunc.getForwardRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						SpeciesContext scOut = fluxFunc.getSpeciesContextOutside();
+						if(fluxFunc.getReactants().size() != 1)
+						{
+							throw new MappingException("Flux " + reactionStep.getName() + " should have only one reactant." );
+						}
+						SpeciesContext scOut = fluxFunc.getReactants().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
-						if(scOut.getStructure() instanceof Membrane) {
-							speciesFactor = Expression.invert(new Expression(scOut.getStructure().getStructureSize().getName()));
-						} else {
+						if(scOut.getStructure() instanceof Feature) {
 							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
 							Expression denomExpr = new Expression(scOut.getStructure().getStructureSize().getName());
 							speciesFactor =  Expression.div(numExpr, denomExpr);
+						} else {
+							speciesFactor = Expression.invert(new Expression(scOut.getStructure().getStructureSize().getName()));
 						}
 						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scOut.getName()));	
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
@@ -911,7 +912,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm.getGeometryClass())));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
+						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
@@ -919,7 +920,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 							jp.addAction(action);
 						}	
 						
-						sc = fluxFunc.getSpeciesContextInside();
+						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(1));
@@ -928,14 +929,19 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 							
 						subDomain.addJumpProcess(jp);
 					}
-					if(fluxFunc.getRateToOutside() != null && !fluxFunc.getRateToOutside().isZero()) 
+					//create jump process for reverse flux if it exists.
+					if(fluxFunc.getReverseRate() != null && !fluxFunc.getReverseRate().isZero()) 
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
 											
-						Expression rate = fluxFunc.getRateToOutside();
+						Expression rate = fluxFunc.getReverseRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						SpeciesContext scIn = fluxFunc.getSpeciesContextInside();
+						if(fluxFunc.getProducts().size() != 1)
+						{
+							throw new MappingException("Flux " + reactionStep.getName() + " should have only one product." );
+						}
+						SpeciesContext scIn = fluxFunc.getProducts().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scIn.getStructure() instanceof Membrane) {
 							speciesFactor = Expression.invert(new Expression(scIn.getStructure().getStructureSize().getName()));
@@ -965,14 +971,14 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm.getGeometryClass())));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
+						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(1));
 							jp.addAction(action);
 						}
 							
-						sc = fluxFunc.getSpeciesContextInside();
+						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(-1));
