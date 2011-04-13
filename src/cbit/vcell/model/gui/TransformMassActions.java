@@ -2,23 +2,14 @@ package cbit.vcell.model.gui;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.MassActionKinetics;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.stoch.FluxSolver;
 import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.solver.stoch.MassActionSolver.MassActionFunction;
 
@@ -95,28 +86,24 @@ public class TransformMassActions {
 		if (origRS instanceof SimpleReaction) {
 			if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction)) 
 			{
-				Expression forwardRate = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
-				Expression reverseRate = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
-				if ((forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName()))
-					 || (reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName())))
-				{
-					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
-					transformedRS.setTransformRemark(TransformedReaction.Label_Failed
-									+ " Reaction: "
-									+ origRS.getName()
-									+ " has symbol \'t\' in rate constant. Propensity of a stochastic jump process should not be a functon of time.");
-				} else {
+				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+				try {
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
+					// set transformed reaction step
 					transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
 					transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
-					MassActionSolver.MassActionFunction maFunc = new MassActionSolver.MassActionFunction(forwardRate, reverseRate); 
 					transformedRS.setMassActionFunction(maFunc);
+				} catch (Exception e) {
+					// Mass Action Solver failed to parse the rate expression
+					transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction());
+					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+					transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
 				}
 			}
 			else if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 			{
 				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 				try {
-					rateExp = substitueKineticPara(rateExp, origRS, false);
 					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
 				
 					// set transformed reaction step
@@ -139,42 +126,12 @@ public class TransformMassActions {
 		} else // flux
 		{
 			if (origRS instanceof FluxReaction) {
-//				if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General))
-//				{
-//					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-//					try {
-//						rateExp = substitueKineticPara(rateExp, origRS, false);
-//						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp, (FluxReaction) origRS);
-////						// change flux to simple Mass Action reaction and save
-////						// it as transformed mass action, use this simple
-////						// reaction to store forward
-////						// and reverse rate so that these can be displayed in
-////						// the table. Flux itself won't be physically changed.
-////						SimpleReaction simpleRxn = new SimpleReaction(origRS.getStructure(), origRS.getName());
-////						// Set the kinetics
-////						MassActionKinetics maKinetics = new MassActionKinetics(simpleRxn);
-////						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(fluxFunc.getRateToInside());
-////						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).setExpression(fluxFunc.getRateToOutside());
-////						simpleRxn.setKinetics(maKinetics);
-////						transformedRS.setTransformedReaction(simpleRxn);
-//						
-//						// Flux won't be phsically changed here, it will be properly
-//						// parsed only in stochastic math mapping.
-//						transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction(fluxFunc.getRateToInside(), fluxFunc.getRateToOutside()));
-//						transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
-//						transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
-//					} catch (Exception e) {
-//						// Flux Solver failed to parse the rate expression
-//						transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction());
-//						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
-//						transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
-//					}
-//				} else // other fluxex which are not described by general density function
+				// fluxes which are described by GeneralPermeability
 				if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) 
 				{
 					try {
 						Expression permeabilityExpr = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
-						permeabilityExpr = substitueKineticPara(permeabilityExpr, origRS, false);
+						permeabilityExpr = MassActionSolver.substituteParameters(permeabilityExpr, false);
 						if (permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
 						{
 							transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
@@ -195,11 +152,11 @@ public class TransformMassActions {
 						transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
 					}
 				}
+				//fluxes which are described by general density function
 				else if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 				{
 					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					try {
-						rateExp = substitueKineticPara(rateExp, origRS, false);
 						MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
 					
 						// set transformed reaction step
@@ -231,30 +188,4 @@ public class TransformMassActions {
 		return isTransformable;
 	}
 
-	private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean substituteConst) throws MappingException, ExpressionException 
-	{
-		Expression result = new Expression(exp);
-		boolean bSubstituted = true;
-		while (bSubstituted) {
-			bSubstituted = false;
-			String symbols[] = result.getSymbols();
-			for (int k = 0; symbols != null && k < symbols.length; k++) {
-				Kinetics.KineticsParameter kp = rs.getKinetics().getKineticsParameter(symbols[k]);
-				if (kp != null) {
-					try {
-						Expression expKP = substitueKineticPara(kp.getExpression(), rs, true);
-						if (!expKP.flatten().isNumeric() || substituteConst) {
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
-							bSubstituted = true;
-						}
-					} catch (ExpressionException e1) {
-						e1.printStackTrace();
-						throw new ExpressionException(e1.getMessage());
-					}
-				}
-			}
-
-		}
-		return result;
-	}
 }

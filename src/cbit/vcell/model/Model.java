@@ -30,9 +30,11 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.math.MathException;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -40,7 +42,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.vcell.solver.stoch.FluxSolver;
 import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
@@ -2957,66 +2958,71 @@ public String isValidForStochApp()
 		}
 		else
 		{
-			if(reacSteps[i] instanceof SimpleReaction)
+			if(reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 			{
-				if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))
-				{
-					Expression forwardRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
-					Expression reverseRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
-					if(forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName()))
-					{
-						tStr = tStr + " " + reacSteps[i].getName() + ",";
-					}
-					if(reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName()))
-					{
-						tStr = tStr + " " + reacSteps[i].getName() + ",";
-					}
-				}
-				else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
-				{
-					genReacts = genReacts + " " + reacSteps[i].getName() + ","; 
-					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					try{
-						rateExp = reacSteps[i].substitueKineticParameter(rateExp, false);
-						MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
-						if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-						if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-					}catch(Exception e)
-					{
-						exceptionGenStr = exceptionGenStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
-					}
-				}
+				unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + "(has electric current),";
 			}
-			else // flux described by General density function
+			else
 			{
-				if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) {
-					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					try{
-						rateExp = reacSteps[i].substitueKineticParameter(rateExp, false);
-						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp,(FluxReaction)reacSteps[i]);
-						if(fluxFunc.getRateToInside() != null && fluxFunc.getRateToInside().hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-						if(fluxFunc.getRateToOutside() != null && fluxFunc.getRateToOutside().hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-					}catch(Exception e)
+				if(reacSteps[i] instanceof SimpleReaction)
+				{
+					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))
 					{
-						exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+						Expression forwardRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
+						Expression reverseRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
+						if(forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
+						if(reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
 					}
-				} else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
-					Expression permeabilityExpr = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
-					if(permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
+					else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 					{
-						tStr = tStr + " " + reacSteps[i].getName() + ",";
+						genReacts = genReacts + " " + reacSteps[i].getName() + ","; 
+						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+						try{
+							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
+							if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
+							{
+								tStr = tStr + " " + reacSteps[i].getName() + ",";
+							}
+							if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
+							{
+								tStr = tStr + " " + reacSteps[i].getName() + ",";
+							}
+						}catch(Exception e)
+						{
+							exceptionGenStr = exceptionGenStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+						}
+					}
+				}
+				else // flux described by General density function
+				{
+					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) {
+						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+						try{
+							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
+							if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
+							{
+								tStr = tStr + " " + reacSteps[i].getName() + ",";
+							}
+							if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
+							{
+								tStr = tStr + " " + reacSteps[i].getName() + ",";
+							}
+						}catch(Exception e)
+						{
+							exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+						}
+					} else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
+						Expression permeabilityExpr = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
+						if(permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
 					}
 				}
 			}
@@ -3025,7 +3031,11 @@ public String isValidForStochApp()
 	
 	if(unTransformableStr.length() > 0)
 	{
-		returnStr = returnStr + unTransformableStr.substring(0,(unTransformableStr.length()-1)) + " are unable to transform to stochastic formulation.\n Reactions described by mass action law(all) or General law(certain forms), or fluxes described by general desity function(certain forms) can be automatically transfromed.\n" ;
+		returnStr = returnStr + unTransformableStr.substring(0,(unTransformableStr.length()-1)) + " are unable to transform to stochastic formulation.\n\n" +
+				"Reactions described by mass action law(all) or General law(certain forms),\n" +
+				"or fluxes described by general desity function(certain forms) and general\n" +
+				"permeability(certain forms) can be automatically transfromed.\n\n"+
+				"All rate laws that include electric current are not suitable for stochastic application.";
 	}
 	if(exceptionGenStr.length() > 0)
 	{

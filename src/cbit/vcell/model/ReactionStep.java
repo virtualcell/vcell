@@ -34,6 +34,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
+import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -876,37 +877,6 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 		}
 	};
 	return stef;
-}
-
-public Expression substitueKineticParameter(Expression exp, boolean substituteConst) throws MappingException, ExpressionException
-{
-	Expression result = new Expression(exp);
-	boolean bSubstituted = true;
-	while(bSubstituted)
-	{
-		bSubstituted = false;
-		String symbols[] = result.getSymbols();
-		if (symbols!=null) {
-			for (int k = 0; k < symbols.length; k++){
-				Kinetics.KineticsParameter kp = getKinetics().getKineticsParameter(symbols[k]);
-				if (kp != null)
-				{
-					try{
-						Expression expKP = substitueKineticParameter(kp.getExpression(), true);
-						if(!expKP.flatten().isNumeric()||substituteConst)
-						{
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
-							bSubstituted = true;
-						}
-					}catch(ExpressionException e1){
-						e1.printStackTrace();
-						throw new ExpressionException(e1.getMessage());
-					}
-				}
-			}
-		}		
-	}
-	return result;
 }
 
 public String getTypeLabel() {

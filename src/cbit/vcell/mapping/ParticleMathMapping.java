@@ -672,7 +672,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 		{
 			Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-			rateExp = reactionStep.substitueKineticParameter(rateExp, false);
 			maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
 			if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 			{
