@@ -1,8 +1,12 @@
 package org.vcell.util.gui;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.event.KeyAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
+
+import javax.swing.JComponent;
 /**
  * Insert the type's description here.
  * Creation date: (5/23/2004 10:49:12 PM)
@@ -11,21 +15,9 @@ import javax.swing.event.*;
 @SuppressWarnings("serial")
 public class GlassPane extends JComponent {
 	// defaults
-	private float opacity = 0.3f;
+	private float opacity = 0f;
 	private Color color = Color.red;
 	private boolean paint = false;
-	// intercepts mouse input; make it fancier later (customize to dispatch to specific children etc.)
-	private MouseInputAdapter listener = new javax.swing.event.MouseInputAdapter() {
-		public void mouseMoved(MouseEvent e) {}
-		public void mouseDragged(MouseEvent e) {}
-		public void mouseClicked(MouseEvent e) {
-			java.awt.Toolkit.getDefaultToolkit().beep();
-		}
-		public void mouseEntered(MouseEvent e) {}
-		public void mouseExited(MouseEvent e) {}
-		public void mousePressed(MouseEvent e) {}
-		public void mouseReleased(MouseEvent e) {}
-	};
 
 /**
  * Insert the method's description here.
@@ -33,8 +25,9 @@ public class GlassPane extends JComponent {
  */
 public GlassPane(boolean inputBlocking) {
 	if (inputBlocking) {
-		addMouseListener(listener);
-		addMouseMotionListener(listener);
+		addMouseListener(new MouseAdapter() {});
+        addMouseMotionListener(new MouseMotionAdapter() {});
+        addKeyListener(new KeyAdapter() {});
 	}
 }		
 

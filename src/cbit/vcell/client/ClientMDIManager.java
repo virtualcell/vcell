@@ -1,10 +1,13 @@
 package cbit.vcell.client;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Enumeration;
@@ -13,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -73,15 +77,28 @@ public ClientMDIManager(RequestManager requestManager) {
 public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame f = (JFrame)getWindowsHash().get(windowID);
-		GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
-		gp.setPaint(true);
-		f.setGlassPane(gp);
-		gp.setVisible(true);
-		//f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
-		return f;
+		return (JFrame)blockWindow(f);
 	} else {
 		return null;
 	}
+}
+
+public static Window blockWindow(Component component) {
+	Container container = BeanUtils.findTypeParentOfComponent(component, Window.class);
+	if (container instanceof JFrame) {
+		GlassPane glass = new GlassPane(true);  // not used for blocking, only for painting as disabled
+		glass.setPaint(true);
+		((JFrame)container).setGlassPane(glass);
+		glass.setVisible(true);
+		return ((JFrame)container);
+	} else if (container instanceof JDialog){
+		GlassPane glass = new GlassPane(true);  // not used for blocking, only for painting as disabled
+		glass.setPaint(true);
+		((JDialog)container).setGlassPane(glass);
+		glass.setVisible(true);
+		return ((JDialog)container);
+	}
+	return null;
 }
 
 /**
@@ -558,10 +575,24 @@ public void showWindow(java.lang.String windowID) {
 public void unBlockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame f = (JFrame)getWindowsHash().get(windowID);
+		unBlockWindow(f);
+	}
+}
+
+public static void unBlockWindow(Component component) {
+	Container container = BeanUtils.findTypeParentOfComponent(component, Window.class);
+	if (container instanceof JFrame) {
+		JFrame f = (JFrame)container;
 		f.setGlassPane(new JPanel());
 		f.getGlassPane().setVisible(false);
 		((JPanel)f.getGlassPane()).setOpaque(false);
 		f.setEnabled(true);
+	} else if (container instanceof JDialog) {
+		JDialog d = (JDialog)container;
+		d.setGlassPane(new JPanel());
+		d.getGlassPane().setVisible(false);
+		((JPanel)d.getGlassPane()).setOpaque(false);
+		d.setEnabled(true);
 	}
 }
 
