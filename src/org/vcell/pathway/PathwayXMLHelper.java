@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import java.util.Hashtable;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -10,6 +12,21 @@ public class PathwayXMLHelper {
 	public static final String schemaInt = new String("http://www.w3.org/2001/XMLSchema#int");
 	public static final String schemaBoolean = new String("http://www.w3.org/2001/XMLSchema#boolean");
 	public static final String schemaDouble = new String("http://www.w3.org/2001/XMLSchema#double");
+	
+	public static final Hashtable<String, String> urlHashtable = new Hashtable<String, String>(){
+        {
+            put("PUBMED", "http://www.ncbi.nlm.nih.gov/pubmed?term=");
+            put("CPATH", "http://www.pathwaycommons.org/pc/record2.do?id=");
+            put("UNIPROT", "http://www.uniprot.org/uniprot/");
+            put("REF_SEQ", "http://www.ncbi.nlm.nih.gov/protein/");
+            put("GENE_SYMBOL", "http://www.ncbi.nlm.nih.gov/gene?term=");
+            put("ENTREZ_GENE", "http://www.ncbi.nlm.nih.gov/gene/");
+            put("REACTOME_STID", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID="); // only works for ST_IDs look like "REACT_12870" in REACTOME 
+            put("REACTOME_ID", "http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID="); // only works for IDs look like "180523" in REACTOME
+            put("ChEBI", "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=");
+            put("GENE_ONTOLOGY", "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:");
+        }
+    };
 	
 //	private static final String SIM_CONTAINER = XMLTags.SimulationSpecTag;
 //	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
