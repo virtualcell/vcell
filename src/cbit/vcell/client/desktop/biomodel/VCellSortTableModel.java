@@ -74,7 +74,15 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	}
 	
 	public void removeValueAt(int row) {
-		visibleRows.remove(row);
+		T object = visibleRows.remove(row);
+		if (object != null) {
+			for (T o : allRows) {
+				if (o == object) {
+					allRows.remove(o);
+					break;
+				}
+			}
+		}
 		fireTableDataChanged();
 	}
 	
