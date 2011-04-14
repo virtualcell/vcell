@@ -16,6 +16,7 @@ import llnl.visit.MachineProfile;
 import llnl.visit.HostProfileList;
 import llnl.visit.ClientInformation;
 import llnl.visit.ClientInformationList;
+import llnl.visit.ViewerState;
 import llnl.visit.operators.ClipAttributes;
 import llnl.visit.operators.SliceAttributes;
 import llnl.visit.operators.ThreeSliceAttributes;
@@ -51,11 +52,16 @@ public class VisitSession {
     	
         // Pass command line options to the viewer viewer
      	viewer.SetVerbose(true);
+     	System.out.println("Setting visitPath="+visitPath);
         viewer.SetBinPath(visitPath);
+		//viewer.AddArgument("-debug");
+		//viewer.AddArgument("5");
         //viewer.AddArgument("-dv");
         viewer.AddArgument("-auxsessionkey");
         viewer.AddArgument(visitConnectionInfo.getAuxSessionKey());
 
+        
+        System.out.println("About to try opening the local Viewer");
         // Try and open the viewer using the viewer proxy.
         int viewerPort = 5600;
         if(viewer.Create(viewerPort)){
@@ -109,14 +115,14 @@ public class VisitSession {
         viewer.GetViewerState().GetHostProfileList().ClearMachines();
         profile.SetActiveProfile(0);
         viewer.GetViewerState().GetHostProfileList().AddMachines(profile);
-     
+        
 
         viewer.GetViewerState().GetHostProfileList().Notify();
         System.out.println("HostProfileList = \n" + 
             viewer.GetViewerState().GetHostProfileList().toString());
 
 		
-		
+		System.out.println("about to OpenMDServer("+ipAddress+","+args+")");
 		bServerOpen = getViewerMethods().OpenMDServer(ipAddress,args);
 		bDatabaseOpen = false;
 		databaseConnectionString = null;
@@ -142,7 +148,7 @@ public class VisitSession {
 	}
 	
 	public void openDatabase(User user, String simLogName) throws VisitSessionException {
-		String s = getVisitConnectionInfo().getDatabaseOpenPath(user,simLogName);
+		String s = getVisitConnectionInfo().getIPAddress()+":"+getVisitConnectionInfo().getDatabaseOpenPath(user,simLogName);
 		System.out.println("About to open " + s);
 		boolean bOpened = getViewerMethods().OpenDatabase(s);
 		if (bOpened){
@@ -272,6 +278,13 @@ public class VisitSession {
 	
 	}
 	
+	
+	public void setClipAttributes(ClipAttributes atts){
+		atts.Notify();
+		getViewerMethods().SetOperatorOptions("Clip");
+		drawPlots();
+	}
+	
 	/* Three plane slice methods */
 	
 	public void addThreeSliceOperator(){
@@ -297,6 +310,14 @@ public class VisitSession {
 		boolean b = getViewerMethods().EnableTool(toolID , enabled);		
 		if (!b) throw new VisitSessionException("Couldn't enable or disable tool #"+ toolID);
 	}
+	
+	
+	public ViewerState getViewerState(){
+		
+		return viewer.GetViewerState();
+	}
+	
+	
 	
 	
 	//Python client methods:
