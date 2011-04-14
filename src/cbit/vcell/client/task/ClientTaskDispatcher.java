@@ -2,6 +2,7 @@ package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Frame;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -14,6 +15,7 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialogListener;
 
 import swingthreads.SwingWorker;
+import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 /**
@@ -82,6 +84,18 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		private Frame frameParent = JOptionPane.getFrameForComponent(requester);
 		public Object construct() {
 			bInProgress = true;
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						ClientMDIManager.blockWindow(requester);
+					}
+				});
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			if (bShowProgressPopup) {
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
 				if (bInputBlocking) {
@@ -89,8 +103,6 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				} else {
 					pp.start();
 				}
-			} else {
-				BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
 			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
@@ -167,11 +179,11 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			return hash;
 		}
 		public void finished() {
+			ClientMDIManager.unBlockWindow(requester);
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
+			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			if (pp != null) {
 				pp.stop();
-			} else {
-				BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong

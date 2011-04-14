@@ -3192,7 +3192,7 @@ public VisitSession createNewVisitSession(String visitBinPath) throws DataAccess
 public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
 	return updateMath(requester, simulationContext, true);
 }
-public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext, final boolean bShowWarning) {
+public static AsynchClientTask[] updateMath(final Component requester, final SimulationContext simulationContext, final boolean bShowWarning) {
 	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override

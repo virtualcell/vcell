@@ -49,7 +49,6 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JRootPane;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 /**
  * Insert the type's description here.
@@ -357,7 +356,8 @@ public final class BeanUtils {
 	}
 
 	public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
-		for (Container p = component.getParent(); p != null; p = p.getParent()) {
+		Container p = component == null || component instanceof Container ? (Container) component : component.getParent(); 
+		for (; p != null; p = p.getParent()) {
 			if(parentType.isAssignableFrom(p.getClass())) {
 				return p;
 			}
