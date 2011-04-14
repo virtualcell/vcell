@@ -2638,9 +2638,7 @@ public void refreshButton_ActionPerformed(ActionEvent actionEvent) {
  */
 public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	int[] indexes = getQueryResultTable().getSelectedRows();
-	for (int i = 0; i < indexes.length; i ++) {
-		((JobTableModel)getQueryResultTable().getModel()).removeValueAt(indexes[i] - i);
-	}
+	((JobTableModel)getQueryResultTable().getModel()).removeRowsAt(indexes);
 	getNumResultsLabel().setText("" + getQueryResultTable().getRowCount());
 	getNumSelectedLabel().setText("0");
 	return;
