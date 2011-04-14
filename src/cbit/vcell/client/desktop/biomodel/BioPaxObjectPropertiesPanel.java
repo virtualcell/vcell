@@ -2,9 +2,18 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
@@ -29,6 +38,8 @@ import org.vcell.pathway.RnaRegion;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -72,7 +83,6 @@ public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			return null;
 		}
-
 		
 		@Override
 		protected Comparator<BioPaxObjectProperty> getComparator(int col,
@@ -112,6 +122,53 @@ private void initialize() {
 		setLayout(new BorderLayout());
 		add(table.getEnclosingScrollPane(), BorderLayout.CENTER);
 		setBackground(Color.white);		
+		table.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() != 2) {
+					return;
+				}
+				
+			    Point pt = e.getPoint();
+			    int crow = table.rowAtPoint(pt);
+			    int ccol = table.columnAtPoint(pt);
+			    if(table.convertColumnIndexToModel(ccol) == BioPaxObjectPropertiesTableModel.Column_Value) {
+			    	BioPaxObjectProperty property = tableModel.getValueAt(crow);
+			    	BioPaxObject bioPaxObject = property.bioPaxObject;
+			    	if (bioPaxObject instanceof Xref) { // if xRef
+			    		String url = ((Xref) bioPaxObject).getURL();
+			    		DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
+			    	}
+			    }
+				
+			}
+			
+		});
+		
+		table.getColumnModel().getColumn(tableModel.Column_Value).setCellRenderer(new DefaultScrollTableCellRenderer(){
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
+				if (column == tableModel.Column_Value) {
+					BioPaxObject bpObject = tableModel.getValueAt(row).bioPaxObject;
+					String text = tableModel.getValueAt(row).value;
+					if(bpObject instanceof Xref){
+						String url = ((Xref) bpObject).getURL();
+						if(url != null){
+							setToolTipText(url);
+							if (!isSelected) {
+								setForeground(Color.blue);
+							}
+							setText("<html><u>" + text + "</u></html>");
+						}
+					}
+				}
+				return this;
+			}
+		});
+
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
