@@ -20,7 +20,6 @@
 	<classpathentry exported="true" kind="lib" path="wstx-asl-3.2.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="xml-apis.jar"/>
 	<classpathentry exported="true" kind="lib" path="bioformats_omexml_locicommon_brnch41.jar"/>
-	<classpathentry exported="true" kind="lib" path="sbmlj.jar"/>
 	<classpathentry exported="true" kind="lib" path="JLink.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
@@ -42,5 +41,6 @@
 	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
 	<classpathentry kind="lib" path="apache_commons_math_2.2.jar"/>
 	<classpathentry kind="lib" path="ojdbc5.jar"/>
+	<classpathentry kind="lib" path="libsbmlj.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
