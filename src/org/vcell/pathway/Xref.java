@@ -1,5 +1,7 @@
 package org.vcell.pathway;
 
+import static org.vcell.pathway.PathwayXMLHelper.*;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Xref extends BioPaxObjectImpl implements UtilityClass {
@@ -19,6 +21,19 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 	}
 	public String getIdVersion() {
 		return idVersion;
+	}
+	public String getURL(){
+		String db_id = db;
+		if(db.equals("REACTOME")){
+			if(id.contains("REACT")) db_id = "REACTOME_STID";
+			else db_id = "REACTOME_ID";
+		}
+		if(urlHashtable.get(db_id) == null){
+//			System.err.println(db);
+			return null;
+		}
+		return urlHashtable.get(db_id) + id;
+
 	}
 	public void setDb(String db) {
 		this.db = db;
