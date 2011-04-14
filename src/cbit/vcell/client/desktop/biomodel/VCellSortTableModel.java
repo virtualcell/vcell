@@ -73,17 +73,19 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 		return null;
 	}
 	
-	public void removeValueAt(int row) {
-		T object = visibleRows.remove(row);
-		if (object != null) {
-			for (T o : allRows) {
-				if (o == object) {
-					allRows.remove(o);
-					break;
-				}
-			}
+	public void removeRowsAt(int[] rows) {
+		List<T> objToRemoveList = new ArrayList<T>();
+		for (int row : rows) {
+			T object = visibleRows.get(row);
+			objToRemoveList.add(object);
 		}
-		fireTableDataChanged();
+		boolean bModified = allRows.removeAll(objToRemoveList);
+		if (bModified) {			
+			if (currentPageIndex >= getNumPages()) {
+				currentPageIndex = getNumPages() - 1;
+			}
+			updateVisibleRows();
+		}
 	}
 	
 	public void setColumns(String[] newValue) {
