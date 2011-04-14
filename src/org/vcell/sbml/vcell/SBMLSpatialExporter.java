@@ -31,6 +31,7 @@ import org.sbml.libsbml.RequiredElementsPkgNamespaces;
 import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLDocumentPlugin;
+import org.sbml.libsbml.SBMLNamespaces;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.SBasePlugin;
@@ -1327,14 +1328,16 @@ private Simulation getSelectedSimulation() {
 
 public String getSBMLFile() {
 
-	/*
-	// SBMLNamespaces of SBML Level 3 Version 1 with Spatial Version 1
-	SBMLNamespaces sbmlns = new SBMLNamespaces(3,1,SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
-	// SpatialPkgNamespaces spatialns(3,1,1);
-	*/
 	
+	// SBMLNamespaces of SBML Level 3 Version 1 with Spatial Version 1
+	SBMLNamespaces sbmlns = new SBMLNamespaces(3,1,SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX,1);
+	sbmlns.addPkgNamespace(SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
+	// SpatialPkgNamespaces spatialns(3,1,1);
+	
+	/*
     RequiredElementsPkgNamespaces sbmlns = new RequiredElementsPkgNamespaces(3,1,1);
 	sbmlns.addPkgNamespace(SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
+	*/
 
 	// create the L3V1 document with spatial package
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlns);

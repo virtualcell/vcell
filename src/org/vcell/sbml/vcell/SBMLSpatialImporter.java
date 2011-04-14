@@ -2491,6 +2491,9 @@ protected void addGeometry() {
 	
 	// from geometry definition, find out which type of geometry : image or analytic
 	int geometryType = GEOM_OTHER;
+	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
+		throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+	}
 	GeometryDefinition gd = sbmlGeometry.getGeometryDefinition(0);
 	if (gd.isAnalyticGeometry()) {
 		geometryType = GEOM_ANALYTIC;
@@ -2781,12 +2784,20 @@ protected void addGeometry() {
 			if (struct instanceof Feature) {
 				FeatureMapping featureMapping = new FeatureMapping((Feature)struct, simContext);
 				featureMapping.setGeometryClass(geometryClass);
-				featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+				if (geometryClass instanceof SubVolume) {
+					featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+				} else if (geometryClass instanceof SurfaceClass) {
+					featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+				}
 				structMappingsVector.add(featureMapping);
 			} else if (struct instanceof Membrane) {
 				MembraneMapping membraneMapping = new MembraneMapping((Membrane)struct, simContext);
 				membraneMapping.setGeometryClass(geometryClass);
-				membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+				if (geometryClass instanceof SubVolume) {
+					membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+				} else if (geometryClass instanceof SurfaceClass) {
+					membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+				}
 				structMappingsVector.add(membraneMapping);
 			}
 		}
