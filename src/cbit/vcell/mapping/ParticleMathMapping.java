@@ -90,7 +90,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 		}	
 	}
-
 	
 	//
 	// fail if any events
@@ -132,7 +131,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
-	
 
 	//
 	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
@@ -212,12 +210,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 
-//	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI,null),getIdentifierSubstitutions(ReservedSymbol.PI.getExpression(),ReservedSymbol.PI.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
-
 
 	//
 	// add Initial Voltages and Voltage Symbols (even though not computing potential).
@@ -348,7 +344,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 	
-	
 	//
 	// advection terms (either function or constant)
 	//
@@ -430,38 +425,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
 			}
 		}
-//		StructureMappingParameter sizeParm = sm.getSizeParameter();
-//		if (sizeParm!=null){
-//			if (getSimulationContext().getGeometry().getDimension()==0){
-//				if (sizeParm.getExpression()!=null){
-//					varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()),sm.getGeometryClass()));
-//				}
-//			}else{
-//				String compartmentName = sm.getGeometryClass().getName();
-//				VCUnitDefinition sizeUnit = null;
-//				String sizeFunctionName = null;
-//				if (sm instanceof MembraneMapping){
-//					MembraneMapping mm = (MembraneMapping)sm;
-//					sizeUnit = VCUnitDefinition.UNIT_um2;
-//					if (mm.getGeometryClass() instanceof SurfaceClass){
-//						sizeFunctionName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
-//					}else if (mm.getGeometryClass() instanceof SubVolume){
-//						sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
-//					}
-//				}else if (sm instanceof FeatureMapping){
-//					sizeUnit = VCUnitDefinition.UNIT_um3;
-//					sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
-//				}else{
-//					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
-//				}
-//				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(getSimulationContext());
-//				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
-//				sizeFunctionExpression.bindExpression(mathDesc);
-//				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm.getGeometryClass()),sm.getGeometryClass()));
-//
-//			}
-//		}
-
 	}
 
 	//
@@ -627,23 +590,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
 
-			//
-			// advection
-			//
-			Expression velocityX = (scs.getVelocityXParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityXParameter(),sm.getGeometryClass()));
-			Expression velocityY = (scs.getVelocityYParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityYParameter(),sm.getGeometryClass()));
-			Expression velocityZ = (scs.getVelocityZParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass()));
-
-			//
-			// boundary conditions
-			//
-			Expression bcXm = (scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),sm.getGeometryClass()));
-			Expression bcXp = (scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),sm.getGeometryClass()));
-			Expression bcYm = (scs.getBoundaryYmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYmParameter(),sm.getGeometryClass()));
-			Expression bcYp = (scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),sm.getGeometryClass()));
-			Expression bcZm = (scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass()));
-			Expression bcZp = (scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass()));
-			
 			ParticleProperties particleProperties = new ParticleProperties(volumeParticleVariable, diffusion, particleInitialConditions);
 			SubDomain subDomain = mathDesc.getSubDomain(sm.getGeometryClass().getName());
 			subDomain.addParticleProperties(particleProperties);

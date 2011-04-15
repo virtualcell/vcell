@@ -128,7 +128,20 @@ public class MassActionSolver {
 						e1.printStackTrace();
 						throw new ExpressionException(e1.getMessage());
 					}
+				}else if (substituteConst && ste instanceof ReservedSymbol){
+					ReservedSymbol rs = (ReservedSymbol)ste;
+					try {
+						if (rs.getExpression() != null) 
+						{
+							result.substituteInPlace(new Expression(symbols[k]), new Expression(rs.getExpression()));
+							bSubstituted = true;
+						}
+					} catch (ExpressionException e1) {
+						e1.printStackTrace();
+						throw new ExpressionException(e1.getMessage());
+					}
 				}
+					
 			}
 
 		}
@@ -238,17 +251,9 @@ public class MassActionSolver {
 			try{
 				//checking if forward rate constant can be evaluated to a number after all parameters and reactants are substituted 
 				Expression forwardRateCopy = substituteParameters(forwardRate, true);
-				for(int i=0; i<reactants.size(); i++)
-				{
-					forwardRateCopy = forwardRateCopy.getSubstitutedExpression(new Expression(reactants.get(i).getName()), new Expression(1)).flatten();
-				}
 				forwardRateCopy.flatten().evaluateConstant();
 				//checking if reverse rate constant can be evaluated to a number after all parameters and products are substituted
 				Expression reverseRateCopy = substituteParameters(reverseRate, true);
-				for(int i=0; i<products.size(); i++)
-				{
-					reverseRateCopy = reverseRateCopy.getSubstitutedExpression(new Expression(products.get(i).getName()), new Expression(1)).flatten();
-				}
 				reverseRateCopy.flatten().evaluateConstant();
 				//if no exception occurs, the mass action function can be obtained 			
 				maFunc.setForwardRate(forwardRate);
