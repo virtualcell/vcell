@@ -538,9 +538,9 @@ private void writeReactions() throws ExpressionException, MathException {
 					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 				}
-				else if(!hasMembraneVariable(products) && !hasMembraneVariable(reactants))
+				else 
 				{
-					writeFluxCommand(reactants, products, subdomain, macroscopicRateConstant);
+					writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
 				}
 			}
 		}
@@ -573,13 +573,19 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 				
 	printWriter.println(" " + rateConstant);
 }
-//used to write flux command, or a membrane reaction with a reactant and product from its inner and outer volumn
-//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c", 
-private void writeFluxCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
+//used to write molecule transition rate command when it interacts with surface, the possible states can be 
+//reflection, transmission, adsorption, desorption  
+private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
 {
 	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
-	if (reacts.size() == 1) 
+	if ((reacts.size() != 1) || (prods.size() != 1)) 
 	{
+		throw new MathException("VCell currently supports membrane reactions with one reactant and one product only.");
+	}
+	//Transmission. Membrane reaction/flux with species in inside and outside membrane solutions
+	//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c",
+	if(!hasMembraneVariable(prods) && !hasMembraneVariable(reacts))
+	{	
 		
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
@@ -591,15 +597,39 @@ private void writeFluxCommand(List<Variable> reacts, List<Variable> prods, SubDo
 			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.fsoln + " ");
 		}
 		printWriter.print(rateConstant + " ");
-
-	} else {
-		//TODO: handle multiple reactants
-	}
-	// products
-	if (prods.size() == 1) {
 		printWriter.println(prods.get(0).getName());
-	} else {
-		//TODO: handle multiple products		
+	}
+	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
+	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
+	else if(hasMembraneVariable(prods) && !hasMembraneVariable(reacts))
+	{
+		printWriter.print(reacts.get(0).getName() + " ");
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.fsoln + " " + /*SmoldynKeyword.front*/SmoldynKeyword.up + " ");
+		}
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.bsoln + " " + /*SmoldynKeyword.back*/SmoldynKeyword.up + " ");
+		}
+		printWriter.print(rateConstant + " ");
+		printWriter.println(prods.get(0).getName());
+	}
+	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution
+	//e.g. "surface c_n_membrane rate B2 front fsoln 4.22 C2"
+	else if(!hasMembraneVariable(prods) && hasMembraneVariable(reacts))
+	{
+		printWriter.print(reacts.get(0).getName() + " ");
+		if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		{
+			printWriter.print(/*SmoldynKeyword.front*/SmoldynKeyword.up + " " + SmoldynKeyword.fsoln + " ");
+		}
+		else if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		{
+			printWriter.print(/*SmoldynKeyword.back*/SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
+		}
+		printWriter.print(rateConstant + " ");
+		printWriter.println(prods.get(0).getName());
 	}
 }
 
