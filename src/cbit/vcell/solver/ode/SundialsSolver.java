@@ -45,14 +45,16 @@ public abstract class SundialsSolver extends AbstractCompiledSolver implements O
 	private long lastSavedMS = 0; // milliseconds since last save
 	private transient RateSensitivity rateSensitivity = null;
 	private transient Jacobian jacobian = null;
+	protected boolean bUseMessaging = true;
 
 /**
  * IDASolver constructor comment.
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SundialsSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
+public SundialsSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
 	super(simulationJob, directory, sessionLog);
+	bUseMessaging = bMessaging;
 	if (simulationJob.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}

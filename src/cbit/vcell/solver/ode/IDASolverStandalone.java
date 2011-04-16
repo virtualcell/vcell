@@ -24,8 +24,8 @@ public class IDASolverStandalone extends SundialsSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public IDASolverStandalone(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog);
+public IDASolverStandalone(SimulationJob simulationJob, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
+	super(simulationJob, directory, sessionLog, bMessaging);
 }
 /**
  *  This method takes the place of the old runUnsteady()...
@@ -43,7 +43,7 @@ protected void initialize() throws SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simulationJob, true);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simulationJob, bUseMessaging);
 		idaFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

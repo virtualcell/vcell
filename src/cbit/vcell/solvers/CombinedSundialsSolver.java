@@ -24,12 +24,12 @@ public class CombinedSundialsSolver extends AbstractCompiledSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog sessionLog, boolean bMessaging) throws cbit.vcell.solver.SolverException {
 	super(simJob, directory, sessionLog);
 	if (simulationJob.getSimulation().getMathDescription().hasFastSystems()) {
-		realSolver = new IDASolverStandalone(simJob, directory, sessionLog);
+		realSolver = new IDASolverStandalone(simJob, directory, sessionLog, bMessaging);
 	} else {
-		realSolver = new CVodeSolverStandalone(simJob, directory, sessionLog);
+		realSolver = new CVodeSolverStandalone(simJob, directory, sessionLog, bMessaging);
 	}
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		

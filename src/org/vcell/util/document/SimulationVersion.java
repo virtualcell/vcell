@@ -1,5 +1,8 @@
 package org.vcell.util.document;
 
+import java.math.BigDecimal;
+import java.util.Random;
+
 
 /**
  * Insert the type's description here.
@@ -35,5 +38,14 @@ public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, org.vcel
  */
 public KeyValue getParentSimulationReference() {
 	return parentSimulationReference;
+}
+
+public static SimulationVersion createTempSimulationVersion() {
+	return  new SimulationVersion(
+			new KeyValue(new BigDecimal(Math.abs(new Random().nextInt()))), 
+			"temp simulation", new User("user",new KeyValue("123")),
+			new GroupAccessNone(), null, // versionBranchPointRef
+			new java.math.BigDecimal(1.0), // branchID
+			new java.util.Date(), VersionFlag.Archived, "",  null);
 }
 }

@@ -25,8 +25,8 @@ public class CVodeSolverStandalone extends SundialsSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public CVodeSolverStandalone(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog);
+public CVodeSolverStandalone(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
+	super(simulationJob, directory, sessionLog, bMessaging);
 }
 /**
  *  This method takes the place of the old runUnsteady()...
@@ -46,7 +46,7 @@ protected void initialize() throws SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new java.io.PrintWriter(inputFilename);
-		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simulationJob, true);
+		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simulationJob, bUseMessaging);
 		cvodeFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));

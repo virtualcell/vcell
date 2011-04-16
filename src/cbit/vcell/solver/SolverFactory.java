@@ -48,11 +48,11 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 	} else if (solverDescription.equals(SolverDescription.RungeKuttaFehlberg)) {
 		solver = new RungeKuttaFehlbergSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.IDA)) {
-		solver = new IDASolverStandalone(simJob, directory, sessionLog);
+		solver = new IDASolverStandalone(simJob, directory, sessionLog, true);
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
-		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);
+		solver = new CVodeSolverStandalone(simJob, directory, sessionLog, true);
 	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
-		solver = new CombinedSundialsSolver(simJob, directory, sessionLog);
+		solver = new CombinedSundialsSolver(simJob, directory, sessionLog, true);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
 		solver = new FVSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
