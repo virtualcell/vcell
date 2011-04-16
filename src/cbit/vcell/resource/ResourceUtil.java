@@ -181,7 +181,7 @@ public class ResourceUtil {
 //			System.loadLibrary("sbml");
 //			System.loadLibrary("sbml-requiredElements");
 //			System.loadLibrary("sbml-spatial");
-			System.loadLibrary("libsbml");
+//			System.loadLibrary("libsbml");
 			System.loadLibrary("sbmlj");
 		} catch (Throwable ex1){
 			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
