@@ -48,6 +48,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
+	public static final String PROPERTY_NAME_SIMULATION_STATUS = "status";
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -411,15 +412,6 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 	}
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
@@ -702,6 +694,9 @@ void runSimulations(Simulation[] sims) {
  * Creation date: (6/3/2004 2:40:41 AM)
  */
 public void setSimulationOwner(SimulationOwner newSimulationOwner) {
+	if (newSimulationOwner == simulationOwner) {
+		return;
+	}
 	SimulationOwner oldSimulationOwner = simulationOwner;
 	if (oldSimulationOwner != null) {
 		oldSimulationOwner.removePropertyChangeListener(this);
@@ -710,8 +705,8 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 		newSimulationOwner.addPropertyChangeListener(this);
 	}
 	simulationOwner = newSimulationOwner;
-	setSimulations(getSimulationOwner() == null ? null : getSimulationOwner().getSimulations());
-	firePropertyChange(new java.beans.PropertyChangeEvent(this, GuiConstants.PROPERTY_NAME_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner));
+	setSimulations(simulationOwner == null ? null : getSimulationOwner().getSimulations());
+	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner);
 }
 
 
@@ -723,7 +718,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 public void setSimulations(final Simulation[] simulations) {
 	Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
-	firePropertyChange("simulations", oldValue, simulations);
+	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 }
 
 /**

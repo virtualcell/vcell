@@ -32,8 +32,8 @@ public class ResourceUtil {
 	private static File userHome = null;
 	private static File vcellHome = null;
 	private static File libDir = null;
+	private static File localSimDir = null;
 	
-	private static File smoldynHome = null;
 	private final static String DLL_GLUT;
 	static {
 		if (bWindows) {
@@ -46,6 +46,11 @@ public class ResourceUtil {
 	private static File smoldynExecutable = null;
 	private final static String RES_EXE_SMOLDYN = RES_PACKAGE + "/" + EXE_SMOLDYN;
 	private final static String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
+	
+	private static File solversDirectory = null;
+	private final static String EXE_COMBINED_SUNDIALS = "SundialsSolverStandalone" + EXE_SUFFIX;
+	private final static String RES_EXE_COMBINED_SUNDIALS = RES_PACKAGE + "/" + EXE_COMBINED_SUNDIALS;
+	private static File combinedSundialsExecutable = null;
 	
 	private static List<String> libList = null;
 
@@ -60,6 +65,19 @@ public class ResourceUtil {
 		}
 		
 		return userHome; 
+	}
+	
+	public static File getLocalSimDir()
+	{
+		if(localSimDir == null)
+		{
+			localSimDir = new File(getVcellHome(), "simdata");
+			if (!localSimDir.exists()) {
+				localSimDir.mkdirs();
+			}
+		}
+		
+		return localSimDir; 
 	}
 	
 	public static void writeFileFromResource(String resname, File file) throws IOException {
@@ -136,17 +154,17 @@ public class ResourceUtil {
 		}
 		return vcellHome;
 	}	
-	
-	public static File getSmoldynHome() 
+		
+	public static File getSolversDirectory() 
 	{
-		if(smoldynHome == null)
+		if(solversDirectory == null)
 		{
-			smoldynHome = new File(getVcellHome(), "Smoldyn");
-			if (!smoldynHome.exists()) {
-				smoldynHome.mkdirs();
+			solversDirectory = new File(getVcellHome(), "solvers");
+			if (!solversDirectory.exists()) {
+				solversDirectory.mkdirs();
 			}
 		}
-		return smoldynHome;
+		return solversDirectory;
 	}	
 	
 	public static void loadNativeSolverLibrary () {
@@ -173,16 +191,27 @@ public class ResourceUtil {
 	private static boolean bFirstTimeSmoldyn = true;
 	public static File getSmoldynExecutable() throws IOException {
 		if (smoldynExecutable == null) {
-			smoldynExecutable = new java.io.File(getSmoldynHome(), EXE_SMOLDYN);
+			smoldynExecutable = new java.io.File(getSolversDirectory(), EXE_SMOLDYN);
 		}
 		if (bFirstTimeSmoldyn || !smoldynExecutable.exists()) {
 			ResourceUtil.writeFileFromResource(RES_EXE_SMOLDYN, smoldynExecutable);
 		}
-		File file_glut_dll = new java.io.File(smoldynHome, DLL_GLUT);
+		File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
 		if (!bMac && (bFirstTimeSmoldyn || !file_glut_dll.exists())) {
 			ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
 		}
 		bFirstTimeSmoldyn = false;
 		return smoldynExecutable;
+	}
+	private static boolean bFirstTimeQuickOdeRun = true;
+	public static File getCombinedSundialsExecutable() throws IOException {
+		if (combinedSundialsExecutable == null) {
+			combinedSundialsExecutable = new java.io.File(getSolversDirectory(), EXE_COMBINED_SUNDIALS);
+		}
+		if (bFirstTimeQuickOdeRun || !combinedSundialsExecutable.exists()) {
+			ResourceUtil.writeFileFromResource(RES_EXE_COMBINED_SUNDIALS, combinedSundialsExecutable);
+		}
+		bFirstTimeQuickOdeRun = false;
+		return combinedSundialsExecutable;
 	}
 }

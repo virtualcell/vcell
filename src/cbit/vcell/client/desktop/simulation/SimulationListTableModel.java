@@ -1,26 +1,21 @@
 package cbit.vcell.client.desktop.simulation;
-import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
-import javax.swing.JToolTip;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -29,9 +24,7 @@ import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.ode.gui.OutputOptionsPanel;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
@@ -209,22 +202,27 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 		refreshData();
-	} else if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("simulations")) {
-		Simulation[] oldValue = (Simulation[]) evt.getOldValue();
-		if (oldValue != null) {
-			for (Simulation simulation : oldValue) {
-				simulation.removePropertyChangeListener(this);
-				simulation.getSolverTaskDescription().removePropertyChangeListener(this);
+	} else if (evt.getSource() == getSimulationWorkspace()) {
+		if (evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)) {
+			Simulation[] oldValue = (Simulation[]) evt.getOldValue();
+			if (oldValue != null) {
+				for (Simulation simulation : oldValue) {
+					simulation.removePropertyChangeListener(this);
+					simulation.getSolverTaskDescription().removePropertyChangeListener(this);
+				}
 			}
-		}
-		Simulation[] newValue = (Simulation[]) evt.getNewValue();
-		if (newValue != null) {
-			for (Simulation simulation : newValue) {
-				simulation.addPropertyChangeListener(this);
-				simulation.getSolverTaskDescription().addPropertyChangeListener(this);
+			Simulation[] newValue = (Simulation[]) evt.getNewValue();
+			if (newValue != null) {
+				for (Simulation simulation : newValue) {
+					simulation.addPropertyChangeListener(this);
+					simulation.getSolverTaskDescription().addPropertyChangeListener(this);
+				}
 			}
+			refreshData();
+		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
+			int simIndex = (Integer)evt.getNewValue();
+			fireTableRowsUpdated(simIndex, simIndex);
 		}
-		refreshData();
 	} else {
 		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals(Simulation.PROPERTY_NAME_SOLVER_TASK_DESCRIPTION)) {
 			SolverTaskDescription oldValue = (SolverTaskDescription)evt.getOldValue();

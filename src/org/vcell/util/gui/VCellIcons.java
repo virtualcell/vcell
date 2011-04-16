@@ -81,6 +81,7 @@ public abstract class VCellIcons {
 	public final static Icon stopSimIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_stop.gif"));
 	public final static Icon resultsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_results.jpg"));
 	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
+	public final static Icon odeQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/ode_quick_run.png"));
 	
 	public static Icon getOldOutputFunctionIcon() {
 		if (oldOutputFunctionIcon == null) {
@@ -135,7 +136,7 @@ public abstract class VCellIcons {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JLabel("label", protocolsIcon, SwingConstants.LEFT), BorderLayout.CENTER);
+			panel.add(new JLabel("label", odeQuickRunIcon, SwingConstants.LEFT), BorderLayout.CENTER);
 			frame.add(panel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {
