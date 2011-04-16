@@ -1390,7 +1390,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 												 scaleMode,
 												 FormatSpecificSpecs.CODEC_JPEG,
 												 1.0f/*lossless*/,
-												 false);
+												 false,
+												 FormatSpecificSpecs.PARTICLE_NONE);
 //				mSpec.setViewZoom(1);
 				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 				// pass the request
