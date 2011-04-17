@@ -727,7 +727,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 //			int iv = (int)(0x000000FF&i);
 //			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
 			if(i != 0){
-				cmap[i] = 0xFFFFFF00;
+				cmap[i] = 0xFF000000 | highlightColor.getRGB();
 			}else{
 				cmap[1] = 0xFF000000;
 			}
