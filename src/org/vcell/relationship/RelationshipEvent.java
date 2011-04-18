@@ -2,6 +2,7 @@ package org.vcell.relationship;
 
 import java.util.EventObject;
 
+@SuppressWarnings("serial")
 public class RelationshipEvent extends EventObject{
 	private int operationType = CHANGED;
 
@@ -25,6 +26,7 @@ public class RelationshipEvent extends EventObject{
 		return operationNames[operationType];
 	}
 
+	@Override
 	public String toString() {
 		return "RelationshipEvent:" + getOperationName();
 	}

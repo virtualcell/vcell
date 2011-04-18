@@ -10,13 +10,10 @@ import java.util.List;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BiochemicalReaction;
 import org.vcell.pathway.Catalysis;
-import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
 import cbit.vcell.model.BioModelEntityObject;
@@ -322,7 +319,7 @@ public class PathwayMapping {
 	private void createSpeciesContextFromPathway(BioModel bioModel, SpeciesContext bioModelEntityObject, RelationshipObject relationshipObject) throws Exception
 	{
 		// annotate the selected vcell object using linked pathway object 
-		((SpeciesContext)bioModelEntityObject).setName(
+		(bioModelEntityObject).setName(
 				getSafetyName(((PhysicalEntity)relationshipObject.getBioPaxObject()).getName().get(0)));
 	}
 	
@@ -343,7 +340,7 @@ public class PathwayMapping {
 	{
 		// annotate the selected vcell object using linked pathway object
 		// add non-existing speciesContexts from linked pathway conversion
-		ReactionParticipant[] rpArray = parseReaction((ReactionStep)bioModelEntityObject, bioModel, relationshipObject);
+		ReactionParticipant[] rpArray = parseReaction(bioModelEntityObject, bioModel, relationshipObject);
 		// create a hashtable for interaction Participants
 		Hashtable<String, BioPaxObject> participantTable = new Hashtable<String, BioPaxObject>();
 		for(BioPaxObject bpObject: ((BiochemicalReaction)relationshipObject.getBioPaxObject()).getLeft()){
@@ -385,7 +382,7 @@ public class PathwayMapping {
 				}
 			}
 		}
-		((ReactionStep)bioModelEntityObject).setReactionParticipants(rpArray);
+		(bioModelEntityObject).setReactionParticipants(rpArray);
 		// add Catalysts to the reaction
 		for(Catalysis catalyst : searchCatalyst(bioModel, relationshipObject)){
 			for(InteractionParticipant pe : catalyst.getParticipants()){
@@ -400,7 +397,7 @@ public class PathwayMapping {
 				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
 				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
 				 */
-				((ReactionStep)bioModelEntityObject).addReactionParticipant(new Catalyst(null,bioModelEntityObject, newSpeciescontext));
+				(bioModelEntityObject).addReactionParticipant(new Catalyst(null,bioModelEntityObject, newSpeciescontext));
 			}
 			
 		}

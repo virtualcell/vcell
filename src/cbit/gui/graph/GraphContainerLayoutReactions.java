@@ -99,7 +99,8 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 		return emptySize;
 	}
 	
-	public void layout(GraphModel graphModel, Graphics2D g2d, Dimension size) {
+	public void layout(GraphModel graphModel, Graphics2D g2d, Dimension size) 
+	throws GraphModel.NotReadyException {
 		Shape topShape = graphModel.getTopShape();
 		//
 		// compute nominal sizes and positions of children
@@ -250,6 +251,14 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 					size.width - 2*WIDTH_PADDING, size.height - 2*HEIGHT_PADDING - TOP_LABEL_HEIGHT);			
 		}
 		return new Rectangle(shape.getAbsPos(), shape.getSize());
+	}
+
+	public boolean isContainerForAutomaticLayout(Shape shape) {
+		return shape instanceof ReactionContainerShape;
+	}
+
+	public boolean isNodeForAutomaticLayout(Shape shape) {
+		return shape instanceof ElipseShape;
 	}
 	
 }

@@ -25,6 +25,8 @@ import javax.swing.ToolTipManager;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
+import cbit.gui.graph.GraphModel.NotReadyException;
+
 @SuppressWarnings("serial")
 public class GraphPane extends JPanel implements GraphListener, MouseListener, Scrollable {
 
@@ -89,7 +91,12 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 	@Override
 	public Dimension getPreferredSize() {
 		if (graphModel != null) {
-			Dimension prefSize = graphModel.getPreferedCanvasSize((java.awt.Graphics2D)getGraphics());
+			Dimension prefSize;
+			try {
+				prefSize = graphModel.getPreferedCanvasSize((Graphics2D)getGraphics());
+			} catch (NotReadyException e) {
+				return super.getPreferredSize();
+			}
 			if (getJScrollPaneParent()!=null){
 				Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
 				prefSize = new Dimension(Math.max(viewBorderBounds.width, prefSize.width),
@@ -335,10 +342,12 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		}			
 	}
 	
+	@Override
 	public String getToolTipText() {
 		return "Graph";
 	}
 
+	@Override
 	public String getToolTipText(MouseEvent event) {
 		if(graphModel == null) {
 			return getToolTipText();

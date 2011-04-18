@@ -2156,6 +2156,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
 					// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
 					// Will deal with multiple children of <vcml> Element when we get to model composition.
+					@SuppressWarnings("unchecked")
 					List<Element> childElementList = rootElement.getChildren();
 					Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
 					modelXmlType = modelElement.getName();
@@ -2908,6 +2909,7 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			@SuppressWarnings("unchecked")
 			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation, Throwable>)hashTable.get("failures");
 			if (failures != null && ! failures.isEmpty()) {
 				Enumeration<Simulation> en = failures.keys();

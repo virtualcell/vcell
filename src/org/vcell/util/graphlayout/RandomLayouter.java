@@ -12,6 +12,7 @@ public class RandomLayouter extends ContainedGraphLayouter {
 	protected Random random = new Random();
 	protected StretchToBoundaryLayouter stretchLayouter = new StretchToBoundaryLayouter();
 	
+	@Override
 	public void layout(ContainedGraph graph) {
 		for(Node node : graph.getNodes()) {
 			Container container = node.getContainer();
@@ -21,6 +22,7 @@ public class RandomLayouter extends ContainedGraphLayouter {
 		stretchLayouter.layout(graph);
 	}
 
+	@Override
 	public String getLayoutName() {
 		return LAYOUT_NAME;
 	}

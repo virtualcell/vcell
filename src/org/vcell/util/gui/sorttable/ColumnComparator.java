@@ -32,8 +32,10 @@ public class ColumnComparator implements Comparator<ComparableObject> {
 				return -1;
 			}
 		} else if (oOne instanceof Comparable && oTwo instanceof Comparable) {
-			Comparable cOne = (Comparable) oOne;
-			Comparable cTwo = (Comparable) oTwo;
+			@SuppressWarnings("unchecked")
+			Comparable<Object> cOne = (Comparable<Object>) oOne;
+			@SuppressWarnings("unchecked")
+			Comparable<Object> cTwo = (Comparable<Object>) oTwo;
 			if (ascending) {
 				return cOne.compareTo(cTwo);
 			} else {

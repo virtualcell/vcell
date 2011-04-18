@@ -71,7 +71,7 @@ public class GraphResizeManager {
 	}
 	
 	public static interface Listener {
-		public void resizeStateChanged(Event event);
+		public void resizeStateChanged(Event event) throws GraphModel.NotReadyException;
 	}
 	
 	protected transient Set<Listener> listeners = new HashSet<Listener>();
@@ -84,7 +84,7 @@ public class GraphResizeManager {
 		this.graph = graph;
 	}
 	
-	public void setResizeMode(ResizeMode resizeMode) {
+	public void setResizeMode(ResizeMode resizeMode) throws GraphModel.NotReadyException {
 		if(this.resizeMode != resizeMode) {
 			State oldState = getState();
 			this.resizeMode = resizeMode;
@@ -100,7 +100,7 @@ public class GraphResizeManager {
 		public ZoomRangeException(String message) { super(message); }
 	}
 	
-	public void setZoomPercent(int zoomPercent) throws ZoomRangeException {
+	public void setZoomPercent(int zoomPercent) throws ZoomRangeException, GraphModel.NotReadyException {
 		if (zoomPercent < minZoomLevel) {
 			throw new ZoomRangeException("Zoom percentage " + zoomPercent + 
 					" is too small. Must be at least 1.");
@@ -144,7 +144,7 @@ public class GraphResizeManager {
 				". Highest possible is " + maxZoomLevel);
 	}
 	
-	public void zoomIn() throws ZoomRangeException {
+	public void zoomIn() throws ZoomRangeException, GraphModel.NotReadyException {
 		setZoomPercent(getNextHigherZoomPercent(zoomPercent));
 	}
 
@@ -159,7 +159,7 @@ public class GraphResizeManager {
 				". Lowest possible is " + minZoomLevel);
 	}
 	
-	public void zoomOut() throws ZoomRangeException {
+	public void zoomOut() throws ZoomRangeException, GraphModel.NotReadyException {
 		setZoomPercent(getNextLowerZoomPercent(zoomPercent));
 	}
 
@@ -187,11 +187,11 @@ public class GraphResizeManager {
 		return new Point((int) unzoom(point.x), (int) unzoom(point.y)); 
 	}
 	
-	public State getState() {
+	public State getState() throws GraphModel.NotReadyException {
 		return new State(resizeMode, zoomPercent, getUnzoomedSize());
 	}
 	
-	public void setState(State state) {
+	public void setState(State state) throws GraphModel.NotReadyException {
 		Dimension size = getUnzoomedSize();
 		if(!resizeMode.equals(state.getResizeMode()) || zoomPercent != state.getZoomPercent()
 				|| !size.equals(state.getSize())) {
@@ -204,7 +204,7 @@ public class GraphResizeManager {
 		}
 	}
 	
-	public void setUnzoomedSize(Dimension size) {
+	public void setUnzoomedSize(Dimension size) throws GraphModel.NotReadyException {
 		ShapeSpaceManager spaceManager = graph.getTopShape().getSpaceManager();
 		if(!spaceManager.getSize().equals(size)) {
 			State oldState = getState();
@@ -214,20 +214,20 @@ public class GraphResizeManager {
 		}
 	}
 	
-	public Dimension getUnzoomedSize() {
+	public Dimension getUnzoomedSize() throws GraphModel.NotReadyException {
 		return graph.getTopShape().getSpaceManager().getSize();
 	}
 	
-	public void setDisplayedSize(Dimension displayedSize) {
+	public void setDisplayedSize(Dimension displayedSize) throws GraphModel.NotReadyException {
 		Dimension size = unzoom(displayedSize);
 		setUnzoomedSize(size);
 	}
 	
-	public Dimension getDisplayedSize() {
+	public Dimension getDisplayedSize() throws GraphModel.NotReadyException {
 		return zoom(graph.getTopShape().getSpaceManager().getSize());
 	}
 	
-	public void notifyComponentSize(Dimension newSize) {
+	public void notifyComponentSize(Dimension newSize) throws GraphModel.NotReadyException {
 		if (graph.getTopShape() != null) {
 			switch(getResizeMode()) {
 			case AUTO_DISPLAYED: {
@@ -248,7 +248,8 @@ public class GraphResizeManager {
 	public void removeListener(Listener listener) { listeners.remove(listener); }
 	public boolean hasListener(Listener listener) { return listeners.contains(listener); }
 	
-	public void fireChange(State oldState, State newState) {
+	public void fireChange(State oldState, State newState) 
+	throws GraphModel.NotReadyException {
 		Event event = new Event(oldState, newState);
 		for(Listener listener : listeners) {
 			listener.resizeStateChanged(event);

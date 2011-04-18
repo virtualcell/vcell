@@ -57,7 +57,6 @@ import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -304,6 +303,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		refreshButtons();
 	}
 
+	@Override
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
 		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
@@ -578,7 +578,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						if (r < structureTableModel.getRowCount()) {
 							Structure rowValue = structureTableModel.getValueAt(r);
 							if (rowValue instanceof Feature) {
-								deleteList.add((Feature) rowValue);
+								deleteList.add(rowValue);
 							}
 						}
 					}
@@ -606,7 +606,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
-			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
+			String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
 			}
@@ -626,6 +626,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		reactionCartoonEditorPanel.setModel(bioModel.getModel());
 		reactionCartoonEditorPanel.setStructureSuite(new AllStructureSuite(this));
+		bioModel.getRelationshipModel().addRelationShipListener(
+				reactionCartoonEditorPanel.getReactionCartoon());
+		reactionCartoonEditorPanel.getReactionCartoon().refreshRelationshipInfo(
+				bioModel.getRelationshipModel());
 		cartoonEditorPanel.setBioModel(bioModel);
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);

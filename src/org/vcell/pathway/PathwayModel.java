@@ -2,7 +2,6 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -11,8 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
-import org.vcell.util.Matchable;
-
 import cbit.vcell.biomodel.meta.Identifiable;
 
 public class PathwayModel {
@@ -256,10 +253,10 @@ public class PathwayModel {
 					ArrayList<BioPaxObject> controlled = new ArrayList<BioPaxObject>();
 					Interaction controlledInteraction = ((Control) bpObject).getControlledInteraction();
 					if(controlledInteraction != null){
-						controlled.add(((BioPaxObject)controlledInteraction));
+						controlled.add((controlledInteraction));
 					}
 					if(((Control) bpObject).getControlledPathway() != null){
-						controlled.add(((BioPaxObject)((Control) bpObject).getControlledPathway()));
+						controlled.add((((Control) bpObject).getControlledPathway()));
 					}
 					addToParentMap(bpObject, controlled);
 					if(bpObject instanceof Catalysis){// for Catalysis

@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.vcell.sybil.util.text.StringUtil;
 
+import cbit.gui.graph.GraphModel.NotReadyException;
 import cbit.gui.graph.GraphView;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.VisualStateUtil;
@@ -52,7 +53,12 @@ public class CartoonToolPaintingActions {
 		}
 
 		public void actionPerformed(ActionEvent event) {
-			showShapeTree(graphView.getGraphModel().getTopShape());
+			try {
+				showShapeTree(graphView.getGraphModel().getTopShape());
+			} catch (NotReadyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

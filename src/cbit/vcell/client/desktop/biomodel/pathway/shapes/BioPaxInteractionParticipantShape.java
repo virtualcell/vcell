@@ -91,6 +91,7 @@ public class BioPaxInteractionParticipantShape extends EdgeShape implements Edge
 		// TODO Auto-generated method stub
 	}
 
+	@Override
 	public boolean isDirectedForward() { 
 		return !participant.getType().equals(InteractionParticipant.Type.LEFT); 
 	}

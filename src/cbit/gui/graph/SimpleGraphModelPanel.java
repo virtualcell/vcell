@@ -1113,6 +1113,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		if (getSimpleGraphModel()!=null){
 			try { getSimpleGraphModel().getResizeManager().zoomIn(); } 
 			catch (ZoomRangeException e) { } // Do nothing
+			catch (GraphModel.NotReadyException e) { } // Do nothing
 		}
 	}
 
@@ -1120,6 +1121,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		if (getSimpleGraphModel()!=null){
 			try { getSimpleGraphModel().getResizeManager().zoomOut(); } 
 			catch (ZoomRangeException e) { } // Do nothing
+			catch (GraphModel.NotReadyException e) { } // Do nothing
 		}
 	}
 

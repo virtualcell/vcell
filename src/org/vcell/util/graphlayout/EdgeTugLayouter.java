@@ -17,6 +17,7 @@ public class EdgeTugLayouter extends ContainedGraphLayouter {
 	
 	protected Random random = new Random();
 	
+	@Override
 	public void layout(ContainedGraph graph) {
 		for(Node node : graph.getNodes()) {
 			node.move(random.nextInt(3) - 1, random.nextInt(3) - 1);
@@ -60,6 +61,7 @@ public class EdgeTugLayouter extends ContainedGraphLayouter {
 		return dx*dx + dy*dy;
 	}
 	
+	@Override
 	public String getLayoutName() {
 		return LAYOUT_NAME;
 	}

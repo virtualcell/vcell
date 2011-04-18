@@ -9,8 +9,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import org.vcell.pathway.Conversion;
-import cbit.gui.graph.GraphModel;
+import org.vcell.util.gui.ShapePaintUtil;
+
 import cbit.gui.graph.ShapeSpaceManager;
+import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 
 public class BioPaxConversionShape extends BioPaxShape {
 	private static final int RADIUS = 5;
@@ -18,7 +20,7 @@ public class BioPaxConversionShape extends BioPaxShape {
 	private Color darkerBackground = null;
 	private Area icon = null;
 
-	public BioPaxConversionShape(Conversion conversion, GraphModel graphModel) {
+	public BioPaxConversionShape(Conversion conversion, PathwayGraphModel graphModel) {
 		super(conversion, graphModel);
 		defaultBG = Color.yellow;
 		defaultFGselect = Color.black;
@@ -84,6 +86,9 @@ public class BioPaxConversionShape extends BioPaxShape {
 					(isSelected() || smallLabel == null ? getLabel():smallLabel),
 					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
 					absPosX, getLabelPos().y + absPosY);
+		}
+		if(hasRelationships) {
+			ShapePaintUtil.paintLinkMark(g2D, this, Color.WHITE);			
 		}
 	}
 

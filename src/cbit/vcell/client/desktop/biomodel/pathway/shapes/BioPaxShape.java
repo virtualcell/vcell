@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.pathway.PathwayModel;
-
-import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
@@ -22,9 +20,11 @@ public abstract class BioPaxShape extends Shape {
 	protected Dimension smallLabelSize = new Dimension();
 	protected Point smallLabelPos = new Point(0,0);
 
+	protected boolean hasRelationships = false;
+	
 	private boolean bTruncateLabelName = true;
 
-	public BioPaxShape(BioPaxObject bioPaxObject, GraphModel graphModel) {
+	public BioPaxShape(BioPaxObject bioPaxObject, PathwayGraphModel graphModel) {
 		super(graphModel);
 		this.bioPaxObject = bioPaxObject;
 		defaultBG = java.awt.Color.pink;
@@ -33,6 +33,13 @@ public abstract class BioPaxShape extends Shape {
 		backgroundColor.darker().darker();
 	}
 
+	@Override
+	public PathwayGraphModel getGraphModel() { 
+		return (PathwayGraphModel) super.getGraphModel();
+	}
+	
+	public void setHasRelationships(boolean hasRelationships) { this.hasRelationships = hasRelationships; }
+	
 	@Override
 	public VisualState createVisualState() { 
 		return new MutableVisualState(this, VisualState.PaintLayer.NODE); 
@@ -44,7 +51,7 @@ public abstract class BioPaxShape extends Shape {
 	}
 
 	@Override
-	public Object getModelObject() {
+	public BioPaxObject getModelObject() {
 		return bioPaxObject;
 	}
 
