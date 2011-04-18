@@ -5,6 +5,7 @@ package cbit.vcell.constraints.gui;
 �*/
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.CartoonTool.Mode;
+import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 
 import javax.swing.*;
@@ -95,6 +96,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  * @param listener java.beans.PropertyChangeListener
  */
+@Override
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
@@ -565,6 +567,7 @@ private void connPtoP4SetTarget() {
  * @param oldValue java.lang.Object
  * @param newValue java.lang.Object
  */
+@Override
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
@@ -1208,6 +1211,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  * @param listener java.beans.PropertyChangeListener
  */
+@Override
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
@@ -1300,6 +1304,7 @@ private void zoomInButton_ActionPerformed() {
 	if (getConstraintGraphModel()!=null){
 		try { getConstraintGraphModel().getResizeManager().zoomIn(); } 
 		catch (ZoomRangeException e) { } // Do nothing
+		catch (GraphModel.NotReadyException e) { } // Do nothing
 	}
 }
 
@@ -1307,6 +1312,7 @@ private void zoomOutButton_ActionPerformed() {
 	if (getConstraintGraphModel()!=null){
 		try { getConstraintGraphModel().getResizeManager().zoomOut(); } 
 		catch (ZoomRangeException e) { } // Do nothing
+		catch (GraphModel.NotReadyException e) { } // Do nothing
 	}
 }
 

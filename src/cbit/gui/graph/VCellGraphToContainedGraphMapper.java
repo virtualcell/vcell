@@ -28,24 +28,19 @@ public class VCellGraphToContainedGraphMapper {
 	public void updateContainedGraphFromVCellGraph() {
 		containedGraph.clear();
 		for(Shape shape : vcellGraph.getShapes()) {
-			if(shape instanceof ContainerShape) {
-				Rectangle boundary = vcellGraph.getContainerLayout().getBoundaryForAutomaticLayout(shape);
+			GraphContainerLayout containerLayout = vcellGraph.getContainerLayout();
+			if(containerLayout.isContainerForAutomaticLayout(shape)) {
+				Rectangle boundary = containerLayout.getBoundaryForAutomaticLayout(shape);
 				Container container = containedGraph.addContainer(shape, boundary.getX(), boundary.getY(),
 						boundary.getWidth(), boundary.getHeight());
-				boolean noChildIsContainer = true;
 				for(Shape child : shape.getChildren()) {
-					if(child instanceof ContainerShape) {
-						noChildIsContainer = false;
-					}
-				}				
-				if(noChildIsContainer) {
-					for(Shape child : shape.getChildren()) {
+					if(containerLayout.isNodeForAutomaticLayout(child)) {							
 						Point absLoc = child.getSpaceManager().getAbsLoc();
 						Dimension size = child.getSpaceManager().getSize();
 						containedGraph.addNode(child, container, absLoc.getX(), absLoc.getY(), 
 								size.getWidth(), size.getHeight());
-					}					
-				}
+					}
+				}					
 			}
 		}
 		for(Shape shape : vcellGraph.getShapes()) {

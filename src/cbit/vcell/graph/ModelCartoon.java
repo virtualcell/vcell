@@ -7,6 +7,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
+import org.vcell.relationship.RelationshipModel;
+import org.vcell.relationship.RelationshipObject;
+
 import cbit.gui.graph.*;
 import cbit.vcell.model.*;
 /**
@@ -14,7 +19,7 @@ import cbit.vcell.model.*;
  * 
  */
 public abstract class ModelCartoon extends GraphModel 
-implements java.beans.PropertyChangeListener, Model.Owner {
+implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener {
 	public static final String PROPERTY_NAME_MODEL = "model";
 	private Model fieldModel = null;
 
@@ -60,4 +65,28 @@ implements java.beans.PropertyChangeListener, Model.Owner {
 		}
 		setSelectedObjects(selectedObjectsNew.toArray());
 	}
+	
+	public void relationshipChanged(RelationshipEvent event) {
+		RelationshipObject relationshipObject = event.getRelationshipObject();
+		refreshRelationshipInfo(relationshipObject);
+	}
+
+
+	public void refreshRelationshipInfo(RelationshipObject relationshipObject) {
+		BioModelEntityObject bioModelEntity = relationshipObject.getBioModelEntityObject();
+		if(bioModelEntity != null) {
+			Shape shape = getShapeFromModelObject(bioModelEntity);
+			if(shape instanceof SpeciesContextShape) {
+				SpeciesContextShape scShape = (SpeciesContextShape) shape;
+				scShape.setLinkText("L");
+			}		
+		}
+	}
+
+	public void refreshRelationshipInfo(RelationshipModel relationshipModel) {
+		for(RelationshipObject relationship : relationshipModel.getRelationshipObjects()) {
+			refreshRelationshipInfo(relationship);
+		}
+	}
+	
 }

@@ -53,6 +53,8 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		this.graphModel = graphModel;
 	}
 
+	public GraphModel getGraphModel() { return graphModel; }
+	
 	public ShapeSpaceManager getSpaceManager() { return spaceManager; }
 	
 	public void setRelPos(Point relPos) { spaceManager.setRelPos(relPos); }

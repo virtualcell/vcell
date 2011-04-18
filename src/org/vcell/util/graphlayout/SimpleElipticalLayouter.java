@@ -13,6 +13,7 @@ public class SimpleElipticalLayouter extends ContainedGraphLayouter {
 	protected Random random = new Random();
 	protected StretchToBoundaryLayouter stretchLayouter = new StretchToBoundaryLayouter();
 	
+	@Override
 	public void layout(ContainedGraph graph) {
 		for(Container container : graph.getContainers()) {
 			double centerX = container.getX() + container.getWidth() / 2;
@@ -31,6 +32,7 @@ public class SimpleElipticalLayouter extends ContainedGraphLayouter {
 		stretchLayouter.layout(graph);
 	}
 
+	@Override
 	public String getLayoutName() {
 		return LAYOUT_NAME;
 	}

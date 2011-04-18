@@ -294,6 +294,7 @@ public void setDBSpecies(cbit.vcell.dictionary.DBSpecies argDBSpecies) throws ja
  * This method was created in VisualAge.
  * @return java.lang.String
  */
+@Override
 public String toString() {
 	return "Species@"+Integer.toHexString(hashCode())+"("+"'commonName='"+getCommonName()+"')";
 }

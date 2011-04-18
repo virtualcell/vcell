@@ -14,6 +14,7 @@ import java.awt.geom.Ellipse2D;
 import java.util.Map;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.util.gui.ShapePaintUtil;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
@@ -40,6 +41,8 @@ public class SpeciesContextShape extends ElipseShape {
 	protected Point smallLabelPos = new Point(0,0);
 
 	private boolean bTruncateLabelName = true;
+	
+	protected String linkText;
 
 	public SpeciesContextShape(SpeciesContext speciesContext, GraphModel graphModel) {
 		super(graphModel);
@@ -82,6 +85,9 @@ public class SpeciesContextShape extends ElipseShape {
 		return speciesContext;
 	}
 
+	public void setLinkText(String linkText) { this.linkText = linkText; }
+	
+	@Override
 	public void refreshLayoutSelf() {
 		int centerX = getSpaceManager().getSize().width/2;
 		labelPos.x = centerX - getLabelSize().width/2; 
@@ -145,6 +151,9 @@ public class SpeciesContextShape extends ElipseShape {
 					(isSelected() || smallLabel == null ? getLabel():smallLabel),
 					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
 					absPosX, getLabelPos().y + absPosY);
+		}
+		if(linkText != null && linkText != "") {
+			ShapePaintUtil.paintLinkMark(g2D, this, Color.WHITE);
 		}
 	}
 

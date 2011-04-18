@@ -2,6 +2,7 @@ package org.vcell.pathway;
 
 import java.util.EventObject;
 
+@SuppressWarnings("serial")
 public class PathwayEvent extends EventObject {
 	private int operationType = CHANGED;
 
@@ -22,6 +23,7 @@ public class PathwayEvent extends EventObject {
 		return operationNames[operationType];
 	}
 
+	@Override
 	public String toString() {
 		return "PathwayEvent:" + getOperationName();
 	}

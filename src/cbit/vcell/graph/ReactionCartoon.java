@@ -113,6 +113,7 @@ public class ReactionCartoon extends ModelCartoon {
 		}
 	}
 
+	@Override
 	public void paint(Graphics2D g, GraphPane canvas) {
 		super.paint(g, canvas);
 	}
@@ -352,7 +353,7 @@ public class ReactionCartoon extends ModelCartoon {
 						shape.getSpaceManager().getRelPos()));
 			}
 		}
-		diagram.setNodeReferences((NodeReference[]) nodeList.toArray(new NodeReference[0]));
+		diagram.setNodeReferences(nodeList.toArray(new NodeReference[0]));
 	}
 
 	public void setStructureSuite(StructureSuite structureSuite) {

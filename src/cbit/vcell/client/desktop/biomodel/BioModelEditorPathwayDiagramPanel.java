@@ -69,7 +69,6 @@ import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -317,7 +316,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if (finalWarningMessage.length() == 0) {
 			return;
 		}
-		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting pathway objects", finalWarningMessage.toString());
+		String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting pathway objects", finalWarningMessage.toString());
 		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 			return;
 		}
@@ -606,7 +605,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 			this.bioModel.getPathwayModel().addPathwayListener(eventHandler);
 		}
 		pathwayModelTableModel.setBioModel(bioModel);
-		pathwayGraphModel.setPathwayModel(bioModel.getPathwayModel());		
+		pathwayGraphModel.setBioModel(bioModel);
+		pathwayGraphModel.setPathwayModel(bioModel.getPathwayModel());
 		refreshInterface();
 	}
 	
@@ -658,9 +658,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 									viewPortStabilizer.restoreViewPortPosition();						
 								}
 							});
-						} catch (ZoomRangeException e) {
-							e.printStackTrace();
-						}
+						} 
+						catch (ZoomRangeException e) { e.printStackTrace(); }
+						catch (GraphModel.NotReadyException e) { e.printStackTrace(); }
 					}
 				};
 			}
@@ -675,9 +675,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 									viewPortStabilizer.restoreViewPortPosition();						
 								}
 							});
-						} catch (ZoomRangeException e) {
-							e.printStackTrace();
-						}
+						} 
+						catch (ZoomRangeException e) { e.printStackTrace(); }
+						catch (GraphModel.NotReadyException e) { e.printStackTrace(); }
 					}
 				};
 			}

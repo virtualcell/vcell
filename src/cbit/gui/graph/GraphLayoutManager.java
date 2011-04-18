@@ -4,9 +4,7 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
@@ -49,6 +47,7 @@ public class GraphLayoutManager {
 			this.task = task;
 		}
 		
+		@Override
 		public boolean isRequestingStop() { 
 			ClientTaskStatusSupport taskSupport = task.getClientTaskStatusSupport();
 			return taskSupport != null ? taskSupport.isInterrupted() : false; 
@@ -88,9 +87,6 @@ public class GraphLayoutManager {
 	}
 
 	public void layoutContainedGraph(Client client) {
-		VCellGraphToContainedGraphMapper mapper = 
-			new VCellGraphToContainedGraphMapper(client.getGraphModel());
-		mapper.updateContainedGraphFromVCellGraph();
 		ContainedGraphLayouter layouter = null;
 		String layoutName = client.getLayoutName();
 		if(RandomLayouter.LAYOUT_NAME.equals(layoutName)) {
@@ -161,18 +157,6 @@ public class GraphLayoutManager {
 		@SuppressWarnings("unchecked")
 		List<Node> nodesRaw = bb.nodes();
 		nodeList = nodesRaw;
-		// calculate offset and scaling so that resulting graph fits on canvas
-		double lowX = 100000;
-		double highX = -100000;
-		double lowY = 100000;
-		double highY = -100000;
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.get(i);
-			lowX = Math.min(lowX, node.x());
-			highX = Math.max(highX, node.x());
-			lowY = Math.min(lowY, node.y());
-			highY = Math.max(highY, node.y());
-		}
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node node = nodeList.get(i);
 			Shape shape = nodeShapeMap.get(node.label());
@@ -196,20 +180,20 @@ public class GraphLayoutManager {
 		graphDim.p2 = new GlgPoint(boundary.getMaxX(), boundary.getMaxY(), 0);
 		graph.dimensions = graphDim;
 		// Add nodes (Vertex) to the graph
-		GlgGraphNode graphNode;
 		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
 		Collection<Shape> shapes = graphModel.getShapes();
 		for(Shape shape : shapes) {
 			// add to the graph
+			GlgGraphNode graphNode;
 			if (ShapeUtil.isMovable(shape)) {
 				graphNode = graph.AddNode(null, 0, null);
 				graph.SetNodePosition(graphNode, ShapeUtil.getAbsCenterX(shape), 
 						ShapeUtil.getAbsCenterY(shape), 0);
+				nodeMap.put(shape, graphNode);
 			} else {
 				continue;
 			}
 			// add to the hashmap
-			nodeMap.put(shape, graphNode);
 		}
 		// Add edges
 		for(Shape shape : shapes) {
@@ -234,39 +218,14 @@ public class GraphLayoutManager {
 		}
 		graph.Update();
 		// Update positions
-		com.genlogic.GraphLayout.GlgPoint glgPoint;
 		for(Shape shape : graphModel.getShapes()) {
-			graphNode = nodeMap.get(shape);
+			GlgGraphNode graphNode = nodeMap.get(shape);
 			if (graphNode != null) {
-				glgPoint = graph.GetNodePosition(graphNode);
+				GlgPoint glgPoint = graph.GetNodePosition(graphNode);
 				shape.setAbsPos((int) glgPoint.x, (int) glgPoint.y);
 			}
 		}
 		new StretchToBoundaryLayouter().layout(client);
-	}
-	
-	public void layoutGLGNew(Client client) {
-		GraphModel graphModel = client.getGraphModel();
-		Shape topShape = graphModel.getTopShape();
-		Set<ContainerShape> containerShapes = new HashSet<ContainerShape>();
-		for(Shape topShapeChild : topShape.getChildren()) {
-			if(topShapeChild instanceof ContainerShape) {
-				containerShapes.add((ContainerShape) topShapeChild);
-			}
-		}
-		if(containerShapes.isEmpty() && topShape instanceof ContainerShape) {
-			containerShapes.add((ContainerShape) topShape);
-		}
-		for(ContainerShape containerShape : containerShapes) {
-			Rectangle boundary = 
-				graphModel.getContainerLayout().getBoundaryForAutomaticLayout(containerShape);
-			GlgCube glgBoundary = new GlgCube();
-			glgBoundary.p1 = new GlgPoint(boundary.getMinX(), boundary.getMinY(), 0);
-			glgBoundary.p2 = new GlgPoint(boundary.getMaxX(), boundary.getMaxY(), 0);
-			GlgGraphLayout graphLayout = new GlgGraphLayout();
-			graphLayout.dimensions = glgBoundary;
-			
-		}
 	}
 	
 }

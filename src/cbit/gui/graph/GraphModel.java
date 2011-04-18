@@ -16,6 +16,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,13 @@ import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphResizeManager.ResizeMode;
 
 public abstract class GraphModel {
+	
+	@SuppressWarnings("serial")
+	public static class NotReadyException extends Exception {
+		public NotReadyException(String message) { super(message); }
+		public NotReadyException(String message, Throwable throwable) { super(message, throwable); }
+		public NotReadyException(Throwable throwable) { super(throwable); }
+	}
 	
 	public static final String PROPERTY_NAME_SELECTED = "selected";
 	
@@ -178,7 +186,7 @@ public abstract class GraphModel {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
-	public Dimension getPreferedCanvasSize(Graphics2D g) {
+	public Dimension getPreferedCanvasSize(Graphics2D g) throws NotReadyException {
 		Dimension dim = null;
 		if (getTopShape() == null) {
 			dim = new Dimension(1, 1);
@@ -245,7 +253,7 @@ public abstract class GraphModel {
 		return objectShapeMap.keySet();
 	}
 
-	public Shape getTopShape() {
+	public Shape getTopShape() throws NotReadyException {
 		if (objectShapeMap == null) {
 			return null;
 		}
@@ -254,20 +262,26 @@ public abstract class GraphModel {
 			return null;
 		}
 		Shape topShape = null;
-		for (Shape fs : objectShapeMap.values()) {
-			if (fs.getParent() == null) {
-				if (topShape != null) {
-					GraphModelShapeHierarchyPrinter.showShapeHierarchyBottomUp(this);
-					GraphModelShapeHierarchyPrinter.showShapeHierarchyTopDown(this);
-					throw new RuntimeException(
-							"ERROR: too many top level shapes, at least "
-									+ topShape + " and " + fs);
+		try {
+			for (Shape fs : objectShapeMap.values()) {
+				if (fs.getParent() == null) {
+					if (topShape != null) {
+						GraphModelShapeHierarchyPrinter.showShapeHierarchyBottomUp(this);
+						GraphModelShapeHierarchyPrinter.showShapeHierarchyTopDown(this);
+						throw new NotReadyException(
+								"Too many top level shapes, at least "
+								+ topShape + " and " + fs + 
+						"; probably tried to paint while updating graph model.");
+					}
+					topShape = fs;
 				}
-				topShape = fs;
 			}
-		}
+		} 
+		catch(NullPointerException exception) { throw new GraphModel.NotReadyException(exception); }
+		catch(ConcurrentModificationException exception) { throw new GraphModel.NotReadyException(exception); }
 		if (topShape == null) {
-			throw new RuntimeException("there are no top shapes");
+			throw new NotReadyException("There are no top shapes; probably tried to paint while" +
+					" updating graph model.");
 		}
 		return topShape;
 	}
@@ -348,14 +362,24 @@ public abstract class GraphModel {
 	}
 
 	public Shape pickWorld(Point argPoint) {
-		Shape topShape = getTopShape();
+		Shape topShape;
+		try {
+			topShape = getTopShape();
+		} catch (NotReadyException e) {
+			return null;
+		}
 		if (topShape == null)
 			return null;
 		return topShape.pick(argPoint);
 	}
 
 	public List<Shape> pickWorld(Rectangle argRectWorld) {
-		Shape topShape = getTopShape();
+		Shape topShape;
+		try {
+			topShape = getTopShape();
+		} catch (NotReadyException e) {
+			return null;
+		}
 		if (topShape == null)
 			return null;
 		List<Shape> pickedList = new ArrayList<Shape>();
@@ -394,7 +418,10 @@ public abstract class GraphModel {
 	}
 
 	public ResizeMode getResizeMode() { return resizeManager.getResizeMode(); }
-	public void setResizeMode(ResizeMode resizeMode) { resizeManager.setResizeMode(resizeMode); }
+	
+	public void setResizeMode(ResizeMode resizeMode) throws GraphModel.NotReadyException { 
+		resizeManager.setResizeMode(resizeMode); 
+	}
 	
 	public void searchText(String text) {
 		String lowerCaseText = text.toLowerCase();

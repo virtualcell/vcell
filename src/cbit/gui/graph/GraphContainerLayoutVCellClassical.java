@@ -8,8 +8,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
+import cbit.gui.graph.GraphModel.NotReadyException;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
 import cbit.vcell.constraints.gui.ConstraintGraphNode;
 import cbit.vcell.graph.ContainerContainerShape;
@@ -30,31 +32,38 @@ import cbit.vcell.model.StructureUtil;
 
 public class GraphContainerLayoutVCellClassical implements GraphContainerLayout {
 	
-	public Dimension getPreferedSize(Shape shape, Graphics2D g) {
-		if(shape instanceof SimpleContainerShape) {
-			return getPreferedSizeSimpleContainerShape((SimpleContainerShape) shape, g);
-		} else if(shape instanceof ContainerContainerShape) {
-			return getPreferedSizeContainerContainerShape((ContainerContainerShape)shape, g);
-		} else if(shape instanceof GeometryContextContainerShape) {
-			return getPreferedSizeGeometryContextContainerShape((GeometryContextContainerShape)shape, g);
-		} else if(shape instanceof GeometryContextGeometryShape) {
-			return getPreferedSizeGeometryContextGeometryShape((GeometryContextGeometryShape)shape, g);
-		} else if(shape instanceof GeometryContextStructureShape) {
-			return getPreferedSizeGeometryContextStructureShape((GeometryContextStructureShape)shape, g);
-		} else if(shape instanceof ReactionContainerShape) {
-			return getPreferedSizeReactionContainerShape((ReactionContainerShape)shape, g);
-		} else if(shape instanceof MembraneShape) {
-			return getPreferedSizeMembraneShape((MembraneShape) shape, g);
-		} else if(shape instanceof StructureMappingFeatureShape) {
-			return getPreferedSizeStructureMappingFeatureShape((StructureMappingFeatureShape) shape, g);
-		} else if(shape instanceof FeatureShape) {
-			return getPreferedSizeFeatureShape((FeatureShape) shape, g);
+	public Dimension getPreferedSize(Shape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
+		try {
+			if(shape instanceof SimpleContainerShape) {
+				return getPreferedSizeSimpleContainerShape((SimpleContainerShape) shape, g);
+			} else if(shape instanceof ContainerContainerShape) {
+				return getPreferedSizeContainerContainerShape((ContainerContainerShape)shape, g);
+			} else if(shape instanceof GeometryContextContainerShape) {
+				return getPreferedSizeGeometryContextContainerShape((GeometryContextContainerShape)shape, g);
+			} else if(shape instanceof GeometryContextGeometryShape) {
+				return getPreferedSizeGeometryContextGeometryShape((GeometryContextGeometryShape)shape, g);
+			} else if(shape instanceof GeometryContextStructureShape) {
+				return getPreferedSizeGeometryContextStructureShape((GeometryContextStructureShape)shape, g);
+			} else if(shape instanceof ReactionContainerShape) {
+				return getPreferedSizeReactionContainerShape((ReactionContainerShape)shape, g);
+			} else if(shape instanceof MembraneShape) {
+				return getPreferedSizeMembraneShape((MembraneShape) shape, g);
+			} else if(shape instanceof StructureMappingFeatureShape) {
+				return getPreferedSizeStructureMappingFeatureShape((StructureMappingFeatureShape) shape, g);
+			} else if(shape instanceof FeatureShape) {
+				return getPreferedSizeFeatureShape((FeatureShape) shape, g);
+			} else {
+				return shape.getPreferedSizeSelf(g);			
+			}
+		} catch (NullPointerException exception) {
+			throw new GraphModel.NotReadyException(exception);
 		}
-		return shape.getPreferedSizeSelf(g);
 	}
 	
 	public Dimension getPreferedSizeStructureMappingFeatureShape(
-			StructureMappingFeatureShape shape, Graphics2D g) {
+			StructureMappingFeatureShape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		FontMetrics fm = g.getFontMetrics();
 		shape.getLabelSize().height = fm.getMaxAscent() + fm.getMaxDescent();
 		shape.getLabelSize().width = fm.stringWidth(shape.getLabel());
@@ -103,7 +112,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		}
 	}
 
-	public Dimension getPreferedSizeMembraneShape(MembraneShape shape, Graphics2D g) {
+	public Dimension getPreferedSizeMembraneShape(MembraneShape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		FontMetrics fm = g.getFontMetrics();
 		shape.setLabelSize(fm.stringWidth(shape.getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		// has 1 child (featureShape)
@@ -115,7 +125,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 
 	public Dimension getPreferedSizeGeometryContextStructureShape(
-			GeometryContextStructureShape shape, Graphics2D g) {
+			GeometryContextStructureShape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		Dimension d = shape.getPreferedSizeSelf(g);
 		Dimension childDim = null;
 		if (shape.countChildren() != 0){
@@ -128,24 +139,28 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 
 	public Dimension getPreferedSizeGeometryContextGeometryShape(
-			GeometryContextGeometryShape shape, Graphics2D g) {
+			GeometryContextGeometryShape shape, Graphics2D g) throws GraphModel.NotReadyException {
 		Dimension d = shape.getPreferedSizeSelf(g);
 		int height = 2 * shape.getLabelSize().height + 2;
 		Dimension childDim = new Dimension();
-		if (shape.countChildren() > 0){
-			for(Shape child : shape.getChildren()) {
-				childDim.height += getPreferedSize(child, g).height;
-				childDim.width = Math.max(childDim.width, getPreferedSize(child, g).width);
+		try {
+			if (shape.countChildren() > 0){
+				for(Shape child : shape.getChildren()) {
+					childDim.height += getPreferedSize(child, g).height;
+					childDim.width = Math.max(childDim.width, getPreferedSize(child, g).width);
+				}
+			}else{
+				childDim = new Dimension(100,100);
 			}
-		}else{
-			childDim = new Dimension(100,100);
+		} catch(ConcurrentModificationException exception) {
+			throw new GraphModel.NotReadyException(exception);
 		}
 		Dimension newDim = new Dimension(Math.max(d.width,childDim.width)+10, height+childDim.height);
 		return newDim;
 	}
 
 	public Dimension getPreferedSizeGeometryContextContainerShape(
-			GeometryContextContainerShape shape, Graphics2D g) {
+			GeometryContextContainerShape shape, Graphics2D g) throws GraphModel.NotReadyException {
 		Dimension geometryChildDim = getPreferedSize(shape.getGeometryContainer(), g);
 		Dimension structureChildDim = getPreferedSize(shape.getStructureContainer(), g);
 		Dimension newDim = 
@@ -154,7 +169,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		return newDim;
 	}
 
-	public Dimension getPreferedSizeContainerContainerShape(ContainerContainerShape shape, Graphics2D g) {
+	public Dimension getPreferedSizeContainerContainerShape(ContainerContainerShape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		// get size when empty
 		Dimension emptySize = shape.getPreferedSizeSelf(g);
 		// make larger than empty size so that children fit
@@ -189,7 +205,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		return emptySize;
 	}
 	
-	public Dimension getPreferedSizeFeatureShape(FeatureShape shape, Graphics2D g) {
+	public Dimension getPreferedSizeFeatureShape(FeatureShape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		Font origfont = g.getFont();
 		g.setFont(shape.getLabelFont(g));
 		FontMetrics fm = g.getFontMetrics();
@@ -257,7 +274,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		}
 	}
 	
-	public void layout(GraphModel graphModel, Graphics2D g2d, Dimension size) {
+	public void layout(GraphModel graphModel, Graphics2D g2d, Dimension size) 
+	throws GraphModel.NotReadyException {
 		Shape topShape = graphModel.getTopShape();
 		//
 		// compute nominal sizes and positions of children
@@ -268,7 +286,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		}
 	}
 	
-	public void change_managed(Shape shape, Graphics2D g) {
+	public void change_managed(Shape shape, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		for (int i = 0; i < shape.countChildren(); i++) {
 			Shape child = shape.childShapeList.get(i);
 			change_managed(child, g);
@@ -368,7 +387,7 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		return new Point(selfCountX+column1.x+column2.x,selfCountY+Math.max(column1.y,column2.y));
 	}
 
-	public void resize(Shape shape, Dimension newSize, Graphics2D g) {
+	public void resize(Shape shape, Dimension newSize, Graphics2D g) throws NotReadyException {
 		if(shape instanceof GeometryContextContainerShape) {
 			resizeGeometryContextContainerShape((GeometryContextContainerShape) shape, newSize, g);
 		} else if(shape instanceof ContainerContainerShape) {
@@ -395,7 +414,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 	
 	public void resizeGeometryContextContainerShape(GeometryContextContainerShape shape, Dimension newSize,
-			Graphics2D g) {
+			Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		shape.getSpaceManager().setSize(newSize);
 		// try to make geometryContainer have full width and structureContainer have rest
 		int geomNewWidth = Math.min(shape.getSpaceManager().getSize().width - 10, 
@@ -411,7 +431,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 
 	
 	public void resizeContainerContainerShape(ContainerContainerShape shape, Dimension newSize,
-			Graphics2D g) {
+			Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		shape.getSpaceManager().setSize(newSize);
 		int remainingWidth = shape.getSpaceManager().getSize().width;
 		int[] widths = new int[shape.getStructureContainers().size()];
@@ -432,7 +453,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 	
 
-	public void resizeMembraneShape(MembraneShape shape, Dimension newSize, Graphics2D g) {
+	public void resizeMembraneShape(MembraneShape shape, Dimension newSize, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		int deltaX = newSize.width - shape.getSpaceManager().getSize().width;
 		int deltaY = newSize.height - shape.getSpaceManager().getSize().height;
 		shape.getSpaceManager().setSize(newSize);
@@ -446,7 +468,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		refreshLayoutChildren(shape);
 	}
 
-	public void resizeShape(Shape shape, Dimension newSize, Graphics2D g) {
+	public void resizeShape(Shape shape, Dimension newSize, Graphics2D g) 
+	throws GraphModel.NotReadyException {
 		int deltaX = newSize.width - shape.getSpaceManager().getSize().width;
 		int deltaY = newSize.height - shape.getSpaceManager().getSize().height;
 		shape.getSpaceManager().setSize(newSize);
@@ -667,7 +690,7 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		int spacingY;
 		int extraSpacingY;
 		int currentX = shape.getSpaceManager().getSize().width/2 - memWidth/2;
-		int spacingX = FeatureShape.defaultSpacingX;
+		int spacingX = StructureShape.defaultSpacingX;
 		// position column2 (membranes)
 		totalSpacingY = (shape.getSpaceManager().getSize().height - currentY) - memHeight;
 		if (totalSpacingY<0){
@@ -822,6 +845,14 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 
 	public Rectangle getBoundaryForAutomaticLayout(Shape shape) {
 		return new Rectangle(shape.getSpaceManager().getAbsLoc(), shape.getSpaceManager().getSize());
+	}
+
+	public boolean isContainerForAutomaticLayout(Shape shape) {
+		return shape instanceof SimpleContainerShape;
+	}
+
+	public boolean isNodeForAutomaticLayout(Shape shape) {
+		return shape instanceof ElipseShape;
 	}
 
 }
