@@ -8,8 +8,9 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
-import java.io.*;
-import java.util.zip.DataFormatException;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.Serializable;
 
 import org.vcell.util.Coordinate;
 
@@ -22,6 +23,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * Dummy parent class.
  */
 public abstract class FormatSpecificSpecs implements Serializable {
+	public static final Dimension SMOLDYN_DEFAULT_FRAME_SIZE = new Dimension(800,800);
 	public static final int PARTICLE_NONE = 0;
 	public static final int PARTICLE_SELECT = 2;	
 	

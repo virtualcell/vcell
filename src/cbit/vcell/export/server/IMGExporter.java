@@ -222,8 +222,8 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 	args.add(beginIndexTime+"");
 	args.add(endIndexTime+"");
 	args.add(4+"");//particle sphere size
-	args.add(800+"");//frame size X
-	args.add(800+"");//frame size Y
+	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.width+"");//frame size X
+	args.add(FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE.height+"");//frame size Y
 	args.add(variableNames.length+""); // 0 = show all the particles.  >0 == show n different particles, to be listed below
 	for (int i = 0; i < variableNames.length; i++) {
 		args.add(variableNames[i]);

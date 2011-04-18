@@ -1,15 +1,9 @@
 package cbit.vcell.export;
 
-import javax.swing.JPanel;
-import java.awt.GridBagLayout;
-import javax.swing.JLabel;
-
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -22,13 +16,18 @@ import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImagePaneModel;
@@ -39,15 +38,6 @@ import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.solvers.CartesianMesh;
-
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.vcell.util.gui.DialogUtils;
-
-import com.sun.swing.internal.plaf.basic.resources.basic_zh_CN;
-import javax.swing.JCheckBox;
 
 public class MediaSettingsPanel extends JPanel {
 	private JTextField movieDurationTextField;
@@ -433,12 +423,18 @@ public class MediaSettingsPanel extends JPanel {
 							mediaDescription = "Unknown";
 				}
 				//Calculate Image/Frame size
-				int meshMode = (scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)?ImagePaneModel.MESH_MODE:ImagePaneModel.NORMAL_MODE);
-				int imageScale = (meshMode == ImagePaneModel.MESH_MODE?viewZoom:Integer.valueOf((String)scalingCombobox.getSelectedItem()));
-				Dimension imageDim = FormatSpecificSpecs.getImageDimension(meshMode, imageScale, mesh, normalAxis);
-				imageDim = FormatSpecificSpecs.getMirrorDimension(mirrorComboBox.getSelectedIndex(), imageDim.width, imageDim.height);
-				imageDim.height = (bSeparate?imageDim.height:imageDim.height*variableNames.length);
-				
+				Dimension imageDim = null;
+				int meshMode = -1;
+				int imageScale = -1;
+				if(isSmoldyn && particleRadioButton.isSelected()){
+					imageDim = FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE;
+				}else{
+					meshMode = (scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)?ImagePaneModel.MESH_MODE:ImagePaneModel.NORMAL_MODE);
+					imageScale = (meshMode == ImagePaneModel.MESH_MODE?viewZoom:Integer.valueOf((String)scalingCombobox.getSelectedItem()));
+					imageDim = FormatSpecificSpecs.getImageDimension(meshMode, imageScale, mesh, normalAxis);
+					imageDim = FormatSpecificSpecs.getMirrorDimension(mirrorComboBox.getSelectedIndex(), imageDim.width, imageDim.height);
+					imageDim.height = (bSeparate?imageDim.height:imageDim.height*variableNames.length);
+				}
 				String finalFileDescription = null;
 				if(numMedia > 1){
 					finalFileDescription = "ZIP file containing "+numMedia+" files of type "+mediaDescription;
@@ -462,7 +458,11 @@ public class MediaSettingsPanel extends JPanel {
 					}
 					exportInfoJTextArea.append("\n");
 				}
-				exportInfoJTextArea.append("Composition: "+(bSeparate?"Export variables individually":"Export variables composited together vertically")+"\n");
+				if(isSmoldyn && particleRadioButton.isSelected()){
+					exportInfoJTextArea.append("Composition: All particles rendered together in each frame.\n");
+				}else{
+					exportInfoJTextArea.append("Composition: "+(bSeparate?"Export variables individually":"Export variables composited together vertically")+"\n");					
+				}
 				exportInfoJTextArea.append("Encoding Format: "+encodingFormat+"\n");
 				int compressionValue = 0;
 				if(!bLossLess && compressionSlider.getValue() != 0){
@@ -472,35 +472,36 @@ public class MediaSettingsPanel extends JPanel {
 				exportInfoJTextArea.append("Num Variables: "+numVars+"\n");
 				exportInfoJTextArea.append("Num Slices: "+numSlices+"\n");
 				exportInfoJTextArea.append("Num TimePoints: "+numTimePoints+" (from "+timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]+" to "+timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]+")\n");
-				if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() == 0){
-					exportInfoJTextArea.append("Hiding Membrane Outlines for Volume variables\n");
-				}else if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() > 0){
-					exportInfoJTextArea.append("Showing Membrane Outlines for Volume variables\n");
-				}
-				exportInfoJTextArea.append("Variable Mirroring: "+mirrorComboBox.getSelectedItem()+"\n");
-				if(membrVarThicknessSlider.isEnabled()){
-					exportInfoJTextArea.append("Membrane Thickness: "+membrVarThicknessSlider.getValue()+"\n");
-				}
-				exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
-				
-				exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
 
-				exportInfoJTextArea.append("\nVariable Display Preferences:\n");
-				for (int i = 0; i < variableNames.length; i++) {
-					boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
-					boolean bSpecialColorsCustom =
-						!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
-						!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
-					
-					exportInfoJTextArea.append(
-						"'"+variableNames[i]+"':\n"+
-						"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
-						"     Value Scale Range: "+(bDefaultScaleRange?"Min/Max each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":"User Defined->"+displayPreferences[i].getScaleSettings())+"\n"+
-						"     Special Colors: "+(bSpecialColorsCustom?"User Defined":"Default (right-click 'BM AM NN ND NR' color bar in 'Results Viewer' to change)")+"\n"+
-						"     Domain Infomation: "+(displayPreferences[i].getDomainValid()==null?"False":"True")+"\n"
-					);
-					
+				if(isSmoldyn && particleRadioButton.isSelected()){
+					exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
+				}else{
+					if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() == 0){
+						exportInfoJTextArea.append("Hiding Membrane Outlines for Volume variables\n");
+					}else if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() > 0){
+						exportInfoJTextArea.append("Showing Membrane Outlines for Volume variables\n");
+					}
+					if(membrVarThicknessSlider.isEnabled()){
+						exportInfoJTextArea.append("Membrane Thickness: "+membrVarThicknessSlider.getValue()+"\n");
+					}
+					exportInfoJTextArea.append("Variable Mirroring: "+mirrorComboBox.getSelectedItem()+"\n");
+					exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
+					exportInfoJTextArea.append("\nVariable Display Preferences:\n");
+					for (int i = 0; i < variableNames.length; i++) {
+						boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
+						boolean bSpecialColorsCustom =
+							!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
+							!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
+						exportInfoJTextArea.append(
+							"'"+variableNames[i]+"':\n"+
+							"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
+							"     Value Scale Range: "+(bDefaultScaleRange?"Min/Max each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":"User Defined->"+displayPreferences[i].getScaleSettings())+"\n"+
+							"     Special Colors: "+(bSpecialColorsCustom?"User Defined":"Default (right-click 'BM AM NN ND NR' color bar in 'Results Viewer' to change)")+"\n"+
+							"     Domain Infomation: "+(displayPreferences[i].getDomainValid()==null?"False":"True")+"\n"
+						);
+					}
 				}
+
 				jScrollPane.setViewportView(exportInfoJTextArea);
 				exportInfoJTextArea.setCaretPosition(0);//reset scroll to beginning
 				if(DialogUtils.showComponentOKCancelDialog(MediaSettingsPanel.this, jScrollPane,"Export Information") != JOptionPane.OK_OPTION){
