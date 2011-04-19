@@ -125,7 +125,7 @@ public static void main(String [] args) throws Exception{
 	MovieSpecs movieSpecs = new MovieSpecs(
 		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,
 		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
-	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs);
+	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest");
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
 }
 

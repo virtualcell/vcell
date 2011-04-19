@@ -12,6 +12,7 @@ import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -634,6 +635,9 @@ public void setImageSizeCalculationInfo(CartesianMesh mesh,int normalAxis){
 }
 public void setIsSmoldyn(boolean isSmoldyn){
 	getMediaSettingsPanel1().setIsSmoldyn(isSmoldyn);
+}
+public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
+	getASCIISettingsPanel1().setSimulationSelector(simulationSelector);
 }
 /**
  * Comment

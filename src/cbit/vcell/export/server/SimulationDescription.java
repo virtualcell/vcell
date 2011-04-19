@@ -1,17 +1,14 @@
 package cbit.vcell.export.server;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.solver.ode.ODESimData;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.simdata.*;
-import cbit.vcell.server.*;
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.solver.ode.ODESimData;
 
 /**
  * This type was created in VisualAge.
@@ -98,7 +95,7 @@ public String getHeader(String format) {
 	String line4 = null;
 	String line5 = null;
 	if (format.equals(".csv")) {
-		line1 = "Simulation name,," + name + ",," + dataType + "\n";
+		line1 = "SimDataID,," + name + ",," + dataType + "\n";
 		if(bMultiTrialData)
 		{
 			line2 = "Trial range,," + times[0] + "," + times[times.length - 1] + "\n";

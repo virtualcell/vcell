@@ -5,6 +5,8 @@ package cbit.vcell.export.server;
  * All rights reserved.
 ©*/
 import java.io.*;
+
+import org.vcell.util.Compare;
 /**
  * This type was created in VisualAge.
  */
@@ -12,13 +14,15 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	private int format;
 	private int dataType;
 	private boolean switchRowsColumns;
+	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(int format, int dataType, boolean switchRowsColumns) {
+public ASCIISpecs(int format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs) {
 	this.format = format;
 	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
+	this.simNameSimDataIDs = simNameSimDataIDs;
 }
 /**
  * Insert the method's description here.
@@ -32,12 +36,16 @@ public boolean equals(java.lang.Object object) {
 		if (
 			format == asciiSpecs.getFormat() &&
 			dataType == asciiSpecs.getDataType() &&
-			switchRowsColumns == asciiSpecs.getSwitchRowsColumns()
+			switchRowsColumns == asciiSpecs.getSwitchRowsColumns() &&
+			Compare.isEqualOrNull(simNameSimDataIDs, asciiSpecs.getSimNameSimDataIDs())
 		) {
 			return true;
 		}
 	}
 	return false;
+}
+public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
+	return simNameSimDataIDs;
 }
 /**
  * This method was created in VisualAge.
