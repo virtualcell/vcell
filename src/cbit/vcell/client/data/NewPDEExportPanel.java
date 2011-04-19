@@ -29,29 +29,43 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
+import org.vcell.util.gui.DialogUtils.TableListResult;
 
 import cbit.image.DisplayAdapterService;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.ExportSettings;
+import cbit.vcell.export.server.ASCIISpecs;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
@@ -1019,10 +1033,76 @@ private ExportSpecs getExportSpecs() {
 		variableSpecs,
 		timeSpecs,
 		geometrySpecs,
-		getExportSettings1().getFormatSpecificSpecs()
+		getExportSettings1().getFormatSpecificSpecs(),
+		dataInfoProvider.getSimulationModelInfo().getSimulationName()
 	);
 }
 
+private ExportSpecs.SimulationSelector createSimulationSelector(){
+	
+	ExportSpecs.SimulationSelector simulationSelector =
+		new ExportSpecs.SimulationSelector(){
+			private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
+			private Simulation[] simulations;
+			public SimNameSimDataID[] getSelectedSimDataInfo() {
+				return simNameSimDataIDs;
+			}
+			public void selectSimulations() {
+				getNumAvailableSimulations();
+				String[][] rowData = new String[simulations.length][5];
+				for (int i = 0; i < rowData.length; i++) {
+					rowData[i][0] = simulations[i].getName();
+					rowData[i][1] = simulations[i].getMeshSpecification().getSamplingSize().toString();
+					rowData[i][2] = simulations[i].getSolverTaskDescription().getExpectedNumTimePoints()+"";
+					rowData[i][3] = simulations[i].getSolverTaskDescription().getTimeBounds().getEndingTime()+"";
+					rowData[i][4] = simulations[i].getSolverTaskDescription().getOutputTimeSpec().getShortDescription();
+				}
+		
+				try{
+					int[] choices = DialogUtils.showComponentOKCancelTableList(
+							NewPDEExportPanel.this, "Choose Sims to export together (non parameter scan)",
+							new String[] {"Simulation","Mesh x,y,z","NumTimePoints","EndTime","Output Descr."},
+							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+					if (choices != null) {
+						simNameSimDataIDs = new ExportSpecs.SimNameSimDataID[choices.length];
+						for (int i = 0; i < choices.length; i++) {
+							VCSimulationIdentifier vcSimId =
+								simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+							simNameSimDataIDs[i] =
+								new ExportSpecs.SimNameSimDataID(
+									simulations[choices[i]].getName(),
+									new VCSimulationDataIdentifier(vcSimId, 0/*simulations[choices[i]].getScanCount()*/)
+								);
+						}
+					}
+				}catch (UserCancelException uce){
+					//ignore
+				}
+			}
+			public int getNumAvailableSimulations() {
+				if(simulations==null){
+					VCDocument thisDocument = ((DocumentWindowManager)getDataViewerManager()).getVCDocument();
+					if(thisDocument instanceof BioModel){
+						String thisSimContextName = dataInfoProvider.getSimulationModelInfo().getContextName();
+						SimulationContext[] simContexts = ((BioModel)thisDocument).getSimulationContexts();
+						SimulationContext thisSimulationContext = null;
+						for (int i = 0; i < simContexts.length; i++) {
+							if(simContexts[i].getName().equals(thisSimContextName)){
+								thisSimulationContext = simContexts[i];
+								break;
+							}
+						}
+						simulations = thisSimulationContext.getSimulations();
+					}else if(thisDocument instanceof MathModel){
+						simulations = ((MathModel)thisDocument).getSimulations();
+					}
+				}
+				return simulations.length;
+			}
+		
+	};
+	return simulationSelector;
+}
 /**
  * Return the JButtonExport property value.
  * @return javax.swing.JButton
@@ -2200,31 +2280,6 @@ private void startExport() {
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
 			
 			displayPreferences = new DisplayPreferences[variableSelections.length];
-//			for (int i = 0; i < displayPreferences.length; i++){
-//				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
-//				Vector v = new Vector();
-//				if (displayPreferences[i] == null) {
-//					PopupGenerator.showErrorDialog(this, "No scale range or colormap available for variable '" + (String)variableSelections[i] + "'\nplease view each variable to be exported");
-//					return;
-//				} else {
-//					if (displayPreferences[i].scaleIsDefault()) {
-//						v.add(variableSelections[i]);
-//					}
-//				}
-//				if (! v.isEmpty()) {
-//					StringBuffer names = new StringBuffer();
-//					Enumeration en = v.elements();
-//					while (en.hasMoreElements()) {
-//						names.append("\n" + en.nextElement());
-//					}
-//					String choice = PopupGenerator.showWarningDialog(this, getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
-//					//String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
-//					if (choice.equals(UserMessage.OPTION_CANCEL)){
-//						// user canceled
-//						return;
-//					}
-//				}
-//			}
 			
 			StringBuffer noScaleInfoNames = new StringBuffer();
 			for (int i = 0; i < displayPreferences.length; i++) {
@@ -2292,6 +2347,7 @@ private void startExport() {
 					return;
 				}
 			}
+			getExportSettings1().setSimulationSelector(createSimulationSelector());
 			break;
 		}
 	};

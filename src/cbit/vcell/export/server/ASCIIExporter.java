@@ -1,11 +1,6 @@
 package cbit.vcell.export.server;
-import cbit.vcell.solver.ode.*;
-import cbit.vcell.math.*;
-import cbit.plot.*;
-import cbit.vcell.simdata.gui.*;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.geometry.*;
-import java.rmi.*;
+import java.rmi.RemoteException;
+import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -13,8 +8,15 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.vcell.simdata.*;
-import cbit.vcell.server.*;
+import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.ParticleData;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
+import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.solver.ode.ODESimData;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:38:59 PM)
@@ -148,9 +150,21 @@ private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID
 /**
  * This method was created in VisualAge.
  */
-private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs) 
+private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
+		VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
+		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String simulationName) 
 						throws RemoteException, DataAccessException {
-							
+						
+	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+	if(simNameSimDataIDs == null){
+		simNameSimDataIDs = new ExportSpecs.SimNameSimDataID[] {new ExportSpecs.SimNameSimDataID(simulationName, orig_vcdID)};
+	}
+	Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
+	final int SIM_COUNT = simNameSimDataIDs.length;
+	for (int v = 0; v < SIM_COUNT; v++) {
+	VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier();
+	
+	
 	double progress = 0.0;
 	
 	String simID = vcdID.getID();							
@@ -159,7 +173,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 	String dataID = "_";
 	StringBuffer data = new StringBuffer();
 	SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
-	data.append(simulationDescription.getHeader(dataType));
+	data.append("Simulation Name: "+simNameSimDataIDs[v].getSimulationName()+"   "+simulationDescription.getHeader(dataType));
 	switch (geometrySpecs.getModeID()) {
 		case GEOMETRY_SELECTIONS: {
 			// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
@@ -198,6 +212,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					output[s * variableSpecs.getVariableNames().length + i+pointOffset] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
+			exportOutputV.add(output);
 			break;
 		}
 		case GEOMETRY_SLICE: {
@@ -208,7 +223,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 				//String[] data2 = new String[timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1];
 				int data2Length = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
 				for (int i=0;i<data2Length;i++) {
-					progress = (double)(i + j * data2Length) / required;
+					progress = (double)(v+((i + j * data2Length) / (double)required))/(double)SIM_COUNT;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					String data2 = getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
 					StringBuffer data1 = new StringBuffer(data.toString());
@@ -218,17 +233,38 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 						inset.append("000");
 						inset.setLength(4);
 						inset.reverse();
-					String dataID1 = dataID + variableSpecs.getVariableNames()[j] + inset.toString();
+					String dataID1 = dataID + variableSpecs.getVariableNames()[j] + "_"+inset.toString();
 					output[j * data2Length + i] = new ExportOutput(true, dataType, simID, dataID1, data1.toString().getBytes());
 				}
 			}
+			exportOutputV.add(output);
 			break;
 		}
 		default: {
 			throw new DataAccessException("Undexpected geometry modeID");
 		}
 	}
-	return output;	
+	}
+	if(exportOutputV.size() == 1){
+		return exportOutputV.elementAt(0);
+	}
+	
+	ExportOutput[] combinedExportOutput = new ExportOutput[exportOutputV.elementAt(0).length];
+	for (int i = 0; i < combinedExportOutput.length; i++) {
+		StringBuffer combinedDataSB = new StringBuffer();
+		String DATATYPE = exportOutputV.elementAt(0)[i].getDataType();
+		String DATAID = exportOutputV.elementAt(0)[i].getDataID();
+		for (int j = 0; j < exportOutputV.size(); j++) {
+			String currentCSV = new String(exportOutputV.elementAt(j)[i].getData());
+			combinedDataSB.append(currentCSV);
+			combinedDataSB.append("\n");
+		}
+		combinedExportOutput[i] =
+			new ExportOutput(true, DATATYPE, "MultiSimulation", DATAID, combinedDataSB.toString().getBytes());
+			
+	}
+	return combinedExportOutput;
+
 }
 
 
@@ -584,7 +620,8 @@ public ExportOutput[] makeASCIIData(OutputContext outputContext,JobRequest jobRe
 				exportSpecs.getVariableSpecs(),
 				exportSpecs.getTimeSpecs(),
 				exportSpecs.getGeometrySpecs(),
-				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs()
+				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs(),
+				exportSpecs.getSimulationName()
 			);
 		case ODE_VARIABLE_DATA:
 			return exportODEData(

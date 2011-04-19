@@ -3,8 +3,10 @@ package cbit.vcell.export.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.*;
-import java.io.*;
+import java.io.Serializable;
+
+import org.vcell.util.Matchable;
+import org.vcell.util.document.VCDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
@@ -15,20 +17,59 @@ public class ExportSpecs implements Serializable {
 	private VariableSpecs variableSpecs;
 	private GeometrySpecs geometrySpecs;
 	private FormatSpecificSpecs formatSpecificSpecs;
+	private String simulatioName;
 
+	public interface SimulationSelector{
+		public void selectSimulations();
+		public ExportSpecs.SimNameSimDataID[] getSelectedSimDataInfo();
+		public int getNumAvailableSimulations();
+	}
+	public static class SimNameSimDataID implements Matchable{
+		private String simulationName;
+		private VCDataIdentifier vcDataIdentifier;
+		public SimNameSimDataID(String simulationName,VCDataIdentifier vcDataIdentifier) {
+			this.simulationName = simulationName;
+			this.vcDataIdentifier = vcDataIdentifier;
+		}
+		public VCDataIdentifier getVCDataIdentifier(){
+			return vcDataIdentifier;
+		}
+		public String getSimulationName(){
+			return simulationName;
+		}
+		public boolean compareEqual(Matchable obj) {
+			if (obj instanceof SimNameSimDataID) {
+				SimNameSimDataID simNameSimDataID = (SimNameSimDataID)obj;
+				if (
+					simulationName.equals(simNameSimDataID.getSimulationName()) &&
+					vcDataIdentifier.equals(simNameSimDataID.getVCDataIdentifier())){
+					
+					return true;
+				}
+			}
+			return false;
+		}
+
+	}
 /**
  * This method was created in VisualAge.
  */
-public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, int format, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs) {
+public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, int format,
+		VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
+		GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
+		String simulationName) {
 	this.vcDataIdentifier = vcdID;
 	this.format = format;
 	this.variableSpecs = variableSpecs;
 	this.timeSpecs = timeSpecs;
 	this.geometrySpecs = geometrySpecs;
 	this.formatSpecificSpecs = formatSpecificSpecs;
+	this.simulatioName = simulationName;
 }
 
-
+public String getSimulationName(){
+	return simulatioName;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 12:04:55 AM)
