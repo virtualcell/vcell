@@ -1393,7 +1393,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 												 false,
 												 FormatSpecificSpecs.PARTICLE_NONE);
 //				mSpec.setViewZoom(1);
-				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
+				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec,fStudy.getName());
 				// pass the request
 				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext, this.getClientTaskStatusSupport());
 				hashTable.put("ExportEvt", exportEvt);
