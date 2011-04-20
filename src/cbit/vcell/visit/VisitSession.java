@@ -77,13 +77,13 @@ public class VisitSession {
             System.out.println("ViewerProxy could not open the viewer.");
     }
 	
-	public void runEventLoop(){
-		VCellThreadChecker.checkCpuIntensiveInvocation();
-		System.out.println("entering the Visit Viewer event loop.");
-        //getEventLoop().Execute();
-       // System.out.println("Visit window closed, closing the Viewer proxy.");
-       // close();
-	}
+//	public void runEventLoop(){
+//		VCellThreadChecker.checkCpuIntensiveInvocation();
+//		System.out.println("entering the Visit Viewer event loop.");
+//        //getEventLoop().Execute();
+//       // System.out.println("Visit window closed, closing the Viewer proxy.");
+//       // close();
+//	}
 	
 	
 	public void openMDServer(String ipAddress){

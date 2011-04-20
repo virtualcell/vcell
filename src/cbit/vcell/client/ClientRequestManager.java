@@ -3183,11 +3183,11 @@ public VisitSession createNewVisitSession(String visitBinPath) throws DataAccess
 	visitSession.initViewerProxyOpenWindows();
 	visitSession.openMDServer(visitSession.getVisitConnectionInfo().getIPAddress());
 	
-	Runnable eventLoopWorker = new Runnable(){
-		public void run(){
-			visitSession.runEventLoop();
-		}
-	};
+//	Runnable eventLoopWorker = new Runnable(){
+//		public void run(){
+//			visitSession.runEventLoop();
+//		}
+//	};
 	return visitSession;
 }
 
