@@ -1087,7 +1087,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 						SimulationContext[] simContexts = ((BioModel)thisDocument).getSimulationContexts();
 						SimulationContext thisSimulationContext = null;
 						for (int i = 0; i < simContexts.length; i++) {
-							if(simContexts[i].getName().equals(thisSimContextName)){
+							if(thisSimContextName.equals(thisDocument.getName()+"::"+simContexts[i].getName())){
 								thisSimulationContext = simContexts[i];
 								break;
 							}
