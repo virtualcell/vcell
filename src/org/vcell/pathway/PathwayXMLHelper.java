@@ -25,6 +25,14 @@ public class PathwayXMLHelper {
             put("REACTOME_ID", "http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID="); // only works for IDs look like "180523" in REACTOME
             put("ChEBI", "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=");
             put("GENE_ONTOLOGY", "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:");
+            // more
+            put("HUMANCYC", "http://biocyc.org/HUMAN/NEW-IMAGE?object=");
+            put("METACYC", "http://biocyc.org/META/NEW-IMAGE?object=");
+            put("PUBCHEM","http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=");
+            put("KEGG","http://www.genome.jp/dbget-bin/www_bget?cpd:");
+            put("CAS", "http://webbook.nist.gov/cgi/cbook.cgi?ID=");
+            put("PDB", "http://www.pdb.org/pdb/explore/explore.do?structureId=");
+            put("KNAPSACK", "http://kanaya.naist.jp/knapsack_jsp/information.jsp?word=");
         }
     };
 	
