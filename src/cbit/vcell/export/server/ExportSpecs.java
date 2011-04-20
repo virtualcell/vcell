@@ -24,7 +24,7 @@ public class ExportSpecs implements Serializable {
 		public ExportSpecs.SimNameSimDataID[] getSelectedSimDataInfo();
 		public int getNumAvailableSimulations();
 	}
-	public static class SimNameSimDataID implements Matchable{
+	public static class SimNameSimDataID implements Matchable,Serializable{
 		private String simulationName;
 		private VCDataIdentifier vcDataIdentifier;
 		public SimNameSimDataID(String simulationName,VCDataIdentifier vcDataIdentifier) {
