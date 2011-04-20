@@ -42,7 +42,7 @@ private void deflate() throws java.io.IOException {
 	if (compressedStrBytes == null) {
 		byte[] strBytes = str.getBytes();
 		compressedStrBytes = BeanUtils.compress(strBytes);
-		System.out.println("Deflating big string: " + strBytes.length + "/" + compressedStrBytes.length);
+//		System.out.println("Deflating big string: " + strBytes.length + "/" + compressedStrBytes.length);
 	}
 }
 
