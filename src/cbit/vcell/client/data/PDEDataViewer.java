@@ -47,6 +47,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -1323,7 +1326,7 @@ private void openInVisit() {
 		
 		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
 		String visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
-		if (visitBinDirProp != null && new File(visitBinDirProp,"visit.exe").exists()) {
+		if (visitBinDirProp != null && (new File(visitBinDirProp,"visit.exe").exists()|| new File(visitBinDirProp,"visit").exists())) {
 			visitBinDir=visitBinDirProp;
 		}else {
 			JFileChooser chooser = new JFileChooser();
@@ -1349,15 +1352,25 @@ private void openInVisit() {
 		visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
 		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitSession);
 		
-		showComponentInFrame(visitControlPanel, "Visit Control Panel");
-		
-		Runnable eventLoopWorker = new Runnable(){
-			public void run(){
-				visitSession.runEventLoop();
+		InternalFrameAdapter internalFrameAdapter = new InternalFrameAdapter() {
+
+			@Override
+			public void internalFrameClosing(InternalFrameEvent e) {
+				// TODO Auto-generated method stub
+				super.internalFrameClosing(e);
+				visitSession.close();
 			}
+			
 		};
-		Thread thread = new Thread(eventLoopWorker,"VisitEventLoop");
-		thread.start();
+		showComponentInFrame0(visitControlPanel, "Visit Control Panel",internalFrameAdapter);
+		
+//		Runnable eventLoopWorker = new Runnable(){
+//			public void run(){
+//				visitSession.runEventLoop();
+//			}
+//		};
+//		Thread thread = new Thread(eventLoopWorker,"VisitEventLoop");
+//		thread.start();
 
 	} catch(Exception e1) {
 		e1.printStackTrace();
@@ -1894,15 +1907,20 @@ public void setSimulation(Simulation simulation) {
 	firePropertyChange("simulation", oldValue, simulation);
 }
 
-
+protected void showComponentInFrame(final Component comp,final String title) {
+	showComponentInFrame0(comp, title,null);
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2006 2:24:21 PM)
  */
-protected void showComponentInFrame(final Component comp,final String title) {
+private void showComponentInFrame0(final Component comp,final String title,InternalFrameAdapter internalFrameAdapter) {
 	final JDesktopPaneEnhanced jDesktopPane = (JDesktopPaneEnhanced)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPaneEnhanced.class);
 	if(jDesktopPane != null){
 		final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
+		if(internalFrameAdapter != null){
+			frame.addInternalFrameListener(internalFrameAdapter);
+		}
 		frame.getContentPane().add(comp);
 		frame.pack();
 		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
