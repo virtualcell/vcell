@@ -121,8 +121,8 @@ public class PathwayProducerBiopax3 {
 		while (objectsToPrint.size()>0){
 			BioPaxObject bpObject = objectsToPrint.iterator().next();
 			if(bpObject == null) {
-				System.out.println("null object!");
-				break;
+				System.out.println("PathwayProducerBiopax3: null BioPaxObject in the PathwayModel.");
+				continue;
 			}
 			
 			String className = bpObject.getClass().getName().substring(1+bpObject.getClass().getName().lastIndexOf('.'));

@@ -26,7 +26,9 @@ public interface BioPaxObject extends Identifiable, Matchable {
 	boolean fullCompare(HashSet<BioPaxObject> theirBiopaxObjects);
 	boolean compareEqual(Matchable obj);
 	void showChildren(StringBuffer stringBuffer, int level);
-	void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject);
+	
+	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject);
+	public void replace(BioPaxObject keeperObject);
 	
 	String getTypeLabel();
 

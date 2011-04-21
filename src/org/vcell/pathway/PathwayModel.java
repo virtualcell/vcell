@@ -63,6 +63,16 @@ public class PathwayModel {
 		return stringBuffer.toString();
 	}
 	
+	public BioPaxObject find(BioPaxObject theirBpObject) {
+
+		for (BioPaxObject ourBpObject : biopaxObjects){
+			if(ourBpObject != null && ourBpObject.getID().equals(theirBpObject.getID())) {
+				return ourBpObject;
+			}
+		}
+		return null;
+	}
+	
 	public boolean compare(HashSet<BioPaxObject> theirBiopaxObjects) {
 
 		if(biopaxObjects.size() != theirBiopaxObjects.size()) {
