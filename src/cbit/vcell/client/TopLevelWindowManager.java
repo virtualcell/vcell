@@ -255,6 +255,12 @@ public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCr
 
 public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws Exception {
 	if (doc instanceof BioModel) {
+		Simulation[] simulations = ((BioModel)doc).getSimulations();
+		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		for (int i = 0; i < simulations.length; i++){
+			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		}
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 	} else if (doc instanceof MathModel) {
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
 		geometry.precomputeAll();

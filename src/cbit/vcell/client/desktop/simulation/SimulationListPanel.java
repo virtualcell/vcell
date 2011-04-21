@@ -330,7 +330,7 @@ private javax.swing.JButton getRunButton() {
 		try {
 			ivjRunButton = new javax.swing.JButton("", VCellIcons.runSimIcon);
 			ivjRunButton.setName("RunButton");
-			ivjRunButton.setToolTipText("Run Simulation");
+			ivjRunButton.setToolTipText("Run and Save Simulation");
 			ivjRunButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
