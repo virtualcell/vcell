@@ -177,7 +177,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			if(bioModel != null) {
 				HashSet<RelationshipObject> relationships = 
 					bioModel.getRelationshipModel().getRelationshipObjects(bpObject);
-				if(relationships != null && !relationships.isEmpty()) {
+				if(relationships.size() > 0) {
 					hasRelationships = true;
 				}
 			}
@@ -192,6 +192,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 	public void relationshipChanged(RelationshipEvent event) {
 		Shape shape = getShapeFromModelObject(event.getRelationshipObject());
 		refreshRelationshipInfo(shape);
+		refreshAll();
 	}
 
 }

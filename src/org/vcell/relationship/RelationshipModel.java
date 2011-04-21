@@ -79,7 +79,7 @@ public class RelationshipModel {
 		}
 		if(!contains(relationshipObject)){
 			relationshipObjects.add(relationshipObject);
-			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));
+			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.ADDED));
 		}
 		return relationshipObject;
 	}
@@ -90,7 +90,7 @@ public class RelationshipModel {
 		}
 		boolean bContained = relationshipObjects.remove(relationshipObject);
 		if (bContained) {
-			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.CHANGED));	
+			fireRelationshipChanged(new RelationshipEvent(this,relationshipObject, RelationshipEvent.REMOVED));	
 		}
 		return bContained;
 	}
@@ -106,12 +106,10 @@ public class RelationshipModel {
 				RelationshipObject relationshipObject = iter.next();
 				if(relationshipObject.getBioPaxObject() == bpObject) { 
 					iter.remove();
+					fireRelationshipChanged(new RelationshipEvent(this, relationshipObject, RelationshipEvent.REMOVED));
 					bRemoved = true;
 				}
 			}
-		}
-		if (bRemoved) {
-			fireRelationshipChanged(new RelationshipEvent(this, null, RelationshipEvent.CHANGED));	
 		}
 		return bRemoved;
 	}
@@ -127,12 +125,10 @@ public class RelationshipModel {
 				RelationshipObject relationshipObject = iter.next();
 				if(relationshipObject.getBioModelEntityObject() == bmObject) { 
 					iter.remove();
+					fireRelationshipChanged(new RelationshipEvent(this, relationshipObject, RelationshipEvent.REMOVED));
 					bRemoved = true;
 				}
 			}
-		}
-		if (bRemoved) {
-			fireRelationshipChanged(new RelationshipEvent(this, null, RelationshipEvent.CHANGED));	
 		}
 		return bRemoved;
 	}
@@ -143,7 +139,7 @@ public class RelationshipModel {
 		}
 		for(RelationshipObject reObject : reObjects)
 			relationshipObjects.add(reObject);
-		fireRelationshipChanged(new RelationshipEvent(this,null, RelationshipEvent.CHANGED));
+		fireRelationshipChanged(new RelationshipEvent(this,null, RelationshipEvent.ADDED));
 		return;
 	}
 

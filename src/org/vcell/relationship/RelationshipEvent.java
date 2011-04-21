@@ -9,8 +9,10 @@ public class RelationshipEvent extends EventObject{
 	private RelationshipObject relationshipObject;
 
 	public static final int CHANGED = 0;
+	public static final int ADDED = 1;
+	public static final int REMOVED = 2;
 	
-	private static final String operationNames[] = { "changed" };
+	private static final String operationNames[] = { "changed", "added", "removed" };
 
 	public RelationshipEvent(RelationshipModel relationshipModel, RelationshipObject relationshipObject, int operationType) {
 		super(relationshipModel);
