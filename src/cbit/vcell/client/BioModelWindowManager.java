@@ -881,57 +881,6 @@ public void showSybilWindow() {
 	}
 }
 
-public void prepareApplicationToLoad(SimulationContext simContext) throws Exception {
-	simContext.getGeometry().precomputeAll();
-	
-	Simulation[] simulations = simContext.getSimulations();
-	if (simulations.length > 0) {	
-		// preload simulation status
-		ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
-		for (Simulation sim : simulations){
-			SimulationInfo simulationInfo = sim.getSimulationInfo();
-			if (simulationInfo != null) {
-				simIDs.add(simulationInfo.getAuthoritativeVCSimulationIdentifier());
-			}
-		}
-		if (simIDs.size() > 0) {
-			getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
-		}
-	}
-}
-
-void prepareToLoad(BioModel doc) throws Exception {
-	if (applicationsHash.size() == 0) {
-		return;
-	}
-	if (!doc.getName().equals(getVCDocument().getName())) {
-		return;
-	}
-	ArrayList<Simulation> simulations = new ArrayList<Simulation>();
-	BioModel bioModel = (BioModel)doc;
-	SimulationContext[] simContexts = bioModel.getSimulationContexts();
-	Enumeration<SimulationContext> openApps = applicationsHash.keys();
-	while (openApps.hasMoreElements()) {
-		SimulationContext openApp = openApps.nextElement();
-		for (SimulationContext simContext : simContexts) {
-			if (openApp.getName().equals(simContext.getName())) {// same application
-				simContext.getGeometry().precomputeAll();
-				simulations.addAll(Arrays.asList(simContext.getSimulations()));
-				break;
-			}
-		}
-	}
-	
-	if (simulations.size() > 0) {	
-		// preload simulation status
-		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.size()];
-		for (int i = 0; i < simulations.size(); i++){
-			simIDs[i] = simulations.get(i).getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-		}
-		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
-	}
-}
-
 public boolean hasBlankDocument() {
 	return !getRequestManager().isDifferentFromBlank(VCDocument.BIOMODEL_DOC, getVCDocument());
 }

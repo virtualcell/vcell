@@ -17,6 +17,7 @@ import cbit.rmi.event.*;
  * Creation date: (6/19/2001 3:00:45 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class SimulationStatus implements java.io.Serializable {
 	// possible status values
 	private static final int UNKNOWN = 0;
@@ -30,9 +31,10 @@ public class SimulationStatus implements java.io.Serializable {
 	private static final int FAILED = 8;
 	private static final int STOP_REQUESTED = 9;
 	private static final int STOPPED = 10;
+	private static final int NOT_SAVED = 11;
 	private static final String STATUS_NAMES[] = {
 		"unknown", "never ran", "submitted...", "dispatched...", "waiting: too many jobs",
-		"queued", "running...", "completed", "failed", "stopping...", "stopped"
+		"queued", "running...", "completed", "failed", "stopping...", "stopped", "not saved"
 	};
 	// actual info
 	private int status = UNKNOWN;
@@ -377,6 +379,11 @@ public boolean isUnknown() {
  */
 public static SimulationStatus newNeverRan(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(NEVER_RAN, false, jobCount);
+	return newStatus;
+}
+
+public static SimulationStatus newNotSaved(int jobCount) {
+	SimulationStatus newStatus = new SimulationStatus(NOT_SAVED, false, jobCount);
 	return newStatus;
 }
 

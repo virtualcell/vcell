@@ -167,7 +167,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				bioModelWindowManager.prepareApplicationToLoad(simulationContext);
+				simulationContext.getGeometry().precomputeAll();
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("showing application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

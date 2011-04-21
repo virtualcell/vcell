@@ -9,21 +9,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
@@ -46,6 +41,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -68,13 +64,18 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
 	public static class PathwayData {
 		private PathwayModel pathwayModel;
+		private String topLevelPathwayName;
 		
-		private PathwayData(PathwayModel pathwayModel) {
+		private PathwayData(String pathwayName, PathwayModel pathwayModel) {
 			super();
+			this.topLevelPathwayName = pathwayName;
 			this.pathwayModel = pathwayModel;
 		}
 		public PathwayModel getPathwayModel() {
 			return pathwayModel;
+		}
+		public String getTopLevelPathwayName() {
+			return topLevelPathwayName;
 		}
 	}
 	enum PathwayCommonsKeyword {
@@ -97,7 +98,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			name = n;
 		}
 	}
-	private JTextField searchTextField;
+	private TextFieldAutoCompletion searchTextField;
+	private Set<String> searchTextList = new HashSet<String>();
 	private JButton searchButton = null;
 	private JTree responseTree = null;
 	private ResponseTreeModel responseTreeModel = null;
@@ -243,7 +245,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Pathway pathway = computeSelectedPathway();
 				URL url = new URL(defaultBaseURL + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
@@ -266,7 +267,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				
 				PathwayModel pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
 				pathwayModel.reconcileReferences();
-				PathwayData pathwayData = new PathwayData(pathwayModel);
+				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 				pathwayModel.refreshParentMap();
 			}
@@ -312,6 +313,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			return;
 		}
 		final String searchText = text;
+		searchTextList.add(searchText);
+		searchTextField.setAutoCompletionWords(searchTextList);
 		AsynchClientTask task1 = new AsynchClientTask("searching", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			
 			@Override
@@ -355,7 +358,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	}
 	
 	private void initialize() {
-		searchTextField = new JTextField(10);
+		searchTextField = new TextFieldAutoCompletion();
 		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);

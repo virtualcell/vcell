@@ -35,7 +35,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 			// look in list for existing status
 			//
 			if (newSimulations[i].getKey()==null || newSimulations[i].getIsDirty()){
-				newHash.put(newSimulations[i],SimulationStatus.newNeverRan(newSimulations[i].getScanCount()));
+				newHash.put(newSimulations[i],SimulationStatus.newNotSaved(newSimulations[i].getScanCount()));
 			// 
 			// try to find status for previous instance of this simulation
 			// 

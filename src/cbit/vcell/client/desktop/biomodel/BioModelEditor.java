@@ -8,7 +8,6 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Pathway;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -523,14 +522,17 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				break;
 			}
 		}
-		Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
 		String pathwayName = "no-name";
-		if(topLevelPathway != null) {
-			pathwayName = "ID = "+topLevelPathway.getID();
-			if (topLevelPathway.getName().size()>0){
-				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
-			}
-		}
+		
+//		Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
+//		if(topLevelPathway != null) {
+//			pathwayName = "ID = "+topLevelPathway.getID();
+//			if (topLevelPathway.getName().size()>0){
+//				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
+//			}
+//		}
+		
+		pathwayName = "\"" + pathwayData.getTopLevelPathwayName() + "\"";
 		String tabTitle = "Pathway " + pathwayName;
 		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
