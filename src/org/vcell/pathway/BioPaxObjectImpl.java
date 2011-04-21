@@ -61,6 +61,9 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		// default implementation ... do nothing
 	}
+	public void replace(BioPaxObject keeperObject) {
+		
+	}
 
 	public String toString(){
 		String suffix = "";

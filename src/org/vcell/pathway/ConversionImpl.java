@@ -1,8 +1,10 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.pathway.persistence.BiopaxProxy.InteractionProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class ConversionImpl extends InteractionImpl implements Conversion {
@@ -57,7 +59,14 @@ public class ConversionImpl extends InteractionImpl implements Conversion {
 			}
 		}
 	}
-	
+	public void replace(BioPaxObject keeperObject) {
+		for (int i=0; i<getParticipants().size(); i++) {
+			InteractionParticipant thing = (InteractionParticipant)getParticipants().get(i);
+			if(thing.getPhysicalEntity().getID().equals(keeperObject.getID())) {
+				getParticipants().set(i, new InteractionParticipant(thing.getInteraction(), (PhysicalEntity)keeperObject, thing.getType()));
+			}
+		}
+	}	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb,level);
 		printString(sb,"conversionDirection",conversionDirection,level);

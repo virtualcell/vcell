@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -83,8 +84,29 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
 		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects);
 		PathwayModel selectedPathwayModel = new PathwayModel();
-		for (BioPaxObject bpObject : selectedBioPaxObjects){
-			selectedPathwayModel.add(bpObject);
+		HashSet<BioPaxObject> objectsToDelete = new HashSet<BioPaxObject>();
+		for (BioPaxObject candidateObject : selectedBioPaxObjects){
+			// is the object in the current pathwayModel already?
+			BioPaxObject keeperObject = bioModel.getPathwayModel().find(candidateObject);
+			if(keeperObject == null) {
+				// not found in the current pathwayModel, add it
+				selectedPathwayModel.add(candidateObject);
+			} else {
+				// make a list with the objects we don't bring in because of duplication
+				objectsToDelete.add(candidateObject);
+			}
+		}
+		// we replace references to those objects within selectedPathwayModel with the real thing
+		for (BioPaxObject bpObject : selectedPathwayModel.getBiopaxObjects()){
+			if(bpObject == null) {
+				System.out.println("PathwayModel: null BioPaxObject.");
+				continue;
+			}
+			for(BioPaxObject objectToDelete : objectsToDelete) {
+				BioPaxObject keeperObject = bioModel.getPathwayModel().find(objectToDelete);
+				// for now we only implemented this for InteractionParticipant entities of Conversions
+				bpObject.replace(keeperObject);
+			}
 		}
 		bioModel.getPathwayModel().merge(selectedPathwayModel);
 	}
