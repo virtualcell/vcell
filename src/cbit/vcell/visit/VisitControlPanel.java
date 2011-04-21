@@ -5,10 +5,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -18,12 +21,16 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import llnl.visit.Plot;
+
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.visit.VisitSession.VisitSessionException;
+import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class VisitControlPanel extends JPanel {
@@ -49,6 +56,8 @@ public class VisitControlPanel extends JPanel {
     private int sliceAxisSelected = 2;
     
     private final ButtonGroup buttonGroup = new ButtonGroup();
+    
+    ClipPlaneOperatorControlPanel clipPlaneOperatorControlPanel = new ClipPlaneOperatorControlPanel();
     
 	/**
 	 * Create the panel.
@@ -126,46 +135,122 @@ public class VisitControlPanel extends JPanel {
 		panel.add(panel_4, gbc_panel_4);
 		GridBagLayout gbl_panel_4 = new GridBagLayout();
 		gbl_panel_4.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panel_4.rowHeights = new int[]{0, 0};
+		gbl_panel_4.rowHeights = new int[]{0, 0, 0};
 		gbl_panel_4.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_4.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel_4.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		panel_4.setLayout(gbl_panel_4);
 		
 		JButton btnClearPlots = new JButton("Clear Plots");
 		GridBagConstraints gbc_btnClearPlots = new GridBagConstraints();
-		gbc_btnClearPlots.insets = new Insets(0, 0, 0, 5);
+		gbc_btnClearPlots.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnClearPlots.insets = new Insets(0, 0, 5, 5);
 		gbc_btnClearPlots.gridx = 0;
 		gbc_btnClearPlots.gridy = 0;
 		panel_4.add(btnClearPlots, gbc_btnClearPlots);
 		
 		JButton btnAddPlot = new JButton("Add Pseudocolor Plot");
 		GridBagConstraints gbc_btnAddPlot = new GridBagConstraints();
-		gbc_btnAddPlot.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddPlot.insets = new Insets(0, 0, 5, 5);
 		gbc_btnAddPlot.gridx = 1;
 		gbc_btnAddPlot.gridy = 0;
 		panel_4.add(btnAddPlot, gbc_btnAddPlot);
 		
 		JButton btnDrawPlot = new JButton("Draw Plots");
 		GridBagConstraints gbc_btnDrawPlot = new GridBagConstraints();
-		gbc_btnDrawPlot.insets = new Insets(0, 0, 0, 5);
+		gbc_btnDrawPlot.insets = new Insets(0, 0, 5, 5);
 		gbc_btnDrawPlot.gridx = 2;
 		gbc_btnDrawPlot.gridy = 0;
 		panel_4.add(btnDrawPlot, gbc_btnDrawPlot);
 		
 		JButton btnShowVisitGui = new JButton("Show VisIt GUI");
 		GridBagConstraints gbc_btnShowVisitGui = new GridBagConstraints();
-		gbc_btnShowVisitGui.insets = new Insets(0, 0, 0, 5);
+		gbc_btnShowVisitGui.insets = new Insets(0, 0, 5, 5);
 		gbc_btnShowVisitGui.gridx = 3;
 		gbc_btnShowVisitGui.gridy = 0;
 		panel_4.add(btnShowVisitGui, gbc_btnShowVisitGui);
 		
 		JButton button_1 = new JButton("Reset view");
 		GridBagConstraints gbc_button_1 = new GridBagConstraints();
+		gbc_button_1.insets = new Insets(0, 0, 5, 0);
 		gbc_button_1.gridx = 4;
 		gbc_button_1.gridy = 0;
 		panel_4.add(button_1, gbc_button_1);
 		
+		JButton btnSaveVisitSession = new JButton("Save VisIt Session");
+		btnSaveVisitSession.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setDialogTitle("Please choose a location to save Session");
+				chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+				String selectedFile=null;
+				try {
+					chooser.setSelectedFile(File.createTempFile(visitSession.getCurrentLogFile().substring(0,visitSession.getCurrentLogFile().length() - 4), ".session"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				chooser.showSaveDialog(VisitControlPanel.this);
+				if (chooser.getSelectedFile()==null) {
+					DialogUtils.showErrorDialog(VisitControlPanel.this, "No filename was choosen");
+					return;
+				}
+				try {
+					selectedFile=chooser.getSelectedFile().getCanonicalPath();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				visitSession.saveSession(selectedFile);
+				
+			}
+		});
+		GridBagConstraints gbc_btnSaveVisitSession = new GridBagConstraints();
+		gbc_btnSaveVisitSession.anchor = GridBagConstraints.WEST;
+		gbc_btnSaveVisitSession.insets = new Insets(0, 0, 0, 5);
+		gbc_btnSaveVisitSession.gridx = 0;
+		gbc_btnSaveVisitSession.gridy = 1;
+		panel_4.add(btnSaveVisitSession, gbc_btnSaveVisitSession);
 		
+		JButton btnRestoreVisitSession = new JButton("Restore VisIt Session");
+		btnRestoreVisitSession.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setDialogTitle("Please choose saved Session file");
+				String selectedFile=null;
+				chooser.showOpenDialog(VisitControlPanel.this);
+				if (chooser.getSelectedFile()==null) {
+					DialogUtils.showErrorDialog(VisitControlPanel.this, "No filename was choosen");
+					return;
+				}
+				try {
+					selectedFile=chooser.getSelectedFile().getCanonicalPath();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				visitSession.restoreSession(selectedFile);
+			}
+		});
+		GridBagConstraints gbc_btnRestoreVisitSession = new GridBagConstraints();
+		gbc_btnRestoreVisitSession.anchor = GridBagConstraints.WEST;
+		gbc_btnRestoreVisitSession.insets = new Insets(0, 0, 0, 5);
+		gbc_btnRestoreVisitSession.gridx = 1;
+		gbc_btnRestoreVisitSession.gridy = 1;
+		panel_4.add(btnRestoreVisitSession, gbc_btnRestoreVisitSession);
+		
+		
+		JButton btnMakeMovieButton = new JButton("Make Movie");
+		btnMakeMovieButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.makeMovie();
+				System.out.println("Returned from VisitSession.makeMovie");
+			}
+		});
+		GridBagConstraints gbc_MakeMovieButton = new GridBagConstraints();
+		gbc_MakeMovieButton.insets = new Insets(0, 0, 0, 5);
+		gbc_MakeMovieButton.anchor = GridBagConstraints.WEST;
+		gbc_MakeMovieButton.gridx = 2;
+		gbc_MakeMovieButton.gridy = 1;
+		panel_4.add(btnMakeMovieButton, gbc_MakeMovieButton);
 		
 		
 		
@@ -325,13 +410,14 @@ public class VisitControlPanel extends JPanel {
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
-		gbc_tabbedPane.insets = new Insets(0, 0, 5, 0);
+		gbc_tabbedPane.gridheight = 2;
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
-		gbc_tabbedPane.gridy = 2;
+		gbc_tabbedPane.gridy = 5;
 		add(tabbedPane, gbc_tabbedPane);
 		
-		tabbedPane.addTab("Clip plane", new ClipPlaneOperatorControlPanel());
+		tabbedPane.addTab("Clip plane", new JLabel("Clip Plane Operator Control Panel will go here"));
+		//tabbedPane.addTab("Clip plane", clipPlaneOperatorControlPanel); 
 		tabbedPane.addTab("Slice", new JLabel("Slice Control Panel will go here"));
 		tabbedPane.addTab("3 Plane Slice", new JLabel("3 Plane Slice Control Panel will go here"));
 		tabbedPane.addTab("Threshold", new JLabel("Threshold Selection Control Panel will go here"));
@@ -347,7 +433,9 @@ public class VisitControlPanel extends JPanel {
 		this.dataIdentifier = dataIdentifier;
 		this.visitSession = visitSession;
 		lblDataset.setText(dataIdentifier.getName());
-		//VisitProcess.setJTextArea(this.jTextArea);
+	    
+		clipPlaneOperatorControlPanel.initializeVisitSessionInfo(visitSession.getViewerState().GetPlotList().GetPlots(0), visitSession);
+		
 	}
 
 

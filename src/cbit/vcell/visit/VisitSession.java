@@ -2,10 +2,16 @@ package cbit.vcell.visit;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 
+import javax.swing.JFileChooser;
+
+import org.vcell.util.Executable;
+import org.vcell.util.ExecutableStatus;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.server.VCellThreadChecker;
@@ -70,7 +76,7 @@ public class VisitSession {
 
             viewer.SetSynchronous(true);
 
-            // Show the windows.
+            // Show the windows
             getViewerMethods().ShowAllWindows();
 
         } else
@@ -219,6 +225,65 @@ public class VisitSession {
        getViewerMethods().OpenClient(clientName, clientProgram, clientArgs);
 	}
 	
+	public void saveSession(String fileNameWithPath){
+
+		getViewerMethods().ExportEntireState(fileNameWithPath);
+		//InterpretPython("SaveSession(\""+fileNameWithPath+"\")");   //Python equivalent
+	
+	}
+	
+	public void restoreSession(String fileNameWithPath){
+		
+		getViewerMethods().ImportEntireState(fileNameWithPath, false);
+	
+	}
+	
+	
+	public void makeMovie(){
+		// 1 - save session file to user's local temp dir
+		// 2 - copy from there to temp work dir on VisitPhineas
+		// 3 - use that session file to set up the shot for the movie script on VisitPhineas
+		
+		String localSessionFile=null;
+		try {
+			localSessionFile = File.createTempFile(currentLogFile.substring(0, currentLogFile.length() - 4),".session").getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		System.out.println("Saving current session file to: "+localSessionFile);
+		saveSession(localSessionFile);
+		
+		try {
+			ArrayList<String> args = new ArrayList<String>();
+			args.add(visitPath+File.separator+"visit");//location of visit
+			args.add("-movie");
+			args.add("-sessionfile");
+			args.add(localSessionFile);
+			args.add("-format");
+			args.add("mpeg");
+			args.add("-output");
+			args.add("/eboyce-local/"+currentLogFile.substring(0, currentLogFile.length() - 4));
+			Executable executable = new Executable(args.toArray(new String[0]));
+			executable.start();
+			while (!executable.getStatus().equals(ExecutableStatus.COMPLETE) && !executable.getStatus().equals(ExecutableStatus.STOPPED)){
+				Thread.sleep(1000);
+				System.out.println("waiting");
+				
+			}
+            //TODO: if error, should show error message to users.
+			System.out.println("done : status = " + executable.getStatus());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("Movie should be ready");
+		
+	}
+	
+	public String getCurrentLogFile(){
+		return currentLogFile;
+	}
 	
 	/* Slice operator methods */
 	
