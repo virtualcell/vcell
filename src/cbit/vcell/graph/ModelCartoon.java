@@ -68,24 +68,34 @@ implements java.beans.PropertyChangeListener, Model.Owner, RelationshipListener 
 	
 	public void relationshipChanged(RelationshipEvent event) {
 		RelationshipObject relationshipObject = event.getRelationshipObject();
-		refreshRelationshipInfo(relationshipObject);
-	}
-
-
-	public void refreshRelationshipInfo(RelationshipObject relationshipObject) {
-		BioModelEntityObject bioModelEntity = relationshipObject.getBioModelEntityObject();
-		if(bioModelEntity != null) {
-			Shape shape = getShapeFromModelObject(bioModelEntity);
+		if(event.getOperationType() == event.ADDED){ 
+			Shape shape = getShapeFromModelObject(relationshipObject.getBioModelEntityObject());
 			if(shape instanceof SpeciesContextShape) {
 				SpeciesContextShape scShape = (SpeciesContextShape) shape;
 				scShape.setLinkText("L");
-			}		
+			}	
+		}else if(event.getOperationType() == event.REMOVED){
+			Shape shape = getShapeFromModelObject(relationshipObject.getBioModelEntityObject());
+			if(shape instanceof SpeciesContextShape) {
+				SpeciesContextShape scShape = (SpeciesContextShape) shape;
+				scShape.setLinkText("");
+				// if the BioModelEntity Object is still linked with other BioPax objects, we add the "L" shape back
+				if(((RelationshipModel)event.getSource()).getRelationshipObjects(relationshipObject.getBioModelEntityObject()).size() > 0){
+					scShape.setLinkText("L");
+				}
+			}				
 		}
 	}
 
 	public void refreshRelationshipInfo(RelationshipModel relationshipModel) {
 		for(RelationshipObject relationship : relationshipModel.getRelationshipObjects()) {
-			refreshRelationshipInfo(relationship);
+			BioModelEntityObject bioModelEntity = relationship.getBioModelEntityObject();
+			Shape shape = getShapeFromModelObject(bioModelEntity);
+			if(shape instanceof SpeciesContextShape) {
+				SpeciesContextShape scShape = (SpeciesContextShape) shape;
+				scShape.setLinkText("L");
+			}		
+			
 		}
 	}
 	

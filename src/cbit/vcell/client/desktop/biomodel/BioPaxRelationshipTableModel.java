@@ -87,6 +87,7 @@ public class BioPaxRelationshipTableModel extends VCellSortTableModel<BioPaxRela
 					if (re.getBioPaxObject() == bioPaxObject
 							&& re.getBioModelEntityObject() == entitySelectionTableRow.getBioModelEntityObject()){
 						bioModel.getRelationshipModel().removeRelationshipObject(re);
+						return;
 					}
 				}
 			}			
