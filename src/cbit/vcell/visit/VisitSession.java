@@ -239,7 +239,7 @@ public class VisitSession {
 	}
 	
 	
-	public void makeMovie(){
+	public void makeMovie(String fileLocation){
 		// 1 - save session file to user's local temp dir
 		// 2 - copy from there to temp work dir on VisitPhineas
 		// 3 - use that session file to set up the shot for the movie script on VisitPhineas
@@ -264,7 +264,8 @@ public class VisitSession {
 			args.add("-format");
 			args.add("mpeg");
 			args.add("-output");
-			args.add("/eboyce-local/"+currentLogFile.substring(0, currentLogFile.length() - 4));
+			args.add(fileLocation);
+			//args.add("/eboyce-local/"+currentLogFile.substring(0, currentLogFile.length() - 4));
 			Executable executable = new Executable(args.toArray(new String[0]));
 			executable.start();
 			while (!executable.getStatus().equals(ExecutableStatus.COMPLETE) && !executable.getStatus().equals(ExecutableStatus.STOPPED)){
