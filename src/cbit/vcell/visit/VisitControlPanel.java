@@ -241,7 +241,29 @@ public class VisitControlPanel extends JPanel {
 		JButton btnMakeMovieButton = new JButton("Make Movie");
 		btnMakeMovieButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				visitSession.makeMovie();
+				
+				JFileChooser chooser = new JFileChooser();
+				chooser.setDialogTitle("Please choose a location to save the movie");				
+				chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+				String selectedFile=null;
+						//				try {
+						//					chooser.setSelectedFile(File.createTempFile(visitSession.getCurrentLogFile().substring(0,visitSession.getCurrentLogFile().length() - 4), ".session"));
+						//				} catch (IOException e) {
+						//					e.printStackTrace();
+						//				}
+				chooser.showSaveDialog(VisitControlPanel.this);
+				if (chooser.getSelectedFile()==null) {
+					DialogUtils.showErrorDialog(VisitControlPanel.this, "No filename was choosen");					
+					return;
+				}
+				try {
+					selectedFile=chooser.getSelectedFile().getCanonicalPath();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+														
+				
+				visitSession.makeMovie(selectedFile);
 				System.out.println("Returned from VisitSession.makeMovie");
 			}
 		});
