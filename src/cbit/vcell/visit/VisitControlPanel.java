@@ -456,7 +456,7 @@ public class VisitControlPanel extends JPanel {
 		this.visitSession = visitSession;
 		lblDataset.setText(dataIdentifier.getName());
 	    
-		clipPlaneOperatorControlPanel.initializeVisitSessionInfo(visitSession.getViewerState().GetPlotList().GetPlots(0), visitSession);
+		//clipPlaneOperatorControlPanel.initializeVisitSessionInfo(visitSession.getViewerState().GetPlotList().GetPlots(0), visitSession);
 		
 	}
 
