@@ -1,6 +1,7 @@
 package org.vcell.util.gui;
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
@@ -25,9 +26,7 @@ public class GlassPane extends JComponent {
  */
 public GlassPane(boolean inputBlocking) {
 	if (inputBlocking) {
-		addMouseListener(new MouseAdapter() {});
-        addMouseMotionListener(new MouseMotionAdapter() {});
-        addKeyListener(new KeyAdapter() {});
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 }		
 

@@ -3,6 +3,7 @@ package cbit.vcell.client;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
@@ -639,21 +640,39 @@ public void connectAs(final String user,  final String password, final TopLevelW
 			// asynch & nothing to do on Swing queue (updates handled by events)
 			String taskName = "Connecting as " + user;
 			AsynchClientTask[] newTasks = newDocument(requester, new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, 0));
+			AsynchClientTask task0 = new AsynchClientTask("preparing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get("windowManager");
+					if (windowManager != null) {
+				    	Frame frameParent = JOptionPane.getFrameForComponent(windowManager.getComponent());
+				    	ClientMDIManager.blockWindow(frameParent);
+				    	frameParent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				    }
+				}
+			};
 			AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					getClientServerManager().connectAs(requester, user, password);
 				}
 			};
-			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					getMdiManager().refreshRecyclableWindows();
+					DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get("windowManager");
+					if (windowManager != null) {
+				    	Frame frameParent = JOptionPane.getFrameForComponent(windowManager.getComponent());
+				    	ClientMDIManager.unBlockWindow(frameParent);
+				    	frameParent.setCursor(Cursor.getDefaultCursor());
+				    }
 				}
 			};
-			AsynchClientTask[] taskArray = new AsynchClientTask[newTasks.length + 3];
+			AsynchClientTask[] taskArray = new AsynchClientTask[newTasks.length + 4];
 			taskArray[0] = waitTask;
 			System.arraycopy(newTasks, 0, taskArray, 1, newTasks.length);
+			taskArray[taskArray.length - 3] = task0;
 			taskArray[taskArray.length - 2] = task1;
 			taskArray[taskArray.length - 1] = task2;
 			
@@ -1957,6 +1976,9 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 			VCDocument doc = (VCDocument)hashTable.get("doc");
 			DocumentWindowManager windowManager = createDocumentWindowManager(doc);
 			getMdiManager().createNewDocumentWindow(windowManager);
+			if (windowManager != null) {
+				hashTable.put("windowManager", windowManager);
+			}
 		}
 	};
 
@@ -2410,7 +2432,7 @@ public void reconnect(final TopLevelWindowManager requester) {
 				
 			}
 	};
-	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
 }
 
 
