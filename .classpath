@@ -25,6 +25,7 @@
 	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_mail.jar"/>
 	<classpathentry exported="true" kind="lib" path="MiriamJavaLib-standalone-20080421.jar"/>
+	<classpathentry kind="lib" path="GlgGraphLayoutNG.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
 	<classpathentry exported="true" kind="lib" path="sonic_Client.jar"/>
 	<classpathentry exported="true" kind="lib" path="sonic_XA.jar"/>

@@ -49,6 +49,7 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.ActionBuilder;
@@ -697,7 +698,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.RELAXER);
 			}
 			case glgLayout : {
-				return new LayoutAction(GraphLayoutManager.OldLayouts.GLG);
+				return new LayoutAction(GenericLogicGraphLayouter.LAYOUT_NAME);
 			}
 			}
 		}
