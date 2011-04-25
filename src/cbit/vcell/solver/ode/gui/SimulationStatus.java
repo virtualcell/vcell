@@ -313,7 +313,7 @@ public boolean isNeverRan() {
  * @return boolean
  */
 public boolean isRunnable() {
-	return status == NEVER_RAN || status == COMPLETED || status == FAILED
+	return status == NOT_SAVED || status == NEVER_RAN || status == COMPLETED || status == FAILED
 		|| status == STOPPED || status == UNKNOWN;
 }
 
