@@ -25,6 +25,7 @@ import llnl.visit.ClientInformationList;
 import llnl.visit.ViewerState;
 import llnl.visit.operators.ClipAttributes;
 import llnl.visit.operators.SliceAttributes;
+import llnl.visit.operators.SmoothOperatorAttributes;
 import llnl.visit.operators.ThreeSliceAttributes;
 //import llnl.visit.VisitClients;
 
@@ -297,6 +298,12 @@ public class VisitSession {
 		atts.SetProject2d(false);
 		atts.Notify();
 		getViewerMethods().SetOperatorOptions("Slice");
+		try {
+			enableViewerTool(2, true);
+		} catch (VisitSessionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		drawPlots();
 	
 	}
@@ -338,8 +345,22 @@ public class VisitSession {
 		
 		int type = viewer.GetOperatorIndex("Clip");
 		ClipAttributes atts = (ClipAttributes)viewer.GetOperatorAttributes(type);
+		
+		//
+//		double[] origin;
+//		origin = new double[3];
+//		origin[0]=0;
+//		origin[1]=0;
+//		origin[3]=0;
+//		atts.SetPlane1Origin(origin);
 		atts.Notify();
 		getViewerMethods().SetOperatorOptions("Clip");
+		try {
+			enableViewerTool(2, true);
+		} catch (VisitSessionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		drawPlots();
 	
 	}
@@ -360,6 +381,12 @@ public class VisitSession {
 		ThreeSliceAttributes atts = (ThreeSliceAttributes)viewer.GetOperatorAttributes(type);
 		atts.Notify();
 		getViewerMethods().SetOperatorOptions("ThreeSlice");
+		try {
+			enableViewerTool(0, true);
+		} catch (VisitSessionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		drawPlots();
 	
 	}
@@ -367,9 +394,12 @@ public class VisitSession {
 	  /**
      * Enables or disables an interactive tool in the active visualization window.
      *
+     * THE FOLLOWING IS WRONG: 
      * @param tool 0=Box, 1=Line, 2=Plane, 3=Sphere, 4=Point, 5=Extents, 6=Axis restriction
      * @param enabled true to enable the tool; false to disable.
      * @return true on success; false otherwise.
+     * THE ORDERING IS ACTUALLY (BY EXPERIMENT):
+     * 0=point, 1=line, 2=
      */
 	
 	public void enableViewerTool(int toolID, boolean enabled) throws VisitSessionException {
@@ -383,6 +413,25 @@ public class VisitSession {
 		return viewer.GetViewerState();
 	}
 	
+	
+	//Smoothing
+	
+	public void applySmoothing(int numIterations, double relaxationFactor){
+		getViewerMethods().AddOperator("Smooth");
+		int type = viewer.GetOperatorIndex("Smooth");
+		SmoothOperatorAttributes atts = (SmoothOperatorAttributes)viewer.GetOperatorAttributes(type);
+		atts.SetNumIterations(numIterations);
+		atts.SetRelaxationFactor(relaxationFactor);
+		atts.SetMaintainFeatures(false);
+		atts.Notify();
+		getViewerMethods().SetOperatorOptions("Smooth");
+		drawPlots();
+}
+	
+	public void undoLastOperator(){
+		getViewerMethods().RemoveLastOperator();
+		drawPlots();
+	}
 	
 	
 	

@@ -259,10 +259,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 	};
 	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", clientServerInfo.getUsername() == null ? AsynchClientTask.TASKTYPE_SWING_BLOCKING : AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {		
-			String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
-			if (build != null){
-				DocumentWindowAboutBox.BUILD_NO = build;
-			}
+			DocumentWindowAboutBox.parseVCellVersion();
 			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
 		    // try server connection
 		    if (clientServerInfo.getUsername() == null) {

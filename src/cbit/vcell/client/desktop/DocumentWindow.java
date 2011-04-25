@@ -2665,14 +2665,10 @@ private void showAboutBox() {
 	aDocumentWindowAboutBox.setLocation((frameSize.width - dialogSize.width) / 2 + loc.x, (frameSize.height - dialogSize.height) / 2 + loc.y);
 	aDocumentWindowAboutBox.setModal(true);
 	String version = "";
-	String build = DocumentWindowAboutBox.BUILD_NO;
+	String build = "";
 	try {
-		java.util.StringTokenizer stk = new java.util.StringTokenizer(DocumentWindowAboutBox.BUILD_NO, "_");
-		String edition = stk.nextToken();
-		if (!stk.nextToken().equalsIgnoreCase("Version")) throw new RuntimeException("Expecting 'Version'");
-		version = "Version " + stk.nextToken();
-		if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
-		build = edition + " edition , build no. " + stk.nextToken();
+		version = "Version " + DocumentWindowAboutBox.getVERSION_NO();
+		build = DocumentWindowAboutBox.getEDITION() + " edition , build no. " + DocumentWindowAboutBox.getBUILD_NO();
 	} catch (Exception exc) {
 		System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
 		exc.printStackTrace(System.out);

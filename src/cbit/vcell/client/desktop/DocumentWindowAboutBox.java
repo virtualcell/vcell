@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.KeySequenceListener;
 
 @SuppressWarnings("serial")
@@ -35,9 +36,40 @@ public class DocumentWindowAboutBox extends JDialog {
 	private JPanel textPane = null;
 	private JLabel userName = null;
 	private JLabel version = null;
-	public static String BUILD_NO = "";
+	private static String VERSION_NO = "";
+	private static String BUILD_NO = "";
+	private static String EDITION = "";
 	private JLabel buildNumber = null;
 
+	public static void parseVCellVersion() {
+		String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
+		if (build != null){
+			try {
+				java.util.StringTokenizer stk = new java.util.StringTokenizer(build, "_");
+				EDITION = stk.nextToken();
+				if (!stk.nextToken().equalsIgnoreCase("Version")) throw new RuntimeException("Expecting 'Version'");
+				VERSION_NO = stk.nextToken();
+				if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
+				BUILD_NO = stk.nextToken();
+			} catch (Exception exc) {
+				System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
+				exc.printStackTrace(System.out);
+			}
+		}
+	}
+	
+	public static String getVERSION_NO() {
+		return VERSION_NO;
+	}
+
+	public static String getBUILD_NO() {
+		return BUILD_NO;
+	}
+
+	public static String getEDITION() {
+		return EDITION;
+	}
+	
 	class EventHandler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == DocumentWindowAboutBox.this.getOkButton())

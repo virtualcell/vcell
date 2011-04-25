@@ -89,6 +89,7 @@ import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -1542,7 +1543,9 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
-			ivjJPanelButtons.add(getJButtonVisit());
+			if (DocumentWindowAboutBox.getVERSION_NO().compareTo("5.0") > 0) {
+				ivjJPanelButtons.add(getJButtonVisit());
+			}
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
