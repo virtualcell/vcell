@@ -818,10 +818,10 @@ protected void addReactions(VCMetaData metaData) {
 			Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement); 
 			// XMLNode embeddedRxnElement = null;
 			if (sbmlImportRelatedElement != null) {
-				Element embeddedRxnElement = sbmlImportRelatedElement.getChild(REACTION);
+				Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
 				if (embeddedRxnElement != null) {
 					if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
-						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attibutes.
+						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attributes.
 						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
 						Structure struct = model.getStructure(structName);
 						if (!(struct instanceof Membrane)) {
@@ -1878,15 +1878,16 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
 	} else if (tag.equals(SPECIES_NAME)) {
 		elementName = XMLTags.SpeciesTag;
 	} else if (tag.equals(REACTION)) {
-		elementName = XMLTags.FluxStepTag;
-		if (elementName == null) {
+		if (sbmlImportRelatedElement.getChild(XMLTags.FluxStepTag, sbmlImportRelatedElement.getNamespace()) != null) {
+			elementName = XMLTags.FluxStepTag;
+		} else if (sbmlImportRelatedElement.getChild(XMLTags.SimpleReactionTag, sbmlImportRelatedElement.getNamespace()) != null) {
 			elementName = XMLTags.SimpleReactionTag;
 		}
 	}
 	// If there is an annotation element for the reaction or species, retrieve and return.
 	if (sbmlImportRelatedElement != null) {
 		for (int j = 0; j < sbmlImportRelatedElement.getChildren().size(); j++) {
-			Element infoChild = sbmlImportRelatedElement.getChild(elementName);
+			Element infoChild = sbmlImportRelatedElement.getChild(elementName, sbmlImportRelatedElement.getNamespace());
 			if (infoChild != null){
 				return infoChild;
 			}

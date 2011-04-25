@@ -213,14 +213,14 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
         throw new XmlParseException("Invalid arguments for exporting SBML.");
     } 
 	if (vcDoc instanceof BioModel) {
-		SimulationContext clonedSimContext = applyOverrides((BioModel)vcDoc, simContext, simJob);
+		SimulationContext clonedSimContext = applyOverridesForSBML((BioModel)vcDoc, simContext, simJob);
 		if (!isSpatial) { 
-		    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
+		    SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext.getBioModel(), level, version);
 		    sbmlExporter.setSelectedSimContext(clonedSimContext);
 		    sbmlExporter.setSelectedSimulationJob(simJob);
 		    return sbmlExporter.getSBMLFile();
 		} else {
-			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter((BioModel)vcDoc);
+			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter(clonedSimContext.getBioModel());
 			sbmlSpatialExporter.setSelectedSimContext(clonedSimContext);
 			sbmlSpatialExporter.setSelectedSimulationJob(simJob);
 			return sbmlSpatialExporter.getSBMLFile();
@@ -249,14 +249,15 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
  * @param simJob - simulationJob from where simulation with overrides is obtained. 
  * @return
  */
-private static SimulationContext applyOverrides(BioModel bm, SimulationContext sc, SimulationJob simJob) {
+private static SimulationContext applyOverridesForSBML(BioModel bm, SimulationContext sc, SimulationJob simJob) {
 	SimulationContext overriddenSimContext = sc;
 	if (simJob != null ) {
 		Simulation sim = simJob.getSimulation();
 		// need to clone Biomodel, simContext, etc. only if simulation has override(s)
 		try {
 			if (sim != null && sim.getMathOverrides().hasOverrides()) {
-				BioModel clonedBM = (BioModel)BeanUtils.cloneSerializable(bm);
+//				BioModel clonedBM = (BioModel)BeanUtils.cloneSerializable(bm);
+				BioModel clonedBM = XMLToBioModel(new XMLSource(bioModelToXML(bm)));
 				clonedBM.refreshDependencies();
 				// get the simContext in cloned Biomodel that corresponds to 'sc'
 				SimulationContext[] simContexts = clonedBM.getSimulationContexts(); 
@@ -308,7 +309,7 @@ private static SimulationContext applyOverrides(BioModel bm, SimulationContext s
 						}
 					}	// end - if (stes[0] is Parameter)
 				}	// end  - for moConstNames
-			} 	// end if (sim had MathOverrides)
+			} 	// end if (sim has MathOverrides)
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
