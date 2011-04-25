@@ -1924,6 +1924,9 @@ private void showComponentInFrame0(final Component comp,final String title,Inter
 		if(internalFrameAdapter != null){
 			frame.addInternalFrameListener(internalFrameAdapter);
 		}
+		
+		//TODO: Visit Window does not close when VCell is quit
+		
 		frame.getContentPane().add(comp);
 		frame.pack();
 		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
