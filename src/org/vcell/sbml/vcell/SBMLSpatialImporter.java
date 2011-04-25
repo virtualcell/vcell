@@ -1028,10 +1028,10 @@ protected void addReactions(VCMetaData metaData) {
 			Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement); 
 			// XMLNode embeddedRxnElement = null;
 			if (sbmlImportRelatedElement != null) {
-				Element embeddedRxnElement = sbmlImportRelatedElement.getChild(REACTION);
+				Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
 				if (embeddedRxnElement != null) {
 					if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
-						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attibutes.
+						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attributes.
 						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
 						Structure struct = model.getStructure(structName);
 						if (!(struct instanceof Membrane)) {
@@ -2077,8 +2077,8 @@ public BioModel getBioModel() {
 }
 
 /**
- *  getEmbeddedElementInRxnAnnotation :
- *  Takes the reaction annotation as an argument and returns the embedded element  (fluxstep or simple reaction), if present.
+ *  getEmbeddedElementInAnnotation :
+ *  Takes the annotation element as an argument and returns the embedded element (fluxstep, simple reaction, species, rate, etc), if present.
  */
 private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement, String tag) {
 	// Get the XML element corresponding to the annotation xmlString.
@@ -2088,8 +2088,9 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
 	} else if (tag.equals(SPECIES_NAME)) {
 		elementName = XMLTags.SpeciesTag;
 	} else if (tag.equals(REACTION)) {
-		elementName = XMLTags.FluxStepTag;
-		if (elementName == null) {
+		if (sbmlImportRelatedElement.getChild(XMLTags.FluxStepTag, sbmlImportRelatedElement.getNamespace()) != null) {
+			elementName = XMLTags.FluxStepTag;
+		} else if (sbmlImportRelatedElement.getChild(XMLTags.SimpleReactionTag, sbmlImportRelatedElement.getNamespace()) != null) {
 			elementName = XMLTags.SimpleReactionTag;
 		}
 	} else if (tag.equals(OUTSIDE_COMP_NAME)) {
