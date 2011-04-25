@@ -26,6 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.vcell.sybil.actions.files.ExitAction;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
@@ -972,6 +973,8 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File subdomainFile_orig = new File(sourceDir,SimulationData.createCanonicalSubdomainFileName(origSimKey,simJobIndex,isOldStyle));
 			File fdLogFile_orig = new File(sourceDir,SimulationData.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
 			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle));
+			boolean bCopySubdomainFile = subdomainFile_orig.exists();
+			//Dont' check subdomainFile_orig
 			if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
 				throw new RuntimeException("Couldn't find all of the files required to copy sim");
 			}
@@ -982,7 +985,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false));
-			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists()){
+			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
 				throw new RuntimeException("File names required for new Field Data already exist on server");
 			}
 
@@ -992,7 +995,9 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			//Simple copy of mesh and funcfile because they do not have to be changed
 			FileUtils.copyFile(meshFile_orig, meshFile_new, false, false, 8*1024);
 			FileUtils.copyFile(funcFile_orig, funcFile_new, false, false, 8*1024);
-			FileUtils.copyFile(subdomainFile_orig, subdomainFile_new, false, false, 8*1024);
+			if(bCopySubdomainFile){
+				FileUtils.copyFile(subdomainFile_orig, subdomainFile_new, false, false, 8*1024);
+			}
 			
 			//Copy Log file and replace original simID with ExternalDataIdentifier id
 	        BufferedWriter writer = null;
