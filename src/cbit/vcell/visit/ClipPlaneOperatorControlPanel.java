@@ -1,5 +1,6 @@
 package cbit.vcell.visit;
 
+import java.awt.CardLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,16 +12,41 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JButton;
+import java.awt.Component;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+import javax.swing.Box;
+
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.gui.DialogUtils;
+
+import llnl.visit.Plot;
+import llnl.visit.operators.ClipAttributes;
 
 @SuppressWarnings("serial")
 public class ClipPlaneOperatorControlPanel extends JPanel {
 
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
-
-	/**
-	 * Launch the application.
-	 */
+	ThreePlaneSpecPanel threePlaneSpecPanel = new ThreePlaneSpecPanel();
+	private SphericalSpecPanel sphericalSpecPanel = new SphericalSpecPanel();
+	JPanel specHolderPanel = new JPanel(new CardLayout());
+	
+	double[] center;
+	
+	
+	private boolean newClip = true;
+	private Plot thisPlot;
+	private VisitSession thisSession;
+	private ClipAttributes lastAppliedClipAttributes, lastPolledClipAttributes, latestViewerClipAttributes;
+	private JRadioButton rdbtnFast;
+	private JRadioButton rdbtnAccurate;
+	private JRadioButton rdbtnPlane; 
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() { 
 			public void run() {
@@ -37,9 +63,11 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
+	
+//	public ClipPlaneOperatorControlPanel(Plot thisPlot, VisitSession thisSession){
+//		
+//	}
+	
 	public ClipPlaneOperatorControlPanel() {
 		setBounds(100, 100, 651, 548);
 		setLayout(new GridBagLayout());
@@ -71,7 +99,7 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		gbc_lblQuality.gridy = 0;
 		panel.add(lblQuality, gbc_lblQuality);
 		
-		JRadioButton rdbtnFast = new JRadioButton("Fast");
+		rdbtnFast = new JRadioButton("Fast");
 		buttonGroup.add(rdbtnFast);
 		GridBagConstraints gbc_rdbtnFast = new GridBagConstraints();
 		gbc_rdbtnFast.insets = new Insets(0, 0, 5, 5);
@@ -79,7 +107,7 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		gbc_rdbtnFast.gridy = 0;
 		panel.add(rdbtnFast, gbc_rdbtnFast);
 		
-		JRadioButton rdbtnAccurate = new JRadioButton("Accurate");
+		rdbtnAccurate = new JRadioButton("Accurate");
 		buttonGroup.add(rdbtnAccurate);
 		GridBagConstraints gbc_rdbtnAccurate = new GridBagConstraints();
 		gbc_rdbtnAccurate.insets = new Insets(0, 0, 5, 0);
@@ -94,7 +122,18 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		gbc_lblSliceType.gridy = 1;
 		panel.add(lblSliceType, gbc_lblSliceType);
 		
-		JRadioButton rdbtnPlane = new JRadioButton("Plane");
+		rdbtnPlane = new JRadioButton("Plane");
+		rdbtnPlane.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (rdbtnPlane.isSelected())
+				{
+					
+					((CardLayout)specHolderPanel.getLayout()).first(specHolderPanel);
+					
+					
+				}
+			}
+		});
 		buttonGroup_1.add(rdbtnPlane);
 		GridBagConstraints gbc_rdbtnPlane = new GridBagConstraints();
 		gbc_rdbtnPlane.insets = new Insets(0, 0, 0, 5);
@@ -102,7 +141,16 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		gbc_rdbtnPlane.gridy = 1;
 		panel.add(rdbtnPlane, gbc_rdbtnPlane);
 		
-		JRadioButton rdbtnSphere = new JRadioButton("Sphere");
+		final JRadioButton rdbtnSphere = new JRadioButton("Sphere");
+		rdbtnSphere.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (rdbtnSphere.isSelected())
+				{
+					
+					((CardLayout)specHolderPanel.getLayout()).last(specHolderPanel);
+				}
+			}
+		});
 		buttonGroup_1.add(rdbtnSphere);
 		GridBagConstraints gbc_rdbtnSphere = new GridBagConstraints();
 		gbc_rdbtnSphere.gridx = 2;
@@ -110,13 +158,16 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		panel.add(rdbtnSphere, gbc_rdbtnSphere);
 		
 		
-		JPanel panel_1 = new ThreePlaneSpecPanel();
+		specHolderPanel.add(threePlaneSpecPanel,"threePlaneSpecPanel");
+		specHolderPanel.add(sphericalSpecPanel,"sphericalSpecPanel");
+		
 		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
 		gbc_panel_1.insets = new Insets(0, 0, 5, 0);
 		gbc_panel_1.fill = GridBagConstraints.BOTH;
 		gbc_panel_1.gridx = 0;
 		gbc_panel_1.gridy = 1;
-		add(panel_1, gbc_panel_1);
+		add(specHolderPanel, gbc_panel_1);
+		
 		
 		JPanel panel_2 = new JPanel();
 		GridBagConstraints gbc_panel_2 = new GridBagConstraints();
@@ -126,9 +177,9 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		gbc_panel_2.gridy = 2;
 		add(panel_2, gbc_panel_2);
 		GridBagLayout gbl_panel_2 = new GridBagLayout();
-		gbl_panel_2.columnWidths = new int[]{0, 0, 0, 0, 0};
+		gbl_panel_2.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panel_2.rowHeights = new int[]{0, 0, 0, 0};
-		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_panel_2.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_2.setLayout(gbl_panel_2);
 		
@@ -169,9 +220,128 @@ public class ClipPlaneOperatorControlPanel extends JPanel {
 		
 		JRadioButton rdbtnPlane_3 = new JRadioButton("Plane 3");
 		GridBagConstraints gbc_rdbtnPlane_3 = new GridBagConstraints();
+		gbc_rdbtnPlane_3.insets = new Insets(0, 0, 0, 5);
 		gbc_rdbtnPlane_3.gridx = 3;
 		gbc_rdbtnPlane_3.gridy = 2;
 		panel_2.add(rdbtnPlane_3, gbc_rdbtnPlane_3);
+		
+		Component horizontalStrut = Box.createHorizontalStrut(20);
+		GridBagConstraints gbc_horizontalStrut = new GridBagConstraints();
+		gbc_horizontalStrut.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut.gridx = 4;
+		gbc_horizontalStrut.gridy = 2;
+		panel_2.add(horizontalStrut, gbc_horizontalStrut);
+		
+		JButton btnApply = new JButton("Apply");
+		GridBagConstraints gbc_btnApply = new GridBagConstraints();
+		gbc_btnApply.insets = new Insets(0, 0, 0, 5);
+		gbc_btnApply.gridx = 5;
+		gbc_btnApply.gridy = 2;
+		panel_2.add(btnApply, gbc_btnApply);
+		
+		JButton btnClose = new JButton("Close");
+		GridBagConstraints gbc_btnClose = new GridBagConstraints();
+		gbc_btnClose.gridx = 6;
+		gbc_btnClose.gridy = 2;
+		panel_2.add(btnClose, gbc_btnClose);
+		
+		//initializeValues();
 	}
 
+    public void initializeVisitSessionInfo(Plot thisPlot, VisitSession thisSession){
+    	this.thisPlot=thisPlot;
+    	this.thisSession=thisSession;
+    }
+	
+	private void initializeValues(){
+		lastPolledClipAttributes=getExistingClipAttributesIfAny();
+		if (newClip){
+			lastPolledClipAttributes.SetCenter(0, 0, 0);  //TODO: find a way to set the X coordinate center in the middle of the x coordinate's range
+		}
+		
+		if (lastPolledClipAttributes.GetQuality()==1) rdbtnAccurate.setSelected(true);
+		if (lastPolledClipAttributes.GetFuncType()==0) rdbtnPlane.setSelected(true);
+	}
+	
+	
+	private void updateControlPanelValues(ClipAttributes clipAtts){
+		if (lastAppliedClipAttributes==null) lastAppliedClipAttributes = new ClipAttributes();
+		if (this.rdbtnPlane.isSelected()) 
+			lastAppliedClipAttributes.SetFuncType(0);
+		else
+			lastAppliedClipAttributes.SetFuncType(1);
+		
+		double[] center=new double[3];
+		double[] radius=new double[3];
+		
+		center=getTripletValues(sphericalSpecPanel.getCenterAsString());
+		radius=getTripletValues(sphericalSpecPanel.getRadiusAsString());
+	
+	}
+	
+	private void applyNewValues(){
+		
+	}
+	
+	private ClipAttributes getExistingClipAttributesIfAny(){
+		if (thisPlot.GetOperatorNames().contains("Clip")){
+			newClip=false;
+			int index = thisPlot.GetOperatorNames().indexOf("Clip");
+			return (ClipAttributes)thisSession.getViewerState().GetOperatorAttributes(index);
+		}
+		
+		else {
+			newClip=true;
+			return new ClipAttributes();
+		}
+	}
+	
+	double[] getTripletValues(String s){
+		Vector<Double> returnVector = new Vector<Double>();
+		double[] returnArray = new double[3];
+	
+		String numString = null;
+		try {
+			
+			StringTokenizer stringTokenizer = new StringTokenizer(s," ");
+			while (stringTokenizer.hasMoreElements()){
+				returnVector.add(Double.valueOf(stringTokenizer.nextToken()));
+			}
+			
+//			s=s.trim();
+//			
+//			int s1=s.indexOf(" ");
+//			numString=s.substring(0,(s1-1));
+//			Double aDouble = Double.parseDouble(numString);
+//			returnVector.add(aDouble);
+//			s=s.substring(s1+1);
+//			s=s.trim();
+//			s1=s.indexOf(" ");
+//			numString=s.substring(0,(s1-1));
+//			aDouble = Double.parseDouble(numString);
+//			returnVector.add(aDouble);
+//			s=s.substring(s1+1);
+//			s=s.trim();
+//			aDouble = Double.parseDouble(s);
+//			returnVector.add(aDouble);
+			
+			returnArray[0]=returnVector.elementAt(0);
+			returnArray[1]=returnVector.elementAt(1);
+			returnArray[2]=returnVector.elementAt(2);
+			
+			return(returnArray);
+		}
+		
+		catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "Please enter three numbers separated by spaces");
+			return(null);
+		}
+		
+	
+		
+		
+		
+	}
+	
 }

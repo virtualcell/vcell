@@ -135,9 +135,9 @@ public class VisitControlPanel extends JPanel {
 		panel.add(panel_4, gbc_panel_4);
 		GridBagLayout gbl_panel_4 = new GridBagLayout();
 		gbl_panel_4.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panel_4.rowHeights = new int[]{0, 0, 0};
+		gbl_panel_4.rowHeights = new int[]{0, 0, 0, 0};
 		gbl_panel_4.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_4.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_4.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_4.setLayout(gbl_panel_4);
 		
 		JButton btnClearPlots = new JButton("Clear Plots");
@@ -205,7 +205,7 @@ public class VisitControlPanel extends JPanel {
 		});
 		GridBagConstraints gbc_btnSaveVisitSession = new GridBagConstraints();
 		gbc_btnSaveVisitSession.anchor = GridBagConstraints.WEST;
-		gbc_btnSaveVisitSession.insets = new Insets(0, 0, 0, 5);
+		gbc_btnSaveVisitSession.insets = new Insets(0, 0, 5, 5);
 		gbc_btnSaveVisitSession.gridx = 0;
 		gbc_btnSaveVisitSession.gridy = 1;
 		panel_4.add(btnSaveVisitSession, gbc_btnSaveVisitSession);
@@ -232,7 +232,7 @@ public class VisitControlPanel extends JPanel {
 		});
 		GridBagConstraints gbc_btnRestoreVisitSession = new GridBagConstraints();
 		gbc_btnRestoreVisitSession.anchor = GridBagConstraints.WEST;
-		gbc_btnRestoreVisitSession.insets = new Insets(0, 0, 0, 5);
+		gbc_btnRestoreVisitSession.insets = new Insets(0, 0, 5, 5);
 		gbc_btnRestoreVisitSession.gridx = 1;
 		gbc_btnRestoreVisitSession.gridy = 1;
 		panel_4.add(btnRestoreVisitSession, gbc_btnRestoreVisitSession);
@@ -268,11 +268,72 @@ public class VisitControlPanel extends JPanel {
 			}
 		});
 		GridBagConstraints gbc_MakeMovieButton = new GridBagConstraints();
-		gbc_MakeMovieButton.insets = new Insets(0, 0, 0, 5);
+		gbc_MakeMovieButton.insets = new Insets(0, 0, 5, 5);
 		gbc_MakeMovieButton.anchor = GridBagConstraints.WEST;
 		gbc_MakeMovieButton.gridx = 2;
 		gbc_MakeMovieButton.gridy = 1;
 		panel_4.add(btnMakeMovieButton, gbc_MakeMovieButton);
+		
+		JButton btnMakeSmoother = new JButton("Apply smoothing");
+		btnMakeSmoother.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.applySmoothing(40,0.04);
+			
+			}
+		});
+		GridBagConstraints gbc_btnMakeSmoother = new GridBagConstraints();
+		gbc_btnMakeSmoother.insets = new Insets(0, 0, 5, 5);
+		gbc_btnMakeSmoother.gridx = 3;
+		gbc_btnMakeSmoother.gridy = 1;
+		panel_4.add(btnMakeSmoother, gbc_btnMakeSmoother);
+		
+		JButton btnUndoLastOperator = new JButton("Undo Last Operator");
+		btnUndoLastOperator.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.undoLastOperator();
+			}
+		});
+		GridBagConstraints gbc_btnUndoLastOperator = new GridBagConstraints();
+		gbc_btnUndoLastOperator.insets = new Insets(0, 0, 5, 0);
+		gbc_btnUndoLastOperator.gridx = 4;
+		gbc_btnUndoLastOperator.gridy = 1;
+		panel_4.add(btnUndoLastOperator, gbc_btnUndoLastOperator);
+		
+		JButton btnAddClipPlane = new JButton("Add Clip Plane");
+		btnAddClipPlane.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addClipPlaneOperator();
+			}
+		});
+		GridBagConstraints gbc_btnAddClipPlane = new GridBagConstraints();
+		gbc_btnAddClipPlane.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddClipPlane.gridx = 0;
+		gbc_btnAddClipPlane.gridy = 2;
+		panel_4.add(btnAddClipPlane, gbc_btnAddClipPlane);
+		
+		JButton btnAddSlice = new JButton("Add Slice ");
+		btnAddSlice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addCartesianSliceOperator(0);
+			}
+		});
+		GridBagConstraints gbc_btnAddSlice = new GridBagConstraints();
+		gbc_btnAddSlice.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddSlice.gridx = 1;
+		gbc_btnAddSlice.gridy = 2;
+		panel_4.add(btnAddSlice, gbc_btnAddSlice);
+		
+		JButton btnAddThreeSlice = new JButton("Add 3-Slice");
+		btnAddThreeSlice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.addThreeSliceOperator();
+			}
+		});
+		GridBagConstraints gbc_btnAddslice = new GridBagConstraints();
+		gbc_btnAddslice.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddslice.gridx = 2;
+		gbc_btnAddslice.gridy = 2;
+		panel_4.add(btnAddThreeSlice, gbc_btnAddslice);
 		
 		
 		
@@ -436,7 +497,7 @@ public class VisitControlPanel extends JPanel {
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
 		gbc_tabbedPane.gridy = 5;
-		add(tabbedPane, gbc_tabbedPane);
+		//add(tabbedPane, gbc_tabbedPane);
 		
 		tabbedPane.addTab("Clip plane", new JLabel("Clip Plane Operator Control Panel will go here"));
 		//tabbedPane.addTab("Clip plane", clipPlaneOperatorControlPanel); 
@@ -466,6 +527,7 @@ public class VisitControlPanel extends JPanel {
 		this.extent = extent;
 		
 		this.pdeDataContext = pdeDataContext;
+		
 		comboBox.removeAllItems();
 		for (int i = 0; i < pdeDataContext.getDataIdentifiers().length; i++) {
 			comboBox.addItem(pdeDataContext.getDataIdentifiers()[i].getName());
