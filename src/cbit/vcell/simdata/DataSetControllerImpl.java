@@ -1437,6 +1437,9 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		File fdFunctionFile =
 			new File(userDir,
 					SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File fdSubdomainFile =
+			new File(userDir,
+					SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 		if(!fdLogFile.delete()){
 			System.out.println("Couldn't delete log file "+fdLogFile.getAbsolutePath());
 		}
@@ -1446,6 +1449,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		if(!fdFunctionFile.delete()){
 			System.out.println("Couldn't delete Functions file "+fdFunctionFile.getAbsolutePath());
 		}
+		if(fdSubdomainFile.exists() && fdSubdomainFile.delete()){
+			System.out.println("Couldn't delete Subdomains file "+fdSubdomainFile.getAbsolutePath());
+		}
+
 		int index = 0;
 		while(true){
 			File fdZipFile =
