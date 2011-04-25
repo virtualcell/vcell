@@ -30,6 +30,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
@@ -125,7 +126,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				});
 			}
 			else if (source == getGlgLayoutJButton())
-				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.GLG);
+				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
 			else if (source == getFloatRequestButton()) 
 				setFloatingRequested(!bFloatingRequested);
 		} catch (Throwable throwable) {

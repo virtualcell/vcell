@@ -1,12 +1,11 @@
 package cbit.gui.graph;
 
-import java.awt.Rectangle;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
+import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
@@ -15,11 +14,6 @@ import org.vcell.util.graphlayout.GraphLayouter.Client.Default;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-
-import com.genlogic.GraphLayout.GlgCube;
-import com.genlogic.GraphLayout.GlgGraphLayout;
-import com.genlogic.GraphLayout.GlgGraphNode;
-import com.genlogic.GraphLayout.GlgPoint;
 
 import edu.rpi.graphdrawing.Annealer;
 import edu.rpi.graphdrawing.Blackboard;
@@ -66,7 +60,6 @@ public class GraphLayoutManager {
 		public static final String RANDOMIZER = "Randomizer (RPI)";
 		public static final String RELAXER = "Relaxer (RPI)";
 		public static final String STABILIZER = "Stabilizer (RPI)";		
-		public static final String GLG = "GLG";
 		
 		public static final List<String> LAYOUTS_RPI = Arrays.asList(ANNEALER, CIRCULARIZER, CYCLEIZER,
 				FORCEDIRECT, LEVELLER, RANDOMIZER, RELAXER, STABILIZER);
@@ -79,8 +72,6 @@ public class GraphLayoutManager {
 			layoutContainedGraph(client);
 		} else if(OldLayouts.LAYOUTS_RPI.contains(layoutName)) {
 			layoutRPI(client);
-		} else if(OldLayouts.GLG.equals(layoutName)) {
-			layoutGLG(client);
 		} else {
 			throw new Exception("Unsupported Layout " + layoutName);
 		}
@@ -99,6 +90,8 @@ public class GraphLayoutManager {
 			layouter = new StretchToBoundaryLayouter();
 		} else if(SimpleElipticalLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new SimpleElipticalLayouter();
+		} else if(GenericLogicGraphLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new GenericLogicGraphLayouter();
 		}
 		if(layouter != null) {
 			layouter.layout(client);
@@ -166,66 +159,5 @@ public class GraphLayoutManager {
 		}
 		new StretchToBoundaryLayouter().layout(client);
 	}
-	
-	public void layoutGLG(Client client) throws Exception {
-		GlgGraphLayout graph = new GlgGraphLayout();
-		graph.SetUntangle(true); // true
-		// specify dimensions for the graph! 400x400
-		// System.out.println("H:"+getGraphPane().getHeight()+" W"+getGraphPane().getWidth());
-		GraphModel graphModel = client.getGraphModel();
-		Rectangle boundary = 
-			graphModel.getContainerLayout().getBoundaryForAutomaticLayout(graphModel.getTopShape());
-		GlgCube graphDim = new GlgCube();
-		graphDim.p1 = new GlgPoint(boundary.getMinX(), boundary.getMinY(), 0);
-		graphDim.p2 = new GlgPoint(boundary.getMaxX(), boundary.getMaxY(), 0);
-		graph.dimensions = graphDim;
-		// Add nodes (Vertex) to the graph
-		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
-		Collection<Shape> shapes = graphModel.getShapes();
-		for(Shape shape : shapes) {
-			// add to the graph
-			GlgGraphNode graphNode;
-			if (ShapeUtil.isMovable(shape)) {
-				graphNode = graph.AddNode(null, 0, null);
-				graph.SetNodePosition(graphNode, ShapeUtil.getAbsCenterX(shape), 
-						ShapeUtil.getAbsCenterY(shape), 0);
-				nodeMap.put(shape, graphNode);
-			} else {
-				continue;
-			}
-			// add to the hashmap
-		}
-		// Add edges
-		for(Shape shape : shapes) {
-			if (shape instanceof EdgeShape) {
-				EdgeShape edgeShape = (EdgeShape) shape;
-				Shape startShape = edgeShape.getStartShape();
-				Shape endShape = edgeShape.getEndShape();
-				GlgGraphNode startNode = nodeMap.get(startShape);
-				GlgGraphNode endNode = nodeMap.get(endShape);
-				if(!graph.NodesConnected(startNode, endNode)) {
-					if(edgeShape.isDirectedForward()) {
-						graph.AddEdge(startNode, endNode, null, 0, null);						
-					} else {
-						graph.AddEdge(endNode, startNode, null, 0, null);						
-					}
-				}
-			}
-		}
-		// call layout algorithm
-		while (!graph.SpringIterate()) {
-			;
-		}
-		graph.Update();
-		// Update positions
-		for(Shape shape : graphModel.getShapes()) {
-			GlgGraphNode graphNode = nodeMap.get(shape);
-			if (graphNode != null) {
-				GlgPoint glgPoint = graph.GetNodePosition(graphNode);
-				shape.setAbsPos((int) glgPoint.x, (int) glgPoint.y);
-			}
-		}
-		new StretchToBoundaryLayouter().layout(client);
-	}
-	
+		
 }
