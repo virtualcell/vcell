@@ -29,7 +29,6 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_ERROR = "abort";
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
-	private static boolean bInProgress = false;
 
 /**
  * don't show popup.
@@ -83,19 +82,6 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		private AsynchProgressPopup pp = null;
 		private Frame frameParent = JOptionPane.getFrameForComponent(requester);
 		public Object construct() {
-			bInProgress = true;
-			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						ClientMDIManager.blockWindow(requester);
-					}
-				});
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			if (bShowProgressPopup) {
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
 				if (bInputBlocking) {
@@ -103,6 +89,18 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				} else {
 					pp.start();
 				}
+			}
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						ClientMDIManager.blockWindow(frameParent);
+						frameParent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					}
+				});
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
 			}
 			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
@@ -179,9 +177,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			return hash;
 		}
 		public void finished() {
-			ClientMDIManager.unBlockWindow(requester);
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
-			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			if (pp != null) {
 				pp.stop();
 			}
@@ -205,7 +201,9 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
 			}
-			bInProgress = false;
+			ClientMDIManager.unBlockWindow(requester);
+			frameParent.setCursor(Cursor.getDefaultCursor());
+//			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
 		}
 	};

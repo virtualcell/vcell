@@ -1,5 +1,7 @@
 package cbit.vcell.client;
 
+import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
@@ -102,29 +104,25 @@ private VCellClient() {
  */
 private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
-	try {		
-		/* Create the first document desktop */
-		switch (startupDoc.getDocumentType()) {
-			case VCDocument.BIOMODEL_DOC: {
-				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+	/* Create the first document desktop */
+	switch (startupDoc.getDocumentType()) {
+		case VCDocument.BIOMODEL_DOC: {
+			windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
 //				((BioModelWindowManager)windowManager).preloadApps();
-				break;
-			}
-			case VCDocument.MATHMODEL_DOC: {
-				windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
-				break;
-			}
-			case VCDocument.GEOMETRY_DOC: {
-				windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc, getMdiManager().getNewlyCreatedDesktops());
-				break;
-			}
-		}	
-		getMdiManager().createNewDocumentWindow(windowManager);
-		/* Create database window, testing framework window, etc. */
-		((ClientMDIManager)getMdiManager()).createRecyclableWindows();
-	} catch (Throwable exc) {
-		handleException (exc);
-	}
+			break;
+		}
+		case VCDocument.MATHMODEL_DOC: {
+			windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+			break;
+		}
+		case VCDocument.GEOMETRY_DOC: {
+			windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+			break;
+		}
+	}	
+	getMdiManager().createNewDocumentWindow(windowManager);
+	/* Create database window, testing framework window, etc. */
+	((ClientMDIManager)getMdiManager()).createRecyclableWindows();
 	return windowManager;
 }
 
@@ -166,19 +164,6 @@ RequestManager getRequestManager() {
 StatusUpdater getStatusUpdater() {
 	return statusUpdater;
 }
-
-
-/**
- * Called whenever the part throws an exception.
- * @param exception java.lang.Throwable
- */
-private void handleException(java.lang.Throwable exception) {
-
-	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	exception.printStackTrace(System.out);
-}
-
 
 /**
  * Insert the method's description here.
@@ -323,7 +308,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 						}
 					}
 				};
-				ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+				ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
 			
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
 				loginDialog.dispose();

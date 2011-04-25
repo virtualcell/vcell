@@ -1,6 +1,7 @@
 package org.vcell.util.gui;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.util.EventObject;
 
@@ -143,6 +144,7 @@ private ProgressDialog getDialog() {
 		if (! knowsProgress) {
 			dialog.setProgressBarString("WORKING...");
 		}
+		dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}	
 	return dialog;
 }
@@ -259,6 +261,7 @@ private void startPrivate(final boolean bKeepOnTop) {
 			}else{
 				getDialog().setVisible(true);
 			}
+//			BeanUtils.setCursorThroughout(getDialog(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		}
 		public void handleException(Throwable e) {
 			e.printStackTrace();

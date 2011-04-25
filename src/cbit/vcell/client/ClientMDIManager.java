@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.RootPaneContainer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
@@ -33,8 +34,6 @@ import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldDataWindow;
 /**
@@ -78,27 +77,18 @@ public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame f = (JFrame)getWindowsHash().get(windowID);
 		return (JFrame)blockWindow(f);
-	} else {
-		return null;
-	}
+	} 
+	return null;
 }
 
 public static Window blockWindow(Component component) {
-	Container container = BeanUtils.findTypeParentOfComponent(component, Window.class);
-	if (container instanceof JFrame) {
-		GlassPane glass = new GlassPane(true);  // not used for blocking, only for painting as disabled
-		glass.setPaint(true);
-		((JFrame)container).setGlassPane(glass);
+	Window window = (Window) BeanUtils.findTypeParentOfComponent(component, Window.class);
+	if (window instanceof RootPaneContainer) {
+		GlassPane glass = new GlassPane(true);
+		((RootPaneContainer)window).setGlassPane(glass);
 		glass.setVisible(true);
-		return ((JFrame)container);
-	} else if (container instanceof JDialog){
-		GlassPane glass = new GlassPane(true);  // not used for blocking, only for painting as disabled
-		glass.setPaint(true);
-		((JDialog)container).setGlassPane(glass);
-		glass.setVisible(true);
-		return ((JDialog)container);
 	}
-	return null;
+	return window;
 }
 
 /**
@@ -217,32 +207,25 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	// assumes caller checked for having this document already open
 
 	// make the window
-	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	AsynchClientTask task1  = new AsynchClientTask("Creating New Document Window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DocumentWindow documentWindow = createDocumentWindow();
-			documentWindow.setWorkArea(windowManager.getComponent());
-			
-			// keep track of things
-			String windowID = windowManager.getManagerID();
-			getWindowsHash().put(windowID, documentWindow);
-			getManagersHash().put(windowID, windowManager);
-			// wire manager to events
-			getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
-			getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
-			getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
-			// get the window ready
-			setCanonicalTitle(windowID);
-			documentWindow.setWindowManager(windowManager);
-			documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
-			setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
-			getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
-			// done
-			documentWindow.setVisible(true);
-		}
-	};
-	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1};
-	ClientTaskDispatcher.dispatch(null, hash, taskArray);
+	DocumentWindow documentWindow = createDocumentWindow();
+	documentWindow.setWorkArea(windowManager.getComponent());
+	
+	// keep track of things
+	String windowID = windowManager.getManagerID();
+	getWindowsHash().put(windowID, documentWindow);
+	getManagersHash().put(windowID, windowManager);
+	// wire manager to events
+	getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
+	getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
+	getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
+	// get the window ready
+	setCanonicalTitle(windowID);
+	documentWindow.setWindowManager(windowManager);
+	documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
+	setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
+	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
+	// done
+	documentWindow.setVisible(true);
 }
 
 
@@ -580,19 +563,9 @@ public void unBlockWindow(final String windowID) {
 }
 
 public static void unBlockWindow(Component component) {
-	Container container = BeanUtils.findTypeParentOfComponent(component, Window.class);
-	if (container instanceof JFrame) {
-		JFrame f = (JFrame)container;
-		f.setGlassPane(new JPanel());
-		f.getGlassPane().setVisible(false);
-		((JPanel)f.getGlassPane()).setOpaque(false);
-		f.setEnabled(true);
-	} else if (container instanceof JDialog) {
-		JDialog d = (JDialog)container;
-		d.setGlassPane(new JPanel());
-		d.getGlassPane().setVisible(false);
-		((JPanel)d.getGlassPane()).setOpaque(false);
-		d.setEnabled(true);
+	Window window = (Window) BeanUtils.findTypeParentOfComponent(component, Window.class);
+	if (window instanceof RootPaneContainer) {
+		((RootPaneContainer)window).getGlassPane().setVisible(false);
 	}
 }
 
