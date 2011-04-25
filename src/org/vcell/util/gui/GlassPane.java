@@ -26,6 +26,9 @@ public class GlassPane extends JComponent {
  */
 public GlassPane(boolean inputBlocking) {
 	if (inputBlocking) {
+		addMouseListener(new MouseAdapter() {});
+		addMouseMotionListener(new MouseMotionAdapter() {});
+		addKeyListener(new KeyAdapter() {});
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 }		
