@@ -240,7 +240,7 @@ public class VisitSession {
 	}
 	
 	
-	public void makeMovie(String fileLocation){
+	public void makeMovie(String fileLocation) throws Exception{
 		// 1 - save session file to user's local temp dir
 		// 2 - copy from there to temp work dir on VisitPhineas
 		// 3 - use that session file to set up the shot for the movie script on VisitPhineas
@@ -278,6 +278,7 @@ public class VisitSession {
 			System.out.println("done : status = " + executable.getStatus());
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw e;
 		}
 		System.out.println("Movie should be ready");
 		

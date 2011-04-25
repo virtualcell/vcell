@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -27,6 +28,8 @@ import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.visit.VisitSession.VisitSessionException;
@@ -263,7 +266,21 @@ public class VisitControlPanel extends JPanel {
 				}
 														
 				
-				visitSession.makeMovie(selectedFile);
+				//visitSession.makeMovie(selectedFile);
+				final String theSelectedFile=selectedFile;
+				AsynchClientTask makeMovieTask = new AsynchClientTask("Making Movie...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						visitSession.makeMovie(theSelectedFile);
+						DialogUtils.showInfoDialog(VisitControlPanel.this, "Movie "+theSelectedFile+" finished.");
+					}
+				};
+				ClientTaskDispatcher.dispatch(VisitControlPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {makeMovieTask});
+//				(new Thread(){
+//					public void run(){
+//						visitSession.makeMovie(theSelectedFile);
+//					}
+//				}).start();
+				
 				System.out.println("Returned from VisitSession.makeMovie");
 			}
 		});
