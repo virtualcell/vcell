@@ -737,6 +737,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			description = ((Geometry)object).getName();
 		} else if (object instanceof OutputFunctionIssueSource) {
 			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
+		} else if (object instanceof MathDescription) {
+			return "math";
 		}
 		return description;		
 	}
