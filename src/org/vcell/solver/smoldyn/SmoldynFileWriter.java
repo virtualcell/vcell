@@ -532,15 +532,23 @@ private void writeReactions() throws ExpressionException, MathException {
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 				writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 			} else if (subdomain instanceof MembraneSubDomain){
-				//if there is mambrane bound product, and there is at least one mambrane reactant
-				if(hasMembraneVariable(products) && hasMembraneVariable(reactants))
-				{
-					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
-				}
-				else 
+				// Use rate command for any membrane reactions with 1 reactant and 1 product
+				if ((reactants.size() == 1) && (products.size() == 1)) 
 				{
 					writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+				}
+				else
+				{
+					// Smoldyn reaction_surface command for membrane reaction requires at least one mambrane bound reactant
+					//if(hasMembraneVariable(reactants))
+					//{
+						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					//}
+					//else 
+					//{
+						//throw new MathException("VCell spatial stochastic solver requires at least one mambrane bound reactant in membrane reactions.");
+					//}
 				}
 			}
 		}
@@ -578,10 +586,7 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
 {
 	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
-	if ((reacts.size() != 1) || (prods.size() != 1)) 
-	{
-		throw new MathException("VCell currently supports membrane reactions with one reactant and one product only.");
-	}
+	
 	//Transmission. Membrane reaction/flux with species in inside and outside membrane solutions
 	//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c",
 	if(!hasMembraneVariable(prods) && !hasMembraneVariable(reacts))
