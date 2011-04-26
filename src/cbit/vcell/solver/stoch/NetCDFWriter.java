@@ -21,9 +21,11 @@ import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.parser.Expression;
@@ -492,22 +494,29 @@ public class NetCDFWriter {
 			    for(int i=0; i<numSpecies.getLength(); i++)
 			    {
 			    	try{
-			    		Expression varIniExp = subDomain.getVarIniCondition(vars.elementAt(i).getName()).getIniVal();
-			    		varIniExp.bindExpression(simSymbolTable);
-			    		varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();
-			    		double expectedCount = varIniExp.evaluateConstant();
-			    		long poissonSampleCount = 0;
-			  			if(expectedCount > 0)
-			  			{
-			  				poissonSampleCount = dist.nextPoisson(expectedCount);
-			  			}
-
-			    		A12.setLong(idx.set(i),poissonSampleCount);
-			    	}catch(ExpressionException ex)
-			    	{
-			    		ex.printStackTrace(System.err);
-			    		throw new ExpressionException(ex.getMessage());
-			    	}
+			    		VarIniCondition varIniCondition = subDomain.getVarIniCondition(vars.elementAt(i).getName());
+			  			Expression varIniExp = varIniCondition.getIniVal();
+			  			varIniExp.bindExpression(simSymbolTable);
+						varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();
+						double expectedCount = varIniExp.evaluateConstant();
+				  		long varCount = 0;
+				  		if(varIniCondition instanceof VarIniCount)
+				  		{
+				  			varCount = (long)expectedCount;
+				  		}
+				  		else
+				  		{
+				  			if(expectedCount > 0)
+				  			{
+				  				varCount = dist.nextPoisson(expectedCount);
+				  			}
+				  		}
+				  		A12.setLong(idx.set(i),varCount);
+			  		}catch(ExpressionException ex)
+			  		{
+			  			ex.printStackTrace(System.err);
+			  			throw new ExpressionException(ex.getMessage());
+			  		}
 			    }
 			    ncfile.write("SpeciesIC", new int[1], A12);
 			    
