@@ -535,7 +535,16 @@ private void writeReactions() throws ExpressionException, MathException {
 				// Use rate command for any membrane reactions with 1 reactant and 1 product
 				if ((reactants.size() == 1) && (products.size() == 1)) 
 				{
-					writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					//Membrane reaction (1 react to 1 product).
+					if(hasMembraneVariable(products) && hasMembraneVariable(reactants))
+					{
+						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					}
+					else//Other single molecular reactions
+					{
+						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					}
 				}
 				else
 				{
@@ -633,14 +642,6 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		{
 			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
 		}
-		printWriter.print(rateConstant + " ");
-		printWriter.println(prods.get(0).getName());
-	}
-	//Membrane reaction (1 react to 1 product).
-	else if(hasMembraneVariable(prods) && hasMembraneVariable(reacts))
-	{
-		printWriter.print(reacts.get(0).getName() + " ");
-		printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.up + " ");
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
 	}
