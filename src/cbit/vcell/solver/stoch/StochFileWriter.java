@@ -12,6 +12,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniCount;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -191,8 +192,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	  	printWriter.println("<model>");
 		//  variables
 		printWriter.println("<discreteVariables>");
-		//speceis initial condition (in number of molecules)
-		//Species iniCondition are sampled from a poisson distribution(which has a mean of the current iniExp value)
+		//Species iniCondition (if in concentration) is sampled from a poisson distribution(which has a mean of the current iniExp value)
 		List<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
 		if((varInis != null) && (varInis.size()>0))
 	    {
@@ -205,23 +205,30 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 				}
 			}
 		    printWriter.println("TotalVars"+"\t"+varInis.size());
-		  	for(int i=0; i<varInis.size(); i++)
+		  	for(VarIniCondition varIniCondition : varInis)
 			{
 		  		try{
-		  			Expression iniExp = varInis.get(i).getIniVal();
+		  			Expression iniExp = varIniCondition.getIniVal();
 		  			iniExp.bindExpression(simSymbolTable);
 					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
-		  			double expectedCount = iniExp.evaluateConstant();
-		  			long poissonSampleCount = 0;
-		  			if(expectedCount > 0)
-		  			{
-		  				poissonSampleCount = dist.nextPoisson(expectedCount);
-		  			}
-		  			printWriter.println(((VarIniCondition)varInis.get(i)).getVar().getName()+"\t" + poissonSampleCount);
-		  		}catch(cbit.vcell.parser.ExpressionException ex)
+					double expectedCount = iniExp.evaluateConstant();
+			  		long varCount = 0;
+			  		if(varIniCondition instanceof VarIniCount)
+			  		{
+			  			varCount = (long)expectedCount;
+			  		}
+			  		else
+			  		{
+			  			if(expectedCount > 0)
+			  			{
+			  				varCount = dist.nextPoisson(expectedCount);
+			  			}
+			  		}
+		  			printWriter.println(varIniCondition.getVar().getName()+"\t" + varCount);
+		  		}catch(ExpressionException ex)
 		  		{
 		  			ex.printStackTrace();
-		  			throw new MathFormatException("variable "+((VarIniCondition)varInis.get(i)).getVar().getName()+"'s initial condition is required to be a constant.");
+		  			throw new MathFormatException("variable "+varIniCondition.getVar().getName()+"'s initial condition is required to be a constant.");
 		  		}
 			}
 		}
