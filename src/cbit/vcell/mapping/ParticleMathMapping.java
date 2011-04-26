@@ -249,7 +249,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			for (int i=0;i<parameters.length;i++){
 				//Reaction rate, currentDensity, LumpedCurrent and null parameters are not going to displayed in the particle math description.
 				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent) || (parameters[i].getRole() == Kinetics.ROLE_ReactionRate)) ||
-					 (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+					 (parameters[i].getExpression()==null)){
 					continue;
 				}
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],geometryClass), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass),geometryClass));
@@ -266,9 +266,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		if (getSimulationContext().isUsingConcentration()) {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			initExpr = new Expression(initParm.getExpression());
-			if (speciesContextSpecs[i].getSpeciesContext().getStructure() instanceof Feature) {
-				initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
-			}
+//			if (speciesContextSpecs[i].getSpeciesContext().getStructure() instanceof Feature) {
+//				initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
+//			}
 		} else {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
 			initExpr = new Expression(initParm.getExpression());
@@ -565,7 +565,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		SpeciesContextSpec    scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 
 		if (scm.getVariable() instanceof ParticleVariable && scm.getDependencyExpression()==null){
-			ParticleVariable volumeParticleVariable = (ParticleVariable)scm.getVariable();
+			ParticleVariable particleVariable = (ParticleVariable)scm.getVariable();
 			
 			//
 			// initial distribution of particles
@@ -574,6 +574,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			ParticleInitialCondition pic = null;
 			if (getSimulationContext().isUsingConcentration()) {
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
+				if(particleVariable instanceof VolumeParticleVariable)
+				{
+					initialDistribution = Expression.div(initialDistribution, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
 				Expression initialCount = scs.getInitialCountParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialCountParameter(),sm.getGeometryClass()));
@@ -592,7 +596,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
 
-			ParticleProperties particleProperties = new ParticleProperties(volumeParticleVariable, diffusion, particleInitialConditions);
+			ParticleProperties particleProperties = new ParticleProperties(particleVariable, diffusion, particleInitialConditions);
 			SubDomain subDomain = mathDesc.getSubDomain(sm.getGeometryClass().getName());
 			subDomain.addParticleProperties(particleProperties);
 		}
