@@ -247,7 +247,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 		if (parameters != null){
 			for (int i=0;i<parameters.length;i++){
-				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+				//Reaction rate, currentDensity, LumpedCurrent and null parameters are not going to displayed in the particle math description.
+				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent) || (parameters[i].getRole() == Kinetics.ROLE_ReactionRate)) ||
+					 (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 					continue;
 				}
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],geometryClass), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass),geometryClass));
