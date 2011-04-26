@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -12,6 +13,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -23,13 +25,16 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
@@ -111,6 +116,27 @@ public class IssuePanel extends DocumentEditorSubPanel {
 								setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
 							}
 							setSelectedObjects(new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
+						} else {
+							boolean bInMathModelEditor = false;
+							boolean bInBioModelEditor = false;
+							for (Component c = IssuePanel.this; c != null; c = c.getParent()) {
+								if (c instanceof MathModelEditor) {
+									bInMathModelEditor = true;
+									break;
+								} else if (c instanceof BioModelEditor) {
+									bInBioModelEditor = true;
+									break;
+								}
+							}
+							if (bInMathModelEditor) {
+								if (object instanceof Geometry) {
+									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry));								
+								} else if (object instanceof OutputFunctionIssueSource) {
+									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
+								} else {
+									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_VCML_NODE, ActiveViewID.math_vcml));
+								}
+							}
 						}
 					}
 				}
