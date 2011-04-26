@@ -611,11 +611,11 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.fsoln + " " + /*SmoldynKeyword.front*/SmoldynKeyword.up + " ");
+			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
 		}
 		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.bsoln + " " + /*SmoldynKeyword.back*/SmoldynKeyword.up + " ");
+			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
 		}
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
@@ -627,12 +627,20 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
 		{
-			printWriter.print(/*SmoldynKeyword.front*/SmoldynKeyword.up + " " + SmoldynKeyword.fsoln + " ");
+			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.fsoln + " ");
 		}
 		else if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
 		{
-			printWriter.print(/*SmoldynKeyword.back*/SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
+			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
 		}
+		printWriter.print(rateConstant + " ");
+		printWriter.println(prods.get(0).getName());
+	}
+	//Membrane reaction (1 react to 1 product).
+	else if(hasMembraneVariable(prods) && hasMembraneVariable(reacts))
+	{
+		printWriter.print(reacts.get(0).getName() + " ");
+		printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.up + " ");
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
 	}
