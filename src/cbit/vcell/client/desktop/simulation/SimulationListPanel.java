@@ -507,7 +507,13 @@ private void initConnections() throws java.lang.Exception {
 			} else if (value instanceof Double) {
 				setText(value + "s");
 			}
-			setToolTipText(getText());
+			if (value instanceof SolverDescription) {
+				SolverDescription solverDescription = (SolverDescription) value;
+				setText(solverDescription.getShortDisplayLabel());
+				setToolTipText(solverDescription.getDisplayLabel());
+			} else {
+				setToolTipText(getText());
+			}
 			return this;
 		}
 		
@@ -515,6 +521,7 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().setDefaultRenderer(OutputTimeSpec.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(Double.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(String.class, renderer);
+	getScrollPaneTable().setDefaultRenderer(SolverDescription.class, renderer);
 	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
 	getScrollPaneTable().setDefaultRenderer(SimulationStatus.class, new DefaultScrollTableCellRenderer() {
 		@Override
