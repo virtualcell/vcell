@@ -32,9 +32,9 @@ import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
@@ -57,18 +57,15 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
-import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
-import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolumeParticleVariable;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -526,6 +523,16 @@ private void writeReactions() throws ExpressionException, MathException {
 			if (macroscopicRateConstant == 0) {
 				continue;
 			}
+			//if the reaction rate is not 0, means we are going to run the simulations
+			//Smoldyn takes maximum 2nd order reaction.
+			if (reactants.size() > 2)
+			{
+				throw new MathException("VCell spatial stochastic models support up to 2nd order reactions. \n" + "The reaction:" + pjp.getName() + " has more than 2 reactants.");
+			}
+			if (products.size() > 2)
+			{
+				throw new MathException("VCell spatial stochastic models support up to 2nd order reactions. \n" + "The reaction:" + pjp.getName() + " has more than 2 products.");
+			}
 			
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
@@ -536,7 +543,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				if ((reactants.size() == 1) && (products.size() == 1)) 
 				{
 					//Membrane reaction (1 react to 1 product).
-					if(hasMembraneVariable(products) && hasMembraneVariable(reactants))
+					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
@@ -546,18 +553,19 @@ private void writeReactions() throws ExpressionException, MathException {
 						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					}
 				}
-				else
+				else //membrane reactions which are not one to one 
 				{
-					// Smoldyn reaction_surface command for membrane reaction requires at least one mambrane bound reactant
-					//if(hasMembraneVariable(reactants))
-					//{
+					// 1. membrane reaction requires at least one mambrane bound reactant
+					// 2. should NOT have volume products (solution for vol products have leaking)
+					if(getMembraneVariableCount(reactants) == 1 && getVolumeVariableCount(products) == 0)
+					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
-					//}
-					//else 
-					//{
-						//throw new MathException("VCell spatial stochastic solver requires at least one mambrane bound reactant in membrane reactions.");
-					//}
+					}
+					else 
+					{
+						throw new MathException("VCell spatial stochastic solver requires at least ONE and ONLY ONE mambrane bound reactant and no volume products in membrane reactions.");
+					}
 				}
 			}
 		}
@@ -598,7 +606,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	
 	//Transmission. Membrane reaction/flux with species in inside and outside membrane solutions
 	//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c",
-	if(!hasMembraneVariable(prods) && !hasMembraneVariable(reacts))
+	if((getVolumeVariableCount(prods) == 1) && (getVolumeVariableCount(reacts) == 1))
 	{	
 		
 		printWriter.print(reacts.get(0).getName() + " ");
@@ -615,7 +623,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	}
 	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
 	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
-	else if(hasMembraneVariable(prods) && !hasMembraneVariable(reacts))
+	else if(getMembraneVariableCount(prods) == 1 && getVolumeVariableCount(reacts) == 1)
 	{
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
@@ -631,7 +639,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	}
 	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution
 	//e.g. "surface c_n_membrane rate B2 front fsoln 4.22 C2"
-	else if(!hasMembraneVariable(prods) && hasMembraneVariable(reacts))
+	else if(getVolumeVariableCount(prods) == 1 && getMembraneVariableCount(reacts) == 1)
 	{
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
@@ -647,16 +655,30 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	}
 }
 
-private boolean hasMembraneVariable(List<Variable> variables)
+private int  getMembraneVariableCount(List<Variable> variables)
 {
+	int count = 0;
 	for(Variable var : variables)
 	{
 		if(var instanceof MembraneParticleVariable)
 		{
-			return true;
+			count++;
 		}
 	}
-	return false;
+	return count;
+}
+
+private int getVolumeVariableCount(List<Variable> variables)
+{
+	int count = 0;
+	for(Variable var : variables)
+	{
+		if(var instanceof VolumeParticleVariable)
+		{
+			count++;
+		}
+	}
+	return count;
 }
 
 private String getVariableName(Variable var, SubDomain subdomain) throws MathException {
