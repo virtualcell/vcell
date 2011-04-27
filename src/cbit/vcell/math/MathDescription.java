@@ -1931,7 +1931,11 @@ public void gatherIssues(List<Issue> issueList) {
 		Issue issue = new Issue(this, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
-	
+	if(isSpatialStoch() && geometry.getDimension() != 3)
+    {
+            Issue issue = new Issue(geometry, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
+            issueList.add(issue);
+    }
 	// check Constant are really constants
 	for (int i=0;i<variableList.size();i++){
 		Variable var = variableList.elementAt(i);
