@@ -4,6 +4,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 
 public class VCellErrorMessages {
@@ -19,6 +20,12 @@ public class VCellErrorMessages {
 //		}
 //	}
 	
+	public static String getSemiFVSolverCompiledSolverDeprecated(Simulation sim) {
+		return "<html>Simulation '" + sim.getName() + "' : <br>The selected solver is no longer fully supported. " +				
+				" We recommend using <font color=blue>" + SolverDescription.SundialsPDE.getDisplayLabel() + "</font>. " +
+				"<br>However to proceed with the equivalent solver, <font color=blue>" 
+				+ SolverDescription.FiniteVolumeStandalone.getDisplayLabel() + "</font>. click OK.</html>";
+	}
 	public static String getSmoldynUnexpectedSurface(CompartmentSubDomain compart0, CompartmentSubDomain compart1) {
 		return "Found an unexpected surface between compartment '" + compart0.getName() + "' and compartment '" + compart1.getName() + "'. Finer mesh is recommended.";
 	}
