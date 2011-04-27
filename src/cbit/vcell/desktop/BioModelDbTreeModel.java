@@ -5,6 +5,7 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -70,7 +71,12 @@ protected void createBaseTree() throws DataAccessException {
 	//
 	// for each user
 	//
-	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
+	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>(new Comparator<String>() {
+
+		public int compare(String o1, String o2) {
+			return o1.compareToIgnoreCase(o2);
+		}		
+	});
 	for (int ownerIndex=0;ownerIndex<userList.size();ownerIndex++){
 		User owner = (User)userList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createUserSubTree(owner, bioModelInfos);

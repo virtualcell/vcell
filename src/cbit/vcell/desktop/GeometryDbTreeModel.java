@@ -3,6 +3,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
+import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -61,7 +62,12 @@ protected void createBaseTree() throws DataAccessException {
 	//
 	// for each user
 	//
-	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
+	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>(new Comparator<String>() {
+
+		public int compare(String o1, String o2) {
+			return o1.compareToIgnoreCase(o2);
+		}		
+	});
 	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
 		User owner = (User)ownerList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createOwnerSubTree(owner, geometryInfos);
