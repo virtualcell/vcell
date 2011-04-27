@@ -66,6 +66,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_StochasticModel,
 		
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
+		Smoldyn_Geometry_3DWarning,
 	}
 
 	//
