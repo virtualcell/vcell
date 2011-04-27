@@ -191,8 +191,13 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		double radiusSquared = radius * radius;
 		double bestT = -1.0;
 		double bestError = 10e10;
-		double deltaT = (endT - startT) / 200;
-		for (double t = startT; ((deltaT > 0) ? (t <= endT) : (t >= endT)); t += deltaT) {
+		int iMax = 200;
+		if(startT == endT) { return endT; }
+		double relDistT = Math.abs(startT - endT) / (Math.abs(startT) + Math.abs(endT));
+		if(relDistT < 1e-8) { return (startT + endT) / 2.0; }
+		for(int i = 0; i <= iMax; ++i) {
+			double iFraction = ((double) i) /((double) iMax);
+			double t = startT*(1.0 - iFraction) + endT*iFraction;
 			double u = 1 - t;
 			double x = curve.getX1() * u * u * u + 3 * curve.getCtrlX1() * t
 					* u * u + 3 * curve.getCtrlX2() * t * t * u + curve.getX2()
