@@ -1,15 +1,9 @@
 package cbit.vcell.client.desktop.simulation;
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.JProgressBar;
-import javax.swing.JTable;
-
-import org.vcell.util.NumberUtils;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -23,6 +17,7 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -94,7 +89,7 @@ public Object getValueAt(int row, int column) {
 					return simulation.getSolverTaskDescription().getOutputTimeSpec();
 				} 
 				case COLUMN_SOLVER: {
-					return simulation.getSolverTaskDescription().getSolverDescription().getShortDisplayLabel();
+					return simulation.getSolverTaskDescription().getSolverDescription();
 				} 
 				case COLUMN_STATUS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation);
@@ -314,6 +309,8 @@ public Class<?> getColumnClass(int columnIndex) {
 		return Double.class;
 	case COLUMN_OUTPUT:
 		return OutputTimeSpec.class;
+	case COLUMN_SOLVER:
+		return SolverDescription.class;
 	default:
 		return String.class;
 	}
