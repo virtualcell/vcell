@@ -76,26 +76,32 @@ public class GenericLogicGraphLayouter extends ContainedGraphLayouter {
 			if(glgEdge == null) {
 				GlgGraphNode glgNode1 = getOrAddInternalNode(context, node1);
 				GlgGraphNode glgNode2 = getOrAddInternalNode(context, node2);
-				glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNode2, null, TYPE_DEFAULT, edge);
-				context.getEdgeMap().put(edge, glgEdge);
+				if(!context.getGlgGraph().NodesConnected(glgNode1, glgNode2)) {
+					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNode2, null, TYPE_DEFAULT, edge);
+					context.getEdgeMap().put(edge, glgEdge);					
+				}
 			}			
 		} else if(container.equals(node1.getContainer())) {
 			GlgGraphEdge glgEdge = context.getEdgeMap().get(edge);
 			if(glgEdge == null) {
 				GlgGraphNode glgNode1 = getOrAddInternalNode(context, node1);
 				GlgGraphNode glgNodeExternal2 = getOrAddExternalNode(context, node2, node1);
-				glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNodeExternal2, null, 
-						TYPE_EXTERNAL, edge);
-				context.getEdgeMap().put(edge, glgEdge);
+				if(!context.getGlgGraph().NodesConnected(glgNode1, glgNodeExternal2)) {	
+					glgEdge = context.getGlgGraph().AddEdge(glgNode1, glgNodeExternal2, null, 
+							TYPE_EXTERNAL, edge);
+					context.getEdgeMap().put(edge, glgEdge);
+				}
 			}
 		} else if(container.equals(node2.getContainer())) {		
 			GlgGraphEdge glgEdge = context.getEdgeMap().get(edge);
 			if(glgEdge == null) {
 				GlgGraphNode glgNodeExternal1 = getOrAddExternalNode(context, node1, node2);
 				GlgGraphNode glgNode2 = getOrAddInternalNode(context, node2);
-				glgEdge = context.getGlgGraph().AddEdge(glgNode2, glgNodeExternal1, null, 
-						TYPE_EXTERNAL, edge);
-				context.getEdgeMap().put(edge, glgEdge);
+				if(!context.getGlgGraph().NodesConnected(glgNodeExternal1, glgNode2)) {					
+					glgEdge = context.getGlgGraph().AddEdge(glgNode2, glgNodeExternal1, null, 
+							TYPE_EXTERNAL, edge);
+					context.getEdgeMap().put(edge, glgEdge);
+				}
 			}						
 		}
 	}
