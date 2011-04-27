@@ -482,7 +482,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					Structure structure = ((ReactionContainerShape) pickedShape).getStructure();
 					if (getReactionCartoon().getStructureSuite().areReactionsShownFor(structure)) {
 						ReactionStep reactionStep = getReactionCartoon().getModel().createSimpleReaction(structure);
-						positionShapeForObject(reactionStep, worldPoint);
+						positionShapeForObject(structure, reactionStep, worldPoint);
 						saveDiagram();
 					}
 				}
@@ -519,7 +519,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				if (pickedShape instanceof ReactionContainerShape){
 					SpeciesContext speciesContext = getReactionCartoon().getModel().createSpeciesContext(((ReactionContainerShape) pickedShape).getStructure());
 					getGraphModel().select(speciesContext);
-					positionShapeForObject(speciesContext, worldPoint);
+					positionShapeForObject(speciesContext.getStructure(), speciesContext, worldPoint);
 //					showCreateSpeciesContextDialog(getGraphPane(),
 //							getReactionCartoon().getModel(),
 //							((ReactionContainerShape) pickedShape).getStructure(), scShapeLocation);
@@ -973,7 +973,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								getReactionCartoon().notifyChangeEvent();
 								Point startLoc = startShape.getSpaceManager().getAbsLoc();
 								Point endLoc = endShape.getSpaceManager().getAbsLoc();
-								positionShapeForObject(speciesContext, new Point(
+								positionShapeForObject(structureSpecies, speciesContext, new Point(
 										(startLoc.x + endLoc.x) / 2, (startLoc.y + endLoc.y) / 2));
 							}
 						} else if(startShapeObject instanceof Structure) {
@@ -981,7 +981,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							SpeciesContext speciesContext =  getReactionCartoon().getModel().createSpeciesContext(structure);
 							simpleReaction.addReactant(speciesContext, 1);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(speciesContext, edgeShape.getStart());
+							positionShapeForObject(structure, speciesContext, edgeShape.getStart());
 						}
 					} else if (endShape instanceof SpeciesContextShape) {
 						SpeciesContext speciesContextEnd = (SpeciesContext) endShape.getModelObject();
@@ -1024,7 +1024,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								getReactionCartoon().notifyChangeEvent();
 								Point endPos = endShape.getSpaceManager().getAbsLoc();
 								Point startPos = startShape.getSpaceManager().getAbsLoc();
-								positionShapeForObject(reaction, new Point(
+								positionShapeForObject(structureEnd, reaction, new Point(
 										(endPos.x + startPos.x)/2, 
 										(endPos.y + startPos.y)/2));
 								getReactionCartoon().notifyChangeEvent();
@@ -1053,17 +1053,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
 									getReactionCartoon().notifyChangeEvent();
 									Point startPos = edgeShape.getStart();
-									//finding correct insertion point for flux, statements below should be put into a utility if used often
-									Shape fluxMemShape =  getGraphModel().getShapeFromModelObject(fluxMem);
-									int memAbsXmin = fluxMemShape.getSpaceManager().getRelX();
-									int memAbsXmax = memAbsXmin + fluxMemShape.getSpaceManager().getSize().width ;
-									int fluxWidth = new FluxReactionShape(flux, getReactionCartoon()).getSpaceManager().getSize().width;
-									int fluxAbsX = Math.max(memAbsXmin, ((memAbsXmax-memAbsXmin)/2-fluxWidth/2));
-									
-									positionShapeForObject(flux, new Point(fluxAbsX, (startPos.y + endPos.y)/2));
+									positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
 								}
-							}else if(structureEnd instanceof Membrane && structureStart instanceof Feature)
-							{
+							} else if(structureEnd instanceof Membrane && structureStart instanceof Feature) {
 								Membrane endMembrane = (Membrane)structureEnd;
 								Feature startFeature = (Feature)structureStart;
 								if(endMembrane.getOutsideFeature().equals(startFeature) || endMembrane.getInsideFeature().equals(startFeature))
@@ -1076,8 +1068,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									getReactionCartoon().notifyChangeEvent();
 									Point startPos = edgeShape.getStart();
 									Point endPos = endShape.getSpaceManager().getAbsLoc();
-									positionShapeForObject(speciesContext1, startPos);
-									positionShapeForObject(speciesContext2, endPos);
+									positionShapeForObject(structureStart, speciesContext1, startPos);
+									positionShapeForObject(structureEnd, speciesContext2, endPos);
 									//finding correct insertion point for reaction, statements below should be put into a utility if used often
 									int memAbsXmin = endShape.getSpaceManager().getAbsLoc().x;
 									int memAbsXmax = memAbsXmin + endShape.getSpaceManager().getSize().width;
@@ -1093,7 +1085,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
 									}
 									
-									positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+									positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 								}
 							}
 							else if(structureEnd instanceof Feature && structureStart instanceof Membrane)
@@ -1110,8 +1102,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									getReactionCartoon().notifyChangeEvent();
 									Point startPos = edgeShape.getStart();
 									Point endPos = endShape.getSpaceManager().getAbsLoc();
-									positionShapeForObject(speciesContext1, startPos);
-									positionShapeForObject(speciesContext2, endPos);
+									positionShapeForObject(structureStart, speciesContext1, startPos);
+									positionShapeForObject(structureEnd, speciesContext2, endPos);
 									//finding correct insertion point for reaction, statements below should be put into a utility if used often
 									int memAbsXmin = startShape.getSpaceManager().getAbsLoc().x;
 									int memAbsXmax = memAbsXmin + startShape.getSpaceManager().getSize().width;
@@ -1127,7 +1119,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
 									}
 									
-									positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+									positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 								}
 							}
 						} else if(startShapeObject instanceof Structure) {
@@ -1136,7 +1128,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							SimpleReaction reaction = model.createSimpleReaction(structure);
 							reaction.addProduct(speciesContextEnd, 1);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(reaction, edgeShape.getStart());
+							positionShapeForObject(structure, reaction, edgeShape.getStart());
 						}
 					} else if (endShape instanceof FluxReactionShape){
 						FluxReaction fluxReaction = (FluxReaction)endShape.getModelObject();
@@ -1187,13 +1179,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							SpeciesContext speciesContext = getReactionCartoon().getModel().createSpeciesContext(endStructure);
 							reaction.addProduct(speciesContext, 1);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(speciesContext, endPos);
+							positionShapeForObject(endStructure, speciesContext, endPos);
 						} else if(startObject instanceof SpeciesContext) {
 							SpeciesContext speciesContext = (SpeciesContext) startObject;
 							SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(endStructure);
 							reaction.addReactant(speciesContext, 1);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(reaction, endPos);
+							positionShapeForObject(endStructure, reaction, endPos);
 						} else if(startObject instanceof Structure) {
 							Structure startStructure = (Structure) startObject;
 							if(endStructure.equals(startStructure)) {
@@ -1204,9 +1196,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								reaction.addProduct(speciesContext2, 1);
 								getReactionCartoon().notifyChangeEvent();
 								Point startPos = edgeShape.getStart();
-								positionShapeForObject(speciesContext1, startPos);
-								positionShapeForObject(speciesContext2, endPos);
-								positionShapeForObject(reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+								positionShapeForObject(endStructure, speciesContext1, startPos);
+								positionShapeForObject(endStructure, speciesContext2, endPos);
+								positionShapeForObject(endStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
 							}
 							else
 							{
@@ -1223,8 +1215,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reaction.addProduct(speciesContext2, 1);
 										getReactionCartoon().notifyChangeEvent();
 										Point startPos = edgeShape.getStart();
-										positionShapeForObject(speciesContext1, startPos);
-										positionShapeForObject(speciesContext2, endPos);
+										positionShapeForObject(startFeature, speciesContext1, startPos);
+										positionShapeForObject(endMembrane, speciesContext2, endPos);
 										//finding correct insertion point for reaction, statements below should be put into a utility if used often
 										int memAbsXmin = endShape.getSpaceManager().getAbsLoc().x;
 										int memAbsXmax = memAbsXmin + endShape.getSpaceManager().getSize().width;
@@ -1240,7 +1232,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
 										}
 										
-										positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Membrane)
@@ -1256,8 +1248,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reaction.addProduct(speciesContext2, 1);
 										getReactionCartoon().notifyChangeEvent();
 										Point startPos = edgeShape.getStart();
-										positionShapeForObject(speciesContext1, startPos);
-										positionShapeForObject(speciesContext2, endPos);
+										positionShapeForObject(startMembrane, speciesContext1, startPos);
+										positionShapeForObject(endFeature, speciesContext2, endPos);
 										//finding correct insertion point for reaction, statements below should be put into a utility if used often
 										int memAbsXmin = startShape.getSpaceManager().getAbsLoc().x;
 										int memAbsXmax = memAbsXmin + startShape.getSpaceManager().getSize().width;
@@ -1273,7 +1265,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
 										}
 										
-										positionShapeForObject(reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Feature)
@@ -1302,16 +1294,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
 										getReactionCartoon().notifyChangeEvent();
 										Point startPos = edgeShape.getStart();
-										positionShapeForObject(speciesContext1, startPos);
-										positionShapeForObject(speciesContext2, endPos);
-										//finding correct insertion point for flux, statements below should be put into a utility if used often
-										Shape fluxMemShape =  getGraphModel().getShapeFromModelObject(fluxMem);
-										int memAbsXmin = fluxMemShape.getSpaceManager().getRelX();
-										int memAbsXmax = memAbsXmin + fluxMemShape.getSpaceManager().getSize().width ;
-										int fluxWidth = new FluxReactionShape(flux, getReactionCartoon()).getSpaceManager().getSize().width;
-										int fluxAbsX = Math.max(memAbsXmin, ((memAbsXmax-memAbsXmin)/2-fluxWidth/2));
-										
-										positionShapeForObject(flux, new Point(fluxAbsX, (startPos.y + endPos.y)/2));
+										positionShapeForObject(startFeature, speciesContext1, startPos);
+										positionShapeForObject(endFeature, speciesContext2, endPos);
+										positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
 									}
 								}
 							}
@@ -1339,7 +1324,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							speciesContext = getReactionCartoon().getModel().createSpeciesContext(endStructure);
 							getReactionCartoon().notifyChangeEvent();
 							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(speciesContext, endPos);
+							positionShapeForObject(endStructure, speciesContext, endPos);
 						}
 					} else if(startObject instanceof SpeciesContext) {
 						speciesContext = (SpeciesContext) startObject;						
@@ -1350,7 +1335,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							reactionStep = getReactionCartoon().getModel().createSimpleReaction(endStructure);
 							getReactionCartoon().notifyChangeEvent();
 							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(reactionStep, endPos);
+							positionShapeForObject(endStructure, reactionStep, endPos);
 						}
 					} else if (startObject instanceof Structure) {
 						Structure startStructure = (Structure) startObject;
@@ -1358,20 +1343,20 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							reactionStep = (ReactionStep) endObject;
 							speciesContext = getReactionCartoon().getModel().createSpeciesContext(startStructure);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(speciesContext, startPointWorld);
+							positionShapeForObject(startStructure, speciesContext, startPointWorld);
 						} else if(endObject instanceof SpeciesContext) {
 							speciesContext = (SpeciesContext) endObject;
 							reactionStep = getReactionCartoon().getModel().createSimpleReaction(startStructure);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(reactionStep, startPointWorld);
+							positionShapeForObject(startStructure, reactionStep, startPointWorld);
 						} else if(endObject instanceof Structure) {
 							Structure endStructure = (Structure) endObject;
 							speciesContext = getReactionCartoon().getModel().createSpeciesContext(startStructure);
 							reactionStep = getReactionCartoon().getModel().createSimpleReaction(endStructure);
 							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(speciesContext, startPointWorld);
+							positionShapeForObject(startStructure, speciesContext, startPointWorld);
 							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(reactionStep, endPos);
+							positionShapeForObject(endStructure, reactionStep, endPos);
 						}
 					}
 					if (reactionStep != null && speciesContext != null) {
@@ -1410,13 +1395,32 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		return getReactionCartoon().getModel();
 	}
 	
-	protected void positionShapeForObject(Object object, Point pos) {
+	protected void positionShapeForObject(Structure structure, Object object, Point pos) {
+		Shape structureShape = getReactionCartoon().getShapeFromModelObject(structure);
 		Shape shape = getReactionCartoon().getShapeFromModelObject(object);
 		if(shape != null) {
-			shape.getSpaceManager().setAbsLoc(pos);
+			if(structureShape != null) {
+				Rectangle boundary = 
+					getReactionCartoon().getContainerLayout().getBoundaryForAutomaticLayout(structureShape);
+				shape.getSpaceManager().setAbsLoc(pos);
+				int xMax = boundary.x + boundary.width - shape.getWidth();
+				if(shape.getAbsX() < boundary.x) { 
+					shape.setAbsX(boundary.x); 
+				} else if(shape.getAbsX() > xMax) {
+					shape.setAbsX(xMax);
+				}
+				int yMax = boundary.y + boundary.height - shape.getHeight();
+				if(shape.getAbsY() < boundary.y) { 
+					shape.setAbsY(boundary.y); 
+				} else if(shape.getAbsY() > yMax) {
+					shape.setAbsY(yMax);
+				}
+			} else {
+				shape.getSpaceManager().setAbsLoc(pos);		
+			}
 		}
 	}
-
+	
 	public void saveDiagram() throws Exception {
 		for(Structure structure : getReactionCartoon().getStructureSuite().getStructures()) {
 			getReactionCartoon().setPositionsFromReactionCartoon(

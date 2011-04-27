@@ -29,6 +29,8 @@ public class ShapeSpaceManager {
 	
 	public void setRelPos(Point relativePos) { this.relPos = relativePos; }	
 	public void setRelPos(int x, int y) { relPos.x = x; relPos.y = y; }
+	public void setRelX(int x) { relPos.x = x; }
+	public void setRelY(int y) { relPos.y = y; }
 	public Point getRelPos() { return relPos; }
 	public int getRelX() { return relPos.x; }
 	public int getRelY() { return relPos.y; }
@@ -43,6 +45,24 @@ public class ShapeSpaceManager {
 			pos.y += parent.getSpaceManager().getRelY();
 		}
 		return pos;
+	}
+
+	public final int getAbsX() {
+		Owner parent = owner;
+		int x = getRelX();
+		while ((parent = parent.getParent()) != null) {
+			x += parent.getSpaceManager().getRelX();
+		}
+		return x;
+	}
+
+	public final int getAbsY() {
+		Owner parent = owner;
+		int y = getRelY();
+		while ((parent = parent.getParent()) != null) {
+			y += parent.getSpaceManager().getRelY();
+		}
+		return y;
 	}
 
 	public final void setAbsLoc(Point absLoc) {
@@ -62,6 +82,26 @@ public class ShapeSpaceManager {
 			setRelPos(x - parentAbsLoc.x, y - parentAbsLoc.y);
 		} else {
 			setRelPos(x, y);
+		}
+	}
+
+	public final void setAbsX(int x) {
+		Owner parent = owner.getParent();
+		if (parent != null) {
+			int parentAbsX = parent.getSpaceManager().getAbsX();
+			setRelX(x - parentAbsX);
+		} else {
+			setRelX(x);
+		}
+	}
+	
+	public final void setAbsY(int y) {
+		Owner parent = owner.getParent();
+		if (parent != null) {
+			int parentAbsY = parent.getSpaceManager().getAbsY();
+			setRelY(y - parentAbsY);
+		} else {
+			setRelY(y);
 		}
 	}
 

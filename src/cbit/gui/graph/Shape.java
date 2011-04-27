@@ -64,6 +64,8 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	public int getRelY() { return spaceManager.getRelY(); }
 	public void setAbsPos(Point absPos) { spaceManager.setAbsLoc(absPos); }
 	public void setAbsPos(int x, int y) { spaceManager.setAbsLoc(x, y); }
+	public void setAbsX(int x) { spaceManager.setAbsX(x); }
+	public void setAbsY(int y) { spaceManager.setAbsY(y); }
 	public Point getAbsPos() { return spaceManager.getAbsLoc(); }
 	public int getAbsX() { return spaceManager.getAbsLoc().x; }
 	public int getAbsY() { return spaceManager.getAbsLoc().y; }
