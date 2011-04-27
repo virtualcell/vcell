@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -21,6 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -451,6 +453,29 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
+private Object getSimulationStatusDisplay(int row) {
+	Simulation simulation = getSimulationListTableModel1().getValueAt(row);
+	SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
+	boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
+							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
+	if (displayProgress){
+		double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
+		JProgressBar progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
+		progressBar.setValue((int)(progress * 100));
+		if (simStatus.isFailed()) {
+			progressBar.setString("one or more jobs failed");
+		} else {
+			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
+		}
+		return progressBar;
+	} else if (simStatus.isFailed()) {		
+		return simStatus.getFailedMessage();
+	} else {
+		return simStatus.getDetails();
+	}	
+}
+
 
 /**
  * Initializes connections
@@ -482,13 +507,34 @@ private void initConnections() throws java.lang.Exception {
 			} else if (value instanceof Double) {
 				setText(value + "s");
 			}
+			setToolTipText(getText());
 			return this;
 		}
 		
 	};
 	getScrollPaneTable().setDefaultRenderer(OutputTimeSpec.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(Double.class, renderer);
+	getScrollPaneTable().setDefaultRenderer(String.class, renderer);
 	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
+	getScrollPaneTable().setDefaultRenderer(SimulationStatus.class, new DefaultScrollTableCellRenderer() {
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			Object obj = getSimulationStatusDisplay(row);
+			if (obj instanceof JProgressBar) {
+				return (JProgressBar)obj;
+			}
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+				row, column);
+			if (value instanceof SimulationStatus) {
+				setText(obj.toString());
+				String details = ((SimulationStatus) value).getDetails();
+				setToolTipText(details);
+			}
+			return this;
+		}
+	});
 }
 
 /**

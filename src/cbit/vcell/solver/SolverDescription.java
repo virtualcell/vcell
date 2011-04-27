@@ -166,6 +166,25 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Smoldyn (Spatial Stochastic Simulator)",
 	};
 	
+	private static final String[] SHORT_DISPLAY_LABEL = {
+		"Forward Euler 1st",
+		"Runge-Kutta 2nd",
+		"Runge-Kutta 4th",
+		"Runge-Kutta-Fehlberg",
+		"Adams-Moulton 5th",
+		"IDA",
+		"Semi-Implicit Compiled",
+		"Gibson",
+		"Gibson + Euler-Maruyama",
+		"Gibson + Milstein",
+		"Adaptive Gibson + Milstein",
+		"CVODE",
+		"Semi-Implicit",
+		"Combined IDA/CVODE",
+		"Fully-Implicit",
+		"Smoldyn",
+	};
+	
 	private static String Description_Start_Time = "<b>Starting Time</b>";
 	private static String Description_End_Time = "<b>Ending Time</b>";
 	private static String Description_TimeStep = "<b>Time Step</b>";
@@ -702,6 +721,9 @@ public String getDisplayLabel() {
 	return DISPLAY_LABEL[type];
 }
 
+public String getShortDisplayLabel() {
+	return SHORT_DISPLAY_LABEL[type];
+}
 
 /**
  * Insert the method's description here.

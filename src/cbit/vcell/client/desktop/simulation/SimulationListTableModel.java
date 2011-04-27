@@ -44,31 +44,12 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
 	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
 
-	private class SimulationStatusCellRenderer extends DefaultScrollTableCellRenderer {
-		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			Object obj = getSimulationStatusDisplay(row);
-			if (obj instanceof JProgressBar) {
-				return (JProgressBar)obj;
-			}
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
-				row, column);
-			if (value instanceof SimulationStatus) {
-				setText(obj.toString());
-				String details = ((SimulationStatus) value).getDetails();
-				setToolTipText(details);
-			}
-			return this;
-		}
-	}
+
 /**
  * SimulationListTableModel constructor comment.
  */
 public SimulationListTableModel(ScrollTable table) {
 	super(table, columnNames);
-	table.setDefaultRenderer(SimulationStatus.class, new SimulationStatusCellRenderer());
 	addPropertyChangeListener(this);
 }
 
@@ -96,32 +77,6 @@ private SimulationWorkspace getSimulationWorkspace() {
 }
 
 /**
- * Comment
- */
-Object getSimulationStatusDisplay(int row) {
-	Simulation simulation = getValueAt(row);
-	SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
-	boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
-							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
-	if (displayProgress){
-		double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
-		JProgressBar progressBar = new JProgressBar();
-		progressBar.setStringPainted(true);
-		progressBar.setValue((int)(progress * 100));
-		if (simStatus.isFailed()) {
-			progressBar.setString("one or more jobs failed");
-		} else {
-			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
-		}
-		return progressBar;
-	} else if (simStatus.isFailed()) {		
-		return simStatus.getFailedMessage();
-	} else {
-		return simStatus.getDetails();
-	}	
-}
-
-/**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int column) {
@@ -139,7 +94,7 @@ public Object getValueAt(int row, int column) {
 					return simulation.getSolverTaskDescription().getOutputTimeSpec();
 				} 
 				case COLUMN_SOLVER: {
-					return simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
+					return simulation.getSolverTaskDescription().getSolverDescription().getShortDisplayLabel();
 				} 
 				case COLUMN_STATUS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation);
