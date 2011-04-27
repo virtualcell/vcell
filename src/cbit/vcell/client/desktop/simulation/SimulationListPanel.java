@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -21,19 +22,24 @@ import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
@@ -623,10 +629,25 @@ private void runSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	for (int i = 0; i < selections.length; i++){
 		Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];	
+		if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) {
+				String option = DialogUtils.showOKCancelWarningDialog(SimulationListPanel.this, "Deprecated Solver", VCellErrorMessages.getSemiFVSolverCompiledSolverDeprecated(sim));
+				if (option.equals(SimpleUserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				try {
+					sim.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		simList.add(sim);
 	}
-	Simulation[] toRun = simList.toArray(new Simulation[0]);
-	getSimulationWorkspace().runSimulations(toRun);
+	if (simList.size() > 0) {
+		Simulation[] toRun = simList.toArray(new Simulation[0]);
+		getSimulationWorkspace().runSimulations(toRun);
+	}
 }
 
 
