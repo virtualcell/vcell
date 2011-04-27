@@ -116,7 +116,9 @@ public class IssuePanel extends DocumentEditorSubPanel {
 								setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
 							}
 							setSelectedObjects(new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
-						} else {
+						} 	else if (object instanceof GeometryContext) {
+							setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
+						}else {
 							boolean bInMathModelEditor = false;
 							boolean bInBioModelEditor = false;
 							for (Component c = IssuePanel.this; c != null; c = c.getParent()) {

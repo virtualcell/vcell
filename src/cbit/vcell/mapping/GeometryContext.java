@@ -241,6 +241,11 @@ public void gatherIssues(List<Issue> issueVector) {
 			issueVector.add(issue);
 		}
 	}
+	if(getSimulationContext().isStoch() && getGeometry().getDimension() != 0 && getGeometry().getDimension() != 3)
+	{
+		Issue issue = new Issue(this, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
+		issueVector.add(issue);
+	}
 }
 /**
  * This method was created in VisualAge.

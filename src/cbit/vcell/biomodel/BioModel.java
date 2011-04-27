@@ -33,6 +33,7 @@ import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.Simulation
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -1137,6 +1138,8 @@ public SimulationContext getSimulationContext(String name) {
 		} else if (source instanceof UnmappedGeometryClass) {
 			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
 			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
+		}else if (source instanceof GeometryContext) {
+			description = "App(" + ((GeometryContext)source).getSimulationContext().getNameScope().getPathDescription() + ")";
 		}
 		return description;
 	}
@@ -1163,6 +1166,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		} else if (object instanceof UnmappedGeometryClass) {
 			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
+		}else if (object instanceof GeometryContext) {
+			description = "Geometry";
 		}
 		return description;
 	}

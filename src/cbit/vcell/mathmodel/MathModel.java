@@ -734,7 +734,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		} else if (object instanceof SubDomain) {
 			description = ((SubDomain)object).getName();
 		} else if (object instanceof Geometry) {
-			description = ((Geometry)object).getName();
+			description = "Geometry";
 		} else if (object instanceof OutputFunctionIssueSource) {
 			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		} else if (object instanceof MathDescription) {
