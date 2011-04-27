@@ -129,13 +129,25 @@ public SimulationJobStatus getJobStatus(int index) {
 	return jobStatuses[index];
 }
 
+public String getFailedMessage() {
+	if (jobStatuses.length == 1) {
+		return getStatusString();
+	}
+	int failCount = 0;
+	for (SimulationJobStatus jobStatus : jobStatuses) {
+		if (jobStatus.isFailed()) {
+			failCount ++;
+		}
+	}
+	return failCount + " of " + jobStatuses.length + " failed";
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (9/29/2005 12:25:24 PM)
  * @return cbit.vcell.messaging.db.SimulationJobStatus[]
  */
-private cbit.vcell.messaging.db.SimulationJobStatus[] getJobStatuses() {
+private SimulationJobStatus[] getJobStatuses() {
 	return jobStatuses;
 }
 

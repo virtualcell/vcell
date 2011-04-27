@@ -109,13 +109,13 @@ Object getSimulationStatusDisplay(int row) {
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
 		if (simStatus.isFailed()) {
-			progressBar.setString("One or more jobs failed");
+			progressBar.setString("one or more jobs failed");
 		} else {
 			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 		}
 		return progressBar;
-	} else if (simStatus.isFailed()) {
-		return simStatus.getStatusString();
+	} else if (simStatus.isFailed()) {		
+		return simStatus.getFailedMessage();
 	} else {
 		return simStatus.getDetails();
 	}	
