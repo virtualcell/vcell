@@ -11,6 +11,8 @@ import java.awt.event.MouseMotionListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -281,6 +283,14 @@ protected void refreshInterface() {
 				propertyList.add(new BioPaxObjectProperty(interactionParticipant.getLevel3PropertyName(), physicalEntityName, physicalEntity));
 			}
 			
+			// get the catalysts for interactions
+			Set<String> catalysisList = getCatalysisSet(interaction);
+			if(catalysisList.size() > 0 ){
+				for(String str : catalysisList){
+					propertyList.add(new BioPaxObjectProperty("Catalyzed by", str, interaction));
+				}
+			}
+			
 			if (interaction instanceof Catalysis){
 				Catalysis catalysis = (Catalysis)interaction;
 				// catalysis::controlled
@@ -319,6 +329,27 @@ protected void refreshInterface() {
 	}
 	tableModel.setData(propertyList);
 	
+}
+
+private Set<String> getCatalysisSet(Interaction interaction){
+	Set<String> catalystList = new HashSet<String>();
+	if(bioModel == null){
+		return catalystList;
+	}
+	for(BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
+		if(bpObject instanceof Catalysis){
+			Catalysis catalysis = (Catalysis) bpObject;
+			if(catalysis.getControlledInteraction() == interaction){
+				if(catalysis.getPhysicalControllers() != null){
+					for(PhysicalEntity ep : catalysis.getPhysicalControllers()){ 
+						if(ep.getName().size() > 0)
+							catalystList.add(ep.getName().get(0));
+					}
+				}
+			}
+		}
+	}
+	return catalystList;
 }
 
 }

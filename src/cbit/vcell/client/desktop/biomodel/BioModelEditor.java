@@ -681,6 +681,7 @@ public void setBioModel(BioModel bioModel) {
 	
 	getReactionPropertiesPanel().setBioModel(bioModel); // wei's code
 	getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code
+	bioPaxObjectPropertiesPanel.setBioModel(bioModel); // wei's code
 }
 
 /**
