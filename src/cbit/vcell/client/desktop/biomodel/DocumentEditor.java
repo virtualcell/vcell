@@ -636,9 +636,15 @@ private JPopupMenu getPopupMenu() {
 	return popupMenu;
 }
 
-public void updateConnectionStatus(ConnectionStatus connStatus) {
-	databaseWindowPanel.updateConnectionStatus(connStatus);
-	if (connStatus.getStatus() != ConnectionStatus.INITIALIZING) {
+private ConnectionStatus connectionStatus = null;
+public void updateConnectionStatus(ConnectionStatus newValue) {
+	if (connectionStatus == newValue 
+			|| connectionStatus != null && connectionStatus.equals(newValue)) {
+		return;
+	}
+	connectionStatus = newValue;
+	databaseWindowPanel.updateConnectionStatus(connectionStatus);
+	if (connectionStatus.getStatus() != ConnectionStatus.INITIALIZING) {
 		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
 	}
 }
