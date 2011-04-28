@@ -51,12 +51,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private GraphPane graphPane = null;
 	private JToolBar toolBar = null;
 	private JToolBarToggleButton speciesButton = null;
-//	private JToolBarToggleButton fluxButton = null;
-//	private JToolBarToggleButton lineButton = null;
 	private JToolBarToggleButton lineDirectedButton = null;
 	private JToolBarToggleButton lineCatalystButton = null;
 	private JToolBarToggleButton selectButton = null;
-//	private JToolBarToggleButton stepButton = null;
 	protected List<JToolBarToggleButton> modeButtons = null;
 	private ButtonGroup modeButtonGroup = new ButtonGroup();
 	private JScrollPane scrollPane = null;
