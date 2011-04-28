@@ -61,6 +61,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.StructureUtil;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.publish.ITextWriter;
 
@@ -791,12 +792,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	public void mouseReleased(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
 		try {
-			// Pick shape
-			int eventX = event.getX();
-			int eventY = event.getY();
-			Point worldPoint = new Point(
-					(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
-					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
+			Point worldPoint = getReactionCartoon().getResizeManager().unzoom(event.getPoint());
 			Shape endShape = getReactionCartoon().pickWorld(worldPoint);
 			// if mouse popupMenu event, popup menu
 			if (event.isPopupTrigger() && mode == Mode.SELECT) {
@@ -836,94 +832,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				rectShape = null;
 				break;
 			}
-			case LINE: {
-				getGraphPane().setCursor(Cursor.getDefaultCursor());
-				if (bLineStretch) {
-					bLineStretch = false;
-					// set label and color for line depending on attachment area
-					// on ReactionStepShape
-					SpeciesContext speciesContext = (SpeciesContext) 
-						edgeShape.getStartShape().getModelObject();
-					LineType lineType = getLineTypeFromAttachment(speciesContext, worldPoint);
-					// remove temporary edge
-					getReactionCartoon().removeShape(edgeShape);
-					edgeShape = null;
-					if (endShape instanceof SimpleReactionShape) {
-						SimpleReaction simpleReaction = (SimpleReaction) endShape.getModelObject();
-						// add reactionParticipant to model
-						switch (lineType) {
-						case CATALYST: {
-							simpleReaction.addCatalyst(speciesContext);
-							getReactionCartoon().notifyChangeEvent();
-							setMode(Mode.SELECT);
-							break;
-						}
-						case REACTANT: {
-							simpleReaction.addReactant(speciesContext, 1);
-							getReactionCartoon().notifyChangeEvent();
-							setMode(Mode.SELECT);
-							break;
-						}
-						case PRODUCT: {
-							simpleReaction.addProduct(speciesContext, 1);
-							getReactionCartoon().notifyChangeEvent();
-							setMode(Mode.SELECT);
-							break;
-						}
-						case NULL: {
-							getGraphPane().repaint();
-							break;
-						}
-						}
-					} else if (endShape instanceof FluxReactionShape) {
-						FluxReaction fluxReaction = (FluxReaction) endShape.getModelObject();
-						// add reactionParticipant to model
-						switch (lineType) {
-						case CATALYST: {
-							fluxReaction.addCatalyst(speciesContext);
-							getReactionCartoon().notifyChangeEvent();
-							setMode(Mode.SELECT);
-							break;
-						}
-						case FLUX: {
-							// assure that there are the appropriate
-							// speciesContexts
-							Membrane membrane = (Membrane) fluxReaction.getStructure();
-							Feature feature = membrane.getOutsideFeature();
-							SpeciesContext sc = getModel().getSpeciesContext(
-											speciesContext.getSpecies(),
-											feature);
-							if (sc == null) {
-								getModel().addSpeciesContext(
-										speciesContext.getSpecies(), feature);
-							}
-							feature = membrane.getInsideFeature();
-							sc = getModel().getSpeciesContext(
-									speciesContext.getSpecies(), feature);
-							if (sc == null) {
-								getModel().addSpeciesContext(
-										speciesContext.getSpecies(), feature);
-							}
-
-							fluxReaction.setFluxCarrier(speciesContext.getSpecies(), getModel());
-							getReactionCartoon().notifyChangeEvent();
-							setMode(Mode.SELECT);
-							break;
-						}
-						case NULL: {
-							break;
-						}
-						}
-					}
-				}
-				getGraphPane().repaint();
-				break;
-			}
 			case LINEDIRECTED: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				if (bLineStretch) {
 					bLineStretch = false;
-					// set label and color for line depending on which shape the edge started. (rather than attachment area on ReactionStepShape)
+					// set label and color for line depending on which shape the edge started. 
+					// (rather than attachment area on ReactionStepShape)
 					LineType lineType = getLineTypeFromDirection(startShape,worldPoint);
 					if (endShape instanceof SimpleReactionShape){
 						SimpleReaction simpleReaction = (SimpleReaction)endShape.getModelObject();
@@ -933,41 +847,44 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						}
 						if(startShapeObject instanceof SpeciesContext) {
 							SpeciesContext speciesContext = (SpeciesContext) startShapeObject;
-							int stoichiometry = 1;
-							Reactant reactant = null;
-							for(ReactionParticipant participant : 
-								simpleReaction.getReactionParticipants()) {
-								if(participant instanceof Reactant && 
-										participant.getSpeciesContext().equals(speciesContext)) {
-									reactant = (Reactant) participant;
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									simpleReaction.getStructure(), speciesContext.getStructure())) {
+								int stoichiometry = 1;
+								Reactant reactant = null;
+								for(ReactionParticipant participant : 
+									simpleReaction.getReactionParticipants()) {
+									if(participant instanceof Reactant && 
+											participant.getSpeciesContext().equals(speciesContext)) {
+										reactant = (Reactant) participant;
+									}
 								}
-							}
-							if(reactant != null) {
-								reactant.setStoichiometry(reactant.getStoichiometry() + 1);
-								Shape shape = getReactionCartoon().getShapeFromModelObject(reactant);
-								if(shape != null) {
-									shape.refreshLabel();
+								if(reactant != null) {
+									reactant.setStoichiometry(reactant.getStoichiometry() + 1);
+									Shape shape = getReactionCartoon().getShapeFromModelObject(reactant);
+									if(shape != null) {
+										shape.refreshLabel();
+									}
+								} else {
+									simpleReaction.addReactant(speciesContext, stoichiometry);								
 								}
-							} else {
-								simpleReaction.addReactant(speciesContext, stoichiometry);								
+								getReactionCartoon().notifyChangeEvent();
 							}
-							getReactionCartoon().notifyChangeEvent();
 							break;
 						} else if(startShapeObject instanceof SimpleReaction) {
 							SimpleReaction simpleReactionStart = (SimpleReaction) startShapeObject;
 							Structure structureReaction = simpleReaction.getStructure();
 							Structure structureReactionStart = simpleReactionStart.getStructure();
 							Structure structureSpecies = null;
-							if(structureReaction != null && structureReactionStart != null && 
-									structureReaction.equals(structureReactionStart)) {
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									structureReactionStart, structureReaction)) {
 								structureSpecies = structureReaction;
-							} else if(structureReaction != null && structureReactionStart == null) {
-								structureSpecies = structureReaction;
-							} else if(structureReactionStart != null && structureReaction == null) {
+							} else if(StructureUtil.reactionHereCanHaveParticipantThere(
+									structureReaction, structureReactionStart)) {
 								structureSpecies = structureReactionStart;
 							}
 							if(structureSpecies != null) {
-								SpeciesContext speciesContext = getReactionCartoon().getModel().createSpeciesContext(structureSpecies);
+								SpeciesContext speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(structureSpecies);
 								simpleReactionStart.addProduct(speciesContext, 1);
 								simpleReaction.addReactant(speciesContext, 1);
 								getReactionCartoon().notifyChangeEvent();
@@ -978,10 +895,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							}
 						} else if(startShapeObject instanceof Structure) {
 							Structure structure = (Structure) startShapeObject;
-							SpeciesContext speciesContext =  getReactionCartoon().getModel().createSpeciesContext(structure);
-							simpleReaction.addReactant(speciesContext, 1);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(structure, speciesContext, edgeShape.getStart());
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									simpleReaction.getStructure(), structure)) {
+								SpeciesContext speciesContext =  
+									getReactionCartoon().getModel().createSpeciesContext(structure);
+								simpleReaction.addReactant(speciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(structure, speciesContext, edgeShape.getStart());
+							}
 						}
 					} else if (endShape instanceof SpeciesContextShape) {
 						SpeciesContext speciesContextEnd = (SpeciesContext) endShape.getModelObject();
@@ -991,31 +912,52 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						}
 						if(startShapeObject instanceof SimpleReaction) {
 							SimpleReaction simpleReaction = (SimpleReaction) startShapeObject;
-							int stoichiometry = 1;
-							Product product = null;
-							for(ReactionParticipant participant : 
-								simpleReaction.getReactionParticipants()) {
-								if(participant instanceof Product && 
-										participant.getSpeciesContext().equals(speciesContextEnd)) {
-									product = (Product) participant;
-									Shape shape = getReactionCartoon().getShapeFromModelObject(product);
-									if(shape != null) {
-										shape.refreshLabel();
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									simpleReaction.getStructure(), speciesContextEnd.getStructure())) {
+								int stoichiometry = 1;
+								Product product = null;
+								for(ReactionParticipant participant : 
+									simpleReaction.getReactionParticipants()) {
+									if(participant instanceof Product && 
+											participant.getSpeciesContext().equals(speciesContextEnd)) {
+										product = (Product) participant;
+										Shape shape = getReactionCartoon().getShapeFromModelObject(product);
+										if(shape != null) {
+											shape.refreshLabel();
+										}
 									}
 								}
+								if(product != null) {
+									product.setStoichiometry(product.getStoichiometry() + 1);
+								} else {
+									simpleReaction.addProduct(speciesContextEnd, stoichiometry);								
+								}
+								getReactionCartoon().notifyChangeEvent();
 							}
-							if(product != null) {
-								product.setStoichiometry(product.getStoichiometry() + 1);
-							} else {
-								simpleReaction.addProduct(speciesContextEnd, stoichiometry);								
-							}
-							getReactionCartoon().notifyChangeEvent();
-							resetMouseActionHistory();
 							break;
 						} else if (startShapeObject instanceof SpeciesContext) {
 							SpeciesContext speciesContextStart = (SpeciesContext) startShapeObject;
 							Structure structureEnd = speciesContextEnd.getStructure();
 							Structure structureStart = speciesContextStart.getStructure();
+							Species speciesStart = speciesContextStart.getSpecies();
+							Species speciesEnd = speciesContextEnd.getSpecies();
+							if(speciesStart.equals(speciesEnd)) {
+								Membrane membraneBetween = null;
+								if(structureEnd instanceof Feature && structureStart instanceof Feature) {
+									membraneBetween = getReactionCartoon().getModel()
+									.getMembrane((Feature) structureStart, (Feature) structureEnd);
+								}
+								if(membraneBetween != null) {
+									Species fluxCarrier = speciesStart;
+									FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(membraneBetween);
+									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+									getReactionCartoon().notifyChangeEvent();
+									Point startPos = edgeShape.getStart();
+									Point endPos = edgeShape.getEnd();
+									positionShapeForObject(membraneBetween, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+									break;
+								}
+							}
 							if(structureEnd.equals(structureStart)) {
 								Model model = getReactionCartoon().getModel();
 								SimpleReaction reaction = model.createSimpleReaction(structureEnd);
@@ -1028,33 +970,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										(endPos.x + startPos.x)/2, 
 										(endPos.y + startPos.y)/2));
 								getReactionCartoon().notifyChangeEvent();
-							}else if(structureStart instanceof Feature && structureEnd instanceof Feature   // species are in two different structures with a share mem will create a flux 
-								   && speciesContextEnd.getSpecies().equals(speciesContextStart.getSpecies()))
-							{
-								Point endPos = endShape.getSpaceManager().getAbsLoc();
-								Feature startFeature = (Feature)structureStart;
-								Membrane startFeatureMem = startFeature.getMembrane();
-								Feature endFeature = (Feature)structureEnd;
-								Membrane endFeatureMem = endFeature.getMembrane();
-								//flux from startFeature to endFeature
-								Membrane fluxMem = null;
-								if(startFeatureMem != null && startFeatureMem.getOutsideFeature().equals(endFeature))
-								{
-									fluxMem = startFeatureMem;
-								}
-								else if(endFeatureMem != null && endFeatureMem.getOutsideFeature().equals(startFeature))
-								{
-									fluxMem =endFeatureMem;
-								}
-								if(fluxMem != null)
-								{
-									Species fluxCarrier = speciesContextStart.getSpecies();
-									FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(fluxMem);
-									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
-									getReactionCartoon().notifyChangeEvent();
-									Point startPos = edgeShape.getStart();
-									positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-								}
 							} else if(structureEnd instanceof Membrane && structureStart instanceof Feature) {
 								Membrane endMembrane = (Membrane)structureEnd;
 								Feature startFeature = (Feature)structureStart;
@@ -1124,11 +1039,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							}
 						} else if(startShapeObject instanceof Structure) {
 							Structure structure = (Structure) startShapeObject;
-							Model model = getReactionCartoon().getModel();
-							SimpleReaction reaction = model.createSimpleReaction(structure);
-							reaction.addProduct(speciesContextEnd, 1);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(structure, reaction, edgeShape.getStart());
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									structure, speciesContextEnd.getStructure())) {
+								Model model = getReactionCartoon().getModel();
+								SimpleReaction reaction = model.createSimpleReaction(structure);
+								reaction.addProduct(speciesContextEnd, 1);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(structure, reaction, edgeShape.getStart());
+							}
 						}
 					} else if (endShape instanceof FluxReactionShape){
 						FluxReaction fluxReaction = (FluxReaction)endShape.getModelObject();
@@ -1176,16 +1094,24 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						Point endPos = edgeShape.getEnd();
 						if(startObject instanceof SimpleReaction) {
 							SimpleReaction reaction = (SimpleReaction) startObject;
-							SpeciesContext speciesContext = getReactionCartoon().getModel().createSpeciesContext(endStructure);
-							reaction.addProduct(speciesContext, 1);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(endStructure, speciesContext, endPos);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									reaction.getStructure(), endStructure)) {
+								SpeciesContext speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(endStructure);
+								reaction.addProduct(speciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(endStructure, speciesContext, endPos);
+							}
 						} else if(startObject instanceof SpeciesContext) {
 							SpeciesContext speciesContext = (SpeciesContext) startObject;
-							SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(endStructure);
-							reaction.addReactant(speciesContext, 1);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(endStructure, reaction, endPos);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									endStructure, speciesContext.getStructure())) {
+								SimpleReaction reaction = 
+									getReactionCartoon().getModel().createSimpleReaction(endStructure);
+								reaction.addReactant(speciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(endStructure, reaction, endPos);
+							}
 						} else if(startObject instanceof Structure) {
 							Structure startStructure = (Structure) startObject;
 							if(endStructure.equals(startStructure)) {
@@ -1318,45 +1244,83 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					if(startObject instanceof ReactionStep) {
 						reactionStep = (ReactionStep) startObject;
 						if(endObject instanceof SpeciesContext) {
-							speciesContext = (SpeciesContext) endObject;							
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									reactionStep.getStructure(), 
+									((SpeciesContext) endObject).getStructure())) {
+								speciesContext = (SpeciesContext) endObject;															
+							}
 						} else if(endObject instanceof Structure) {
 							Structure endStructure = (Structure) endObject;
-							speciesContext = getReactionCartoon().getModel().createSpeciesContext(endStructure);
-							getReactionCartoon().notifyChangeEvent();
-							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(endStructure, speciesContext, endPos);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									reactionStep.getStructure(), endStructure)) {
+								speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(endStructure);
+								getReactionCartoon().notifyChangeEvent();
+								Point endPos = edgeShape.getEnd();
+								positionShapeForObject(endStructure, speciesContext, endPos);							
+							}
 						}
 					} else if(startObject instanceof SpeciesContext) {
 						speciesContext = (SpeciesContext) startObject;						
 						if(endObject instanceof ReactionStep) {
-							reactionStep = (ReactionStep) endObject;
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									((ReactionStep) endObject).getStructure(), 
+									speciesContext.getStructure())) {
+								reactionStep = (ReactionStep) endObject;								
+							}
 						} else if(endObject instanceof Structure) {
 							Structure endStructure = (Structure) endObject;
-							reactionStep = getReactionCartoon().getModel().createSimpleReaction(endStructure);
-							getReactionCartoon().notifyChangeEvent();
-							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(endStructure, reactionStep, endPos);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									endStructure, speciesContext.getStructure())) {
+								reactionStep = getReactionCartoon().getModel().createSimpleReaction(endStructure);
+								getReactionCartoon().notifyChangeEvent();
+								Point endPos = edgeShape.getEnd();
+								positionShapeForObject(endStructure, reactionStep, endPos);							
+							}
 						}
 					} else if (startObject instanceof Structure) {
 						Structure startStructure = (Structure) startObject;
 						if(endObject instanceof ReactionStep) {
 							reactionStep = (ReactionStep) endObject;
-							speciesContext = getReactionCartoon().getModel().createSpeciesContext(startStructure);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(startStructure, speciesContext, startPointWorld);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									reactionStep.getStructure(), startStructure)) {
+								speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(startStructure);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(startStructure, speciesContext, startPointWorld);							
+							}
 						} else if(endObject instanceof SpeciesContext) {
 							speciesContext = (SpeciesContext) endObject;
-							reactionStep = getReactionCartoon().getModel().createSimpleReaction(startStructure);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(startStructure, reactionStep, startPointWorld);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									startStructure, speciesContext.getStructure())) {
+								reactionStep = 
+									getReactionCartoon().getModel().createSimpleReaction(startStructure);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(startStructure, reactionStep, startPointWorld);
+							}
 						} else if(endObject instanceof Structure) {
 							Structure endStructure = (Structure) endObject;
-							speciesContext = getReactionCartoon().getModel().createSpeciesContext(startStructure);
-							reactionStep = getReactionCartoon().getModel().createSimpleReaction(endStructure);
-							getReactionCartoon().notifyChangeEvent();
-							positionShapeForObject(startStructure, speciesContext, startPointWorld);
-							Point endPos = edgeShape.getEnd();
-							positionShapeForObject(endStructure, reactionStep, endPos);
+							if(StructureUtil.reactionHereCanHaveParticipantThere(
+									startStructure, endStructure)) {
+								speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(endStructure);
+								reactionStep = 
+									getReactionCartoon().getModel().createSimpleReaction(startStructure);
+								getReactionCartoon().notifyChangeEvent();
+								Point endPos = edgeShape.getEnd();
+								positionShapeForObject(endStructure, speciesContext, endPos);
+								positionShapeForObject(startStructure, reactionStep, startPointWorld);
+							} else if(StructureUtil.reactionHereCanHaveParticipantThere(
+									endStructure, startStructure)) {
+								speciesContext = 
+									getReactionCartoon().getModel().createSpeciesContext(startStructure);
+								reactionStep = 
+									getReactionCartoon().getModel().createSimpleReaction(endStructure);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(startStructure, speciesContext, startPointWorld);
+								Point endPos = edgeShape.getEnd();
+								positionShapeForObject(endStructure, reactionStep, endPos);								
+							}
 						}
 					}
 					if (reactionStep != null && speciesContext != null) {
