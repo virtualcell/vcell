@@ -35,7 +35,6 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.DataSymbolsPanel;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
 import cbit.vcell.model.Feature;
@@ -88,7 +87,7 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
 	private ApplicationsPropertiesPanel applicationsPropertiesPanel;
 	private BioModelParametersPanel bioModelParametersPanel;
-	private DataSymbolsPanel dataSymbolsPanel = null;
+//	private DataSymbolsPanel dataSymbolsPanel = null;
 	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
 	
 	/**
@@ -413,8 +412,8 @@ private void initialize() {
 		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
 		bioModelEditorApplicationPanel.setIssueManager(issueManager);
 				
-		dataSymbolsPanel = new DataSymbolsPanel();
-		dataSymbolsPanel.setSelectionManager(selectionManager);
+//		dataSymbolsPanel = new DataSymbolsPanel();
+//		dataSymbolsPanel.setSelectionManager(selectionManager);
 		
 		bioPaxObjectPropertiesPanel = new BioPaxObjectPropertiesPanel();
 		bioPaxObjectPropertiesPanel.setSelectionManager(selectionManager);
@@ -618,8 +617,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = bioModelParametersPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 			newTopPanel = bioModelEditorApplicationsPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.DATA_NODE) {
-			newTopPanel = dataSymbolsPanel;
+//		} else if (folderClass == DocumentEditorTreeFolderClass.DATA_NODE) {
+//			newTopPanel = dataSymbolsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
 		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {

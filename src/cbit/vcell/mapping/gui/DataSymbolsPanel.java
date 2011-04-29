@@ -93,7 +93,7 @@ public class DataSymbolsPanel extends BioModelEditorApplicationRightSidePanel<Da
 			this.name = n;
 		}
 	}
-	static final String fluorStaticName = "fluor";
+	private static final String fluorStaticName = "fluor";
 	private JFileChooser fc = null;	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
@@ -116,7 +116,7 @@ public DataSymbolsPanel() {
 	initialize();
 }
 
-public void newDataSymbol(DataSymbolNewMenuItem item) {
+private void newDataSymbol(DataSymbolNewMenuItem item) {
 	switch (item) {
 	case vfrap:
 		addVFrapOriginalImages();
@@ -140,18 +140,28 @@ private void addPSF() {
 	psfManager.importPointSpreadFunction();
 }
 
-private void ChooseVFrapFile(Hashtable<String, Object> hashTable) {
-	int returnVal = fc.showOpenDialog(DataSymbolsPanel.this);
+private AsynchClientTask ChooseVFrapFile() {
+	return new AsynchClientTask("Select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (fc == null) {
+				//Create a file chooser
+				fc = new JFileChooser();
+				vFrapFieldDataFilter filter = new vFrapFieldDataFilter();
+				fc.setFileFilter(filter);
+			}
+			int returnVal = fc.showOpenDialog(DataSymbolsPanel.this);
 
-	if (returnVal == JFileChooser.APPROVE_OPTION) {
-		File vFrapFile = fc.getSelectedFile();
-		if (vFrapFile == null) {
-			throw new RuntimeException("Unable to open vFrap file.");
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File vFrapFile = fc.getSelectedFile();
+				if (vFrapFile == null) {
+					throw new RuntimeException("Unable to open vFrap file.");
+				}
+				hashTable.put("vFrapFile", vFrapFile);
+			} else {
+				throw UserCancelException.CANCEL_GENERIC;
+			}
 		}
-		hashTable.put("vFrapFile", vFrapFile);
-	} else {
-		throw UserCancelException.CANCEL_GENERIC;
-	}
+	};
 }
 
 private void addAssociate() {
@@ -175,15 +185,12 @@ private void addAssociate() {
 		}
 	});
 }
-public void addVFrapOriginalImages() {		// add dataset (normal images) from vFrap
+
+private void addVFrapOriginalImages() {		// add dataset (normal images) from vFrap
 	AsynchClientTask[] taskArray = new AsynchClientTask[5];
 
 	// select the desired vfrap file 
-	taskArray[0] = new AsynchClientTask("Select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			ChooseVFrapFile(hashTable);
-		}
-	};
+	taskArray[0] = ChooseVFrapFile();
 	taskArray[1] = new AsynchClientTask("Import objects", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 		
@@ -392,14 +399,10 @@ public void addVFrapOriginalImages() {		// add dataset (normal images) from vFra
 //		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
 //	}
 }
-public void addVFrapDerivedImages() {		// add special (computed) images from vFrap
+private void addVFrapDerivedImages() {		// add special (computed) images from vFrap
 	AsynchClientTask[] taskArray = new AsynchClientTask[5];
 	// select the desired vfrap file 
-	taskArray[0] = new AsynchClientTask("Select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			ChooseVFrapFile(hashTable);
-		}
-	};
+	taskArray[0] = ChooseVFrapFile();
 	// load the images from the vfrap file, compute derived images, store them all in memory
 	taskArray[1] = new AsynchClientTask("Import images", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -687,11 +690,6 @@ private void initialize() {
 		addNewButton.setIcon(new DownArrowIcon());
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		//setSize(456, 539);
-
-		//Create a file chooser
-		fc = new JFileChooser();
-		vFrapFieldDataFilter filter = new vFrapFieldDataFilter();
-		fc.setFileFilter(filter);
 
 		setLayout(new GridBagLayout());
 		int gridy = 0;
