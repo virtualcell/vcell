@@ -189,7 +189,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 					  importedBPObjects.add(bpo);
 				  }else{
 					  warningCount ++;
-					  warningMessage += "\nReaction: \'" + ((Conversion)bpo).getName().get(0) + "\' =>\n";
+					  if(((Conversion)bpo).getName().size() > 0)
+						  warningMessage += "\nReaction: \'" + ((Conversion)bpo).getName().get(0) + "\' =>\n";
+					  else 
+						  warningMessage += "\nReaction: \'" + ((Conversion)bpo).getID() + "\' =>\n";
 					  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
 						  warningMessage += "\t=> \'" + r.getBioModelEntityObject().getName()+"\'\n";
 					  }
@@ -199,7 +202,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 					  importedBPObjects.add(bpo);
 				  }else{
 					  warningCount ++;
-					  warningMessage += "\nSpecies: \'" + ((PhysicalEntity)bpo).getName().get(0) + "\' =>\n";
+					  if(((PhysicalEntity)bpo).getName().size() > 0)
+						  warningMessage += "\nSpecies: \'" + ((PhysicalEntity)bpo).getName().get(0) + "\' =>\n";
+					  else
+						  warningMessage += "\nSpecies: \'" + ((PhysicalEntity)bpo).getID() + "\' =>\n";
 					  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
 						  warningMessage += "\t=> \'" + r.getBioModelEntityObject().getName()+"\'\n";
 					  }
