@@ -10,6 +10,8 @@ import java.util.List;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BiochemicalReaction;
 import org.vcell.pathway.Catalysis;
+import org.vcell.pathway.Complex;
+import org.vcell.pathway.ComplexAssembly;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
@@ -42,6 +44,9 @@ public class PathwayMapping {
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
 			}else if(conversionTableRow.getBioPaxObject() instanceof BiochemicalReaction){
 				createReactionStepFromTableRow(bioModel, (BiochemicalReaction)conversionTableRow.getBioPaxObject(),
+						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
+			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){
+				createReactionStepFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}
 		}
@@ -222,6 +227,41 @@ public class PathwayMapping {
 		}
 	}
 	
+	private void createReactionStepFromTableRow(BioModel bioModel, ComplexAssembly bioPaxObject,
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+	{
+		// use user defined id as the name of the reaction name
+		String safeId = getSafetyName(id);
+		String bioPaxName;
+		if(bioPaxObject.getName().size() == 0 ){
+			bioPaxName = bioPaxObject.getID();
+		}else{
+			bioPaxName = bioPaxObject.getName().get(0);
+		}
+		// get participants from table rows
+		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
+		for(ConversionTableRow ctr : conversionTableRows){
+			if(ctr.interactionName().equals(bioPaxName)){
+				participants.add(ctr);
+			}
+		}
+		// create reaction object
+		if(bioModel.getModel().getReactionStep(safeId) == null){
+			// create a new reactionStep object
+			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
+			simpleReactionStep.setName(safeId);
+			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
+			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
+		}else{
+//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
+		// add missing parts for the existing reactionStep
+			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(safeId), bioPaxObject);
+			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+			createReactionStep( bioModel, bioModel.getModel().getReactionStep(safeId), newRelationship, participants);
+		}
+	}
+	
 	/*
 	 * for reaction:
 	 * 1. annotate the selected vcell object using linked pathway conversion
@@ -289,25 +329,6 @@ public class PathwayMapping {
 				reactionStep.addReactionParticipant(
 						new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 			}else if(ctr.participantType().equals("Control")){
-				String safeId = getSafetyName(ctr.id());
-				/* 
-				 * using addCatalyst() to create catalyst in reaction: 
-				 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
-				 */
-				//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
-				
-				/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
-				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
-				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
-				 */
-				reactionStep.addReactionParticipant(
-						new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
-			}
-		}
-
- 		// add Catalysts to the reaction
-		for(ConversionTableRow ctr : participants){
-			if(ctr.participantType().equals("Catalyst")){
 				String safeId = getSafetyName(ctr.id());
 				/* 
 				 * using addCatalyst() to create catalyst in reaction: 
