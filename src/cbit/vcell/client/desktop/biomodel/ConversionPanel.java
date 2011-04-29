@@ -197,27 +197,4 @@ public BioModelEditorConversionTableModel getTableModel(){
 	return tableModel;
 }
 
-
-private void resetValues(){
-	
-}
-
-
-
-//private void goToPathway(){
-//	if(bioModel == null){
-//		return;
-//	}
-//	if(bioModel.getRelationshipModel() == null){
-//		return;
-//	}
-//	ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
-//	for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects(bioModelEntityObject)){
-//		selectedBioPaxObjects.add(re.getBioPaxObject());
-//	}
-//	if (selectionManager != null){
-//		selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
-//		selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
-//	}
-//}
 }
