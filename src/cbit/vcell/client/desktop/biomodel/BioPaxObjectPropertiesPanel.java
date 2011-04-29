@@ -21,6 +21,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.CellularLocationVocabulary;
 import org.vcell.pathway.Complex;
+import org.vcell.pathway.Control;
 import org.vcell.pathway.Dna;
 import org.vcell.pathway.DnaRegion;
 import org.vcell.pathway.Entity;
@@ -291,6 +292,14 @@ protected void refreshInterface() {
 				}
 			}
 			
+			// get the controls for interactions
+			Set<String> controlList = getControlSet(interaction);
+			if(controlList.size() > 0 ){
+				for(String str : controlList){
+					propertyList.add(new BioPaxObjectProperty("Controled by", str, interaction));
+				}
+			}
+			
 			if (interaction instanceof Catalysis){
 				Catalysis catalysis = (Catalysis)interaction;
 				// catalysis::controlled
@@ -344,12 +353,38 @@ private Set<String> getCatalysisSet(Interaction interaction){
 					for(PhysicalEntity ep : catalysis.getPhysicalControllers()){ 
 						if(ep.getName().size() > 0)
 							catalystList.add(ep.getName().get(0));
+						else
+							catalystList.add(ep.getID());
 					}
 				}
 			}
 		}
 	}
 	return catalystList;
+}
+
+private Set<String> getControlSet(Interaction interaction){
+	Set<String> controlList = new HashSet<String>();
+	if(bioModel == null){
+		return controlList;
+	}
+	for(BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
+		if(bpObject instanceof Control && !(bpObject instanceof Catalysis)){
+			Control control = (Control) bpObject;
+			if(control.getControlledInteraction() == interaction){
+				if(control.getPhysicalControllers() != null){
+					for(PhysicalEntity ep : control.getPhysicalControllers()){ 
+						if(ep.getName().size() > 0)
+							controlList.add(ep.getName().get(0));
+						else{
+							controlList.add(ep.getID());
+						}
+					}
+				}
+			}
+		}
+	}
+	return controlList;
 }
 
 }

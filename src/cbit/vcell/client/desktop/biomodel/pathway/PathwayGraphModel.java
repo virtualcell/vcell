@@ -91,7 +91,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 				} else {
 					bpObjectShape = new BioPaxObjectShape(bpObject, this);				
 				}
-				if(!(bpObject instanceof Catalysis)){ // the Catalysis objects will not be displayed on the diagram
+				if(!(bpObject instanceof Control)){ // the Control objects will not be displayed on the diagram
 					pathwayContainerShape.addChildShape(bpObjectShape);
 					addShape(bpObjectShape);
 				}
