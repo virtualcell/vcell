@@ -125,7 +125,8 @@ public class MathMapping implements ScopedSymbolTable {
 	private static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
 	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
-	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION = "_init";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2 = "_init_molecules_per_um2";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM = "_init_uM";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
@@ -933,7 +934,11 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION;
+			if (scsParm.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_uM)){
+				return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM;
+			}else if (scsParm.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_molecules_per_um2)){
+				return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2;
+			}
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialCount){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;

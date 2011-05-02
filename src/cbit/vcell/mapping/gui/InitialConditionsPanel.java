@@ -617,7 +617,10 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 										}
 										Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 										if(localMathVariable == null){
-											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+"_init");
+											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
+											if (localMathVariable==null){
+												localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
+											}
 										}
 										if(localMathVariable != null){
 											SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);

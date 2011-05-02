@@ -15,6 +15,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.gui.ButtonGroupCivilized;
 
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -716,7 +717,9 @@ private void refreshEquations() throws ExpressionException {
 			}
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
-			if(getMathDescription().isNonSpatialStoch() && (function.getName().indexOf("_init") >= 0)) 
+			if(getMathDescription().isNonSpatialStoch() && 
+					((function.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) >= 0) || 
+					 (function.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) >= 0))) 
 			{
 				try{
 					double value = exp.evaluateConstant();
@@ -743,7 +746,9 @@ private void refreshEquations() throws ExpressionException {
 			}
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
-			if(getMathDescription().isNonSpatialStoch() && (constant.getName().indexOf("_init") >= 0))
+			if(getMathDescription().isNonSpatialStoch() && 
+					((constant.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) >= 0) ||
+					 (constant.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) >= 0)))
 			{
 				try{
 					double value = exp.evaluateConstant();
