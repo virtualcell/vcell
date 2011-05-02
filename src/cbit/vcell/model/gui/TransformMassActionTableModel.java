@@ -388,14 +388,6 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 		{
 			msg = msg + okTransReacNames + " have been transformed.\n";
 		}
-		if(!noTransReacNames.equals(""))
-		{
-			msg = msg + noTransReacNames + " are able to be transformed, but were not tranformed.\n";
-		}
-		if(!errReacNames.equals(""))
-		{
-			msg = msg + errReacNames + " are NOT able to be transformed.\n";
-		}
 		// message to be displayed in popupdialog of DocumentWindow
 		if(!msg.equals(""))
 		{
