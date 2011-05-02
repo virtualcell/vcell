@@ -28,21 +28,21 @@ public class TransformMassActionTableRenderer extends DefaultTableCellRenderer
 		Component tcr = null;
 		if(booleanCellRenderer != null && value instanceof Boolean){
 			tcr = booleanCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			if(!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformMassActions.TransformedReaction.Label_Transformed))
+			if(table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformMassActions.TransformedReaction.Label_Transformable))
 			{
-				tcr.setEnabled(false);
+				tcr.setEnabled(true);
 			}
 			else
 			{
-				tcr.setEnabled(true);
+				tcr.setEnabled(false);
 			}
 		}else{
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			tcr = this;
 		}
 		//  set row color to pink if the reaction on the row is not able to be transformed.
-		if (!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals("") && !table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformedReaction.Label_Ok) &&
-			!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformedReaction.Label_Transformed))
+		if (!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals("") && 
+			((String)table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK)).indexOf(TransformedReaction.Label_Failed) >= 0)
 		{
 			tcr.setBackground( new Color(255,200,200));
 			tcr.setForeground(Color.BLACK);
