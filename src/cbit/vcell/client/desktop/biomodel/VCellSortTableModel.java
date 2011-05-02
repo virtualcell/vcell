@@ -222,12 +222,14 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 	}
 	
 	public void setData(List<? extends T> list) {
-		int rows[] = ownerTable.getSelectedRows();
 		Object[] selectedObjects = null;
-		if (rows.length > 0) {
-			selectedObjects = new Object[rows.length];
-			for (int i = 0; i < rows.length; i ++) {
-				selectedObjects[i] = getValueAt(rows[i]);
+		if (ownerTable != null) {
+			int rows[] = ownerTable.getSelectedRows();
+			if (rows.length > 0) {
+				selectedObjects = new Object[rows.length];
+				for (int i = 0; i < rows.length; i ++) {
+					selectedObjects[i] = getValueAt(rows[i]);
+				}
 			}
 		}
 		allRows.clear();
