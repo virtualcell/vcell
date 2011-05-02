@@ -331,6 +331,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 			refreshData();
+		} else if (evt.getSource() instanceof Kinetics && (evt.getPropertyName().equals(Kinetics.PROPERTY_NAME_KINETICS_PARAMETERS))) {
+			Parameter oldValue[] = (Parameter[])evt.getOldValue();
+			if (oldValue != null) {
+				for (int i = 0; i < oldValue.length; i++){
+					oldValue[i].removePropertyChangeListener(this);
+				}
+			}
+			Parameter newValue[] = (Parameter[])evt.getNewValue();
+			if (newValue != null) {
+				for (int i = 0; i < newValue.length; i++){
+					newValue[i].addPropertyChangeListener(this);
+				}
+			}
+			refreshData();
 		}
 	}
 }
