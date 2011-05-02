@@ -277,7 +277,7 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 	 * @param columnIndex int
 	 */
 	public boolean isCellEditable(int row, int column) {
-		if(column == COLUMN_TRANSFORM && transMAs.getTransformedReactionSteps()[row].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMED )
+		if(column == COLUMN_TRANSFORM && transMAs.getTransformedReactionSteps()[row].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMABLE )
 		{
 			return true;
 		}
@@ -314,11 +314,11 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 		String errReacNames = ""; // names of those who can not be transformed
 		for(int i=0; i < isTransformable.length; i++)
 		{
-			if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMED && getIsSelected(i) )
+			if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMABLE && getIsSelected(i) )
 			{
 				okTransReacNames = okTransReacNames + origReactions[i].getName()+ ",";
 			}
-			else if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMED &&  !getIsSelected(i))
+			else if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMABLE &&  !getIsSelected(i))
 			{
 				noTransReacNames = noTransReacNames + origReactions[i].getName()+ ",";
 			}

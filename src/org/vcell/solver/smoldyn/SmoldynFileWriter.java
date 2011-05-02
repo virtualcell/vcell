@@ -1126,8 +1126,8 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
 			
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.solution + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+//			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			

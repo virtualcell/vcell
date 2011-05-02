@@ -159,7 +159,7 @@ public double evaluateConstant() throws ExpressionException {
 		return symbolTableEntry.getConstantValue();
 	}	
 
-	throw new ExpressionException("IdNode cannot be evaluated as a constant, (until 'Constants' are treated properly)");
+	throw new ExpressionException("Symbol '" + name + "' cannot be evaluated as a constant.");
 
 /*
 	if (symbolTableEntry==null){

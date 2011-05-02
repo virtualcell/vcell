@@ -18,17 +18,18 @@ public class TransformMassActions {
 	private boolean[] isTransformable = null;
 
 	public static class TransformedReaction {
-		public final static int TRANSFORMED_WITH_NOCHANGE = 0;
-		public final static int TRANSFORMED = 1;
+		public final static int TRANSFORMABLE_WITH_NOCHANGE = 0;
+		public final static int TRANSFORMABLE = 1;
 		public final static int NOTRANSFORMABLE = 2;
-		// public final static int NOTRANSFORMABLEFLUX = 3;
+		public final static int NOTRANSFORMABLE_STOCHCAPABLE = 3;
 		public final static String Label_Ok = "Ok";
-		public final static String Label_Transformed = "Able to transform.";
+		public final static String Label_Transformable = "Can be transformed to mass action.";
+		public final static String Label_StochForm_NotTransformable = "Stochastic capable, but can NOT be transformed to mass action.";
 		public final static String Label_Failed = "Failed.";
-		public final static String Label_expectedReacForm = "Looking for the reactin rate according to the form of Kf*(reactant1^n1)*(reactant2^n2)*...-Kr*(product1^m1)*(product2^m2)*...";
+		public final static String Label_expectedReacForm = "Looking for the reaction rate according to the form of Kf*(reactant1^n1)*(reactant2^n2)*...-Kr*(product1^m1)*(product2^m2)*...";
 		public final static String Label_expectedFluxForm = "Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.";
-		public final static String Label_FailedOtherReacLaw = "Automatic transformation can apply to reactions with general[uM/s] kinetic law only.";
-		public final static String Label_FailedOtherFluxLaw = "Automatic transformation can apply to fluxes with general flux density only.";
+		public final static String Label_FailedOtherReacLaw = "Only reactions with general kinetic laws may be transformed.";
+		public final static String Label_FailedOtherFluxLaw = "Only fluxes with general flux density/permeability may be transformed.";
 
 		private String transformRemark = "";
 		private int transformType = 0;
@@ -72,10 +73,10 @@ public class TransformMassActions {
 
 		for (int i = 0; i < origReactions.length; i++) {
 			transReactionSteps[i] = transformOne(origReactions[i]);
-			if (transReactionSteps[i].getTransformType() == TransformedReaction.NOTRANSFORMABLE) {
-				isTransformable[i] = false;
-			} else {
+			if (transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE) {
 				isTransformable[i] = true;
+			} else {
+				isTransformable[i] = false;
 			}
 		}
 	}
@@ -84,13 +85,14 @@ public class TransformMassActions {
 		TransformedReaction transformedRS = new TransformedReaction();
 		
 		if (origRS instanceof SimpleReaction) {
+			//we separate mass action and general law, because if it passes, mass action uses label 'ok' and general uses label 'stochastic capable'
 			if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction)) 
 			{
 				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 				try {
 					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
 					// set transformed reaction step
-					transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
+					transformedRS.setTransformType(TransformedReaction.TRANSFORMABLE_WITH_NOCHANGE);
 					transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
 					transformedRS.setMassActionFunction(maFunc);
 				} catch (Exception e) {
@@ -108,8 +110,17 @@ public class TransformMassActions {
 				
 					// set transformed reaction step
 					transformedRS.setMassActionFunction(maFunc);
-					transformedRS.setTransformType(TransformedReaction.TRANSFORMED);
-					transformedRS.setTransformRemark(TransformedReaction.Label_Transformed);
+					// if number of reactant is 0, or number of product is 0, we can not transform it to mass action law
+					if(((SimpleReaction)origRS).getNumReactants() == 0 || ((SimpleReaction)origRS).getNumProducts() == 0)
+					{
+						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE_STOCHCAPABLE);
+						transformedRS.setTransformRemark(TransformedReaction.Label_StochForm_NotTransformable);
+					}
+					else
+					{
+						transformedRS.setTransformType(TransformedReaction.TRANSFORMABLE);
+						transformedRS.setTransformRemark(TransformedReaction.Label_Transformable);
+					}
 				} catch (Exception e) {
 					// Mass Action Solver failed to parse the rate expression
 					transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction());
@@ -126,34 +137,9 @@ public class TransformMassActions {
 		} else // flux
 		{
 			if (origRS instanceof FluxReaction) {
-				// fluxes which are described by GeneralPermeability
-				if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) 
-				{
-					try {
-						Expression permeabilityExpr = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
-						permeabilityExpr = MassActionSolver.substituteParameters(permeabilityExpr, false);
-						if (permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
-							transformedRS.setTransformRemark(TransformedReaction.Label_Failed
-											+ " Flux: "
-											+ origRS.getName()
-											+ " has symbol \'t\' in rate constant. Propensity of a stochastic jump process should not be a functon of time.");
-						} else {
-							transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
-							transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
-							MassActionSolver.MassActionFunction maFunc = new MassActionSolver.MassActionFunction(permeabilityExpr, permeabilityExpr); 
-							transformedRS.setMassActionFunction(maFunc);
-						}
-					} catch (Exception e) {
-						// Mass Action Solver failed to parse the rate expression
-						transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction());
-						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
-						transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
-					}
-				}
-				//fluxes which are described by general density function
-				else if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General))
+				//fluxes which are described by general density function/permeability
+				if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General) || 
+						 origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 				{
 					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					try {
@@ -161,8 +147,8 @@ public class TransformMassActions {
 					
 						// set transformed reaction step
 						transformedRS.setMassActionFunction(maFunc);
-						transformedRS.setTransformType(TransformedReaction.TRANSFORMED);
-						transformedRS.setTransformRemark(TransformedReaction.Label_Transformed);
+						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE_STOCHCAPABLE);
+						transformedRS.setTransformRemark(TransformedReaction.Label_StochForm_NotTransformable);
 					} catch (Exception e) {
 						// Mass Action Solver failed to parse the rate expression
 						transformedRS.setMassActionFunction(new MassActionSolver.MassActionFunction());

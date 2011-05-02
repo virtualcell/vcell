@@ -2935,11 +2935,8 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 public String isValidForStochApp()
 {
 	String returnStr = ""; //sum of all the issues
-	String exceptionGenStr = ""; //exception msg from MassActionSolver when parsing general kinetics for reactions
-	String exceptionFluxStr = ""; //exception msg from FluxSolver when parsing general density function for fluxes 
+	String exceptionReacStr = ""; //exception msg from MassActionSolver when parsing kinetics for reactions/fluxes.
 	String unTransformableStr = ""; //all untransformable reactions/fluxes, which have kinetic laws rather than General and MassAction.
-	String tStr = ""; //untransformable reactions/fluxes with time 't' in parsed forward and reverse rate constants
-	String genReacts = "";//To count reactions with general rate law. We have to force user to tansform general to mass action before proceeding further.
 	cbit.vcell.model.ReactionStep[] reacSteps = getReactionSteps();
 	// Mass Action and centain form of general Flux can be automatically transformed.
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
@@ -2964,64 +2961,31 @@ public String isValidForStochApp()
 			{
 				if(reacSteps[i] instanceof SimpleReaction)
 				{
-					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))
+					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) || 
+							reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 					{
-						Expression forwardRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
-						Expression reverseRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
-						if(forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-						if(reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-					}
-					else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
-					{
-						genReacts = genReacts + " " + reacSteps[i].getName() + ","; 
-						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 						try{
 							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
-							if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
-							{
-								tStr = tStr + " " + reacSteps[i].getName() + ",";
-							}
-							if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
-							{
-								tStr = tStr + " " + reacSteps[i].getName() + ",";
-							}
 						}catch(Exception e)
 						{
-							exceptionGenStr = exceptionGenStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+							exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
 						}
 					}
 				}
 				else // flux described by General density function
 				{
-					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) {
+					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) ||
+					   reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
+					{
 						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 						try{
 							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
-							if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
-							{
-								tStr = tStr + " " + reacSteps[i].getName() + ",";
-							}
-							if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
-							{
-								tStr = tStr + " " + reacSteps[i].getName() + ",";
-							}
 						}catch(Exception e)
 						{
-							exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+							exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
 						}
-					} else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
-						Expression permeabilityExpr = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability).getExpression();
-						if(permeabilityExpr != null && permeabilityExpr.hasSymbol(ReservedSymbol.TIME.getName()))
-						{
-							tStr = tStr + " " + reacSteps[i].getName() + ",";
-						}
-					}
+					} 
 				}
 			}
 		}
@@ -3029,29 +2993,16 @@ public String isValidForStochApp()
 	
 	if(unTransformableStr.length() > 0)
 	{
-		returnStr = returnStr + unTransformableStr.substring(0,(unTransformableStr.length()-1)) + " are unable to transform to stochastic formulation.\n\n" +
+		returnStr = returnStr + unTransformableStr.substring(0,(unTransformableStr.length()-1)) + " are unable to be intepreted to mass action form. \nTherefore," +
+				"they are not suitable for stochastic application.\n\n" +
 				"Reactions described by mass action law(all) or General law(certain forms),\n" +
 				"or fluxes described by general desity function(certain forms) and general\n" +
-				"permeability(certain forms) can be automatically transfromed.\n\n"+
+				"permeability(certain forms) can be inteprested to mass action form.\n\n"+
 				"All rate laws that include electric current are not suitable for stochastic application.";
 	}
-	if(exceptionGenStr.length() > 0)
+	if(exceptionReacStr.length() > 0)
 	{
-		returnStr = returnStr + exceptionGenStr;
-	}
-	if(exceptionFluxStr.length() > 0)
-	{
-		returnStr = returnStr + exceptionFluxStr;
-	}
-	if(tStr.length() > 0)
-	{
-		returnStr = returnStr + tStr.substring(0,(tStr.length()-1)) + " have symbol \'t\' in propensity. Propensity of a stochastic jump process should not be a functon of time.";
-	}
-	//If the a stochastic application can be set and there are general law reactions, we force user to transform the general laws to mass action laws first.
-	if(returnStr.equals("") && !genReacts.equals(""))
-	{
-		returnStr = returnStr + "The system is able to set up stochastic application. However reactions " + genReacts + " are described by general kinetic law.\n" + 
-		            "Please use menu \'Tool -> Transform to Stochastic Capable\' in main window to transform these reactions before proceeding further.";
+		returnStr = returnStr + exceptionReacStr;
 	}
 	return returnStr;
 }

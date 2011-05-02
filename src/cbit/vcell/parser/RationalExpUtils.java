@@ -13,11 +13,14 @@ public class RationalExpUtils {
 
 
 	public static RationalExp getRationalExp(Expression exp) throws ExpressionException {
-		return getRationalExp(exp.getRootNode());
+		return getRationalExp(exp.getRootNode(), false);
 	}
 
+	public static RationalExp getRationalExp(Expression exp, boolean bAllowFunctions) throws ExpressionException {
+		return getRationalExp(exp.getRootNode(), bAllowFunctions);
+	}
 
-	private static RationalExp getRationalExp(SimpleNode node) throws ExpressionException {
+	private static RationalExp getRationalExp(SimpleNode node, boolean bAllowFunctions) throws ExpressionException {
 		
 		if (node == null) {
 			return null;
@@ -42,7 +45,7 @@ public class RationalExpUtils {
 						return RationalExp.ONE;
 					}
 					
-					RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0));
+					RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0), bAllowFunctions);
 					if (intExponent < 0){
 						base = base.inverse();
 						intExponent = -intExponent;
@@ -56,7 +59,14 @@ public class RationalExpUtils {
 					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not constant");
 				}
 			}else{
-				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression");
+				if(bAllowFunctions)
+				{
+					return new RationalExp(((ASTFuncNode)node).infixString(SimpleNode.LANGUAGE_DEFAULT));
+				}
+				else
+				{
+					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression");
+				}
 			}
 		} else if (node instanceof ASTPowerNode) {
 			try {
@@ -69,7 +79,7 @@ public class RationalExpUtils {
 					return RationalExp.ONE;
 				}
 				
-				RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0));
+				RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0), bAllowFunctions);
 				if (intExponent < 0){
 					base = base.inverse();
 					intExponent = -intExponent;
@@ -85,23 +95,23 @@ public class RationalExpUtils {
 		} else if (node instanceof ASTAddNode) {
 			RationalExp exp = RationalExp.ZERO;
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-				exp = exp.add(getRationalExp((SimpleNode)node.jjtGetChild(i)));
+				exp = exp.add(getRationalExp((SimpleNode)node.jjtGetChild(i), bAllowFunctions));
 			}
 			return exp;
 		} else if (node instanceof ASTMinusTermNode) {
-			return getRationalExp((SimpleNode)node.jjtGetChild(0)).minus();
+			return getRationalExp((SimpleNode)node.jjtGetChild(0), bAllowFunctions).minus();
 		} else if (node instanceof ASTMultNode) {
 			if (node.jjtGetNumChildren() == 1) {
-				return getRationalExp((SimpleNode)node.jjtGetChild(0));
+				return getRationalExp((SimpleNode)node.jjtGetChild(0), bAllowFunctions);
 			}
 			RationalExp exp = RationalExp.ONE;
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {             
-				exp = exp.mult(getRationalExp((SimpleNode)node.jjtGetChild(i)));
+				exp = exp.mult(getRationalExp((SimpleNode)node.jjtGetChild(i), bAllowFunctions));
 			}
 			return exp;
 		} else if (node instanceof ASTInvertTermNode) {
 			SimpleNode child = (SimpleNode)node.jjtGetChild(0);
-			return getRationalExp(child).inverse();
+			return getRationalExp(child, bAllowFunctions).inverse();
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless.
 			RationalNumber r = RationalNumber.getApproximateFraction(((ASTFloatNode)node).value.doubleValue());
 			return new RationalExp(r);
