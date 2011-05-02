@@ -777,7 +777,8 @@ public class PathwayProducerBiopax3 {
 	//	deltaS 		Float 		multiple 
 	//	deltaH 		Float 		multiple 
 	private Element addContentTransportWithBiochemicalReaction( BioPaxObject bpObject, Element element) {
-		element = addContentTransport(bpObject, element);
+//		element = addContentTransport(bpObject, element);
+		element = addContentBiochemicalReaction(bpObject, element);
 		
 		TransportWithBiochemicalReaction ob = (TransportWithBiochemicalReaction)bpObject;
 		Element tmpElement = null;

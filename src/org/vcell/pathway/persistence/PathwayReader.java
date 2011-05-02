@@ -2,6 +2,8 @@ package org.vcell.pathway.persistence;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -1312,9 +1314,9 @@ public class PathwayReader {
 		if (addContentBiochemicalReaction(transportWithBiochemicalReaction,element,childElement)){
 			return true;
 		}
-		if (addContentTransport(transportWithBiochemicalReaction,element,childElement)){
-			return true;
-		}
+//		if (addContentTransport(transportWithBiochemicalReaction,element,childElement)){
+//			return true;
+//		}
 		/**
 		 * 
 		 */
