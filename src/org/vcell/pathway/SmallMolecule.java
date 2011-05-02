@@ -28,6 +28,6 @@ public class SmallMolecule extends PhysicalEntity {
 	}
 
 	public String getTypeLabel(){
-		return "small molecule";
+		return "Small Molecule";
 	}
 }

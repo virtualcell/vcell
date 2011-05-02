@@ -1497,9 +1497,9 @@ public class PathwayReaderBiopax3 {
 		if (addContentBiochemicalReaction(transportWithBiochemicalReaction,element,childElement)){
 			return true;
 		}
-		if (addContentTransport(transportWithBiochemicalReaction,element,childElement)){
-			return true;
-		}
+//		if (addContentTransport(transportWithBiochemicalReaction,element,childElement)){
+//			return true;
+//		}
 		/**
 		 * 
 		 */

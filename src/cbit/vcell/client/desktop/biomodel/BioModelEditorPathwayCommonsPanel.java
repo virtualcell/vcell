@@ -27,8 +27,10 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.jdom.Namespace;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReader;
+import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.sybil.util.http.pathwaycommons.search.DataSource;
 import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
@@ -253,7 +255,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				
 				URLConnection connection = url.openConnection();
 
-				PathwayReader pathwayReader = new PathwayReader();
 				org.jdom.Document jdomDocument = XmlUtil.readXML(connection.getInputStream());
 //				String xmlText = XmlUtil.xmlToString(jdomDocument, false);
 				
@@ -265,7 +266,17 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 //				PathwayReader pathwayReader = new PathwayReader();
 //				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
 				
-				PathwayModel pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
+				PathwayModel pathwayModel = null;
+				Namespace namespace = jdomDocument.getRootElement().getNamespace("bp");
+				if((namespace != null) && (namespace.getURI() != null) && (namespace.getURI().contains("level3"))) {
+					PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
+					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
+				} else {		// if it's not level3 we assume it to be level2
+				// TODO: once biopax version3 becomes dominant change the code to use that as the default
+					PathwayReader pathwayReader = new PathwayReader();
+					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
+				}
+				
 				pathwayModel.reconcileReferences();
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);

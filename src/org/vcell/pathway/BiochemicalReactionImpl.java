@@ -71,7 +71,7 @@ public class BiochemicalReactionImpl extends ConversionImpl implements Biochemic
 	}
 
 	public String getTypeLabel(){
-		return "biochemical reaction";
+		return "Biochemical Reaction";
 	}
 
 }

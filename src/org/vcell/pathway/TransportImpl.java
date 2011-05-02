@@ -8,5 +8,9 @@ public class TransportImpl extends ConversionImpl implements Transport {
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
 	}
-	
+
+	public String getTypeLabel(){
+		return "Transport";
+	}
+
 }
