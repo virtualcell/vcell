@@ -15,6 +15,7 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -766,7 +767,12 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
 				String varName = odeEquation.getVariable().getName();
-				String initName = varName+"_"+subDomain.getName()+"_init";
+				String initName = null;
+				if (subDomain instanceof MembraneSubDomain){
+					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2;
+				}else{
+					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM;
+				}
 				String exactName = varName+"_"+subDomain.getName()+"_exact";
 				String errorName = varName+"_"+subDomain.getName()+"_error";
 				String origRateName = "_"+varName+"_"+subDomain.getName()+"_origRate";
@@ -804,7 +810,12 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
 				String varName = pdeEquation.getVariable().getName();
-				String initName = varName+"_"+subDomain.getName()+"_init";
+				String initName = null;
+				if (subDomain instanceof MembraneSubDomain){
+					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2;
+				}else{
+					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM;
+				}
 				String diffusionRateName = "_"+varName+"_"+subDomain.getName()+"_diffusionRate";
 				String exactName = varName+"_"+subDomain.getName()+"_exact";
 				String errorName = varName+"_"+subDomain.getName()+"_error";

@@ -38,6 +38,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
@@ -881,8 +882,11 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
 							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
 						}
-						if (newMath.getVariable(function.getName()+"_init")!=null){
-							initExp = new Expression(function.getName()+"_init");
+						if (newMath.getVariable(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2)!=null){
+							initExp = new Expression(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
+						}
+						if (newMath.getVariable(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM)!=null){
+							initExp = new Expression(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
 						}
 						OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
 						subDomain.addEquation(odeEquation);
@@ -914,8 +918,11 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
 							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
 						}
-						if (newMath.getVariable(function.getName()+"_init")!=null){
-							initExp = new Expression(function.getName()+"_init");
+						if (newMath.getVariable(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2)!=null){
+							initExp = new Expression(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
+						}
+						if (newMath.getVariable(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM)!=null){
+							initExp = new Expression(function.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
 						}
 						OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
 						subDomain.addEquation(odeEquation);
@@ -1931,11 +1938,13 @@ public void gatherIssues(List<Issue> issueList) {
 		Issue issue = new Issue(this, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
+
 	if(isSpatialStoch() && geometry.getDimension() != 3)
-    {
-            Issue issue = new Issue(geometry, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
-            issueList.add(issue);
-    }
+	{
+		Issue issue = new Issue(geometry, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
+		issueList.add(issue);
+	}
+	
 	// check Constant are really constants
 	for (int i=0;i<variableList.size();i++){
 		Variable var = variableList.elementAt(i);
