@@ -700,7 +700,11 @@ public class TextFieldAutoCompletion extends JTextField {
 	@Override
 	protected void fireActionPerformed() {
 		if (isPopupVisible()) {
-			return;
+			if (autoCompJList.getSelectedIndex() >= 0) {
+				return;
+			}
+
+			autoCompJPopupMenu.setVisible(false);
 		}
 		super.fireActionPerformed();
 	}	
