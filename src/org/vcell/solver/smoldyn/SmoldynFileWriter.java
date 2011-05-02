@@ -122,7 +122,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Simulation simulation = null;
 	private MathDescription mathDesc = null;
 	private SimulationSymbolTable simulationSymbolTable = null;
-	ArrayList<ParticleVariable> particleVariableList = null;
+	private ArrayList<ParticleVariable> particleVariableList = null;
 	private Geometry resampledGeometry = null;
 	private boolean bHasNoSurface = false;
 	private int dimension = 1;
@@ -555,17 +555,19 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 				else //membrane reactions which are not one to one 
 				{
+					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					// 1. membrane reaction requires at least one mambrane bound reactant
 					// 2. should NOT have volume products (solution for vol products have leaking)
-					if(getMembraneVariableCount(reactants) == 1 && getVolumeVariableCount(products) == 0)
-					{
-						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
-					}
-					else 
-					{
-						throw new MathException("VCell spatial stochastic solver requires at least ONE and ONLY ONE mambrane bound reactant and no volume products in membrane reactions.");
-					}
+//					if(getMembraneVariableCount(reactants) == 1 && getVolumeVariableCount(products) == 0)
+//					{
+//						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+//						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+//					}
+//					else 
+//					{
+//						throw new MathException("VCell spatial stochastic solver requires at least ONE and ONLY ONE mambrane bound reactant and no volume products in membrane reactions.");
+//					}
 				}
 			}
 		}
