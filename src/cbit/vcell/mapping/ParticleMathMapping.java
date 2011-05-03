@@ -720,18 +720,32 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					N += rp.getStoichiometry();
 				}
 			}
-			
-			// Step (2) : if reaction is a vol reaction, N = N-1
-			if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-				N = N-1;
+			// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
+			// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
+			// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
+			// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
+			// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
+			if( (reactants.size() == 0) && (products.size() == 1) && 	//0th order reaction
+				reactionStep.getStructure() instanceof Feature &&  // in VOLUME
+				reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+			{
+				forwardRate = Expression.div(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+			}
+			else
+			{
+				// Step (2) : if reaction is a vol reaction/flux, N = N-1
+				if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
+					N = N-1;
+				}
+				
+				// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+				if (N == 1) {
+					forwardRate = Expression.mult(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+				} else if (N > 1) {
+					forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+				}
 			}
 			
-			// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-			if (N == 1) {
-				forwardRate = Expression.mult(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
-			} else if (N > 1) {
-				forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
-			}
 			Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
 			ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
 			
@@ -757,17 +771,32 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 			}
 			
-			// Step (2) : if reaction is a vol reaction, N = N-1
-			if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-				N = N-1;
+			// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
+			// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
+			// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
+			// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
+			// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
+			if( (reactants.size() == 1) && (products.size() == 0) && 	//consuming a species
+				reactionStep.getStructure() instanceof Feature &&  // in VOLUME
+				reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+			{
+				reverseRate = Expression.div(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+			}
+			else 
+			{
+				// Step (2) : if reaction is a vol reaction, N = N-1
+				if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
+					N = N-1;
+				}
+				
+				// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+				if (N == 1) {
+					reverseRate = Expression.mult(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+				} else if (N > 1) {
+					reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+				}
 			}
 			
-			// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-			if (N == 1) {
-				reverseRate = Expression.mult(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
-			} else if (N > 1) {
-				reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
-			}
 			// get probability
 			Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
 			ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
