@@ -6,17 +6,12 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.CellularLocationVocabulary;
@@ -25,15 +20,11 @@ import org.vcell.pathway.Control;
 import org.vcell.pathway.Dna;
 import org.vcell.pathway.DnaRegion;
 import org.vcell.pathway.Entity;
-import org.vcell.pathway.EntityFeature;
-import org.vcell.pathway.Evidence;
-import org.vcell.pathway.Gene;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Protein;
-import org.vcell.pathway.Provenance;
 import org.vcell.pathway.PublicationXref;
 import org.vcell.pathway.RelationshipXref;
 import org.vcell.pathway.Rna;
@@ -149,12 +140,12 @@ private void initialize() {
 			
 		});
 		
-		table.getColumnModel().getColumn(tableModel.Column_Value).setCellRenderer(new DefaultScrollTableCellRenderer(){
+		table.getColumnModel().getColumn(BioPaxObjectPropertiesTableModel.Column_Value).setCellRenderer(new DefaultScrollTableCellRenderer(){
 			
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
-				if (column == tableModel.Column_Value) {
+				if (column == BioPaxObjectPropertiesTableModel.Column_Value) {
 					BioPaxObject bpObject = tableModel.getValueAt(row).bioPaxObject;
 					String text = tableModel.getValueAt(row).value;
 					if(bpObject instanceof Xref){
@@ -249,11 +240,11 @@ protected void refreshInterface() {
 				}
 				
 			} else if (entity instanceof Protein){
-				Protein protein = (Protein)entity;
+//				Protein protein = (Protein)entity;
 				// protein::entity reference (***ignored***)
 
 			} else if (entity instanceof SmallMolecule){
-				SmallMolecule smallMolecule = (SmallMolecule) entity;
+//				SmallMolecule smallMolecule = (SmallMolecule) entity;
 				// smallMolecule::entityReference (***ignored***)
 
 			} else if (entity instanceof Dna){

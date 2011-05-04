@@ -307,6 +307,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 			e.printStackTrace();
 			throw new java.io.IOException("An error occurred when trying to parse the rules file ");
 		}
+		@SuppressWarnings("unchecked")
 		Iterator<Element> ruleiterator = doctable.getRootElement().getChildren().iterator();
 		while (ruleiterator.hasNext()) {
 			Element temp = (Element) ruleiterator.next();

@@ -12,21 +12,13 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.relationship.PathwayMapping;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
-import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.client.desktop.biomodel.pathway.PathwayImportSelectionTool;
 
 @SuppressWarnings("serial")
 public class ConversionPanel extends DocumentEditorSubPanel  {

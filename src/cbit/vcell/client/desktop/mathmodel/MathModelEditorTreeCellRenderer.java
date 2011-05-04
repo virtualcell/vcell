@@ -1,14 +1,13 @@
 package cbit.vcell.client.desktop.mathmodel;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Component;
 import java.awt.Font;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
 
 import org.vcell.util.gui.VCellIcons;
@@ -23,8 +22,8 @@ import cbit.vcell.mathmodel.MathModel;
 public class MathModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
 //	private MathModel mathModel = null;
 	
-	public MathModelEditorTreeCellRenderer(JTree tree) {
-		super(tree);
+	public MathModelEditorTreeCellRenderer() {
+		super();
 	}
 
 //	public void setMathModel(MathModel mm) {

@@ -18,7 +18,6 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.BioModelEntityObject;
 
 
 @SuppressWarnings("serial")

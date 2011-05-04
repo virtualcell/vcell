@@ -2,8 +2,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import org.vcell.pathway.BioPaxObject;
 
-import cbit.vcell.model.Structure;
-
 public class ConversionTableRow {
 	private BioPaxObject bioPaxObject;
 //	private Boolean modifiable = new Boolean(false);

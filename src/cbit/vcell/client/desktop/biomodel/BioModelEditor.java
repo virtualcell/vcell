@@ -399,7 +399,7 @@ private void initialize() {
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
-		bioModelEditorTreeCellRenderer = new BioModelEditorTreeCellRenderer(documentEditorTree);
+		bioModelEditorTreeCellRenderer = new BioModelEditorTreeCellRenderer();
 		documentEditorTree.setModel(bioModelEditorTreeModel);
 		documentEditorTree.addTreeExpansionListener(bioModelEditorTreeModel);
 		documentEditorTree.setCellRenderer(bioModelEditorTreeCellRenderer);

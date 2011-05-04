@@ -77,7 +77,7 @@ private void initialize() {
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
 		mathModelEditorTreeModel = new MathModelEditorTreeModel(documentEditorTree);
-		mathModelEditorTreeCellRenderer = new MathModelEditorTreeCellRenderer(documentEditorTree);
+		mathModelEditorTreeCellRenderer = new MathModelEditorTreeCellRenderer();
 		documentEditorTree.setModel(mathModelEditorTreeModel);
 		documentEditorTree.setCellRenderer(mathModelEditorTreeCellRenderer);
 		

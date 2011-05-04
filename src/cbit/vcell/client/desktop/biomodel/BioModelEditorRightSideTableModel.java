@@ -1,23 +1,13 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.SwingConstants;
-
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
-
 import cbit.gui.ReactionEquation;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Structure;
 
 /**
  * BioModelEditorRightSideTableModel extends DefaultSortTableModel and always has an extra row for adding new row.

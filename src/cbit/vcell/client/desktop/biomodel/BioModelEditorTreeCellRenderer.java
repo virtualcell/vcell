@@ -1,9 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Component;
 import java.awt.Font;
 
@@ -23,8 +23,8 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRenderer  {
 	private BioModel bioModel = null;
 	
-	public BioModelEditorTreeCellRenderer(JTree tree) {
-		super(tree);
+	public BioModelEditorTreeCellRenderer() {
+		super();
 	}
 	
 	public void setBioModel(BioModel newValue) {

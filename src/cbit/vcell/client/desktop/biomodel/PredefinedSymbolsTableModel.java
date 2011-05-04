@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.GuiUtils;
-
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ASTFuncNode;
