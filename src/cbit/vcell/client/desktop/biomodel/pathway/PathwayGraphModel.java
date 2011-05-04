@@ -5,9 +5,9 @@ import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Interaction;
@@ -73,7 +73,8 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			fireGraphChanged();
 			return;
 		}
-		objectShapeMap.clear();
+		Set<Shape> unwantedShapes = new HashSet<Shape>();
+		unwantedShapes.addAll(getShapes());
 		PathwayContainerShape pathwayContainerShape = 
 			(PathwayContainerShape) getShapeFromModelObject(pathwayModel);
 		if(pathwayContainerShape == null) {
@@ -81,6 +82,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			pathwayContainerShape.getSpaceManager().setSize(400, 300);
 			addShape(pathwayContainerShape);			
 		}
+		unwantedShapes.remove(pathwayContainerShape);
 		for (BioPaxObject bpObject : pathwayModel.getBiopaxObjects()){
 			BioPaxShape bpObjectShape = (BioPaxShape) getShapeFromModelObject(bpObject);
 			if(bpObjectShape == null) {
@@ -101,6 +103,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 				int yPos = boundary.y + random.nextInt(boundary.height - shapeSize.height);
 				bpObjectShape.setAbsPos(xPos, yPos);
 			}
+			unwantedShapes.remove(bpObjectShape);
 		}
 		for (BioPaxObject bpObject : pathwayModel.getBiopaxObjects()) {
 			if (bpObject instanceof Conversion) {
@@ -123,9 +126,9 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 							addShape(edgeShape);
 						}
 					}
+					unwantedShapes.remove(edgeShape);
 				}
-			} else if (bpObject instanceof Control) {
-				
+			} else if (bpObject instanceof Control) {			
 				Control control = (Control) bpObject;
 				Interaction controlledInteraction = control.getControlledInteraction();
 				if(controlledInteraction instanceof Conversion) {
@@ -140,7 +143,6 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 									(BioPaxInteractionParticipantShape) 
 									getShapeFromModelObject(participant);
 								if(edgeShape == null) {
-
 									PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 									Shape shape = getShapeFromModelObject(physicalEntity);
 									if(shape instanceof BioPaxPhysicalEntityShape) {
@@ -153,12 +155,14 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 										addShape(edgeShape);
 									}
 								}
+								unwantedShapes.remove(edgeShape);
 							}							
 						}
 					}
 				}
 			}
 		}
+		for(Shape unwantedShape : unwantedShapes) { removeShape(unwantedShape); }
 		refreshRelationshipInfo();
 		fireGraphChanged();
 	}

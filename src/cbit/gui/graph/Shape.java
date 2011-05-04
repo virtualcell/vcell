@@ -27,8 +27,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	protected List<Shape> childShapeList = new ArrayList<Shape>();
 	private Shape parent = null;
 
-	private boolean bDirty = false;
-
 	protected boolean bNoFill = false;
 
 	public static final int ATTACH_CENTER = 0;
@@ -200,10 +198,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		return false;
 	}
 
-	public boolean isDirty() {
-		return bDirty;
-	}
-
 	protected abstract boolean isInside(Point p);
 
 	public boolean isSelected() {
@@ -285,10 +279,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	public void notifyUnselected() {
 		backgroundColor = defaultBG;
 		forgroundColor = defaultFG;
-	}
-
-	public void setDirty(boolean isDirty) {
-		bDirty = isDirty;
 	}
 
 	public final void setLabel(String label) {

@@ -1,8 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.BorderLayout;
 
 import javax.swing.JScrollPane;
@@ -44,7 +44,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {
 		tree = new JTree();
-		treeModel = new ApplicationPropertiesTreeModel(tree);
+		treeModel = new ApplicationPropertiesTreeModel();
 		tree.setModel(treeModel);
 		ToolTipManager.sharedInstance().registerComponent(tree);
 		tree.setCellRenderer(new BioModelCellRenderer(null));

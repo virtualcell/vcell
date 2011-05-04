@@ -6,7 +6,6 @@ package cbit.vcell.client.desktop.biomodel;
  �*/
 import java.awt.Font;
 
-import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -15,11 +14,8 @@ public abstract class DocumentEditorTreeCellRenderer extends DefaultTreeCellRend
 	protected Font regularFont = null;
 	protected Font boldFont = null;
 	
-	private JTree ownerTree;
-
-	public DocumentEditorTreeCellRenderer(JTree tree) {
+	public DocumentEditorTreeCellRenderer() {
 		super();
-		ownerTree = tree;
 		setBorder(new EmptyBorder(0, 2, 0, 0));
 	}
 

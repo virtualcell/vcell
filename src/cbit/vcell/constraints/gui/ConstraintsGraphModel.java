@@ -1,43 +1,29 @@
 package cbit.vcell.constraints.gui;
-import java.util.ArrayList;
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.SimpleContainerShape;
-/**
- * Insert the type's description here.
- * Creation date: (7/9/2003 4:31:04 PM)
- * @author: Jim Schaff
- */
-public class ConstraintsGraphModel extends cbit.gui.graph.GraphModel implements java.beans.PropertyChangeListener {
-	private cbit.vcell.constraints.ConstraintContainerImpl fieldConstraintContainerImpl = null;
+import cbit.vcell.constraints.ConstraintContainerImpl;
+import cbit.vcell.constraints.GeneralConstraint;
+import cbit.vcell.constraints.SimpleBounds;
 
-/**
- * ConstraintsGraphModel constructor comment.
- */
+public class ConstraintsGraphModel extends GraphModel implements PropertyChangeListener {
+	private ConstraintContainerImpl fieldConstraintContainerImpl = null;
+
 public ConstraintsGraphModel() {
 	super();
 	this.addPropertyChangeListener(this);
 }
 
-
-/**
- * Gets the constraintContainerImpl property (cbit.vcell.constraints.ConstraintContainerImpl) value.
- * @return The constraintContainerImpl property value.
- * @see #setConstraintContainerImpl
- */
-public cbit.vcell.constraints.ConstraintContainerImpl getConstraintContainerImpl() {
+public ConstraintContainerImpl getConstraintContainerImpl() {
 	return fieldConstraintContainerImpl;
 }
 
-
-	/**
-	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
-	 *   	and the property that has changed.
-	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("constraintContainerImpl")){
 		clearAllShapes();
@@ -46,38 +32,26 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == getConstraintContainerImpl()){
 		refreshAll();
 	}
-	if (evt.getSource() instanceof cbit.vcell.constraints.GeneralConstraint){
+	if (evt.getSource() instanceof GeneralConstraint){
 		if (evt.getPropertyName().equals("expression")){
 			refreshAll();
 		}else{
 			fireGraphChanged();
 		}
 	}
-	if (evt.getSource() instanceof cbit.vcell.constraints.SimpleBounds){
+	if (evt.getSource() instanceof SimpleBounds){
 		fireGraphChanged();
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/8/2003 9:11:57 AM)
- */
 public void refreshAll() {
-	//
-	// 1) mark all shapes as dirty
-	// 2) traverse model adding new shapes or cleaning those that already exist
-	// 3) remove remaining dirty shapes
-	//
-
+	Set<Shape> unwantedShapes = new HashSet<Shape>();
+	unwantedShapes.addAll(getShapes());
 	for(Shape shape : getShapes()) {
-		shape.setDirty(true);
 		if (shape instanceof ConstraintVarNode){
 			((ConstraintVarNode)shape).setDegree(1);
 		}
-	}
-
-	
+	}	
 	ContainerShape containerShape = (ContainerShape)getShapeFromModelObject(getConstraintContainerImpl());
 	if (containerShape==null){
 		containerShape = new SimpleContainerShape(getConstraintContainerImpl(),this,"constraint network");
@@ -85,11 +59,11 @@ public void refreshAll() {
 		addShape(containerShape);
 	}
 	containerShape.refreshLabel();
-	containerShape.setDirty(false);
+	unwantedShapes.remove(containerShape);
 	//
 	// add nodes for GeneralConstraints and edges to its Variables (add Variable when necessary)
 	//
-	cbit.vcell.constraints.GeneralConstraint generalConstraints[] = getConstraintContainerImpl().getGeneralConstraints();
+	GeneralConstraint generalConstraints[] = getConstraintContainerImpl().getGeneralConstraints();
 	for (int i = 0; i < generalConstraints.length; i++){
 		String symbols[] = generalConstraints[i].getExpression().getSymbols();
 		if (symbols==null){
@@ -102,8 +76,7 @@ public void refreshAll() {
 			addShape(generalConstraintNode);
 		}
 		generalConstraintNode.refreshLabel();
-		generalConstraintNode.setDirty(false);
-		
+		unwantedShapes.remove(generalConstraintNode);		
 		for (int j = 0; j < symbols.length; j++){
 			ConstraintVarNode constraintVarNode = (ConstraintVarNode)getShapeFromLabel(symbols[j]);
 			if (constraintVarNode==null){
@@ -114,8 +87,7 @@ public void refreshAll() {
 				constraintVarNode.setDegree(constraintVarNode.getDegree()+1);
 			}
 			constraintVarNode.refreshLabel();
-			constraintVarNode.setDirty(false);
-
+			unwantedShapes.remove(constraintVarNode);
 			ConstraintDependencyEdgeShape constraintDependencyEdgeShape = null;
 			for(Shape shape : getShapes()) {
 				if (shape instanceof ConstraintDependencyEdgeShape){
@@ -130,8 +102,7 @@ public void refreshAll() {
 				containerShape.addChildShape(constraintDependencyEdgeShape);
 				addShape(constraintDependencyEdgeShape);
 			}
-			constraintDependencyEdgeShape.refreshLabel();
-			constraintDependencyEdgeShape.setDirty(false);
+			unwantedShapes.remove(constraintDependencyEdgeShape);
 		}
 	}
 	//
@@ -146,10 +117,9 @@ public void refreshAll() {
 			addShape(boundsNode);
 		}
 		boundsNode.refreshLabel();
-		boundsNode.setDirty(false);
-
-		
-		ConstraintVarNode constraintVarNode = (ConstraintVarNode)getShapeFromLabel(simpleBounds[i].getIdentifier());
+		unwantedShapes.remove(boundsNode);
+		ConstraintVarNode constraintVarNode = 
+			(ConstraintVarNode)getShapeFromLabel(simpleBounds[i].getIdentifier());
 		if (constraintVarNode==null){
 			constraintVarNode = new ConstraintVarNode(simpleBounds[i].getIdentifier(),this,1);
 			containerShape.addChildShape(constraintVarNode);
@@ -158,8 +128,7 @@ public void refreshAll() {
 			constraintVarNode.setDegree(constraintVarNode.getDegree()+1);
 		}
 		constraintVarNode.refreshLabel();
-		constraintVarNode.setDirty(false);
-
+		unwantedShapes.remove(constraintVarNode);
 		ConstraintDependencyEdgeShape constraintDependencyEdgeShape = null;
 		for(Shape shape : getShapes()) {
 			if (shape instanceof ConstraintDependencyEdgeShape){
@@ -175,37 +144,21 @@ public void refreshAll() {
 			addShape(constraintDependencyEdgeShape);
 		}
 		constraintDependencyEdgeShape.refreshLabel();
-		constraintDependencyEdgeShape.setDirty(false);
+		unwantedShapes.remove(constraintDependencyEdgeShape);
 	}
-	
-	List<Shape> deleteList = new ArrayList<Shape>();
-	for(Shape shape : getShapes()) {
-		if (shape.isDirty()) {
-			deleteList.add(shape);
-		}
-	}
-	for(Shape shape : deleteList) {
-		removeShape(shape);
-	}
-	
+	for(Shape unwantedShape : unwantedShapes) { removeShape(unwantedShape); }
 	fireGraphChanged(new GraphEvent(this));
 }
 
-
-/**
- * Sets the constraintContainerImpl property (cbit.vcell.constraints.ConstraintContainerImpl) value.
- * @param constraintContainerImpl The new value for the property.
- * @see #getConstraintContainerImpl
- */
-public void setConstraintContainerImpl(cbit.vcell.constraints.ConstraintContainerImpl constraintContainerImpl) {
-	cbit.vcell.constraints.ConstraintContainerImpl oldValue = fieldConstraintContainerImpl;
+public void setConstraintContainerImpl(ConstraintContainerImpl constraintContainerImpl) {
+	ConstraintContainerImpl oldValue = fieldConstraintContainerImpl;
 	if (oldValue!=null){
 		oldValue.removePropertyChangeListener(this);
-		cbit.vcell.constraints.GeneralConstraint oldConstraints[] = oldValue.getGeneralConstraints();
+		GeneralConstraint oldConstraints[] = oldValue.getGeneralConstraints();
 		for (int i = 0; i < oldConstraints.length; i++){
 			oldConstraints[i].removePropertyChangeListener(this);
 		}
-		cbit.vcell.constraints.SimpleBounds oldSimpleBounds[] = oldValue.getSimpleBounds();
+		SimpleBounds oldSimpleBounds[] = oldValue.getSimpleBounds();
 		for (int i = 0; i < oldSimpleBounds.length; i++){
 			oldSimpleBounds[i].removePropertyChangeListener(this);
 		}
@@ -213,11 +166,11 @@ public void setConstraintContainerImpl(cbit.vcell.constraints.ConstraintContaine
 	fieldConstraintContainerImpl = constraintContainerImpl;
 	if (fieldConstraintContainerImpl!=null){
 		fieldConstraintContainerImpl.addPropertyChangeListener(this);
-		cbit.vcell.constraints.GeneralConstraint newConstraints[] = fieldConstraintContainerImpl.getGeneralConstraints();
+		GeneralConstraint newConstraints[] = fieldConstraintContainerImpl.getGeneralConstraints();
 		for (int i = 0; i < newConstraints.length; i++){
 			newConstraints[i].addPropertyChangeListener(this);
 		}
-		cbit.vcell.constraints.SimpleBounds newSimpleBounds[] = fieldConstraintContainerImpl.getSimpleBounds();
+		SimpleBounds newSimpleBounds[] = fieldConstraintContainerImpl.getSimpleBounds();
 		for (int i = 0; i < newSimpleBounds.length; i++){
 			newSimpleBounds[i].addPropertyChangeListener(this);
 		}

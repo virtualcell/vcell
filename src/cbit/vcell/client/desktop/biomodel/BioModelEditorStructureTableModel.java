@@ -10,8 +10,6 @@ import java.util.Set;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
-import com.hp.hpl.jena.sparql.pfunction.library.str;
-
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;

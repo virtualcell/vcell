@@ -1,7 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import javax.swing.JTree;
-
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
@@ -17,15 +15,13 @@ public class ApplicationPropertiesTreeModel extends javax.swing.tree.DefaultTree
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext simulationContext = null;
 	private BioModelNode rootNode = null;
-	private JTree ownerTree = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
-public ApplicationPropertiesTreeModel(JTree tree) {
+public ApplicationPropertiesTreeModel() {
 	super(new BioModelNode("Select an application to show properties", true), true);
 	rootNode = (BioModelNode)root;
-	ownerTree = tree;
 	addPropertyChangeListener(this);
 }
 /**

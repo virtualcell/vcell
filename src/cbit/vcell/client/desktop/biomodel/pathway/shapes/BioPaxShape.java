@@ -5,12 +5,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
-import org.vcell.pathway.PathwayModel;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
-import cbit.vcell.model.InUseException;
 
 public abstract class BioPaxShape extends Shape {
 	BioPaxObject bioPaxObject = null;
@@ -43,11 +41,6 @@ public abstract class BioPaxShape extends Shape {
 	@Override
 	public VisualState createVisualState() { 
 		return new MutableVisualState(this, VisualState.PaintLayer.NODE); 
-	}
-
-	protected void delete() throws Exception, InUseException {
-		PathwayModel pathwayModel = ((PathwayGraphModel)graphModel).getPathwayModel();
-		pathwayModel.getBiopaxObjects().remove(getBioPaxObject());
 	}
 
 	@Override

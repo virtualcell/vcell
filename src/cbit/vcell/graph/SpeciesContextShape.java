@@ -23,8 +23,6 @@ import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
-import cbit.vcell.model.InUseException;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesContextShape extends ElipseShape {
@@ -56,11 +54,6 @@ public class SpeciesContextShape extends ElipseShape {
 	@Override
 	public VisualState createVisualState() { 
 		return new MutableVisualState(this, VisualState.PaintLayer.NODE); 
-	}
-
-	protected void delete() throws Exception, InUseException {
-		Model model = ((ModelCartoon)graphModel).getModel();
-		model.removeSpeciesContext(getSpeciesContext());
 	}
 
 	@Override

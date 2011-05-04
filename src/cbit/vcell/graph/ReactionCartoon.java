@@ -9,7 +9,9 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import cbit.gui.graph.GraphContainerLayoutReactions;
 import cbit.gui.graph.GraphEvent;
@@ -137,9 +139,8 @@ public class ReactionCartoon extends ModelCartoon {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
 			}
-			for(Shape shape : getShapes()) {
-				shape.setDirty(true);
-			}
+			Set<Shape> unwantedShapes = new HashSet<Shape>();
+			unwantedShapes.addAll(getShapes());
 			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
 			List<ReactionContainerShape> reactionContainerShapeList = 
 				new ArrayList<ReactionContainerShape>();
@@ -166,7 +167,7 @@ public class ReactionCartoon extends ModelCartoon {
 						membraneShape.setStructureSuite(structureSuite);
 					}
 					membraneShape.refreshLabel();
-					membraneShape.setDirty(false);
+					unwantedShapes.remove(membraneShape);
 					reactionContainerShapeList.add(membraneShape);
 				}else if (structure instanceof Feature){
 					Feature feature = (Feature) structure;
@@ -181,7 +182,7 @@ public class ReactionCartoon extends ModelCartoon {
 						featureShape.setStructureSuite(structureSuite);
 					}
 					featureShape.refreshLabel();
-					featureShape.setDirty(false);
+					unwantedShapes.remove(featureShape);
 					reactionContainerShapeList.add(featureShape);
 				}
 			}
@@ -192,7 +193,7 @@ public class ReactionCartoon extends ModelCartoon {
 				containerShape.setReactionContainerShapeList(reactionContainerShapeList);
 			}
 			containerShape.refreshLabel();
-			containerShape.setDirty(false);
+			unwantedShapes.remove(containerShape);
 			// add all species context shapes within the structures
 			for(Structure structure : getStructureSuite().getStructures()) {
 				ReactionContainerShape reactionContainerShape = 
@@ -212,7 +213,7 @@ public class ReactionCartoon extends ModelCartoon {
 						ss.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 					}
 					ss.refreshLabel();
-					ss.setDirty(false);
+					unwantedShapes.remove(ss);
 				}
 			}
 			// add all reactionSteps that are in this structure (ReactionContainerShape), and draw the lines
@@ -251,7 +252,7 @@ public class ReactionCartoon extends ModelCartoon {
 						reactionContainerShape.addChildShape(reactionStepShape);
 					}
 					reactionStepShape.refreshLabel();
-					reactionStepShape.setDirty(false);
+					unwantedShapes.remove(reactionStepShape);
 					// add reaction participants as edges
 					for(ReactionParticipant participant : reactionStep.getReactionParticipants()) {
 						participant.removePropertyChangeListener(this);
@@ -277,7 +278,7 @@ public class ReactionCartoon extends ModelCartoon {
 										reactionContainerShape.getRandomPosition());
 							}
 							speciesContextShape.refreshLabel();
-							speciesContextShape.setDirty(false);
+							unwantedShapes.remove(speciesContextShape);
 							ReactionParticipantShape reactionParticipantShape = 
 								(ReactionParticipantShape) getShapeFromModelObject(participant);
 							if (reactionParticipantShape == null) {
@@ -306,21 +307,13 @@ public class ReactionCartoon extends ModelCartoon {
 							if(!containerShape.getChildren().contains(reactionParticipantShape)) {
 								containerShape.addChildShape(reactionParticipantShape);								
 							}
-							reactionParticipantShape.setDirty(false);
+							unwantedShapes.remove(reactionParticipantShape);
 							reactionParticipantShape.refreshLabel();
 						}
 					}
 				}
 			}
-			List<Shape> deleteList = new ArrayList<Shape>();
-			for(Shape shape : getShapes()) {
-				if (shape.isDirty()) {
-					deleteList.add(shape);
-				}
-			}
-			for(Shape shape : deleteList) {
-				removeShape(shape);
-			}
+			for(Shape unwantedShape : unwantedShapes) { removeShape(unwantedShape); }
 			// update diagrams
 			for(Structure structure : structureSuite.getStructures()) {
 				Diagram diagram = getModel().getDiagram(structure);

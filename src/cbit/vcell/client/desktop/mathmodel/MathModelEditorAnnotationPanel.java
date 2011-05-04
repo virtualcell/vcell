@@ -1,34 +1,19 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.border.EmptyBorder;
-
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.Version;
-
-import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 /**
  * Insert the type's description here.
@@ -110,13 +95,13 @@ private void initialize() {
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
  */
-public static void main(java.lang.String[] args) {
+public static void main(String[] args) {
 	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
+		JFrame frame = new JFrame();
 		MathModelEditorAnnotationPanel aEditSpeciesPanel = new MathModelEditorAnnotationPanel();
 		frame.add(aEditSpeciesPanel);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			};
 		});

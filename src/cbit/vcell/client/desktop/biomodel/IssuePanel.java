@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,7 +12,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -34,7 +32,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
@@ -120,13 +117,11 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
 						}else {
 							boolean bInMathModelEditor = false;
-							boolean bInBioModelEditor = false;
 							for (Component c = IssuePanel.this; c != null; c = c.getParent()) {
 								if (c instanceof MathModelEditor) {
 									bInMathModelEditor = true;
 									break;
 								} else if (c instanceof BioModelEditor) {
-									bInBioModelEditor = true;
 									break;
 								}
 							}
