@@ -1,7 +1,5 @@
 package cbit.vcell.client;
 
-import java.awt.Cursor;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
@@ -14,7 +12,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ZEnforcer;
@@ -244,6 +241,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 				VCDocument newStartupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
 				hashTable.put("startupDoc",newStartupDoc);
 			}
+			DocumentWindowAboutBox.parseVCellVersion();
 		}
 	};
 	AsynchClientTask task2  = new AsynchClientTask("Creating GUI", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -255,18 +253,19 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
-		}
-	};
-	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", clientServerInfo.getUsername() == null ? AsynchClientTask.TASKTYPE_SWING_BLOCKING : AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {		
-			DocumentWindowAboutBox.parseVCellVersion();
-			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-		    // try server connection
 		    if (clientServerInfo.getUsername() == null) {
 			    // we were not supplied login credentials; pop-up dialog
 		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo, currWindowManager);
-		    } else {
-				vcellClient.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
+		    }
+		}
+	};
+	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+		    // try server connection
+		    if (clientServerInfo.getUsername() != null) {
+		    	DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
+			    // we were not supplied login credentials; pop-up dialog
+		    	vcellClient.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
 		    }
 		}
 	}; 	
