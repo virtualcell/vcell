@@ -10,12 +10,13 @@ import java.util.List;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BiochemicalReaction;
 import org.vcell.pathway.Catalysis;
-import org.vcell.pathway.Complex;
 import org.vcell.pathway.ComplexAssembly;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.Degradation;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.pathway.Transport;
 import org.vcell.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
@@ -23,6 +24,7 @@ import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -42,12 +44,17 @@ public class PathwayMapping {
 			if(conversionTableRow.getBioPaxObject() instanceof PhysicalEntity){
 				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
-			}else if(conversionTableRow.getBioPaxObject() instanceof BiochemicalReaction){
+			}else if(conversionTableRow.getBioPaxObject() instanceof BiochemicalReaction){ // Conversion : BiochemicalReaction
 				createReactionStepFromTableRow(bioModel, (BiochemicalReaction)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
-			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){
+			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){ // Conversion : ComplexAssembly
 				createReactionStepFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
+			}else if(conversionTableRow.getBioPaxObject() instanceof Transport){ // Conversion : Transport
+				createReactionStepFromTableRow(bioModel, (Transport)conversionTableRow.getBioPaxObject(),
+						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
+			}else if(conversionTableRow.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
+				// to do
 			}
 		}
 	}
@@ -253,6 +260,41 @@ public class PathwayMapping {
 			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
+		}else{
+//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
+		// add missing parts for the existing reactionStep
+			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(safeId), bioPaxObject);
+			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+			createReactionStep( bioModel, bioModel.getModel().getReactionStep(safeId), newRelationship, participants);
+		}
+	}
+	
+	private void createReactionStepFromTableRow(BioModel bioModel, Transport bioPaxObject,
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+	{
+		// use user defined id as the name of the reaction name
+		String safeId = getSafetyName(id);
+		String bioPaxName;
+		if(bioPaxObject.getName().size() == 0 ){
+			bioPaxName = bioPaxObject.getID();
+		}else{
+			bioPaxName = bioPaxObject.getName().get(0);
+		}
+		// get participants from table rows
+		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
+		for(ConversionTableRow ctr : conversionTableRows){
+			if(ctr.interactionName().equals(bioPaxName)){
+				participants.add(ctr);
+			}
+		}
+		// create reaction object
+		if(bioModel.getModel().getReactionStep(safeId) == null){
+			// create a new reactionStep object
+			FluxReaction fluxReactionStep = bioModel.getModel().createFluxReaction((Membrane)bioModel.getModel().getStructure(location));
+			fluxReactionStep.setName(safeId);
+			RelationshipObject newRelationship = new RelationshipObject(fluxReactionStep, bioPaxObject);
+			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+			createReactionStep( bioModel, fluxReactionStep, newRelationship, participants);
 		}else{
 //			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 		// add missing parts for the existing reactionStep

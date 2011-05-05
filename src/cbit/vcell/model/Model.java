@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1380,6 +1381,18 @@ public Membrane getMembrane(Feature feature1, Feature feature2){
 	}
 	return null;
 }
+//wei's code
+public ArrayList<Membrane> getMembranes(){
+	ArrayList<Membrane> membranes = new ArrayList<Membrane>();
+	for (int i = 0; i < fieldStructures.length; i++) {
+		if (fieldStructures[i] instanceof Membrane){
+			membranes.add( (Membrane)fieldStructures[i]);
+			
+		}
+	}
+	return membranes;
+}
+// done
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Feature
