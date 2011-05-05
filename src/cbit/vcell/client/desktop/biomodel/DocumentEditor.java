@@ -644,7 +644,7 @@ public void updateConnectionStatus(ConnectionStatus newValue) {
 	}
 	connectionStatus = newValue;
 	databaseWindowPanel.updateConnectionStatus(connectionStatus);
-	if (connectionStatus.getStatus() != ConnectionStatus.INITIALIZING) {
+	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
 		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
 	}
 }
