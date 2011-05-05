@@ -24,14 +24,14 @@ public class ZEnforcer {
 	private static Vector<Window> windowStack = new Vector<Window>();
 	private static WindowAdapter listener = new WindowAdapter() {
 		public void windowDeactivated(WindowEvent evt) {
-			if (evt.getWindow() == topWindow()) {
-				evt.getWindow().toFront();
-			}
+//			if (evt.getWindow() == topWindow()) {
+//				evt.getWindow().toFront();
+//			}
 		}
 		public void windowIconified(WindowEvent evt) {
-			if (evt.getWindow() == topWindow()) {
-				evt.getWindow().setVisible(true);
-			}
+//			if (evt.getWindow() == topWindow()) {
+//				evt.getWindow().setVisible(true);
+//			}
 		}
 		public void windowClosed(WindowEvent evt) {
 			removeFromStack(evt.getWindow());
