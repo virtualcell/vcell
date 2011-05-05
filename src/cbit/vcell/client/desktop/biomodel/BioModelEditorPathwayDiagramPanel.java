@@ -49,6 +49,7 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.pathway.Transport;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
@@ -175,17 +176,32 @@ implements PathwayEditor, ActionBuilder.Generator {
 			return;
 		}
 		String warningMessage = "";
+		String warningMessage2 = "";
 		int warningCount = 0;
+		int warningCount2 = 0;
 		String infoMessage = "";
 		ArrayList <BioPaxObject> importedBPObjects = new ArrayList <BioPaxObject>();
 		
 		warningMessage = "The following pathway object(s) have been associated with object(s) in the physiology model:\n";
+		warningMessage2 = "The following transport reaction(s) will NOT be converted to the physiology model:\n";
 		warningCount = 0;
+		warningCount2 = 0;
+		
 		infoMessage = "The following pathway object(s) have been coverted in the physiology model:\n\n";
+		
+		boolean hasMembrane = false;
+		if(bioModel.getModel().getMembranes().size() > 0)
+			hasMembrane = true;
 		
 		for(BioPaxObject bpo : getSelectedBioPaxObjects()){
 			  if(bpo instanceof Conversion){
-				  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
+				  if(bpo instanceof Transport && !hasMembrane){
+					  warningCount2 ++;
+					  if(((Conversion)bpo).getName().size() > 0)
+						  warningMessage2 += "\nTransport: \'" + ((Conversion)bpo).getName().get(0) + "\'\n";
+					  else 
+						  warningMessage2 += "\nTransport: \'" + ((Conversion)bpo).getID() + "\'\n";
+				  }else if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
 					  importedBPObjects.add(bpo);
 				  }else{
 					  warningCount ++;
@@ -213,7 +229,18 @@ implements PathwayEditor, ActionBuilder.Generator {
 			  }	  
 		}
 		
+		// create import panel
+		if (conversionPanel == null) {
+			conversionPanel = new ConversionPanel();
+			conversionPanel.setBioModel(bioModel);
+			conversionPanel.setSelectionManager(getSelectionManager());
+		}				
+		
 		// show warning message 
+		warningMessage2 += "\nNO membrane structures available in the physiology model.\n";
+		if(warningCount2 > 0){
+			  DialogUtils.showWarningDialog(conversionPanel, warningMessage2);
+		  }
 		warningMessage += "\nThey will NOT be converted to the physiology model.\n";
 		  if(warningCount > 0){
 			  DialogUtils.showWarningDialog(conversionPanel, warningMessage);
@@ -222,13 +249,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if(importedBPObjects.size() == 0){
 			return;
 		}
-		// create import panel
-		if (conversionPanel == null) {
-			conversionPanel = new ConversionPanel();
-			conversionPanel.setBioModel(bioModel);
-			conversionPanel.setSelectionManager(getSelectionManager());
-		}		
-		conversionPanel.setBioPaxObjects(getSelectedBioPaxObjects());
+		
+		// set the selected objects to be the validly imported biopaxObject set
+		conversionPanel.setBioPaxObjects(importedBPObjects);
+
 		int returnCode = DialogUtils.showComponentOKCancelDialog(this, conversionPanel, "Import into Physiology");
 		if (returnCode == JOptionPane.OK_OPTION) {
 			PathwayMapping pathwayMapping = new PathwayMapping();
@@ -237,10 +261,6 @@ implements PathwayEditor, ActionBuilder.Generator {
 				// function I:
 				// pass the table rows that contains user edited values to create Vcell object
 				pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, conversionPanel.getTableRows());
-				// function II:
-				// pass the bioPax objects to generate Vcell objects
-				// pathwayMapping.createBioModelEntitiesFromBioPaxObjects(bioModel, tableModel.getBioPaxObjects().toArray());
-				// show import info
 				for(BioPaxObject bpo : importedBPObjects){
 					  if(bpo instanceof Conversion){
 							  infoMessage += "Reaction: \t\'";
