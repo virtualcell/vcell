@@ -278,9 +278,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 				}
 				DialogUtils.showInfoDialog(this, infoMessage);
 				
+				// jump the view to reaction diagram panel
 				if (selectionManager != null){
 					selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
-			//							selectionManager.setSelectedObjects(new Object[]{selectedBioPaxObjects});
 				}
 			}catch(Exception e)
 			{
