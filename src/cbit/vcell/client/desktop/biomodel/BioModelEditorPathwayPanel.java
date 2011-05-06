@@ -24,6 +24,9 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
@@ -109,6 +112,11 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			}
 		}
 		bioModel.getPathwayModel().merge(selectedPathwayModel);
+		
+		// jump the view to pathway diagram panel
+		if (selectionManager != null){
+			selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
+		}
 	}
 
 	private void initialize() {
