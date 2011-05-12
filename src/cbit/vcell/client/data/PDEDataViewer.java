@@ -120,6 +120,7 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
@@ -140,6 +141,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.visit.VCellVisitUtils;
 import cbit.vcell.visit.VisitControlPanel;
 import cbit.vcell.visit.VisitSession;
 /**
@@ -1303,6 +1305,16 @@ private ExportMonitorPanel getExportMonitorPanel1() {
 
 private void openInVisit() {
 	try {
+		
+//		if (!VCellVisitUtils.checkVisitResourcePrerequisites(this,"visit2_2_2"))   //This should be a property
+//		{
+//			System.out.println("VCellVisitUtils.checkVisitResourcePrerequisites returned false, meaning prerequisite tests failed");
+//			return; //return without opening Visit or VisitControlPanel
+//			
+//		}
+//		
+//		System.out.println("Visit prerequisites tests passed");
+		
 		 /*
 		 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
 		 if vcDId instanceOf VCSim
@@ -1326,7 +1338,18 @@ private void openInVisit() {
 		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
 		
 		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
-		String visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
+		//
+		String visitBinDirProp = null;
+		if (ResourceUtil.osname == "mac" || ResourceUtil.osname == "linux") {
+		
+			visitBinDirProp = new File(ResourceUtil.getVcellHome(),"visit2_2_2/bin").getCanonicalPath();    //TODO: Replace visit2_2_2 with property of latest VCell supported version
+		}
+		else {
+				visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
+		}
+		
+		System.out.println("visitBinDirProp = " + visitBinDirProp);
+		
 		if (visitBinDirProp != null && (new File(visitBinDirProp,"visit.exe").exists()|| new File(visitBinDirProp,"visit").exists())) {
 			visitBinDir=visitBinDirProp;
 		}else {
@@ -1700,6 +1723,7 @@ private javax.swing.JPopupMenu getPlotPopupMenu() {
 			handleException(ivjExc);
 		}
 	}
+	
 	return plotPopupMenu;
 }
 
