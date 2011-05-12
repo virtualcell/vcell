@@ -141,7 +141,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
-import cbit.vcell.visit.VCellVisitUtils;
+//import cbit.vcell.visit.VCellVisitUtils;
 import cbit.vcell.visit.VisitControlPanel;
 import cbit.vcell.visit.VisitSession;
 /**
@@ -1018,7 +1018,8 @@ private void roiAction(){
 						{
 							ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
 						}
-						else //this is added to show progress dialog on top for vfrap 
+						else //this is added to show progress dialog on top for vfrap ring simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
+							
 						{
 							ClientTaskDispatcher.dispatch(PDEDataViewer.this,hash,new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
 						}
