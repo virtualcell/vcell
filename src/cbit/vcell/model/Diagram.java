@@ -1,41 +1,59 @@
 package cbit.vcell.model;
 
-/*�
+/*
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-�*/
-import java.util.*;
+ */
 
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-/**
- * This type was created in VisualAge.
- */
-// TODO should it be serializable?
+
 @SuppressWarnings("serial")
-public class Diagram implements java.io.Serializable, Matchable {
-	private Vector<NodeReference> nodeList = new Vector<NodeReference>();
-	private Structure structure = null;
+public class Diagram implements Serializable, Matchable {
+	
+	public static interface Key { }
+	
+	public static class StructureKey implements Key {
+		
+		protected final Structure structure;
+		
+		public StructureKey(Structure structure) { this.structure = structure; }
+		
+		public Structure getStructure() { return structure; }
+
+		@Override
+		public boolean equals(Object object) {
+			return (object instanceof StructureKey) && 
+			(((StructureKey) object).getStructure().equals(structure));
+		}
+		
+		@Override
+		public int hashCode() { return structure.hashCode(); }
+		
+	}
+	
+	private List<NodeReference> nodeList = new ArrayList<NodeReference>();
+	private StructureKey key = null;
 	private String name = null;
-	/**
-	 * Diagram constructor comment.
-	 */
+
 	public Diagram(Structure structure, String aName) {
-		this.structure = structure;
+		this.key = new StructureKey(structure);
 		this.name = aName;
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @param nodeRef cbit.vcell.model.NodeReference
-	 */
+	
+	public StructureKey getKey() { return key; }
+
 	private void addNodeReference(NodeReference nodeRef) {
-		nodeList.addElement(nodeRef);
+		nodeList.add(nodeRef);
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @return boolean
-	 * @param object java.lang.Object
-	 */
+
 	public boolean compareEqual(Matchable object) {
 
 		Diagram diagram = null;
@@ -52,7 +70,7 @@ public class Diagram implements java.io.Serializable, Matchable {
 			return false;
 		}
 
-		if (!Compare.isEqual(structure,diagram.structure)){
+		if (!Compare.isEqual(key.getStructure(), diagram.key.getStructure())){
 			return false;
 		}
 
@@ -62,11 +80,8 @@ public class Diagram implements java.io.Serializable, Matchable {
 
 		return true;
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @param tokens java.util.StringTokenizer
-	 */
-	public void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws Exception {
+
+	public void fromTokens(CommentStringTokenizer tokens) throws Exception {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCMODL.Diagram)){
 			token = tokens.nextToken();  // get StructureName (and discard)
@@ -117,32 +132,19 @@ public class Diagram implements java.io.Serializable, Matchable {
 			throw new Exception("Diagram.fromTokens(), unexpected identifier "+token);
 		}	
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @return java.lang.String
-	 */
+
 	public String getName() {
 		return name;
 	}
-	/**
-	 * This method returns the content of nodeList.
-	 * Creation date: (2/27/2001 5:24:31 PM)
-	 * @return java.util.Vector
-	 */
-	public Vector<NodeReference> getNodeList() {
+
+	public List<NodeReference> getNodeList() {
 		return nodeList;
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @return cbit.vcell.model.Structure
-	 */
+
 	public Structure getStructure() {
-		return structure;
+		return key.getStructure();
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @return java.lang.String
-	 */
+
 	public String getVCML() {
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
 		java.io.PrintWriter pw = new java.io.PrintWriter(stringWriter);
@@ -151,65 +153,39 @@ public class Diagram implements java.io.Serializable, Matchable {
 		pw.close();
 		return stringWriter.getBuffer().toString();
 	}
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (4/14/2003 4:11:58 PM)
-	 * @param oldName java.lang.String
-	 * @param newName java.lang.String
-	 */
+
 	public void renameNode(String oldName, String newName) {
-		for (int i = 0; i < nodeList.size(); i++){
-			NodeReference nodeRef = nodeList.elementAt(i);
+		for(NodeReference nodeRef : nodeList) {
 			if (nodeRef.getName().equals(oldName)){
 				nodeRef.setName(newName);
 			}
 		}
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @param name java.lang.String
-	 */
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (4/25/01 11:32:06 AM)
-	 * @param nodeReferences cbit.vcell.model.NodeReference[]
-	 */
+
 	public void setNodeReferences(NodeReference[] nodeReferences) {
 		nodeList.clear();
 		nodeList.addAll(Arrays.asList(nodeReferences));
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @param structure cbit.vcell.model.Structure
-	 */
+
 	public void setStructure(Structure structure) {
-		this.structure = structure;
+		this.key = new StructureKey(structure);
 	}
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (4/14/2003 5:10:07 PM)
-	 * @return java.lang.String
-	 */
+
 	@Override
 	public String toString() {
 		return "Diagram@"+Integer.toHexString(hashCode())+" for "+getStructure();
 	}
-	/**
-	 * This method was created in VisualAge.
-	 * @param pw java.io.PrintWriter
-	 */
-	public void write(java.io.PrintWriter pw) {
 
+	public void write(PrintWriter pw) {
 		pw.println(VCMODL.Diagram+" \""+getStructure().getName()+"\" { ");
-		if (nodeList.size()>0){
-			for (int i=0;i<nodeList.size();i++){
-				NodeReference node = nodeList.elementAt(i);
-				node.write(pw);
-			}
+		for(NodeReference node : nodeList) {
+			node.write(pw);
 		}
 		pw.println("} ");
 	}
+
 }
