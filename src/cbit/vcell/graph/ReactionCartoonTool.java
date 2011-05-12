@@ -524,6 +524,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 //					showCreateSpeciesContextDialog(getGraphPane(),
 //							getReactionCartoon().getModel(),
 //							((ReactionContainerShape) pickedShape).getStructure(), scShapeLocation);
+					saveDiagram();
 				}
 			}
 			default:
@@ -1229,6 +1230,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						}
 					}
 				}
+				saveDiagram();
 				break;
 			}
 			case LINECATALYST: {
@@ -1341,6 +1343,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						getGraphPane().repaint();
 					}
 				}
+				saveDiagram();
 				break;
 			}
 			default: {
