@@ -9,10 +9,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
@@ -59,9 +60,7 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JRadioButton ivjNoClampRadioButton = null;
 	private javax.swing.JRadioButton ivjVoltageClampRadioButton = null;
 	private javax.swing.ButtonGroup ivjbuttonGroup = null;
-	private javax.swing.JLabel ivjgroundElectrodeLabel = null;
 	private ElectrodePanel ivjgroundElectrodePanel = null;
-	private javax.swing.JLabel ivjpatchElectrodeLabel = null;
 	private ElectrodePanel ivjpatchElectrodePanel = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private JButton btnGraphElectricalStimulus;
@@ -770,30 +769,6 @@ private GeometryContext getgeometryContext() {
 	return ivjgeometryContext;
 }
 
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getgroundElectrodeLabel() {
-	if (ivjgroundElectrodeLabel == null) {
-		try {
-			ivjgroundElectrodeLabel = new javax.swing.JLabel();
-			ivjgroundElectrodeLabel.setName("groundElectrodeLabel");
-			ivjgroundElectrodeLabel.setText("Ground Electrode: ");
-			ivjgroundElectrodeLabel.setFont(ivjgroundElectrodeLabel.getFont().deriveFont(Font.BOLD));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjgroundElectrodeLabel;
-}
-
 /**
  * Return the ElectrodePanel property value.
  * @return cbit.vcell.mapping.gui.ElectrodePanel
@@ -852,31 +827,25 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
-			JPanel panel1 = new JPanel();
-			panel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-			panel1.add(getpatchElectrodeLabel());
-			panel1.add(getpatchElectrodePanel());
-			panel1.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			TitledBorder tb = BorderFactory.createTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Patch Electrode", TitledBorder.CENTER, TitledBorder.TOP);
+			getpatchElectrodePanel().setBorder(tb);
 
-			JPanel panel2 = new JPanel();
-			panel2.setLayout(new FlowLayout(FlowLayout.LEFT));
-			panel2.add(getgroundElectrodeLabel());
-			panel2.add(getgroundElectrodePanel());
-			panel2.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tb = BorderFactory.createTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Ground Electrode", TitledBorder.CENTER, TitledBorder.TOP);
+			getgroundElectrodePanel().setBorder(tb);
 			
 			java.awt.GridBagConstraints constraintspatchElectrodeLabel = new java.awt.GridBagConstraints();
 			constraintspatchElectrodeLabel.gridx = 0; constraintspatchElectrodeLabel.gridy = 0;
 			constraintspatchElectrodeLabel.fill = GridBagConstraints.BOTH;
 			constraintspatchElectrodeLabel.weightx = 1.0;
 			constraintspatchElectrodeLabel.insets = new Insets(0, 0, 0, 2);
-			ivjJPanel2.add(panel1, constraintspatchElectrodeLabel);
+			ivjJPanel2.add(getpatchElectrodePanel(), constraintspatchElectrodeLabel);
 
 			java.awt.GridBagConstraints constraintsgroundElectrodeLabel = new java.awt.GridBagConstraints();
 			constraintsgroundElectrodeLabel.gridx = 1; constraintsgroundElectrodeLabel.gridy = 0;
 			constraintsgroundElectrodeLabel.fill = GridBagConstraints.BOTH;
 			constraintsgroundElectrodeLabel.insets = new Insets(0, 2, 0, 0);
 			constraintsgroundElectrodeLabel.weightx = 1.0;
-			ivjJPanel2.add(panel2, constraintsgroundElectrodeLabel);
+			ivjJPanel2.add(getgroundElectrodePanel(), constraintsgroundElectrodeLabel);
 			 
 			GridBagConstraints gbc_btnGraphElectricalStimulus = new GridBagConstraints();
 			gbc_btnGraphElectricalStimulus.insets = new Insets(10, 4, 4, 4);
@@ -920,24 +889,6 @@ private javax.swing.JRadioButton getNoClampRadioButton() {
 		}
 	}
 	return ivjNoClampRadioButton;
-}
-
-/**
- * Return the JLabel1 property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getpatchElectrodeLabel() {
-	if (ivjpatchElectrodeLabel == null) {
-		try {
-			ivjpatchElectrodeLabel = new javax.swing.JLabel();
-			ivjpatchElectrodeLabel.setName("patchElectrodeLabel");
-			ivjpatchElectrodeLabel.setText("Patch Electrode: ");
-			ivjpatchElectrodeLabel.setFont(ivjpatchElectrodeLabel.getFont().deriveFont(Font.BOLD));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjpatchElectrodeLabel;
 }
 
 /**
