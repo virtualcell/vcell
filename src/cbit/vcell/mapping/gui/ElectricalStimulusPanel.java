@@ -1,6 +1,6 @@
 package cbit.vcell.mapping.gui;
 
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -10,8 +10,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
@@ -53,51 +59,28 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext ivjsimulationContext1 = null;
 	private ElectricalStimulusParameterTableModel ivjelectricalStimulusParameterTableModel = null;
-	private javax.swing.JRadioButton ivjTotalCurrentClampRadioButton = null;
-	private javax.swing.JRadioButton ivjCurrentDensityClampRadioButton = null;
 	private GeometryContext ivjgeometryContext = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JRadioButton ivjNoClampRadioButton = null;
-	private javax.swing.JRadioButton ivjVoltageClampRadioButton = null;
-	private javax.swing.ButtonGroup ivjbuttonGroup = null;
 	private ElectrodePanel ivjgroundElectrodePanel = null;
 	private ElectrodePanel ivjpatchElectrodePanel = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private JButton btnGraphElectricalStimulus;
 	private TimeFunctionPanel timeFunctionPanel = null;
-	private javax.swing.JLabel ivjJLabel2 = null;
+	private JComboBox clampComboBox;
+	
+	private enum Clamp {
+		No_Clamp("No Clamp"),
+		Voltage_Clamp("Voltage Clamp"),
+		Total_Current_Clamp("Total Current Clamp"),
+		Current_Density_Clamp("Current Density Clamp");
+		
+		String title;
+		Clamp(String t) {
+			title = t;
+		}
+	}
 
-	private class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
-		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == ElectricalStimulusPanel.this.getNoClampRadioButton()) {
-				try {
-					ElectricalStimulusPanel.this.newStimulus(e);
-				} catch (java.lang.Throwable ivjExc) {
-					handleException(ivjExc);
-				}
-			}
-			if (e.getSource() == ElectricalStimulusPanel.this.getVoltageClampRadioButton()) {
-				try {
-					ElectricalStimulusPanel.this.newStimulus(e);
-				} catch (java.lang.Throwable ivjExc) {
-					handleException(ivjExc);
-				}
-			}
-			if (e.getSource() == ElectricalStimulusPanel.this.getTotalCurrentClampRadioButton()) {
-				try {
-					ElectricalStimulusPanel.this.newStimulus(e);
-				} catch (java.lang.Throwable ivjExc) {
-					handleException(ivjExc);
-				}
-			}
-			if (e.getSource() == ElectricalStimulusPanel.this.getCurrentDensityClampRadioButton()) {
-				try {
-					ElectricalStimulusPanel.this.newStimulus(e);
-				} catch (java.lang.Throwable ivjExc) {
-					handleException(ivjExc);
-				}
-			}
-		};
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ElectricalStimulusPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
 				connPtoP1SetTarget();
@@ -121,6 +104,12 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 				connEtoM19(evt);
 			if (evt.getSource() == ElectricalStimulusPanel.this.getsimulationContext1() && (evt.getPropertyName().equals("model"))) 
 				connEtoM21(evt);
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == clampComboBox) {
+				newStimulus();
+			}
+			
 		};
 	};
 
@@ -141,7 +130,7 @@ private void connEtoC1(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.setRadioButtons(getsimulationContext1());
+		this.setClamp(getsimulationContext1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -162,7 +151,7 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		if ((getsimulationContext1() != null)) {
-			this.setRadioButtons(getsimulationContext1());
+			this.setClamp(getsimulationContext1());
 		}
 		// user code begin {2}
 		// user code end
@@ -183,7 +172,7 @@ private void connEtoC3() {
 		// user code begin {1}
 		// user code end
 		if ((getsimulationContext1() != null)) {
-			this.setRadioButtons(getsimulationContext1());
+			this.setClamp(getsimulationContext1());
 		}
 		// user code begin {2}
 		// user code end
@@ -642,74 +631,6 @@ private void connPtoP1SetTarget() {
 	}
 }
 
-
-/**
- * Return the buttonGroup property value.
- * @return javax.swing.ButtonGroup
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ButtonGroup getbuttonGroup() {
-	if (ivjbuttonGroup == null) {
-		try {
-			ivjbuttonGroup = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjbuttonGroup;
-}
-
-
-/**
- * Return the CurrentClampRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getTotalCurrentClampRadioButton() {
-	if (ivjTotalCurrentClampRadioButton == null) {
-		try {
-			ivjTotalCurrentClampRadioButton = new javax.swing.JRadioButton();
-			ivjTotalCurrentClampRadioButton.setName("TotalCurrentClampRadioButton");
-			ivjTotalCurrentClampRadioButton.setText("Total Current Clamp");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTotalCurrentClampRadioButton;
-}
-
-
-/**
- * Return the CurrentClampRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getCurrentDensityClampRadioButton() {
-	if (ivjCurrentDensityClampRadioButton == null) {
-		try {
-			ivjCurrentDensityClampRadioButton = new javax.swing.JRadioButton();
-			ivjCurrentDensityClampRadioButton.setName("CurrentDensityClampRadioButton");
-			ivjCurrentDensityClampRadioButton.setText("Current Density Clamp");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCurrentDensityClampRadioButton;
-}
-
-
 /**
  * Return the electricalStimulus property value.
  * @return cbit.vcell.mapping.ElectricalStimulus
@@ -800,15 +721,38 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-			ivjJPanel1.add(getJLabel2());
-			ivjJPanel1.add(getNoClampRadioButton());
-			ivjJPanel1.add(getVoltageClampRadioButton());
-			ivjJPanel1.add(getTotalCurrentClampRadioButton());
-			ivjJPanel1.add(getCurrentDensityClampRadioButton());
+			ivjJPanel1.setLayout(new BoxLayout(ivjJPanel1, BoxLayout.X_AXIS));
+			JLabel label = new javax.swing.JLabel();
+			label.setText("Electrical Stimulus:");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			
+			ivjJPanel1.add(label);
+			clampComboBox = new JComboBox();
+			for (Clamp clamp : Clamp.values()) {
+				clampComboBox.addItem(clamp);
+			}
+			clampComboBox.setRenderer(new DefaultListCellRenderer() {
+
+				@Override
+				public Component getListCellRendererComponent(JList list,
+						Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected,
+							cellHasFocus);
+					if (value instanceof Clamp) {
+						setText(((Clamp) value).title);
+					}
+					return this;
+				}
+				
+			});
+			ivjJPanel1.add(Box.createHorizontalStrut(4));
+			ivjJPanel1.add(clampComboBox);
+			
+			ivjJPanel1.add(Box.createHorizontalGlue());
+			ivjJPanel1.add(getBtnGraphElectricalStimulus());
+
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -847,48 +791,19 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsgroundElectrodeLabel.weightx = 1.0;
 			ivjJPanel2.add(getgroundElectrodePanel(), constraintsgroundElectrodeLabel);
 			 
-			GridBagConstraints gbc_btnGraphElectricalStimulus = new GridBagConstraints();
-			gbc_btnGraphElectricalStimulus.insets = new Insets(10, 4, 4, 4);
-			gbc_btnGraphElectricalStimulus.gridx = 0;
-			gbc_btnGraphElectricalStimulus.gridy = 3;
-			gbc_btnGraphElectricalStimulus.gridwidth = 2;
-			ivjJPanel2.add(getBtnGraphElectricalStimulus(), gbc_btnGraphElectricalStimulus);
-
 			java.awt.GridBagConstraints constraintsparameterTable = new java.awt.GridBagConstraints();
-			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 4;
+			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 1;
 			constraintsparameterTable.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsparameterTable.gridwidth = 2;
 			constraintsparameterTable.weightx = 1.0;
 			constraintsparameterTable.weighty = 1.0;
-			constraintsparameterTable.insets = new java.awt.Insets(0, 4, 4, 4);
+			constraintsparameterTable.insets = new java.awt.Insets(4, 2, 2, 2);
 			ivjJPanel2.add(getScrollPaneTable().getEnclosingScrollPane(), constraintsparameterTable);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return ivjJPanel2;
-}
-
-/**
- * Return the NoClampRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getNoClampRadioButton() {
-	if (ivjNoClampRadioButton == null) {
-		try {
-			ivjNoClampRadioButton = new javax.swing.JRadioButton();
-			ivjNoClampRadioButton.setName("NoClampRadioButton");
-			ivjNoClampRadioButton.setText("No Clamp");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjNoClampRadioButton;
 }
 
 /**
@@ -951,30 +866,6 @@ private SimulationContext getsimulationContext1() {
 	return ivjsimulationContext1;
 }
 
-
-/**
- * Return the VoltageClampRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getVoltageClampRadioButton() {
-	if (ivjVoltageClampRadioButton == null) {
-		try {
-			ivjVoltageClampRadioButton = new javax.swing.JRadioButton();
-			ivjVoltageClampRadioButton.setName("VoltageClampRadioButton");
-			ivjVoltageClampRadioButton.setText("Voltage Clamp");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjVoltageClampRadioButton;
-}
-
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -996,30 +887,9 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	getNoClampRadioButton().addItemListener(ivjEventHandler);
-	getVoltageClampRadioButton().addItemListener(ivjEventHandler);
-	getTotalCurrentClampRadioButton().addItemListener(ivjEventHandler);
-	getCurrentDensityClampRadioButton().addItemListener(ivjEventHandler);
+	clampComboBox.addActionListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
-}
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Electrical Stimulus:");
-			ivjJLabel2.setFont(ivjJLabel2.getFont().deriveFont(Font.BOLD));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
 }
 
 /**
@@ -1051,10 +921,6 @@ private void initialize() {
 		
 		initConnections();
 		connEtoM7();
-		getbuttonGroup().add(getNoClampRadioButton());
-		getbuttonGroup().add(getVoltageClampRadioButton());
-		getbuttonGroup().add(getTotalCurrentClampRadioButton());
-		getbuttonGroup().add(getCurrentDensityClampRadioButton());
 		connEtoC3();
 
 	} catch (java.lang.Throwable ivjExc) {
@@ -1091,7 +957,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void newStimulus(java.awt.event.ItemEvent itemEvent) {
+private void newStimulus() {
 	try {
 		SimulationContext simContext = getSimulationContext();
 		if (simContext == null){
@@ -1113,46 +979,43 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		// ignore selection if already selected
 		// warn upon deselect if about to loose edits
 		//
-		if (itemEvent.getStateChange() == java.awt.event.ItemEvent.SELECTED){
-			if (currElectricalStimulus instanceof VoltageClampStimulus){
-				if (itemEvent.getSource()==getVoltageClampRadioButton()){
-					return;
-				}else{
-					String response = PopupGenerator.showWarningDialog(this,"warning: the present voltage clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
-					if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
-						getVoltageClampRadioButton().setSelected(true); // revert back to Voltage Clamp
-						return;
-					}
-				}
-			}
-			if (currElectricalStimulus instanceof TotalCurrentClampStimulus){
-				if (itemEvent.getSource()==getTotalCurrentClampRadioButton()) {
-					return;
-				}else{
-					String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
-					if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
-						getTotalCurrentClampRadioButton().setSelected(true); // revert back to Current Clamp
-						return;
-					}
-				}
-			}
-			if (currElectricalStimulus instanceof CurrentDensityClampStimulus){
-				if (itemEvent.getSource()==getCurrentDensityClampRadioButton()) {
-					return;
-				}else{
-					String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
-					if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
-						getCurrentDensityClampRadioButton().setSelected(true); // revert back to Current Clamp
-						return;
-					}
-				}
-			}
-			if (currElectricalStimulus == null && itemEvent.getSource()==getNoClampRadioButton()){
+		Clamp selectedClamp = (Clamp) clampComboBox.getSelectedItem();
+		if (currElectricalStimulus instanceof VoltageClampStimulus){
+			if (selectedClamp == Clamp.Voltage_Clamp){
+				return;
+			} 
+			
+			String response = PopupGenerator.showWarningDialog(this,"warning: the present voltage clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
+			if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
+				clampComboBox.setSelectedItem(Clamp.Voltage_Clamp); // revert back to Voltage Clamp
 				return;
 			}
-		}else{
-			return;
 		}
+		if (currElectricalStimulus instanceof TotalCurrentClampStimulus){
+			if (selectedClamp == Clamp.Total_Current_Clamp) {
+				return;
+			}
+			String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
+			if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
+				clampComboBox.setSelectedItem(Clamp.Total_Current_Clamp); // revert back to Current Clamp
+				return;
+			}			
+		}
+		
+		if (currElectricalStimulus instanceof CurrentDensityClampStimulus){
+			if (selectedClamp == Clamp.Current_Density_Clamp) {
+				return;
+			}
+			String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
+			if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
+				clampComboBox.setSelectedItem(Clamp.Current_Density_Clamp); // revert back to Current Clamp
+				return;
+			}			
+		}
+		
+		if (currElectricalStimulus == null && selectedClamp == Clamp.No_Clamp){
+			return;
+		}		
 
 		Feature topFeature = simContext.getModel().getTopFeature();
 		Feature innerFeature = topFeature; // start here, but look for inner feature
@@ -1172,7 +1035,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		//
 		// selected "Total Current Clamp Stimulus"
 		//
-		if (itemEvent.getSource()==getTotalCurrentClampRadioButton()){
+		if (selectedClamp==Clamp.Total_Current_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof TotalCurrentClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
 				TotalCurrentClampStimulus ccStimulus = new TotalCurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
@@ -1184,7 +1047,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		//
 		// selected "Current Density Clamp Stimulus"
 		//
-		if (itemEvent.getSource()==getCurrentDensityClampRadioButton()){
+		if (selectedClamp==Clamp.Current_Density_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof CurrentDensityClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
 				CurrentDensityClampStimulus ccStimulus = new CurrentDensityClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
@@ -1196,7 +1059,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		//
 		// selected "NO Electrical Stimulus"
 		//
-		if (itemEvent.getSource()==getNoClampRadioButton()){
+		if (selectedClamp==Clamp.No_Clamp){
 			if (simContext.getElectricalStimuli().length>0){
 				simContext.setElectricalStimuli(new ElectricalStimulus[0]);
 			}
@@ -1204,7 +1067,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		//
 		// selected "Voltage Clamp Stimulus"
 		//
-		if (itemEvent.getSource()==getVoltageClampRadioButton()){
+		if (selectedClamp==Clamp.Voltage_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof VoltageClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
 				VoltageClampStimulus vcStimulus = new VoltageClampStimulus(probeElectrode,"vcElectrode",new Expression(0.0), simContext);
@@ -1297,15 +1160,15 @@ private void setPanelsVisible() {
 /**
  * Comment
  */
-public void setRadioButtons(SimulationContext arg1) {
+private void setClamp(SimulationContext arg1) {
 	if (arg1==null || arg1.getElectricalStimuli()==null || arg1.getElectricalStimuli().length==0){
-		getNoClampRadioButton().setSelected(true);
+		clampComboBox.setSelectedItem(Clamp.No_Clamp);
 	}else if (arg1.getElectricalStimuli()[0] instanceof TotalCurrentClampStimulus){
-		getTotalCurrentClampRadioButton().setSelected(true);
+		clampComboBox.setSelectedItem(Clamp.Total_Current_Clamp);
 	}else if (arg1.getElectricalStimuli()[0] instanceof CurrentDensityClampStimulus){
-		getCurrentDensityClampRadioButton().setSelected(true);
+		clampComboBox.setSelectedItem(Clamp.Current_Density_Clamp);
 	}else if (arg1.getElectricalStimuli()[0] instanceof VoltageClampStimulus){
-		getVoltageClampRadioButton().setSelected(true);
+		clampComboBox.setSelectedItem(Clamp.Voltage_Clamp);
 	}
 }
 
