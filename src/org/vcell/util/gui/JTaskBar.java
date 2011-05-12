@@ -171,7 +171,7 @@ public class JTaskBar extends JPanel {
 	public JTaskBar(final JDesktopPane desktop) {
 		super();
 		setLayout(new EqualSizesLayout(EqualSizesLayout.LEFT, 0));
-		setBackground(desktop.getBackground());
+		setBackground(desktop.getBackground().darker());
 		setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createEtchedBorder(EtchedBorder.RAISED), BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)));
 		this.buttonGroup = new ButtonGroup();

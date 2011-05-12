@@ -1,9 +1,7 @@
 package cbit.vcell.mapping.gui;
 
-import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.util.Vector;
-
-import org.vcell.util.Coordinate;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
@@ -16,6 +14,7 @@ import cbit.vcell.model.Structure;
  * Creation date: (4/18/2002 9:29:41 AM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class ElectrodePanel extends javax.swing.JPanel {
 	private Feature ivjFeature = null;
 	private javax.swing.JLabel ivjFeatureLabel = null;
@@ -527,20 +526,22 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsFeatureLabel = new java.awt.GridBagConstraints();
 		constraintsFeatureLabel.gridx = 0; constraintsFeatureLabel.gridy = 0;
 		constraintsFeatureLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsFeatureLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsFeatureLabel.insets = new java.awt.Insets(4, 10, 4, 4);
+		constraintsFeatureLabel.anchor = GridBagConstraints.LINE_START;
 		add(getFeatureLabel(), constraintsFeatureLabel);
 
 		java.awt.GridBagConstraints constraintsFeatureValueLabel = new java.awt.GridBagConstraints();
 		constraintsFeatureValueLabel.gridx = 1; constraintsFeatureValueLabel.gridy = 0;
-		constraintsFeatureValueLabel.gridwidth = 7;
+		constraintsFeatureValueLabel.weightx = 1.0;
 		constraintsFeatureValueLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsFeatureValueLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getFeatureValueLabel(), constraintsFeatureValueLabel);
 
 		java.awt.GridBagConstraints constraintsSetFeatureButton = new java.awt.GridBagConstraints();
-		constraintsSetFeatureButton.gridx = 8; constraintsSetFeatureButton.gridy = 0;
+		constraintsSetFeatureButton.gridx = 2; constraintsSetFeatureButton.gridy = 0;
 		constraintsSetFeatureButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsSetFeatureButton.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsSetFeatureButton.insets = new java.awt.Insets(4, 4, 4, 10);
+		constraintsSetFeatureButton.anchor = GridBagConstraints.LINE_END;
 		add(getSetFeatureButton(), constraintsSetFeatureButton);
 
 		initConnections();
