@@ -1151,6 +1151,7 @@ private void setgeometryContext(GeometryContext newValue) {
  */
 private void setPanelsVisible() {
 	boolean bHasStimulus = (getElectricalStimulus(getSimulationContext()) != null);
+	getBtnGraphElectricalStimulus().setEnabled(bHasStimulus);
 	getJPanel2().setEnabled(bHasStimulus);
 	BeanUtils.enableComponents(getJPanel2(), bHasStimulus);
 	return;
