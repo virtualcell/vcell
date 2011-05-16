@@ -26,8 +26,8 @@ import cbit.vcell.solvers.SubdomainInfo;
  */
 public class SmoldynSolver extends AbstractCompiledSolver {
 
-public SmoldynSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog);
+public SmoldynSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(simulationJob, directory, sessionLog, bMsging);
 }
 
 
@@ -96,7 +96,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simulationJob, true);
+		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simulationJob, bMessaging);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

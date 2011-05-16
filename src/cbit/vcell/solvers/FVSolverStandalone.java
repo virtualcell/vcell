@@ -25,7 +25,7 @@ import cbit.vcell.solver.SolverStatus;
  * 
  */
 public class FVSolverStandalone extends FVSolver implements Solver {
-	private boolean bMessaging = true; 
+
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -39,8 +39,7 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
 }
 	
 public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean arg_bMessaging) throws SolverException {
-	super(argSimulationJob, dir, sessionLog);
-	bMessaging = arg_bMessaging;
+	super(argSimulationJob, dir, sessionLog, arg_bMessaging);
 }
 
 /**

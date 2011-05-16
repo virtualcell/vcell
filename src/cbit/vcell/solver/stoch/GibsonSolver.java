@@ -40,8 +40,8 @@ public class GibsonSolver extends AbstractCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog);
+public GibsonSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
+	super(simulationJob, directory, sessionLog, bMessaging);
 }
 
 
@@ -216,7 +216,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		StochFileWriter stFileWriter = new StochFileWriter(pw, simulationJob, true);
+		StochFileWriter stFileWriter = new StochFileWriter(pw, simulationJob, bMessaging);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

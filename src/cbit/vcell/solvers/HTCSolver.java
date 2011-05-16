@@ -38,7 +38,7 @@ public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) 
 	super(simTask.getSimulationJob(), directory, sessionLog);
 	simulationTask = simTask;
 	if (!simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
-		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
+		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob(), true);
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
 				fireSolverAborted(event.getSimulationMessage());

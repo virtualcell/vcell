@@ -55,20 +55,18 @@ public class NetCDFWriter {
 	// to store variables and their orders in the reactions. It is set to global in this
 	// class, since it is useful in a few functions and we don't want to calculate it 
 	// again and again. it is calculated in function getReactionRateLaws.
-	private Hashtable<String,Integer>[]  varInProbOrderHash = null; 
-	/**
-	 * constructor 
-	 */
-	public NetCDFWriter()
-	{}
+	private Hashtable<String,Integer>[]  varInProbOrderHash = null;
+	private boolean bMessaging;
+
 	/**
 	 * another constructor
 	 * @param arg_simulation
 	 */
-	public NetCDFWriter(SimulationJob arg_simulationJob, String fn) 
+	public NetCDFWriter(SimulationJob arg_simulationJob, String fn, boolean argMessaging) 
 	{
 		simJob = arg_simulationJob;
 		filename = fn;
+		bMessaging = argMessaging;
 	}
 
 	/**
@@ -175,14 +173,18 @@ public class NetCDFWriter {
 			//jms info
 			ArrayList<Dimension> dims = new ArrayList<Dimension>();
 			dims.add(stringLen);
-			ncfile.addVariable("JMS_BROKER", DataType.CHAR, dims);
-			ncfile.addVariable("JMS_USER", DataType.CHAR, dims);
-			ncfile.addVariable("JMS_PASSWORD", DataType.CHAR, dims);
-			ncfile.addVariable("JMS_QUEUE", DataType.CHAR, dims);  
-			ncfile.addVariable("JMS_TOPIC", DataType.CHAR, dims);
-			ncfile.addVariable("VCELL_USER", DataType.CHAR, dims);
-			ncfile.addVariable("SIMULATION_KEY", DataType.INT, new ArrayList<Dimension>());
-			ncfile.addVariable("JOB_INDEX", DataType.INT, new ArrayList<Dimension>());
+			
+			if (bMessaging) {
+				ncfile.addVariable("JMS_BROKER", DataType.CHAR, dims);
+				ncfile.addVariable("JMS_USER", DataType.CHAR, dims);
+				ncfile.addVariable("JMS_PASSWORD", DataType.CHAR, dims);
+				ncfile.addVariable("JMS_QUEUE", DataType.CHAR, dims);  
+				ncfile.addVariable("JMS_TOPIC", DataType.CHAR, dims);
+				ncfile.addVariable("VCELL_USER", DataType.CHAR, dims);
+				ncfile.addVariable("SIMULATION_KEY", DataType.INT, new ArrayList<Dimension>());
+				ncfile.addVariable("JOB_INDEX", DataType.INT, new ArrayList<Dimension>());
+			}
+
 			//scalars
 			ncfile.addVariable("TStart", DataType.DOUBLE, new ArrayList<Dimension>());
 			ncfile.addVariable("TEnd", DataType.DOUBLE, new ArrayList<Dimension>());
@@ -241,25 +243,27 @@ public class NetCDFWriter {
 			//write data to the NetCDF file
 			try{
 				// write jms info
-				ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-				jmsString.setString(JmsUtils.getJmsUrl());
-				ncfile.write("JMS_BROKER", jmsString);
-				jmsString.setString(JmsUtils.getJmsUserID());
-				ncfile.write("JMS_USER", jmsString);
-				jmsString.setString(JmsUtils.getJmsPassword());
-				ncfile.write("JMS_PASSWORD", jmsString);
-				jmsString.setString(JmsUtils.getQueueWorkerEvent());
-				ncfile.write("JMS_QUEUE", jmsString);
-				jmsString.setString(JmsUtils.getTopicServiceControl());
-				ncfile.write("JMS_TOPIC", jmsString);
-				jmsString.setString(simulation.getVersion().getOwner().getName());
-				ncfile.write("VCELL_USER", jmsString);
-				
-				ArrayInt.D0 scalarJMS = new ArrayInt.D0();
-				scalarJMS.set(Integer.parseInt(simulation.getVersion().getVersionKey()+""));
-				ncfile.write("SIMULATION_KEY", scalarJMS);
-				scalarJMS.set(simJob.getJobIndex());
-				ncfile.write("JOB_INDEX", scalarJMS);
+				if (bMessaging) {
+					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
+					jmsString.setString(JmsUtils.getJmsUrl());
+					ncfile.write("JMS_BROKER", jmsString);
+					jmsString.setString(JmsUtils.getJmsUserID());
+					ncfile.write("JMS_USER", jmsString);
+					jmsString.setString(JmsUtils.getJmsPassword());
+					ncfile.write("JMS_PASSWORD", jmsString);
+					jmsString.setString(JmsUtils.getQueueWorkerEvent());
+					ncfile.write("JMS_QUEUE", jmsString);
+					jmsString.setString(JmsUtils.getTopicServiceControl());
+					ncfile.write("JMS_TOPIC", jmsString);
+					jmsString.setString(simulation.getVersion().getOwner().getName());
+					ncfile.write("VCELL_USER", jmsString);
+					
+					ArrayInt.D0 scalarJMS = new ArrayInt.D0();
+					scalarJMS.set(Integer.parseInt(simulation.getVersion().getVersionKey()+""));
+					ncfile.write("SIMULATION_KEY", scalarJMS);
+					scalarJMS.set(simJob.getJobIndex());
+					ncfile.write("JOB_INDEX", scalarJMS);
+				}
 
 				ArrayDouble.D0 scalarDouble = new ArrayDouble.D0();
 				//TStart, TEnd, SaveTime

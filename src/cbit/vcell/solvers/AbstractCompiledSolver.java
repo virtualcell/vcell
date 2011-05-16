@@ -29,11 +29,13 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 	protected final static String DATA_PREFIX = "data:";
 	protected final static String PROGRESS_PREFIX = "progress:";
 	protected final static String SEPARATOR = ":";
+	protected boolean bMessaging = true; 
 /**
  * AbstractPDESolver constructor comment.
  */
-public AbstractCompiledSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
+public AbstractCompiledSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
 	super(simulationJob, directory, sessionLog);
+	bMessaging = bMsging;
 	setCurrentTime(simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 }
 /**

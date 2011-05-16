@@ -106,7 +106,7 @@ protected void doJob() throws JMSException, SolverException, XmlParseException {
 //}
 
 private void doSolverJob(File userdir) throws SolverException {
-	currentSolver = cbit.vcell.solver.SolverFactory.createSolver(log,userdir,currentTask.getSimulationJob());
+	currentSolver = cbit.vcell.solver.SolverFactory.createSolver(log,userdir,currentTask.getSimulationJob(), true);
 	currentSolver.addSolverListener(this);
 	currentSolver.startSolver();
 	

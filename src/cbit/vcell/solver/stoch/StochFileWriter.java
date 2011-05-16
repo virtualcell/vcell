@@ -157,7 +157,10 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable(); 
 	
 	initialize();
-	writeJMSParamters();
+	
+	if (bUseMessaging) {
+		writeJMSParamters();
+	}
 
 	// Write control information
 	printWriter.println("<control>");
