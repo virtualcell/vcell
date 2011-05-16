@@ -46,7 +46,7 @@ protected void initialize() throws SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new java.io.PrintWriter(inputFilename);
-		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simulationJob, bUseMessaging);
+		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simulationJob, bMessaging);
 		cvodeFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));

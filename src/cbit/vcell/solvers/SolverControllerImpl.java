@@ -50,7 +50,7 @@ public SolverControllerImpl (LocalVCellConnection argVCellConnection, org.vcell.
 	//
 	// instantiate an appropriate solver
 	//
-	this.solver = cbit.vcell.solver.SolverFactory.createSolver(sessionLog,directory,argSimulationJob);
+	this.solver = cbit.vcell.solver.SolverFactory.createSolver(sessionLog,directory,argSimulationJob, false);
 }
 
 

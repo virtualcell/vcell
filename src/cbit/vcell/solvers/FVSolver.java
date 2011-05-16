@@ -54,8 +54,8 @@ public class FVSolver extends AbstractCompiledSolver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolver (SimulationJob argSimulationJob, File dir, SessionLog sessionLog) throws SolverException {
-	super(argSimulationJob, dir, sessionLog);
+public FVSolver (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(argSimulationJob, dir, sessionLog, bMsging);
 	if (! simulationJob.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
 	}

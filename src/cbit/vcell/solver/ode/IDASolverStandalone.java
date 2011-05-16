@@ -43,7 +43,7 @@ protected void initialize() throws SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simulationJob, bUseMessaging);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simulationJob, bMessaging);
 		idaFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

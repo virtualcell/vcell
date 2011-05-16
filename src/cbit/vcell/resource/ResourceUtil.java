@@ -9,6 +9,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import cbit.vcell.solver.SolverDescription;
+
 public class ResourceUtil {
 	private static final String system_osname = System.getProperty("os.name");
 	public final static boolean bWindows = system_osname.contains("Windows");
@@ -33,6 +39,7 @@ public class ResourceUtil {
 	private static File vcellHome = null;
 	private static File libDir = null;
 	private static File localSimDir = null;
+	private static File localRootDir = null;
 	
 	private final static String DLL_GLUT;
 	static {
@@ -42,15 +49,41 @@ public class ResourceUtil {
 			DLL_GLUT = "libglut.so";
 		}
 	}
-	private final static String EXE_SMOLDYN = "smoldyn" + EXE_SUFFIX;
-	private static File smoldynExecutable = null;
-	private final static String RES_EXE_SMOLDYN = RES_PACKAGE + "/" + EXE_SMOLDYN;
-	private final static String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
-	
 	private static File solversDirectory = null;
-	private final static String EXE_COMBINED_SUNDIALS = "SundialsSolverStandalone" + EXE_SUFFIX;
-	private final static String RES_EXE_COMBINED_SUNDIALS = RES_PACKAGE + "/" + EXE_COMBINED_SUNDIALS;
-	private static File combinedSundialsExecutable = null;
+	
+	private final static String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
+	public enum SolverExecutable {
+		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
+		SundialsOde("SundialsSolverStandalone" + EXE_SUFFIX),
+		Gibson("Stochastic" + EXE_SUFFIX),
+		Hybrid_EM("Hybrid_EM" + EXE_SUFFIX),
+		Hybrid_Mil("Hybrid_MIL" + EXE_SUFFIX),
+		Hybrid_Mil_Adaptive("Hybrid_MIL_Adaptive" + EXE_SUFFIX),
+		Smoldyn("smoldyn" + EXE_SUFFIX);
+		
+		private boolean bFirstTime = true;
+		private String name;
+		private String res;
+		SolverExecutable(String n) {
+			this.name = n;
+			this.res = RES_PACKAGE + "/" + name;
+		}
+		
+		public File getExecutable() throws IOException {
+			File exe = new java.io.File(getSolversDirectory(), name);
+			if (bFirstTime || !exe.exists()) {
+				ResourceUtil.writeFileFromResource(res, exe);
+			}
+			if (this == Smoldyn) {
+				File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
+				if (bWindows && (bFirstTime || !file_glut_dll.exists())) {
+					ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+				}
+			}
+			bFirstTime = false;			
+			return exe;
+		}
+	}
 	
 	private static List<String> libList = null;
 
@@ -67,19 +100,38 @@ public class ResourceUtil {
 		return userHome; 
 	}
 	
+	public static File getLocalRootDir()
+	{
+		if(localRootDir == null)
+		{
+			localRootDir = new File(getVcellHome(), "simdata");
+			if (!localRootDir.exists()) {
+				localRootDir.mkdirs();
+			}
+		}
+		
+		return localRootDir; 
+	}
+
+	public static User tempUser = new User("user",new KeyValue("123"));
+
 	public static File getLocalSimDir()
 	{
 		if(localSimDir == null)
 		{
-			localSimDir = new File(getVcellHome(), "simdata");
-			if (!localSimDir.exists()) {
+			localSimDir = new File(getLocalRootDir(), tempUser.getName());
+			if (localSimDir.exists()) {
+				for (File file : localSimDir.listFiles()) {
+					file.delete();
+				}
+			} else {
 				localSimDir.mkdirs();
 			}
 		}
 		
 		return localSimDir; 
 	}
-	
+
 	public static void writeFileFromResource(String resname, File file) throws IOException {
 		java.net.URL url = ResourceUtil.class.getResource(resname);
 		if (url == null) {
@@ -187,31 +239,32 @@ public class ResourceUtil {
 			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
 		}
 	}
-	
-	private static boolean bFirstTimeSmoldyn = true;
-	public static File getSmoldynExecutable() throws IOException {
-		if (smoldynExecutable == null) {
-			smoldynExecutable = new java.io.File(getSolversDirectory(), EXE_SMOLDYN);
-		}
-		if (bFirstTimeSmoldyn || !smoldynExecutable.exists()) {
-			ResourceUtil.writeFileFromResource(RES_EXE_SMOLDYN, smoldynExecutable);
-		}
-		File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
-		if (!bMac && (bFirstTimeSmoldyn || !file_glut_dll.exists())) {
-			ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
-		}
-		bFirstTimeSmoldyn = false;
-		return smoldynExecutable;
-	}
-	private static boolean bFirstTimeQuickOdeRun = true;
-	public static File getCombinedSundialsExecutable() throws IOException {
-		if (combinedSundialsExecutable == null) {
-			combinedSundialsExecutable = new java.io.File(getSolversDirectory(), EXE_COMBINED_SUNDIALS);
-		}
-		if (bFirstTimeQuickOdeRun || !combinedSundialsExecutable.exists()) {
-			ResourceUtil.writeFileFromResource(RES_EXE_COMBINED_SUNDIALS, combinedSundialsExecutable);
-		}
-		bFirstTimeQuickOdeRun = false;
-		return combinedSundialsExecutable;
+		
+	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
+		if (solverDescription.equals(SolverDescription.CombinedSundials)
+				|| solverDescription.equals(SolverDescription.CVODE)
+				|| solverDescription.equals(SolverDescription.IDA)) {
+			File exe = SolverExecutable.SundialsOde.getExecutable();
+			System.getProperties().put(PropertyLoader.sundialsSolverExecutableProperty, exe.getAbsolutePath());
+		} else	if (solverDescription.equals(SolverDescription.StochGibson)) {
+			File exe = SolverExecutable.Gibson.getExecutable();
+			System.getProperties().put(PropertyLoader.stochExecutableProperty, exe.getAbsolutePath());
+		} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
+			File exe = SolverExecutable.Hybrid_EM.getExecutable();
+			System.getProperties().put(PropertyLoader.hybridEMExecutableProperty, exe.getAbsolutePath());
+		} if (solverDescription.equals(SolverDescription.HybridMilstein)) {
+			File exe = SolverExecutable.Hybrid_Mil.getExecutable();
+			System.getProperties().put(PropertyLoader.hybridMilExecutableProperty, exe.getAbsolutePath());
+		} if (solverDescription.equals(SolverDescription.HybridMilAdaptive)) {
+			File exe = SolverExecutable.Hybrid_Mil_Adaptive.getExecutable();
+			System.getProperties().put(PropertyLoader.hybridMilAdaptiveExecutableProperty, exe.getAbsolutePath());
+		} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)
+				|| solverDescription.equals(SolverDescription.SundialsPDE)) {
+			File exe = SolverExecutable.FiniteVolume.getExecutable();
+			System.getProperties().put(PropertyLoader.finiteVolumeExecutableProperty, exe.getAbsolutePath());		
+		} else if (solverDescription.isSpatialStochasticSolver()) {
+			File exe = SolverExecutable.Smoldyn.getExecutable();
+			System.getProperties().put(PropertyLoader.smoldynExecutableProperty, exe.getAbsolutePath());
+		} 
 	}
 }

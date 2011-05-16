@@ -55,8 +55,8 @@ public class HybridSolver extends AbstractCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, int type) throws cbit.vcell.solver.SolverException {
-	super(simulationJob, directory, sessionLog);
+public HybridSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
+	super(simulationJob, directory, sessionLog, b_Msging);
 	integratorType = type;
 }
 
@@ -326,7 +326,7 @@ protected void initialize() throws SolverException
 	//
 	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
 	//
-	NetCDFWriter ncWriter = new NetCDFWriter(simulationJob,inputFilename);
+	NetCDFWriter ncWriter = new NetCDFWriter(simulationJob,inputFilename, bMessaging);
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
@@ -496,7 +496,7 @@ public void setIntegratorType(int integratorType) {
  */
 public static void main(String[] args) {
 	try{
-	HybridSolver hs = new HybridSolver(null,null,null,HybridSolver.EMIntegrator);
+	HybridSolver hs = new HybridSolver(null,null,null,HybridSolver.EMIntegrator, false);
 	hs.getHybridSolverResultSet(); //put file name to be open in getHybridSolverResultSet()
 	}catch(Exception e){
 		e.printStackTrace(System.err);

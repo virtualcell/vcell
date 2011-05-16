@@ -140,7 +140,7 @@ protected void reconnect() throws JMSException {
 }
 
 private void runSimulation() throws SolverException {
-	solver = SolverFactory.createSolver(log, new File(userDirectory), simulationTask.getSimulationJob());
+	solver = SolverFactory.createSolver(log, new File(userDirectory), simulationTask.getSimulationJob(), true);
 	solver.addSolverListener(this);
 	solver.startSolver();
 	
