@@ -8,14 +8,19 @@ import java.util.Random;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Complex;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.Dna;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.pathway.Protein;
+import org.vcell.pathway.Rna;
+import org.vcell.pathway.SmallMolecule;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
@@ -24,11 +29,16 @@ import cbit.gui.graph.GraphContainerLayoutPathways;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxComplexShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxDnaShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionParticipantShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxObjectShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxPhysicalEntityShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxProteinShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxRnaShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxSmallMoleculeShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
 
 public class PathwayGraphModel extends GraphModel implements PathwayListener, RelationshipListener {
@@ -88,6 +98,16 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			if(bpObjectShape == null) {
 				if(bpObject instanceof Conversion) {
 					bpObjectShape = new BioPaxConversionShape((Conversion) bpObject, this);				
+				} else if(bpObject instanceof Protein) {
+					bpObjectShape = new BioPaxProteinShape((Protein) bpObject, this);
+				} else if(bpObject instanceof Complex) {
+					bpObjectShape = new BioPaxComplexShape((Complex) bpObject, this);
+				} else if(bpObject instanceof SmallMolecule) {
+					bpObjectShape = new BioPaxSmallMoleculeShape((SmallMolecule) bpObject, this);
+				} else if(bpObject instanceof Dna) {
+					bpObjectShape = new BioPaxDnaShape((Dna) bpObject, this);
+				} else if(bpObject instanceof Rna) {
+					bpObjectShape = new BioPaxRnaShape((Rna) bpObject, this);
 				} else if(bpObject instanceof PhysicalEntity) {
 					bpObjectShape = new BioPaxPhysicalEntityShape((PhysicalEntity) bpObject, this);
 				} else {
