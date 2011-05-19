@@ -29,6 +29,7 @@ import ucar.units.UnitName;
  * Creation date: (3/3/2004 6:20:39 PM)
  * @author: Rashad Badrawi
  */
+@SuppressWarnings("serial")
 public class VCUnitDefinition implements Matchable, Serializable {
 
     public static final String TBD_SYMBOL = "tbd";
@@ -774,9 +775,7 @@ private static void showUChar(String pad, String attribute, Object obj) {
 		}
 		//showUChar(pad,"rank",new Integer(dimension.getRank()));  // adds nothing
 		showUChar(pad,"isDimensionless",new Boolean(dimension.isDimensionless()));
-		if (dimension instanceof QuantityDimension){
-			QuantityDimension quantityDimension = (QuantityDimension)dimension;
-		}else if (dimension instanceof UnitDimension){
+		if (dimension instanceof UnitDimension){
 			UnitDimension unitDimension = (UnitDimension)dimension;
 			showUChar(pad,"quantityDimension",unitDimension.getQuantityDimension());
 		}			
