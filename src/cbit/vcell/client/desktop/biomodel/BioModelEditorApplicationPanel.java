@@ -124,7 +124,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		if (oldSelectedIndex == selectedIndex) {
 			return;
 		}
-		if (oldSelectedIndex >= 0) {
+		if (oldSelectedIndex >= 0 && oldSelectedIndex < tabbedPane.getTabCount()) {
 			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
 		}
 		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
@@ -186,13 +186,15 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 
 	private void showOrHideFittingPanel() {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.fitting.ordinal()];
+		int indexOfFittingPanel = tabbedPane.indexOfComponent(tab.component);
 		if (simulationContext.isValidForFitting()) {
-			if (tabbedPane.indexOfComponent(tab.component) < 0) {
+			if (indexOfFittingPanel < 0) {
 				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 			}
 			applicationFittingPanel.setSimulationContext(simulationContext);
 		} else {
-			if (tabbedPane.indexOfComponent(tab.component) >= 0) {
+			if (indexOfFittingPanel >= 0) {
+//				tabbedPane.putClientProperty("__index_to_remove__", indexOfComponent);
 				tabbedPane.remove(tab.component);
 			}
 		}
@@ -219,7 +221,10 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationFittingPanel.setSelectionManager(selectionManager);
 	}
 	
-	private void selectTab(ApplicationPanelTabID tabid) {		
+	private void selectTab(ApplicationPanelTabID tabid) {
+		if (tabid.ordinal() == ApplicationPanelTabID.fitting.ordinal()) {
+			showOrHideFittingPanel();
+		}
 		tabbedPane.setSelectedIndex(tabid.ordinal());
 	}
 

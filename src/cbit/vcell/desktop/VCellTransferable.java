@@ -1,15 +1,19 @@
 package cbit.vcell.desktop;
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.SimpleTransferable;
 
 import cbit.vcell.model.Species;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (5/8/2003 2:40:40 PM)
  * @author: Frank Morgan
  */
-public class VCellTransferable extends org.vcell.util.gui.SimpleTransferable {
+public class VCellTransferable extends SimpleTransferable {
 
 	public static final DataFlavor SPECIES_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+cbit.vcell.model.Species.class.getName(),"Species");
@@ -18,23 +22,23 @@ public class VCellTransferable extends org.vcell.util.gui.SimpleTransferable {
 	public static final DataFlavor RESOLVED_VALUES_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ResolvedValuesSelection.class.getName(),"ResolvedValues");
 	public static class ResolvedValuesSelection{
-		private cbit.vcell.parser.SymbolTableEntry[] primarySymbolTableEntries;
-		private cbit.vcell.parser.SymbolTableEntry[] alternateSymbolTableEntries;
-		private cbit.vcell.parser.Expression[] expressionValues;
+		private SymbolTableEntry[] primarySymbolTableEntries;
+		private SymbolTableEntry[] alternateSymbolTableEntries;
+		private Expression[] expressionValues;
 		private String stringRepresentation;
 
 		public ResolvedValuesSelection(
-			cbit.vcell.parser.SymbolTableEntry[] argPrimarySymbolTableEntries,
-			cbit.vcell.parser.SymbolTableEntry[] argAlternateSymbolTableEntries,
-			cbit.vcell.parser.Expression[] argExpressionValues,String argStringRep){
+			SymbolTableEntry[] argPrimarySymbolTableEntries,
+			SymbolTableEntry[] argAlternateSymbolTableEntries,
+			Expression[] argExpressionValues,String argStringRep){
 				
-			if(argPrimarySymbolTableEntries.length != argExpressionValues.length ||
+			if (argPrimarySymbolTableEntries.length != argExpressionValues.length ||
 				(argAlternateSymbolTableEntries != null && argAlternateSymbolTableEntries.length != argExpressionValues.length)){
-				throw new IllegalArgumentException("ResolvedValuesSelection SymbolTableEntry array length must equal DataValues array length");
+				throw new IllegalArgumentException("symbol array length must equal data array length");
 			}
 			for(int i=0;i<argExpressionValues.length;i+= 1){
-				if(argExpressionValues[i] == null){
-					throw new IllegalArgumentException("ResolvedValuesSelection resolved value "+argPrimarySymbolTableEntries[i].getNameScope().getName()+" cannot be null.");
+				if (argExpressionValues[i] == null){
+					throw new IllegalArgumentException("copied values cannot be null.");
 				}
 			}
 			primarySymbolTableEntries = argPrimarySymbolTableEntries;
@@ -43,13 +47,13 @@ public class VCellTransferable extends org.vcell.util.gui.SimpleTransferable {
 			stringRepresentation = argStringRep;
 		}
 
-		public cbit.vcell.parser.SymbolTableEntry[] getPrimarySymbolTableEntries(){
+		public SymbolTableEntry[] getPrimarySymbolTableEntries(){
 			return primarySymbolTableEntries;
 		}
-		public cbit.vcell.parser.SymbolTableEntry[] getAlternateSymbolTableEntries(){
+		public SymbolTableEntry[] getAlternateSymbolTableEntries(){
 			return alternateSymbolTableEntries;
 		}
-		public cbit.vcell.parser.Expression[] getExpressionValues(){
+		public Expression[] getExpressionValues(){
 			return expressionValues;
 		}
 		public String toString() {

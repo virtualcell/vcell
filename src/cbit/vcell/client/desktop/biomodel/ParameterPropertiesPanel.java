@@ -257,7 +257,7 @@ private void changeUnit() {
 		String text = unitTextField.getText();
 		if (text.length() == 0) {
 			parameter.setUnitDefinition(VCUnitDefinition.UNIT_TBD);
-		} else if (!parameter.getUnitDefinition().getSymbol().equals(text)){
+		} else if (parameter.getUnitDefinition() == null ||  !parameter.getUnitDefinition().getSymbol().equals(text)){
 			parameter.setUnitDefinition(VCUnitDefinition.getInstance(text));
 		}
 	} catch(Exception e){

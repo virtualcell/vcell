@@ -382,7 +382,8 @@ private synchronized void copyCells(String actionCommand) {
 			new VCellTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
 		VCellTransferable.sendToClipboard(rvs);
 	}catch(Throwable e){
-		DialogUtils.showErrorDialog(Plot2DDataPanel.this, "Plot2DDataPanel copy failed.  "+e.getMessage(), e);
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(Plot2DDataPanel.this, "Copy failed.  "+e.getMessage(), e);
 	}
 }
 

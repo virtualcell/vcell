@@ -87,9 +87,6 @@ public Expression(String expString) throws ExpressionException {
 	//
 	// not just a number, must parse string
 	//
-	if (!expString.trim().endsWith(";")){
-		expString = expString.trim()+";";
-	}
 	parseExpression(expString);
 }
 
@@ -681,9 +678,14 @@ public static Expression negate(Expression expression) throws ExpressionExceptio
 	}	
 	return exp;
 }
-private void parseExpression(String exp) throws ExpressionException {
+private void parseExpression(String expString) throws ExpressionException {
 parseCount++;
+
 	try {
+		String exp = expString.trim();
+		if (!exp.endsWith(";")){
+			exp = exp + ";";
+		}
 		//System.out.println("expression: " + exp);
 		ExpressionParser parser;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
@@ -700,7 +702,7 @@ parseCount++;
 		}
 	} catch (ParseException e) {
 		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression " + exp);
+		throw new ParserException("Parse Error while parsing expression '" + expString + "'");
 	}
 }
 /**

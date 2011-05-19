@@ -621,19 +621,11 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 //			newTopPanel = dataSymbolsPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
 			newTopPanel = getScriptingPanel();
-		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE) {
-			newTopPanel = bioModelEditorApplicationPanel;
-			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE) {
-			newTopPanel = bioModelEditorApplicationPanel;
-			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE) {
-			newTopPanel = bioModelEditorApplicationPanel;
-			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE) {
-			newTopPanel = bioModelEditorApplicationPanel;
-			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
-		} else if (folderClass == DocumentEditorTreeFolderClass.FITTING_NODE) {
+		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.FITTING_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
 		}
