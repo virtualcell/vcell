@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -26,6 +27,7 @@ import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -256,11 +258,14 @@ public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCr
 public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws Exception {
 	if (doc instanceof BioModel) {
 		Simulation[] simulations = ((BioModel)doc).getSimulations();
-		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
 		for (int i = 0; i < simulations.length; i++){
-			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+			SimulationInfo simulationInfo = simulations[i].getSimulationInfo();
+			if (simulationInfo != null) {
+				simIDs.add(simulationInfo.getAuthoritativeVCSimulationIdentifier());
+			}
 		}
-		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
 	} else if (doc instanceof MathModel) {
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
 		geometry.precomputeAll();

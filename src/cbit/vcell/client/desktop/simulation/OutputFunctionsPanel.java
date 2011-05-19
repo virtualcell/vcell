@@ -44,7 +44,6 @@ import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 
@@ -449,29 +448,26 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 				// Else, pop-up an error dialog indicating that function cannot be added.
 				//
 				int ok = DialogUtils.showComponentOKCancelDialog(OutputFunctionsPanel.this, getAddFunctionPanel(), "Add Function");
+				String funcName = getFunctionNameTextField().getText();
 				if (ok == javax.swing.JOptionPane.OK_OPTION) {
-					String funcName = getFunctionNameTextField().getText();
-					Expression funcExp = null;
 					try {
+						Expression funcExp = null;
 						funcExp = new Expression(getFunctionExpressionTextField().getText());
-					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-					}
-					Domain domain = null;
-					VariableType newFunctionVariableType = null;
-					if (bSpatial) {
-						GeometryClass geoClass = (GeometryClass)getSubdomainComboBox().getSelectedItem();
-						domain = new Domain(geoClass);
-						if (getSubdomainComboBox().getSelectedItem() instanceof SubVolume) {
-							newFunctionVariableType = VariableType.VOLUME;
+						Domain domain = null;
+						VariableType newFunctionVariableType = null;
+						if (bSpatial) {
+							GeometryClass geoClass = (GeometryClass)getSubdomainComboBox().getSelectedItem();
+							domain = new Domain(geoClass);
+							if (getSubdomainComboBox().getSelectedItem() instanceof SubVolume) {
+								newFunctionVariableType = VariableType.VOLUME;
+							} else {
+								newFunctionVariableType = VariableType.MEMBRANE;
+							}
 						} else {
-							newFunctionVariableType = VariableType.MEMBRANE;
+							newFunctionVariableType = VariableType.NONSPATIAL;
 						}
-					} else {
-						newFunctionVariableType = VariableType.NONSPATIAL;
-					}
-					AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, newFunctionVariableType, FunctionCategory.OUTPUTFUNCTION);
-					try {
+						AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, newFunctionVariableType, FunctionCategory.OUTPUTFUNCTION);
+					
 						VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(newFunction, funcExp);
 						if (!vt.compareEqual(newFunctionVariableType)) {
 							newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, vt, FunctionCategory.OUTPUTFUNCTION);
@@ -480,7 +476,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 						setSelectedObjects(new Object[] {newFunction});
 					} catch (Exception e1) {
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(OutputFunctionsPanel.this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
+						DialogUtils.showErrorDialog(OutputFunctionsPanel.this, "Function '" + funcName + "' cannot be added.\n\t" + e1.getMessage(), e1);
 					}
 				}		
 				enableDeleteFnButton();
