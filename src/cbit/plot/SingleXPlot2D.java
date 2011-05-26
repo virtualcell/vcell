@@ -122,7 +122,7 @@ public Double[][] getVisiblePlotDataValuesByRow() {
 
 @Override
 public SymbolTableEntry getPlotDataSymbolTableEntry(int tableColumn) {
-	int index = getVisiblePlotDataIndex(tableColumn - 1);
+	int index = getVisiblePlotIndices()[tableColumn - 1];
 	return getSymbolTableEntries()[index];
 }
 }
