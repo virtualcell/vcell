@@ -1,5 +1,7 @@
 package cbit.plot;
 
+import cbit.vcell.parser.SymbolTableEntry;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -116,5 +118,11 @@ public Double[][] getVisiblePlotDataValuesByRow() {
 		}
 		return visiblePlotValuesByRow;
 	}
+}
+
+@Override
+public SymbolTableEntry getPlotDataSymbolTableEntry(int tableColumn) {
+	int index = getVisiblePlotDataIndex(tableColumn - 1);
+	return getSymbolTableEntries()[index];
 }
 }
