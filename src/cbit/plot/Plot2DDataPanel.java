@@ -12,7 +12,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -22,6 +21,8 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (4/19/2001 12:33:58 PM)
@@ -325,8 +326,8 @@ private synchronized void copyCells(String actionCommand) {
 		{
 			bHistogram = true;
 		}
-		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[c - (bHasTimeColumn?1:0)];
-		cbit.vcell.parser.Expression[] resolvedValues = new cbit.vcell.parser.Expression[symbolTableEntries.length];
+		SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[c - (bHasTimeColumn?1:0)];
+		Expression[] resolvedValues = new Expression[symbolTableEntries.length];
 		//String[] dataNames = new String[symbolTableEntries.length];//don't include "t" for SimulationResultsSelection
 		// if copying more than one cell, make a string that will paste like a table in spreadsheets
 		// also include column headers in this case
@@ -338,8 +339,7 @@ private synchronized void copyCells(String actionCommand) {
 					//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
 					symbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
 					if(getPlot2D().getSymbolTableEntries() != null){
-						int index = getplot2D1().getVisiblePlotIndices()[columns[i]-1];
-						cbit.vcell.parser.SymbolTableEntry ste = getPlot2D().getSymbolTableEntries()[index];
+						SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[i]);
 						symbolTableEntries[i-(bHasTimeColumn?1:0)] = ste;
 						buffer.append(
 							( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+
@@ -356,7 +356,7 @@ private synchronized void copyCells(String actionCommand) {
 					cell = cell != null ? cell : ""; 
 					buffer.append(cell.toString() + (j==c-1?"":"\t"));
 					if(!cell.equals("") && (!bHasTimeColumn || j>0) ){
-						resolvedValues[j-(bHasTimeColumn?1:0)] = new cbit.vcell.parser.Expression(((Double)cell).doubleValue());
+						resolvedValues[j-(bHasTimeColumn?1:0)] = new Expression(((Double)cell).doubleValue());
 					}
 				}
 			}
@@ -369,12 +369,11 @@ private synchronized void copyCells(String actionCommand) {
 			if(!bHasTimeColumn){
 				//dataNames[0] = getScrollPaneTable().getColumnName(columns[0]);
 				symbolTableEntries[0] = null;
-				if(getPlot2D().getSymbolTableEntries() != null){
-					int index = getplot2D1().getVisiblePlotIndices()[columns[0]-1];
-					cbit.vcell.parser.SymbolTableEntry ste =getPlot2D().getSymbolTableEntries()[index];
+				if(getPlot2D().getSymbolTableEntries() != null){					
+					SymbolTableEntry ste =getPlot2D().getPlotDataSymbolTableEntry(columns[0]);					
 					symbolTableEntries[0] = ste;
 				}
-				resolvedValues[0] = new cbit.vcell.parser.Expression(((Double)cell).doubleValue());
+				resolvedValues[0] = new Expression(((Double)cell).doubleValue());
 			}
 		}
 
