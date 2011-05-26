@@ -18,6 +18,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
+import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -27,6 +28,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -36,6 +38,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * Creation date: (10/17/2005 11:22:58 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class ODETimePlotMultipleScansPanel extends JPanel {
 	private static final String JOB_PLOT_NAME = "Set";
 	private Simulation simulation = null;
@@ -173,9 +176,11 @@ private void updateScanParamChoices(){
 			VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 			int plotCount = jobIndexes.length * variableNames.length;
 			SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotCount];
+			double[][] dataValues = new double[plotCount+1][];
 			PlotData[] plotDatas = new PlotData[plotCount];
 			String[] plotNames = new String[plotCount];
 			int plotIndex = 0;
+			dataValues[0] = null;
 			for (int ji = 0; ji < jobIndexes.length; ji ++) {
 				int jobIndex = jobIndexes[ji];
 				final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
@@ -183,16 +188,21 @@ private void updateScanParamChoices(){
 				ODESolverResultSet odeSolverResultSet = odeDatamanager.getODESolverResultSet();
 				int tcol = odeSolverResultSet.findColumn(ReservedSymbol.TIME.getName());
 				double[] tdata = odeSolverResultSet.extractColumn(tcol);
+				if (dataValues[0] == null) {
+					dataValues[0] = tdata;
+				}
 				for (int v = 0; v < variableNames.length; v ++) {
 					String varname = variableNames[v];
 					int varcol = odeSolverResultSet.findColumn(varname);
 					double[] vdata = odeSolverResultSet.extractColumn(varcol);
+					dataValues[plotIndex+1] = vdata;
 					plotNames[plotIndex] = varname + " -- " + JOB_PLOT_NAME + " " + jobIndex;
 					plotDatas[plotIndex] = new PlotData(tdata, vdata);
 					symbolTableEntries[plotIndex] = simulation.getMathDescription().getVariable(varname);
 					plotIndex ++;
 				}
 			}
+			hashTable.put("dataValues", dataValues);
 			hashTable.put("plotDatas", plotDatas);
 			hashTable.put("plotNames", plotNames);
 			hashTable.put("symbolTableEntries", symbolTableEntries);
@@ -201,6 +211,7 @@ private void updateScanParamChoices(){
 	AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {	
+			double[][] dataValues = (double[][])hashTable.get("dataValues");
 			PlotData[] plotDatas = (PlotData[])hashTable.get("plotDatas");
 			String[] plotNames = (String[])hashTable.get("plotNames");
 			SymbolTableEntry[] symbolTableEntries = (SymbolTableEntry[])hashTable.get("symbolTableEntries");
@@ -208,8 +219,17 @@ private void updateScanParamChoices(){
 				plotPane.setPlot2D(null);
 				return;
 			}
-			Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
-					new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
+			Plot2D plot2D = null;
+			if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
+			{
+				plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
+						new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});
+			}
+			else
+			{
+				plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, dataValues);
+			}
+							
 			plotPane.setPlot2D(plot2D);
 		}
 	};
