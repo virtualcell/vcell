@@ -93,7 +93,7 @@ public double evaluateOperand() throws ExpressionException
 	}
 	else
 	{
-		throw new ExpressionException();	
+		throw new ExpressionException("Non-spatial stochastic variable increment can not be evaluated to a constant:" + operand.infix());	
 	}
 }
 

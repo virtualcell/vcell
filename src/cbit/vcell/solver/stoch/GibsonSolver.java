@@ -150,6 +150,7 @@ public ODESolverResultSet getStochSolverResultSet()
 		//
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
+		return null;
 	} finally {
 		try {
 			if (inputStream != null) {

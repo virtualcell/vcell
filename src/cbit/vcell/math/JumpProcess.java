@@ -42,7 +42,7 @@ public void addAction(Action newAction) throws MathException
 		try
 		{
 			newOperand = Expression.add(orgOperand,addOperand);
-			newOperand.flatten();
+			newOperand = newOperand.flatten();
 			actions.remove(action);
 			actions.add(Action.createIncrementAction(newAction.getVar(), newOperand));
 		} catch(cbit.vcell.parser.ExpressionException ex) {
