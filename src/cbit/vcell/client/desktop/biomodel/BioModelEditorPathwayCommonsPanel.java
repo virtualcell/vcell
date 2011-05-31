@@ -45,8 +45,6 @@ import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -371,6 +369,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		searchTextField = new TextFieldAutoCompletion();
 		searchTextField.addActionListener(eventHandler);
+		searchTextField.putClientProperty("JTextField.variant", "search");
+		
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);
 		showPathwayButton = new JButton("Import Pathway");

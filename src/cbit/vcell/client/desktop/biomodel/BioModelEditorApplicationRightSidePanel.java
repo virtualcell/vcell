@@ -77,6 +77,7 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 		addNewButton = new JButton("Add New");
 		deleteButton = new JButton("Delete Selected");
 		textFieldSearch = new JTextField(10);
+		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		table = new EditorScrollTable();
 		tableModel = createTableModel();
 		table.setModel(tableModel);

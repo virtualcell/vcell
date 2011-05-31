@@ -158,6 +158,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private void initialize() {
 //		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
+		nameSearchTextField.putClientProperty("JTextField.variant", "search");
 		textFieldAutoComSet.add(nameSearchTextField);
 		
 		advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");

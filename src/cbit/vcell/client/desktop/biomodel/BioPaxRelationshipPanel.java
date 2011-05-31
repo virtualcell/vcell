@@ -101,6 +101,7 @@ private void initialize() {
 		textFieldSearch = new JTextField(30);
 		textFieldSearch.addActionListener(eventHandler);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;

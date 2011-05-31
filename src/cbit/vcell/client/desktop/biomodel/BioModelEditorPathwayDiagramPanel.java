@@ -480,6 +480,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		pathwayModelTable.setModel(pathwayModelTableModel);
 		
 		searchTextField = new JTextField();
+		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
 		deleteButton = new JButton("Delete Selected");
 		deleteButton.addActionListener(eventHandler);

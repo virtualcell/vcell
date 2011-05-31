@@ -337,6 +337,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
+		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		
 		structuresTable = new EditorScrollTable();
 		reactionsTable = new EditorScrollTable();

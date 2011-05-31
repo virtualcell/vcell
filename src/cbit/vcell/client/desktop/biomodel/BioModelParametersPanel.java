@@ -148,6 +148,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		deleteButton.addActionListener(eventHandler);
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		parametersFunctionsTable = new EditorScrollTable();
 		parametersFunctionsTableModel = new BioModelParametersTableModel(parametersFunctionsTable);
 		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
