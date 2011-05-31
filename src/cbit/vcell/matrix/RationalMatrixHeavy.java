@@ -4,6 +4,7 @@ package cbit.vcell.matrix;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+@SuppressWarnings("serial")
 public class RationalMatrixHeavy implements RationalMatrix, java.io.Serializable
 {
 	private int rows;
@@ -49,9 +50,9 @@ public RationalMatrixHeavy (RationalMatrix mat) {
 }
 public RationalMatrix findNullSpace() throws MatrixException {
 	
-	if (rows <= 1){
-		throw new MatrixException("this must have more than one row");
-	}
+//	if (rows <= 1){
+//		throw new MatrixException("this must have more than one row");
+//	}
 	int numVars = rows;
 	
 	RationalMatrixHeavy b = new RationalMatrixHeavy(this);
