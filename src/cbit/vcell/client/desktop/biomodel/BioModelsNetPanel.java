@@ -220,6 +220,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		searchTextField = new JTextField(10);
+		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);
