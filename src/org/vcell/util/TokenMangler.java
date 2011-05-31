@@ -62,12 +62,14 @@ public static String fixTokenStrict(String name, int maxLength) {
 	if (string.length() == 0){ 
 		return string;
 	}
-	StringBuffer newString = new StringBuffer(string);
-	if (!Character.isLetter(newString.charAt(0)) && newString.charAt(0)!='_'){
+	StringBuilder newString = new StringBuilder(string);
+	char charAt0 = newString.charAt(0);
+	if (!Character.isLetter(charAt0) && charAt0 != '_'){
 		newString.insert(0,'_');
 	}
 	for (int i=1;i<newString.length();i++){
-		if (!Character.isLetterOrDigit(newString.charAt(i)) && newString.charAt(i)!='_'){
+		char charAtI = newString.charAt(i);
+		if (!Character.isLetterOrDigit(charAtI) && charAtI != '_'){
 			newString.setCharAt(i,'_');
 		}
 	}

@@ -26,7 +26,6 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -159,6 +158,7 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 			newSlowRateVector = new RationalExpMatrix(numDependent,1);
 			newSlowRateVector.matmul(fastInvarianceMatrix,origSlowRateVector);
 		} catch (MatrixException ex) {
+			ex.printStackTrace();
 			throw new MathException(ex.getMessage());
 		}
 

@@ -7,6 +7,7 @@ import java.util.Arrays;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+@SuppressWarnings("serial")
 public class RationalMatrixFast implements RationalMatrix, java.io.Serializable
 {
 	private int rows;
@@ -138,9 +139,9 @@ void div_elem(int r, int c, long num, long den) {
 public RationalMatrix findNullSpace() throws MatrixException {
 	
 	try {
-		if (rows <= 1){
-			throw new MatrixException("this must have more than one row");
-		}
+//		if (rows <= 1){
+//			throw new MatrixException("this must have more than one row");
+//		}
 		int numVars = rows;
 		RationalMatrixFast b = new RationalMatrixFast(this);
 		RationalMatrixFast K = new RationalMatrixFast(numVars,numVars);

@@ -6,6 +6,7 @@ import java.math.BigInteger;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+@SuppressWarnings("serial")
 public class RationalExpMatrix implements RationalMatrix, java.io.Serializable
 {
 	protected int rows;
@@ -77,9 +78,9 @@ public RationalExpMatrix transpose(){
 
 public RationalMatrix findNullSpace() throws MatrixException {
 	
-	if (rows <= 1){
-		throw new MatrixException("this must have more than one row");
-	}
+//	if (rows <= 1){
+//		throw new MatrixException("this must have more than one row");
+//	}
 	int numVars = rows;
 	
 	RationalExpMatrix b = new RationalExpMatrix(this);
