@@ -226,6 +226,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		output_file_number,		
 		incrementfile,
 		killmolincmpt, 
+		killmol,
 		
 		accuracy,
 		boxsize,
@@ -494,7 +495,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 }
 
 private void writeReactions() throws ExpressionException, MathException {
-	printWriter.println("# reaction in compartments");
+	printWriter.println("# reactions");
 	Enumeration<SubDomain> subdomains = mathDesc.getSubDomains();
 	while(subdomains.hasMoreElements()) {
 		SubDomain subdomain = subdomains.nextElement();
@@ -539,8 +540,35 @@ private void writeReactions() throws ExpressionException, MathException {
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 				writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 			} else if (subdomain instanceof MembraneSubDomain){
+				//0th order reaction, product limited to one and it can be on mem or in vol
+				if(reactants.size() == 0 && products.size() == 1)
+				{
+					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+				}
+				//consuming of a species to nothing, limited to one reactant
+				else if(reactants.size() == 1 && products.size() == 0)
+				{
+					if(getMembraneVariableCount(reactants) == 1)//consuming a mem species in mem reaction
+					{
+						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					}
+					//consuming a vol spcies in mem reaction
+					//it equals to adsorption, species A from vol adsorbed to mem as again species A, and then we kill the speceis A on mem.
+					else if(getVolumeVariableCount(reactants) == 1)
+					{
+						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						String speciesName = reactants.get(0).getName();
+						printWriter.print("# kill membrane molecues " + speciesName + " that are absorbed (to nothing)");
+						printWriter.println();
+						printWriter.print("cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)");
+						printWriter.println();
+					}
+				}
+				//
 				// Use rate command for any membrane reactions with 1 reactant and 1 product
-				if ((reactants.size() == 1) && (products.size() == 1)) 
+				else if ((reactants.size() == 1) && (products.size() == 1)) 
 				{
 					//Membrane reaction (1 react to 1 product).
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
@@ -553,24 +581,18 @@ private void writeReactions() throws ExpressionException, MathException {
 						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					}
 				}
-				else //membrane reactions which are not one to one 
+				else //membrane reactions which are not one to one, or 0th order, or consuming species
 				{
 					// 1. membrane reaction requires at least one mambrane bound reactant
 					// 2. should NOT have volume products (solution for vol products have leaking)
-					// 3. 0th order reactions(no reactant, 1 product) or simply consuming one species(1 reactant, no product)
-					if(getMembraneVariableCount(reactants) == 0 && getMembraneVariableCount(products) == 0)
-					{
-						throw new MathException("VCell spatial stochastic solver requires at least ONE membrane reactant/product in membrane reactions.");
-					}
-					else if((getMembraneVariableCount(reactants) == 1 && getVolumeVariableCount(products) == 0)||
-					   (reactants.size() == 0 && products.size() == 1) || (reactants.size() == 1 && products.size() == 0))
+					if((getMembraneVariableCount(reactants) == 1) && (getVolumeVariableCount(products) == 0))
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					}
 					else 
 					{
-						throw new MathException("VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
+						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
 					}
 				}
 			}
@@ -627,23 +649,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
 	}
-	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
-	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
-	else if(getMembraneVariableCount(prods) == 1 && getVolumeVariableCount(reacts) == 1)
-	{
-		printWriter.print(reacts.get(0).getName() + " ");
-		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
-		{
-			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
-		}
-		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
-		{
-			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
-		}
-		printWriter.print(rateConstant + " ");
-		printWriter.println(prods.get(0).getName());
-	}
-	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution
+	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution, 0th order desorption doesn't work in the way
 	//e.g. "surface c_n_membrane rate B2 front fsoln 4.22 C2"
 	else if(getVolumeVariableCount(prods) == 1 && getMembraneVariableCount(reacts) == 1)
 	{
@@ -658,6 +664,29 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		}
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
+	}
+	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
+	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
+	else if((getVolumeVariableCount(reacts) == 1) && ((getMembraneVariableCount(prods) == 1) || (prods.size() == 0)))
+	{
+		printWriter.print(reacts.get(0).getName() + " ");
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
+		}
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
+		}
+		printWriter.print(rateConstant + " ");
+		if(prods.size() == 1)
+		{
+			printWriter.println(prods.get(0).getName());
+		}
+		else
+		{
+			printWriter.println();
+		}
 	}
 }
 
