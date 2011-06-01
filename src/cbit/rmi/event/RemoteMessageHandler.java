@@ -1,10 +1,7 @@
 package cbit.rmi.event;
 
+import java.rmi.*;
 
-import java.rmi.*;/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 /**
  * Insert the type's description here.
  * Creation date: (11/12/2000 8:16:16 PM)
