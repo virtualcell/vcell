@@ -1361,17 +1361,17 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) == 0.0){
 			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.csc(argument);
+		result = MathUtil.csc(argument);
 		break;
 	}
 	case COT: {
 		if (jjtGetNumChildren()!=1) throw new Error("cot() expects 1 argument");
-		result = flanagan.math.Fmath.cot(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.cot(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case SEC: {
 		if (jjtGetNumChildren()!=1) throw new Error("sec() expects 1 argument");
-		result = flanagan.math.Fmath.sec(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.sec(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case ACSC: {
@@ -1380,12 +1380,12 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("acsc(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acsc(argument);
+		result = MathUtil.acsc(argument);
 		break;
 	}
 	case ACOT: {
 		if (jjtGetNumChildren()!=1) throw new Error("acot() expects 1 argument");
-		result = flanagan.math.Fmath.acot(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.acot(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case ASEC: {
@@ -1394,22 +1394,22 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("asec(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.asec(argument);
+		result = MathUtil.asec(argument);
 		break;
 	}
 	case SINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sinh() expects 1 argument");
-		result = flanagan.math.Fmath.sinh(jjtGetChild(0).evaluateConstant());
+		result = Math.sinh(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case COSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("cosh() expects 1 argument");
-		result = flanagan.math.Fmath.cosh(jjtGetChild(0).evaluateConstant());
+		result = Math.cosh(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case TANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("tanh() expects 1 argument");
-		result = flanagan.math.Fmath.tanh(jjtGetChild(0).evaluateConstant());
+		result = Math.tanh(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case CSCH: {
@@ -1418,7 +1418,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("csch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.csch(argument);
+		result = MathUtil.csch(argument);
 		break;
 	}
 	case COTH: {
@@ -1427,17 +1427,17 @@ public double evaluateConstant() throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("coth(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.coth(argument);
+		result = MathUtil.coth(argument);
 		break;
 	}
 	case SECH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sech() expects 1 argument");
-		result = flanagan.math.Fmath.sech(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.sech(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case ASINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("asinh() expects 1 argument");
-		result = flanagan.math.Fmath.asinh(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.asinh(jjtGetChild(0).evaluateConstant());
 		break;
 	}
 	case ACOSH: {
@@ -1446,7 +1446,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (argument < 1.0){
 			throw new FunctionDomainException("acosh(u) and u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acosh(argument);
+		result = MathUtil.acosh(argument);
 		break;
 	}
 	case ATANH: {
@@ -1455,7 +1455,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) >= 1.0){
 			throw new FunctionDomainException("atanh(u) and |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.atanh(argument);
+		result = MathUtil.atanh(argument);
 		break;
 	}
 	case ACSCH: {
@@ -1464,7 +1464,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("acsch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acsch(argument);
+		result = MathUtil.acsch(argument);
 		break;
 	}
 	case ACOTH: {
@@ -1473,7 +1473,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) <= 1.0){
 			throw new FunctionDomainException("acoth(u) and |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acoth(argument);
+		result = MathUtil.acoth(argument);
 		break;
 	}
 	case ASECH: {
@@ -1482,7 +1482,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (argument <= 0.0 || argument > 1.0){
 			throw new FunctionDomainException("asech(u) and 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.asech(argument);
+		result = MathUtil.asech(argument);
 		break;
 	}
 	case FACTORIAL: {
@@ -1491,7 +1491,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (Math.abs(argument) < 0.0){
 			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.factorial(argument);
+		result = MathUtil.factorial(argument);
 		break;
 	}
 	case LOG_10: {
@@ -1948,17 +1948,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) == 0.0){
 			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.csc(argument);
+		result = MathUtil.csc(argument);
 		break;
 	}
 	case COT: {
 		if (jjtGetNumChildren()!=1) throw new Error("cot() expects 1 argument");
-		result = flanagan.math.Fmath.cot(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.cot(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case SEC: {
 		if (jjtGetNumChildren()!=1) throw new Error("sec() expects 1 argument");
-		result = flanagan.math.Fmath.sec(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.sec(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ACSC: {
@@ -1967,12 +1967,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("acsc(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acsc(argument);
+		result = MathUtil.acsc(argument);
 		break;
 	}
 	case ACOT: {
 		if (jjtGetNumChildren()!=1) throw new Error("acot() expects 1 argument");
-		result = flanagan.math.Fmath.acot(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.acot(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ASEC: {
@@ -1981,22 +1981,22 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("asec(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.asec(argument);
+		result = MathUtil.asec(argument);
 		break;
 	}
 	case SINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sinh() expects 1 argument");
-		result = flanagan.math.Fmath.sinh(jjtGetChild(0).evaluateVector(values));
+		result = Math.sinh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case COSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("cosh() expects 1 argument");
-		result = flanagan.math.Fmath.cosh(jjtGetChild(0).evaluateVector(values));
+		result = Math.cosh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case TANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("tanh() expects 1 argument");
-		result = flanagan.math.Fmath.tanh(jjtGetChild(0).evaluateVector(values));
+		result = Math.tanh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case CSCH: {
@@ -2005,7 +2005,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("csch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.csch(argument);
+		result = MathUtil.csch(argument);
 		break;
 	}
 	case COTH: {
@@ -2014,17 +2014,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("coth(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.coth(argument);
+		result = MathUtil.coth(argument);
 		break;
 	}
 	case SECH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sech() expects 1 argument");
-		result = flanagan.math.Fmath.sech(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.sech(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ASINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("asinh() expects 1 argument");
-		result = flanagan.math.Fmath.asinh(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.asinh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ACOSH: {
@@ -2033,7 +2033,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (argument < 1.0){
 			throw new FunctionDomainException("acosh(u) is not defined for u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acosh(argument);
+		result = MathUtil.acosh(argument);
 		break;
 	}
 	case ATANH: {
@@ -2042,7 +2042,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) >= 1.0){
 			throw new FunctionDomainException("atanh(u) is not defined in |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.atanh(argument);
+		result = MathUtil.atanh(argument);
 		break;
 	}
 	case ACSCH: {
@@ -2051,7 +2051,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (argument == 0.0){
 			throw new FunctionDomainException("acsch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acsch(argument);
+		result = MathUtil.acsch(argument);
 		break;
 	}
 	case ACOTH: {
@@ -2060,7 +2060,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) <= 1.0){
 			throw new FunctionDomainException("acoth(u) is not defined in |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.acoth(argument);
+		result = MathUtil.acoth(argument);
 		break;
 	}
 	case ASECH: {
@@ -2069,7 +2069,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (argument <= 0.0 || argument > 1.0){
 			throw new FunctionDomainException("asech(u) is not defined in 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.asech(argument);
+		result = MathUtil.asech(argument);
 		break;
 	}
 	case FACTORIAL: {
@@ -2078,7 +2078,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument) < 0.0){
 			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = flanagan.math.Fmath.factorial(argument);
+		result = MathUtil.factorial(argument);
 		break;
 	}
 	default: {
