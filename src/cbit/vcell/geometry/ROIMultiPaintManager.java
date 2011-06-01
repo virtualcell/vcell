@@ -102,7 +102,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private AsynchProgressPopup progressWaitPopup;
 	
 	public static class BoxBlurFilter{
-		
+		//This code originated from
+		//http://www.jhlabs.com/ip/blurring.html
 		public static int clamp(int x, int a, int b) {
 			return (x < a) ? a : (x > b) ? b : x;
 		}
