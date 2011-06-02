@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.microscopy.xml;
 import java.io.FileReader;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -8,6 +8,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
+
+import cbit.vcell.xml.XMLTags;
 /**
  * A container pattern class, wraps around a Hashtable, used by the XMLReader. The format of the keys is:
  x_path_of_element + ":" + java_class_name + ":" + identifying_attribute (varies)
