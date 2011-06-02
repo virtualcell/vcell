@@ -65,6 +65,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
@@ -767,15 +768,14 @@ public class FRAPStudy implements Matchable{
 			
 			int jobIndex = 0;
 			SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
-			
-			//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
-			System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
 			//if we need to check steady state, do the following two lines
 			if(bCheckSteadyState)
 			{
 				simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 				simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 			}
+			
+			ResourceUtil.prepareSolverExecutable(SolverDescription.FiniteVolumeStandalone);
 			
 			FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
 			fvSolver.startSolver();
