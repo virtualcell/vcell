@@ -122,6 +122,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private PreferencePanel preferencePanel = null;
 	private LoadFRAPData_MultiFilePanel multiFileDialog = null;
 	private VirtualFrapBatchRunFrame batchRunFrame = null;
+	private boolean bStandalone = true;
 	//for drag and drop action 
 	@SuppressWarnings("unused")
 	private DropTarget dt;
@@ -263,7 +264,14 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 					String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_EXIT, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_EXIT); 
 					if (result == UserMessage.OPTION_EXIT)
 					{
-						System.exit(0);
+						if(bStandalone)
+						{
+							System.exit(0);//quit application
+						}
+						else //activated in VCell
+						{
+							VirtualFrapMainFrame.this.dispose();//dispose the frame
+						}
 					}
 				}
 				// Help menu
@@ -385,17 +393,21 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 
 
 	// constructor
-	public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace)
+	public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone)
 	{
 		super();
 		this.localWorkspace = localWorkspace;
 		this.frapWorkspace = frapWorkspace;
 		this.batchRunWorkspace = batchRunWorkspace;
-		//showing the splash window for VirtualFrap
-		final URL splashImage = getClass().getResource("/images/splash.jpg");
-		new SplashWindow(splashImage,this,3500);
-		//get image file
-		setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
+		this.bStandalone = bStandalone;
+		//showing the splash window for VirtualFrap standalone, don't show if activated from VCell
+		if(bStandalone)
+		{
+			final URL splashImage = getClass().getResource("/images/splash.jpg");
+			new SplashWindow(splashImage,this,3500);
+			//get image file
+			setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
+		}
 		//initialize components
 		initiateComponents();
 		SetupMenus();

@@ -89,16 +89,12 @@ public class VirtualFrapLoader {
     public final static Font defaultFont = new Font("Tahoma", Font.PLAIN, 11); 
     //the only one instance of the main frame 
     public static VirtualFrapMainFrame mf; 
-	
-	public static void main(final String[] args)
+	//the function is called when activate in VCell or as standalone.
+	public static void loadVFRAP(final String[] args, final boolean bStandalone)
 	{
 		try { 
-			if(args.length != 0 && args.length != 1){
-				System.out.println("Usage: progName [workingDirectory]");
-				System.exit(1);
-			}
 			File wd = null;
-			if (args.length == 0) {
+			if (args == null || args.length == 0) {
 				wd = ResourceUtil.getUserHomeDir();
 			} else {
 				wd = new File(args[0]);
@@ -167,27 +163,7 @@ public class VirtualFrapLoader {
 			    saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
 			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 	            
-	            // setup component font
-		        UIManager.put ("InternalFrame.titleFont", defaultFont);
-		        UIManager.put ("ToolBar.font", defaultFont);
-		        UIManager.put ("Menu.font", defaultFont);
-		        UIManager.put ("MenuItem.font", defaultFont);
-		        UIManager.put ("Button.font",defaultFont);
-		        UIManager.put ("CheckBox.font",defaultFont);
-		        UIManager.put ("RadioButton.font",defaultFont);
-		        UIManager.put ("ComboBox.font",defaultFont);
-		        UIManager.put ("TextField.font",defaultFont);
-		        UIManager.put ("TextArea.font",defaultFont);
-		        UIManager.put ("TabbedPane.font",defaultFont);
-		        UIManager.put ("Panel.font",defaultFont);
-		        UIManager.put ("Label.font",defaultFont);
-		        UIManager.put ("List.font",defaultFont);
-		        UIManager.put ("Table.font",defaultFont);
-		        UIManager.put ("TitledBorder.font",defaultFont);
-		        UIManager.put ("OptionPane.font",defaultFont);
-		        UIManager.put ("FileChooser.font", defaultFont);
-							
-				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace);
+				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace, bStandalone);
 				System.out.println(mf.getLocation().x + "---"+mf.getLocation().y);
 				mf.setMainFrameTitle("");
 				mf.setVisible(true);
@@ -207,22 +183,29 @@ public class VirtualFrapLoader {
 
 	}
 	
-//	public final static Object loadProperty(String propName)
-//	{
-//		Object result = "";
-//		try { 
-//		            
-//            PropertyResourceBundle resources = (PropertyResourceBundle)
-//                ResourceBundle.getBundle("cbit.vcell.microscopy.vfrap");
-//            
-//            result = resources.getObject(propName);
-//        
-//        } catch (MissingResourceException mre) {
-//        	mre.printStackTrace(System.out);
-//			PopupGenerator.showErrorDialog("New user Registration error:\n"+mre.getMessage());
-////            System.exit(1);
-//        }
-//        return result;
-//	}
-
+	//loading as standalone. UIManager is needed when loading as standalone.
+	public static void main(final String[] args)
+	{
+		 // setup component font
+        UIManager.put ("InternalFrame.titleFont", defaultFont);
+        UIManager.put ("ToolBar.font", defaultFont);
+        UIManager.put ("Menu.font", defaultFont);
+        UIManager.put ("MenuItem.font", defaultFont);
+        UIManager.put ("Button.font",defaultFont);
+        UIManager.put ("CheckBox.font",defaultFont);
+        UIManager.put ("RadioButton.font",defaultFont);
+        UIManager.put ("ComboBox.font",defaultFont);
+        UIManager.put ("TextField.font",defaultFont);
+        UIManager.put ("TextArea.font",defaultFont);
+        UIManager.put ("TabbedPane.font",defaultFont);
+        UIManager.put ("Panel.font",defaultFont);
+        UIManager.put ("Label.font",defaultFont);
+        UIManager.put ("List.font",defaultFont);
+        UIManager.put ("Table.font",defaultFont);
+        UIManager.put ("TitledBorder.font",defaultFont);
+        UIManager.put ("OptionPane.font",defaultFont);
+        UIManager.put ("FileChooser.font", defaultFont);
+        
+		loadVFRAP(args, true);
+	}
 }
