@@ -163,8 +163,11 @@ public class VirtualFrapLoader {
 			    saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
 			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 	            
-				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace, bStandalone);
-				System.out.println(mf.getLocation().x + "---"+mf.getLocation().y);
+			    if(mf == null)
+			    {
+			    	mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace, bStandalone);
+			    }
+//				System.out.println(mf.getLocation().x + "---"+mf.getLocation().y);
 				mf.setMainFrameTitle("");
 				mf.setVisible(true);
 			
