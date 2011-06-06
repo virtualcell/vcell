@@ -916,9 +916,9 @@ private JMenu getToolMenu() {
 			toolMenu.setText("Tools");
 			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
-			toolMenu.add(getTransMAMenuItem());
-			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
+			toolMenu.add(new JSeparator());
+			toolMenu.add(getTransMAMenuItem());
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
