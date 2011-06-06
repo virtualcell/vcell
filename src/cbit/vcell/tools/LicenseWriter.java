@@ -211,15 +211,15 @@ public class LicenseWriter {
 			}
 			
 			//now read from the temp file and copy the contents to the original file
-//			writer = new BufferedWriter(new FileWriter(file));
-//			reader = new BufferedReader(new FileReader(tempFile));
-//
-//			while(null != (line = reader.readLine())) {
-//				writer.write(line);
-//				writer.write(newLine);
-//			}
-//			writer.close();
-//			reader.close();
+			writer = new BufferedWriter(new FileWriter(file));
+			reader = new BufferedReader(new FileReader(tempFile));
+
+			while(null != (line = reader.readLine())) {
+				writer.write(line);
+				writer.write(newLine);
+			}
+			writer.close();
+			reader.close();
 			tempFile.delete();
 			
 		} catch(Exception ex) {
@@ -289,14 +289,14 @@ public class LicenseWriter {
 			reader.close();
 
 			// now read from the temp file and copy the contents to the original file
-//			writer = new BufferedWriter(new FileWriter(file));
-//			reader = new BufferedReader(new FileReader(tempFile));
-//			while(null != (line = reader.readLine())) {
-//				writer.write(line);
-//				writer.write(newLine);
-//			}
-//			writer.close();
-//			reader.close();
+			writer = new BufferedWriter(new FileWriter(file));
+			reader = new BufferedReader(new FileReader(tempFile));
+			while(null != (line = reader.readLine())) {
+				writer.write(line);
+				writer.write(newLine);
+			}
+			writer.close();
+			reader.close();
 			tempFile.delete();
 			
 			summaryAddedLicenses++;
@@ -377,12 +377,19 @@ public class LicenseWriter {
 	 */
 	public static void main(String[] args) {
 		// Exceptions:
-		fileExceptions.add("src\\cbit\\vcell\\tools\\LicenseWriter.java");
-		fileExceptions.add("src\\org\\vcell\\sybil\\rdf\\reason\\MakeSkolem.java");
-		fileExceptions.add("src\\org\\vcell\\util\\gui\\sorttable\\JSortTable.java");
-		fileExceptions.add("src\\cbit\\vcell\\client\\desktop\\DocumentWindowAboutBox.java");
-		fileExceptions.add("src\\cbit\\rmi\\event\\RemoteMessageHandler.java");
-		fileExceptions.add("src\\cbit\\rmi\\event\\RemoteMessageListener.java");
+		fileExceptions.add("src\\cbit\\vcell\\tools\\LicenseWriter.java");				// this file
+		fileExceptions.add("src\\org\\vcell\\sybil\\rdf\\reason\\MakeSkolem.java");		// external license
+		fileExceptions.add("src\\org\\vcell\\util\\gui\\sorttable\\JSortTable.java");	// external license
+//		fileExceptions.add("src\\cbit\\vcell\\client\\desktop\\DocumentWindowAboutBox.java");	// license string inside code
+//		fileExceptions.add("src\\cbit\\rmi\\event\\RemoteMessageHandler.java");			// code & comment on same line
+//		fileExceptions.add("src\\cbit\\rmi\\event\\RemoteMessageListener.java");
+		
+        fileExceptions.add("src/org/vcell/wizard/Wizard.java");
+        fileExceptions.add("src/org/vcell/wizard/FinishDescriptor.java");
+        fileExceptions.add("src/org/vcell/wizard/WizardPanelNotFoundException.java");
+        fileExceptions.add("src/org/vcell/wizard/WizardController.java");
+        fileExceptions.add("src/org/vcell/wizard/WizardPanelDescriptor.java");
+        fileExceptions.add("src/org/vcell/wizard/WizardModel.java");
 
 		directoryExceptions.add("numerics\\fsqp");
 		directoryExceptions.add("numerics\\JNI");
@@ -396,31 +403,31 @@ public class LicenseWriter {
 		directoryExceptions.add("numerics\\zip");
 		directoryExceptions.add("numerics\\zlib");
 
-		if(args.length != 0 && args.length != 1 && args.length != 3) {
-			throw new IllegalArgumentException("Arguments:  [command] [java source dir] [license file name]");
+		if(args.length != 0 && args.length != 3) {
+			throw new IllegalArgumentException("Arguments:  [[command] [java source dir] [license file name]]");
 		}
 		String command = null;
 		File dir = null;
 		String rootDirectory = null;
 		File licenseFile = null;
+		String licenseFileName = null;
 		if(args.length == 0) {
 			{	// ************************************ setup area ***********************************
-//				command = "evaluate";
-//				command = "cleanup";
-				command = "write";
-				String testingDirectory = "C:\\dan\\licensetest\\work";
-				String vCellSourceDirectory = "C:\\dan\\projects\\VCell\\src";
-				String numericsSourceDirectory = "C:\\dan\\projects\\numerics";
-				rootDirectory = vCellSourceDirectory;
+//			command = "evaluate";
+//			command = "cleanup";
+			command = "write";
+			licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
+			String vCellSourceDirectory = "C:\\dan\\projects\\VCell_4.8\\src";
+			String numericsSourceDirectory = "C:\\dan\\projects\\numerics";
+			rootDirectory = vCellSourceDirectory;
 			}
 			dir = new File(rootDirectory);
-			String licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
 			licenseFile = new File(licenseFileName);
 		} else if (args.length == 3) {
 			command = args[0];
-			String directory = args[1];			// java source directory is first parameter
+			String directory = args[1];	// java source directory is first parameter
 			dir = new File(directory);
-			String licenseFileName = args[2];	// name of file with license statement is second parameter
+			licenseFileName = args[2];	// name of file with license statement is second parameter
 			licenseFile = new File(licenseFileName);
 		}
 		
