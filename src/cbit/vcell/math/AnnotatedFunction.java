@@ -11,7 +11,7 @@ import cbit.vcell.simdata.VariableType;
 public class AnnotatedFunction extends Function implements Matchable {
 	private java.lang.String fieldErrorString = null;
 	private VariableType fieldFunctionType = null;
-	private final FunctionCategory functionCatogery;
+	private final FunctionCategory functionCategory;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private String displayName = null;
 	
@@ -37,9 +37,23 @@ public AnnotatedFunction(String argFunctionName, Expression argFunctionExpressio
 	//fieldSimplifiedExpression = null;
 	fieldErrorString = argErrString;
 	fieldFunctionType = argFunctionType;
-	functionCatogery = fc;
+	functionCategory = fc;
 }
 
+/**
+ * AnnotatedFunction copy constructor.
+ */
+public AnnotatedFunction(AnnotatedFunction argAnnotatedFn) {
+	super(argAnnotatedFn.getName(), argAnnotatedFn.getExpression(), argAnnotatedFn.getDomain());
+	this.displayName = argAnnotatedFn.displayName; 
+	if (argAnnotatedFn.getName().indexOf(" ") > 0) {
+		throw new RuntimeException("Spaces are not allowed in user-defined function names. Try adding the function without spaces in its name.");
+	}
+	//fieldSimplifiedExpression = null;
+	fieldErrorString = argAnnotatedFn.fieldErrorString;
+	fieldFunctionType = argAnnotatedFn.fieldFunctionType;
+	functionCategory = argAnnotatedFn.functionCategory;
+}
 
 /**
  * Insert the method's description here.
@@ -66,15 +80,15 @@ public VariableType getFunctionType() {
  * @return boolean
  */
 public boolean isPredefined() {
-	return functionCatogery.equals(FunctionCategory.PREDEFINED);
+	return functionCategory.equals(FunctionCategory.PREDEFINED);
 }
 
 public boolean isOldUserDefined() {
-	return functionCatogery.equals(FunctionCategory.OLDUSERDEFINED);
+	return functionCategory.equals(FunctionCategory.OLDUSERDEFINED);
 }
 
 public boolean isOutputFunction() {
-	return functionCatogery.equals(FunctionCategory.OUTPUTFUNCTION);
+	return functionCategory.equals(FunctionCategory.OUTPUTFUNCTION);
 }
 
 public String getDisplayName() {
@@ -82,7 +96,7 @@ public String getDisplayName() {
 }
 
 public final FunctionCategory getFunctionCatogery() {
-	return functionCatogery;
+	return functionCategory;
 }
 
 }
