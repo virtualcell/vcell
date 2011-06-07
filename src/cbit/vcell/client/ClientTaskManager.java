@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
@@ -17,6 +18,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
@@ -82,13 +84,21 @@ public class ClientTaskManager {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
 				bioModel.addSimulationContext(newSimulationContext);
-				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
+				if (newSimulationContext.isSameTypeAs(simulationContext)) {
+					// copy simulations to new simContext
 					for (Simulation sim : simulationContext.getSimulations()) {
 						Simulation clonedSimulation = new Simulation(sim, false);
 						clonedSimulation.setMathDescription(newSimulationContext.getMathDescription());
 						clonedSimulation.setName(simulationContext.getBioModel().getFreeSimulationName());
 						newSimulationContext.addSimulation(clonedSimulation);
 					}
+					// copy output functions to new simContext
+					ArrayList<AnnotatedFunction> outputFunctions = simulationContext.getOutputFunctionContext().getOutputFunctionsList(); 
+					ArrayList<AnnotatedFunction> newOutputFunctions = new ArrayList<AnnotatedFunction>();
+					for (AnnotatedFunction afn : outputFunctions) {
+						newOutputFunctions.add(new AnnotatedFunction(afn));
+					}
+					newSimulationContext.getOutputFunctionContext().setOutputFunctions(newOutputFunctions);
 				} else {
 					if (simulationContext.getSimulations().length > 0) {
 						DialogUtils.showWarningDialog(requester, "Simulations are not copied because new application is of different type.");
