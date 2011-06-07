@@ -211,15 +211,15 @@ public class LicenseWriter {
 			}
 			
 			//now read from the temp file and copy the contents to the original file
-			writer = new BufferedWriter(new FileWriter(file));
-			reader = new BufferedReader(new FileReader(tempFile));
-
-			while(null != (line = reader.readLine())) {
-				writer.write(line);
-				writer.write(newLine);
-			}
-			writer.close();
-			reader.close();
+//			writer = new BufferedWriter(new FileWriter(file));
+//			reader = new BufferedReader(new FileReader(tempFile));
+//
+//			while(null != (line = reader.readLine())) {
+//				writer.write(line);
+//				writer.write(newLine);
+//			}
+//			writer.close();
+//			reader.close();
 			tempFile.delete();
 			
 		} catch(Exception ex) {
@@ -289,14 +289,14 @@ public class LicenseWriter {
 			reader.close();
 
 			// now read from the temp file and copy the contents to the original file
-			writer = new BufferedWriter(new FileWriter(file));
-			reader = new BufferedReader(new FileReader(tempFile));
-			while(null != (line = reader.readLine())) {
-				writer.write(line);
-				writer.write(newLine);
-			}
-			writer.close();
-			reader.close();
+//			writer = new BufferedWriter(new FileWriter(file));
+//			reader = new BufferedReader(new FileReader(tempFile));
+//			while(null != (line = reader.readLine())) {
+//				writer.write(line);
+//				writer.write(newLine);
+//			}
+//			writer.close();
+//			reader.close();
 			tempFile.delete();
 			
 			summaryAddedLicenses++;
@@ -391,13 +391,23 @@ public class LicenseWriter {
         fileExceptions.add("src/org/vcell/wizard/WizardPanelDescriptor.java");
         fileExceptions.add("src/org/vcell/wizard/WizardModel.java");
 
-		directoryExceptions.add("numerics\\fsqp");
+        // numerics
+		directoryExceptions.add("numerics\\blas");
+		directoryExceptions.add("numerics\\fsqp");				// csfqp?
+		directoryExceptions.add("numerics\\Hy3S");
+		directoryExceptions.add("numerics\\IDAWin");
+		directoryExceptions.add("numerics\\IFortran");
 		directoryExceptions.add("numerics\\JNI");
+		directoryExceptions.add("numerics\\libSBML-3.3.2");
+		directoryExceptions.add("numerics\\libSBML-4.0.0-b2");
+		directoryExceptions.add("numerics\\netcdf-3.6.2");
+		directoryExceptions.add("numerics\\PCGPack");
 		directoryExceptions.add("numerics\\qhull");
 		directoryExceptions.add("numerics\\smoldyn-2.15");
 		directoryExceptions.add("numerics\\SonicCClient");
 		directoryExceptions.add("numerics\\SonicCClient64");
 		directoryExceptions.add("numerics\\sundials");
+		directoryExceptions.add("numerics\\SundialsSolverStandalone");
 		directoryExceptions.add("numerics\\tinyxml");
 		directoryExceptions.add("numerics\\unzip");
 		directoryExceptions.add("numerics\\zip");
@@ -413,9 +423,9 @@ public class LicenseWriter {
 		String licenseFileName = null;
 		if(args.length == 0) {
 			{	// ************************************ setup area ***********************************
-//			command = "evaluate";
+			command = "evaluate";
 //			command = "cleanup";
-			command = "write";
+//			command = "write";
 			licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
 			String vCellSourceDirectory = "C:\\dan\\projects\\VCell_4.8\\src";
 			String numericsSourceDirectory = "C:\\dan\\projects\\numerics";
