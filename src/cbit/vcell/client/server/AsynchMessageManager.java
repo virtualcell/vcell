@@ -30,7 +30,8 @@ public class AsynchMessageManager
         DataJobSender, 
         VCellMessageEventListener,
         VCellMessageEventSender {
-    private EventListenerList listenerList = new EventListenerList();
+    private static final int CLIENT_POLLING_INTERVAL = 3;
+	private EventListenerList listenerList = new EventListenerList();
     private SimpleMessageService simpleMessageService = new SimpleMessageService();
     private RemoteMessageHandler connectedRemoteMessageHandler = null;
 
@@ -112,10 +113,10 @@ void connect(RemoteMessageHandler remoteMessageHandler) throws DataAccessExcepti
 		setConnectedRemoteMessageHandler(remoteMessageHandler);
 		// add me to remote message server
 		getSimpleMessageService().getMessageHandler().addRemoteMessageListener(remoteMessageHandler, remoteMessageHandler.getRemoteMesssageListenerID());
-		// add remote message server to me.
-		remoteMessageHandler.addRemoteMessageListener(getSimpleMessageService().getMessageHandler(), getSimpleMessageService().getMessageHandler().getRemoteMesssageListenerID());
+//		// add remote message server to me.
+//		remoteMessageHandler.addRemoteMessageListener(getSimpleMessageService().getMessageHandler(), getSimpleMessageService().getMessageHandler().getRemoteMesssageListenerID());
 		// in case of firewalls, etc
-		getSimpleMessageService().getMessageHandler().enablePolling(10); // seconds
+		getSimpleMessageService().getMessageHandler().enablePolling(CLIENT_POLLING_INTERVAL); // seconds
 	} catch (Throwable exc) {
 		// no go, dump
 		disconnect();
