@@ -34,7 +34,9 @@ import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.gui.DialogUtils;
 
-import uk.ac.ebi.miriam.lib.MiriamLink;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -79,13 +81,12 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 					miriamResources.add(resource);
 					miriamManager.addMiriamRefGroup(getSpeciesContext().getSpecies(), miriamQualifier, miriamResources);
 					
-					MiriamLink link = new MiriamLink();
-					if (!link.isLibraryUpdated()) {
-						System.err.println("MirianLink library is not up to date!");
-					}
+					MiriamProviderServiceLocator providerLocator = new MiriamProviderServiceLocator();
+					MiriamProvider provider = providerLocator.getMiriamWebServices();
+					
 					String pcLink = resource.getMiriamURN();
 					if (pcLink != null && pcLink.length() > 0) {
-						String[] locations = link.getLocations(pcLink);
+						String[] locations = provider.getLocations(pcLink);
 						if (locations != null){
 							for(String url : locations) {
 								try {
