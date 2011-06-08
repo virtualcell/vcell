@@ -678,7 +678,7 @@ public static void showErrorDialog(final Component requester, final String messa
 public static void showWarningDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareWarningDialog(null, message);
+			final JDialog dialog = prepareWarningDialog(requester, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{

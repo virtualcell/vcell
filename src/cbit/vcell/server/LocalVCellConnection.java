@@ -7,27 +7,26 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Date;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.MessageCollector;
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.MessageService;
+import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
+import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.simdata.LocalDataSetController;
-import cbit.vcell.simdata.LocalDataSetControllerProxy;
 import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -35,24 +34,27 @@ import cbit.vcell.visit.VisitConnectionInfo;
  * Creation date: (Unknown)
  * @author: Jim Schaff.
  */
-public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{	
-	private DataSetController dataSetControllerProxy = null;
+@SuppressWarnings("serial")
+public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener, DataJobListener {
 	private SimulationController simulationController = null;
 	private UserMetaDbServer userMetaDbServer = null;
 	private SimpleMessageService messageService = new SimpleMessageService();
+	private SimpleMessageCollector messageCollector = new SimpleMessageCollector();
 	//
 	private UserLoginInfo userLoginInfo;
 
 	//
 	// database resources
 	//
-	private static cbit.sql.ConnectionFactory conFactory = null;
-	private static cbit.sql.KeyFactory keyFactory = null;
+	private static ConnectionFactory conFactory = null;
+	private static KeyFactory keyFactory = null;
 
 	
 	private SessionLog fieldSessionLog = null;
 	private LocalVCellServer fieldLocalVCellServer = null;
 	private String fieldHost = null;
+	private PerformanceMonitoringFacility performanceMonitoringFacility;
+	private LocalDataSetController localDataSetController;
 
 /**
  * This method was created by a SmartGuide.
@@ -66,12 +68,12 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog
 	this.fieldLocalVCellServer = aLocalVCellServer;
 	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
 	
+	messageCollector.addMessageListener(messageService);
+	
 	getLocalVCellServer().getExportServiceImpl().addExportListener(this);
 	getLocalVCellServer().getDataSetControllerImpl().addDataJobListener(this);
 
-	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(this.userLoginInfo.getUser(), sessionLog);
-	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
-	
+	performanceMonitoringFacility = new PerformanceMonitoringFacility(this.userLoginInfo.getUser(), sessionLog);	
 }
 
 
@@ -83,7 +85,7 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
-		messageService.getMessageCollector().exportMessage(event);
+		messageService.messageEvent(event);
 	}
 }
 
@@ -93,16 +95,6 @@ public VisitConnectionInfo createNewVisitConnection() {
 	return visitConnectionInfo;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataSetControllerImpl
- */
-public ConnectionPool getConnectionPool() {
-	return (getLocalVCellServer().getConnectionPool());
-}
-
-
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.DataSetController
@@ -110,28 +102,11 @@ public ConnectionPool getConnectionPool() {
  */
 public DataSetController getDataSetController() throws RemoteException, DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getDataSetController()");
-	if (dataSetControllerProxy == null) {
-		//
-		// if this is a Primary Server, then create a factory for Remote Data Services
-		//
-		RemoteDataSetControllerFactory remoteDataSetControllerFactory = null;
-		getSessionLog().print("getDataSetController(), this is a primary server, creating remote factory for DataSetControllerProxy");
-		if (getLocalVCellServer().isPrimaryServer()) {
-			remoteDataSetControllerFactory = new RemoteDataSetControllerFactory() {
-				public DataSetController getRemoteDataSetController() throws RemoteException, DataAccessException {
-					return getRemoteDataSetController0();
-				}
-			};
-		}else{
-			remoteDataSetControllerFactory = null;
-		}
-
-		getSessionLog().print("getDataSetController() creating LocalDataSetController(" + getUserLoginInfo().getUser().getName() + ")");
-		LocalDataSetController localDataSetController = new LocalDataSetController(this, getSessionLog(), getLocalVCellServer().getDataSetControllerImpl(), getLocalVCellServer().getExportServiceImpl(), getUserLoginInfo().getUser());
-		dataSetControllerProxy = new LocalDataSetControllerProxy(getSessionLog(), remoteDataSetControllerFactory, localDataSetController);
+	if (localDataSetController == null) {
+		localDataSetController = new LocalDataSetController(this, getSessionLog(), getLocalVCellServer().getDataSetControllerImpl(), getLocalVCellServer().getExportServiceImpl(), getUserLoginInfo().getUser());
 	}
 
-	return dataSetControllerProxy;
+	return localDataSetController;
 }
 
 
@@ -161,44 +136,13 @@ private LocalVCellServer getLocalVCellServer() {
  * Creation date: (6/29/01 10:33:49 AM)
  * @return cbit.rmi.event.SimpleMessageService
  */
-cbit.rmi.event.SimpleMessageService getMessageService() {
+MessageService getMessageService() {
 	return messageService;
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.server.DataSetController
- */
-private DataSetController getRemoteDataSetController0() throws RemoteException, DataAccessException {
-	VCellConnection vcConn = getSimDataServerRemoteConnection();
-	if (vcConn != null && vcConn!=this){
-		DataSetController remoteDataSetController = vcConn.getDataSetController();
-		return remoteDataSetController;
-	}else{
-		return null;
-	}
+MessageCollector getMessageCollector() {
+	return messageCollector;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/9/01 1:27:23 PM)
- * @return cbit.rmi.event.RemoteMessageHandler
- */
-public cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() throws java.rmi.RemoteException {
-	return messageService.getMessageHandler();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 9:45:10 AM)
- * @return cbit.vcell.modeldb.ResultSetCrawler
- */
-public cbit.vcell.modeldb.ResultSetCrawler getResultSetCrawler() {
-	return this.fieldLocalVCellServer.getResultSetCrawler();
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -208,34 +152,6 @@ public cbit.vcell.modeldb.ResultSetCrawler getResultSetCrawler() {
 private SessionLog getSessionLog() {
 	return (fieldSessionLog);
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.server.VCellConnection
- */
-private VCellConnection getSimDataServerRemoteConnection() {
-	ConnectionPool connectionPool = getLocalVCellServer().getConnectionPool();
-	if (connectionPool != null) {
-		try {
-			VCellConnection vcConn = connectionPool.getSimDataServerVCellConnection(userLoginInfo);
-			//
-			// connect() establishes a two way connection, so this is sufficient for receiving data events.
-			//
-			if (vcConn!=null && !getRemoteMessageHandler().isConnected(vcConn.getRemoteMessageHandler())){
-				cbit.rmi.event.RemoteMessageHandler localMessageHandler = getRemoteMessageHandler();
-				cbit.rmi.event.RemoteMessageHandler remoteMessageHandler = vcConn.getRemoteMessageHandler();
-				localMessageHandler.addRemoteMessageListener(remoteMessageHandler, remoteMessageHandler.getRemoteMesssageListenerID());
-				remoteMessageHandler.addRemoteMessageListener(localMessageHandler, localMessageHandler.getRemoteMesssageListenerID());
-			}
-			return vcConn;
-		} catch (Throwable e) {
-			getSessionLog().exception(e);
-		}
-	}
-	return null;
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -290,7 +206,7 @@ public UserLoginInfo getUserLoginInfo() {
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServer == null) {
-		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser(), getSessionLog());
+		userMetaDbServer = new LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser(), getSessionLog());
 	}
 	return userMetaDbServer;
 }
@@ -300,7 +216,7 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
  * This method was created in VisualAge.
  * @param conFactory cbit.sql.ConnectionFactory
  */
-static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFactory argKeyFactory) {
+static void setDatabaseResources(ConnectionFactory argConFactory, KeyFactory argKeyFactory) {
 	conFactory = argConFactory;
 	keyFactory = argKeyFactory;
 }
@@ -308,12 +224,22 @@ static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFa
 
 public void dataJobMessage(DataJobEvent event) {
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
-		messageService.getMessageCollector().dataJobMessage(event);
+		messageService.messageEvent(event);
 	}
 }
 
 
 public void sendErrorReport(Throwable exception) throws RemoteException {
 	BeanUtils.sendErrorReport(exception);
+}
+
+public MessageEvent[] getMessageEvents() throws RemoteException {
+	return messageService.getMessageEvents();
+}
+
+
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteException {
+	performanceMonitoringFacility.performanceMonitorEvent(performanceMonitorEvent);
+	
 }
 }

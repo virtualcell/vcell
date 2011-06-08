@@ -1647,10 +1647,6 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 		// gets BioModelMetaDatas, MathModelMetaDatas, all VersionInfos, and ResultSetInfos
 		//
 		vcInfoContainer = sessionManager.getUserMetaDbServer().getVCInfoContainer();
-//		bMathModelInfosDirty = false;
-//		bImageInfosDirty = false;
-//		bBioModelInfosDirty = false;
-//		bGeometryInfosDirty = false;
 
 		PerformanceMonitorEvent pme = new PerformanceMonitorEvent(this,getUser(),
 			new PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
@@ -1660,7 +1656,7 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 				    }
 		    )
     	);
-		((ClientServerManager)getSessionManager()).getAsynchMessageManager().performanceMonitorEvent(pme);
+		((ClientServerManager)getSessionManager()).getAsynchMessageManager().reportPerformanceMonitorEvent(pme);
 
 	}catch (RemoteException e){
 		handleRemoteException(e);

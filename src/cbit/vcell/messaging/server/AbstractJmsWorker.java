@@ -141,7 +141,7 @@ public final void start() {
 			
 			if (currentTask == null || !(currentTask instanceof SimulationTask)){
 				try {
-					Thread.sleep(MessageConstants.SECOND);
+					Thread.sleep(MessageConstants.SECOND_IN_MS);
 				} catch (Exception ex) {
 				}
 				continue;				
