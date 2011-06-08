@@ -19,7 +19,6 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
@@ -37,7 +36,7 @@ import cbit.xml.merge.XmlTreeDiff;
  * Creation date: (5/5/2004 1:01:37 PM)
  * @author: Ion Moraru
  */
-public abstract class DocumentWindowManager extends TopLevelWindowManager implements PerformanceMonitorListener, java.awt.event.ActionListener, DataViewerManager {
+public abstract class DocumentWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener, DataViewerManager {
 	private JPanel jPanel = null;
 	private String documentID = null;
 	
@@ -339,18 +338,6 @@ public void openGeometryDocumentWindow(final Geometry geom) {
 	};
 	ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/17/2004 3:13:55 PM)
- * @param pme cbit.rmi.event.PerformanceMonitorEvent
- */
-public void performanceMonitorEvent(PerformanceMonitorEvent pme) {
-	// just pass it to the the message manager
-	getRequestManager().getAsynchMessageManager().performanceMonitorEvent(pme);
-}
-
 
 /**
  * Insert the method's description here.

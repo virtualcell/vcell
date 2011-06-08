@@ -31,7 +31,7 @@ public RpcDataServerImpl (cbit.vcell.messaging.RpcServerMessaging messaging, Ses
 	super(sessionLog);
 	rpcServerMessaging = messaging;
 
-	Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE * 20);
+	Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog, cacheTable, 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));

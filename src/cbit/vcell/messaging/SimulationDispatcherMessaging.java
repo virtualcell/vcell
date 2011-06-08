@@ -82,7 +82,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				} catch (Exception e) {
 					log.exception(e);
 					try {
-						Thread.sleep(MessageConstants.SECOND);
+						Thread.sleep(MessageConstants.SECOND_IN_MS);
 					} catch (InterruptedException ex) {
 						log.exception(ex);
 					}
@@ -218,7 +218,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				} catch (Exception e) {
 					log.exception(e);
 					try {
-						Thread.sleep(MessageConstants.SECOND);
+						Thread.sleep(MessageConstants.SECOND_IN_MS);
 					} catch (InterruptedException ex) {
 						log.exception(ex);
 					}
@@ -343,7 +343,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 					if (foundOne) {
 						sleep(100);
 					} else {
-						sleep(1 * MessageConstants.SECOND);
+						sleep(1 * MessageConstants.SECOND_IN_MS);
 					}
 				} catch (InterruptedException ex) {
 					log.exception(ex);
@@ -372,7 +372,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				} catch (Exception e) {
 					log.exception(e);
 					try {
-						Thread.sleep(MessageConstants.SECOND);
+						Thread.sleep(MessageConstants.SECOND_IN_MS);
 					} catch (InterruptedException ex) {
 						log.exception(ex);
 					}
@@ -445,7 +445,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				
 				// if there are no messages or exceptions, sleep for a while
 				try {
-					sleep(5 * MessageConstants.SECOND);
+					sleep(5 * MessageConstants.SECOND_IN_MS);
 				} catch (InterruptedException ex) {
 					log.exception(ex);
 				}

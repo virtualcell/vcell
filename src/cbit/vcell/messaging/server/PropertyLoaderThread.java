@@ -86,7 +86,7 @@ public void run() {
 		// sleep for a while
 		//
 		try {
-			Thread.sleep(20 * MessageConstants.MINUTE);
+			Thread.sleep(20 * MessageConstants.MINUTE_IN_MS);
 		} catch (InterruptedException e){
 		}
 		

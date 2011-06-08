@@ -416,7 +416,7 @@ public final void start() throws JMSException {
 		}
 		
 		try {
-			Thread.sleep(2 * MessageConstants.SECOND);
+			Thread.sleep(2 * MessageConstants.SECOND_IN_MS);
 		} catch (Exception ex) {
 			log.exception(ex);
 		}			

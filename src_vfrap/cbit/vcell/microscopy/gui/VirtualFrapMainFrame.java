@@ -482,7 +482,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 					}
 				}
 		);
-		System.setProperty(PropertyLoader.localSimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+		System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 		System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 		System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultSimDataDirectory());
 		System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());

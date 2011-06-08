@@ -49,7 +49,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -85,7 +84,6 @@ import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
-import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -141,7 +139,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
-//import cbit.vcell.visit.VCellVisitUtils;
 import cbit.vcell.visit.VisitControlPanel;
 import cbit.vcell.visit.VisitSession;
 /**
@@ -150,7 +147,7 @@ import cbit.vcell.visit.VisitSession;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class PDEDataViewer extends DataViewer implements DataJobSender {
+public class PDEDataViewer extends DataViewer {
 	public enum CurrentView {
 		SLICE_VIEW("Slice View"),
 		SURFACE_VIEW("Surface View");
