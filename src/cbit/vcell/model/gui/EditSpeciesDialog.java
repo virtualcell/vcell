@@ -44,7 +44,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 
-import uk.ac.ebi.miriam.lib.MiriamLink;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
+import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -117,10 +118,10 @@ public class EditSpeciesDialog extends JDialog {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				String htmlText = null;
-				MiriamLink link = new MiriamLink();
-				if (!link.isLibraryUpdated()) {
-					System.err.println("MirianLink library is not up to date!");
-				}
+				
+				MiriamProviderServiceLocator providerLocator = new MiriamProviderServiceLocator();
+				MiriamProvider provider = providerLocator.getMiriamWebServices();
+				
 				ArrayList<String> pcLinkStr = getPCLinks();
 				if (pcLinkStr != null && pcLinkStr.size() > 0) {
 					StringBuffer buffer = new StringBuffer("<html>");
@@ -132,9 +133,9 @@ public class EditSpeciesDialog extends JDialog {
 						String prettyResourceName = pcLink.replaceFirst("urn:miriam:", "");
 						if (pcLink != null && pcLink.length() > 0) {
 							buffer.append("&#x95;&nbsp;" + prettyResourceName + "  <b>" + preferredName + "</b><br>");
-							String[] locations = link.getLocations(pcLink);
+							String[] locations = provider.getLocations(pcLink);
 							if (locations!=null){
-								for(String url : link.getLocations(pcLink)) {
+								for(String url : provider.getLocations(pcLink)) {
 									buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
 								}
 							}
