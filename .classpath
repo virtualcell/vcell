@@ -26,11 +26,10 @@
 	<classpathentry exported="true" kind="lib" path="wstx-asl-3.2.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="xml-apis.jar"/>
 	<classpathentry exported="true" kind="lib" path="bioformats_omexml_locicommon_brnch41.jar"/>
-	<classpathentry exported="true" kind="lib" path="JLink.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_mail.jar"/>
-	<classpathentry kind="lib" path="GlgGraphLayoutNG.jar"/>
+	<classpathentry exported="true" kind="lib" path="GlgGraphLayoutNG.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
 	<classpathentry exported="true" kind="lib" path="sonic_Client.jar"/>
 	<classpathentry exported="true" kind="lib" path="sonic_XA.jar"/>
@@ -39,21 +38,20 @@
 	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="copasi_build30.jar"/>
 	<classpathentry exported="true" kind="lib" path="js.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-js.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
-	<classpathentry kind="lib" path="apache_commons_math_2.2.jar"/>
-	<classpathentry kind="lib" path="ojdbc5.jar"/>
-	<classpathentry kind="lib" path="libsbmlj.jar"/>
-	<classpathentry kind="lib" path="jh_2_0_05.jar"/>
-	<classpathentry kind="lib" path="jmf.jar"/>
-	<classpathentry kind="lib" path="axis.jar"/>
-	<classpathentry kind="lib" path="jaxrpc.jar"/>
-	<classpathentry kind="lib" path="commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="wsdl4j-1.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="apache_commons_math_2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="ojdbc5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libsbmlj.jar"/>
+	<classpathentry exported="true" kind="lib" path="jh_2_0_05.jar"/>
+	<classpathentry exported="true" kind="lib" path="jmf.jar"/>
+	<classpathentry exported="true" kind="lib" path="axis.jar"/>
+	<classpathentry exported="true" kind="lib" path="jaxrpc.jar"/>
+	<classpathentry exported="true" kind="lib" path="commons-discovery-0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="commons-logging-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
