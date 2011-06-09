@@ -87,7 +87,6 @@ import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
-import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -142,7 +141,7 @@ import cbit.vcell.solvers.MembraneElement;
  * Creation date: (6/11/2004 6:03:07 AM)
  * @author: Ion Moraru
  */
-public class PDEDataViewer extends DataViewer implements DataJobSender {
+public class PDEDataViewer extends DataViewer {
 	private Vector<DataJobListener> dataJobListenerList = new Vector<DataJobListener>();
 	 
 	public static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";

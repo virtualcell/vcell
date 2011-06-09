@@ -9,20 +9,34 @@
  */
 
 package cbit.vcell.messaging.server;
+import java.io.FileNotFoundException;
 import java.net.URL;
-import java.io.*;
-import java.rmi.*;
-import java.rmi.server.*;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.User;
 
-import cbit.rmi.event.*;
-import cbit.vcell.messaging.*;
-import cbit.vcell.messaging.event.*;
-import cbit.vcell.server.*;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.rmi.event.SimpleMessageService;
+import cbit.vcell.messaging.JmsClientMessaging;
+import cbit.vcell.messaging.JmsConnection;
+import cbit.vcell.messaging.JmsConnectionFactory;
+import cbit.vcell.messaging.JmsMessageCollector;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.LocalVCellServer;
+import cbit.vcell.server.PerformanceMonitoringFacility;
+import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.URLFinder;
+import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.server.VCellConnection;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -30,14 +44,16 @@ import cbit.vcell.server.*;
  * Creation date: (Unknown)
  * @author: Jim Schaff.
  */
+@SuppressWarnings("serial")
 public class LocalVCellConnectionMessaging extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{
-	
+	private long MAX_TIME_WITHOUT_POLLING_MS = 10*MessageConstants.MINUTE_IN_MS;
 	private LocalDataSetControllerMessaging dataSetControllerMessaging = null;
 	private LocalSimulationControllerMessaging simulationControllerMessaging = null;
 	private LocalUserMetaDbServerMessaging userMetaDbServerMessaging = null;
-	private cbit.vcell.messaging.event.SimpleMessageServiceMessaging messageService = null;
+	private SimpleMessageService messageService = null;
 
 	private JmsConnection jmsConn = null;
+	private JmsMessageCollector jmsMessageCollector = null;
 	
 	private UserLoginInfo userLoginInfo;
 	
@@ -48,6 +64,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private JmsClientMessaging dbClientMessaging = null;
 	private JmsClientMessaging dataClientMessaging = null;
 	private JmsClientMessaging simClientMessaging = null;
+	private PerformanceMonitoringFacility performanceMonitoringFacility;
 
 	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, String host, 
 		SessionLog sessionLog, JmsConnectionFactory jmsConnFactory, LocalVCellServer aLocalVCellServer) 
@@ -58,15 +75,16 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	this.fieldSessionLog = sessionLog;
 	this.fieldLocalVCellServer = aLocalVCellServer;
 	jmsConn = jmsConnFactory.createConnection();
+	jmsMessageCollector = new JmsMessageCollector(jmsConn, userLoginInfo.getUser(), fieldSessionLog);
 	
-	messageService = new SimpleMessageServiceMessaging(jmsConn, userLoginInfo.getUser(), sessionLog);	
+	messageService = new SimpleMessageService();
+	jmsMessageCollector.addMessageListener(messageService);
+	
 	sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
 	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
 	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
 	
-	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);
-	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
-	
+	performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
 }
 
 
@@ -75,7 +93,6 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
  * Creation date: (4/16/2004 10:42:29 AM)
  */
 public void close() throws java.rmi.RemoteException {
-	messageService.close();
 	try {
 		jmsConn.close();
 	} catch (javax.jms.JMSException ex) {
@@ -92,7 +109,7 @@ public void close() throws java.rmi.RemoteException {
 public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
-		messageService.getMessageCollector().dataJobMessage(event);
+		messageService.messageEvent(event);
 	}
 }
 
@@ -105,7 +122,7 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
-		messageService.getMessageCollector().exportMessage(event);
+		messageService.messageEvent(event);
 	}
 }
 
@@ -136,20 +153,9 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
  * Creation date: (9/17/2004 4:34:02 PM)
  * @return cbit.vcell.messaging.event.SimpleMessageServiceMessaging
  */
-cbit.vcell.messaging.event.SimpleMessageServiceMessaging getMessageService() {
+SimpleMessageService getMessageService() {
 	return messageService;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/9/01 1:27:23 PM)
- * @return cbit.rmi.event.RemoteMessageHandler
- */
-public cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() {
-	return messageService.getMessageHandler();
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -229,21 +235,16 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
  * Creation date: (4/16/2004 11:22:31 AM)
  */
 public boolean isTimeout() throws java.rmi.RemoteException {
-	SimpleMessageHandler messageHander = (SimpleMessageHandler)messageService.getMessageHandler();
-	if (messageHander.isTimeout()) {
-		return true;
-	}
+	return messageService.timeSinceLastPoll() > MAX_TIME_WITHOUT_POLLING_MS;
+}
 
-	//long TIMEOUT_INTERVAL = 3600 * 1000; // a hour
+public MessageEvent[] getMessageEvents() throws RemoteException {
+	return messageService.getMessageEvents();
+}
+
+
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteException {
+	performanceMonitoringFacility.performanceMonitorEvent(performanceMonitorEvent);
 	
-	//long t = System.currentTimeMillis();
-	//if ((dbClientMessaging == null || t - dbClientMessaging.getTimeSinceLastMessage() >= TIMEOUT_INTERVAL) 
-		//&& (dataClientMessaging == null || t - dataClientMessaging.getTimeSinceLastMessage() >= TIMEOUT_INTERVAL)
-		//&& (simClientMessaging == null || t - simClientMessaging.getTimeSinceLastMessage() >= TIMEOUT_INTERVAL)
-		//&& t - messageService.getJmsMessageCollector().getTimeSinceLastMessage() >= TIMEOUT_INTERVAL) {
-		//return true;
-	//}	
-
-	return false;
 }
 }

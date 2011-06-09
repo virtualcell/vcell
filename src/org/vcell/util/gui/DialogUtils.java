@@ -325,7 +325,7 @@ private static JDialog prepareWarningDialog(final Component requester,final Stri
 private static JDialog prepareInfoDialog(final Component requester,final String message) {
 	JPanel panel = createMessagePanel(message);
 	JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-	JDialog dialog = pane.createDialog(requester, "");
+	JDialog dialog = pane.createDialog(requester, "info");
 	dialog.setResizable(true);
 	return dialog;
 }
@@ -654,7 +654,7 @@ public static void showErrorDialog(final Component requester,final  String messa
 public static void showWarningDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareWarningDialog(null, message);
+			final JDialog dialog = prepareWarningDialog(requester, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{

@@ -116,7 +116,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	// generate PerformanceMonitorEvent
 	long l2 = System.currentTimeMillis();
 	double duration = ((double)(l2 - l1)) / 1000;
-	documentWindowManager.performanceMonitorEvent(
+	requestManager.getAsynchMessageManager().reportPerformanceMonitorEvent(
 	    new PerformanceMonitorEvent(
 		    this, documentManager.getUser(), new PerformanceData(
 			    "SaveDocument.run()",

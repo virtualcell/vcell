@@ -18,7 +18,7 @@ import java.util.*;
  * @author: Jim Schaff
  */
 public class MessageQueue {
-	private LinkedList<RemoteMessageEvent> q = new LinkedList<RemoteMessageEvent>();
+	private LinkedList<MessageEvent> q = new LinkedList<MessageEvent>();
 	private Date dateWhenLastPopAll = new Date();   // is receiver polling?
 	private int failedToSendCount = 0;
 /**
@@ -27,17 +27,17 @@ public class MessageQueue {
 public MessageQueue() {
 	super();
 }
-public synchronized void addToFront(RemoteMessageEvent remoteMessageEvent){
+public synchronized void addToFront(MessageEvent remoteMessageEvent){
 	q.addFirst(remoteMessageEvent);		// prepend to start of list
 	this.notify();						// tell waiting threads that data is ready
 }
-public synchronized RemoteMessageEvent blockingPop() {
+public synchronized MessageEvent blockingPop() {
 	while (q.size()==0){
 		try {
 			this.wait();
 		}catch (InterruptedException e){}
 	}
-	return (RemoteMessageEvent)q.remove(0);
+	return q.remove(0);
 }
 /**
  * Insert the method's description here.
@@ -69,9 +69,9 @@ public int getFailedToSendCount() {
 public void incrementFailedToSendCount() {
 	failedToSendCount++;
 }
-public synchronized RemoteMessageEvent nonblockingPop() {
+public synchronized MessageEvent nonblockingPop() {
 	if (q.size()>0){
-		return (RemoteMessageEvent)q.remove(0);
+		return q.remove(0);
 	}else{
 		return null;
 	}
@@ -79,28 +79,28 @@ public synchronized RemoteMessageEvent nonblockingPop() {
 /**
  * Insert the method's description here.
  * Creation date: (4/15/2002 2:37:42 PM)
- * @return cbit.rmi.event.RemoteMessageEvent[]
+ * @return cbit.rmi.event.MessageEvent[]
  */
-public synchronized RemoteMessageEvent[] popAll() {
+public synchronized MessageEvent[] popAll() {
 	setDateWhenLastPopAll(new Date());
 	if (q.size()>0){
-		RemoteMessageEvent[] queuedMessages = (RemoteMessageEvent[])q.toArray(new RemoteMessageEvent[q.size()]);
+		MessageEvent[] queuedMessages = (MessageEvent[])q.toArray(new MessageEvent[q.size()]);
 		q.clear();
 		return queuedMessages;
 	}else{
-		return new RemoteMessageEvent[0];
+		return new MessageEvent[0];
 	}
 }
-public synchronized void push(RemoteMessageEvent remoteMessageEvent){
+public synchronized void push(MessageEvent remoteMessageEvent){
 	// first clear any consumable events of the same type that may be in the queue coming from the same originator
-	ListIterator<RemoteMessageEvent> itr = q.listIterator();
+	ListIterator<MessageEvent> itr = q.listIterator();
 	while (itr.hasNext()) {
-		RemoteMessageEvent rme = itr.next();
-		if (remoteMessageEvent.getMessageEvent().getMessageSource().equals(rme.getMessageEvent().getMessageSource())) {
-			if (rme.getMessageEvent().isSupercededBy(remoteMessageEvent.getMessageEvent())) {
+		MessageEvent rme = itr.next();
+		if (rme.getMessageSource().equals(rme.getMessageSource())) {
+			if (rme.isSupercededBy(remoteMessageEvent)) {
 				itr.remove();
 			} 
-			if (remoteMessageEvent.getMessageEvent().isSupercededBy(rme.getMessageEvent())) {
+			if (remoteMessageEvent.isSupercededBy(rme)) {
 				return;
 			}
 		}

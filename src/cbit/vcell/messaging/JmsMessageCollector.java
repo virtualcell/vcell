@@ -26,7 +26,7 @@ import cbit.rmi.event.*;
  * Creation date: (5/9/2003 12:05:19 PM)
  * @author: Fei Gao
  */
-public class JmsMessageCollector implements ControlTopicListener, MessageSender {
+public class JmsMessageCollector implements ControlTopicListener, MessageCollector {
 	private EventListenerList listenerList = new EventListenerList();	
 	private User user = null;	
 	private JmsConnection jmsConn = null;
@@ -196,5 +196,13 @@ public void removeMessageListener(MessageListener listener) {}
  */
 public void setTimeSinceLastMessage(long newTimeSinceLastMessage) {
 	timeSinceLastMessage = newTimeSinceLastMessage;
+}
+
+public void simulationJobStatusChanged(SimulationJobStatusEvent simJobStatusEvent) {
+	// jms message collector doesn't listen for SimulationJobStatusEvent
+}
+
+public void onWorkerEvent(WorkerEvent event) {	
+	// jms message collector doesn't listen for WorkerEvent
 }
 }

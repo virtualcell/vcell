@@ -19,8 +19,8 @@ import cbit.vcell.messaging.*;
  * @author: Fei Gao
  */
 public interface ManageConstants {
-	public static final long INTERVAL_PING_SERVICE = 10 * MessageConstants.MINUTE; // in minutes
-	public static final long INTERVAL_PING_RESPONSE = 10 * MessageConstants.SECOND; // in milliseconds
+	public static final long INTERVAL_PING_SERVICE = 10 * MessageConstants.MINUTE_IN_MS; // in minutes
+	public static final long INTERVAL_PING_RESPONSE = 10 * MessageConstants.SECOND_IN_MS; // in milliseconds
 
 	public static final String MESSAGE_TYPE_PROPERTY = MessageConstants.MESSAGE_TYPE_PROPERTY;
 	public static final String MESSAGE_TYPE_ISSERVICEALIVE_VALUE	= "IsServiceAlive";

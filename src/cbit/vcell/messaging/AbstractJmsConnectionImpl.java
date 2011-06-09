@@ -28,7 +28,7 @@ public abstract class AbstractJmsConnectionImpl implements ExceptionListener, Jm
 	protected Connection connection = null;	
 
 	protected static final int JMSCONNECTION_PING_INTERVAL = 30; // second
-	protected static final long JMSCONNECTION_RETRY_INTERVAL = 10 * MessageConstants.SECOND; //second
+	protected static final long JMSCONNECTION_RETRY_INTERVAL = 10 * MessageConstants.SECOND_IN_MS; //second
 		
 	protected List<JmsSession> sessionList = Collections.synchronizedList(new ArrayList<JmsSession>());
 

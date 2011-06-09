@@ -9,52 +9,124 @@
  */
 
 package cbit.vcell.client.server;
-import cbit.vcell.server.*;
-import cbit.vcell.client.*;
-import java.beans.*;
-import cbit.vcell.client.desktop.simulation.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.messaging.db.*;
-import cbit.sql.*;
-import cbit.rmi.event.*;
-import cbit.vcell.solver.ode.gui.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.rmi.RemoteException;
 
-import org.vcell.util.DataAccessException;
+import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
+
+import org.vcell.util.MessageConstants;
+
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceData;
+import cbit.rmi.event.PerformanceDataEntry;
+import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.SimulationJobStatusListener;
+import cbit.rmi.event.VCellMessageEvent;
+import cbit.rmi.event.VCellMessageEventListener;
+import cbit.vcell.client.SimStatusEvent;
+import cbit.vcell.client.SimStatusListener;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.server.VCellConnection;
+
 /**
- * Insert the type's description here.
- * Creation date: (6/9/2004 2:17:35 PM)
- * @author: Ion Moraru
+ * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
+ * {@link SimulationJobStatusEvent} : simulation running event.
+ * {@link ExportEvent} : export data event.
+ * {@link DataJobEvent} : spatial plot, kymograph, etc
+ * {@link VCellMessageEvent} : broadcase messages.
+ * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify {@link TopLevelWindowManager}
+ * to update the status.
  */
-public class AsynchMessageManager
-    implements
-        SimStatusListener,
-        SimStatusSender,
-        PerformanceMonitorListener,
-        SimulationJobStatusListener,
-        ExportListener,
-        SimulationJobStatusSender,
-        ExportSender,
-        DataJobListener,
-        DataJobSender, 
-        VCellMessageEventListener,
-        VCellMessageEventSender {
-    private EventListenerList listenerList = new EventListenerList();
-    private SimpleMessageService simpleMessageService = new SimpleMessageService();
-    private RemoteMessageHandler connectedRemoteMessageHandler = null;
+public class AsynchMessageManager implements SimStatusListener {
+    private static final int CLIENT_POLLING_INTERVAL = 3 * MessageConstants.SECOND_IN_MS;
+	private EventListenerList listenerList = new EventListenerList();
+    private VCellConnection vcellConnection = null;
 
 /**
  * Insert the method's description here.
  * Creation date: (6/9/2004 4:55:22 PM)
  */
 public AsynchMessageManager() {
-	getSimpleMessageService().getMessageDispatcher().addSimulationJobStatusListener(this);
-	getSimpleMessageService().getMessageDispatcher().addExportListener(this);
-	getSimpleMessageService().getMessageDispatcher().addDataJobListener(this);
-	getSimpleMessageService().getMessageDispatcher().addVCellMessageEventListener(this);
+	startPolling();
 }
 
+private void startPolling() {
+	Thread pollingThread = new Thread(
+		new Runnable() {
+			public void run() {
+				long counter = 0;
+				while (true) {
+					try { 
+						Thread.sleep(CLIENT_POLLING_INTERVAL); 
+					} catch (InterruptedException exc) {
+						
+					}
+					counter += 1;
+					poll(counter%50 == 0); // send performance report every now and then...
+				}
+			}
+		}
+	);
+	pollingThread.setDaemon(true);
+	pollingThread.start();	
+}
+
+private void poll(boolean reportPerf) {
+    //
+    // ask remote message listener (really should be "message producer") for any queued events.
+    //
+    try {
+    	if (vcellConnection == null) {
+    		return;
+    	}
+    	MessageEvent[] queuedEvents = null;
+    	// time the call
+	    long l1 = System.currentTimeMillis();
+	    synchronized (vcellConnection) {		
+	    	queuedEvents = vcellConnection.getMessageEvents();
+		}
+	    long l2 = System.currentTimeMillis();
+	    double duration = ((double)(l2 - l1)) / 1000;
+	    // deal with events, if any
+	    if (queuedEvents != null) {
+		    for (MessageEvent messageEvent : queuedEvents){
+		    	onMessageEvent(messageEvent);
+		    }
+	    }
+	    // report polling call performance
+	    if (reportPerf) {
+	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
+			    this, null, new PerformanceData(
+				    "AsynchMessageManager.poll()",
+				    MessageEvent.POLLING_STAT,
+				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
+			    )
+			);
+			reportPerformanceMonitorEvent(performanceMonitorEvent);
+	    }
+    } catch (Exception exc) {
+	    System.out.println(">> polling failure << " + exc.getMessage());
+    }	
+}
+
+private void onMessageEvent(MessageEvent event) {
+	if (event instanceof SimulationJobStatusEvent) {
+		fireSimulationJobStatusEvent((SimulationJobStatusEvent)event);
+	} else if (event instanceof ExportEvent) {
+		fireExportEvent((ExportEvent)event);
+	} else if (event instanceof DataJobEvent) {
+		fireDataJobEvent((DataJobEvent)event);
+	} else if (event instanceof VCellMessageEvent) {
+		fireVCellMessageEvent((VCellMessageEvent)event);
+	} else {
+		System.err.println("AsynchMessageManager.onMessageEvent() : unknown message event " + event);
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -97,96 +169,9 @@ public synchronized void addSimulationJobStatusListener(SimulationJobStatusListe
  * Creation date: (6/19/2006 12:51:56 PM)
  * @param listener cbit.vcell.desktop.controls.ExportListener
  */
-public void addVCellMessageEventListener(cbit.rmi.event.VCellMessageEventListener listener) {
+public void addVCellMessageEventListener(VCellMessageEventListener listener) {
 	listenerList.add(VCellMessageEventListener.class, listener);
 }
-
-
-/**
- */
-void close() {
-	disconnect();
-	getSimpleMessageService().close();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/5/01 3:00:52 PM)
- * @return cbit.rmi.event.RemoteMessageHandler
- */
-void connect(RemoteMessageHandler remoteMessageHandler) throws DataAccessException {
-	disconnect();
-	try {
-		// record connection
-		setConnectedRemoteMessageHandler(remoteMessageHandler);
-		// add me to remote message server
-		getSimpleMessageService().getMessageHandler().addRemoteMessageListener(remoteMessageHandler, remoteMessageHandler.getRemoteMesssageListenerID());
-		// add remote message server to me.
-		remoteMessageHandler.addRemoteMessageListener(getSimpleMessageService().getMessageHandler(), getSimpleMessageService().getMessageHandler().getRemoteMesssageListenerID());
-		// in case of firewalls, etc
-		getSimpleMessageService().getMessageHandler().enablePolling(10); // seconds
-	} catch (Throwable exc) {
-		// no go, dump
-		disconnect();
-		// let caller know...
-		throw new DataAccessException(exc.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2006 3:05:48 PM)
- * @param event cbit.rmi.event.ExportEvent
- */
-public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
-	// refire for swing
-	fireDataJobEvent(event);
-
-	}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/5/01 3:00:52 PM)
- * @return cbit.rmi.event.RemoteMessageHandler
- */
-private void disconnect() {
-	if (getConnectedRemoteMessageHandler() == null) {
-		// nobody there
-		return;
-	}
-	/* trying gracefully */
-	// remove me from remote message server.
-	try {
-		getSimpleMessageService().getMessageHandler().removeRemoteMessageListener(getConnectedRemoteMessageHandler());
-	} catch (java.rmi.RemoteException exc) {
-		exc.printStackTrace(System.out);
-	}
-	// remove remote message server from me.
-	try {
-		getConnectedRemoteMessageHandler().removeRemoteMessageListener(getSimpleMessageService().getMessageHandler());
-	} catch (java.rmi.RemoteException exc) {
-		exc.printStackTrace(System.out);
-	}
-	/* no matter what, now dump the current handler */
-	getSimpleMessageService().resetHandler();
-	setConnectedRemoteMessageHandler(null);
-		
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 2:27:28 PM)
- * @param event cbit.rmi.event.ExportEvent
- */
-public void exportMessage(cbit.rmi.event.ExportEvent event) {
-	// refire for swing
-	fireExportEvent(event);
-}
-
 
 /**
  * Insert the method's description here.
@@ -342,46 +327,6 @@ private void fireVCellMessageEvent(final VCellMessageEvent event, final VCellMes
 	});
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 11:33:31 PM)
- * @return cbit.rmi.event.RemoteMessageHandler
- */
-private cbit.rmi.event.RemoteMessageHandler getConnectedRemoteMessageHandler() {
-	return connectedRemoteMessageHandler;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 4:55:54 PM)
- * @return cbit.rmi.event.SimpleMessageService
- */
-private cbit.rmi.event.SimpleMessageService getSimpleMessageService() {
-	return simpleMessageService;
-}
-
-
-/**
- * onVCellMessageEvent method comment.
- */
-public void onVCellMessageEvent(cbit.rmi.event.VCellMessageEvent event) {
-	fireVCellMessageEvent(event);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/17/2004 3:13:55 PM)
- * @param pme cbit.rmi.event.PerformanceMonitorEvent
- */
-public void performanceMonitorEvent(cbit.rmi.event.PerformanceMonitorEvent pme) {
-	// just pass it to the the messaging service
-	getSimpleMessageService().getMessageCollector().performanceMonitorEvent(pme);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2001 5:18:16 PM)
@@ -423,20 +368,9 @@ public synchronized void removeSimulationJobStatusListener(SimulationJobStatusLi
  * Creation date: (6/19/2006 12:54:05 PM)
  * @param listener cbit.vcell.desktop.controls.ExportListener
  */
-public void removeVCellMessageEventListener(cbit.rmi.event.VCellMessageEventListener listener) {
+public void removeVCellMessageEventListener(VCellMessageEventListener listener) {
 	listenerList.remove(VCellMessageEventListener.class, listener);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 11:33:31 PM)
- * @param newConnectedRemoteMessageHandler cbit.rmi.event.RemoteMessageHandler
- */
-private void setConnectedRemoteMessageHandler(cbit.rmi.event.RemoteMessageHandler newConnectedRemoteMessageHandler) {
-	connectedRemoteMessageHandler = newConnectedRemoteMessageHandler;
-}
-
 
 /**
  * Insert the method's description here.
@@ -450,16 +384,14 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	fireSimStatusEvent(simStatusEvent);
 }
 
+public final void setVCellConnection(VCellConnection vcellConnection) {
+	synchronized (vcellConnection) {		
+		this.vcellConnection = vcellConnection;
+	}
+}
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 2:27:28 PM)
- * @param newJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- * @param timePoint java.lang.Double
- */
-public void simulationJobStatusChanged(SimulationJobStatusEvent simJobStatusEvent) {
-	// refire for swing
-	fireSimulationJobStatusEvent(simJobStatusEvent);
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
+	// just pass it to the the messaging service
+	vcellConnection.reportPerformanceMonitorEvent(pme);
 }
 }

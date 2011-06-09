@@ -121,9 +121,9 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	if (args[0].startsWith("-")) {
 		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userLoginInfo.getUserName());
 		if (args[0].equalsIgnoreCase("-jms")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log, false);
+			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log);
 		} else if (args[0].equalsIgnoreCase("-local")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log, true);
+			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log);
 			if (args.length == 7) {
 				ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log, args[3], args[4], args[5], args[6]);
 				((cbit.vcell.server.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);

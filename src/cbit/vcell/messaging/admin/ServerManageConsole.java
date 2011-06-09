@@ -2386,7 +2386,7 @@ private void pingAll(int waitingTimeSec) {
 		log.print("sending ping message [" + JmsUtils.toString(msg) + "]");		
 		topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);			
 		try {
-			Thread.sleep(waitingTimeSec * MessageConstants.SECOND);
+			Thread.sleep(waitingTimeSec * MessageConstants.SECOND_IN_MS);
 		} catch (InterruptedException ex) {
 			log.exception(ex);
 		}		

@@ -17,7 +17,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
-import cbit.rmi.event.RemoteMessageHandler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.ClientDocumentManager;
@@ -29,6 +28,7 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.LocalVCellConnectionFactory;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserLoginInfo;
@@ -181,7 +181,6 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	private SimulationController simulationController = null;
 	private UserMetaDbServer userMetaDbServer = null;
 	private DataSetController dataSetController = null;
-	private cbit.rmi.event.RemoteMessageHandler remoteMessageHandler = null;
 	// gotten from call to vcellConnection
 	private User user = null;
 	
@@ -221,20 +220,16 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
 	setVcellConnection(newVCellConnection);
 	if (getVcellConnection() != null) {
 		try {
-			// hook up the message manager
-			getAsynchMessageManager().connect(getRemoteMessageHandler());
-			//if (! reconnect) {
-				/* new credentials; need full init */
-				// throw it away; doesn't properly support full reinits
-				documentManager = null;
-				
-				// preload the document manager cache
-				((ClientDocumentManager)getDocumentManager()).initAllDatabaseInfos();
-				
-				// load user preferences
-				getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
+			/* new credentials; need full init */
+			// throw it away; doesn't properly support full reinits
+			documentManager = null;
+			
+			// preload the document manager cache
+			((ClientDocumentManager)getDocumentManager()).initAllDatabaseInfos();
+			
+			// load user preferences
+			getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
 
-			//}
 			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.CONNECTED));
 		} catch (DataAccessException exc) {
 			// unlikely, since we just connected, but it looks like we did loose the connection...
@@ -258,7 +253,6 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
  * @return int
  */
 public void cleanup() {
-	getAsynchMessageManager().close();
 	setVcellConnection(null);	
 }
 
@@ -357,9 +351,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 				new PropertyLoader();
 				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);				
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
-				Class localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
-				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {UserLoginInfo.class, SessionLog.class, boolean.class});
-				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUserLoginInfo(), log, Boolean.TRUE});				
+				vcConnFactory = new LocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);				
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
@@ -527,37 +519,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/13/2004 1:54:04 PM)
- * @return UserMetaDbServer
- */
-private synchronized RemoteMessageHandler getRemoteMessageHandler() throws DataAccessException {
-	VCellThreadChecker.checkRemoteInvocation();
-	if (remoteMessageHandler!=null){
-		return remoteMessageHandler;
-	}else if (getVcellConnection()==null){
-		throw new RuntimeException("cannot get Remote Message Service, no VCell Connection\ntry Server->Reconnect");
-	}else{
-		try {
-			remoteMessageHandler = getVcellConnection().getRemoteMessageHandler();
-			return remoteMessageHandler;
-		} catch (java.rmi.RemoteException rexc) {
-			rexc.printStackTrace(System.out);
-			try {
-				// one more time before we fail../
-				remoteMessageHandler = getVcellConnection().getRemoteMessageHandler();
-				return remoteMessageHandler;
-			} catch (java.rmi.RemoteException rexc2) {
-				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteException: "+rexc2.getMessage());
-			}
-		}
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -747,8 +708,8 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 	simulationController = null;
 	dataSetController = null;
 	userMetaDbServer = null;
-	remoteMessageHandler = null;
 	
+	getAsynchMessageManager().setVCellConnection(vcellConnection);
 	if (vcellConnection == null) {
 		return;
 	}
@@ -757,7 +718,6 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 		getSimulationController();
 		getDataSetController();
 		getUserMetaDbServer();
-		getRemoteMessageHandler();
 	} catch (DataAccessException ex) {
 		ex.printStackTrace(System.out);
 		throw new RuntimeException("DataAccessException: "+ex.getMessage());

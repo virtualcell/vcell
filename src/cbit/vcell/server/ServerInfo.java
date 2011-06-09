@@ -22,13 +22,11 @@ public class ServerInfo implements java.io.Serializable {
 	
 private String hostName = null;
 private CacheStatus cacheStatus = null;
-private ProcessStatus processStatus = null;
 private User[] connectedUsers = null;
 
-public ServerInfo(String argHostName,CacheStatus argCacheStatus,ProcessStatus argProcessStatus,User[] argConnectedUsers){
+public ServerInfo(String argHostName,CacheStatus argCacheStatus, User[] argConnectedUsers){
 	hostName = argHostName;
 	cacheStatus = argCacheStatus;
-	processStatus = argProcessStatus;
 	connectedUsers = argConnectedUsers;
 }
 public CacheStatus getCacheStatus() {
@@ -40,7 +38,5 @@ public User[] getConnectedUsers() {
 public String getHostName(){
 	return hostName;
 }
-public ProcessStatus getProcessStatus() {
-	return processStatus;
-}
+
 }

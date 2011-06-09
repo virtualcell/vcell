@@ -2094,7 +2094,7 @@ private AsynchClientTask getSaveImageAndGeometryTask(){
  */
 public void onVCellMessageEvent(final VCellMessageEvent event) {
 	if (event.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
-	    PopupGenerator.showErrorDialog(getMdiManager().getFocusedWindowManager(), event.getMessageData().getData().toString());
+	    PopupGenerator.showInfoDialog(getMdiManager().getFocusedWindowManager(), event.getMessageData().getData().toString());
 	}
 }
 

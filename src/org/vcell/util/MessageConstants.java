@@ -91,11 +91,12 @@ public interface MessageConstants {
 	public static final int QUEUE_ID_SIMULATIONJOB = 1;
 	public static final int QUEUE_ID_NULL = 2;
 
-	public static final int SECOND = 1000; // in milliseconds
-	public static final int MINUTE = 60000; // in milliseconds
+	public static final int SECOND_IN_MS = 1000; // in milliseconds
+	public static final int MINUTE_IN_S = 60;
+	public static final int MINUTE_IN_MS = MINUTE_IN_S * SECOND_IN_MS; // in milliseconds
 
-	public static final long INTERVAL_PING_SERVER = 5 * MINUTE; // in milliseconds
-	public static final long INTERVAL_SERVER_FAIL = 10 * MINUTE; // in milliseconds
+	public static final long INTERVAL_PING_SERVER = 5 * MINUTE_IN_MS; // in milliseconds
+	public static final long INTERVAL_SERVER_FAIL = 10 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_DATABASE_SERVER_FAIL = 10 * 60; // in seconds
-	public static final long INTERVAL_PROGRESS_MESSAGE = 5 * SECOND;	
+	public static final long INTERVAL_PROGRESS_MESSAGE = 5 * SECOND_IN_MS;	
 }

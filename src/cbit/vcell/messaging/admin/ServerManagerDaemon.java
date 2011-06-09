@@ -173,7 +173,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 					} else if (PBSUtils.isJobRunning(status)) {						
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
 						break;
-					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND) {
+					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
 						String pendingReason = PBSUtils.getPendingReason(jobid);
 						PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
@@ -309,7 +309,7 @@ private void on_stopservice(Message message) throws JMSException {
 					String pbsJobId = service.getPbsJobId();
 					if (pbsJobId != null && PBSUtils.isJobRunning(pbsJobId)) {
 						try {
-							Thread.sleep(5 * MessageConstants.SECOND); // wait 5 seconds
+							Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
 						} catch (InterruptedException ex) {							
 						}					
 						// if the service is not stopped, kill it from PBS

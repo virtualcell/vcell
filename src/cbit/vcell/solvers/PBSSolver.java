@@ -79,7 +79,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 			// we have to find out why.
 			if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
 				try {
-					Thread.sleep(MessageConstants.MINUTE); // have to sleep at least one minute to get tracejob exist status;
+					Thread.sleep(MessageConstants.MINUTE_IN_MS); // have to sleep at least one minute to get tracejob exist status;
 				} catch (InterruptedException ex) {
 				}
 				if (!PBSUtils.isJobExecOK(jobid)) {
@@ -97,7 +97,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 			if (PBSUtils.isJobExiting(status)) {
 				if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
 					try {
-						Thread.sleep(MessageConstants.MINUTE); // have to sleep at least one minute to get tracejob exist status;
+						Thread.sleep(MessageConstants.MINUTE_IN_MS); // have to sleep at least one minute to get tracejob exist status;
 					} catch (InterruptedException ex) {
 					}
 					if (!PBSUtils.isJobExecOK(jobid)) {
@@ -106,7 +106,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 				}
 			}
 			break;
-		} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE) {
+		} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE_IN_MS) {
 			String pendingReason = PBSUtils.getPendingReason(jobid);
 			PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 			throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");

@@ -74,30 +74,14 @@ public VCellServer getVCellServer() throws ConnectionException, AuthenticationEx
 	}
 	return vcellServer;
 }
-/**
- * This method was created in VisualAge.
- */
-public static boolean pingBootstrap(String host) {
-	VCellThreadChecker.checkRemoteInvocation();
-	
-	try {
-		VCellBootstrap vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
-		if (vcellBootstrap != null){
-			return true;
-		}else{
-			return false;
-		}
-	} catch (Throwable e){
-		return false;
-	}			
-}
+
 /**
  * This method was created in VisualAge.
  */
 public void pingVCellServer() throws RemoteException {
 	VCellThreadChecker.checkRemoteInvocation();
 	
-	vcellServer.isPrimaryServer();
+	vcellServer.getBootTime();
 }
 /**
  * This method was created in VisualAge.
@@ -107,7 +91,7 @@ private void reconnect() throws ConnectionException, AuthenticationException {
 	
 //	String bootstrapName = "VCellBootstrapServer";
 	try {
-		vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup(connectString);
+		vcellBootstrap = (VCellBootstrap)java.rmi.Naming.lookup(connectString);
 	} catch (Throwable e){
 		throw new ConnectionException("cannot contact server: "+e.getMessage());
 	}
