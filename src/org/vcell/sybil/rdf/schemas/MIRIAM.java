@@ -7,14 +7,13 @@ package org.vcell.sybil.rdf.schemas;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntModelSpec;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 
 public class MIRIAM {
 	
-	public static OntModel schema = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+	public static Model schema = ModelFactory.createDefaultModel();
 
 	public static Property createProperty(Set<Property> all, String ns, String name) {
 		Property property = schema.createProperty(ns + name);

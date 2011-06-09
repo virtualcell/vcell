@@ -6,18 +6,13 @@ package org.vcell.sybil.models.sbbox.factories;
 
 import org .vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.imp.ProcessModelImp;
-import org.vcell.sybil.rdf.schemas.SBPAX;
-
 import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
-public class ProcessModelFactory extends ThingFactory<SBBox.MutableProcessModel> {
+public class ProcessModelFactory extends ThingFactory<SBBox.NamedThing> {
 
-	public ProcessModelFactory(SBBox box) { super(box, SBPAX.ProcessModel); }
+	public ProcessModelFactory(SBBox box) { super(box); }
 	@Override
-	public SBBox.MutableProcessModel newThing(Resource node) { return new ProcessModelImp(box, node); }
+	public SBBox.NamedThing newThing(Resource node) { return new ProcessModelImp(box, node); }
 
-	@Override
-	public String baseLabel() { return "ProcessModel"; }
-	
 }

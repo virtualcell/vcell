@@ -14,12 +14,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
-import javax.swing.text.SimpleAttributeSet;
-
-import org.vcell.sybil.util.exception.CatchUtil;
 
 public class StringUtil {
 	
@@ -88,32 +82,6 @@ public class StringUtil {
 
 	}
 
-	public static Document documentFromText(String text) {
-		Document document = new PlainDocument();
-		try { document.insertString(0, text, SimpleAttributeSet.EMPTY); } 
-		catch (BadLocationException e) { CatchUtil.handle(e); }
-		return document;
-	}
-	
-	public static Document documentSetText(Document document, String text) {
-		try {
-			document.remove(0, document.getLength());
-			document.insertString(0, text, SimpleAttributeSet.EMPTY);
-		} catch (BadLocationException e) {
-			CatchUtil.handle(e);
-		}
-		return document;
-	}
-	
-	public static Document documentResetText(Document document) {
-		try {
-			document.remove(0, document.getLength());
-		} catch (BadLocationException e) {
-			CatchUtil.handle(e);
-		}
-		return document;
-	}
-	
 	public static String concat(Collection<?> tokens, String separator) {
 		String chain = "";
 		for(Object token : tokens) {

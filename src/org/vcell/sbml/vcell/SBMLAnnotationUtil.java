@@ -1,8 +1,6 @@
 package org.vcell.sbml.vcell;
 
-import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -12,26 +10,18 @@ import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.sybil.rdf.RDFChopper;
-import org.vcell.sybil.rdf.baptizer.RDFLocalNamer;
-import org.vcell.sybil.rdf.baptizer.SimpleSBPAXLocalNamer;
 import org.vcell.sybil.rdf.smelt.NamespaceAssimilator;
 import org.vcell.sybil.rdf.smelt.SameAsCrystalizer;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -45,7 +35,6 @@ public class SBMLAnnotationUtil {
 
 	protected VCMetaData metaData;
 	protected RDFChopper chopper;
-	protected RDFLocalNamer localNamer = new SimpleSBPAXLocalNamer();
 	protected NamespaceAssimilator namespaceAssimilator;
 	protected Identifiable root;
 	protected Model rdfSmelted;
@@ -74,7 +63,7 @@ public class SBMLAnnotationUtil {
 		tripleAnnotation = new XMLTriple("annotation", nsSBML, "");
 		Set<Resource> resources = metaData.getRegistry().getResources();
 		namespaceAssimilator = 
-			new NamespaceAssimilator(resources, nsSBML, localNamer);
+			new NamespaceAssimilator(resources, nsSBML);
 		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdfDataCopy());
 		SameAsCrystalizer sameAsCrystalizer = new SameAsCrystalizer(nsSBML);
 		rdfSmelted = sameAsCrystalizer.smelt(rdfSmelted);

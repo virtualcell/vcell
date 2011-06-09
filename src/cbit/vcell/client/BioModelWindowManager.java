@@ -1,13 +1,10 @@
 package cbit.vcell.client;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -19,9 +16,6 @@ import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.vcell.sybil.gui.space.DialogParentProvider;
-import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
-import org.vcell.sybil.init.SybilApplication;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
@@ -64,10 +58,7 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 
 	private LocalOptimizationService localOptService = null;
 	
-	private SybilApplication sybilApplication = null;
-	
 	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
-	private JInternalFrame sybilFrame = null;
 	private PropertyChangeListener miriamPropertyChangeListener =
 		new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -851,35 +842,6 @@ public void showMIRIAMWindow() {
 	showFrame(mIRIAMAnnotationEditorFrame);
 }
 
-
-public void showSybilWindow() {
-
-	boolean firstTime = (sybilFrame==null);
-	if(sybilFrame == null){
-		sybilFrame = new JInternalFrame();
-		sybilFrame.setTitle("Sybil Application Window");
-		sybilFrame.setSize(800,600);
-		sybilFrame.setClosable(true);
-		sybilFrame.setResizable(true);
-		DialogParentProvider dialogParentProvider = new DialogParentProvider(){
-			public Component getDialogParent() {
-				return ((JPanel)BioModelWindowManager.this.getComponent()).getTopLevelAncestor();
-			}
-		};
-		BioModel bioModel = getBioModel();
-		sybilApplication = 
-			new SybilApplication(new GUIJInternalFrameSpace(dialogParentProvider, sybilFrame), bioModel);
-	}
-
-//	if(!sybilFrame.isShowing()){
-//		sybilApplication.setBioModel(getBioModel());
-//	}
-//
-	showFrame(sybilFrame);
-	if (firstTime){
-		sybilApplication.runVCell();
-	}
-}
 
 public boolean hasBlankDocument() {
 	return !getRequestManager().isDifferentFromBlank(VCDocument.BIOMODEL_DOC, getVCDocument());

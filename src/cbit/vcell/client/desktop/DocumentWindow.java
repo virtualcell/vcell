@@ -12,12 +12,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
@@ -128,7 +125,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjRunVFrapMenuItem = null;
-	private JMenuItem ivjSybilMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
@@ -200,8 +196,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getRunVFrapItem()) 
 				startVirtualFRAP();
-			if (e.getSource() == DocumentWindow.this.getSybilMenuItem()) 
-				startSybil();
 			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem()) 
 				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
@@ -891,12 +885,6 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 		}
 	}
 	return ivjAbout_BoxMenuItem;
-}
-
-private void startSybil(){
-	if (getWindowManager() instanceof BioModelWindowManager){
-		((BioModelWindowManager)getWindowManager()).showSybilWindow();
-	}
 }
 
 
@@ -2025,24 +2013,6 @@ private JMenuItem getRunVFrapItem() {
 }
 
 /**
- * Return the RunBNGMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getSybilMenuItem() {
-	if (ivjSybilMenuItem == null) {
-		try {
-			ivjSybilMenuItem = new javax.swing.JMenuItem();
-			ivjSybilMenuItem.setName("RUNSybilMenuItem");
-			ivjSybilMenuItem.setText("Systems Biology Linker (SyBiL)");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSybilMenuItem;
-}
-
-/**
  * Return the Save_AsMenuItem property value.
  * @return javax.swing.JMenuItem
  */
@@ -2500,7 +2470,6 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getRunVFrapItem().addActionListener(ivjEventHandler);
-	getSybilMenuItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);

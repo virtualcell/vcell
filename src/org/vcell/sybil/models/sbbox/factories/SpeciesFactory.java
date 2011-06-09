@@ -6,17 +6,13 @@ package org.vcell.sybil.models.sbbox.factories;
 
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.imp.SpeciesImp;
-import org.vcell.sybil.rdf.schemas.SBPAX;
-
 import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
-public class SpeciesFactory extends ThingFactory<SBBox.MutableSpecies> {
+public class SpeciesFactory extends ThingFactory<SBBox.NamedThing> {
 
-	public SpeciesFactory(SBBox box) { super(box, SBPAX.Species); }
+	public SpeciesFactory(SBBox box) { super(box); }
 	@Override
-	public SBBox.MutableSpecies newThing(Resource node) { return new SpeciesImp(box, node); }
-	@Override
-	public String baseLabel() { return "Species"; }
+	public SBBox.NamedThing newThing(Resource node) { return new SpeciesImp(box, node); }
 
 }

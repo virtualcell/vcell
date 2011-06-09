@@ -56,18 +56,6 @@ public class OpenRegistry implements Registry, Serializable {
 			}
 		}
 		
-		public NamedThing setNamedThingFromResource(Resource resource) {
-			if (resource.getURI().contains("#")){
-				throw new RuntimeException("unexpected character, '#' in uri");
-			}
-			NamedThing newNamedThing = OpenRegistry.this.sbThingFactory.createThing(identifiable, resource);
-			if (newNamedThing==null){
-				throw new RuntimeException("Metadata exception: could not create a namedThing for resource '"+resource.getURI()+"' and object '"+identifiable.toString()+"'");
-			}
-			setNamedThing(newNamedThing);
-			return newNamedThing;
-		}
-		
 		public NamedThing setNamedThingFromURI(String uri) {
 			if (uri.contains("#")){
 				throw new RuntimeException("unexpected character, '#' in uri");
