@@ -21,13 +21,8 @@ public interface Registry {
 		public NamedThing getNamedThing();
 	}
 	
-	public static interface IdentifiableURIGenerator {
-		public String generateURI(Identifiable identifiable);
-	}
-	
 	public static interface IdentifiableSBThingFactory {
 		public NamedThing createThingWithURI(Identifiable identifiable, String uri);
-		public NamedThing createThing(Identifiable identifiable, Resource resource);
 		public NamedThing createThingAnonymous(Identifiable identifiable);
 	}
 	

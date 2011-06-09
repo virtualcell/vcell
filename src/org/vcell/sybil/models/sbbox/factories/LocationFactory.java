@@ -5,19 +5,14 @@ package org.vcell.sybil.models.sbbox.factories;
  */
 
 import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.SBBox.MutableLocation;
 import org.vcell.sybil.models.sbbox.imp.LocationImp;
-import org.vcell.sybil.rdf.schemas.SBPAX;
-
 import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
-public class LocationFactory extends ThingFactory<SBBox.MutableLocation> {
+public class LocationFactory extends ThingFactory<SBBox.NamedThing> {
 
-	public LocationFactory(SBBox box) { super(box, SBPAX.Location); }
+	public LocationFactory(SBBox box) { super(box); }
 	@Override
-	public MutableLocation newThing(Resource node) { return new LocationImp(box, node); }
-	@Override
-	public String baseLabel() { return "Location"; }
+	public SBBox.NamedThing newThing(Resource node) { return new LocationImp(box, node); }
 
 }

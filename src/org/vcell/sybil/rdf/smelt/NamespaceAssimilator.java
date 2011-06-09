@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.rdf.baptizer.RDFLocalNamer;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -22,13 +21,11 @@ public class NamespaceAssimilator implements RDFSmelter {
 	
 	protected Set<Resource> resources;
 	protected String namespace;
-	protected RDFLocalNamer localNamer;
 	protected Map<Resource, Resource> resourceMap = new HashMap<Resource, Resource>();
 	
-	public NamespaceAssimilator(Set<Resource> resources, String namespace, RDFLocalNamer localNamer) {
+	public NamespaceAssimilator(Set<Resource> resources, String namespace) {
 		this.resources = resources;
 		this.namespace = namespace;
-		this.localNamer = localNamer;
 	}
 	
 	public Model smelt(Model rdf) {
@@ -72,7 +69,7 @@ public class NamespaceAssimilator implements RDFSmelter {
 			} else {
 				resourceMapped = resourceMap.get(resource);
 				if(resourceMapped == null) {
-					String localNameBase = localNamer.newLocalName(resource);
+					String localNameBase = "thing";
 					String localNameNew;
 					int i = 0;
 					do {
