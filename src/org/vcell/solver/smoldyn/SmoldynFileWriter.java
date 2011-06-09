@@ -129,6 +129,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryXSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryYSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
+	private ArrayList<String> killMolCommands = new ArrayList<String>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
 	enum SmoldynKeyword {
@@ -408,6 +409,14 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 	}	
 	printWriter.println();
 	
+	//write command to kill molecules on membrane for adsortption to nothing
+	printWriter.println("# kill membrane molecues that are absorbed (to nothing)");
+	for(String killMolCmd : killMolCommands)
+	{
+		printWriter.println(killMolCmd);
+	}
+	printWriter.println();
+	
 	printWriter.println("# runtime command");
 	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
 	if (outputFile != null && cartesianMesh != null) {
@@ -560,10 +569,8 @@ private void writeReactions() throws ExpressionException, MathException {
 					{
 						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
 						String speciesName = reactants.get(0).getName();
-						printWriter.print("# kill membrane molecues " + speciesName + " that are absorbed (to nothing)");
-						printWriter.println();
-						printWriter.print("cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)");
-						printWriter.println();
+						String killMolCmd = "cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)";
+						killMolCommands.add(killMolCmd);
 					}
 				}
 				//
