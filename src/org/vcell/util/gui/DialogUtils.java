@@ -690,7 +690,7 @@ public static void showWarningDialog(final Component requester, final String mes
 }
 
 public static void showInfoDialog(final Component requester, final String message) {
-	showInfoDialog(requester, "", message);
+	showInfoDialog(requester, "Info", message);
 }
 
 
