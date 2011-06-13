@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://www.ebi.ac.uk/ws/services/WSDbfetch" xmlns:intf="http://www.ebi.ac.uk/ws/services/WSDbfetch" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://exceptions.jdbfetch.ebi.ac.uk" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!-- $Id: WSDBFetchServerService.wsdl 793 2010-11-28 11:26:38Z hpm $ -->
+
+  <wsdl:types>
+
+    <schema targetNamespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" xmlns="http://www.w3.org/2001/XMLSchema">
+
+      <import namespace="http://exceptions.jdbfetch.ebi.ac.uk"/>
+
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+
+      <complexType name="ArrayOf_xsd_string">
+
+        <complexContent>
+
+          <restriction base="soapenc:Array">
+
+            <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]"/>
+
+          </restriction>
+
+        </complexContent>
+
+      </complexType>
+
+      <complexType name="InputException">
+
+        <sequence/>
+
+      </complexType>
+
+    </schema>
+
+    <schema targetNamespace="http://exceptions.jdbfetch.ebi.ac.uk" xmlns="http://www.w3.org/2001/XMLSchema">
+
+      <import namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch"/>
+
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+
+      <complexType name="DbfException">
+
+        <sequence/>
+
+      </complexType>
+
+      <complexType name="DbfParamsException">
+
+        <complexContent>
+
+          <extension base="tns1:DbfException">
+
+            <sequence/>
+
+          </extension>
+
+        </complexContent>
+
+      </complexType>
+
+      <complexType name="DbfConnException">
+
+        <complexContent>
+
+          <extension base="tns1:DbfException">
+
+            <sequence/>
+
+          </extension>
+
+        </complexContent>
+
+      </complexType>
+
+      <complexType name="DbfNoEntryFoundException">
+
+        <complexContent>
+
+          <extension base="tns1:DbfException">
+
+            <sequence/>
+
+          </extension>
+
+        </complexContent>
+
+      </complexType>
+
+    </schema>
+
+  </wsdl:types>
+
+
+    <wsdl:message name="DbfParamsException">
+
+        <wsdl:part name="fault" type="tns1:DbfParamsException"/>
+
+    </wsdl:message>
+
+    <wsdl:message name="DbfConnException">
+
+        <wsdl:part name="fault" type="tns1:DbfConnException"/>
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedStylesResponse">
+
+        <wsdl:part name="getSupportedStylesReturn" type="impl:ArrayOf_xsd_string">
+
+            <wsdl:documentation>
+List of databases with result style names.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="fetchBatchResponse">
+
+        <wsdl:part name="fetchBatchReturn" type="xsd:string">
+
+            <wsdl:documentation>
+Entries data as a string.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getFormatStylesResponse">
+
+        <wsdl:part name="getFormatStylesReturn" type="impl:ArrayOf_xsd_string">
+
+            <wsdl:documentation>
+List of result style names.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="InputException">
+
+        <wsdl:part name="fault" type="impl:InputException"/>
+
+    </wsdl:message>
+
+    <wsdl:message name="getFormatStylesRequest">
+
+        <wsdl:part name="db" type="xsd:string">
+
+            <wsdl:documentation>
+Database name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="format" type="xsd:string">
+
+            <wsdl:documentation>
+Data format name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedFormatsRequest">
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedDBsResponse">
+
+        <wsdl:part name="getSupportedDBsReturn" type="impl:ArrayOf_xsd_string">
+
+            <wsdl:documentation>
+List of database names.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="fetchDataRequest">
+
+        <wsdl:part name="query" type="xsd:string">
+
+            <wsdl:documentation>
+Entry identifier in DB:ID format.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="format" type="xsd:string">
+
+            <wsdl:documentation>
+Data format name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="style" type="xsd:string">
+
+            <wsdl:documentation>
+Result style name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="DbfException">
+
+        <wsdl:part name="fault" type="tns1:DbfException"/>
+
+    </wsdl:message>
+
+    <wsdl:message name="fetchBatchRequest">
+
+        <wsdl:part name="db" type="xsd:string">
+
+            <wsdl:documentation>
+Database name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="ids" type="xsd:string">
+
+            <wsdl:documentation>
+Comma or space separated list of entry identifiers.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="format" type="xsd:string">
+
+            <wsdl:documentation>
+Data format name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+        <wsdl:part name="style" type="xsd:string">
+
+            <wsdl:documentation>
+Result style name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedStylesRequest">
+
+    </wsdl:message>
+
+    <wsdl:message name="fetchDataResponse">
+
+        <wsdl:part name="fetchDataReturn" type="xsd:string">
+
+            <wsdl:documentation>
+Entry data as a string.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getDbFormatsRequest">
+
+        <wsdl:part name="db" type="xsd:string">
+
+            <wsdl:documentation>
+Database name.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="DbfNoEntryFoundException">
+
+        <wsdl:part name="fault" type="tns1:DbfNoEntryFoundException"/>
+
+    </wsdl:message>
+
+    <wsdl:message name="getDbFormatsResponse">
+
+        <wsdl:part name="getDbFormatsReturn" type="impl:ArrayOf_xsd_string">
+
+            <wsdl:documentation>
+List of data format names.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedFormatsResponse">
+
+        <wsdl:part name="getSupportedFormatsReturn" type="impl:ArrayOf_xsd_string">
+
+            <wsdl:documentation>
+List of databases with data format names.   </wsdl:documentation>
+
+        </wsdl:part>
+
+    </wsdl:message>
+
+    <wsdl:message name="getSupportedDBsRequest">
+
+    </wsdl:message>
+
+
+    <wsdl:portType name="WSDBFetchServer">
+
+        <wsdl:operation name="getDbFormats" parameterOrder="db">
+
+            <wsdl:documentation>
+Get a list of formats for a given database (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getdbformats_db).   </wsdl:documentation>
+
+            <wsdl:input message="impl:getDbFormatsRequest" name="getDbFormatsRequest"/>
+
+            <wsdl:output message="impl:getDbFormatsResponse" name="getDbFormatsResponse"/>
+
+            <wsdl:fault message="impl:DbfParamsException" name="DbfParamsException"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="fetchData" parameterOrder="query format style">
+
+            <wsdl:documentation>
+Get a database entry (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchdata_query_format_style).   </wsdl:documentation>
+
+            <wsdl:input message="impl:fetchDataRequest" name="fetchDataRequest"/>
+
+            <wsdl:output message="impl:fetchDataResponse" name="fetchDataResponse"/>
+
+            <wsdl:fault message="impl:InputException" name="InputException"/>
+
+            <wsdl:fault message="impl:DbfParamsException" name="DbfParamsException"/>
+
+            <wsdl:fault message="impl:DbfException" name="DbfException"/>
+
+            <wsdl:fault message="impl:DbfNoEntryFoundException" name="DbfNoEntryFoundException"/>
+
+            <wsdl:fault message="impl:DbfConnException" name="DbfConnException"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="fetchBatch" parameterOrder="db ids format style">
+
+            <wsdl:documentation>
+Get a set of database entries (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchbatch_db_ids_format_style).   </wsdl:documentation>
+
+            <wsdl:input message="impl:fetchBatchRequest" name="fetchBatchRequest"/>
+
+            <wsdl:output message="impl:fetchBatchResponse" name="fetchBatchResponse"/>
+
+            <wsdl:fault message="impl:InputException" name="InputException"/>
+
+            <wsdl:fault message="impl:DbfParamsException" name="DbfParamsException"/>
+
+            <wsdl:fault message="impl:DbfException" name="DbfException"/>
+
+            <wsdl:fault message="impl:DbfNoEntryFoundException" name="DbfNoEntryFoundException"/>
+
+            <wsdl:fault message="impl:DbfConnException" name="DbfConnException"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedDBs">
+
+            <wsdl:documentation>
+Get a list of available databases (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getsupporteddbs).   </wsdl:documentation>
+
+            <wsdl:input message="impl:getSupportedDBsRequest" name="getSupportedDBsRequest"/>
+
+            <wsdl:output message="impl:getSupportedDBsResponse" name="getSupportedDBsResponse"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedFormats">
+
+            <wsdl:documentation>
+Get a list of databases and formats (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getsupportedformats).   </wsdl:documentation>
+
+            <wsdl:input message="impl:getSupportedFormatsRequest" name="getSupportedFormatsRequest"/>
+
+            <wsdl:output message="impl:getSupportedFormatsResponse" name="getSupportedFormatsResponse"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getFormatStyles" parameterOrder="db format">
+
+            <wsdl:documentation>
+Get a list of available styles for a format of a database (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getformatstyles_db_format).   </wsdl:documentation>
+
+            <wsdl:input message="impl:getFormatStylesRequest" name="getFormatStylesRequest"/>
+
+            <wsdl:output message="impl:getFormatStylesResponse" name="getFormatStylesResponse"/>
+
+            <wsdl:fault message="impl:DbfParamsException" name="DbfParamsException"/>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedStyles">
+
+            <wsdl:documentation>
+Deprecated: use getFormatStyles(). Get a list of databases and styles (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchdata_query_format_style).   </wsdl:documentation>
+
+            <wsdl:input message="impl:getSupportedStylesRequest" name="getSupportedStylesRequest"/>
+
+            <wsdl:output message="impl:getSupportedStylesResponse" name="getSupportedStylesResponse"/>
+
+        </wsdl:operation>
+
+    </wsdl:portType>
+
+
+    <wsdl:binding name="WSDbfetchSoapBinding" type="impl:WSDBFetchServer">
+
+        <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <wsdl:operation name="getDbFormats">
+
+            <wsdl:documentation>
+Get a list of formats for a given database (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getdbformats_db).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="getDbFormatsRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="getDbFormatsResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+            <wsdl:fault name="DbfParamsException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfParamsException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="fetchData">
+
+            <wsdl:documentation>
+Get a database entry (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchdata_query_format_style).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="fetchDataRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="fetchDataResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+            <wsdl:fault name="InputException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="InputException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfParamsException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfParamsException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfNoEntryFoundException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfNoEntryFoundException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfConnException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfConnException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="fetchBatch">
+
+            <wsdl:documentation>
+Get a set of database entries (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchbatch_db_ids_format_style).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="fetchBatchRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="fetchBatchResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+            <wsdl:fault name="InputException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="InputException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfParamsException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfParamsException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfNoEntryFoundException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfNoEntryFoundException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+            <wsdl:fault name="DbfConnException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfConnException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedDBs">
+
+            <wsdl:documentation>
+Get a list of available databases (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getsupporteddbs).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="getSupportedDBsRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="getSupportedDBsResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedFormats">
+
+            <wsdl:documentation>
+Get a list of databases and formats (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getsupportedformats).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="getSupportedFormatsRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="getSupportedFormatsResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getFormatStyles">
+
+            <wsdl:documentation>
+Get a list of available styles for a format of a database (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#getformatstyles_db_format).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="getFormatStylesRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="getFormatStylesResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+            <wsdl:fault name="DbfParamsException">
+
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DbfParamsException" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:fault>
+
+        </wsdl:operation>
+
+        <wsdl:operation name="getSupportedStyles">
+
+            <wsdl:documentation>
+Get a list of databases and styles (see http://www.ebi.ac.uk/Tools/webservices/services/dbfetch#fetchdata_query_format_style).   </wsdl:documentation>
+
+            <wsdlsoap:operation soapAction=""/>
+
+            <wsdl:input name="getSupportedStylesRequest">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:input>
+
+            <wsdl:output name="getSupportedStylesResponse">
+
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://www.ebi.ac.uk/ws/services/WSDbfetch" use="encoded"/>
+
+            </wsdl:output>
+
+        </wsdl:operation>
+
+    </wsdl:binding>
+
+    <wsdl:service name="WSDBFetchServerService">
+
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+
+WSDbfetch: entry retrieval using entry identifiers or accession numbers for 
+various biological databases, including EMBL-Bank, InterPro, MEDLINE, Patent 
+Proteins, PDB, RefSeq, UniParc, UniProtKB and UniRef.
+
+Note: this is an RPC/encoded SOAP interface to the WSDbfetch service, for 
+other interfaces please see the documentation 
+(http://www.ebi.ac.uk/Tools/webservices/services/dbfetch).
+    </wsdl:documentation>
+
+        <wsdl:port binding="impl:WSDbfetchSoapBinding" name="WSDbfetch">
+
+            <wsdlsoap:address location="http://www.ebi.ac.uk/ws/services/WSDbfetch"/>
+
+        </wsdl:port>
+
+    </wsdl:service>
+
+</wsdl:definitions>
