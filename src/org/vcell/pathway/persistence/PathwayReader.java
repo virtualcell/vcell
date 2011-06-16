@@ -96,6 +96,8 @@ public class PathwayReader {
 	private PathwayModel pathwayModel = new PathwayModel();
 	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
 	private Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	
+	private int counterID = 0;
 
 	public static void main(String args[]){
 		try {
@@ -212,6 +214,19 @@ public class PathwayReader {
 		return transportWithBiochemicalReaction;
 	}
 
+	// returns a "resource" attribute if present or generates one from the ID
+	private String generateResourceID(Element element) {
+		for (Object attr : element.getAttributes()){
+			Attribute attribute = (Attribute)attr;
+			if (attribute.getName().equals("ID")){
+				return ("#" + attribute.getValue());
+			} else if (attribute.getName().equals("resource")) {
+				return attribute.getValue();
+			}
+		}
+		return null;
+	}
+	
 	private void addAttributes(BioPaxObject bioPaxObject, Element element){
 		for (Object attr : element.getAttributes()){
 			Attribute attribute = (Attribute)attr;
@@ -1211,20 +1226,61 @@ public class PathwayReader {
 		if (childElement.getName().equals("LEFT") || childElement.getName().equals("RIGHT")){
 			Element physicalEntityParticipantElement = childElement.getChild("physicalEntityParticipant",bp);
 			if (physicalEntityParticipantElement!=null){
+				boolean found = false;
 				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
-				if (physicalEntityPropertyElement!=null){
-					if (physicalEntityPropertyElement.getChildren().size()==0){
-						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
-						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
-						pathwayModel.add(physicalEntityProxy);
-						if (childElement.getName().equals("LEFT")){
-							conversion.addLeft(physicalEntityProxy);
-						}else{
-							conversion.addRight(physicalEntityProxy);
-						}
-						return true;
+				// always create a proxy, the real PhysicalEntity (if present) is not ready to be inserted as is because it is incomplete
+				// the reason is that PhysicalEntity object is a "species" in v2 but becames a "species context" in v3
+				PhysicalEntityProxy physicalEntityProxy = null;
+				if (physicalEntityPropertyElement != null){
+					found = true;
+					physicalEntityProxy = new PhysicalEntityProxy();
+					addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
+					pathwayModel.add(physicalEntityProxy);
+					if (childElement.getName().equals("LEFT")){
+						conversion.addLeft(physicalEntityProxy);
+					}else{
+						conversion.addRight(physicalEntityProxy);
+					}
+					if (physicalEntityPropertyElement.getChildren().size() > 0) {
+						addObjectPhysicalEntity(physicalEntityPropertyElement);
 					}
 				}
+				Element cellularLocationElement = physicalEntityParticipantElement.getChild("CELLULAR-LOCATION",bp);
+				if(cellularLocationElement != null && found == true) {
+					Element controlledVocabularyElement = cellularLocationElement.getChild("openControlledVocabulary", bp);
+					if(controlledVocabularyElement != null) {
+						CellularLocationVocabularyProxy cellularLocationVocabularyProxy = new CellularLocationVocabularyProxy();
+						addAttributes(cellularLocationVocabularyProxy, controlledVocabularyElement);
+						pathwayModel.add(cellularLocationVocabularyProxy);
+						if(controlledVocabularyElement.getChildren().size() == 0) {
+							physicalEntityProxy.setCellularLocation(cellularLocationVocabularyProxy);
+						} else {
+							addObjectCellularLocationVocabulary(controlledVocabularyElement);
+						}
+						System.out.println(" -          " + controlledVocabularyElement.getName());
+						// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
+					}
+				}
+				Element stoichiometricCoefficientElement = physicalEntityParticipantElement.getChild("STOICHIOMETRIC-COEFFICIENT",bp);
+				if(stoichiometricCoefficientElement != null && found == true) {
+					System.out.println(" -          " + stoichiometricCoefficientElement.getTextTrim());
+					// Create a Stoichiometry object from the stoichiometricCoefficient and from PhysicalEntity object
+					Stoichiometry stoichiometry = new Stoichiometry();
+					stoichiometry.setID(generateInstanceID());
+					stoichiometry.setStoichiometricCoefficient(Double.valueOf(stoichiometricCoefficientElement.getTextTrim()));
+					if(physicalEntityProxy == null) {		// reuse the proxy if we created one already
+						physicalEntityProxy = new PhysicalEntityProxy();
+						physicalEntityProxy.setResource(generateResourceID(physicalEntityPropertyElement));
+						pathwayModel.add(physicalEntityProxy);
+					}
+					stoichiometry.setPhysicalEntity(physicalEntityProxy);
+					// Add the Stoichiometry object to the participantStoichiometry property of the conversion
+					conversion.getParticipantStoichiometry().add(stoichiometry);
+					// add the Stoichiometry object to the pathway model
+					pathwayModel.add(stoichiometry);
+					found = true;
+				}
+				return found;
 			}
 			Element sequenceParticipantElement = childElement.getChild("sequenceParticipant",bp);
 			if (sequenceParticipantElement!=null){
@@ -1256,11 +1312,18 @@ public class PathwayReader {
 				return true;
 			}
 			return false;
+//		}else if(childElement.getName().equals("participantStoichiometry")) {
+//			conversion.getParticipantStoichiometry().add(addObjectStoichiometry(childElement));
+//			return true;
 		}else{
 			return false;
 		}
 	}
 	
+	private String generateInstanceID() {
+		return(new String("VCELL_LOCAL_ID_" + counterID++));
+	}
+
 	private boolean addContentComplexAssembly(ComplexAssembly complexAssembly, Element element, Element childElement){
 		if (addContentConversion(complexAssembly,element,childElement)){
 			return true;

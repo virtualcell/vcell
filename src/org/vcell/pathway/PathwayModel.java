@@ -157,8 +157,13 @@ public class PathwayModel {
 		}
 	}
 
+	private void reconcileReferencesPreprocessing() {
+		
+	}
+
 	public void reconcileReferences() {
 		ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
+		reconcileReferencesPreprocessing();
 		for (BioPaxObject bpObject : biopaxObjects){
 			if (bpObject instanceof RdfObjectProxy){
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
@@ -178,28 +183,8 @@ public class PathwayModel {
 		}
 		biopaxObjects.removeAll(proxiesToDelete);
 		
-		// get rid of all UtilityClass objects for display purposes
-		// the producer will recreate them from memory at the time when we save
-		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
-		for (BioPaxObject bpObject : biopaxObjects){
-			if(!(bpObject instanceof UtilityClass)) {
-				newBiopaxObjects.add(bpObject);
-			}
-		}
-		biopaxObjects = newBiopaxObjects;
-		
-		// get rid of all unresolved proxies
-		HashSet<BioPaxObject> new2BiopaxObjects = new HashSet<BioPaxObject>();
-		int unresolvedProxiesCount = 0;
-		for (BioPaxObject bpObject : biopaxObjects){
-			if(!(bpObject instanceof RdfObjectProxy)) {
-				new2BiopaxObjects.add(bpObject);
-			} else {
-				unresolvedProxiesCount++;
-			}
-		}
-		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
-		biopaxObjects = new2BiopaxObjects;
+		hideUtilityClassObjects();
+		cleanupUnresolvedProxies();
 		
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
@@ -217,19 +202,43 @@ public class PathwayModel {
 	private BioPaxObject findFromResourceID(String resource) {
 		resource = resource.replace("#","");
 		for (BioPaxObject bpObject : biopaxObjects){
-			if (bpObject.getID()!=null){
+			if (bpObject.getID() != null){
 				if (bpObject.getID().equals(resource)){
 					return bpObject;
 				}
-//				// contains() won't work, may result in matching objects which are wildly incompatible
-//				if (bpObject.getID().contains(resource)){
-//					return bpObject;
-//				}
 			}
 		}
 		return null;
 	}
 	
+	private void hideUtilityClassObjects() {
+		// remove all references to UtilityClass objects from the model root (biopaxObjects)
+		// they are still embedded within various Entity objects
+		// the producer will put them back in biopaxObjects set at the time when we save
+		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(!(bpObject instanceof UtilityClass)) {
+				newBiopaxObjects.add(bpObject);
+			}
+		}
+		biopaxObjects = newBiopaxObjects;
+	}
+
+	private void cleanupUnresolvedProxies() {
+		// get rid of all unresolved proxies
+		HashSet<BioPaxObject> new2BiopaxObjects = new HashSet<BioPaxObject>();
+		int unresolvedProxiesCount = 0;
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(!(bpObject instanceof RdfObjectProxy)) {
+				new2BiopaxObjects.add(bpObject);
+			} else {
+				unresolvedProxiesCount++;
+			}
+		}
+		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
+		biopaxObjects = new2BiopaxObjects;
+	}
+
 	public Map<BioPaxObject, HashSet<BioPaxObject>> getParentHashtable(){
 		return parentMap;
 	}
