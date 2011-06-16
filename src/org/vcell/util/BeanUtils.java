@@ -48,7 +48,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 /**
  * Insert the type's description here.
@@ -675,17 +674,18 @@ public final class BeanUtils {
 		if (container==null){
 			return;
 		}
-		Component[] components = container.getComponents();
-		for (int i=0;i<components.length;i++) {
-			components[i].setCursor(cursor);
-			if(components[i] instanceof JRootPane){
-				BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
-			}else if (components[i] instanceof Container) {
-				if (((Container)components[i]).getComponentCount() > 0) {
-					BeanUtils.setCursorThroughout((Container)components[i], cursor);
-				}
-			}
-		}
+		container.setCursor(cursor);
+//		Component[] components = container.getComponents();
+//		for (int i=0;i<components.length;i++) {
+//			components[i].setCursor(cursor);
+//			if(components[i] instanceof JRootPane){
+//				BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
+//			}else if (components[i] instanceof Container) {
+//				if (((Container)components[i]).getComponentCount() > 0) {
+//					BeanUtils.setCursorThroughout((Container)components[i], cursor);
+//				}
+//			}
+//		}
 	}
 
 	public static String[] stringArrayMerge(String[] array1, String[] array2) {
