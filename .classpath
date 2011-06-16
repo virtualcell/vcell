@@ -20,7 +20,6 @@
 	<classpathentry exported="true" kind="lib" path="wstx-asl-3.2.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="xml-apis.jar"/>
 	<classpathentry exported="true" kind="lib" path="bioformats_omexml_locicommon_brnch41.jar"/>
-	<classpathentry exported="true" kind="lib" path="JLink.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry exported="true" kind="lib" path="new_mail.jar"/>
@@ -33,7 +32,6 @@
 	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="copasi_build30.jar"/>
 	<classpathentry exported="true" kind="lib" path="js.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-js.jar"/>
