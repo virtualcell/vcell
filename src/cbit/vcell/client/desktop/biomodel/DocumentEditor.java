@@ -423,7 +423,6 @@ private void initialize() {
 
 private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	try {
-		//long t = System.currentTimeMillis();
 		treeSelectionChanged();
 		Object selectedNode = documentEditorTree.getLastSelectedPathComponent();
 		if (selectedNode != null && (selectedNode instanceof BioModelNode)) {
@@ -441,7 +440,6 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 				selectionManager.setSelectedObjects(new Object[]{selectedObject});
 			}
 		}
-		//System.out.println("total time: " + (System.currentTimeMillis() - t));
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
