@@ -71,13 +71,13 @@ private void poll(boolean reportPerf) {
     // ask remote message listener (really should be "message producer") for any queued events.
     //
     try {
-    	if (vcellConnection == null) {
-    		return;
-    	}
     	MessageEvent[] queuedEvents = null;
     	// time the call
 	    long l1 = System.currentTimeMillis();
-	    synchronized (vcellConnection) {		
+	    synchronized (this) {
+	    	if (vcellConnection == null) {
+	    		return;
+	    	}
 	    	queuedEvents = vcellConnection.getMessageEvents();
 		}
 	    long l2 = System.currentTimeMillis();
@@ -374,9 +374,9 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	fireSimStatusEvent(simStatusEvent);
 }
 
-public final void setVCellConnection(VCellConnection vcellConnection) {
-	synchronized (vcellConnection) {		
-		this.vcellConnection = vcellConnection;
+public final void setVCellConnection(VCellConnection vcellConn) {
+	synchronized (this) {
+		this.vcellConnection = vcellConn;
 	}
 }
 
