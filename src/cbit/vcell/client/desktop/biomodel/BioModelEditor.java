@@ -553,7 +553,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		// a bug in BasicTabbedPanelUI (See line 3337)
 		rightBottomTabbedPane.putClientProperty("__index_to_remove__", destComponentIndex);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
-		rightBottomTabbedPane.validate();
 	}
 	if (rightBottomTabbedPane.getSelectedComponent() != bottomComponent) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
@@ -633,7 +632,6 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	Component rightTopComponent = rightSplitPane.getTopComponent();
 	if (rightTopComponent != newTopPanel) {		
 		rightSplitPane.setTopComponent(newTopPanel);
-		rightSplitPane.validate();
 	}
 	rightSplitPane.setDividerLocation(dividerLocation);	
 }

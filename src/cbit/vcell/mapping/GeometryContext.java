@@ -24,6 +24,7 @@ import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -570,18 +571,10 @@ public boolean isAllUnitSizeParameterSetForSpatial()
  * @param event java.beans.PropertyChangeEvent
  */
 public void propertyChange(PropertyChangeEvent event) {
-	if (event.getSource() == getGeometry() || event.getSource() == getGeometry().getGeometrySpec()){
-		try {
-			refreshStructureMappings();
-		}catch (MappingException e){
-			e.printStackTrace(System.out);
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
-	}
-	if (event.getSource() == getModel() && event.getPropertyName().equals("structures")){
+	if (event.getSource() == getGeometry()
+			|| event.getSource() == getModel() && event.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)
+			|| event.getSource() == getGeometry().getGeometrySpec() && event.getPropertyName() != GeometrySpec.PROPERTY_NAME_SAMPLED_IMAGE
+				&& event.getPropertyName() != GeometrySpec.PROPERTY_NAME_THUMBNAIL_IMAGE){
 		try {
 			refreshStructureMappings();
 		}catch (MappingException e){
