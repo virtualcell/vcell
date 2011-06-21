@@ -10,9 +10,9 @@
 
 package cbit.vcell.geometry.surface;
 
-import org.vcell.util.ISize;
+//import org.vcell.util.ISize;
 
-import progress.message.client.EExclusiveQueueOpen;
+//import progress.message.client.EExclusiveQueueOpen;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.RegionImage;
 
