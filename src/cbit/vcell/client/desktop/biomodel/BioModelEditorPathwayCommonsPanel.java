@@ -254,6 +254,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	
 	public void showPathway() {
 		final Pathway pathway = computeSelectedPathway();
+		if (pathway == null) {
+			return;
+		}
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {

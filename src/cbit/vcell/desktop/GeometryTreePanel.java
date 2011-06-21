@@ -424,8 +424,10 @@ private GeometryInfo getSelectedGeometryInfo() {
 /**
  * Initialize the class.
  */
-private void initialize() {
+@Override
+protected void initialize() {
 	try {
+		super.initialize();
 		this.addPropertyChangeListener(ivjEventHandler);
 		getJMenuItemCreateNewGeometry().addActionListener(ivjEventHandler);
 		getJMenuItemOpen().addActionListener(ivjEventHandler);
