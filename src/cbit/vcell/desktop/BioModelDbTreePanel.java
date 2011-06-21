@@ -611,9 +611,10 @@ private javax.swing.JMenuItem getLatestEditionMenuItem() {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initialize() {
+@Override
+protected void initialize() {
 	try {
+		super.initialize();
 		addPropertyChangeListener(ivjEventHandler);
 		getJMenuItemDelete().addActionListener(ivjEventHandler);
 		getJMenuItemOpen().addActionListener(ivjEventHandler);

@@ -342,7 +342,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		String distinctDescr =
 			"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values.";
 		if(!bForceAddDistinct){
-			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Image Editor",
 				distinctDescr+
 				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
 				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+

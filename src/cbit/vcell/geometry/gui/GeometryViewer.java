@@ -261,7 +261,7 @@ private ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			ivjJButtonChangeDomain = new javax.swing.JButton("Edit...");
+			ivjJButtonChangeDomain = new javax.swing.JButton("Edit Domain...");
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -553,7 +553,7 @@ private JPopupMenu getPopupMenu() {
 			newGeometryMenuItem = new JMenuItem("New...");
 			newGeometryMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CREATE_GEOMETRY);
 			newGeometryMenuItem.addActionListener(this);
-			existingGeometryMenuItem = new JMenuItem("Open...");
+			existingGeometryMenuItem = new JMenuItem("Open from...");
 			existingGeometryMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
 			existingGeometryMenuItem.addActionListener(this);
 			popupMenu.add(newGeometryMenuItem);
