@@ -1,8 +1,7 @@
 package cbit.vcell.geometry.surface;
 
-import org.vcell.util.ISize;
-
-import progress.message.client.EExclusiveQueueOpen;
+//import org.vcell.util.ISize;
+//import progress.message.client.EExclusiveQueueOpen;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.RegionImage;
 
