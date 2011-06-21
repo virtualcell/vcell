@@ -608,9 +608,10 @@ private MathModelInfo[] getMathModelVersionDates(MathModelInfo thisMathModelInfo
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initialize() {
+@Override
+protected void initialize() {
 	try {
+		super.initialize();
 		this.addPropertyChangeListener(ivjEventHandler);
 		getJMenuItemDelete().addActionListener(ivjEventHandler);
 		getJMenuItemOpen().addActionListener(ivjEventHandler);
