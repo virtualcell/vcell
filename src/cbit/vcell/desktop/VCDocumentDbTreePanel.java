@@ -102,7 +102,6 @@ public VCDocumentDbTreePanel() {
 public VCDocumentDbTreePanel(boolean bMetadata) {
 	super();
 	this.bShowMetadata = bMetadata;
-	initialize();
 }
 
 protected abstract void actionsOnClick(MouseEvent mouseEvent);
@@ -196,7 +195,7 @@ protected abstract JPanel getBottomPanel();
  * Initialize the class.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initialize() {
+protected void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
