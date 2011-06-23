@@ -130,13 +130,14 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
 				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
-				Species species = (Species) SimpleTransferable
-				.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 				if (species != null) {
 					boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
-					pasteSpecies(getGraphPane(), species, getStructureCartoon().getModel(), 
+					SpeciesContext pastedSpeciesContext = pasteSpecies(getGraphPane(), species, getStructureCartoon().getModel(), 
 							((StructureShape) shape).getStructure(), bPasteNew, speciesHash, null);
+					getGraphModel().clearSelection();
+					getGraphModel().select(pastedSpeciesContext);
 				}
 			}
 		} else if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
