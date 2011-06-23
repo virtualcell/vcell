@@ -20,7 +20,7 @@ public class Diagram implements Serializable, Matchable {
 	
 	public static interface Key { }
 	
-	public static class StructureKey implements Key {
+	public static class StructureKey implements Key, Serializable {
 		
 		protected final Structure structure;
 		

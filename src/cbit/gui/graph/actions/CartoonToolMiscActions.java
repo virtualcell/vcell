@@ -10,22 +10,32 @@ import java.util.List;
 
 import cbit.gui.graph.CartoonTool;
 
+@SuppressWarnings("serial")
 public class CartoonToolMiscActions {
 
-	@SuppressWarnings("serial")
-	public static class AddFeature extends CartoonToolWrapperAction {
-		public static final String MENU_ACTION = "Add Feature...";
+	public static class AddFeatureInside extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Add Feature Inside";
 		public static final String MENU_TEXT = MENU_ACTION;		
-		public AddFeature(CartoonTool cartoonTool) {
-			super(cartoonTool, MENU_ACTION, MENU_TEXT, "Add new feature", 
+		public AddFeatureInside(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, "Add new feature inside", 
 					"Add new feature to bio model.");
 			putValue(MNEMONIC_KEY, KeyEvent.VK_F);
 		}
 	}
 
+	public static class AddFeatureOutside extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Add Feature Outside";
+		public static final String MENU_TEXT = MENU_ACTION;		
+		public AddFeatureOutside(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, "Add new feature outside", 
+			"Add new feature to bio model.");
+			putValue(MNEMONIC_KEY, KeyEvent.VK_F);
+		}
+	}
+	
 	@SuppressWarnings("serial")
 	public static class AddSpecies extends CartoonToolWrapperAction {
-		public static final String MENU_ACTION = "Add Species...";
+		public static final String MENU_ACTION = "Add Species";
 		public static final String MENU_TEXT = MENU_ACTION;
 		public AddSpecies(CartoonTool cartoonTool) {
 			super(cartoonTool, MENU_ACTION, MENU_TEXT, "Add new species", 
@@ -170,7 +180,8 @@ public class CartoonToolMiscActions {
 	
 	public static List<GraphViewAction> getDefaultActions(CartoonTool cartoonTool) { 
 		List<GraphViewAction> list = new ArrayList<GraphViewAction>();
-		list.add(new AddFeature(cartoonTool));
+		list.add(new AddFeatureInside(cartoonTool));
+		list.add(new AddFeatureOutside(cartoonTool));
 		list.add(new AddSpecies(cartoonTool));
 //		list.add(new AddGlobalParameter(cartoonTool));
 		list.add(new SearchReactions(cartoonTool));

@@ -121,8 +121,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				Species species = ((SpeciesContextShape) shape).getSpeciesContext().getSpecies();
 				VCellTransferable.sendToClipboard(species);
 			}
-		} else if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
-				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
+		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
 				Species species = (Species) SimpleTransferable
 				.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
@@ -168,26 +168,32 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
 				SpeciesContext speciesContext = getStructureCartoon().getModel().createSpeciesContext(((StructureShape) shape).getStructure());
+				getGraphModel().clearSelection();
 				getGraphModel().select(speciesContext);
-//				showCreateSpeciesContextDialog(getGraphPane(),
-//						getStructureCartoon().getModel(),
-//						((StructureShape) shape).getStructure(), null);
 			}
 
-		} else if (menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.AddFeatureInside.MENU_ACTION)) {
 			try {
 				if (shape instanceof FeatureShape) {
 					final Feature feature = getStructureCartoon().getModel().createFeature(((FeatureShape) shape).getFeature());
+					getGraphModel().clearSelection();
 					getGraphModel().select(feature);
-//					showFeaturePropertiesDialog(getGraphPane(),
-//							(getStructureCartoon().getModel() == null ? null
-//									: getStructureCartoon().getModel()),
-//									((FeatureShape) shape).getFeature(), null);
 				}
 			} catch (Exception e) {
 				generateErrorDialog(e, 0, 0);
 			}
 
+		} else if (menuAction.equals(CartoonToolMiscActions.AddFeatureOutside.MENU_ACTION)) {
+			try {
+				if (shape instanceof FeatureShape) {
+					final Feature feature = getStructureCartoon().getModel().createFeature(null);
+					getGraphModel().clearSelection();
+					getGraphModel().select(feature);
+				}
+			} catch (Exception e) {
+				generateErrorDialog(e, 0, 0);
+			}
+			
 		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
 				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			try {
@@ -302,7 +308,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			}
 			case FEATURE: {
 				menuAction(getStructureCartoon().getSelectedShape(),
-						CartoonToolMiscActions.AddFeature.MENU_ACTION);
+						CartoonToolMiscActions.AddFeatureInside.MENU_ACTION);
 				// createFeature(pickedShape);
 				// String newFeatureName =
 				// getStructureCartoon().getModel().getFreeFeatureName();
@@ -551,7 +557,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.Reactions.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.ReactionsSlices.MENU_ACTION)
-					|| menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+//					|| menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
 					|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)
@@ -565,7 +571,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		// only features should be deleted (not membranes).
 		if (shape instanceof FeatureShape) {
 			if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
-					|| menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.AddFeatureInside.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.AddFeatureOutside.MENU_ACTION)
 					|| menuAction.equals(CartoonToolEditActions.Move.MENU_ACTION)) {
 				return true;
 			}
@@ -588,27 +595,16 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		// exist in structure || you are PASTE_NEW)
 		if (shape instanceof StructureShape) {
 			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
-			boolean bPaste = menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION);
-			if (bPaste || bPasteNew) {
-				Species species = 
-					(Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
-				if (species == null) {
-					return false;
-				}
-				if (getStructureCartoon().getModel().contains(species)) {
-					if (getStructureCartoon().getModel().getSpeciesContext(
-							species, ((StructureShape) shape).getStructure()) != null) {
-						return bPasteNew ? true : false;
-					} else {
-						return bPasteNew ? false : true;
-					}
-				} else {
-					return bPasteNew ? false : true;
-				}
+			if (bPasteNew) {
+				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				return species != null;
 			}
 		}
 		// Is Move valid
 		if (shape instanceof FeatureShape) {
+			if (menuAction.equals(CartoonToolMiscActions.AddFeatureOutside.MENU_ACTION) && ((Feature)shape.getModelObject()).getParentStructure() != null) {
+				return false;
+			}
 			if (menuAction.equals(CartoonToolEditActions.Move.MENU_ACTION)) {
 				Feature[] featureArr = 
 					getStructureCartoon().getModel().getValidDestinationsForMovingFeature(
