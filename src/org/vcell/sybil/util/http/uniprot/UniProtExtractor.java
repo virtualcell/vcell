@@ -7,38 +7,40 @@ package org.vcell.sybil.util.http.uniprot;
  *   the suffix ".rdf", others do not.
  */
 
+import java.util.Iterator;
+
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.vcell.sybil.util.http.uniprot.box.UniProtBox;
 import org.vcell.sybil.util.http.uniprot.box.imp.UniProtBoxImp;
 import org.vcell.sybil.util.text.StringUtil;
 
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
 public class UniProtExtractor {
 
-	protected Model model;
+	protected Graph model;
 	
-	public UniProtExtractor(Model model) { this.model = model; }
+	public UniProtExtractor(Graph model) { this.model = model; }
 
-	public Model model() { return model; }
+	public Graph model() { return model; }
 	
-	public Resource entry(String id) { return model.createResource(UniProtConstants.uri(id)); }
-	public String id(Resource entry) { return entry.getLocalName(); }	
+	public URI entry(String id) { return model.getValueFactory().createURI(UniProtConstants.uri(id)); }
+	public String id(URI entry) { return entry.getLocalName(); }	
 	
 	public UniProtBox extractBox() {
 		UniProtBoxImp box = new UniProtBoxImp();
 		
-		StmtIterator stmtIter1 = model.listStatements(null, UniProtConstants.replaces, (RDFNode) null);
+		Iterator<Statement> stmtIter1 = model.match(null, UniProtConstants.replaces, null);
 		while(stmtIter1.hasNext()) {
-			Statement statement = stmtIter1.nextStatement();
-			RDFNode object = statement.getObject();
-			if(object instanceof Resource) {
-				String idSubject = id(statement.getSubject());
-				String idObject = id((Resource) statement.getObject());
+			Statement statement = stmtIter1.next();
+			Resource subject = statement.getSubject();
+			Value object = statement.getObject();
+			if(subject instanceof URI && object instanceof URI) {
+				String idSubject = id((URI) subject);
+				String idObject = id((URI) object);
 				if(StringUtil.notEmpty(idSubject) && StringUtil.notEmpty(idObject)) {
 					UniProtBox.Entry entrySubject = box.entry(idSubject);
 					UniProtBox.Entry entryObject = box.entry(idObject);
@@ -46,13 +48,14 @@ public class UniProtExtractor {
 				}
 			}
 		}
-		StmtIterator stmtIter2 = model.listStatements(null, UniProtConstants.replacedBy, (RDFNode) null);
+		Iterator<Statement> stmtIter2 = model.match(null, UniProtConstants.replacedBy, null);
 		while(stmtIter2.hasNext()) {
-			Statement statement = stmtIter2.nextStatement();
-			RDFNode object = statement.getObject();
-			if(object instanceof Resource) {
-				String idSubject = id(statement.getSubject());
-				String idObject = id((Resource) statement.getObject());
+			Statement statement = stmtIter2.next();
+			Resource subject = statement.getSubject();
+			Value object = statement.getObject();
+			if(subject instanceof URI && object instanceof URI) {
+				String idSubject = id((URI) subject);
+				String idObject = id((URI) object);
 				if(StringUtil.notEmpty(idSubject) && StringUtil.notEmpty(idObject)) {
 					UniProtBox.Entry entrySubject = box.entry(idSubject);
 					UniProtBox.Entry entryObject = box.entry(idObject);
@@ -61,24 +64,23 @@ public class UniProtExtractor {
 			}
 		} 
 		
-		StmtIterator stmtIter3 = model.listStatements(null, UniProtConstants.recommendedName, (RDFNode) null);
+		Iterator<Statement> stmtIter3 = model.match(null, UniProtConstants.recommendedName, null);
 		if (stmtIter3.hasNext()) {
 			while(stmtIter3.hasNext()) {
-				Statement statement = stmtIter3.nextStatement();
+				Statement statement = stmtIter3.next();
 				Resource entryNode = statement.getSubject();
-				RDFNode nameNode = statement.getObject();
+				Value nameNode = statement.getObject();
 				if(nameNode instanceof Resource) {
 					Resource nameResource = (Resource) nameNode;
-					StmtIterator stmtIter4 = 
-						model.listStatements(nameResource, UniProtConstants.fullName, (RDFNode) null);
+					Iterator<Statement> stmtIter4 = model.match(nameResource, UniProtConstants.fullName, null);
 						// System.out.println("hello world");
 					while(stmtIter4.hasNext()) {
-						Statement statement2 = stmtIter4.nextStatement();
-						RDFNode objectNode = statement2.getObject();
+						Statement statement2 = stmtIter4.next();
+						Value objectNode = statement2.getObject();
 						// System.out.println("hello moon");
-						if(objectNode instanceof Literal) {
-							String name = ((Literal) objectNode).getLexicalForm();
-							UniProtBox.Entry entry = box.entry(UniProtConstants.idFromResource(entryNode));
+						if(entryNode instanceof URI && objectNode instanceof Literal) {
+							String name = ((Literal) objectNode).stringValue();
+							UniProtBox.Entry entry = box.entry(UniProtConstants.idFromResource((URI) entryNode));
 							System.out.println("UniProtExtractor: name: " + name + "\tid: " + entry.id());
 							entry.setRecommendedName(name);
 						}
@@ -87,14 +89,14 @@ public class UniProtExtractor {
 			}
 		} else { 
 			// sometimes, recommended name is not present for an uniprot id : check the full name
-			stmtIter3 = model.listStatements(null, UniProtConstants.fullName, (RDFNode) null);
+			stmtIter3 = model.match(null, UniProtConstants.fullName, null);
 			while(stmtIter3.hasNext()) {
-				Statement statement2 = stmtIter3.nextStatement();
-				RDFNode objectNode = statement2.getObject();
+				Statement statement2 = stmtIter3.next();
 				Resource entryNode = statement2.getSubject();
-				if(objectNode instanceof Literal) {
-					String name = ((Literal) objectNode).getLexicalForm();
-					UniProtBox.Entry entry = box.entry(UniProtConstants.idFromResource(entryNode));
+				Value objectNode = statement2.getObject();
+				if(entryNode instanceof URI && objectNode instanceof Literal) {
+					String name = ((Literal) objectNode).stringValue();
+					UniProtBox.Entry entry = box.entry(UniProtConstants.idFromResource((URI) entryNode));
 					entry.setRecommendedName(name);
 					System.out.println("UniProtExtractor: name: " + name + "\tid: " + entry.id());
 				}
@@ -104,6 +106,6 @@ public class UniProtExtractor {
 		return box;
 	}
 	
-	public static UniProtBox extractBox(Model model) { return new UniProtExtractor(model).extractBox(); }
+	public static UniProtBox extractBox(Graph model) { return new UniProtExtractor(model).extractBox(); }
 	
 }

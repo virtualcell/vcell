@@ -70,4 +70,18 @@ public class NSMap {
 		return ns;
 	}
 	
+	public void addFromMap(Map<String, String> map) {
+		for(Map.Entry<String, String> entry : map.entrySet()) {
+			register(entry.getKey(), entry.getValue());
+		}
+	}
+	
+	public Map<String, String> convertToMap() {
+		HashMap<String, String> map = new HashMap<String, String>();
+		for(NameSpace ns : all) {
+			map.put(ns.prefix, ns.uri);
+		}
+		return map;
+	}
+	
 }

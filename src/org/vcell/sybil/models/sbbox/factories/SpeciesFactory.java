@@ -4,9 +4,9 @@ package org.vcell.sybil.models.sbbox.factories;
  *   A factory for specieses
  */
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.imp.SpeciesImp;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
 public class SpeciesFactory extends ThingFactory<SBBox.NamedThing> {

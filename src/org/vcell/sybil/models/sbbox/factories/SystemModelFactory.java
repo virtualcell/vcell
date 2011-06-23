@@ -4,9 +4,9 @@ package org.vcell.sybil.models.sbbox.factories;
  *   A factory for system models
  */
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.imp.SystemModelImp;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
 public class SystemModelFactory extends ThingFactory<SBBox.NamedThing> {

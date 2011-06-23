@@ -1,13 +1,13 @@
 package cbit.vcell.biomodel.meta.xml;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.xml.sax.SAXParseException;
-
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
@@ -52,10 +52,13 @@ public class XMLMetaDataReader extends XMLMetaData {
 			// read RDF
 			try { 
 				metaData.addToModelFromElement(rdfElement);
-			}catch (SAXParseException e) {
+			} catch (RDFParseException e) {
 				e.printStackTrace();
 				throw new XmlParseException(e.getMessage());
-			}catch (JDOMException e) {
+			} catch (RDFHandlerException e) {
+				e.printStackTrace();
+				throw new XmlParseException(e.getMessage());
+			} catch (IOException e) {
 				e.printStackTrace();
 				throw new XmlParseException(e.getMessage());
 			}

@@ -1,19 +1,29 @@
 package org.vcell.sbml.vcell;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.sybil.rdf.RDFChopper;
+import org.vcell.sybil.rdf.SesameRioUtil;
+import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.sybil.rdf.smelt.NamespaceAssimilator;
 import org.vcell.sybil.rdf.smelt.SameAsCrystalizer;
 
@@ -22,8 +32,6 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * Creates annotation xml elements from meta data
@@ -37,7 +45,7 @@ public class SBMLAnnotationUtil {
 	protected RDFChopper chopper;
 	protected NamespaceAssimilator namespaceAssimilator;
 	protected Identifiable root;
-	protected Model rdfSmelted;
+	protected Graph rdfSmelted;
 	protected String nsSBML;
 	protected XMLTriple tripleAnnotation;
 	protected XMLTriple tripleRDF = new XMLTriple("RDF", NameSpace.RDF.uri, NameSpace.RDF.prefix);
@@ -73,8 +81,11 @@ public class SBMLAnnotationUtil {
 	public void writeMetaID(Identifiable identifiable, SBase sBase) {
 		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
 		if (namedThing != null) {
-			String metaID = namespaceAssimilator.map(namedThing.resource()).getLocalName();
-			sBase.setMetaId(metaID);
+			Resource mappedResource = namespaceAssimilator.map(namedThing.resource());
+			if(mappedResource instanceof URI) {
+				String metaID = ((URI) mappedResource).getLocalName();
+				sBase.setMetaId(metaID);				
+			}
 		}
 	}
 	
@@ -95,12 +106,12 @@ public class SBMLAnnotationUtil {
 		// Deal with RDF annotation 
 		XMLNode rootAnnotation = new XMLNode(tripleAnnotation, new XMLAttributes());
 		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
-		Model rdfChunk = null;
+		Graph rdfChunk = null;
 		if (namedThing != null) { 
 			rdfChunk = chopper.getChops().get(namedThing.resource());
 		}
 		if(identifiable == root && rdfChunk != null) { 
-			rdfChunk.add(chopper.getRemains());
+			rdfChunk.addAll(chopper.getRemains());
 		}
 		XMLNode rootRDF = null;
 		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
@@ -212,6 +223,9 @@ public class SBMLAnnotationUtil {
 	 * 				is read here.
 	 * @param identifiable - vcReaction, vcSpecies, vcCompartment, vcBiomodel
 	 * @param sBase - corresponding SBML elements
+	 * @throws  
+	 * @throws RDFHandlerException 
+	 * @throws RDFParseException 
 	 */
 	public void readAnnotation(Identifiable identifiable, SBase sBase) {
 		readMetaID(identifiable, sBase);
@@ -228,7 +242,13 @@ public class SBMLAnnotationUtil {
 						
 						// TODO this is a hack to be replaced by proper URI management.
 						text = text.replace("about=\"#","about=\"");
-						Model rdfNew = JenaIOUtil.modelFromText(text, nsSBML);
+						Graph rdfNew = new HashGraph();
+						Map<String, String> nsMap = new HashMap<String, String>();
+						try {
+							SesameRioUtil.readRDFFromString(text, rdfNew, nsMap, RDFFormat.RDFXML, nsSBML);
+						} catch (RDFParseException e) { e.printStackTrace(); } 
+						catch (RDFHandlerException e) { e.printStackTrace(); } 
+						catch (IOException e) { e.printStackTrace(); }
 //						System.out.println("SBML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(rdfNew, nsSBML));
 						metaData.add(rdfNew);
 //						System.out.println("VCML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(metaData.getRdfData(), XMLTags.VCML_NS));

@@ -7,11 +7,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.vcell.sybil.models.AnnotationQualifiers;
 import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
@@ -29,13 +37,6 @@ import org.vcell.sybil.rdf.schemas.ProtegeDC;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.xml.gui.MiriamTreeModel;
-
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 @SuppressWarnings("serial")
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
@@ -291,9 +292,9 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 
 	public List<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) throws MalformedURLException {
-		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
-		RDFNode node = null;
-		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, MIRIAM.BioProperties.isDescribedBy, node);
+		URI resource = vcMetaData.getRdfData().getValueFactory().createURI(miriamResource.getMiriamURN());
+		Iterator<Statement> iter = 
+			vcMetaData.getRdfData().match(resource, MIRIAM.BioProperties.isDescribedBy, null);
 		List<URL> urlList = new ArrayList<URL>();
 		while (iter.hasNext()){
 			Statement statement = iter.next();
@@ -304,14 +305,22 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 	
 	public void addStoredCrossReferencedLink(MiriamResource miriamResource, URL url) {
-		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
-		vcMetaData.getRdfData().add(resource, MIRIAM.BioProperties.isDescribedBy, url.toString());
+		ValueFactory valueFactory = vcMetaData.getRdfData().getValueFactory();
+		URI resource = valueFactory.createURI(miriamResource.getMiriamURN());
+		// TODO: fix this. literally translated from the Jena-based code, but not correct in 
+		// terms of MIRIAM
+		vcMetaData.getRdfData().add(resource, MIRIAM.BioProperties.isDescribedBy, 
+				valueFactory.createLiteral(url.toString()));
 	}
 
 	public void removeStoredCrossReferencedLink(MiriamResource miriamResource, URL url) {
-		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
-		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, MIRIAM.BioProperties.isDescribedBy, url.toString());
+		ValueFactory valueFactory = vcMetaData.getRdfData().getValueFactory();
+		Resource resource = valueFactory.createURI(miriamResource.getMiriamURN());
+		Iterator<Statement> iter = 
+			vcMetaData.getRdfData().match(resource, MIRIAM.BioProperties.isDescribedBy, 
+					valueFactory.createLiteral(url.toString()));
 		while (iter.hasNext()){
+			iter.next();
 			iter.remove();
 		}
 	}
@@ -338,8 +347,8 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			String newURI = vcMetaData.getRegistry().generateFreeURI(identifiable);
 			entry.setNamedThingFromURI(newURI);
 		}
-		Model rdfData = vcMetaData.getRdfData();
-		Literal dateLiteral = rdfData.createLiteral(date.getDateString());
+		Graph rdfData = vcMetaData.getRdfData();
+		Literal dateLiteral = rdfData.getValueFactory().createLiteral(date.getDateString());
 		rdfData.add(entry.getNamedThing().resource(), dateQualifier.property(), dateLiteral);
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
@@ -349,23 +358,22 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> map =
 			new HashMap<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>>();
 		Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
-		Model rdfData = vcMetaData.getRdfData();
+		Graph rdfData = vcMetaData.getRdfData();
 		for (Entry entry : allEntries){
 			NamedThing sbThing = entry.getNamedThing();
 			if (sbThing != null){
 				Identifiable identifiable = entry.getIdentifiable();
 				Map<DateQualifier, Set<DublinCoreDate>> qualifierDateMap = new HashMap<DateQualifier, Set<DublinCoreDate>>();
 				for(DublinCoreQualifier.DateQualifier dateQualifier : AnnotationQualifiers.DC_date_all){
-					StmtIterator stmtIter = 
-						rdfData.listStatements(sbThing.resource(), dateQualifier.property(), 
-								(RDFNode) null);
 					Set<DublinCoreDate> dateStrings = new HashSet<DublinCoreDate>();
+					Iterator<Statement> stmtIter = 
+						rdfData.match(sbThing.resource(), dateQualifier.property(), null);
 					while(stmtIter.hasNext()) {
-						Statement statement = stmtIter.nextStatement();
-						RDFNode dateObject = statement.getObject();
+						Statement statement = stmtIter.next();
+						Value dateObject = statement.getObject();
 						if(dateObject instanceof Literal) {
 							Literal dateLiteral = (Literal) dateObject;
-							String dateString = dateLiteral.getLexicalForm();
+							String dateString = dateLiteral.stringValue();
 							dateStrings.add(new DublinCoreDate(dateString));
 						}
 					}
@@ -388,14 +396,15 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 
 	public void setPrettyName(MiriamResource miriamResource, String prettyName) {
-		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
-		vcMetaData.getRdfData().add(resource, ProtegeDC.description, prettyName);		
+		ValueFactory valueFactory = vcMetaData.getRdfData().getValueFactory();
+		Resource resource = valueFactory.createURI(miriamResource.getMiriamURN());
+		Literal prettyNameLiteral = valueFactory.createLiteral(prettyName);
+		vcMetaData.getRdfData().add(resource, ProtegeDC.description, prettyNameLiteral);		
 	}
 
 	public String getPrettyName(MiriamResource miriamResource) {
-		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
-		RDFNode node = null;
-		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, ProtegeDC.description, node);
+		Resource resource = vcMetaData.getRdfData().getValueFactory().createURI(miriamResource.getMiriamURN());
+		Iterator<Statement> iter = vcMetaData.getRdfData().match(resource, ProtegeDC.description, null);
 		while (iter.hasNext()){
 			Statement statement = iter.next();
 			return statement.getObject().toString();

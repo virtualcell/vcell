@@ -1,11 +1,18 @@
 package org.vcell.sybil.util.http.uniprot;
 
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openrdf.model.Graph;
+import org.openrdf.rio.RDFFormat;
+import org.vcell.sybil.rdf.SesameRioUtil;
+import org.vcell.sybil.rdf.impl.HashGraph;
+
 /*   UniProtRDFRequest  --- by Oliver Ruebenacker, UCHC --- January 2010
  *   Launch a web request to UniProt to get RDF for an id
  */
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class UniProtRDFRequest {
 
@@ -16,11 +23,11 @@ public class UniProtRDFRequest {
 	}
 	
 	public static class ModelResponse extends Response {
-		protected Model model;
-		public ModelResponse(UniProtRDFRequest request, Model model) { 
+		protected Graph model;
+		public ModelResponse(UniProtRDFRequest request, Graph model) { 
 			super(request); this.model = model; 
 		}
-		public Model model() { return model; }
+		public Graph model() { return model; }
 	}
 	
 	public static class ExceptionResponse extends Response {
@@ -43,10 +50,13 @@ public class UniProtRDFRequest {
 	public Response response() {
 		Response response = null;
 		try {
-			Model model = ModelFactory.createDefaultModel();
+			Graph model = new HashGraph();
 			// print out debug messsage to console -------- can be uncommented later.
 			// Debug.message(urlRDF());
-			model.read(urlRDF(), uri(), null);			
+			URL url = new URL(urlRDF());
+			URLConnection connection = url.openConnection();
+			Map<String, String> nsMap = new HashMap<String, String>();
+			SesameRioUtil.readRDFFromStream(connection.getInputStream(), model, nsMap, RDFFormat.RDFXML, uri());
 			response = new ModelResponse(this, model);
 		} catch (Exception exception) {
 			response = new ExceptionResponse(this, exception);

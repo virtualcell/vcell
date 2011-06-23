@@ -4,24 +4,24 @@ package org.vcell.sybil.rdf.compare;
  *   A comparator for RDF nodes by type and preferring a default name space
  */
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.vcell.sybil.util.comparator.ComparatorScore;
 
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-
-public class NodeComparatorNS extends ComparatorScore<RDFNode> {
+public class NodeComparatorNS extends ComparatorScore<Value> {
 	
 	protected String namespace;
 	
 	public NodeComparatorNS(String namespace) { this.namespace = namespace; }
 	
 	@Override
-	public int score(RDFNode node) {
+	public int score(Value node) {
 		int score = 0;
 		if(node instanceof Resource) {
 			Resource resource = (Resource) node;
-			if(resource.isURIResource()) {
-				if(namespace.equals(resource.getNameSpace())) { score = 3; } 
+			if(resource instanceof URI) {
+				if(namespace.equals(((URI) resource).getNamespace())) { score = 3; } 
 				else { score = 2; }
 			} else {
 				score = 1;

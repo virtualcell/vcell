@@ -4,36 +4,38 @@ package org.vcell.sybil.models.sbbox.imp;
  *   Generate a name for an SBView
  */
 
+import java.util.Iterator;
+
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.vcell.sybil.util.keys.KeyOfOne;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 public interface ResourceNaming {
 
-	public String createName(Resource resource, Model model);
+	public String createName(Resource resource, Graph model);
 
 	public static class FixedName extends KeyOfOne<String> implements ResourceNaming {
 		public FixedName(String name) { super(name); }
 		public String name() { return a(); }
-		public String createName(Resource resource, Model model) { return name(); }
+		public String createName(Resource resource, Graph model) { return name(); }
 	}
 	
-	public static class StringProperty extends KeyOfOne<Property> implements ResourceNaming {
+	public static class StringProperty extends KeyOfOne<URI> implements ResourceNaming {
 
-		public StringProperty(Property property) { super(property); }
-		public Property property() { return a(); }
+		public StringProperty(URI property) { super(property); }
+		public URI property() { return a(); }
 
-		public String createName(Resource resource, Model model) {
+		public String createName(Resource resource, Graph model) {
 			String string = null;
-			StmtIterator stmtIter = model.listStatements(resource, property(), (RDFNode) null);
+			Iterator<Statement> stmtIter = model.match(resource, property(), null);
 			while(stmtIter.hasNext()) {
-				RDFNode nodeName = stmtIter.nextStatement().getObject();
+				Value nodeName = stmtIter.next().getObject();
 				if(nodeName instanceof Literal) {
-					String nameNew = ((Literal) nodeName).getLexicalForm();
+					String nameNew = ((Literal) nodeName).stringValue();
 					if(nameNew != null && nameNew.length() > 0) {
 						string = nameNew;
 						break;
@@ -46,8 +48,8 @@ public interface ResourceNaming {
 	}
 	
 	public static class LocalName implements ResourceNaming {
-		public String createName(Resource resource, Model model) {
-			return resource.isURIResource() ? resource.getLocalName() : null;
+		public String createName(Resource resource, Graph model) {
+			return resource instanceof URI ? ((URI) resource).getLocalName() : null;
 		}
 	}
 	

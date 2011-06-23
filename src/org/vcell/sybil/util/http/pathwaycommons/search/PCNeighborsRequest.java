@@ -8,9 +8,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.vcell.sybil.rdf.JenaIOUtil;
+import org.openrdf.model.Graph;
+import org.openrdf.rio.RDFFormat;
+import org.vcell.sybil.rdf.SesameRioUtil;
+import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;
 import org.vcell.sybil.util.http.pathwaycommons.PCRParameter;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsRequest;
@@ -42,8 +48,10 @@ public class PCNeighborsRequest extends PathwayCommonsRequest {
 				response = new PCErrorResponse(this, PCErrorResponse.errorElement(text));
 			} else {
 				try { 
-					response = new PCTextModelResponse(this, text, 
-							JenaIOUtil.modelFromText(text, uriBase)); 
+					Graph graph = new HashGraph();
+					Map<String, String> nsMap = new HashMap<String, String>();
+					SesameRioUtil.readRDFFromString(text, graph, nsMap, RDFFormat.RDFXML, uriBase);
+					response = new PCTextModelResponse(this, text, graph); 
 				} catch(Throwable t) { response = new PCTextResponse(this, text); }				
 			}
 		} 

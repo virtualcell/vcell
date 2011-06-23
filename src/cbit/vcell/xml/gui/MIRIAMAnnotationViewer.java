@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -12,6 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import org.openrdf.rio.RDFHandlerException;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.util.gui.DialogUtils;
 
@@ -20,11 +20,7 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.registry.Registry;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFWriter;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
+@SuppressWarnings("serial")
 public class MIRIAMAnnotationViewer extends JPanel {
 	private JTextArea LoStextArea;
 	private JTextArea PPtextArea;
@@ -49,7 +45,6 @@ public class MIRIAMAnnotationViewer extends JPanel {
 //								close(mIRIAMAnnotationEditorFrame,getJDesktopPane());
 //							}else 
 							if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
-								VCMetaData metaData = biomodel.getVCMetaData();
 								Identifiable identifiable = miriamAnnotationEditor.getSelectedIdentifiable();
 								if(identifiable == null){
 									DialogUtils.showInfoDialog(MIRIAMAnnotationViewer.this, "Not yet Implemented deletion of individual links");
@@ -109,7 +104,12 @@ public class MIRIAMAnnotationViewer extends JPanel {
 		
 		// Pretty Print
 		StringWriter sw = new StringWriter();
-		sw.append(biomodel.getVCMetaData().printRdfPretty());
+		try {
+			sw.append(biomodel.getVCMetaData().printRdfPretty());
+		} catch (RDFHandlerException e) {
+			e.printStackTrace();
+			sw.append(e.getMessage());
+		}
 		sw.append(printResourceMappings(biomodel.getVCMetaData()));
 
 //		Element root = XmlUtil.stringToXML(sw.getBuffer().toString(), null);
@@ -129,7 +129,7 @@ public static String printResourceMappings(VCMetaData metaData) {
 	for (Registry.Entry entry : entrySet) {
 		NamedThing namedThing = entry.getNamedThing();
 		if (namedThing!=null){
-			strBuffer.append(namedThing.resource().getURI());
+			strBuffer.append(namedThing.resource().stringValue());
 			Identifiable identifiable = entry.getIdentifiable();
 			strBuffer.append(" ============= " + metaData.getIdentifiableProvider().getVCID(identifiable).toASCIIString());
 			strBuffer.append("\n");				

@@ -6,54 +6,54 @@ package org.vcell.sybil.rdf;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
+import org.vcell.sybil.rdf.impl.HashGraph;
 
 public class RDFChopper {
 	
-	protected Map<Resource, Model> chops = new HashMap<Resource, Model>();
+	protected Map<Resource, Graph> chops = new HashMap<Resource, Graph>();
 	protected Map<Resource, Set<Resource>> neighborhoods = new HashMap<Resource, Set<Resource>>();
-	protected Model remains = ModelFactory.createDefaultModel();
+	protected Graph remains = new HashGraph();
 
-	public RDFChopper(Model model, Set<Resource> resources) {
-		HashMap<Resource, Model> chopsNew = new HashMap<Resource, Model>();
+	public RDFChopper(Graph model, Set<Resource> resources) {
+		HashMap<Resource, Graph> chopsNew = new HashMap<Resource, Graph>();
 		HashMap<Resource, Set<Resource>> neighborhoodsNew = new HashMap<Resource, Set<Resource>>();
 		for(Resource resource : resources) {
-			chops.put(resource, ModelFactory.createDefaultModel());
+			chops.put(resource, new HashGraph());
 			neighborhoods.put(resource, new HashSet<Resource>());
-			chopsNew.put(resource, ModelFactory.createDefaultModel());
+			chopsNew.put(resource, new HashGraph());
 			Set<Resource> neighborhoodNew = new HashSet<Resource>();
 			neighborhoodNew.add(resource);
 			neighborhoodsNew.put(resource, neighborhoodNew);
 		}
-		remains.add(model);
+		remains.addAll(model);
 		boolean seenProgress = true;
 		while(seenProgress) {
 			seenProgress = false;
 			// add statements pertaining to your "neighbors" (initially yourself) ... then the neighbor list grows via the new statements.
 			for(Resource resource : resources) {
 				Set<Resource> neighborhoodNew = neighborhoodsNew.get(resource);
-				Model chopNew = chopsNew.get(resource);
+				Graph chopNew = chopsNew.get(resource);
 				for(Resource neighborNew : neighborhoodNew) {
-					StmtIterator stmtIter = remains.listStatements(neighborNew, null, (RDFNode) null);
+					Iterator<Statement> stmtIter = remains.match(neighborNew, null, null);
 					while(stmtIter.hasNext()) {
-						Statement stmt = stmtIter.nextStatement();
+						Statement stmt = stmtIter.next();
 						chopNew.add(stmt);
 					}
-					stmtIter = remains.listStatements(null, null, neighborNew);
+					stmtIter = remains.match(null, null, neighborNew);
 					while(stmtIter.hasNext()) { 
-						Statement stmt = stmtIter.nextStatement();
+						Statement stmt = stmtIter.next();
 						chopNew.add(stmt);
 					}					
 				}
-				remains.remove(chopNew);
+				remains.removeAll(chopNew);
 				neighborhoods.get(resource).addAll(neighborhoodNew);
 				if(!neighborhoodNew.isEmpty()) { 
 					seenProgress = true; 
@@ -63,24 +63,24 @@ public class RDFChopper {
 			for(Resource resource : resources) {
 				Set<Resource> neighborhood = neighborhoods.get(resource);
 				Set<Resource> neighborhoodNew = neighborhoodsNew.get(resource);
-				Model chopNew = chopsNew.get(resource);
+				Graph chopNew = chopsNew.get(resource);
 				// add neighbors from all statements in this chunk.
-				StmtIterator stmtIter = chopNew.listStatements();
+				Iterator<Statement> stmtIter = chopNew.iterator();
 				if(stmtIter.hasNext()) { 
 					seenProgress = true; 
 				}
 				while(stmtIter.hasNext()) {
-					Statement statement = stmtIter.nextStatement();
+					Statement statement = stmtIter.next();
 					neighborhoodNew.add(statement.getSubject());
-					RDFNode object = statement.getObject();
+					Value object = statement.getObject();
 					if(object instanceof Resource) { 
 						neighborhoodNew.add((Resource) object); 
 					}					
 				}
 				neighborhoodNew.removeAll(neighborhood); // keep only truly "new" resources
 				neighborhood.addAll(neighborhoodNew);    // keep total list of all resources (new and old).
-				chops.get(resource).add(chopNew);
-				chopNew.removeAll();
+				chops.get(resource).addAll(chopNew);
+				chopNew.clear();
 			}
 		}
 		// remove statements that have been added to "resources"
@@ -88,13 +88,13 @@ public class RDFChopper {
 		System.out.println("done");
 	}
 	
-	public Map<Resource, Model> getChops() {
+	public Map<Resource, Graph> getChops() {
 		return chops; 
 	}
 	public Map<Resource, Set<Resource>> getNeighborhoods() {
 		return neighborhoods; 
 	}
-	public Model getRemains() { 
+	public Graph getRemains() { 
 		return remains; 
 	}
 	

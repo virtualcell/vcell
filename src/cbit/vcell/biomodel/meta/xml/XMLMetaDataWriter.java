@@ -6,8 +6,7 @@ import java.util.Map.Entry;
 
 import org.jdom.Element;
 import org.jdom.Text;
-
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.openrdf.model.Resource;
 
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
@@ -46,7 +45,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
 				Resource resource = entry.getNamedThing().resource();
 				if (resource!=null){
-					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.getURI());				
+					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.stringValue());				
 				}
 				entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());
 				bindingListElement.addContent(entryElement);

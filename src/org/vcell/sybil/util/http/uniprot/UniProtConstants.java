@@ -1,15 +1,14 @@
 package org.vcell.sybil.util.http.uniprot;
 
+import org.openrdf.model.Graph;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.URIImpl;
 import org.vcell.sybil.util.http.uniprot.UniProtRDFRequest.ExceptionResponse;
 import org.vcell.sybil.util.http.uniprot.UniProtRDFRequest.ModelResponse;
 import org.vcell.sybil.util.http.uniprot.UniProtRDFRequest.Response;
 import org.vcell.sybil.util.http.uniprot.box.UniProtBox;
 import org.vcell.sybil.util.http.uniprot.box.imp.UniProtBoxImp;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 /*   UniProtURIs  --- by Oliver Ruebenacker, UCHC --- January 2010
  *   Some information about UniProt useful for web requests.
@@ -30,16 +29,16 @@ public class UniProtConstants {
 	public static String urlRDF(String id) { return rdfFileDir + id + rdfFileSuffix; }
 	public static String uri(String id) { return uriBase + id; }
 	public static String uriCore(String localName) { return nsDefault + localName; }
-	public static String idFromResource(Resource resource) { return resource.getLocalName(); }
+	public static String idFromResource(URI resource) { return resource.getLocalName(); }
 
-	public static Property coreProperty(String localName) {
-		return ResourceFactory.createProperty(uriCore(localName));
+	public static URI coreProperty(String localName) {
+		return new URIImpl(uriCore(localName));
 	}
 	
-	public static final Property replaces = coreProperty("replaces");
-	public static final Property replacedBy = coreProperty("replacedBy");
-	public static final Property recommendedName = coreProperty("recommendedName");
-	public static final Property fullName = coreProperty("fullName");
+	public static final URI replaces = coreProperty("replaces");
+	public static final URI replacedBy = coreProperty("replacedBy");
+	public static final URI recommendedName = coreProperty("recommendedName");
+	public static final URI fullName = coreProperty("fullName");
 	
 	public static String getNameFromID(String urnStr) {
 		// extract id of entry from urnStr : urn string is of the form "urn:miriam:uniprot:XXXX" ; we need to extract 'XXXX'
@@ -83,7 +82,7 @@ public class UniProtConstants {
 		UniProtRDFRequest request = new UniProtRDFRequest(id);
 		Response response = request.response();
 		if(response instanceof ModelResponse) {
-			Model model = ((ModelResponse) response).model();
+			Graph model = ((ModelResponse) response).model();
 			box.add(UniProtExtractor.extractBox(model));
 		} else if(response instanceof ExceptionResponse) {
 			System.out.println("an exception was thrown");

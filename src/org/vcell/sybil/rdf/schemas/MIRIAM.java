@@ -7,53 +7,53 @@ package org.vcell.sybil.rdf.schemas;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
+import org.openrdf.model.Graph;
+import org.openrdf.model.URI;
+import org.vcell.sybil.rdf.impl.HashGraph;
 
 public class MIRIAM {
 	
-	public static Model schema = ModelFactory.createDefaultModel();
+	public static Graph schema = new HashGraph();
 
-	public static Property createProperty(Set<Property> all, String ns, String name) {
-		Property property = schema.createProperty(ns + name);
+	public static URI createProperty(Set<URI> all, String ns, String name) {
+		URI property = schema.getValueFactory().createURI(ns + name);
 		all.add(property);
 		return property;
 	}
 	
 	public static class ModelProperties {
 		public static final String ns = "http://biomodels.net/model-qualifiers/";
-		public static final Set<Property> all = new HashSet<Property>();
+		public static final Set<URI> all = new HashSet<URI>();
 
-		protected static Property createProperty(String name) { 
+		protected static URI createProperty(String name) { 
 			return MIRIAM.createProperty(all, ns, name);
 		}
 
-		public static final Property is = createProperty("is");
-		public static final Property isDerivedFrom = createProperty("isDerivedFrom");
-		public static final Property isDescribedBy = createProperty("isDescribedBy");	
+		public static final URI is = createProperty("is");
+		public static final URI isDerivedFrom = createProperty("isDerivedFrom");
+		public static final URI isDescribedBy = createProperty("isDescribedBy");	
 	}
 
 	public static class BioProperties {
 		public static final String ns = "http://biomodels.net/biology-qualifiers/";
-		public static final Set<Property> all = new HashSet<Property>();
+		public static final Set<URI> all = new HashSet<URI>();
 		
-		protected static Property createProperty(String name) { 
+		protected static URI createProperty(String name) { 
 			return MIRIAM.createProperty(all, ns, name);
 		}
 
-		public static final Property encodes = createProperty("encodes");
-		public static final Property hasPart = createProperty("hasPast");
-		public static final Property hasProperty = createProperty("hasProperty");
-		public static final Property hasVersion = createProperty("hasVersion");
-		public static final Property is = createProperty("is");
-		public static final Property isDescribedBy = createProperty("isDescribedBy");	
-		public static final Property isEncodedBy = createProperty("isEncodedBy");
-		public static final Property isHomologTo = createProperty("isHomologTo");
-		public static final Property isPartOf = createProperty("isPartOf");
-		public static final Property isPropertyOf = createProperty("isPropertyOf");
-		public static final Property isVersionOf = createProperty("isVersionOf");
-		public static final Property occursIn = createProperty("occursIn");
+		public static final URI encodes = createProperty("encodes");
+		public static final URI hasPart = createProperty("hasPast");
+		public static final URI hasProperty = createProperty("hasProperty");
+		public static final URI hasVersion = createProperty("hasVersion");
+		public static final URI is = createProperty("is");
+		public static final URI isDescribedBy = createProperty("isDescribedBy");	
+		public static final URI isEncodedBy = createProperty("isEncodedBy");
+		public static final URI isHomologTo = createProperty("isHomologTo");
+		public static final URI isPartOf = createProperty("isPartOf");
+		public static final URI isPropertyOf = createProperty("isPropertyOf");
+		public static final URI isVersionOf = createProperty("isVersionOf");
+		public static final URI occursIn = createProperty("occursIn");
 	}
 
 }

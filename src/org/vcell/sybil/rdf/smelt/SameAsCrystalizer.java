@@ -7,25 +7,25 @@ package org.vcell.sybil.rdf.smelt;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.OWL;
 import org.vcell.sybil.rdf.compare.NodeComparatorByType;
 import org.vcell.sybil.rdf.compare.NodeComparatorNS;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.vocabulary.OWL;
 
 public class SameAsCrystalizer implements RDFSmelter {
 	
-	protected Comparator<? super RDFNode> comparator;
+	protected Comparator<Value> comparator;
 	
 	public SameAsCrystalizer() { comparator = new NodeComparatorByType(); }
 	
-	public SameAsCrystalizer(Comparator<? super RDFNode> comparator) { 
+	public SameAsCrystalizer(Comparator<Value> comparator) { 
 		this.comparator = comparator; 
 	}
 	
@@ -34,13 +34,13 @@ public class SameAsCrystalizer implements RDFSmelter {
 	}
 	
 	
-	public Model smelt(Model rdf) {
+	public Graph smelt(Graph rdf) {
 		Map<Resource, Set<Resource>> sameAsSetsMap = new HashMap<Resource, Set<Resource>>();
-		StmtIterator sameAsStmtIter = rdf.listStatements(null, OWL.sameAs, (RDFNode) null);
+		Iterator<Statement> sameAsStmtIter = rdf.match(null, OWL.SAMEAS, null);
 		while(sameAsStmtIter.hasNext()) {
-			Statement sameAsStatement = sameAsStmtIter.nextStatement();
-			RDFNode objectNode = sameAsStatement.getObject();
-			if(objectNode.isResource()) {
+			Statement sameAsStatement = sameAsStmtIter.next();
+			Value objectNode = sameAsStatement.getObject();
+			if(objectNode instanceof Resource) {
 				Resource subject = sameAsStatement.getSubject();
 				Resource object = (Resource) objectNode;
 				Set<Resource> subjectSameAsSet = sameAsSetsMap.get(subject);
@@ -87,13 +87,14 @@ public class SameAsCrystalizer implements RDFSmelter {
 			}
 		}
 		RDFResourceProjection rdfResourceProjection = new RDFResourceProjection(projectionMap);
-		Model rdfSmelted = rdfResourceProjection.smelt(rdf);
-		rdfSmelted.removeAll(null, OWL.sameAs, (RDFNode) null);
+		Graph rdfSmelted = rdfResourceProjection.smelt(rdf);
+		Iterator<Statement> iter = rdfSmelted.match(null, OWL.SAMEAS, null);
+		while(iter.hasNext()) { iter.next(); iter.remove(); }
 		for(Map.Entry<Resource, Resource> projectionEntry : projectionMap.entrySet()) {
 			Resource subject = projectionEntry.getValue();
 			Resource object = projectionEntry.getKey();
 			if(!subject.equals(object)) {
-				rdfSmelted.add(subject, OWL.sameAs, object);				
+				rdfSmelted.add(subject, OWL.SAMEAS, object);				
 			}
 		}
 		return rdfSmelted;

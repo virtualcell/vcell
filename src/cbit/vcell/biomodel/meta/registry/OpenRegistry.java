@@ -10,14 +10,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.biomodel.meta.VCMetaData;
-
-import com.hp.hpl.jena.rdf.model.Resource;
+import cbit.vcell.xml.XMLTags;
 
 /*   OpenRegistry  --- May 2009
  *   Maintains resources and their relationships to objects
@@ -46,13 +45,13 @@ public class OpenRegistry implements Registry, Serializable {
 			if (this.namedThing!=null){
 				namedThingToEntry.remove(namedThing);
 				resourceToEntry.remove(namedThing.resource());
-				uriToEntry.remove(namedThing.resource().getURI());
+				uriToEntry.remove(namedThing.resource().stringValue());
 			}
 			this.namedThing = namedThing;
 			if (namedThing!=null){
 				namedThingToEntry.put(namedThing, this);
 				resourceToEntry.put(namedThing.resource(), this);
-				uriToEntry.put(namedThing.resource().getURI(), this);
+				uriToEntry.put(namedThing.resource().stringValue(), this);
 			}
 		}
 		
@@ -90,7 +89,7 @@ public class OpenRegistry implements Registry, Serializable {
 	
 	public String generateFreeURI(Identifiable identifiable) {
 		while (true){
-			String uri = VCMetaData.nsVCML + "/" + identifiable.getClass().getName() + "/" + (Math.abs((new Random()).nextInt()));
+			String uri = XMLTags.VCML_NS + "/" + identifiable.getClass().getName() + "/" + (Math.abs((new Random()).nextInt()));
 			if (uriToEntry.get(uri)==null){
 				return uri;
 			}
@@ -104,7 +103,7 @@ public class OpenRegistry implements Registry, Serializable {
 		if (namedThing==null){
 			throw new RuntimeException("cannot create a new metadata entry with a null named thing");
 		}
-		if (namedThing.resource().getURI().contains("#")){
+		if (namedThing.resource().stringValue().contains("#")){
 			throw new RuntimeException("unexpected character, '#' in uri");
 		}
 		if (identifiableToEntry.get(identifiable)!=null){
@@ -116,8 +115,8 @@ public class OpenRegistry implements Registry, Serializable {
 		if (resourceToEntry.get(namedThing.resource())!=null){
 			throw new RuntimeException("entry for resource '"+namedThing.resource()+"' already exists");
 		}
-		if (uriToEntry.get(namedThing.resource().getURI())!=null){
-			throw new RuntimeException("entry for uri '"+namedThing.resource().getURI()+"' already exists");
+		if (uriToEntry.get(namedThing.resource().stringValue())!=null){
+			throw new RuntimeException("entry for uri '"+namedThing.resource().stringValue()+"' already exists");
 		}
 		OpenEntry newEntry = new OpenEntry(identifiable);
 		identifiableToEntry.put(identifiable,newEntry);

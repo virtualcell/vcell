@@ -5,9 +5,10 @@ package org.vcell.sybil.models.sbbox.factories;
  */
 
 import java.io.Serializable;
+
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 @SuppressWarnings("serial")
 public abstract class ThingFactory<T extends NamedThing> implements Serializable{
@@ -20,9 +21,9 @@ public abstract class ThingFactory<T extends NamedThing> implements Serializable
 	
 	public abstract T newThing(Resource node);
 	
-	public T createWithURI(String uri) { return create(box.getRdf().createResource(uri)); }
+	public T createWithURI(String uri) { return create(box.getRdf().getValueFactory().createURI(uri)); }
 	
-	public T createAnonymous() { return create(box.getRdf().createResource()); }
+	public T createAnonymous() { return create(box.getRdf().getValueFactory().createBNode()); }
 	
 	public T create(Resource node) {
 		return newThing(node);

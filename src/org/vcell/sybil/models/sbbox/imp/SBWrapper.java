@@ -4,9 +4,9 @@ package org.vcell.sybil.models.sbbox.imp;
  *   A view of a resource representing an SBPAX object
  */
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.rdf.RDFBox.ResourceWrapper;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 public class SBWrapper extends ResourceWrapper implements SBBox.NamedThing {
 	
