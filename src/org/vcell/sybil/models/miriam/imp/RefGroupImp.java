@@ -5,81 +5,77 @@ package org.vcell.sybil.models.miriam.imp;
  */
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.RefGroup;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
-import org.vcell.sybil.rdf.RDFBagUtil;
 import org.vcell.sybil.rdf.RDFBagWrapper;
 import org.vcell.sybil.rdf.RDFBox;
 
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
 public class RefGroupImp extends RDFBagWrapper implements RefGroup {
 
-	public RefGroupImp(RDFBox box, Bag bag) { super(box, bag); }
+	public RefGroupImp(RDFBox box, Resource bag) { super(box, bag); }
 
 	public RefGroupImp add(MIRIAMRef ref) {
-		Resource rRef = box().getRdf().createResource(ref.urn());
-		bag().add(rRef);
+		Resource rRef = box().getRdf().getValueFactory().createURI(ref.urn());
+		box().getRdf().add(resource(), RDF.LI, rRef);
 		return this;
 	}
 
 	public boolean contains(MIRIAMRef ref) {
-		Resource rRef = box().getRdf().createResource(ref.urn());
-		return bag().contains(rRef);
+		Resource rRef = box().getRdf().getValueFactory().createURI(ref.urn());
+		Statement statement = box().getRdf().getValueFactory().createStatement(resource(), RDF.LI, rRef);
+		return box().getRdf().contains(statement);
 	}
 
 	public RefGroupImp removeAll() {
-		StmtIterator stmtIter = box().getRdf().listStatements(bag(), null, (RDFNode) null);
-		Set<Statement> statements = new HashSet<Statement>();
-		while(stmtIter.hasNext()) {
-			Statement statement = stmtIter.nextStatement();
-			if(RDFBagUtil.isRDFBagMemberProperty(statement.getPredicate())) { 
-				statements.add(statement); 
+		Iterator<Statement> stmtIter = box().getRdf().match(resource(), null, null);
+		while(stmtIter.hasNext()) { 
+			Statement statement = stmtIter.next();
+			if(RDFBagWrapper.isRDFContainerMembershipProperty(statement.getPredicate())) {
+				stmtIter.remove(); 				
 			}
 		}
-		for(Statement statement : statements) { box().getRdf().remove(statement); }
 		return this;
 	}
 
 	public Set<MIRIAMRef> refs() {
-		StmtIterator stmtIter = box().getRdf().listStatements(bag(), null, (RDFNode) null);
+		Iterator<Statement> stmtIter = box().getRdf().match(resource(), null, null);
 		Set<MIRIAMRef> refs = new HashSet<MIRIAMRef>();
 		while(stmtIter.hasNext()) {
-			Statement statement = stmtIter.nextStatement();
-			if(RDFBagUtil.isRDFBagMemberProperty(statement.getPredicate())) { 
-				RDFNode object = statement.getObject();
-				if(object instanceof Resource) {
-					Resource resourceRef = (Resource) object;
-					if(resourceRef.isURIResource()) {
-						try { 
-							refs.add(MIRIAMRef.createFromURN(resourceRef.getURI()));
-						} catch (URNParseFailureException e) { e.printStackTrace(); }
-					}
+			Statement statement = stmtIter.next();
+			if(RDFBagWrapper.isRDFContainerMembershipProperty(statement.getPredicate())) {
+				Value object = statement.getObject();
+				if(object instanceof URI) {
+					URI resourceRef = (URI) object;
+					try { 
+						refs.add(MIRIAMRef.createFromURN(resourceRef.stringValue()));
+					} catch (URNParseFailureException e) { e.printStackTrace(); }
 				}
-			}
+			}			
 		}
 		return refs;
 	}
 
 	public RefGroupImp remove(MIRIAMRef ref) {
-		Resource resourceRef = box().getRdf().createResource(ref.urn());
-		StmtIterator stmtIter = box().getRdf().listStatements(bag(), null, resourceRef);
-		Set<Statement> statements = new HashSet<Statement>();
-		while(stmtIter.hasNext()) { statements.add(stmtIter.nextStatement()); }
-		for(Statement statement : statements) { box().getRdf().remove(statement); }
+		Resource resourceRef = box().getRdf().getValueFactory().createURI(ref.urn());
+		Iterator<Statement> stmtIter = box().getRdf().match(resource(), null, resourceRef);
+		while(stmtIter.hasNext()) { stmtIter.next(); stmtIter.remove(); }
 		return this;
 	}
 
 	public void delete() {
-		box().getRdf().removeAll(bag(), null, (RDFNode) null);
-		box().getRdf().removeAll(null, null, bag());
+		Iterator<Statement> iter = box().getRdf().match(resource(), null, null);
+		while(iter.hasNext()) { iter.next(); iter.remove(); }
+		iter = box().getRdf().match(null, null, resource());
+		while(iter.hasNext()) { iter.next(); iter.remove(); }
 	}
 	
 }

@@ -13,11 +13,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry exported="true" kind="lib" path="arq-2.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="xercesImpl-2.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="icu4j-3.4.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="iri-0.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="jena-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="log4j-1.2.13.jar"/>
 	<classpathentry exported="true" kind="lib" path="lucene-core-2.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="slf4j-api-1.5.6.jar"/>
@@ -41,6 +39,19 @@
 	<classpathentry exported="true" kind="lib" path="js.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="script-js.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-collections-2.8.0.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-io-2.10.0.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-lang-2.9.0.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-net-2.7.0.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-text-2.7.0.jar"/>
+	<classpathentry kind="lib" path="sesame/aduna-commons-xml-2.7.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-model-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-queryalgebra-evaluation-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-api-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-n3-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-rdfxml-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-turtle-2.4.0.jar"/>
+	<classpathentry kind="lib" path="sesame/slf4j-api-1.6.1.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="jvisit.jar"/>
 	<classpathentry exported="true" kind="lib" path="apache_commons_math_2.2.jar"/>

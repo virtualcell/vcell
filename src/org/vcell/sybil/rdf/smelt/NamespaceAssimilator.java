@@ -8,14 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.vocabulary.OWL;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.OWL;
+import org.vcell.sybil.rdf.impl.HashGraph;
 
 public class NamespaceAssimilator implements RDFSmelter {
 	
@@ -28,83 +27,57 @@ public class NamespaceAssimilator implements RDFSmelter {
 		this.namespace = namespace;
 	}
 	
-	public Model smelt(Model rdf) {
-		Model rdfNew = ModelFactory.createDefaultModel();
-		rdfNew.setNsPrefixes(rdf);
-		StmtIterator stmtIter = rdf.listStatements();
-		while(stmtIter.hasNext()) {
-			Statement statement = stmtIter.nextStatement();
+	public Graph smelt(Graph rdf) {
+		Graph rdfNew = new HashGraph();
+		for(Statement statement : rdf) {
 			Resource subjectNew = smelt(rdf, statement.getSubject());
-			Property predicateNew = smelt(rdf, statement.getPredicate());
-			RDFNode objectNew = statement.getObject() instanceof Resource ? 
+			URI predicateNew = smelt(rdf, statement.getPredicate());
+			Value objectNew = statement.getObject() instanceof Resource ? 
 					smelt(rdf, (Resource) statement.getObject()) : statement.getObject();
 			rdfNew.add(subjectNew, predicateNew, objectNew);
 		}
 		for(Map.Entry<Resource, Resource> entry : resourceMap.entrySet()) {
-			rdfNew.add(entry.getKey(), OWL.sameAs, entry.getValue());
+			rdfNew.add(entry.getKey(), OWL.SAMEAS, entry.getValue());
 		}
-		rdfNew.setNsPrefixes(rdf);
 		return rdfNew;
 	}
 
-	public Resource smelt(Model rdf, Resource resource) {
+	public Resource smelt(Graph rdf, Resource resource) {
 		Resource resourceMapped = resource;
 		if(!resources.contains(resource)) {
-			if(resource.isURIResource()) {
-				if(!namespace.equals(resource.getNameSpace())) {
+			if(resource instanceof URI) {
+				URI uri = (URI) resource;
+				if(!namespace.equals(uri.getNamespace())) {
 					resourceMapped = resourceMap.get(resource);
 					if(resourceMapped == null) {
-						String localName = resource.getLocalName();
+						String localName = uri.getLocalName();
 						String localNameNew = localName;
-						int i = 0;
-						resourceMapped = rdf.createResource(namespace + localNameNew);
-						while(rdf.containsResource(resourceMapped)) {
-							++i;
-							localNameNew = localName + i;
-							resourceMapped = rdf.createResource(namespace + localNameNew);
-						}
+						resourceMapped = rdf.getValueFactory().createURI(namespace + localNameNew);
 						resourceMap.put(resource, resourceMapped);
 					}
 				}
 			} else {
 				resourceMapped = resourceMap.get(resource);
-				if(resourceMapped == null) {
-					String localNameBase = "thing";
-					String localNameNew;
-					int i = 0;
-					do {
-						++i;
-						localNameNew = localNameBase + i;
-						resourceMapped = rdf.createResource(namespace + localNameNew);
-					} while(rdf.containsResource(resourceMapped));
-					resourceMap.put(resource, resourceMapped);
-				}
-				
+				if(resourceMapped == null) { resourceMapped = resource; }
 			}
 		}
 		return resourceMapped;
 	}
 	
-	public Property smelt(Model rdf, Property property) {
-		Property propertyMapped = property;
+	public URI smelt(Graph rdf, URI property) {
+		URI propertyMapped = property;
 		if(!resources.contains(property)) {
-			if(!namespace.equals(property.getNameSpace())) {
+			if(!namespace.equals(property.getNamespace())) {
 				Resource resourceMapped = resourceMap.get(property);
-				if(resourceMapped instanceof Property) {
-					propertyMapped = (Property) resourceMapped;
+				if(resourceMapped instanceof URI) {
+					propertyMapped = (URI) resourceMapped;
 				} else if (resourceMapped instanceof Resource) {
-					propertyMapped = rdf.createProperty(resourceMapped.getURI());
+					propertyMapped = rdf.getValueFactory().createURI(resourceMapped.stringValue());
 					resourceMap.put(property, propertyMapped);
 				} else {
 					String localName = property.getLocalName();
 					String localNameNew = localName;
-					int i = 0;
-					propertyMapped = rdf.createProperty(namespace + localNameNew);
-					while(rdf.containsResource(propertyMapped)) {
-						++i;
-						localNameNew = localName + i;
-						propertyMapped = rdf.createProperty(namespace + localNameNew);
-					}
+					propertyMapped = rdf.getValueFactory().createURI(namespace + localNameNew);
 					resourceMap.put(property, propertyMapped);
 				} 
 			}

@@ -4,18 +4,18 @@ package org.vcell.sybil.util.http.pathwaycommons.search;
  *   Response from a web request from Pathway Commons consisting of text converted to a Jena model
  */
 
+import org.openrdf.model.Graph;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsRequest;
-import com.hp.hpl.jena.rdf.model.Model;
 
 public class PCTextModelResponse extends PCTextResponse {
 
-	protected Model model;
+	protected Graph model;
 	
-	public PCTextModelResponse(PathwayCommonsRequest requestNew, String textNew, Model modelNew) {
+	public PCTextModelResponse(PathwayCommonsRequest requestNew, String textNew, Graph modelNew) {
 		super(requestNew, textNew);
 		model = modelNew;
 	}
 	
-	public Model model() { return model; }
+	public Graph model() { return model; }
 	
 }

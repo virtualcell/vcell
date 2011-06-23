@@ -13,10 +13,6 @@ public class NameSpace {
 		this.prefix = prefix; this.uri = uri; 
 	}
 	
-	public String prefixLine() { 
-		return "PREFIX " + prefix + ": <" + uri + ">\n"; 
-	}
-
 	@Override
 	public String toString() { return uri; }
 

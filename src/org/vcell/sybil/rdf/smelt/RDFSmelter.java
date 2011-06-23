@@ -4,10 +4,10 @@ package org.vcell.sybil.rdf.smelt;
  *   An object for systematic RDF modification
  */
 
-import com.hp.hpl.jena.rdf.model.Model;
+import org.openrdf.model.Graph;
 
 public interface RDFSmelter {
 	
-	public Model smelt(Model rdf);
+	public Graph smelt(Graph rdf);
 
 }

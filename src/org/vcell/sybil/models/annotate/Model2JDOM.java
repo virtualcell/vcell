@@ -1,22 +1,21 @@
 package org.vcell.sybil.models.annotate;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.vcell.sybil.rdf.NSMap;
 import org.vcell.sybil.rdf.NameSpace;
-
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 
 /*   DOM2JModel  --- May 2009
@@ -42,21 +41,19 @@ public class Model2JDOM {
 
 	public Element root() { return root; }
 	
-	public void addModel(Model model, String baseURI) {
+	public void addModel(Graph model, String baseURI) {
 
 //		RDFWriter writer = model.getWriter("RDF/XML-ABBREV");
 //		StringWriter sw = new StringWriter();
 //		writer.write(model, sw, baseURI);
 //		root = XmlUtil.stringToXML(sw.getBuffer().toString(), null);
 
-		StmtIterator stmtIter = model.listStatements();
-		while(stmtIter.hasNext()) {
-			Statement statement = stmtIter.nextStatement();
+		for(Statement statement : model) {
 			Resource subject = statement.getSubject();
 			Element elementS = addSubjectElement(model, subject, root);
-			Property predicate = statement.getPredicate();
+			URI predicate = statement.getPredicate();
 			Element elementP = createPredicateElement(predicate);
-			RDFNode object = statement.getObject();
+			Value object = statement.getObject();
 			if(object instanceof Resource) {
 				Resource objectR = (Resource) object;
 				if(!isTypeSetAsName(elementS, subject, predicate, object)) {
@@ -66,10 +63,10 @@ public class Model2JDOM {
 			} else {
 				elementS.addContent(elementP);
 				Literal objectL = (Literal) object;
-				elementP.addContent(new Text(objectL.getLexicalForm()));
-				String dataTypeURI = objectL.getDatatypeURI();
+				elementP.addContent(new Text(objectL.stringValue()));
+				URI dataTypeURI = objectL.getDatatype();
 				if(dataTypeURI != null) {
-					elementP.setAttribute("datatype", dataTypeURI, nsRDF);
+					elementP.setAttribute("datatype", dataTypeURI.stringValue(), nsRDF);
 				}
 				String languageTag = objectL.getLanguage();
 				if(languageTag != null) {
@@ -80,7 +77,7 @@ public class Model2JDOM {
 		}
 	}
 	
-	protected Element addSubjectElement(Model model, Resource resource, Element defaultParent) {
+	protected Element addSubjectElement(Graph model, Resource resource, Element defaultParent) {
 		Element element = resourceToElement.get(resource);
 		if(element == null) {
 			element = createElement(model, resource);
@@ -90,53 +87,54 @@ public class Model2JDOM {
 		return element;
 	}
 
-	protected Element createPredicateElement(Property predicate) {
-		NameSpace ns = nsMap.provideNamesSpace(predicate.getNameSpace());
+	protected Element createPredicateElement(URI predicate) {
+		NameSpace ns = nsMap.provideNamesSpace(predicate.getNamespace());
 		return new Element(predicate.getLocalName(), 
 				Namespace.getNamespace(ns.prefix, ns.uri));
 	}
 	
-	protected Element addObjectElement(Model model, Resource resource, Element defaultParent) {
+	protected Element addObjectElement(Graph model, Resource resource, Element defaultParent) {
 		Element element = createElement(model, resource);
 		if(resourceToElement.get(resource) == null) { resourceToElement.put(resource, element); } 
 		defaultParent.addContent(element);
 		return element;
 	}
 	
-	protected Element createElement(Model model, Resource resource) {
+	protected Element createElement(Graph model, Resource resource) {
 		Element element = null;
-		StmtIterator stmtIter = model.listStatements(resource, RDF.type, (RDFNode) null);
-		while(stmtIter.hasNext() && element == null) {
-			RDFNode object = stmtIter.nextStatement().getObject();
-			if(object.isURIResource()) {
-				Resource type = (Resource) object;
-				String nameSpaceURI = type.getNameSpace();
+		Iterator<Statement> stmtIter = model.match(resource, RDF.TYPE, null);
+		while(stmtIter.hasNext()) {
+			Value object = stmtIter.next().getObject();
+			if(object instanceof URI) {
+				URI type = (URI) object;
+				String nameSpaceURI = type.getNamespace();
 				String localName = type.getLocalName();
 				if(localName != null && localName.length() > 0 && nameSpaceURI != null &&
 						nameSpaceURI.length() > 0) {
 					NameSpace ns = nsMap.provideNamesSpace(nameSpaceURI);
 					element = new Element(localName, Namespace.getNamespace(ns.prefix, ns.uri));
+					break;
 				}				
 			}
 		} 
 		if(element == null){
 			element = new Element(TYPELESS_NODE_NAME, nsRDF);			
 		}
-		if(resource.isURIResource()) {
-			element.setAttribute("about", resource.getURI(), nsRDF);
+		if(resource instanceof URI) {
+			element.setAttribute("about", resource.stringValue(), nsRDF);
 		} else {
 			element.setAttribute("nodeID", blankNodeID(resource), nsRDF);
 		}
 		return element;
 	}
 
-	protected boolean isTypeSetAsName(Element elementS, Resource subject, Property predicate,
-			RDFNode object) {
+	protected boolean isTypeSetAsName(Element elementS, Resource subject, URI predicate,
+			Value object) {
 		boolean isSetAsName = false;
-		if(RDF.type.equals(predicate) && object.isURIResource()) {
-			Resource objectR = (Resource) object;
+		if(RDF.TYPE.equals(predicate) && object instanceof URI) {
+			URI objectR = (URI) object;
 			isSetAsName = (elementS.getName().equals(objectR.getLocalName())) 
-			&& (elementS.getNamespaceURI().equals(objectR.getNameSpace()));
+			&& (elementS.getNamespaceURI().equals(objectR.getNamespace()));
 		}
 		return isSetAsName;
 	}

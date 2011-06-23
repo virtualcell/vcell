@@ -8,14 +8,12 @@ package cbit.vcell.biomodel.meta.registry;
 
 import java.io.Serializable;
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.Factories;
 import org.vcell.sybil.models.sbbox.factories.ThingFactory;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
-
-import com.hp.hpl.jena.rdf.model.Resource;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.model.ReactionStep;

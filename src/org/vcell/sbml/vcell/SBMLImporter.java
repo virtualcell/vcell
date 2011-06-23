@@ -39,7 +39,6 @@ import org.sbml.libsbml.Reaction;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
-import org.sbml.libsbml.SBasePlugin;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;

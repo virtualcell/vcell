@@ -8,8 +8,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.vcell.sybil.rdf.JenaIOUtil;
+import org.openrdf.model.Graph;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.vcell.sybil.rdf.SesameRioUtil;
+import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;
 import org.vcell.sybil.util.http.pathwaycommons.PCRParameter;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsRequest;
@@ -33,11 +40,16 @@ public class PCIDRequest extends PathwayCommonsRequest {
 			URL url = url();
 			URLConnection connection = url.openConnection();
 			String text = StringUtil.textFromInputStream(connection.getInputStream());
-			try { return new PCTextModelResponse(this, text, JenaIOUtil.modelFromText(text, uriBase)); } 
+			Graph graph = new HashGraph();
+			Map<String, String> nsMap = new HashMap<String, String>();
+			SesameRioUtil.readRDFFromString(text, graph, nsMap, RDFFormat.RDFXML, uriBase);
+			try { return new PCTextModelResponse(this, text, graph); } 
 			catch(Throwable t) { return new PCTextResponse(this, text); }
 		} 
 		catch (MalformedURLException e) { return new PCExceptionResponse(this, e); } 
 		catch (IOException e) { return new PCExceptionResponse(this, e); } 
+		catch (RDFParseException e) { return new PCExceptionResponse(this, e); } 
+		catch (RDFHandlerException e) { return new PCExceptionResponse(this, e); } 
 	}
 
 	@Override

@@ -7,27 +7,24 @@ package org.vcell.sybil.rdf.smelt;
 
 import java.util.Map;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.vcell.sybil.rdf.impl.HashGraph;
 
 public class RDFResourceProjection implements RDFSmelter {
 
-	// TODO testing
-	
 	protected final Map<Resource, Resource> map;
 	
 	public RDFResourceProjection(Map<Resource, Resource> map) {
 		this.map = map;
 	}
 	
-	public RDFNode project(RDFNode node) {
-		RDFNode nodeMapped = map.get(node);
+	public Value project(Value node) {
+		Value nodeMapped = map.get(node);
 		if(nodeMapped == null) { nodeMapped = node; }
 		return nodeMapped;
 	}
@@ -38,35 +35,30 @@ public class RDFResourceProjection implements RDFSmelter {
 		return resourceMapped;
 	}
 	
-	public Property project(Property property) {
+	public URI project(URI property) {
 		Resource resourceMapped = map.get(property);
-		Property propertyMapped = property;
-		if(resourceMapped != null && resourceMapped.isURIResource()) {
-			String uri = resourceMapped.getURI();
-			if(uri != null && uri.length() > 0) {
-				propertyMapped = ResourceFactory.createProperty(uri);
-			}
+		URI propertyMapped = property;
+		if(resourceMapped instanceof URI) {
+			propertyMapped = (URI) resourceMapped;
 		}
 		return propertyMapped;
 	}
 	
-	public Statement project(Statement statement) {
+	public Statement project(Statement statement, ValueFactory factory) {
 		Resource subjectMapped = project(statement.getSubject());
-		Property predicateMapped = project(statement.getPredicate());
-		RDFNode objectMapped = project(statement.getObject());
-		return ResourceFactory.createStatement(subjectMapped, predicateMapped, objectMapped);
+		URI predicateMapped = project(statement.getPredicate());
+		Value objectMapped = project(statement.getObject());
+		return factory.createStatement(subjectMapped, predicateMapped, objectMapped);
 	}
 
-	public Model project(Model model) {
-		Model modelMapped = ModelFactory.createDefaultModel();
-		StmtIterator stmtIter = model.listStatements();
-		while(stmtIter.hasNext()) {
-			modelMapped.add(project(stmtIter.nextStatement()));
+	public Graph project(Graph model) {
+		Graph modelMapped = new HashGraph();
+		for(Statement statement : model) {
+			modelMapped.add(project(statement, model.getValueFactory()));
 		}
-		modelMapped.setNsPrefixes(model);
 		return modelMapped;
 	}
 	
-	public Model smelt(Model rdf) { return project(rdf); }
+	public Graph smelt(Graph rdf) { return project(rdf); }
 
 }

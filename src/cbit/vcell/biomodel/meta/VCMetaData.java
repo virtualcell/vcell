@@ -1,11 +1,10 @@
 package cbit.vcell.biomodel.meta;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -14,17 +13,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.Namespace;
-import org.vcell.sybil.models.annotate.JDOM2Model;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Statement;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+ import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
+import org.vcell.sybil.rdf.NameSpace;
+import org.vcell.sybil.rdf.SesameRioUtil;
+import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
-import org.xml.sax.SAXParseException;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
@@ -33,12 +37,6 @@ import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFWriter;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * manager for Notes, Annotations, SBOTerms, and all other meta data regarding 
@@ -90,17 +88,11 @@ public class VCMetaData implements Serializable {
 
 	public SBBox getSBbox() { return rdfBox; }
 	
-	Model getRdfData() { return rdfBox.getRdf(); }
+	Graph getRdfData() { return rdfBox.getRdf(); }
 	
-	public Model getRdfDataCopy() {
-		Model rdfModelCopy = ModelFactory.createDefaultModel();
-		// add statements
-		rdfModelCopy.add(getRdfData());
-		// add prefix mappings
-		Map<String,String> prefixMap = new HashMap<String,String>();
-		prefixMap.putAll(getRdfData().getNsPrefixMap());
-		rdfModelCopy.setNsPrefixes(prefixMap);
-		
+	public Graph getRdfDataCopy() {
+		Graph rdfModelCopy = new HashGraph();
+		rdfModelCopy.addAll(getRdfData());
 		return rdfModelCopy;
 	}
 	
@@ -111,7 +103,7 @@ public class VCMetaData implements Serializable {
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
-		if (!getRdfData().isIsomorphicWith(vcMetaData.getRdfData())) {
+		if (!getRdfData().equals(vcMetaData.getRdfData())) {
 			return false; 
 		}
 		if (!registry.compareEquals(vcMetaData.registry)) {
@@ -174,8 +166,8 @@ public class VCMetaData implements Serializable {
 		return nonRDFAnnotation;
 	}
 		
-	public void add(Model jenaModel){
-		getRdfData().add(jenaModel);
+	public void add(Graph rdfModel){
+		getRdfData().addAll(rdfModel);
 		miriamManager.invalidateCache();
 	}
 	
@@ -294,31 +286,26 @@ public class VCMetaData implements Serializable {
 		return XMLRDFWriter.createElement(getRdfData(), getBaseURI());
 	}
 
-	public void addToModelFromElement(Element element) 
-	throws SAXParseException, JDOMException {
+	public void addToModelFromElement(Element element) throws RDFParseException, RDFHandlerException, IOException {
 		JDOM2Model jdom2model = new JDOM2Model(getRdfData());
 		jdom2model.addJDOM(element, getBaseURI());
 	}
 	
 	public String printRdfStatements(){
 		StringBuffer strBuffer = new StringBuffer();
-		StmtIterator statementIterator = getRdfData().listStatements();
-		while (statementIterator.hasNext()) {
-			Statement st = statementIterator.nextStatement();
+		for(Statement st : getRdfData()) {
 			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
 		}
 		return strBuffer.toString();
 	}
 	
-	public String printRdfPretty(){
-		RDFWriter writer = getRdfData().getWriter("N3");
-		StringWriter sw = new StringWriter();
-		writer.write(getRdfData(), sw, getBaseURI());
-		return sw.getBuffer().toString();
+	public String printRdfPretty() throws RDFHandlerException{
+		Map<String, String> nsMap = NameSpace.defaultMap.convertToMap();
+		return SesameRioUtil.writeRDFToString(getRdfData(), nsMap, RDFFormat.N3);
 	}
 
-	public void addPathwayModel(BioModel bioModel, Model model) {
-		getRdfData().add(model);
+	public void addPathwayModel(BioModel bioModel, Graph model) {
+		getRdfData().addAll(model);
 		fireAnnotationEventListener(new AnnotationEvent(bioModel, true));
 	}
 

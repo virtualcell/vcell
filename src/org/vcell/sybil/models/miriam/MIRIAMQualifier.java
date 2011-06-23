@@ -4,13 +4,10 @@ package org.vcell.sybil.models.miriam;
  *   Wrapper for a MIRIAM property
  */
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.openrdf.model.URI;
 import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.sybil.rdf.schemas.MIRIAM;
 import org.vcell.sybil.rdf.RDFBox;
-
-import com.hp.hpl.jena.rdf.model.Property;
 
 public class MIRIAMQualifier extends RDFBox.PropertyWrapper implements AnnotationQualifier {
 	public static final MIRIAMQualifier BIO_encodes = new MIRIAMQualifier(MIRIAM.BioProperties.encodes,"(bio) encodes");
@@ -31,13 +28,9 @@ public class MIRIAMQualifier extends RDFBox.PropertyWrapper implements Annotatio
 
 	private String description = null;
 		
-	private MIRIAMQualifier(Property property, String description) {
+	private MIRIAMQualifier(URI property, String description) {
 		super(property);
 		this.description = description;
-	}
-	
-	public URI getURI() throws URISyntaxException {
-		return new URI(property().getURI());
 	}
 	
 	public String getLocalName(){
@@ -45,7 +38,7 @@ public class MIRIAMQualifier extends RDFBox.PropertyWrapper implements Annotatio
 	}
 
 	public String getNameSpace(){
-		return property().getNameSpace();
+		return property().getNamespace();
 	}
 	
 	public String getDescription(){

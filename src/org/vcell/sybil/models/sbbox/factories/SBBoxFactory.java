@@ -4,15 +4,15 @@ package org.vcell.sybil.models.sbbox.factories;
  *   Creates SBBox objects
  */
 
+import org.openrdf.model.Graph;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.imp.SBBoxImp;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import org.vcell.sybil.rdf.impl.HashGraph;
 
 public class SBBoxFactory {
 
 	public static SBBox create() {
-		Model data = ModelFactory.createDefaultModel();
+		Graph data = new HashGraph();
 		return new SBBoxImp(data);
 	}
 	

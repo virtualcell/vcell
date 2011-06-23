@@ -8,11 +8,10 @@ package cbit.vcell.biomodel.meta.registry;
 
 import java.util.Set;
 
+import org.openrdf.model.Resource;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
-
-import com.hp.hpl.jena.rdf.model.Resource;
 
 public interface Registry {
 	

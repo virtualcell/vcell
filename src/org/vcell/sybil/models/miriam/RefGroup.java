@@ -6,13 +6,14 @@ package org.vcell.sybil.models.miriam;
 
 import java.util.Set;
 
-import org.vcell.sybil.rdf.RDFBag;
+import org.openrdf.model.Resource;
 
-public interface RefGroup extends RDFBag {
+public interface RefGroup {
 	public RefGroup add(MIRIAMRef ref);
 	public RefGroup remove(MIRIAMRef ref);
 	public boolean contains(MIRIAMRef ref);
 	public Set<MIRIAMRef> refs();
 	public RefGroup removeAll();
 	public void delete();
+	public Resource resource();
 }
