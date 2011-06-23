@@ -69,24 +69,25 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 
 	// Model	
 	private DocumentEditorTreeFolderNode modelChildFolderNodes[] = {			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, true),
 		};	
-	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[0], false); 
+	private BioModelNode structureDiagramNode = new BioModelNode(modelChildFolderNodes[0], false); 
 	private BioModelNode reactionDiagramNode = new BioModelNode(modelChildFolderNodes[1], false); 
-	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[2], false); 
-	private BioModelNode structureDiagramNode = new BioModelNode(modelChildFolderNodes[3], false); 
+	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[2], false); 
+	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[3], false); 
 	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[4], false); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
-			reactionsNode,
-			reactionDiagramNode,
-			structuresNode,
 			structureDiagramNode,
+			reactionDiagramNode,
+			reactionsNode,
+			structuresNode,
 			speciesNode,
 	};
+	private BioModelNode defaultSelectModelNode = structureDiagramNode;
 		
 	public BioModelEditorTreeModel(JTree tree) {
 		super(tree);
@@ -138,10 +139,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			bPopulatingRoot = false;
 		}
 		ownerTree.expandPath(new TreePath(modelNode.getPath()));
-//		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
 		if (selectedBioModelNode == null) {
-			ownerTree.setSelectionPath(new TreePath(reactionsNode.getPath()));
-			selectedBioModelNode = reactionsNode;
+			selectedBioModelNode = defaultSelectModelNode;
+			ownerTree.setSelectionPath(new TreePath(selectedBioModelNode.getPath()));
 		} else {
 			restoreTreeSelection();
 		}

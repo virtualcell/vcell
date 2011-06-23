@@ -60,21 +60,21 @@ public class CartoonToolEditActions {
 		}
 	}
 
-	@SuppressWarnings("serial")
-	public static class Paste extends CartoonToolWrapperAction {
-		public static final String MENU_ACTION = "Paste";
-		public static final String MENU_TEXT = MENU_ACTION;
-		public Paste(CartoonTool cartoonTool) {
-			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
-			putValue(MNEMONIC_KEY, KeyEvent.VK_V);
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V,
-					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		}
-	}	
+//	@SuppressWarnings("serial")
+//	public static class Paste extends CartoonToolWrapperAction {
+//		public static final String MENU_ACTION = "Paste";
+//		public static final String MENU_TEXT = MENU_ACTION;
+//		public Paste(CartoonTool cartoonTool) {
+//			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+//			putValue(MNEMONIC_KEY, KeyEvent.VK_V);
+//			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V,
+//					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+//		}
+//	}	
 	
 	@SuppressWarnings("serial")
 	public static class PasteNew extends CartoonToolWrapperAction {
-		public static final String MENU_ACTION = "Paste New";
+		public static final String MENU_ACTION = "Paste";
 		public static final String MENU_TEXT = MENU_ACTION;
 		public PasteNew(CartoonTool cartoonTool) {
 			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
@@ -97,7 +97,7 @@ public class CartoonToolEditActions {
 		list.add(new Copy(cartoonTool));
 		list.add(new Delete(cartoonTool));
 		list.add(new Cut(cartoonTool));
-		list.add(new Paste(cartoonTool));
+//		list.add(new Paste(cartoonTool));
 		list.add(new PasteNew(cartoonTool));
 		list.add(new Move(cartoonTool));
 		return list; 
