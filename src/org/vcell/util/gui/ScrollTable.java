@@ -355,7 +355,7 @@ public class ScrollTable extends JTable {
 		}
 		if (vcellSortTableModel != null) {
 			if (vcellSortTableModel.getNumPages() == 1) {
-				if (getPageToolBar().getParent() != null) {
+				if (pageToolBar != null && getPageToolBar().getParent() != null) {
 					contentPanel.remove(getPageToolBar());
 					contentPanel.repaint();
 				}

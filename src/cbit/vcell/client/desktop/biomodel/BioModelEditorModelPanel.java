@@ -79,10 +79,10 @@ import cbit.vcell.model.Structure;
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTabID {
-		reaction_table("Reactions"),
-		reaction_diagram("Reaction Diagram"),
-		structure_table("Structures"),
 		structure_diagram("Structure Diagram"),
+		reaction_diagram("Reaction Diagram"),
+		reaction_table("Reactions"),
+		structure_table("Structures"),
 		species_table("Species");
 		
 		private String name = null;
