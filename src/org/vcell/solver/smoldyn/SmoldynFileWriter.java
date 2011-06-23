@@ -179,6 +179,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 		end_compartment,
 		surface,
 		point,
+		polygon,
+		edge,
+		face,
 		
 		reaction,
 		reaction_cmpt,
@@ -1170,7 +1173,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 //			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.6 0 0.6 0.1");
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.front + " " + SmoldynKeyword.face);
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.back + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
 			if (DEBUG) tmppw.println("verts" + sci + "=[");
@@ -1553,7 +1558,8 @@ private void writeWallSurfaces() throws SolverException {
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[0]);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[1]);
-		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+		printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 		// yz walls
 		switch (dimension) {
@@ -1579,7 +1585,8 @@ private void writeWallSurfaces() throws SolverException {
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[2]);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[3]);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 			// xz walls
 			switch (dimension) {
@@ -1601,7 +1608,8 @@ private void writeWallSurfaces() throws SolverException {
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[4]);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[5]);
-				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both  + " 0.8 0.9 0 0.1");
+				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+				printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 				// xy walls
 				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
