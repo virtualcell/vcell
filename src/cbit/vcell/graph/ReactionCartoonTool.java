@@ -347,14 +347,15 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				// See if Species
-				Species species = (Species) SimpleTransferable
-						.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 				if (species != null) {
 					IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-					pasteSpecies(getGraphPane(), species, getModel(), 
+					SpeciesContext pastedSpeciesContext = pasteSpecies(getGraphPane(), species, getModel(), 
 							((ReactionContainerShape) shape).getStructure(), 
 							menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION),/* true, */
 					speciesHash, null);
+					getGraphModel().clearSelection();
+					getGraphModel().select(pastedSpeciesContext);
 				}
 				// See if ReactionStep[]
 				ReactionStep[] reactionStepArr = (ReactionStep[]) SimpleTransferable
