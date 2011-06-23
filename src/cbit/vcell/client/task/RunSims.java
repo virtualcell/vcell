@@ -81,9 +81,9 @@ public class RunSims extends AsynchClientTask {
 			while (subDomainEnumeration.hasMoreElements()) {
 				SubDomain subDomain = subDomainEnumeration.nextElement();
 				
-				if (!(subDomain instanceof CompartmentSubDomain)) {
-					continue;
-				}
+//				if (!(subDomain instanceof CompartmentSubDomain)) {
+//					continue;
+//				}
 				for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 					try {
 						Expression newExp = new Expression(particleProperties.getDiffusion());

@@ -31,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -369,21 +370,21 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		outputFnsListTableModel = new OutputFunctionsListTableModel(outputFnsScrollPaneTable);
 		getFnScrollPaneTable().setModel(outputFnsListTableModel);
 		getFnScrollPaneTable().createDefaultColumnsFromModel();
-		
-		outputFnsListTableModel.addTableModelListener(
-			new javax.swing.event.TableModelListener(){
-				public void tableChanged(javax.swing.event.TableModelEvent e){
-					getFnScrollPaneTable().getColumnModel().getColumn(OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME).setCellRenderer(new DefaultScrollTableCellRenderer(){
-						
-						@Override
-						protected void setValue(Object value) {
-							super.setValue(value);
-							setIcon(VCellIcons.getOutputFunctionIcon());
-						}
-					});
+		getFnScrollPaneTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer() {
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (column == OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME) {
+					setIcon(VCellIcons.getOutputFunctionIcon());
+				} else {
+					setIcon(null);
 				}
+				return this;
 			}
-		);
+		});
 	}
 
 	private void initialize() {

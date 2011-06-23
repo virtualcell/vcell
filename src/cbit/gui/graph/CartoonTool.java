@@ -206,7 +206,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		}
 		if ((e.getKeyCode() == KeyEvent.VK_V)
 				&& ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0)) {
-			menuAction(getGraphModel().getSelectedShape(), CartoonToolEditActions.Paste.MENU_ACTION);
+			menuAction(getGraphModel().getSelectedShape(), CartoonToolEditActions.PasteNew.MENU_ACTION);
 		}
 		if ((e.getKeyCode() == KeyEvent.VK_DELETE)) {
 			menuAction(getGraphModel().getSelectedShape(), CartoonToolEditActions.Delete.MENU_ACTION);

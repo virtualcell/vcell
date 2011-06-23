@@ -343,8 +343,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					VCellTransferable.sendToClipboard(reactionStepArr);
 				}
 			}
-		} else if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
-				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
+		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				// See if Species
 				Species species = (Species) SimpleTransferable
@@ -525,6 +525,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);	
 				if (pickedShape instanceof ReactionContainerShape){
 					SpeciesContext speciesContext = getReactionCartoon().getModel().createSpeciesContext(((ReactionContainerShape) pickedShape).getStructure());
+					reactionCartoon.clearSelection();
 					getGraphModel().select(speciesContext);
 					positionShapeForObject(speciesContext.getStructure(), speciesContext, worldPoint);
 //					showCreateSpeciesContextDialog(getGraphPane(),
@@ -1496,8 +1497,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return true;
 			}
 		}
-		if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
-				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
+		if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
@@ -1580,23 +1581,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 		if (shape instanceof ReactionContainerShape) {
 			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
-			boolean bPaste = menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION);
-			if (bPaste || bPasteNew) {
+			if (bPasteNew) {
 				// Paste if there is a species on the system clipboard and it
 				// doesn't exist in structure
 				Species species = (Species) 
 					SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 				if (species != null) {
-					if (getModel().contains(species)) {
-						if (getModel().getSpeciesContext(
-										species, ((ReactionContainerShape) shape).getStructure()) != null) {
-							return bPasteNew ? true : false;
-						} else {
-							return bPasteNew ? false : true;
-						}
-					} else {
-						return bPasteNew ? false : true;
-					}
+					return true;
+					
 				}
 				// Paste if there is a ReactionStepArr on the system clipboard
 				// and structure types match

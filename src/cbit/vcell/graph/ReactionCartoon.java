@@ -255,6 +255,7 @@ public class ReactionCartoon extends ModelCartoon {
 						reactionStepShape.getSpaceManager().setRelPos(
 								reactionContainerShape.getRandomPosition());
 						reactionContainerShape.addChildShape(reactionStepShape);
+						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 					}
 					reactionStepShape.refreshLabel();
 					reactionStepShape.setDirty(false);
