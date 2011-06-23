@@ -1,13 +1,3 @@
-/*
- * Copyright (C) 1999-2011 University of Connecticut Health Center
- *
- * Licensed under the MIT License (the "License").
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at:
- *
- *  http://www.opensource.org/licenses/mit-license.php
- */
-
 package org.vcell.solver.smoldyn;
 
 
@@ -139,6 +129,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Set<SubVolume> boundaryXSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryYSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryZSubVolumes = new HashSet<SubVolume>();
+	private ArrayList<String> killMolCommands = new ArrayList<String>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
 	enum SmoldynKeyword {
@@ -188,6 +179,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 		end_compartment,
 		surface,
 		point,
+		polygon,
+		edge,
+		face,
 		
 		reaction,
 		reaction_cmpt,
@@ -226,7 +220,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 //		molecule.		
 		listmols,
 //		This is very similar to listmols but has a slightly different output format.
-//		Each line of text is preceded by the ï¿½time counterï¿½, which is an integer
+//		Each line of text is preceded by the “time counter”, which is an integer
 //		that starts at 1 and is incremented each time the routine is called. Also, the
 //		names and states of molecules are not printed, but instead the identity and
 //		state numbers are printed.
@@ -236,6 +230,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		output_file_number,		
 		incrementfile,
 		killmolincmpt, 
+		killmol,
 		
 		accuracy,
 		boxsize,
@@ -417,6 +412,14 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 	}	
 	printWriter.println();
 	
+	//write command to kill molecules on membrane for adsortption to nothing
+	printWriter.println("# kill membrane molecues that are absorbed (to nothing)");
+	for(String killMolCmd : killMolCommands)
+	{
+		printWriter.println(killMolCmd);
+	}
+	printWriter.println();
+	
 	printWriter.println("# runtime command");
 	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
 	if (outputFile != null && cartesianMesh != null) {
@@ -504,7 +507,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 }
 
 private void writeReactions() throws ExpressionException, MathException {
-	printWriter.println("# reaction in compartments");
+	printWriter.println("# reactions");
 	Enumeration<SubDomain> subdomains = mathDesc.getSubDomains();
 	while(subdomains.hasMoreElements()) {
 		SubDomain subdomain = subdomains.nextElement();
@@ -549,8 +552,33 @@ private void writeReactions() throws ExpressionException, MathException {
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 				writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 			} else if (subdomain instanceof MembraneSubDomain){
+				//0th order reaction, product limited to one and it can be on mem or in vol
+				if(reactants.size() == 0 && products.size() == 1)
+				{
+					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+				}
+				//consuming of a species to nothing, limited to one reactant
+				else if(reactants.size() == 1 && products.size() == 0)
+				{
+					if(getMembraneVariableCount(reactants) == 1)//consuming a mem species in mem reaction
+					{
+						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					}
+					//consuming a vol spcies in mem reaction
+					//it equals to adsorption, species A from vol adsorbed to mem as again species A, and then we kill the speceis A on mem.
+					else if(getVolumeVariableCount(reactants) == 1)
+					{
+						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						String speciesName = reactants.get(0).getName();
+						String killMolCmd = "cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)";
+						killMolCommands.add(killMolCmd);
+					}
+				}
+				//
 				// Use rate command for any membrane reactions with 1 reactant and 1 product
-				if ((reactants.size() == 1) && (products.size() == 1)) 
+				else if ((reactants.size() == 1) && (products.size() == 1)) 
 				{
 					//Membrane reaction (1 react to 1 product).
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
@@ -563,24 +591,18 @@ private void writeReactions() throws ExpressionException, MathException {
 						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					}
 				}
-				else //membrane reactions which are not one to one 
+				else //membrane reactions which are not one to one, or 0th order, or consuming species
 				{
 					// 1. membrane reaction requires at least one mambrane bound reactant
 					// 2. should NOT have volume products (solution for vol products have leaking)
-					// 3. 0th order reactions(no reactant, 1 product) or simply consuming one species(1 reactant, no product)
-					if(getMembraneVariableCount(reactants) == 0 && getMembraneVariableCount(products) == 0)
-					{
-						throw new MathException("VCell spatial stochastic solver requires at least ONE membrane reactant/product in membrane reactions.");
-					}
-					else if((getMembraneVariableCount(reactants) == 1 && getVolumeVariableCount(products) == 0)||
-					   (reactants.size() == 0 && products.size() == 1) || (reactants.size() == 1 && products.size() == 0))
+					if((getMembraneVariableCount(reactants) == 1) && (getVolumeVariableCount(products) == 0))
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
 					}
 					else 
 					{
-						throw new MathException("VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
+						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
 					}
 				}
 			}
@@ -637,23 +659,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
 	}
-	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
-	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
-	else if(getMembraneVariableCount(prods) == 1 && getVolumeVariableCount(reacts) == 1)
-	{
-		printWriter.print(reacts.get(0).getName() + " ");
-		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
-		{
-			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
-		}
-		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
-		{
-			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
-		}
-		printWriter.print(rateConstant + " ");
-		printWriter.println(prods.get(0).getName());
-	}
-	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution
+	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution, 0th order desorption doesn't work in the way
 	//e.g. "surface c_n_membrane rate B2 front fsoln 4.22 C2"
 	else if(getVolumeVariableCount(prods) == 1 && getMembraneVariableCount(reacts) == 1)
 	{
@@ -668,6 +674,29 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		}
 		printWriter.print(rateConstant + " ");
 		printWriter.println(prods.get(0).getName());
+	}
+	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
+	//e.g. "surface c_n_membrane rate B2 fsoln front 4.22 C2"
+	else if((getVolumeVariableCount(reacts) == 1) && ((getMembraneVariableCount(prods) == 1) || (prods.size() == 0)))
+	{
+		printWriter.print(reacts.get(0).getName() + " ");
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
+		}
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		{
+			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
+		}
+		printWriter.print(rateConstant + " ");
+		if(prods.size() == 1)
+		{
+			printWriter.println(prods.get(0).getName());
+		}
+		else
+		{
+			printWriter.println();
+		}
 	}
 }
 
@@ -1144,7 +1173,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 //			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.6 0 0.6 0.1");
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.front + " " + SmoldynKeyword.face);
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.back + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
 			if (DEBUG) tmppw.println("verts" + sci + "=[");
@@ -1527,7 +1558,8 @@ private void writeWallSurfaces() throws SolverException {
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[0]);
 		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[1]);
-		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+		printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 		// yz walls
 		switch (dimension) {
@@ -1553,7 +1585,8 @@ private void writeWallSurfaces() throws SolverException {
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[2]);
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[3]);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.8 0.9 0 0.1");
+			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 			// xz walls
 			switch (dimension) {
@@ -1575,7 +1608,8 @@ private void writeWallSurfaces() throws SolverException {
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[4]);
 				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[5]);
-				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both  + " 0.8 0.9 0 0.1");
+				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
+				printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
 				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
 				// xy walls
 				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
