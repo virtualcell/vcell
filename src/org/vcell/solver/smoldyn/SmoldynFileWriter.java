@@ -102,6 +102,8 @@ import cbit.vcell.solvers.MembraneElement;
 public class SmoldynFileWriter extends SolverFileWriter 
 {
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "triangle";
+	private static final Color bg = new Color(0x0);
+	private Color[] colors = null;
 	
 	private static class TrianglePanel {
 		String name;
@@ -340,6 +342,7 @@ private void init() throws SolverException {
 	if (!bGraphicOpenGL) {
 		writeMeshFile();
 	}
+	colors = Plot2DPanel.generateAutoColor(particleVariableList.size() + resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses().length, bg, new Integer(5));
 }
 
 
@@ -379,13 +382,12 @@ private void writeGraphicsOpenGL() throws MathException {
 	}
 	printWriter.println("# graphics command");	
 	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
-	Color bg = new Color(0x0);
+	
 	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
 	printWriter.println(SmoldynKeyword.frame_color + " 0.8 0.9 0.0");
 //	printWriter.println(SmoldynKeyword.grid_thickness + " 1");
 //	printWriter.println(SmoldynKeyword.grid_color + " 0 0 0");
 	printWriter.println(SmoldynKeyword.background_color + " " + bg.getRed()/255.0 + " " + bg.getGreen()/255.0 + " " + bg.getBlue()/255.0);
-	Color[] colors = Plot2DPanel.generateAutoColor(particleVariableList.size(), bg, new Integer(5));
 	for (int i = 0; i < particleVariableList.size(); i ++) {
 		Color c = colors[i];
 		String variableName = getVariableName(particleVariableList.get(i),null);
@@ -595,15 +597,15 @@ private void writeReactions() throws ExpressionException, MathException {
 				{
 					// 1. membrane reaction requires at least one mambrane bound reactant
 					// 2. should NOT have volume products (solution for vol products have leaking)
-					if((getMembraneVariableCount(reactants) == 1) && (getVolumeVariableCount(products) == 0))
-					{
+//					if((getMembraneVariableCount(reactants) == 1) && (getVolumeVariableCount(products) == 0))
+//					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
-					}
-					else 
-					{
-						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
-					}
+//					}
+//					else 
+//					{
+//						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
+//					}
 				}
 			}
 		}
@@ -1173,8 +1175,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 //			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 0.6 0 0.6 0.1");
-			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.front + " " + SmoldynKeyword.face);
+			Color c = colors[sci+particleVariableList.size()]; //get color after species
+			printWriter.println(SmoldynKeyword.color + " " +  SmoldynKeyword.both + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0 + " 0.1");
+			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.front + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.back + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
