@@ -606,17 +606,16 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 				else //membrane reactions which are not one to one, or 0th order, or consuming species
 				{
-					// 1. membrane reaction requires at least one mambrane bound reactant
-					// 2. should NOT have volume products (solution for vol products have leaking)
-//					if((getMembraneVariableCount(reactants) == 1) && (getVolumeVariableCount(products) == 0))
-//					{
+					// membrane reaction requires at least one mambrane bound reactant
+					if((getMembraneVariableCount(reactants) == 1))
+					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
-//					}
-//					else 
-//					{
-//						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant and no volume products in membrane reactions.");
-//					}
+					}
+					else 
+					{
+						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant.");
+					}
 				}
 			}
 		}
