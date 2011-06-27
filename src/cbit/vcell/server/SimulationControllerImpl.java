@@ -10,8 +10,11 @@
 
 package cbit.vcell.server;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 
+import javax.jms.JMSException;
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.ConfigurationException;
@@ -82,12 +85,18 @@ public void addSimulationJobStatusListener(SimulationJobStatusListener listener)
  * Creation date: (6/28/01 1:19:54 PM)
  * @return cbit.vcell.solvers.SolverController
  * @param simulation cbit.vcell.solver.Simulation
+ * @throws JMSException 
+ * @throws AuthenticationException 
+ * @throws DataAccessException 
+ * @throws SQLException 
+ * @throws FileNotFoundException 
  */
-private SolverController createNewSolverController(User user, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException {
+private SolverController createNewSolverController(UserLoginInfo userLoginInfo, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException {
 	//
 	// either no appropriate slave server or THIS IS A SLAVE SERVER (can't pass the buck).
 	//
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
+	User user = userLoginInfo.getUser();
+	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
 	LocalSolverController localSolverController = new LocalSolverController(
 		localVCellConnection,
 		userSessionLog,
@@ -133,8 +142,13 @@ public LocalVCellServer getLocalVCellServer() {
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
+ * @throws JMSException 
+ * @throws AuthenticationException 
+ * @throws SQLException 
+ * @throws FileNotFoundException 
  */
-SolverController getSolverController(User user, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, PermissionException, DataAccessException {
+SolverController getSolverController(UserLoginInfo userLoginInfo, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, PermissionException, DataAccessException, FileNotFoundException, SQLException, AuthenticationException, JMSException {
+	User user = userLoginInfo.getUser();
 	Simulation simulation = simulationJob.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
@@ -145,7 +159,7 @@ SolverController getSolverController(User user, SimulationJob simulationJob, Ses
 	}
 	SolverController solverController = solverControllerHash.get(simulationJob.getSimulationJobID());
 	if (solverController==null){
-		solverController = createNewSolverController(user,simulationJob,userSessionLog);
+		solverController = createNewSolverController(userLoginInfo,simulationJob,userSessionLog);
 		solverControllerHash.put(simulationJob.getSimulationJobID(),solverController);
 	}
 	return solverController;
@@ -276,8 +290,9 @@ public void removeSimulationJobStatusListener(SimulationJobStatusListener listen
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(User user, Simulation simulation, SessionLog userSessionLog) throws RemoteException, Exception {
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
+public void startSimulation(UserLoginInfo userLoginInfo, Simulation simulation, SessionLog userSessionLog) throws RemoteException, Exception {
+	User user = userLoginInfo.getUser();
+	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
 	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	
@@ -286,7 +301,7 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 	if (fieldFuncArgs.length != 0) {
 		ExternalDataIdentifier[]  qualifiedSpecs =
 			getLocalVCellServer().
-				getVCellConnection(user).
+				getVCellConnection(userLoginInfo).
 					getUserMetaDbServer().
 						fieldDataDBOperation(
 								FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
@@ -310,7 +325,7 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 		VCSimulationIdentifier vcSimID = simJob.getVCDataIdentifier().getVcSimID();
 		try {
 
-			SolverController solverController = getSolverController(user,simJob,userSessionLog);
+			SolverController solverController = getSolverController(userLoginInfo,simJob,userSessionLog);
 			SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(simulation.getKey(),i);	
 			SimulationJobStatus newJobStatus = updateDispatchedJobStatus(oldJobStatus, vcSimID, i);
 			
@@ -330,10 +345,16 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 
 /**
  * This method was created by a SmartGuide.
+ * @throws JMSException 
+ * @throws AuthenticationException 
+ * @throws DataAccessException 
+ * @throws SQLException 
+ * @throws FileNotFoundException 
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(User user, Simulation simulation) {	
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
+public void stopSimulation(UserLoginInfo userLoginInfo, Simulation simulation) throws RemoteException, FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException {	
+	User user = userLoginInfo.getUser();
+	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
 	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	for (int i = 0; i < simulation.getScanCount(); i++){
@@ -364,12 +385,12 @@ public void stopSimulation(User user, Simulation simulation) {
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) {	
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
-	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
+public void stopSimulation(UserLoginInfo userLoginInfo, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) {	
 	try {
-		if (!vcSimID.getOwner().equals(user)){
+		LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
+		removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
+		addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
+		if (!vcSimID.getOwner().equals(userLoginInfo.getUser())){
 			throw new PermissionException("insufficient privilege: stopSimulation()");
 		}
 		SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimID.getSimulationKey(),jobIndex);	
