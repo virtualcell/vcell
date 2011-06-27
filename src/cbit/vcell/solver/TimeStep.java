@@ -7,13 +7,13 @@ package cbit.vcell.solver;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.server.*;
-import cbit.vcell.math.*;
+import cbit.vcell.math.VCML;
 /**
  * Insert the type's description here.
  * Creation date: (11/2/2000 3:59:34 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class TimeStep implements java.io.Serializable, org.vcell.util.Matchable {
 	private double fieldMinimumTimeStep = 1.0E-8;
 	private double fieldDefaultTimeStep = 0.1;
@@ -29,6 +29,9 @@ public static TimeStep getDefaultSundialsTimeStep() {
 	return new TimeStep(0, 0.1, 0.1);
 }
 
+public static TimeStep getDefaultSmoldynTimeStep() {
+	return new TimeStep(1e-4,1e-4,1e-4);
+}
 /**
  * TimeStep constructor comment.
  */

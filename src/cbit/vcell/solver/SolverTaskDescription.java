@@ -574,9 +574,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					}
 				}
 			} else if (solverDescription.isSpatialStochasticSolver()) {
+				setTimeStep(TimeStep.getDefaultSmoldynTimeStep());
 				if (smoldynSimulationOptions == null) {
 					smoldynSimulationOptions = new SmoldynSimulationOptions();
 				}
+//				setSmoldynDefaultTimeStep();
 			}
 		}
 	} catch (PropertyVetoException e) {
@@ -584,6 +586,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
+
+//private void setSmoldynDefaultTimeStep() throws PropertyVetoException {
+//	if (fieldSimulation != null) {
+//		SmoldynTimeStepVars smoldynTimeStepVars = RunSims.computeMaxSmoldynTimeStep(fieldSimulation);
+//		double maxDt = smoldynTimeStepVars.getMaxDt();
+//		setTimeStep(new TimeStep(maxDt, maxDt, maxDt));
+//	}
+//}
 
 /**
  * Insert the method's description here.
@@ -861,6 +871,7 @@ public void setSensitivityParameter(Constant sensitivityParameter) throws java.b
 /**
  * Gets the endingTime property (double) value.
  * @return The endingTime property value.
+ * @throws PropertyVetoException 
  * @see #setEndingTime
  */
 private void setSimulation(Simulation simulation) {
@@ -871,7 +882,11 @@ private void setSimulation(Simulation simulation) {
 	if (getSimulation() != null) {
 		getSimulation().addPropertyChangeListener(this);
 	}
-
+//	try {
+//		setSmoldynDefaultTimeStep();
+//	} catch (Exception ex) {
+//		ex.printStackTrace();
+//	}
 }
 
 
@@ -1010,5 +1025,62 @@ public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverO
 	this.sundialsSolverOptions = sundialsSolverOptions;
 	firePropertyChange(PROPERTY_SUNDIALS_SOLVER_OPTIONS, oldValue, sundialsSolverOptions);
 }
+
+//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
+//{
+//	double minRadius = 1e8;
+//	MathDescription mathDesc = fieldSimulation.getMathDescription();
+//	for (int jobIndex = 0; jobIndex < fieldSimulation.getScanCount(); jobIndex ++) {
+//		double kon = 0;
+//		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(fieldSimulation, jobIndex);
+//		if(pjp.getParticleProbabilityRate() instanceof MacroscopicRateConstant) {
+//			Expression newExp = new Expression(((MacroscopicRateConstant) pjp.getParticleProbabilityRate()).getExpression());
+//			newExp.bindExpression(simSymbolTable);
+//			newExp = simSymbolTable.substituteFunctions(newExp).flatten();
+//			kon = newExp.evaluateConstant();
+//		}	
+//		double sumD = 0;
+//		double maxConc = 0;
+//		//List<ParticleProperties> particleProperties = subDomain.getParticleProperties();
+//		//reactants
+//		ParticleVariable[] particleVars = pjp.getParticleVariables();
+//		//
+//		for(ParticleVariable pv : particleVars)
+//		{
+//			SubDomain particleSubDomain = mathDesc.getSubDomain(pv.getDomain().getName());
+//			ParticleProperties particleProperties = particleSubDomain.getParticleProperties(pv);
+//			Expression diffExp = new Expression(particleProperties.getDiffusion());
+//			diffExp.bindExpression(simSymbolTable);
+//			diffExp = simSymbolTable.substituteFunctions(diffExp).flatten();
+//			double diffConstant = diffExp.evaluateConstant();
+//			
+//			for (ParticleInitialCondition pic : particleProperties.getParticleInitialConditions()){
+//				if (pic instanceof ParticleInitialCondition){
+//					Expression concExp = new Expression(particleProperties.get());
+//					diffExp.bindExpression(simSymbolTable);
+//					diffExp = simSymbolTable.substituteFunctions(diffExp).flatten();
+//					double diffConstant = diffExp.evaluateConstant();
+//					sumD += diffConstant;
+//					maxConc = Math.max(maxConc,conc);
+//				}else if (pic instanceof ParticleInitialConditionCount){
+//					
+//				}
+//			}
+//		}
+//		if(subDomain instanceof CompartmentSubDomain)
+//		{
+//			double calculatedRadius = kon/(4*Math.PI*sumD);
+//			minRadius = Math.min(minRadius, calculatedRadius);
+//		}
+//		else if(subDomain instanceof MembraneSubDomain)
+//		{
+//			double b = 0;
+//			double calculatedRadius = Math.exp(2*Math.PI*sumD/kon - Math.log(b)) ;
+//			minRadius = Math.min(minRadius, calculatedRadius);
+//		}
+//		
+//	}
+//	return 0;
+//}
 
 }
