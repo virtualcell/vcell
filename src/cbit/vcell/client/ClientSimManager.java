@@ -566,8 +566,8 @@ public void runQuickOde(final Simulation originalSimulation) {
 			VCSimulationDataIdentifier vcDataID = (VCSimulationDataIdentifier) hashTable.get("vcDataID");
 			ODEDataBlock odeDataBlock = (ODEDataBlock) hashTable.get("odeDataBlock");
 			ODEDataViewer odeDataViewer = new ODEDataViewer();
-			odeDataViewer.setOdeSolverResultSet(odeDataBlock.getODESimData());
 			odeDataViewer.setSimulation(simulation);
+			odeDataViewer.setOdeSolverResultSet(odeDataBlock.getODESimData());
 			odeDataViewer.setVcDataIdentifier(vcDataID);
 			
 			SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, simulation, simulationOwner, odeDataViewer);
