@@ -27,7 +27,7 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
  */
 public class LocalSimulationController extends java.rmi.server.UnicastRemoteObject implements SimulationController {
 	private SessionLog sessionLog = null;
-	private User user = null;
+	private UserLoginInfo userLoginInfo = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private UserMetaDbServer userMetaDbServer = null;
 	private AdminDatabaseServer adminDbServer = null;
@@ -36,10 +36,10 @@ public class LocalSimulationController extends java.rmi.server.UnicastRemoteObje
  * LocalSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-protected LocalSimulationController(User argUser, SessionLog argSessionLog, AdminDatabaseServer adminDbServer0, SimulationControllerImpl argSimulationControllerImpl, UserMetaDbServer argUserMetaDbServer) throws java.rmi.RemoteException {
+protected LocalSimulationController(UserLoginInfo argUserLoginInfo, SessionLog argSessionLog, AdminDatabaseServer adminDbServer0, SimulationControllerImpl argSimulationControllerImpl, UserMetaDbServer argUserMetaDbServer) throws java.rmi.RemoteException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSimulationController,0));
 	sessionLog = argSessionLog;
-	user = argUser;
+	userLoginInfo = argUserLoginInfo;
 	adminDbServer = adminDbServer0;
 	simulationControllerImpl = argSimulationControllerImpl;
 	userMetaDbServer = argUserMetaDbServer;
@@ -73,7 +73,7 @@ public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throw
 	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = getSimulation(vcSimulationIdentifier);
-		simulationControllerImpl.startSimulation(user,simulation,sessionLog);
+		simulationControllerImpl.startSimulation(userLoginInfo,simulation,sessionLog);
 	}catch (RemoteException e){
 		sessionLog.exception(e);
 		throw e;
@@ -95,7 +95,7 @@ public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws
 	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = getSimulation(vcSimulationIdentifier);
-		simulationControllerImpl.stopSimulation(user,simulation);
+		simulationControllerImpl.stopSimulation(userLoginInfo,simulation);
 	}catch (RemoteException e){
 		sessionLog.exception(e);
 		throw e;

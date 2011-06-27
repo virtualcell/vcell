@@ -87,7 +87,7 @@ private void poll(boolean reportPerf) {
     	MessageEvent[] queuedEvents = null;
     	// time the call
 	    long l1 = System.currentTimeMillis();
-	    synchronized (vcellConnection) {		
+	    synchronized (this) {		
 	    	queuedEvents = vcellConnection.getMessageEvents();
 		}
 	    long l2 = System.currentTimeMillis();
@@ -385,7 +385,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 }
 
 public final void setVCellConnection(VCellConnection vcellConnection) {
-	synchronized (vcellConnection) {		
+	synchronized (this) {
 		this.vcellConnection = vcellConnection;
 	}
 }

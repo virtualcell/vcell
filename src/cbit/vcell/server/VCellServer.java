@@ -48,13 +48,6 @@ User[] getConnectedUsers() throws RemoteException;
 ServerInfo getServerInfo() throws RemoteException;
 
 /**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.server.VCellConnection
- * @exception java.rmi.RemoteException The exception description.
- */
-public VCellConnection getVCellConnection(User user) throws RemoteException, DataAccessException;
-
-/**
  * This method was created in VisualAge.
  * @exception java.rmi.RemoteException The exception description.
  */

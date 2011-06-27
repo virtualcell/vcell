@@ -83,7 +83,7 @@ public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory,
  * @param password java.lang.String
  */
 private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
-	if (getVCellConnection0(userLoginInfo.getUser()) == null) {
+	if (getVCellConnection0(userLoginInfo) == null) {
 		VCellConnection localConn = null;
 		if (fieldJmsConnFactory == null){
 			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), this);
@@ -222,47 +222,32 @@ SimulationControllerImpl getSimulationControllerImpl() {
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-public VCellConnection getVCellConnection(User user) {
-	try {
-		return getVCellConnection0(user);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.server.DataSetController
- * @exception java.lang.Exception The exception description.
- */
 VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, DataAccessException, FileNotFoundException, AuthenticationException, javax.jms.JMSException {
 	VCellConnection localConnection = null;
 	//Authenticate User
 	User user = null;
+	synchronized (adminDbServer) {
+		user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getPassword());
+	}
+	if (user == null){
+		throw new AuthenticationException(VCellErrorMessages.getErrorMessage(VCellErrorMessages.AUTHEN_FAIL_MESSAGE, userLoginInfo.getUserName()));
+	}
 	try{
-		synchronized (adminDbServer) {
-			user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getPassword());
-			if (user == null){
-				throw new AuthenticationException(VCellErrorMessages.getErrorMessage(VCellErrorMessages.AUTHEN_FAIL_MESSAGE, userLoginInfo.getUserName()));
-			}
-			userLoginInfo.setUser(user);
-		}
+		userLoginInfo.setUser(user);
 	}catch(Exception e){
 		throw new DataAccessException(VCellErrorMessages.NETWORK_FAIL_MESSAGE, e);
 	}
 	//
 	// get existing VCellConnection
 	//
-	localConnection = getVCellConnection0(user);
+	localConnection = getVCellConnection0(userLoginInfo);
 
 	//
 	// if doesn't exist, create new one
 	//
 	if (localConnection == null) {
 		addVCellConnection(userLoginInfo);
-		localConnection = getVCellConnection0(user);
+		localConnection = getVCellConnection0(userLoginInfo);
 		if (localConnection==null){
 			sessionLog.print("LocalVCellServer.getVCellConnecytion("+user.getName()+") unable to create VCellConnection");
 			throw new DataAccessException("unable to create VCellConnection");
@@ -287,19 +272,19 @@ VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteExc
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-private synchronized VCellConnection getVCellConnection0(User user) {
+private synchronized VCellConnection getVCellConnection0(UserLoginInfo userLoginInfo) {
 	//
 	// Lookup existing VCellConnections
 	//
 	for (VCellConnection vcc : vcellConnectionList) {
 		if (vcc instanceof LocalVCellConnection){
 			LocalVCellConnection lvcc = (LocalVCellConnection)vcc;
-			if (lvcc.getUserLoginInfo().getUser().compareEqual(user)) {
+			if (lvcc.getUserLoginInfo().getUser().compareEqual(userLoginInfo.getUser()) && lvcc.getUserLoginInfo().getClientId() == userLoginInfo.getClientId()) {
 				return lvcc;
 			}
 		}else if (vcc instanceof LocalVCellConnectionMessaging){
 			LocalVCellConnectionMessaging lvccm = (LocalVCellConnectionMessaging)vcc;
-			if (lvccm.getUserLoginInfo().getUser().compareEqual(user)) {
+			if (lvccm.getUserLoginInfo().getUser().compareEqual(userLoginInfo.getUser()) && lvccm.getUserLoginInfo().getClientId() == userLoginInfo.getClientId()) {
 				return lvccm;
 			}
 		}

@@ -72,7 +72,7 @@ public class VCellErrorMessages {
 		+ VCellSupport + " for more details."; 
 
 	public static final String AUTHEN_FAIL_MESSAGE = "The userid (" + PLACE_HOLDER + ") or password you " +
-			"entered is not correct. Please go to Server->Change User... to reenter your userid and password or click \"Forgot Login Password\"";
+			"entered is not correct. Please go to Server->Change User... to reenter your userid and password or click \"Forgot Login Password\".";
 	// ============ connection problems end ========== //
 	
 		
