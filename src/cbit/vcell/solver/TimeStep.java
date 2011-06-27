@@ -35,6 +35,9 @@ public static TimeStep getDefaultSundialsTimeStep() {
 	return new TimeStep(0, 0.1, 0.1);
 }
 
+public static TimeStep getDefaultSmoldynTimeStep() {
+	return new TimeStep(1e-4,1e-4,1e-4);
+}
 /**
  * TimeStep constructor comment.
  */

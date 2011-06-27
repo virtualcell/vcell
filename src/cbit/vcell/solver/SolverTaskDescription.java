@@ -580,6 +580,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					}
 				}
 			} else if (solverDescription.isSpatialStochasticSolver()) {
+				setTimeStep(TimeStep.getDefaultSmoldynTimeStep());
 				if (smoldynSimulationOptions == null) {
 					smoldynSimulationOptions = new SmoldynSimulationOptions();
 				}
