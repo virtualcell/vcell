@@ -162,7 +162,7 @@ private SessionLog getSessionLog() {
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationController == null){
 		try {
-			simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),getSessionLog(),getLocalVCellServer().getAdminDatabaseServer(), getLocalVCellServer().getSimulationControllerImpl(),getUserMetaDbServer());
+			simulationController = new LocalSimulationController(getUserLoginInfo(),getSessionLog(),getLocalVCellServer().getAdminDatabaseServer(), getLocalVCellServer().getSimulationControllerImpl(),getUserMetaDbServer());
 		}catch (DataAccessException e){
 			throw new RuntimeException("DataAccessException creating LocalSimulationController, :"+e.getMessage());
 		}

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
+@SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {
 	private String userName;
 	private String password;
@@ -13,6 +14,9 @@ public class UserLoginInfo implements Serializable {
 	private String os_version;// os.version Operating system version
 	private String vcellSoftwareVersion;//VCell client logging in from
 	private User user;
+	// clientId to indentify machine so that
+	// same user can login at the same time.
+	private final long clientId = System.currentTimeMillis();
 	public UserLoginInfo(String userName,String password) {
 		super();
 		this.userName = userName;
@@ -58,5 +62,8 @@ public class UserLoginInfo implements Serializable {
 			throw new Exception("UserLoginInfo: 'set' user "+user.getName()+" does not equal login name "+this.userName);
 		}
 		this.user = user;
+	}
+	public final long getClientId() {
+		return clientId;
 	}
 }
