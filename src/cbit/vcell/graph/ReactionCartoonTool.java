@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyVetoException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 
@@ -249,13 +250,15 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	private ReactionStep[] getReactionStepArray(Shape shape, String menuAction) {
 		if (shape instanceof ReactionStepShape) {
-			List<Shape> reactionStepShapes = getReactionCartoon().getSelectedShapes();
-			if (reactionStepShapes != null && reactionStepShapes.size() > 0) {
-				ReactionStep[] rxStepsArr = new ReactionStep[reactionStepShapes.size()];
-				for (int i = 0; i < reactionStepShapes.size(); i += 1) {
-					rxStepsArr[i] = (ReactionStep) reactionStepShapes.get(i).getModelObject();
+			List<Shape> shapes = getReactionCartoon().getSelectedShapes();
+			if (shapes != null && shapes.size() > 0) {
+				ArrayList<ReactionStep> reactionSteps = new ArrayList<ReactionStep>();
+				for (int i = 0; i < shapes.size(); i += 1) {
+					if (shapes.get(i).getModelObject() instanceof ReactionStep){
+						reactionSteps.add((ReactionStep)shapes.get(i).getModelObject());
+					}
 				}
-				return rxStepsArr;
+				return reactionSteps.toArray(new ReactionStep[0]);
 			}
 		}
 		return null;
@@ -958,6 +961,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									Point startPos = edgeShape.getStart();
 									Point endPos = edgeShape.getEnd();
 									positionShapeForObject(membraneBetween, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(flux);
 									break;
 								}
 							}
@@ -972,6 +977,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								positionShapeForObject(structureEnd, reaction, new Point(
 										(endPos.x + startPos.x)/2, 
 										(endPos.y + startPos.y)/2));
+								getGraphModel().clearSelection();
+								getGraphModel().select(reaction);
 								getReactionCartoon().notifyChangeEvent();
 							} else if(structureEnd instanceof Membrane && structureStart instanceof Feature) {
 								Membrane endMembrane = (Membrane)structureEnd;
@@ -1004,6 +1011,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									}
 									
 									positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(reaction);
 								}
 							}
 							else if(structureEnd instanceof Feature && structureStart instanceof Membrane)
@@ -1038,17 +1047,77 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									}
 									
 									positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(reaction);
 								}
 							}
 						} else if(startShapeObject instanceof Structure) {
 							Structure structure = (Structure) startShapeObject;
-							if(StructureUtil.reactionHereCanHaveParticipantThere(
+							boolean bDone = false;
+							//
+							// feature1 ==> speciesContext(feature2) (on other side of membrane)
+							//
+							// find or create a speciesContext in "start" feature.
+							// create flux reaction in membrane using FluxCarrier from "end" speciesContext.
+							//
+							if(structure instanceof Feature && speciesContextEnd.getStructure() instanceof Feature && structure!=speciesContextEnd.getStructure())
+							{
+								Point startPos = edgeShape.getStart();
+								Point endPos = edgeShape.getEnd();
+								Feature startFeature = (Feature)structure;
+								Feature endFeature = (Feature)speciesContextEnd.getStructure();
+								//flux from startFeature to endFeature
+								Membrane fluxMem = getModel().getMembrane(startFeature, endFeature);
+								if(fluxMem != null)
+								{
+									Species fluxCarrier = speciesContextEnd.getSpecies();
+									SpeciesContext speciesContextStart = getModel().getSpeciesContext(fluxCarrier, startFeature);
+									if (speciesContextStart == null){
+										speciesContextStart = new SpeciesContext(fluxCarrier, startFeature);
+										getReactionCartoon().getModel().addSpeciesContext(speciesContextStart);
+										positionShapeForObject(startFeature, speciesContextStart, endPos);
+									}
+									FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(fluxMem);
+									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+									getReactionCartoon().notifyChangeEvent();
+									positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(flux);
+									bDone = true;
+								}
+							}
+							if (!bDone && StructureUtil.reactionHereCanHaveParticipantThere(
 									structure, speciesContextEnd.getStructure())) {
 								Model model = getReactionCartoon().getModel();
 								SimpleReaction reaction = model.createSimpleReaction(structure);
 								reaction.addProduct(speciesContextEnd, 1);
 								getReactionCartoon().notifyChangeEvent();
 								positionShapeForObject(structure, reaction, edgeShape.getStart());
+								getGraphModel().clearSelection();
+								getGraphModel().select(reaction);
+								bDone = true;
+							}
+							if (!bDone && speciesContextEnd.getStructure() instanceof Membrane && StructureUtil.reactionHereCanHaveParticipantThere(speciesContextEnd.getStructure(), structure)) {
+								// feature ==> membrane-species .....
+								//
+								// create volume species
+								// create membrane reaction
+								// add volume species as reactant and membrane species as product.
+								//
+								Membrane membrane = (Membrane)speciesContextEnd.getStructure();
+								Model model = getReactionCartoon().getModel();
+								SimpleReaction membraneReaction = model.createSimpleReaction(membrane);
+								membraneReaction.addProduct(speciesContextEnd, 1);
+								SpeciesContext startingSpeciesContext = model.createSpeciesContext(structure);
+								membraneReaction.addReactant(startingSpeciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								positionShapeForObject(structure, startingSpeciesContext, edgeShape.getStart()); 
+								positionShapeForObject(membrane, membraneReaction, 
+										new java.awt.Point((2*edgeShape.getStart().x+8*edgeShape.getEnd().x)/10,
+															(2*edgeShape.getStart().y+8*edgeShape.getEnd().y)/10));
+								getGraphModel().clearSelection();
+								getGraphModel().select(membraneReaction);
+								bDone = true;
 							}
 						}
 					} else if (endShape instanceof FluxReactionShape){
@@ -1095,6 +1164,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							startObject = startShape.getModelObject();
 						}
 						Point endPos = edgeShape.getEnd();
+						Point startPos = edgeShape.getStart();
 						if(startObject instanceof SimpleReaction) {
 							SimpleReaction reaction = (SimpleReaction) startObject;
 							if(StructureUtil.reactionHereCanHaveParticipantThere(
@@ -1106,14 +1176,69 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								positionShapeForObject(endStructure, speciesContext, endPos);
 							}
 						} else if(startObject instanceof SpeciesContext) {
-							SpeciesContext speciesContext = (SpeciesContext) startObject;
-							if(StructureUtil.reactionHereCanHaveParticipantThere(
-									endStructure, speciesContext.getStructure())) {
+							SpeciesContext speciesContextStart = (SpeciesContext) startObject;
+							boolean bDone = false;
+							//
+							// speciesContext(feature1) ==> feature2 (feature1,feature2 separated by membrane)
+							// find or create speciesContext(feature2) with same species.
+							// create new flux reaction in membrane
+							//
+							if(endStructure instanceof Feature && speciesContextStart.getStructure() instanceof Feature && endStructure!=speciesContextStart.getStructure())
+							{
+								Feature startFeature = (Feature)speciesContextStart.getStructure();
+								Feature endFeature = (Feature)endStructure;
+								//flux from startFeature to endFeature
+								Membrane fluxMem = getModel().getMembrane(startFeature, endFeature);
+								if(fluxMem != null)
+								{
+									Species fluxCarrier = speciesContextStart.getSpecies();
+									SpeciesContext speciesContextEnd = getModel().getSpeciesContext(fluxCarrier, endFeature);
+									if (speciesContextEnd == null){
+										speciesContextEnd = new SpeciesContext(fluxCarrier, endFeature);
+										getReactionCartoon().getModel().addSpeciesContext(speciesContextEnd);
+										positionShapeForObject(endFeature, speciesContextEnd, endPos);
+									}
+									FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(fluxMem);
+									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+									getReactionCartoon().notifyChangeEvent();
+									positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(flux);
+									bDone = true;
+								}
+							}
+							if (!bDone && StructureUtil.reactionHereCanHaveParticipantThere(
+									endStructure, speciesContextStart.getStructure())) {
 								SimpleReaction reaction = 
 									getReactionCartoon().getModel().createSimpleReaction(endStructure);
-								reaction.addReactant(speciesContext, 1);
+								reaction.addReactant(speciesContextStart, 1);
 								getReactionCartoon().notifyChangeEvent();
 								positionShapeForObject(endStructure, reaction, endPos);
+								getGraphModel().clearSelection();
+								getGraphModel().select(reaction);
+								bDone = true;
+							}
+							if (!bDone && speciesContextStart.getStructure() instanceof Membrane){
+								//
+								// (speciesContext(membrane) ==> feature)
+								// create speciesContext(feature)
+								// create membrane reaction
+								//
+								Membrane membrane = (Membrane)speciesContextStart.getStructure();
+								if (endStructure instanceof Feature && 
+										(membrane.getInsideFeature()==endStructure ||
+										 membrane.getInsideFeature()==endStructure)){
+									SimpleReaction membraneReaction = getReactionCartoon().getModel().createSimpleReaction(membrane);
+									membraneReaction.addReactant(speciesContextStart, 1);
+									SpeciesContext endSpeciesContext = getModel().createSpeciesContext(endStructure);
+									membraneReaction.addProduct(endSpeciesContext,1);
+									getReactionCartoon().notifyChangeEvent();
+									positionShapeForObject(membrane, membraneReaction, new java.awt.Point(((8*startPos.x+2*endPos.x)/10),(8*startPos.y+2*endPos.y)/10));
+									positionShapeForObject(endStructure, endSpeciesContext, endPos);
+									getGraphModel().clearSelection();
+									getGraphModel().select(membraneReaction);
+									bDone = true;
+								}
 							}
 						} else if(startObject instanceof Structure) {
 							Structure startStructure = (Structure) startObject;
@@ -1124,10 +1249,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								reaction.addReactant(speciesContext1, 1);
 								reaction.addProduct(speciesContext2, 1);
 								getReactionCartoon().notifyChangeEvent();
-								Point startPos = edgeShape.getStart();
 								positionShapeForObject(endStructure, speciesContext1, startPos);
 								positionShapeForObject(endStructure, speciesContext2, endPos);
 								positionShapeForObject(endStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+								getGraphModel().clearSelection();
+								getGraphModel().select(reaction);
 							}
 							else
 							{
@@ -1143,7 +1269,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reaction.addReactant(speciesContext1, 1);
 										reaction.addProduct(speciesContext2, 1);
 										getReactionCartoon().notifyChangeEvent();
-										Point startPos = edgeShape.getStart();
 										positionShapeForObject(startFeature, speciesContext1, startPos);
 										positionShapeForObject(endMembrane, speciesContext2, endPos);
 										//finding correct insertion point for reaction, statements below should be put into a utility if used often
@@ -1162,6 +1287,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										}
 										
 										positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(reaction);
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Membrane)
@@ -1176,7 +1303,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										reaction.addReactant(speciesContext1, 1);
 										reaction.addProduct(speciesContext2, 1);
 										getReactionCartoon().notifyChangeEvent();
-										Point startPos = edgeShape.getStart();
 										positionShapeForObject(startMembrane, speciesContext1, startPos);
 										positionShapeForObject(endFeature, speciesContext2, endPos);
 										//finding correct insertion point for reaction, statements below should be put into a utility if used often
@@ -1195,24 +1321,16 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										}
 										
 										positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(reaction);
 									}
 								}
 								else if(endStructure instanceof Feature && startStructure instanceof Feature)
 								{
 									Feature startFeature = (Feature)startStructure;
-									Membrane startFeatureMem = startFeature.getMembrane();
 									Feature endFeature = (Feature)endStructure;
-									Membrane endFeatureMem = endFeature.getMembrane();
 									//flux from startFeature to endFeature
-									Membrane fluxMem = null;
-									if(startFeatureMem != null && startFeatureMem.getOutsideFeature().equals(endFeature))
-									{
-										fluxMem = startFeatureMem;
-									}
-									else if(endFeatureMem != null && endFeatureMem.getOutsideFeature().equals(startFeature))
-									{
-										fluxMem =endFeatureMem;
-									}
+									Membrane fluxMem = getModel().getMembrane(startFeature, endFeature);
 									if(fluxMem != null)
 									{
 										SpeciesContext speciesContext1 = getReactionCartoon().getModel().createSpeciesContext(startFeature);
@@ -1222,10 +1340,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(fluxMem);
 										flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
 										getReactionCartoon().notifyChangeEvent();
-										Point startPos = edgeShape.getStart();
 										positionShapeForObject(startFeature, speciesContext1, startPos);
 										positionShapeForObject(endFeature, speciesContext2, endPos);
 										positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(flux);
 									}
 								}
 							}
@@ -1359,7 +1478,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		resetMouseActionHistory();
 		getGraphPane().repaint();
 	}
-	
+
 	public Model getModel() {
 		return getReactionCartoon().getModel();
 	}
