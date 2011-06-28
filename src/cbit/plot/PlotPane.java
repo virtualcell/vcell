@@ -1318,8 +1318,8 @@ private void updateLegend() {
 		text.addMouseListener(ml);
 	}
 	legends = getJPanelPlotLegends().getComponents();
-	// update labels and show them
-	for (int i = 0; i < plotIndices.length; i++){
+	// update labels and show them,use reverse loop to generate non-repeatable colors
+	for (int i = (plotIndices.length - 1); i >= 0; i--){
 		LineIcon icon = new LineIcon(getPlot2DPanel1().getVisiblePlotPaint(i));
 		String plotLabel = null;
 		if (plot instanceof SingleXPlot2D) {
