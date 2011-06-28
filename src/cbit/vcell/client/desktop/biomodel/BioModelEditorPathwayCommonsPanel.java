@@ -254,10 +254,30 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
 				
-				URLConnection connection = url.openConnection();
-
-				org.jdom.Document jdomDocument = XmlUtil.readXML(connection.getInputStream());
-//				String xmlText = XmlUtil.xmlToString(jdomDocument, false);
+				org.jdom.Document jdomDocument = null;
+				String ERROR_CODE_TAG = "error_code";
+				String ERROR_MSG_TAG = "error_msg";
+				int max_try = 2;
+				for (int i = 0; i < max_try; i ++) {
+					URLConnection connection = url.openConnection();	
+					jdomDocument = XmlUtil.readXML(connection.getInputStream());
+	//				String xmlText = XmlUtil.xmlToString(jdomDocument, false);
+					
+					// report error 
+					org.jdom.Element rootElement = jdomDocument.getRootElement();
+					String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
+//					String errorMsg = rootElement.getChildText(ERROR_MSG_TAG);
+					if (errorCode == null) {
+						break;
+					} 
+					if (i < (max_try-1)) {
+						//getClientTaskStatusSupport().setMessage("failed once, try again");
+						continue;
+					}
+					if (errorCode != null){
+						throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
+					}
+				}
 				
 //				String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
 //				PathwayReader pathwayReader = new PathwayReader();
