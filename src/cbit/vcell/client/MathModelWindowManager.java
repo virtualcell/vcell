@@ -7,7 +7,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -67,6 +66,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	super(panel, aRequestManager, aMathModel, newlyCreatedDesktops);
 	mathModel = aMathModel;
 	simulationWorkspace = new SimulationWorkspace(MathModelWindowManager.this, getMathModel());
+	mathModel.addPropertyChangeListener(this);
 	
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
