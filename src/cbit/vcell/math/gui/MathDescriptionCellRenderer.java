@@ -4,17 +4,25 @@ package cbit.vcell.math.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Font;
+
+import javax.swing.JLabel;
+import javax.swing.JTree;
+
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
-import java.awt.Font;
-import cbit.vcell.math.*;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
-/**
- * Insert the type's description here.
- * Creation date: (7/27/2000 6:30:41 PM)
- * @author: 
- */
-import javax.swing.*;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
  
 public class MathDescriptionCellRenderer extends VCellBasicCellRenderer {
 /**
@@ -60,11 +68,21 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			}else{
 				diffusionTerm = "("+pdeEquation.getDiffusionExpression().infix()+") "+DEL+Super2+" "+var.getName();
 			}
+			String gradTerm = "";
+			if (pdeEquation.getGradientX()!=null && !pdeEquation.getGradientX().isZero()){
+				gradTerm += " + "+PARTIAL_DIFF+"["+pdeEquation.getGradientX().infix()+"]/"+PARTIAL_DIFF+"x";
+			}
+			if (pdeEquation.getGradientY()!=null && !pdeEquation.getGradientY().isZero()){
+				gradTerm += " + "+PARTIAL_DIFF+"["+pdeEquation.getGradientY().infix()+"]/"+PARTIAL_DIFF+"y";
+			}
+			if (pdeEquation.getGradientZ()!=null && !pdeEquation.getGradientZ().isZero()){
+				gradTerm += " + "+PARTIAL_DIFF+"["+pdeEquation.getGradientZ().infix()+"]/"+PARTIAL_DIFF+"z";
+			}
 			String sourceTerm = pdeEquation.getRateExpression().infix();
 			if (!sourceTerm.equals("0.0")){
-				component.setText(PARTIAL_DIFF+"["+var.getName()+"]/"+PARTIAL_DIFF+"t = "+diffusionTerm+" + "+sourceTerm);
+				component.setText(PARTIAL_DIFF+"["+var.getName()+"]/"+PARTIAL_DIFF+"t = "+diffusionTerm + gradTerm+" + "+sourceTerm);
 			}else{
-				component.setText(PARTIAL_DIFF+"["+var.getName()+"]/"+PARTIAL_DIFF+"t = "+diffusionTerm);
+				component.setText(PARTIAL_DIFF+"["+var.getName()+"]/"+PARTIAL_DIFF+"t = "+diffusionTerm + gradTerm);
 			}
 		} else if (node.getUserObject() instanceof OdeEquation) {
 			OdeEquation odeEquation = (OdeEquation)node.getUserObject();

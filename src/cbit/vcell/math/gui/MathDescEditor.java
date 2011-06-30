@@ -320,6 +320,11 @@ private static List<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.VarIniCount);
 		autoCompletionWords.add(VCML.VarIniPoissonExpectedCount);
 		autoCompletionWords.add(VCML.VelocityX);
+		autoCompletionWords.add(VCML.VelocityY);
+		autoCompletionWords.add(VCML.VelocityZ);
+		autoCompletionWords.add(VCML.GradientX);
+		autoCompletionWords.add(VCML.GradientY);
+		autoCompletionWords.add(VCML.GradientZ);
 		autoCompletionWords.add(VCML.VolumeRate);
 		autoCompletionWords.add(VCML.VolumeRegionVariable);
 		autoCompletionWords.add(VCML.VolumeVariable);
@@ -503,6 +508,9 @@ public static List<String> getkeywords() {
 		keywords.add(VCML.VelocityX);
 		keywords.add(VCML.VelocityY);
 		keywords.add(VCML.VelocityZ);
+		keywords.add(VCML.GradientX);
+		keywords.add(VCML.GradientY);
+		keywords.add(VCML.GradientZ);
 		keywords.add(VCML.VolumeRate);
 		keywords.add(VCML.VolumeRegionEquation);
 		keywords.add(VCML.VolumeRegionVariable);

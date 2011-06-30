@@ -80,6 +80,9 @@ public class VCML {
 	public final static String VelocityX				= "VelocityX";
 	public final static String VelocityY				= "VelocityY";
 	public final static String VelocityZ				= "VelocityZ";
+	public final static String GradientX				= "GradientX";
+	public final static String GradientY				= "GradientY";
+	public final static String GradientZ				= "GradientZ";
 	public final static String Dirichlet				= "Dirichlet";
 	public final static String Neumann					= "Neumann";
 	public final static String InFlux					= "InFlux";

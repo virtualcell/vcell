@@ -419,6 +419,7 @@ public class XMLTags {
 //	public static final String ParamRoleTotalRateTag = "totalRate";
 	public static final String DefaultReactionRateSymbol = "J";
 	public static final String VelocityTag = "Velocity";
+	public static final String GradientTag = "Gradient";
 
 	//Surface Description elements
 	public static final String SurfaceDescriptionTag = "SurfaceDescription";

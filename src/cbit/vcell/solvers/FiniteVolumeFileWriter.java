@@ -108,7 +108,54 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		public String getNumericsSubsitute() {
 			return numericsSubsitute;
 		}
-	};	
+	};
+	
+	enum FVInputFileKeyword {
+		SIMULATION_PARAM_BEGIN,
+		SOLVER,
+		FV_SOLVER,
+		SUNDIALS_PDE_SOLVER,
+		DISCONTINUITY_TIMES,
+		BASE_FILE_NAME,
+		ENDING_TIME,
+		TIME_STEP,
+		KEEP_EVERY,
+		ONE_STEP,
+		KEEP_AT_MOST,
+		CHECK_SPATIALLY_UNIFORM,
+		SIMULATION_PARAM_END,
+		
+		MODEL_BEGIN,
+		FEATURE,
+		MEMBRANE,
+		MODEL_END,
+		
+		MESH_BEGIN,
+		VCG_FILE,
+		MESH_END,
+		
+		value,
+		flux,
+		periodic,
+		
+		EQUATION_BEGIN,
+		INITIAL,
+		RATE,
+		DIFFUSION,
+		VELOCITY_X,
+		VELOCITY_Y,
+		VELOCITY_Z,
+		GRADIENT_X,
+		GRADIENT_Y,
+		GRADIENT_Z,
+		EQUATION_END,
+		
+		PARAMETER_BEGIN,
+		PARAMETER_END,
+		
+		VARIABLE_BEGIN,
+		VARIABLE_END,
+	}
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir) {	// for optimization only, no messaging
 	this (pw, simJob, geo, dir, false);
@@ -440,26 +487,37 @@ EQUATION_END
  * @throws ExpressionException 
  */
 private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDomain, Equation equation) throws ExpressionException {	
-	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
-	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	printWriter.println(FVInputFileKeyword.EQUATION_BEGIN + " " + equation.getVariable().getName());
+	printWriter.println(FVInputFileKeyword.INITIAL + " " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME);
-	printWriter.println("RATE " + rateExpression.infix() + ";");
+	printWriter.println(FVInputFileKeyword.RATE + " " + rateExpression.infix() + ";");
 	if (equation instanceof PdeEquation) {
-		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
-		if (((PdeEquation)equation).getVelocityX() != null) {
-			printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
-		} else {
-			printWriter.println("VELOCITY_X 0.0;");
+		PdeEquation pdeEquation = (PdeEquation)equation;
+		printWriter.println(FVInputFileKeyword.DIFFUSION + " " + subsituteExpression(pdeEquation.getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+		
+		// Velocity
+		String velocity = pdeEquation.getVelocityX() == null ? "0.0" : subsituteExpression(pdeEquation.getVelocityX(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix();
+		printWriter.println(FVInputFileKeyword.VELOCITY_X + " " + velocity + ";");
+				
+		if (resampledGeometry.getDimension() > 1) {
+			velocity = pdeEquation.getVelocityY() == null ? "0.0" : subsituteExpression(pdeEquation.getVelocityY(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix();
+			printWriter.println(FVInputFileKeyword.VELOCITY_Y + " " + velocity + ";");
+					
+			if (resampledGeometry.getDimension() > 2) {
+				velocity = pdeEquation.getVelocityZ() == null ? "0.0" : subsituteExpression(pdeEquation.getVelocityZ(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix();
+				printWriter.println(FVInputFileKeyword.VELOCITY_Z + " " + velocity + ";");
+			}
 		}
-		if (((PdeEquation)equation).getVelocityY() != null) {
-			printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
-		} else if (resampledGeometry.getDimension() > 1) {
-			printWriter.println("VELOCITY_Y 0.0;");
+	
+		// Gradient
+		if (pdeEquation.getGradientX() != null) {
+			printWriter.println(FVInputFileKeyword.GRADIENT_X + " " + subsituteExpression(pdeEquation.getGradientX(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 		}
-		if (((PdeEquation)equation).getVelocityZ() != null) {
-			printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");			
-		} else if (resampledGeometry.getDimension() > 2) {
-			printWriter.println("VELOCITY_Z 0.0;");
+		if (pdeEquation.getGradientY() != null) { 
+			printWriter.println(FVInputFileKeyword.GRADIENT_Y + " " + subsituteExpression(pdeEquation.getGradientY(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+		}
+		if (pdeEquation.getGradientZ() != null) {
+			printWriter.println(FVInputFileKeyword.GRADIENT_Z + " " + subsituteExpression(pdeEquation.getGradientZ(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");			
 		}
 		
 		PdeEquation pde = (PdeEquation)equation;		
@@ -488,7 +546,7 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 //		printWriter.println("RATE_DERIVATIVES " + count);
 //		printWriter.print(rateDerivativeString);
 //	}
-	printWriter.println("EQUATION_END");
+	printWriter.println(FVInputFileKeyword.EQUATION_END);
 	printWriter.println();
 }
 
@@ -787,22 +845,22 @@ private void writeModelDescription() throws MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	
 	printWriter.println("# Model description: FEATURE name handle boundary_conditions");
-	printWriter.println("MODEL_BEGIN");
+	printWriter.println(FVInputFileKeyword.MODEL_BEGIN);
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain sd = enum1.nextElement();
 		if (sd instanceof CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
-			printWriter.print("FEATURE " + csd.getName() + " " + mathDesc.getHandle(csd) + " ");
+			printWriter.print(FVInputFileKeyword.FEATURE + " " + csd.getName() + " " + mathDesc.getHandle(csd) + " ");
 			writeFeature_boundaryConditions(csd);
 		} else if (sd instanceof MembraneSubDomain) {
 			MembraneSubDomain msd = (MembraneSubDomain)sd;
-			printWriter.print("MEMBRANE " + msd.getName() + " " + msd.getInsideCompartment().getName() + " " + msd.getOutsideCompartment().getName() + " ");
+			printWriter.print(FVInputFileKeyword.MEMBRANE + " " + msd.getName() + " " + msd.getInsideCompartment().getName() + " " + msd.getOutsideCompartment().getName() + " ");
 			writeMembrane_boundaryConditions(msd);
 		}
 	}
-	printWriter.println("MODEL_END");
+	printWriter.println(FVInputFileKeyword.MODEL_END);
 	printWriter.println();	
 }
 
@@ -858,9 +916,10 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	SolverTaskDescription solverTaskDesc = simulation.getSolverTaskDescription();
 	
 	printWriter.println("# Simulation Parameters");
-	printWriter.println("SIMULATION_PARAM_BEGIN");
+	printWriter.println(FVInputFileKeyword.SIMULATION_PARAM_BEGIN);
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-		printWriter.print("SOLVER SUNDIALS_PDE_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
+		printWriter.print(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.SUNDIALS_PDE_SOLVER +
+				" " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
 				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getTimeStep().getMaximumTimeStep());
 		if (simulation.getMathDescription().hasVelocity()) {
 			printWriter.print(" " + solverTaskDesc.getSundialsSolverOptions().getMaxOrderAdvection());
@@ -880,30 +939,30 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		}
 		getDiscontinuityTimes(discontinuities, discontinuityTimes);
 		if (discontinuityTimes.size() > 0) {
-			printWriter.print("DISCONTINUITY_TIMES " + discontinuityTimes.size());
+			printWriter.print(FVInputFileKeyword.DISCONTINUITY_TIMES + " " + discontinuityTimes.size());
 			for (double d : discontinuityTimes) {
 				printWriter.print(" " + d);			
 			}
 			printWriter.println();
 		}
 	} else { 
-		printWriter.println("SOLVER FV_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
+		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
-	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
-    printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());    
+	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
+    printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());    
     OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 		if (outputTimeSpec.isDefault()) {
 			DefaultOutputTimeSpec defaultOutputTimeSpec = (DefaultOutputTimeSpec)outputTimeSpec;
-			printWriter.println("KEEP_EVERY ONE_STEP " + defaultOutputTimeSpec.getKeepEvery());
-			printWriter.println("KEEP_AT_MOST " + defaultOutputTimeSpec.getKeepAtMost());
+			printWriter.println(FVInputFileKeyword.KEEP_EVERY + " " +FVInputFileKeyword.ONE_STEP + " " + defaultOutputTimeSpec.getKeepEvery());
+			printWriter.println(FVInputFileKeyword.KEEP_AT_MOST + " " + defaultOutputTimeSpec.getKeepAtMost());
 		} else {
-			printWriter.println("TIME_STEP " + ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
-			printWriter.println("KEEP_EVERY 1");
+			printWriter.println(FVInputFileKeyword.TIME_STEP + " " + ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
+			printWriter.println(FVInputFileKeyword.KEEP_EVERY + " 1");
 		}
     } else {
     	double defaultTimeStep = solverTaskDesc.getTimeStep().getDefaultTimeStep();
-    	printWriter.println("TIME_STEP " + defaultTimeStep);
+    	printWriter.println(FVInputFileKeyword.TIME_STEP + " " + defaultTimeStep);
     	int keepEvery = 1;
 		if (outputTimeSpec.isDefault()) {
         	keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
@@ -913,16 +972,16 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 		}
 		if (keepEvery <= 0) {
-			throw new RuntimeException(" Output KeepEvery must be a positive integer. Try to change the output option.");
+			throw new RuntimeException("Output KeepEvery must be a positive integer. Try to change the output option.");
 		}
-		printWriter.println("KEEP_EVERY " +  keepEvery);
+		printWriter.println(FVInputFileKeyword.KEEP_EVERY + " " +  keepEvery);
     }
     ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
 	if (stopAtSpatiallyUniformErrorTolerance != null) {
-    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
+    	printWriter.println(FVInputFileKeyword.CHECK_SPATIALLY_UNIFORM + " " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
     			+ " " + stopAtSpatiallyUniformErrorTolerance.getRelativeErrorTolerance());
     }
-	printWriter.println("SIMULATION_PARAM_END");	
+	printWriter.println(FVInputFileKeyword.SIMULATION_PARAM_END);	
 	printWriter.println();
 }
 
@@ -935,13 +994,13 @@ MESH_END
 */
 private void writeMeshFile() throws IOException {
 	printWriter.println("# Mesh file");
-	printWriter.println("MESH_BEGIN");
+	printWriter.println(FVInputFileKeyword.MESH_BEGIN);
 	if (bInlineVCG) {
 		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
+		printWriter.println(FVInputFileKeyword.VCG_FILE + " " + new File(userDirectory, simulationJob.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
-	printWriter.println("MESH_END");
+	printWriter.println(FVInputFileKeyword.MESH_END);
 	printWriter.println();
 }
 
@@ -1012,8 +1071,8 @@ VARIABLE_END
 private void writeVariables() throws MathException, ExpressionException, IOException {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	
-	printWriter.println("# Variables : type name domain time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
-	printWriter.println("VARIABLE_BEGIN");
+	printWriter.println("# Variables : type name domain time_dependent_flag advection_flag grad_flag solve_whole_mesh_flag solve_regions");
+	printWriter.println(FVInputFileKeyword.VARIABLE_BEGIN);
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 	Variable[] vars = simSymbolTable.getVariables();
 	ArrayList<RandomVariable> rvList = new ArrayList<RandomVariable>();
@@ -1027,12 +1086,13 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
 				final boolean hasVelocity = mathDesc.hasVelocity(volVar);
+				final boolean hasGradient = mathDesc.hasGradient(volVar);
 				if (mathDesc.isPdeSteady(volVar)) {
 					printWriter.print("VOLUME_PDE_STEADY ");
 				} else {
 					printWriter.print("VOLUME_PDE ");
 				}
-				printWriter.print(varName + " " + domainName + " " + hasTimeVaryingDiffusionOrAdvection + " " + hasVelocity);
+				printWriter.print(varName + " " + domainName + " " + hasTimeVaryingDiffusionOrAdvection + " " + hasVelocity + " " + hasGradient);
 			} else {
 				printWriter.print("VOLUME_ODE " + varName + " " + domainName);
 			}
@@ -1112,7 +1172,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		File rvFile = new File(userDirectory, simulationJob.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
 		DataSet.writeNew(rvFile, varNameArr, varTypeArr, samplingSize, dataArr);
 	}
-	printWriter.println("VARIABLE_END");
+	printWriter.println(FVInputFileKeyword.VARIABLE_END);
 	printWriter.println();
 }
 
@@ -1126,11 +1186,11 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 private void writeParameters(String[] parameterNames) {
 	if (parameterNames != null) {
 		printWriter.println("# Parameters");
-		printWriter.println("PARAMETER_BEGIN " + parameterNames.length);
+		printWriter.println(FVInputFileKeyword.PARAMETER_BEGIN + " " + parameterNames.length);
 		for (int i = 0; i < parameterNames.length; i ++) {
 			printWriter.println(parameterNames[i]);
 		}
-		printWriter.println("PARAMETER_END");
+		printWriter.println(FVInputFileKeyword.PARAMETER_END);
 		printWriter.println();
 	}
 }

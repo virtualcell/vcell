@@ -439,6 +439,9 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getMathDescription().hasRegionSizeFunctions()) {
 		requiredFeatures.add(SolverFeature.Feature_RegionSizeFunctions);
 	}
+	if (getMathDescription().hasGradient()) {
+		requiredFeatures.add(SolverFeature.Feature_GradientSourceTerm);
+	}
 	return requiredFeatures;
 }
 /**
