@@ -3701,37 +3701,57 @@ private PdeEquation getPdeEquation(Element param, MathDescription mathDesc) thro
                 pdeEquation.setBoundaryZp(newexp);
             }
         }
-        //add Velocity
-        Element velocityE = param.getChild(XMLTags.VelocityTag, vcNamespace);
-        if (velocityE != null) {
-	        String tempStr = null;
-	        boolean dummyVel = true;
-	        tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
-	        if (tempStr != null) {
-	       		pdeEquation.setVelocityX(unMangleExpression(tempStr));                  //all velocity dimensions are optional.
-				if (dummyVel) {
-					dummyVel = false;
-				}
-	       	}
-	        tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
-	        if (tempStr != null) {
-				pdeEquation.setVelocityY(unMangleExpression(tempStr));
-				if (dummyVel) {
-					dummyVel = false;
-				}
+        {
+	        //add Velocity
+	        Element velocityE = param.getChild(XMLTags.VelocityTag, vcNamespace);
+	        if (velocityE != null) {
+		        String tempStr = null;
+		        boolean dummyVel = true;
+		        tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
+		        if (tempStr != null) {
+		       		pdeEquation.setVelocityX(unMangleExpression(tempStr));                  //all velocity dimensions are optional.
+					if (dummyVel) {
+						dummyVel = false;
+					}
+		       	}
+		        tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
+		        if (tempStr != null) {
+					pdeEquation.setVelocityY(unMangleExpression(tempStr));
+					if (dummyVel) {
+						dummyVel = false;
+					}
+		        }
+		        tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
+		        if (tempStr != null) {
+					pdeEquation.setVelocityZ(unMangleExpression(tempStr));
+					if (dummyVel) {
+						dummyVel = false;
+					}
+		        }
+		        if (dummyVel) {
+		        	throw new XmlParseException("Void Velocity element found under PDE for: " + name);
+	        	} 
 	        }
-	        tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
-	        if (tempStr != null) {
-				pdeEquation.setVelocityZ(unMangleExpression(tempStr));
-				if (dummyVel) {
-					dummyVel = false;
-				}
-	        }
-	        if (dummyVel) {
-	        	throw new XmlParseException("Void Velocity element found under PDE for: " + name);
-        	} 
         }
-        
+        {
+        	//add Grad
+        	Element gradElement = param.getChild(XMLTags.GradientTag, vcNamespace);
+        	if (gradElement != null) {
+        		String tempStr = null;
+        		tempStr = gradElement.getAttributeValue(XMLTags.XAttrTag);
+        		if (tempStr != null) {
+        			pdeEquation.setGradientX(unMangleExpression(tempStr));    //all grad dimensions are optional.
+        		}
+        		tempStr = gradElement.getAttributeValue(XMLTags.YAttrTag);
+        		if (tempStr != null) {
+        			pdeEquation.setGradientY(unMangleExpression(tempStr));
+        		}
+        		tempStr = gradElement.getAttributeValue(XMLTags.ZAttrTag);
+        		if (tempStr != null) {
+        			pdeEquation.setGradientZ(unMangleExpression(tempStr));
+        		}
+        	}
+        }        
     } catch (Exception e) {
         e.printStackTrace();
         throw new XmlParseException(e.getMessage());

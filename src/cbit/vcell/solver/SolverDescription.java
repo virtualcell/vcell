@@ -41,7 +41,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_JVMRequired("JVM Required"),
 		Feature_SerialParameterScans("Serial Parameter Scans"),
 		Feature_VolumeRegionEquations("Volume Region Equations"),
-		Feature_RegionSizeFunctions("Region Size Functions");
+		Feature_RegionSizeFunctions("Region Size Functions"),
+		Feature_GradientSourceTerm("Gradient Source Term");
 				
 		private String name;
 		private SolverFeature(String name) {
@@ -988,6 +989,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_SerialParameterScans);
 		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
 		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
+		featureSet.add(SolverFeature.Feature_GradientSourceTerm);
 		break;
 		
 	case TYPE_SMOLDYN:

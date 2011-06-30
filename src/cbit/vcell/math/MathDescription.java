@@ -1814,6 +1814,36 @@ public boolean hasVelocity() {
 	return false;		
 }
 
+public boolean hasGradient() {
+	for (Variable var : variableList) {
+		if (var instanceof VolVariable) {
+			if (hasGradient((VolVariable)var)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+public boolean hasGradient(VolVariable volVariable) {
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = enum1.nextElement();
+		if (subDomain instanceof CompartmentSubDomain){
+			Equation equation = subDomain.getEquation(volVariable);
+			if (equation instanceof PdeEquation){
+				PdeEquation pdeEqn = (PdeEquation)equation;
+				if ((pdeEqn.getGradientX() != null && !pdeEqn.getGradientX().isZero()) 
+					|| (pdeEqn.getGradientY() != null && !pdeEqn.getGradientY().isZero())
+					|| (pdeEqn.getGradientZ() != null && !pdeEqn.getGradientZ().isZero())) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 /**
  * This method was created by a SmartGuide.
  * @return boolean

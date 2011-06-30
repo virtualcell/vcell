@@ -12,6 +12,17 @@ public abstract class SolverFileWriter {
 	protected boolean bUseMessaging = true;
 	protected final SimulationJob simulationJob;
 
+	enum SolverInputFileKeyword {
+		JMS_PARAM_BEGIN,
+		JMS_BROKER,
+		JMS_USER,
+		JMS_QUEUE,
+		JMS_TOPIC,
+		VCELL_USER,
+		SIMULATION_KEY,
+		JOB_INDEX,
+		JMS_PARAM_END,
+	}
 /**
  * OdeFileCoder constructor comment.
  */
@@ -43,15 +54,15 @@ JMS_PARAM_END
 protected void writeJMSParamters() {
 	if (bUseMessaging) {
 		printWriter.println("# JMS_Paramters");
-		printWriter.println("JMS_PARAM_BEGIN");
-		printWriter.println("JMS_BROKER " + JmsUtils.getJmsUrl());
-	    printWriter.println("JMS_USER " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
-	    printWriter.println("JMS_QUEUE " + JmsUtils.getQueueWorkerEvent());  
-		printWriter.println("JMS_TOPIC " + JmsUtils.getTopicServiceControl());
-		printWriter.println("VCELL_USER " + simulationJob.getSimulation().getVersion().getOwner().getName());
-		printWriter.println("SIMULATION_KEY " + simulationJob.getSimulation().getVersion().getVersionKey());
-		printWriter.println("JOB_INDEX " + simulationJob.getJobIndex());
-		printWriter.println("JMS_PARAM_END");
+		printWriter.println(SolverInputFileKeyword.JMS_PARAM_BEGIN);
+		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + JmsUtils.getJmsUrl());
+	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
+	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + JmsUtils.getQueueWorkerEvent());  
+		printWriter.println(SolverInputFileKeyword.JMS_TOPIC + " " + JmsUtils.getTopicServiceControl());
+		printWriter.println(SolverInputFileKeyword.VCELL_USER + " " + simulationJob.getSimulation().getVersion().getOwner().getName());
+		printWriter.println(SolverInputFileKeyword.SIMULATION_KEY + " " + simulationJob.getSimulation().getVersion().getVersionKey());
+		printWriter.println(SolverInputFileKeyword.JOB_INDEX + " " + simulationJob.getJobIndex());
+		printWriter.println(SolverInputFileKeyword.JMS_PARAM_END);
 		printWriter.println();
 	}
 }

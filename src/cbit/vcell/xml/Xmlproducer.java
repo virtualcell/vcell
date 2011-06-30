@@ -116,8 +116,6 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
-import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -128,6 +126,7 @@ import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
@@ -2455,32 +2454,62 @@ private Element getXML(PdeEquation param) throws XmlParseException {
 			throw new XmlParseException("Unknown solution type:"+param.getSolutionType());
 		}
 	}
-
-	//add Velocity
-	Element velocity = null;
-	Expression velX = param.getVelocityX();
-	if (velX != null) {
-		velocity = new Element(XMLTags.VelocityTag);
-		velocity.setAttribute(XMLTags.XAttrTag, mangleExpression(velX));
-	}
-	Expression velY = param.getVelocityY();
-	if (velY != null) {
-		if (velocity == null) {
+	{
+		//add Velocity
+		Element velocity = null;
+		Expression velX = param.getVelocityX();
+		if (velX != null) {
 			velocity = new Element(XMLTags.VelocityTag);
+			velocity.setAttribute(XMLTags.XAttrTag, mangleExpression(velX));
 		}
-		velocity.setAttribute(XMLTags.YAttrTag, mangleExpression(velY));
-	}
-	Expression velZ = param.getVelocityZ();
-	if (velZ != null) {
-		if (velocity == null) {
-			velocity = new Element(XMLTags.VelocityTag);
+		Expression velY = param.getVelocityY();
+		if (velY != null) {
+			if (velocity == null) {
+				velocity = new Element(XMLTags.VelocityTag);
+			}
+			velocity.setAttribute(XMLTags.YAttrTag, mangleExpression(velY));
 		}
-		velocity.setAttribute(XMLTags.ZAttrTag, mangleExpression(velZ));
+		Expression velZ = param.getVelocityZ();
+		if (velZ != null) {
+			if (velocity == null) {
+				velocity = new Element(XMLTags.VelocityTag);
+			}
+			velocity.setAttribute(XMLTags.ZAttrTag, mangleExpression(velZ));
+		}
+		if (velocity != null) {
+			pde.addContent(velocity);
+		}
 	}
-	if (velocity != null) {
-		pde.addContent(velocity);
+	
+	{
+		//add Grad
+		Element grad = null;
+		Expression gradX = param.getGradientX();
+		if (gradX != null) {
+			if (grad == null) {
+				grad = new Element(XMLTags.GradientTag);
+			}
+			grad.setAttribute(XMLTags.XAttrTag, mangleExpression(gradX));
+		}
+		Expression gradY = param.getGradientY();
+		if (gradY != null) {
+			if (grad == null) {
+				grad = new Element(XMLTags.GradientTag);
+			}
+			grad.setAttribute(XMLTags.YAttrTag, mangleExpression(gradY));
+		}
+		Expression gradZ = param.getGradientZ();
+		if (gradZ != null) {
+			if (grad == null) {
+				grad = new Element(XMLTags.GradientTag);
+			}
+			grad.setAttribute(XMLTags.ZAttrTag, mangleExpression(gradZ));
+		}
+		if (grad != null) {
+			pde.addContent(grad);
+		}
 	}
-
+	
 	return pde;
 }
 
