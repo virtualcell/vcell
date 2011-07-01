@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -32,6 +33,7 @@ import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -164,14 +166,26 @@ private void copySimulations() {
  */
 private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector<Simulation> v = new Vector<Simulation>();
+	StringBuilder simulationNames = new StringBuilder(); 
+	ArrayList<Simulation> simList = new ArrayList<Simulation>();
+	Simulation[] allSims = getSimulationWorkspace().getSimulations();
 	for (int i = 0; i < selections.length; i++){
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[i]]);
+		Simulation sim = allSims[selections[i]];
+		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 		if (!simStatus.isRunning()){
-			v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+			simList.add(sim);
+			simulationNames.append(sim.getName() + "\n");
 		}
 	}
-	Simulation[] toDelete = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	if (simList.size() == 0) {
+		return;
+	}
+	
+	String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following simulation(s):\n\n" + simulationNames + "\n Continue?");
+	if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+		return;
+	}
+	Simulation[] toDelete = (Simulation[])BeanUtils.getArray(simList, Simulation.class);
 	try {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
@@ -230,7 +244,7 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(copyButton);
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
-			toolBar.addSeparator();
+			toolBar.add(Box.createHorizontalGlue());
 			toolBar.add(getRunButton());
 			toolBar.add(stopButton);
 			toolBar.add(getResultsButton());
