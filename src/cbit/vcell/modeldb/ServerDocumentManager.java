@@ -738,7 +738,7 @@ long start = System.currentTimeMillis();
 	BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 
 	forceDeepDirtyIfForeign(user,bioModel);
-	
+	boolean isSaveAsNew = true;
 	//
 	// rename if required
 	//
@@ -749,14 +749,25 @@ long start = System.currentTimeMillis();
 			e.printStackTrace(System.out);
 			throw new DataAccessException("couldn't set new name for BioModel: "+e.getMessage());
 		}
+	}else{
+		isSaveAsNew = false;
 	}
 
 	Version oldVersion = bioModel.getVersion();
 
 	BioModel origBioModel = null;
 	if (oldVersion!=null){
-		String origBioModelXML = getBioModelXML(dbc, user,oldVersion.getVersionKey(),false);
-		origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
+		try{
+			String origBioModelXML = getBioModelXML(dbc, user,oldVersion.getVersionKey(),false);
+			origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
+		}catch(ObjectNotFoundException nfe){
+			if(isSaveAsNew){
+				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(foceClearVersionUser, bioModel);
+			}else{
+				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
+			}
+		}
 	}
 
 	boolean bSomethingChanged = false;
@@ -1533,7 +1544,8 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 	MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 	
 	forceDeepDirtyIfForeign(user,mathModel);
-	
+	boolean isSaveAsNew = true;
+
 	//
 	// rename if required
 	//
@@ -1544,14 +1556,25 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			e.printStackTrace(System.out);
 			throw new DataAccessException("couldn't set new name for MathModel: "+e.getMessage());
 		}
+	}else{
+		isSaveAsNew = false;
 	}
 
 	Version oldVersion = mathModel.getVersion();
 
 	MathModel origMathModel = null;
 	if (oldVersion!=null){
-		String origMathModelXML = getMathModelXML(dbc, user,oldVersion.getVersionKey(),false);
-		origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
+		try{
+			String origMathModelXML = getMathModelXML(dbc, user,oldVersion.getVersionKey(),false);
+			origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
+		}catch(ObjectNotFoundException nfe){
+			if(isSaveAsNew){
+				User foceClearVersionUser = new User("foceClearVersionUser",new KeyValue("0"));
+				forceDeepDirtyIfForeign(foceClearVersionUser, mathModel);
+			}else{
+				throw new DataAccessException("Stored model has been changed or removed, please use 'Save As..'");
+			}
+		}
 	}
 
 	boolean bSomethingChanged = false;
