@@ -953,7 +953,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							Structure structureStart = speciesContextStart.getStructure();
 							Species speciesStart = speciesContextStart.getSpecies();
 							Species speciesEnd = speciesContextEnd.getSpecies();
-							if(speciesStart.equals(speciesEnd)) {
+							boolean bDone = false;
+							if(!bDone && speciesStart.equals(speciesEnd)) {
 								Membrane membraneBetween = null;
 								if(structureEnd instanceof Feature && structureStart instanceof Feature) {
 									membraneBetween = getReactionCartoon().getModel()
@@ -969,10 +970,29 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									positionShapeForObject(membraneBetween, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
 									getGraphModel().clearSelection();
 									getGraphModel().select(flux);
-									break;
+									bDone = true;
 								}
 							}
-							if(structureEnd.equals(structureStart)) {
+							if(!bDone && !speciesStart.equals(speciesEnd)) {
+								Membrane membraneBetween = null;
+								if(structureEnd instanceof Feature && structureStart instanceof Feature) {
+									membraneBetween = getReactionCartoon().getModel()
+									.getMembrane((Feature) structureStart, (Feature) structureEnd);
+								}
+								if(membraneBetween != null) {
+									SimpleReaction simpleReaction = getReactionCartoon().getModel().createSimpleReaction(membraneBetween);
+									simpleReaction.addReactant(speciesContextStart, 1);
+									simpleReaction.addProduct(speciesContextEnd, 1);
+									getReactionCartoon().notifyChangeEvent();
+									Point startPos = edgeShape.getStart();
+									Point endPos = edgeShape.getEnd();
+									positionShapeForObject(membraneBetween, simpleReaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+									getGraphModel().clearSelection();
+									getGraphModel().select(simpleReaction);
+									bDone = true;
+								}
+							}
+							if(!bDone && structureEnd.equals(structureStart)) {
 								Model model = getReactionCartoon().getModel();
 								SimpleReaction reaction = model.createSimpleReaction(structureEnd);
 								reaction.addReactant(speciesContextStart, 1);
@@ -986,7 +1006,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								getGraphModel().clearSelection();
 								getGraphModel().select(reaction);
 								getReactionCartoon().notifyChangeEvent();
-							} else if(structureEnd instanceof Membrane && structureStart instanceof Feature) {
+							} else if(!bDone && structureEnd instanceof Membrane && structureStart instanceof Feature) {
 								Membrane endMembrane = (Membrane)structureEnd;
 								Feature startFeature = (Feature)structureStart;
 								if(endMembrane.getOutsideFeature().equals(startFeature) || endMembrane.getInsideFeature().equals(startFeature))
@@ -1021,7 +1041,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									getGraphModel().select(reaction);
 								}
 							}
-							else if(structureEnd instanceof Feature && structureStart instanceof Membrane)
+							else if(!bDone && structureEnd instanceof Feature && structureStart instanceof Membrane)
 							{
 								Membrane startMembrane = (Membrane) structureStart;
 								Feature endFeature = (Feature) structureEnd;

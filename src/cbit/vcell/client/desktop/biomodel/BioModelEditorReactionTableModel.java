@@ -196,21 +196,23 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			} else {
 				switch (column) {
 				case COLUMN_EQUATION: {
-					String inputValue = ((String)value);
-					inputValue = inputValue.trim();
-					if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
-						return;
-					}
-					reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
-					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
-					for (ReactionParticipant rp : rpArray) {
-						SpeciesContext speciesContext = rp.getSpeciesContext();
-						if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
-							bioModel.getModel().addSpecies(speciesContext.getSpecies());
-							bioModel.getModel().addSpeciesContext(speciesContext);
+					if (getModel().getNumStructures() == 1) {
+						String inputValue = ((String)value);
+						inputValue = inputValue.trim();
+						if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
+							return;
 						}
+						reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
+						ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
+						for (ReactionParticipant rp : rpArray) {
+							SpeciesContext speciesContext = rp.getSpeciesContext();
+							if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
+								bioModel.getModel().addSpecies(speciesContext.getSpecies());
+								bioModel.getModel().addSpeciesContext(speciesContext);
+							}
+						}
+						reactionStep.setReactionParticipants(rpArray);
 					}
-					reactionStep.setReactionParticipants(rpArray);
 					break;
 				}
 				}
@@ -312,9 +314,6 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 
 	@Override
 	public int getRowCount() {
-		if (bioModel == null || bioModel.getModel().getNumStructures() == 1) {
-			return getRowCountWithAddNew();
-		}
-		return super.getRowCount();
+		return getRowCountWithAddNew();
 	}
 }
