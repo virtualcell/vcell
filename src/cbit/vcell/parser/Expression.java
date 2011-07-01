@@ -727,6 +727,14 @@ public static Expression log(Expression expression1) throws ExpressionException 
 	return function(FunctionType.LOG, expression1);
 }
 
+public static Expression max(Expression expression1, Expression expression2) throws ExpressionException {
+	return function(FunctionType.MAX, expression1, expression2);
+}
+
+public static Expression min(Expression expression1, Expression expression2) throws ExpressionException {
+	return function(FunctionType.MIN, expression1, expression2);
+}
+
 public static Expression exp(Expression expression1) throws ExpressionException {
 	return function(FunctionType.EXP, expression1);
 }
