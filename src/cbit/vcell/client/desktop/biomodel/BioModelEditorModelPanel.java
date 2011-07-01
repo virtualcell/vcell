@@ -20,11 +20,15 @@ import java.util.Arrays;
 import java.util.Set;
 
 import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -53,6 +57,9 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ReactionEquation;
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
@@ -69,11 +76,14 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
@@ -187,7 +197,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		public void mouseClicked(MouseEvent e) {
 			if (e.getSource() == tabbedPane) {
 				showDiagramView();
-			}			
+			} else if (e.getClickCount() == 2 && e.getSource() == reactionsTable) {
+				if (reactionsTable.getSelectedRow() == reactionsTable.getRowCount() - 1) { // last add new row.
+					addNewReaction();
+				}
+			}
 		}
 		public void mousePressed(MouseEvent e) {
 		}
@@ -491,6 +505,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
+		
+		reactionsTable.addMouseListener(eventHandler);
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -787,5 +803,204 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		relationshipPanel.setBioModelEntityObject(selectedBioModelEntityObject);
 		DialogUtils.showComponentCloseDialog(BioModelEditorModelPanel.this, relationshipPanel, "Edit Pathway Links");
 		refreshButtons();
+	}
+	
+	ReactionEditorPanel reactionEditorPanel = null;
+	private static class ReactionEditorPanel extends JPanel {
+		JComboBox structureComboBox = new JComboBox();
+		JTextField nameTextField = new JTextField(); 
+		TextFieldAutoCompletion equationTextField = new TextFieldAutoCompletion();
+		
+		public ReactionEditorPanel() {
+			super();
+			equationTextField.setColumns(30);
+			equationTextField.setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
+				
+				public boolean acceptFunction(String funcName) {
+					return false;
+				}
+				
+				public boolean accept(SymbolTableEntry ste) {
+					Structure structure = (Structure) structureComboBox.getSelectedItem();
+					
+					if (ste instanceof SpeciesContext) {
+						SpeciesContext sc = (SpeciesContext) ste;
+						if (sc.getStructure() == structure) {
+							return true;
+						}
+						if (structure instanceof Membrane) {
+							if (((Membrane)structure).getInsideFeature() == sc.getStructure() 
+									|| ((Membrane)structure).getOutsideFeature() == sc.getStructure()) {
+								return true;
+							}
+						}
+					}
+					return false;					
+				}
+			});
+			
+			setLayout(new GridBagLayout());
+			int gridy = 0;
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;		
+			JLabel label = new JLabel("Structure");
+			add(label, gbc);
+			
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_START;		
+			add(structureComboBox, gbc);
+
+			gbc.gridx = 2; 
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;		
+			label = new JLabel("(where reaction occurs)");
+			add(label, gbc);
+			
+			gridy ++;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;		
+			label = new JLabel("Reaction Name");
+			add(label, gbc);
+			
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_START;		
+			add(nameTextField, gbc);			
+			
+			gridy ++;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;		
+			label = new JLabel("Equation");
+			add(label, gbc);
+			
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_START;		
+			add(equationTextField, gbc);
+			
+			gbc.gridx = 2; 
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_START;		
+			label = new JLabel("(e.g. a+b->c)");
+			add(label, gbc);
+			
+			structureComboBox.setRenderer(new DefaultListCellRenderer() {
+
+				@Override
+				public Component getListCellRendererComponent(JList list,
+						Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected,
+							cellHasFocus);
+					if (value instanceof Structure) {
+						setText(((Structure) value).getName());
+					}
+					return this;
+				}
+				
+			});
+			setBackground(Color.white);
+		}
+
+		void setModel(Model model) {			
+			DefaultComboBoxModel dataModel = new DefaultComboBoxModel();
+			for (Structure s : model.getStructures()) {
+				dataModel.addElement(s);
+			}
+			structureComboBox.setModel(dataModel);
+			nameTextField.setText(model.getFreeReactionName());
+			equationTextField.setSymbolTable(model);
+			equationTextField.setText(null);
+		}
+		
+		Structure getStructure() {
+			return (Structure) structureComboBox.getSelectedItem();
+		}
+		String getEquationString() {
+			return equationTextField.getText();
+		}
+
+		public String getReactionName() {
+			return nameTextField.getText();
+		}
+	}
+	
+	private void addNewReaction() {
+		if (reactionEditorPanel == null) {
+			reactionEditorPanel = new ReactionEditorPanel();
+		}
+		reactionEditorPanel.setModel(getModel());
+		while (true) {
+			int confirm = DialogUtils.showComponentOKCancelDialog(this, reactionEditorPanel, "Add New Reaction");
+			if (confirm == javax.swing.JOptionPane.OK_OPTION) {
+				Structure reactionStructure = reactionEditorPanel.getStructure();
+				String reactionName = reactionEditorPanel.getReactionName();
+				String equationString = reactionEditorPanel.getEquationString();
+				try {
+					if (reactionName == null || reactionName.trim().length() == 0 || equationString == null || equationString.trim().length() == 0) {
+						throw new RuntimeException("Reaction name or equation cannot be empty.");
+					}
+					if (getModel().getReactionStep(reactionName) != null) {
+						throw new RuntimeException("Reaction '" + reactionName + "' already exists.");
+					}
+					ReactionStep simpleReaction = new SimpleReaction(reactionStructure, "dummy");
+					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(simpleReaction, getModel(), equationString);
+					for (ReactionParticipant reactionParticipant : rpArray) {
+						if (reactionParticipant.getStructure() == reactionStructure) {
+							continue;
+						}
+						if (reactionStructure instanceof Feature) {
+							throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be in the same volume compartment as reaction.");
+						} else if (reactionStructure instanceof Membrane) {
+							if (((Membrane)reactionStructure).getInsideFeature() != reactionParticipant.getStructure()
+									&& ((Membrane)reactionStructure).getOutsideFeature() != reactionParticipant.getStructure()) {
+								throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be adjacent to " +
+										"or within reaction's structure '" + reactionStructure.getName() + "'.");
+							}
+						}
+					}
+					simpleReaction = getModel().createSimpleReaction(reactionStructure);
+					for (ReactionParticipant rp : rpArray) {
+						SpeciesContext speciesContext = rp.getSpeciesContext();
+						if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
+							bioModel.getModel().addSpecies(speciesContext.getSpecies());
+							bioModel.getModel().addSpeciesContext(speciesContext);
+						}
+					}
+					simpleReaction.setReactionParticipants(rpArray);
+					simpleReaction.setName(reactionName);
+					setSelectedObjects(new Object[]{simpleReaction});
+					break;
+				} catch (Exception e) {
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(this, e.getMessage());
+				}
+			} else {
+				break;
+			}
+		}
 	}
 }
