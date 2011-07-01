@@ -708,7 +708,10 @@ parseCount++;
 		}
 	} catch (ParseException e) {
 		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression '" + expString + "'");
+		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
+	} catch (TokenMgrError e) {
+		e.printStackTrace();
+		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
 	}
 }
 /**

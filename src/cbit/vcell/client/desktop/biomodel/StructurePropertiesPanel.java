@@ -35,6 +35,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -47,6 +48,9 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea;
 	private JTextField nameTextField = null;
 	private Model fieldModel = null;
+	private JTextField sizeTextField;
+	private JLabel voltageLabel;
+	private JTextField voltageTextField;
 
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
@@ -59,7 +63,8 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == structure) {
+			if (evt.getSource() == structure || evt.getSource() == structure.getStructureSize()
+					|| structure instanceof Membrane && evt.getSource() == ((Membrane)structure).getMembraneVoltage()) {
 				updateInterface();
 			}
 		}
@@ -109,7 +114,18 @@ private void initialize() {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
 		nameTextField.addActionListener(eventHandler);
+		sizeTextField = new JTextField();
+		sizeTextField.setEditable(false);
 		
+		voltageLabel = new JLabel("Voltage Variable Name");
+		voltageTextField = new JTextField();
+		voltageTextField.setEditable(false);
+		
+		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+		annotationTextArea.setLineWrap(true);
+		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setEditable(false);
+
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -143,14 +159,43 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("Size Variable Name");
+		add(label, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(sizeTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(voltageLabel, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(voltageTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(new JLabel("Annotation"), gbc);
 
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setEditable(false);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -202,6 +247,10 @@ void setStructure(Structure newValue) {
 	Structure oldValue = structure;
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(eventHandler);
+		oldValue.getStructureSize().removePropertyChangeListener(eventHandler);
+		if (oldValue instanceof Membrane) {
+			((Membrane) oldValue).getMembraneVoltage().removePropertyChangeListener(eventHandler);
+		}
 	}
 	// commit the changes before switch to another structure
 	changeName();
@@ -209,6 +258,10 @@ void setStructure(Structure newValue) {
 	structure = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
+		newValue.getStructureSize().addPropertyChangeListener(eventHandler);
+		if (newValue instanceof Membrane) {
+			((Membrane) newValue).getMembraneVoltage().addPropertyChangeListener(eventHandler);
+		}		
 	}
 	updateInterface();
 }
@@ -220,12 +273,21 @@ private void updateInterface() {
 	boolean bNonNullStructure = structure != null && fieldModel != null;
 	nameTextField.setEditable(bNonNullStructure);
 	annotationTextArea.setEditable(bNonNullStructure);
+	boolean bMembrane = bNonNullStructure && structure instanceof Membrane;
+	voltageLabel.setVisible(bMembrane);
+	voltageTextField.setVisible(bMembrane);
 	if (bNonNullStructure) {
 		nameTextField.setText(structure.getName());
-		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));	
+		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
+		sizeTextField.setText(structure.getStructureSize().getName() + " [" + (bMembrane ? VCUnitDefinition.UNIT_um2.getSymbol() : VCUnitDefinition.UNIT_um3.getSymbol()) + "]");
+		if (bMembrane) {
+			voltageTextField.setText(((Membrane)structure).getMembraneVoltage().getName() + " [" + VCUnitDefinition.UNIT_mV.getSymbol() + "]");
+		}
 	} else {
 		annotationTextArea.setText(null);
 		nameTextField.setText(null);
+		sizeTextField.setText(null);
+		voltageTextField.setText(null);
 	}
 }
 
