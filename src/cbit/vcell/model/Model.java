@@ -837,6 +837,19 @@ private String getFreeMembraneName() {
  * @return java.lang.String
  */
 public SimpleReaction createSimpleReaction(Structure structure) {
+	String reactionStepName = getFreeReactionName();
+	try {
+		SimpleReaction simpleReaction = new SimpleReaction(structure, reactionStepName);
+		addReactionStep(simpleReaction);
+		return simpleReaction;
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+public String getFreeReactionName() {
 	int count=0;
 	String reactionStepName = null;
 	while (true) {
@@ -847,14 +860,7 @@ public SimpleReaction createSimpleReaction(Structure structure) {
 	
 		count++;
 	}
-	try {
-		SimpleReaction simpleReaction = new SimpleReaction(structure, reactionStepName);
-		addReactionStep(simpleReaction);
-		return simpleReaction;
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
+	return reactionStepName;
 }
 
 public FluxReaction createFluxReaction(Membrane membrane) {
