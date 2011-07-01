@@ -25,9 +25,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public final static int COLUMN_TYPE = 1;
 	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
 	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
-	public final static int COLUMN_SIZE_NAME = 4;	
-	public final static int COLUMN_VOLTAGE_NAME = 5;	
-	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size", "Voltage"};
+	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent"};
 
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
@@ -47,12 +45,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			}
 			case COLUMN_OUTSIDE_COMPARTMENT:{
 				return Structure.class;
-			}
-			case COLUMN_SIZE_NAME:{
-				return String.class;
-			}
-			case COLUMN_VOLTAGE_NAME:{
-				return String.class;
 			}
 		}
 		return Object.class;
@@ -102,16 +94,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					case COLUMN_OUTSIDE_COMPARTMENT: {
 						return structure.getParentStructure();
 					}
-					case COLUMN_SIZE_NAME:
-						return structure.getStructureSize().getName();
-						
-					case COLUMN_VOLTAGE_NAME:
-						if (structure instanceof Feature) {
-							return "n/a";
-						}
-						if (structure instanceof Membrane) {
-							return  ((Membrane)structure).getMembraneVoltage().getName();
-						}
 				}
 			} else {
 				if (column == COLUMN_NAME) {
@@ -148,11 +130,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			refreshData();
 //			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
-			Structure structure = (Structure) evt.getSource();
-			int changeRow = getRowIndex(structure);
-			if (changeRow >= 0) {
-				fireTableRowsUpdated(changeRow, changeRow);
-			}
+			fireTableRowsUpdated(0, getRowCount());
 		}
 	}
 
@@ -240,14 +218,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				} else if (col == COLUMN_OUTSIDE_COMPARTMENT) {
 					String s1 = o1.getParentStructure() == null ? "" : o1.getParentStructure().getName();
 					String s2 = o2.getParentStructure() == null ? "" : o2.getParentStructure().getName();
-					return scale * s1.compareTo(s2);
-				} else if (col == COLUMN_SIZE_NAME) {
-					String s1 = o1.getStructureSize().getName();
-					String s2 = o2.getStructureSize().getName();
-					return scale * s1.compareTo(s2);
-				} else if (col == COLUMN_VOLTAGE_NAME) {
-					String s1 = o1 instanceof Membrane ? ((Membrane)o1).getMembraneVoltage().getName() : "";
-					String s2 = o2 instanceof Membrane ? ((Membrane)o2).getMembraneVoltage().getName() : "";
 					return scale * s1.compareTo(s2);
 				}
 				return 0;
