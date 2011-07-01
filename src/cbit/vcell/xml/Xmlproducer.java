@@ -1195,8 +1195,9 @@ private Element getXML(MembraneMapping param) {
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
 	//Add size
-	if(param.getSizeParameter().getExpression() != null)
+	if(param.getSizeParameter().getExpression() != null){
  		membrane.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
+	}
 	
 	// Add area/unit_area and area/unit_vol if they exist
 	if(param.getAreaPerUnitAreaParameter().getExpression() != null) {
