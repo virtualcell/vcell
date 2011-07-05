@@ -462,7 +462,7 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 					RoleDescriptions[ROLE_InitialCount]);
 		}
 	}
-	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(0.0),
+	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(1.0),
 														ROLE_DiffusionRate,VCUnitDefinition.UNIT_um2_per_s,
 														RoleDescriptions[ROLE_DiffusionRate]);
 

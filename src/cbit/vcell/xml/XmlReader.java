@@ -1201,6 +1201,13 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace(System.out);
 		}	
+	}else{
+		try {
+			feamap.getSizeParameter().setExpression(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("unexpected exception while setting structure size: "+e.getMessage());
+		}
 	}
 	
 	//Set Volume/unit_area if it exists
@@ -3018,7 +3025,14 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
-	}	
+	}else{
+		try {
+			memmap.getSizeParameter().setExpression(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("unexpected exception while setting structure size: "+e.getMessage());
+		}
+	}
 	//** Set electrical properties **
 	//set specific capacitance
 	double specificCap = Double.parseDouble(param.getAttributeValue(XMLTags.SpecificCapacitanceTag));
