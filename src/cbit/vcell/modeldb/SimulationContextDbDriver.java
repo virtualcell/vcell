@@ -496,7 +496,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 			
 			Expression sizeExpression = null;
 			String sizeExpressionS = rset.getString(StructureMappingTable.table.sizeExp.getUnqualifiedColName());
-			if(!rset.wasNull()){
+			if(!rset.wasNull() && sizeExpressionS!=null && sizeExpressionS.length()>0){
 				try {
 					sizeExpressionS = TokenMangler.getSQLRestoredString(sizeExpressionS);
 					sizeExpression = new Expression(sizeExpressionS);

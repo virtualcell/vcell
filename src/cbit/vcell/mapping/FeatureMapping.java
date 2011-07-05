@@ -50,9 +50,16 @@ public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimula
  */
 public FeatureMapping(Feature feature, SimulationContext argSimulationContext) {
 	super(feature, argSimulationContext);
+	Membrane outmembrane = null;
+	int depth = 0;
+	Feature f = feature;
+	for(; (outmembrane = f.getMembrane()) != null; depth++) {
+		f = outmembrane.getOutsideFeature();
+	}
+	double volume = 50000.0 / Math.pow(10, depth);
 	try {
-		setParameters(new StructureMappingParameter[] {						
-				new StructureMappingParameter(DefaultNames[ROLE_Size], null, ROLE_Size, VCUnitDefinition.UNIT_um3),
+		setParameters(new StructureMappingParameter[] {
+				new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(volume), ROLE_Size, VCUnitDefinition.UNIT_um3),
 				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitArea], null, ROLE_VolumePerUnitArea, VCUnitDefinition.UNIT_um),
 				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitVolume], null, ROLE_VolumePerUnitVolume, VCUnitDefinition.UNIT_DIMENSIONLESS),			
 		});

@@ -13,12 +13,14 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
@@ -60,13 +62,26 @@ public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSim
  */
 public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext) {
 	super(membrane, argSimulationContext);
+	Feature outfeature = null;
+	int depth = 0;
+	Membrane m = membrane;
+	for(; (outfeature = m.getOutsideFeature()) != null; depth++) {
+		if((m = outfeature.getMembrane()) == null) {
+			break;
+		}
+	}
+	double volume = 50000.0 / Math.pow(10, depth+1);
+	double radius = Math.pow(  ((3.0*volume) / (4.0*Math.PI)), 1.0/3.0);
+	double area = 4.0*Math.PI*Math.pow(radius, 2.0);
+	String sArea = NumberUtils.formatNumber(area, 4);
+	area = Double.parseDouble(sArea);
 	try {
 		setParameters(new StructureMappingParameter[] {
 						new StructureMappingParameter(getInitialVoltageName(), new Expression(0.0), ROLE_InitialVoltage,VCUnitDefinition.UNIT_mV),
 						new StructureMappingParameter(DefaultNames[ROLE_SpecificCapacitance], new Expression(1.0), ROLE_SpecificCapacitance,VCUnitDefinition.UNIT_pF_per_um2),
 						new StructureMappingParameter(DefaultNames[ROLE_SurfaceToVolumeRatio], /*new Expression(0)*/ null, ROLE_SurfaceToVolumeRatio,VCUnitDefinition.UNIT_per_um),
 						new StructureMappingParameter(DefaultNames[ROLE_VolumeFraction], /*new Expression(0)*/ null, ROLE_VolumeFraction,VCUnitDefinition.UNIT_DIMENSIONLESS),
-						new StructureMappingParameter(DefaultNames[ROLE_Size], /*new Expression(0)*/ null, ROLE_Size,VCUnitDefinition.UNIT_um2),
+						new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(area), ROLE_Size,VCUnitDefinition.UNIT_um2),
 						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitArea], /*new Expression(1)*/ null, ROLE_AreaPerUnitArea,VCUnitDefinition.UNIT_DIMENSIONLESS),
 						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitVolume], /*new Expression(1)*/ null, ROLE_AreaPerUnitVolume,VCUnitDefinition.UNIT_per_um)
 		});
