@@ -29,7 +29,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public final static int COLUMN_KINETICS = 3;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Equation", "Name", "Structure", "Kinetics"};
+	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Kinetics"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
