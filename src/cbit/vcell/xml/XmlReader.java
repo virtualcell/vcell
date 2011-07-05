@@ -3928,6 +3928,7 @@ private ArrayList<String> getReservedVars() {
 	//
 	// add constants that may be used in kinetics.
 	//
+	reservedVars.add(ReservedSymbol.PI_CONSTANT.getName());
 	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT.getName());
 	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName());
 	reservedVars.add(ReservedSymbol.GAS_CONSTANT.getName());
@@ -3937,7 +3938,6 @@ private ArrayList<String> getReservedVars() {
 	reservedVars.add(ReservedSymbol.TEMPERATURE.getName());
 	reservedVars.add(ReservedSymbol.K_GHK.getName());
 	reservedVars.add(ReservedSymbol.TIME.getName());
-	//reservedVars.add(ReservedSymbol.PI.getName());
 	
 	return reservedVars;
 }
@@ -5172,6 +5172,7 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 	//
 	try {
 		// add reserved symbols
+		varHash.addVariable(new Constant(ReservedSymbol.PI_CONSTANT.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), new Expression(0.0)));
@@ -5181,7 +5182,6 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
-		//varHash.addVariable(new Constant(ReservedSymbol.PI.getName(), new Expression(0.0)));
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
