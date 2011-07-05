@@ -203,7 +203,7 @@ public class Macroscopic_IRRKinetics extends DistributedKinetics {
 		Expression b = Expression.max(getSymbolExpression(conc_react1Param), getSymbolExpression(conc_react2Param));
 		Expression sumD = Expression.add(getSymbolExpression(diff_react1Param), getSymbolExpression(diff_react2Param));
 		Expression ln_b = Expression.log(b);
-		Expression numeratorExp = Expression.mult(new Expression(2.0), new Expression(NumberUtils.formatNumber(Math.PI, 4)), sumD);
+		Expression numeratorExp = Expression.mult(new Expression(2.0), new Expression(ReservedSymbol.PI_CONSTANT.getName()), sumD);
 		Expression exponentExp = Expression.div(numeratorExp, getSymbolExpression(kOnParam)); 
 		Expression radius = Expression.exp(Expression.add(exponentExp, Expression.negate(ln_b)));
 		

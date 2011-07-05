@@ -204,7 +204,7 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 		Expression sumD = Expression.add(getSymbolExpression(diff_react1Param), getSymbolExpression(diff_react2Param));
 		Expression ln_b = Expression.log(b);
 		Expression ln_Radius = Expression.log(getSymbolExpression(bindingRadiusParam));
-		Expression numeratorExp = Expression.mult(new Expression(2.0), new Expression(NumberUtils.formatNumber(Math.PI, 4)), sumD);
+		Expression numeratorExp = Expression.mult(new Expression(2.0), new Expression(ReservedSymbol.PI_CONSTANT.getName()), sumD);
 		Expression denominatorExp = Expression.add(ln_b, Expression.negate(ln_Radius));
 		Expression kOnExp = Expression.div(numeratorExp, denominatorExp);
 		
