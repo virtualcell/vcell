@@ -291,13 +291,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 
 	public void deleteButtonPressed() {
-		List<BioPaxObject> allSelectedBioPaxObjects = getSelectedBioPaxObjects(); // all objects required by user
+		deleteSelectedBioPaxObjects(this, bioModel, graphCartoonTool.getGraphModel());
+	}
+	public static void deleteSelectedBioPaxObjects(Component guiRequester, BioModel bioModel, GraphModel graphModel) {
+		List<BioPaxObject> allSelectedBioPaxObjects = getSelectedBioPaxObjects(graphModel); // all objects required by user
 		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
 		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the all objects that will be deleted from the pathway model
 		StringBuilder warning = new StringBuilder("You can NOT delete the following pathway objects:\n\n");
 		StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
 		for (BioPaxObject bpObject : allSelectedBioPaxObjects) {
-			if(canDelete(bpObject)){
+			if(canDelete(bioModel, allSelectedBioPaxObjects, bpObject)){
 				selectedBioPaxObjects.add(bpObject);
 				text.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
 				
@@ -305,11 +308,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 				if(bpObject instanceof Conversion){// all its participants and its catalysts will be deleted if deleting a conversion
 					// check each participant
 					for(InteractionParticipant ip : ((Conversion)bpObject).getParticipants()){
-						if(canDelete(ip.getPhysicalEntity())) {
+						if(canDelete(bioModel, allSelectedBioPaxObjects, ip.getPhysicalEntity())) {
 							completeSelectedBioPaxObjects.add(ip.getPhysicalEntity());
 							// the complex of the pysicalEntity will be removed
-							for(Complex complex : getComplex(ip.getPhysicalEntity())){
-								if(canDelete(complex))
+							for(Complex complex : getComplex(bioModel, ip.getPhysicalEntity())){
+								if(canDelete(bioModel, allSelectedBioPaxObjects, complex))
 									completeSelectedBioPaxObjects.add(complex);
 							}
 						}
@@ -320,7 +323,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 							if(((Control)bp).getControlledInteraction() == bpObject){
 								completeSelectedBioPaxObjects.add(bp);
 								for(PhysicalEntity pe : ((Control)bp).getPhysicalControllers()){
-									if(canDelete(pe)) completeSelectedBioPaxObjects.add(pe);
+									if(canDelete(bioModel, allSelectedBioPaxObjects, pe)) completeSelectedBioPaxObjects.add(pe);
 								}
 							}
 						}
@@ -343,7 +346,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if (finalWarningMessage.length() == 0) {
 			return;
 		}
-		String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting pathway objects", finalWarningMessage.toString());
+		String confirm = DialogUtils.showOKCancelWarningDialog(guiRequester, "Deleting pathway objects", finalWarningMessage.toString());
 		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 			return;
 		}
@@ -353,7 +356,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 	}
 	
-	private ArrayList<Complex> getComplex(PhysicalEntity physicalEntity){
+	private static ArrayList<Complex> getComplex(BioModel bioModel, PhysicalEntity physicalEntity){
 		ArrayList<Complex> complexList = new ArrayList<Complex>();
 		for(BioPaxObject bpObject: bioModel.getPathwayModel().getBiopaxObjects()){
 			if(bpObject instanceof Complex){
@@ -364,12 +367,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 		return complexList;
 	}
 	
-	private boolean canDelete(BioPaxObject bpObject){
+	private static boolean canDelete(BioModel bioModel, List<BioPaxObject> selectedBioPaxObjects, BioPaxObject bpObject){
 		// CANNOT deleted an pathway object if it has been linked to a bioModel object
 		if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject).size() > 0){
 			return false;
 		}
-		List<BioPaxObject> selectedBioPaxObjects = getSelectedBioPaxObjects();
 		for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
 			if(bp instanceof Conversion){ // CANNOT delete any participants before deleting the reaction
 				if(!selectedBioPaxObjects.contains(bp)) {
@@ -461,7 +463,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		graphPane.setGraphModel(pathwayGraphModel);
 		
 		graphCartoonTool = new PathwayGraphTool();
-		graphCartoonTool.setGraphPane(graphPane);		
+		graphCartoonTool.setGraphPane(graphPane);
 		graphTabPanel = new JPanel(new BorderLayout());
 		graphScrollPane = new JScrollPane(graphPane);
 		graphScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -639,14 +641,18 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 	
 	// wei's code
-	public List<BioPaxObject> getSelectedBioPaxObjects(){
+	public static List<BioPaxObject> getSelectedBioPaxObjects(GraphModel graphModel){
 		ArrayList<BioPaxObject> bpObjects = new ArrayList<BioPaxObject>();
-		for(Object selected : graphCartoonTool.getGraphModel().getSelectedObjects()) {
+		for(Object selected : graphModel.getSelectedObjects()) {
 			if(selected instanceof BioPaxObject) {
 				bpObjects.add((BioPaxObject) selected);
 			}
 		}
 		return bpObjects;
+	}
+	
+	public List<BioPaxObject> getSelectedBioPaxObjects(){
+		return getSelectedBioPaxObjects(graphCartoonTool.getGraphModel()); 
 	}
 	
 	public SelectionManager getSelectionManager() { return selectionManager; }

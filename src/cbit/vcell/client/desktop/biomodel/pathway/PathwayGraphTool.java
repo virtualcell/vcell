@@ -19,7 +19,8 @@ import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
-import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.actions.CartoonToolEditActions;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayDiagramPanel;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
 import cbit.vcell.graph.BioCartoonTool;
@@ -53,12 +54,6 @@ public class PathwayGraphTool extends BioCartoonTool {
 			}
 			switch (mode) {
 			case SELECT: {
-				if (event.getClickCount() == 2) {
-					Shape selectedShape = getGraphModel().getSelectedShape();
-					if (selectedShape != null) {
-						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
-					}
-				}
 				break;
 			}
 			default:
@@ -393,8 +388,13 @@ public class PathwayGraphTool extends BioCartoonTool {
 	
 	@Override
 	protected void menuAction(Shape shape, String menuAction) {
-		// TODO Auto-generated method stub
-
+		 if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
+			try {
+				BioModelEditorPathwayDiagramPanel.deleteSelectedBioPaxObjects(getGraphPane(), ((PathwayGraphModel)getGraphModel()).getBioModel(), getGraphModel());
+			} catch (Exception e) {
+				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
+			}
+		 }
 	}
 
 	@Override
@@ -414,5 +414,4 @@ public class PathwayGraphTool extends BioCartoonTool {
 		// TODO Auto-generated method stub
 
 	}
-
 }
