@@ -501,22 +501,29 @@ private void initKineticChoices() {
 		{
 			model.addElement(kineticTypes[i]);
 		}
-		else //it's macroscopic irreversible
+		else // macroscopic/microscopic irreversible
 		{
+			// reactions on membrane in a 3D geometry
 			if(reactionStep != null && reactionStep.getStructure() != null && reactionStep.getStructure() instanceof Membrane)
 			{
-				//calculate sum of reactants' stoichiometries
+				//check if reactants are all on membrane and calculate sum of reactants' stoichiometry
 				ReactionParticipant[] rps = reactionStep.getReactionParticipants();
 				int order = 0;
+				boolean bAllMembraneReactants = true;
 				for(ReactionParticipant rp : rps)
 				{
 					if(rp instanceof Reactant)
 					{
+						if(! (rp.getStructure() instanceof Membrane))
+						{
+							bAllMembraneReactants = false;
+							break;
+						}
 						order += rp.getStoichiometry();
 					}
 				}
-				//add only if 2nd order reaction
-				if(order == 2)
+				//add only if 2nd order membrane reaction
+				if(order == 2 && bAllMembraneReactants)
 				{
 					model.addElement(kineticTypes[i]);
 				}
