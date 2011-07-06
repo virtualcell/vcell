@@ -20,6 +20,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -162,7 +164,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JPanel buttonPanel;
 	private PhysiologyRelationshipPanel relationshipPanel;
 	
-	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener, DocumentListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener, DocumentListener, KeyListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorModelPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
@@ -232,6 +234,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 
 		public void changedUpdate(DocumentEvent e) {
 			search();
+		}
+		
+		public void keyTyped(KeyEvent e) {
+		}
+		
+		public void keyReleased(KeyEvent e) {
+		}
+		
+		public void keyPressed(KeyEvent e) {
+			if (e.getModifiersEx() == 0) {
+				if (e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+					deleteButtonPressed();
+				}
+			}
 		}
 	}
 	
@@ -516,6 +532,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
+		reactionsTable.addKeyListener(eventHandler);
+		speciesTable.addKeyListener(eventHandler);
+		structuresTable.addKeyListener(eventHandler);
 	}
 	
 	public void setBioModel(BioModel newValue) {
