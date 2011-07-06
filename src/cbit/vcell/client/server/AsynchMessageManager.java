@@ -36,12 +36,15 @@ public class AsynchMessageManager implements SimStatusListener {
     private static final int CLIENT_POLLING_INTERVAL = 3 * MessageConstants.SECOND_IN_MS;
 	private EventListenerList listenerList = new EventListenerList();
     private VCellConnection vcellConnection = null;
+    private ClientServerManager clientServerManager = null;
+    private int failureCount = 0;
 
 /**
  * Insert the method's description here.
  * Creation date: (6/9/2004 4:55:22 PM)
  */
-public AsynchMessageManager() {
+public AsynchMessageManager(ClientServerManager csm) {
+	this.clientServerManager = csm;
 	startPolling();
 }
 
@@ -82,6 +85,7 @@ private void poll(boolean reportPerf) {
 		}
 	    long l2 = System.currentTimeMillis();
 	    double duration = ((double)(l2 - l1)) / 1000;
+	    failureCount = 0;
 	    // deal with events, if any
 	    if (queuedEvents != null) {
 		    for (MessageEvent messageEvent : queuedEvents){
@@ -101,6 +105,10 @@ private void poll(boolean reportPerf) {
 	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
+	    failureCount ++;
+	    if (failureCount % 3 == 0) {
+	    	clientServerManager.setDisconnected();
+	    }
     }	
 }
 
