@@ -42,6 +42,7 @@ import cbit.vcell.visit.VisitConnectionInfo;
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 
 
+	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
@@ -401,7 +402,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  */
 public AsynchMessageManager getAsynchMessageManager() {
 	if (asynchMessageManager == null) {
-		asynchMessageManager = new AsynchMessageManager();
+		asynchMessageManager = new AsynchMessageManager(this);
 	}
 	return asynchMessageManager;
 }
@@ -670,7 +671,7 @@ public void setClientServerInfo(ClientServerInfo newClientServerInfo) {
 public void setConnectionStatus(ConnectionStatus connectionStatus) {
 	ConnectionStatus oldValue = fieldConnectionStatus;
 	fieldConnectionStatus = connectionStatus;
-	firePropertyChange("connectionStatus", oldValue, connectionStatus);
+	firePropertyChange(PROPERTY_NAME_CONNECTION_STATUS, oldValue, connectionStatus);
 }
 
 /**
@@ -732,5 +733,9 @@ public VisitConnectionInfo createNewVisitConnection() throws DataAccessException
 			}
 		}
 	}
+}
+
+void setDisconnected() {
+	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 }
 }
