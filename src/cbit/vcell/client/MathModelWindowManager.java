@@ -82,8 +82,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
-		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
-		getJPanel().add(taskBar, BorderLayout.SOUTH);
+		taskBar = new JTaskBar(getJDesktopPane());
 	}
 	createMathModelFrame();
 }
