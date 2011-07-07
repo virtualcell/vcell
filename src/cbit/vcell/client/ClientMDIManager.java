@@ -41,7 +41,7 @@ import cbit.vcell.field.FieldDataWindow;
  * @author: Ion Moraru
  */
 public class ClientMDIManager implements MDIManager {
-	private static final Dimension JFRAME_SIZE = new Dimension(900, 800);
+	private static final Dimension JFRAME_SIZE = new Dimension(1024, 768);
 	public final static String DATABASE_WINDOW_ID = "DatabaseWindow";
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
