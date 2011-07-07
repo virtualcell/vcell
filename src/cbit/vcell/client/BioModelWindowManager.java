@@ -89,7 +89,6 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 				closeMIRIAMWindow();
 			}};
 
-
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 8:31:18 PM)
@@ -102,14 +101,12 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
-		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
-		getJPanel().add(taskBar, BorderLayout.SOUTH);
+		taskBar = new JTaskBar(getJDesktopPane());
 	}
 	setBioModel(bioModel);
 	setBioModelEditor(new BioModelEditor());
 	createBioModelFrame();
 }
-
 	/**
 	 * Invoked when an action occurs.
 	 */

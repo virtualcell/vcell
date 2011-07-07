@@ -26,10 +26,10 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
+import org.vcell.util.gui.JTaskBar;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -82,6 +82,8 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 			return bFromCurrentGeom;
 		}
 	}
+	
+	protected JTaskBar taskBar = null;
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 5:14:36 PM)
@@ -94,6 +96,9 @@ public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocu
 	setDocumentID(vcDocument);
 }
 
+public JTaskBar getTaskBar() {
+	return taskBar; 
+}
 
 /**
  * Insert the method's description here.
