@@ -88,7 +88,7 @@ public VCSimulationIdentifier getVcSimulationIdentifier() {
  */
 private void initialize(DataViewer dataViewer) {
 	// create frame
-	JInternalFrameEnhanced newFrame = new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true);
+	JInternalFrameEnhanced newFrame = new JInternalFrameEnhanced(getSimulation().getName(), true, true, true, true);
 	newFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/run2_16x16.gif")));
 	setFrame(newFrame);
 	getFrame().add(dataViewer);

@@ -15,11 +15,9 @@ import java.awt.event.WindowEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -29,7 +27,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
-import javax.swing.border.EtchedBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.User;
@@ -70,7 +67,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjUpdate_UserMenuItem = null;
 	private JMenuItem ivjCloseMenuItem = null;
 	private JMenuBar ivjDocumentWindowJMenuBar = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JMenuItem ivjExitMenuItem = null;
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
@@ -100,14 +97,11 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemOpenBioModel = null;
 	private JMenuItem ivjJMenuItemOpenGeometry = null;
 	private JMenuItem ivjJMenuItemOpenMathModel = null;
-	private JPanel ivjJPanelMemStatus = null;
 	private JProgressBar ivjJProgressBarMemory = null;
-	private JLabel ivjStatusMsgMemory = null;
 	private DocumentWindowManager fieldWindowManager = null;
 	private JMenuItem ivjJMenuItemExport = null;
 	private JMenuItem ivjJMenuItemImport = null;
 	private JSeparator ivjJSeparator7 = null;
-	private JLabel ivjStatusMsgConnection = null;
 	private JMenuItem ivjJMenuItemServer = null;
 	private JProgressBar ivjJProgressBarConnection = null;
 	private JMenuItem ivjJMenuItemCompare = null;
@@ -1495,45 +1489,6 @@ private javax.swing.JMenuItem getJMenuItemServer() {
 }
 
 /**
- * Return the JPanelMemStatus property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanelMemStatus() {
-	if (ivjJPanelMemStatus == null) {
-		try {
-			ivjJPanelMemStatus = new javax.swing.JPanel();
-			ivjJPanelMemStatus.setBorder(new EtchedBorder());
-			ivjJPanelMemStatus.setName("JPanelMemStatus");
-			ivjJPanelMemStatus.setPreferredSize(new java.awt.Dimension(300, 26));
-			ivjJPanelMemStatus.setLayout(new java.awt.GridBagLayout());
-			ivjJPanelMemStatus.setMinimumSize(new java.awt.Dimension(200, 26));
-
-			java.awt.GridBagConstraints constraintsStatusMsgMemory = new java.awt.GridBagConstraints();
-			constraintsStatusMsgMemory.gridx = 0; constraintsStatusMsgMemory.gridy = 0;
-			constraintsStatusMsgMemory.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsStatusMsgMemory.weightx = 1.0;
-			constraintsStatusMsgMemory.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelMemStatus().add(getStatusMsgMemory(), constraintsStatusMsgMemory);
-
-			java.awt.GridBagConstraints constraintsJProgressBarMemory = new java.awt.GridBagConstraints();
-			constraintsJProgressBarMemory.gridx = 1; constraintsJProgressBarMemory.gridy = 0;
-			constraintsJProgressBarMemory.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJProgressBarMemory.weightx = 2.0;
-			constraintsJProgressBarMemory.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelMemStatus().add(getJProgressBarMemory(), constraintsJProgressBarMemory);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanelMemStatus;
-}
-
-/**
  * Return the JProgressBarConnection property value.
  * @return javax.swing.JProgressBar
  */
@@ -1545,11 +1500,7 @@ private javax.swing.JProgressBar getJProgressBarConnection() {
 			ivjJProgressBarConnection.setName("JProgressBarConnection");
 			ivjJProgressBarConnection.setString("NOT CONNECTED");
 			ivjJProgressBarConnection.setStringPainted(true);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1568,7 +1519,6 @@ private javax.swing.JProgressBar getJProgressBarMemory() {
 			ivjJProgressBarMemory.setName("JProgressBarMemory");
 			ivjJProgressBarMemory.setMinimum(0);
 			ivjJProgressBarMemory.setStringPainted(true);
-			ivjJProgressBarMemory.setValue(50);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2156,11 +2106,7 @@ private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
 			ivjSpatialCreateNewMenuItem = new javax.swing.JMenuItem();
 			ivjSpatialCreateNewMenuItem.setName("SpatialMenuItem");
 			ivjSpatialCreateNewMenuItem.setText(MATHMODEL_SPATIAL_CREATENEW);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2171,7 +2117,6 @@ private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
  * Return the StatusbarMenuItem property value.
  * @return javax.swing.JCheckBoxMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
 	if (ivjStatusbarMenuItem == null) {
 		try {
@@ -2179,11 +2124,7 @@ private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
 			ivjStatusbarMenuItem.setName("StatusbarMenuItem");
 			ivjStatusbarMenuItem.setSelected(true);
 			ivjStatusbarMenuItem.setText("Status Bar");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2200,75 +2141,34 @@ private javax.swing.JPanel getStatusBarPane() {
 		try {
 			ivjStatusBarPane = new javax.swing.JPanel();
 			ivjStatusBarPane.setName("StatusBarPane");
-			ivjStatusBarPane.setLayout(new java.awt.BorderLayout());
-			getStatusBarPane().add(getStatusMsgConnection(), BorderLayout.CENTER);
-			getStatusBarPane().add(getJPanelMemStatus(), BorderLayout.EAST);
-			JPanel panel = new JPanel();
-			panel.setLayout(new GridBagLayout());
-			panel.setBorder(new EtchedBorder());
+			ivjStatusBarPane.setLayout(new BorderLayout());
+			
+			JPanel panel = new JPanel(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 0;
+			gbc.weighty = 1;
+			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
 			panel.add(getJProgressBarConnection(), gbc);
-			getStatusBarPane().add(panel, BorderLayout.WEST);
-			// user code begin {1}
-			// user code end
+			ivjStatusBarPane.add(panel, BorderLayout.WEST);
+			
+			panel = new JPanel(new GridBagLayout());
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weighty = 1;
+			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			panel.add(getJProgressBarMemory(), gbc);
+			ivjStatusBarPane.add(panel, BorderLayout.EAST);
+
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjStatusBarPane;
 }
-
-/**
- * Return the StatusMsgConnection property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getStatusMsgConnection() {
-	if (ivjStatusMsgConnection == null) {
-		try {
-			ivjStatusMsgConnection = new javax.swing.JLabel();
-			ivjStatusMsgConnection.setName("StatusMsgConnection");
-			ivjStatusMsgConnection.setBorder(BorderFactory.createCompoundBorder(new EtchedBorder(), BorderFactory.createEmptyBorder(0, 4, 0, 4)));
-			ivjStatusMsgConnection.setText("");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStatusMsgConnection;
-}
-
-
-/**
- * Return the StatusMsg1 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getStatusMsgMemory() {
-	if (ivjStatusMsgMemory == null) {
-		try {
-			ivjStatusMsgMemory = new javax.swing.JLabel();
-			ivjStatusMsgMemory.setName("StatusMsgMemory");
-			ivjStatusMsgMemory.setText(" Java Memory used: 0.0MB / 50.0MB");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStatusMsgMemory;
-}
-
 
 /**
  * Return the TestingFrameworkMenuItem property value.
@@ -2481,15 +2381,12 @@ private void initConnections() throws java.lang.Exception {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("DocumentWindow");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setIconImage(VCellIcons.getJFrameImageIcon());
 		setJMenuBar(getDocumentWindowJMenuBar());
 		setSize(460, 536);
 		setTitle("DocumentWindow");
-//		add(scrollPane, BorderLayout.CENTER);
 		add(getStatusBarPane(), BorderLayout.SOUTH);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -2629,9 +2526,17 @@ private void saveDocumentAsNew() {
  * @see #getWindowManager
  */
 public void setWindowManager(DocumentWindowManager windowManager) {
+	if (fieldWindowManager == windowManager) {
+		return;
+	}
 	DocumentWindowManager oldValue = fieldWindowManager;
 	fieldWindowManager = windowManager;
 	firePropertyChange("windowManager", oldValue, windowManager);//May 2009,found it doesn't fire to any where.
+	
+	if (windowManager.getTaskBar() != null) {
+		windowManager.getTaskBar().setBackground(getStatusBarPane().getBackground());
+		getStatusBarPane().add(windowManager.getTaskBar(), BorderLayout.CENTER);
+	}
 }
 
 
@@ -2807,7 +2712,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 		}
 		case ConnectionStatus.CONNECTED: {
 			status = "Server: " + connStatus.getServerHost() + " User: " + connStatus.getUserName();
-			getJProgressBarConnection().setString("CONNECTED");
+			getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
 			getJProgressBarConnection().setValue(100);
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(true);
@@ -2881,7 +2786,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			break;
 		}
 	}
-	getStatusMsgConnection().setText(status);
+	getJProgressBarConnection().setToolTipText(status);
 }
 
 
@@ -2894,8 +2799,8 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {
 	df.setMaximumFractionDigits(1);
 	String usedMB = df.format((totalBytes - freeBytes)/1000000.0);
 	String totalMB = df.format(totalBytes/1000000.0);
-	getStatusMsgMemory().setText("Java Memory Used: " + usedMB + "MB / " + totalMB + "MB");
 	getJProgressBarMemory().setValue((int)(100 * (totalBytes - freeBytes) / totalBytes));
+	getJProgressBarMemory().setString(usedMB + "MB / " + totalMB + "MB");
 }
 
 
