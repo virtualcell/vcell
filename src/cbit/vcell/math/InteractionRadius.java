@@ -5,10 +5,10 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 
-public class MacroscopicRateConstant extends JumpProcessRateDefinition {
-	private Expression expression = null;
+public class InteractionRadius extends JumpProcessRateDefinition{
+private Expression expression = null;
 	
-	public MacroscopicRateConstant(Expression exp){
+	public InteractionRadius(Expression exp){
 		this.expression = exp;
 	}
 
@@ -23,12 +23,12 @@ public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 
 	@Override
 	public String getVCML() {
-		return VCML.MacroscopicRateConstant+"\t"+getExpression().infix();
+		return VCML.InteractionRadius+"\t"+getExpression().infix();
 	}
 
 	public boolean compareEqual(Matchable obj) {
-		if (obj instanceof MacroscopicRateConstant){
-			MacroscopicRateConstant mrc = (MacroscopicRateConstant)obj;
+		if (obj instanceof InteractionRadius){
+			InteractionRadius mrc = (InteractionRadius)obj;
 			if (!Compare.isEqual(getExpression(), mrc.getExpression())){
 				return false;
 			}
@@ -36,5 +36,4 @@ public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 		}
 		return false;
 	}
-	
 }

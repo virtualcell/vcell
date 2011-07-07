@@ -176,6 +176,7 @@ public class VCML {
 	public final static String ParticleDiffusion		= "ParticleDiffusion"; // particle
 	public final static String ParticleJumpProcess 		= "ParticleJumpProcess"; // particle
 	public final static String MacroscopicRateConstant	= "MacroscopicRateConstant"; // particle
+	public final static String InteractionRadius    	= "InteractionRadius"; // particle
 	public final static String CreateParticle			= "CreateParticle"; // particle
 	public final static String DestroyParticle			= "DestroyParticle"; // particle
 	public final static String SelectedParticle			= "SelectedParticle"; // particle

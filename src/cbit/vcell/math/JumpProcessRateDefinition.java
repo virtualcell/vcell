@@ -6,7 +6,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 
-public abstract class ParticleProbabilityRate implements Matchable, Serializable{
+public abstract class JumpProcessRateDefinition implements Matchable, Serializable{
 
 	public abstract String getVCML();
 

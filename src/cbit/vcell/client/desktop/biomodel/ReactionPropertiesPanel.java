@@ -523,7 +523,7 @@ private void initKineticChoices() {
 					}
 				}
 				//add only if 2nd order membrane reaction
-				if(order == 2 && bAllMembraneReactants)
+				if(order == 2 && bAllMembraneReactants && !reactionStep.hasCatalyst())
 				{
 					model.addElement(kineticTypes[i]);
 				}

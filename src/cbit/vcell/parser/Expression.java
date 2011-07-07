@@ -739,6 +739,10 @@ public static Expression exp(Expression expression1) throws ExpressionException 
 	return function(FunctionType.EXP, expression1);
 }
 
+public static Expression sqrt(Expression expression1) throws ExpressionException {
+	return function(FunctionType.SQRT, expression1);
+}
+
 public static Expression function(FunctionType funcType, Expression... expressions) {
 	return function(funcType.getName(), expressions);
 }
