@@ -1292,8 +1292,9 @@ protected Variable newFunctionOrConstant(String name, Expression exp, GeometryCl
  * @param obj java.lang.Object
  */
 protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
-//System.out.println("MathMapping.refresh()");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
+	//All sizes must be set for new ODE models and ratios must be set for old ones.
+	simContext.checkValidity();
 	
 	localIssueList.clear();
 	refreshKFluxParameters();
@@ -1415,9 +1416,6 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
  */
 protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
-	//All sizes must be set for new ODE models and ratios must be set for old ones.
-	simContext.checkValidity();
-	
 	//
 	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
 	//

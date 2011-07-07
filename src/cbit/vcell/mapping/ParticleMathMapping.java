@@ -90,8 +90,6 @@ protected ParticleMathMapping(SimulationContext simContext) {
 @Override
 protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
-	getSimulationContext().checkValidity();
-	
 	if (getSimulationContext().getGeometry().getDimension()==0){
 		throw new MappingException("particle math mapping requires spatial geometry - dimension >= 1");
 	}
@@ -625,7 +623,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		SubDomain subdomain = mathDesc.getSubDomain(reactionStepGeometryClass.getName());
 
 		//macroscopic_irreversible/Microscopic_irreversible for bimolecular membrane reactions. They will NOT go through MassAction solver.
-		if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) || kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
+		if(kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
 		{
 			Expression radiusExp = getIdentifierSubstitutions(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getExpression(), 
 					                                    reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getUnitDefinition(), reactionStepGeometryClass);
@@ -1017,7 +1015,8 @@ protected void refreshVariables() throws MappingException {
 @Override
 protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 	VCellThreadChecker.checkCpuIntensiveInvocation();
-	
+	//All sizes must be set for new ODE models and ratios must be set for old ones.
+	getSimulationContext().checkValidity();
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	refreshSpeciesContextMappings();

@@ -32,10 +32,9 @@ public  class KineticsDescription implements java.io.Serializable {
 	public final static KineticsDescription GeneralLumped = new KineticsDescription("GeneralLumpedKinetics", "GeneralLumped", VCMODL.GeneralLumpedKinetics, false, false, GeneralLumpedKinetics.class);
 	public final static KineticsDescription GeneralCurrentLumped = new KineticsDescription("GeneralCurrentLumpedKinetics", "GeneralCurrentLumped", VCMODL.GeneralCurrentLumpedKinetics, true, false, GeneralCurrentLumpedKinetics.class);
 	public final static KineticsDescription GeneralPermeability = new KineticsDescription("GeneralPermeabilityKinetics", "GeneralPermeability", VCMODL.GeneralPermeabilityKinetics, false, false, GeneralPermeabilityKinetics.class);
-	public final static KineticsDescription Macroscopic_irreversible = new KineticsDescription("Macroscopic_IRRKinetics", "Macroscopic (irreversible)", VCMODL.Macroscopic_IRRKinetics, false, false, Macroscopic_IRRKinetics.class);
-	public final static KineticsDescription Microscopic_irreversible = new KineticsDescription("Microscopic_IRRKinetics", "Microscopic (irreversible)", VCMODL.Microscopic_IRRKinetics, false, false, Microscopic_IRRKinetics.class);
+	public final static KineticsDescription Microscopic_irreversible = new KineticsDescription("Microscopic_IRRKinetics", "Microscopic (irreversible) Spatial Stochastic Only", VCMODL.Microscopic_IRRKinetics, false, false, Microscopic_IRRKinetics.class);
 	
-	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralLumped, GeneralCurrentLumped, GeneralPermeability, Macroscopic_irreversible, Microscopic_irreversible };
+	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralLumped, GeneralCurrentLumped, GeneralPermeability, Microscopic_irreversible };
 	
 /**
  * KineticsDescription constructor comment.

@@ -2960,7 +2960,6 @@ public String isValidForStochApp()
 		if(((reacSteps[i] instanceof SimpleReaction) && 
 				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) &&
 				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) &&
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) &&
 				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
 			||
 		  ((reacSteps[i] instanceof FluxReaction) && 
@@ -2979,10 +2978,10 @@ public String isValidForStochApp()
 			{
 				if(reacSteps[i] instanceof SimpleReaction)
 				{
-					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) || 
 							reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 					{
+						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 						try{
 							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
 						}catch(Exception e)

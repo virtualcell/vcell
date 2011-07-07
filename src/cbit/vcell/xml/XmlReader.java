@@ -174,7 +174,6 @@ import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
@@ -2209,9 +2208,6 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) ) {
 			// create GeneralPermeabilityKinetics
 			newKinetics = new GeneralPermeabilityKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) ) {
-			// create Macroscopic_IRRKinetics
-			newKinetics = new Macroscopic_IRRKinetics(reaction);
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) ) {
 			// create Microscopic_IRRKinetics
 			newKinetics = new Microscopic_IRRKinetics(reaction);

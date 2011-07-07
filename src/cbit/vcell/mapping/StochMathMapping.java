@@ -315,8 +315,9 @@ public Expression getProbabilityRate(ReactionStep rs, Expression rateConstant, b
  */
 protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
 	localIssueList.clear();
-	//refreshKFluxParameters();
-	
+	//All sizes must be set for new ODE models and ratios must be set for old ones.
+	getSimulationContext().checkValidity();
+				
 	refreshSpeciesContextMappings();
 	//refreshStructureAnalyzers();
 	refreshVariables();
@@ -345,10 +346,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		{
 			throw new ModelException("Problem updating math description: "+ simContext.getName()+"\n"+stochChkMsg);
 		}
-		//All sizes must be set for new ODE models and ratios must be set for old ones.
-		simContext.checkValidity();
 		
-
 		//
 		// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 		//
@@ -679,8 +677,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 					}
 				}
 				//if it's macro/microscopic kinetics, we'll have them set up as reactions with only forward rate.
-				else if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) ||
-						kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible))
+				else if(kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible))
 				{
 					Expression Kon = getIdentifierSubstitutions(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KOn).getExpression(), 
                             reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getUnitDefinition(), reactionStepGeometryClass);

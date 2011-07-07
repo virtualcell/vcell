@@ -43,7 +43,6 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -74,7 +73,6 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		KineticsDescription.GeneralLumped,
 		KineticsDescription.HMM_irreversible,
 		KineticsDescription.HMM_reversible,
-		KineticsDescription.Macroscopic_irreversible,
 		KineticsDescription.Microscopic_irreversible
 	};
 	
@@ -362,9 +360,7 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 										setText("Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
 									} else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
 										setText("Henri-Michaelis-Menten (Reversible) [molecules/("+SQUAREMICRON+" s)]");
-									} else if (kineticsDescription.equals(KineticsDescription.Macroscopic_irreversible)){
-										setText("Macroscopic (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
-									}  else if (kineticsDescription.equals(KineticsDescription.Microscopic_irreversible)){
+									} else if (kineticsDescription.equals(KineticsDescription.Microscopic_irreversible)){
 										setText("Microscopic (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
 									}
 								}
@@ -507,36 +503,15 @@ private void initKineticChoices() {
 	javax.swing.DefaultComboBoxModel model = new DefaultComboBoxModel();
 	for (int i=0;i<kineticTypes.length;i++){
 		
-		if(!(kineticTypes[i].equals(KineticsDescription.Macroscopic_irreversible) || kineticTypes[i].equals(KineticsDescription.Microscopic_irreversible)))
+		if(!kineticTypes[i].equals(KineticsDescription.Microscopic_irreversible))
 		{
 			model.addElement(kineticTypes[i]);
 		}
-		else // macroscopic/microscopic irreversible
+		else // microscopic irreversible
 		{
-			// reactions on membrane in a 3D geometry
-			if(reactionStep != null && reactionStep.getStructure() != null && reactionStep.getStructure() instanceof Membrane)
+			if(reactionStep != null && reactionStep.isBimolecularMembraneReactionWithoutCatalyst())
 			{
-				//check if reactants are all on membrane and calculate sum of reactants' stoichiometry
-				ReactionParticipant[] rps = reactionStep.getReactionParticipants();
-				int order = 0;
-				boolean bAllMembraneReactants = true;
-				for(ReactionParticipant rp : rps)
-				{
-					if(rp instanceof Reactant)
-					{
-						if(! (rp.getStructure() instanceof Membrane))
-						{
-							bAllMembraneReactants = false;
-							break;
-						}
-						order += rp.getStoichiometry();
-					}
-				}
-				//add only if 2nd order membrane reaction
-				if(order == 2 && bAllMembraneReactants && !reactionStep.hasCatalyst())
-				{
-					model.addElement(kineticTypes[i]);
-				}
+				model.addElement(kineticTypes[i]);
 			}
 		}
 	}
