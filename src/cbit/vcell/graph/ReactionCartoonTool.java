@@ -68,6 +68,8 @@ import cbit.vcell.publish.ITextWriter;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
+	public static final int MIN_DRAG_DISTANCE_TO_CREATE_NEW_ELEMENTS_SQUARED = 114;
+	
 	private ReactionCartoon reactionCartoon = null;
 	// for dragging speciesContext's around
 	private boolean bMoving = false;
@@ -459,6 +461,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 
 	}
+	
+	private int getDragDistanceSquared() {
+		if(startPointWorld == null || endPointWorld == null) { return 0; }
+		int dx = endPointWorld.x - startPointWorld.x;
+		int dy = endPointWorld.y - startPointWorld.y;
+		return dx*dx + dy*dy;
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
@@ -798,8 +807,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	public void mouseReleased(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
 		try {
-			Point worldPoint = getReactionCartoon().getResizeManager().unzoom(event.getPoint());
-			Shape endShape = getReactionCartoon().pickWorld(worldPoint);
+			endPointWorld = getReactionCartoon().getResizeManager().unzoom(event.getPoint());
+			Shape endShape = getReactionCartoon().pickWorld(endPointWorld);
 			// if mouse popupMenu event, popup menu
 			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getReactionCartoon().getSelectedShape(), event.getX(), event.getY());
@@ -840,11 +849,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			case LINEDIRECTED: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
-				if (bLineStretch) {
+				if (bLineStretch 
+						&& getDragDistanceSquared() >= MIN_DRAG_DISTANCE_TO_CREATE_NEW_ELEMENTS_SQUARED) {
 					bLineStretch = false;
 					// set label and color for line depending on which shape the edge started. 
 					// (rather than attachment area on ReactionStepShape)
-					LineType lineType = getLineTypeFromDirection(startShape,worldPoint);
+					LineType lineType = getLineTypeFromDirection(startShape, endPointWorld);
 					if (endShape instanceof SimpleReactionShape){
 						SimpleReaction simpleReaction = (SimpleReaction)endShape.getModelObject();
 						Object startShapeObject = null;						
@@ -1376,7 +1386,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			case LINECATALYST: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
-				if (bLineStretch){
+				if (bLineStretch
+						&& getDragDistanceSquared() >= MIN_DRAG_DISTANCE_TO_CREATE_NEW_ELEMENTS_SQUARED){
 					bLineStretch = false;
 					// set label and color for line depending on which shape the edge started. 
 					// (rather than attachment area on ReactionStepShape)
