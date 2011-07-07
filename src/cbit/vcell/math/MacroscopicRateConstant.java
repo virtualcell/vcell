@@ -15,7 +15,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 
-public class MacroscopicRateConstant extends ParticleProbabilityRate {
+public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 	private Expression expression = null;
 	
 	public MacroscopicRateConstant(Expression exp){

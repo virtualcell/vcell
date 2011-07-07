@@ -125,6 +125,7 @@ public class ReservedBioSymbolEntries {
 	private static HashMap<String,ReservedSymbol> getSymbolTableEntries(){
 		if (symbolTableEntries==null){
 			symbolTableEntries = new HashMap<String, ReservedSymbol>();
+			symbolTableEntries.put(ReservedSymbol.PI_CONSTANT.getName(), ReservedSymbol.PI_CONSTANT);
 			symbolTableEntries.put(ReservedSymbol.FARADAY_CONSTANT.getName(),ReservedSymbol.FARADAY_CONSTANT);
 			symbolTableEntries.put(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(),ReservedSymbol.FARADAY_CONSTANT_NMOLE);
 			symbolTableEntries.put(ReservedSymbol.GAS_CONSTANT.getName(),ReservedSymbol.GAS_CONSTANT);
@@ -137,7 +138,6 @@ public class ReservedBioSymbolEntries {
 			symbolTableEntries.put(ReservedSymbol.X.getName(),ReservedSymbol.X);
 			symbolTableEntries.put(ReservedSymbol.Y.getName(),ReservedSymbol.Y);
 			symbolTableEntries.put(ReservedSymbol.Z.getName(),ReservedSymbol.Z);
-			//symbolTableEntries.put(ReservedSymbol.PI.getName(),ReservedSymbol.PI);
 		}
 		return symbolTableEntries;
 	}

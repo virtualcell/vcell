@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.Action;
@@ -435,11 +436,11 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		//
 		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.PI_CONSTANT.getExpression(),ReservedSymbol.PI_CONSTANT.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
-		//varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI,null),getIdentifierSubstitutions(ReservedSymbol.PI.getExpression(),ReservedSymbol.PI.getUnitDefinition(),null)));
 		
 		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
@@ -646,7 +647,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			Kinetics kinetics = reactionStep.getKinetics();
 			// the structure where reaction happens
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(reactionStep.getStructure());
-	
+			GeometryClass reactionStepGeometryClass = sm.getGeometryClass();
 			// Different ways to deal with simple reactions and flux reactions
 			if(reactionStep instanceof SimpleReaction) // simple reactions
 			{
@@ -675,6 +676,28 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						{
 							reverseRate = maFunc.getReverseRate();
 						}
+					}
+				}
+				//if it's macro/microscopic kinetics, we'll have them set up as reactions with only forward rate.
+				else if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) ||
+						kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible))
+				{
+					Expression Kon = getIdentifierSubstitutions(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KOn).getExpression(), 
+                            reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getUnitDefinition(), reactionStepGeometryClass);
+					if(Kon != null)
+					{
+						Expression KonCopy = new Expression(Kon);
+						try{
+							MassActionSolver.substituteParameters(KonCopy, true).evaluateConstant();
+							forwardRate = new Expression(Kon);
+						}catch(ExpressionException e)
+						{
+							throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Problem with Kon parameter in " + reactionStep.getName() +":  '" + KonCopy.infix() + "', " + e.getMessage()));
+						}
+					}
+					else
+					{
+						throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Kon parameter of " + reactionStep.getName() +" is null."));
 					}
 				}
 			    boolean isForwardRatePresent = false;

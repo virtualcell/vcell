@@ -349,6 +349,7 @@ private static List<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.MembraneParticleVariable);
 		
 		autoCompletionWords.add(VCML.ParticleJumpProcess);	
+		autoCompletionWords.add(VCML.InteractionRadius);
 		autoCompletionWords.add(getTemplate_ParticleJumpProcess());
 		autoCompletionWords.add(VCML.DestroyParticle);
 		autoCompletionWords.add(VCML.CreateParticle);
@@ -536,6 +537,7 @@ public static List<String> getkeywords() {
 		keywords.add(VCML.MembraneParticleVariable);
 		keywords.add(VCML.ParticleJumpProcess);
 		keywords.add(VCML.MacroscopicRateConstant);
+		keywords.add(VCML.InteractionRadius);
 		keywords.add(VCML.DestroyParticle);
 		keywords.add(VCML.CreateParticle);
 		keywords.add(VCML.SelectedParticle);

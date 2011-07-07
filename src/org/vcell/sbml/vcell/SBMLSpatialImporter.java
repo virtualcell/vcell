@@ -634,6 +634,7 @@ protected void addParameters() throws PropertyVetoException {
 	// the hash can be used to check for reserved symbols, so that it will not be added as a global parameter in VCell, 
 	// since reserved symbols cannot be used as other variables (species, structureSize, parameters, reactions, etc.).
 	HashSet<String> reservedSymbolHash = new HashSet<String>();
+	reservedSymbolHash.add(ReservedSymbol.PI_CONSTANT.getName());
 	reservedSymbolHash.add(ReservedSymbol.FARADAY_CONSTANT.getName());
 	reservedSymbolHash.add(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName());
 	reservedSymbolHash.add(ReservedSymbol.GAS_CONSTANT.getName());

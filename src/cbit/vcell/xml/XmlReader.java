@@ -123,8 +123,10 @@ import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -172,8 +174,10 @@ import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.NernstKinetics;
@@ -2114,10 +2118,32 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 	}
 	
 	//probability rate
+	JumpProcessRateDefinition jprd = null;
+	//for old models
 	Element pb = param.getChild(XMLTags.ParticleProbabilityRateTag, vcNamespace);
-	Expression exp = unMangleExpression(pb.getText());
-	MacroscopicRateConstant mrc = new MacroscopicRateConstant(exp);
-		
+	if(pb != null)
+	{
+		Expression exp = unMangleExpression(pb.getText());
+		jprd = new MacroscopicRateConstant(exp);
+	}
+	else //for new models
+	{
+		pb = param.getChild(XMLTags.MacroscopicRateConstantTag, vcNamespace);
+		if(pb != null) //jump process rate defined by macroscopic rate constant
+		{
+			Expression exp = unMangleExpression(pb.getText());
+			jprd = new MacroscopicRateConstant(exp);
+		}
+		else //jump process rate defined by binding radius
+		{
+			pb = param.getChild(XMLTags.InteractionRadiusTag, vcNamespace);
+			if(pb != null)
+			{
+				Expression exp = unMangleExpression(pb.getText());
+				jprd = new InteractionRadius(exp);
+			}
+		}
+	}
 	//add actions
 	List<Action> actionList = new ArrayList<Action>();	
 	iterator = param.getChildren(XMLTags.ActionTag, vcNamespace).iterator();
@@ -2134,7 +2160,7 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 		}
 	}
 	
-	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, mrc, actionList);
+	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, jprd, actionList);
 	
 	return jump;
 }
@@ -2183,6 +2209,12 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) ) {
 			// create GeneralPermeabilityKinetics
 			newKinetics = new GeneralPermeabilityKinetics(reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) ) {
+			// create Macroscopic_IRRKinetics
+			newKinetics = new Macroscopic_IRRKinetics(reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) ) {
+			// create Microscopic_IRRKinetics
+			newKinetics = new Microscopic_IRRKinetics(reaction);
 		}else {
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}
@@ -3910,6 +3942,7 @@ private ArrayList<String> getReservedVars() {
 	//
 	// add constants that may be used in kinetics.
 	//
+	reservedVars.add(ReservedSymbol.PI_CONSTANT.getName());
 	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT.getName());
 	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName());
 	reservedVars.add(ReservedSymbol.GAS_CONSTANT.getName());
@@ -3919,7 +3952,6 @@ private ArrayList<String> getReservedVars() {
 	reservedVars.add(ReservedSymbol.TEMPERATURE.getName());
 	reservedVars.add(ReservedSymbol.K_GHK.getName());
 	reservedVars.add(ReservedSymbol.TIME.getName());
-	//reservedVars.add(ReservedSymbol.PI.getName());
 	
 	return reservedVars;
 }
@@ -5154,6 +5186,7 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 	//
 	try {
 		// add reserved symbols
+		varHash.addVariable(new Constant(ReservedSymbol.PI_CONSTANT.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), new Expression(0.0)));
@@ -5163,7 +5196,6 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
-		//varHash.addVariable(new Constant(ReservedSymbol.PI.getName(), new Expression(0.0)));
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());

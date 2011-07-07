@@ -2959,7 +2959,9 @@ public String isValidForStochApp()
 	{
 		if(((reacSteps[i] instanceof SimpleReaction) && 
 				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) &&
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)) 
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) &&
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) &&
+				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
 			||
 		  ((reacSteps[i] instanceof FluxReaction) && 
 				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) && 
