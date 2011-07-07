@@ -67,6 +67,7 @@ import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.model.Reactant;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -621,7 +622,7 @@ private void writeReactions() throws ExpressionException, MathException {
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinition);
 					}
-					else // bimolecular membrane reaction
+					else  if((getMembraneVariableCount(reactants) == 2)) // bimolecular membrane reaction
 					{
 						if(jprd instanceof InteractionRadius)
 						{
@@ -630,8 +631,12 @@ private void writeReactions() throws ExpressionException, MathException {
 						}
 						else
 						{
-							throw new MathException("VCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
+							throw new MathException("VCell Spatial stochastic modeling requires microscopic kinetics for bimolecular membrane reactions. Please check the reaction kinetics in your spatial stochastic applications.");
 						}
+					}
+					else //membrane reaction doesn't have any membrane reactants
+					{
+						throw new MathException("VCell Spatial stochastic modeling requires at least one membrane reactant for a membrane reaction. Please check your reaction '" + pjp.getName()+ "'.");
 					}
 				}
 			}

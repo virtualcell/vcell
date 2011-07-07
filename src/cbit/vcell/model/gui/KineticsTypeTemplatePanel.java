@@ -62,7 +62,6 @@ public class KineticsTypeTemplatePanel extends DocumentEditorSubPanel {
 		KineticsDescription.GeneralLumped,
 		KineticsDescription.HMM_irreversible,
 		KineticsDescription.HMM_reversible,
-		KineticsDescription.Macroscopic_irreversible,
 		KineticsDescription.Microscopic_irreversible
 	};
 	
@@ -322,8 +321,6 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 									setText("Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
 								}else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
 									setText("Henri-Michaelis-Menten (Reversible) [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.Macroscopic_irreversible)){
-									setText("Macroscopic (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
 								}else if (kineticsDescription.equals(KineticsDescription.Microscopic_irreversible)){
 									setText("Microscopic (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
 								}else{

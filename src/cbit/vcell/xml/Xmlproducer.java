@@ -155,7 +155,6 @@ import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
@@ -2905,10 +2904,7 @@ private Element getXML(Kinetics param) throws XmlParseException {
 	} else if (param instanceof GeneralPermeabilityKinetics) {
 		//Process a GeneralPermeabilityKinetics
 		kineticsType = XMLTags.KineticsTypeGeneralPermeability;
-	} else if (param instanceof Macroscopic_IRRKinetics) {
-		//Process a Macroscopic_IRRKinetics
-		kineticsType = XMLTags.KineticsTypeMacroscopic_Irr;
-	}  else if (param instanceof Microscopic_IRRKinetics) {
+	} else if (param instanceof Microscopic_IRRKinetics) {
 		//Process a Microscopic_IRRKinetics
 		kineticsType = XMLTags.KineticsTypeMicroscopic_Irr;
 	} 

@@ -268,15 +268,6 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 				}
 			}
 			
-			if (getRole() == ROLE_Binding_Radius){
-				// only allow editing "Current" for GeneralCurrentLumpedKinetics
-				if (Kinetics.this instanceof Macroscopic_IRRKinetics){
-					return false;
-				}else{
-					return true;
-				}
-			}
-			
 			if (getRole() == ROLE_KOn){
 				// only allow editing "Current" for GeneralCurrentLumpedKinetics
 				if (Kinetics.this instanceof Microscopic_IRRKinetics){

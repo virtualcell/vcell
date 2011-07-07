@@ -38,6 +38,7 @@ import org.vcell.util.document.Versionable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.gui.graph.actions.CartoonToolMiscActions.Reactions;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
@@ -58,6 +59,7 @@ import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
@@ -1901,9 +1903,26 @@ public BioEvent getBioEvent(String name) {
 	return null;
 }
 
+//meaing bimolecular membrane reaction with two membrane species as reactants
+private boolean isMicroscopicKineticLawUsed()
+{
+	ReactionSpec[] reactionSpecs = getReactionContext().getReactionSpecs();
+	for(ReactionSpec rspec : reactionSpecs)
+	{
+		if((!rspec.isExcluded()) && rspec.getReactionStep().getKinetics().getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 public void checkValidity() throws MappingException
 {
+	if(!(getGeometry().getDimension() > 0 && isStoch()) && isMicroscopicKineticLawUsed() )
+	{
+		throw new MappingException("'"+KineticsDescription.Microscopic_irreversible.getDescription()+"'" + " can be used only for spatial stochastic applications. Please choose another kinetic law or disable those reactions in application '" + this.getName() + "'.");
+	}
 	//spatial
 	if(getGeometry().getDimension() > 0) {
 		//

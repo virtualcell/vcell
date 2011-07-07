@@ -333,6 +333,36 @@ public KeyValue getKey() {
 public Kinetics getKinetics() {
 	return fieldKinetics;
 }
+
+public boolean isBimolecularMembraneReactionWithoutCatalyst()
+{
+	//reactions on membrane in a 3D geometry
+	if(this.getStructure() != null && this.getStructure() instanceof Membrane)
+	{
+		//check if reactants are all on membrane and calculate sum of reactants' stoichiometry
+		ReactionParticipant[] rps = this.getReactionParticipants();
+		int order = 0;
+		boolean bAllMembraneReactants = true;
+		for(ReactionParticipant rp : rps)
+		{
+			if(rp instanceof Reactant)
+			{
+				if(!(rp.getStructure() == this.getStructure()))
+				{
+					bAllMembraneReactants = false;
+					break;
+				}
+				order += rp.getStoichiometry();
+			}
+		}
+		//add only if 2nd order membrane reaction
+		if(order == 2 && bAllMembraneReactants && !this.hasCatalyst())
+		{
+			return true;
+		}
+	}
+	return false;
+}
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
 {
 	//
