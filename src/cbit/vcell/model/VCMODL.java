@@ -67,6 +67,8 @@ public class VCMODL {
 	public final static String GeneralLumpedKinetics   	       = "GeneralLumpedKinetics";
 	public final static String GeneralCurrentLumpedKinetics	   = "GeneralCurrentLumpedKinetics";
 	public static final String GeneralPermeabilityKinetics 	   = "GeneralPermeabilityKinetics";
+	public static final String Macroscopic_IRRKinetics 	   	   = "Macroscopic_IRRKinetics";
+	public static final String Microscopic_IRRKinetics 	   	   = "Microscopic_IRRKinetics";
 	public final static String CurrentDensity				   = "CurrentDensity";
 	public final static String LumpedCurrent				   = "LumpedCurrent";
 	public final static String ReactionRate					   = "Rate";
@@ -92,6 +94,12 @@ public class VCMODL {
 	public final static String VmaxFwd						   = "VmaxFwd";
 	public final static String KmRev						   = "KmRev";
 	public final static String VmaxRev						   = "VmaxRev";
+	public final static String Binding_Radius				   = "Binding_Radius";
+	public final static String Kon							   = "Kon";
+	public final static String Diffusion_Reactant1			   = "Diffusion_Reactant1";
+	public final static String Diffusion_Reactant2			   = "Diffusion_Reactant2";
+	public final static String Concentration_Reactant1		   = "Concentration_Reactant1";
+	public final static String Concentration_Reactant2		   = "Concentration_Reactant2";
 	public final static String LumpedReactionRate			   = "LumpedReactionRate";
 	public final static String TotalRate_oldname			   = "TotalRate"; // "TotalRate" is the old name for "LumpedReactionRate"
 	public final static String AssumedCompartmentSize_oldname  = "AssumedCompartmentSize";

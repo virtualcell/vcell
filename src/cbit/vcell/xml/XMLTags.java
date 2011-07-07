@@ -327,6 +327,8 @@ public class XMLTags {
     public final static String KineticsTypeGeneralLumped = "GeneralLumpedKinetics";
     public final static String KineticsTypeGeneralCurrentLumped = "GeneralCurrentLumpedKinetics";
     public static final String KineticsTypeGeneralPermeability = "GeneralPermeabilityKinetics";
+    public static final String KineticsTypeMacroscopic_Irr = "Macroscopic_IrrKinetics";
+    public static final String KineticsTypeMicroscopic_Irr = "Microscopic_IrrKinetics";
     
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ModelParametersTag = "ModelParameters";
@@ -481,6 +483,8 @@ public class XMLTags {
 	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";
 	public final static String ParticleJumpProcessTag = "ParticleJumpProcess";
 	public final static String ParticleProbabilityRateTag = "ParticleProbabilityRate";
+	public final static String MacroscopicRateConstantTag = "MacroscopicRateConstant";
+	public final static String InteractionRadiusTag = "InteractionRadius";
 	public final static String SelectedParticleTag = "SelectedParticle";
 	public final static String ParticlePropertiesTag 		= "ParticleProperties"; // particle
 	public final static String ParticleInitialCountTag			= "ParticleInitialCount"; // particle

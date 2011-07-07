@@ -109,6 +109,7 @@ import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MacroscopicRateConstant;
@@ -120,10 +121,8 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.ParticleProbabilityRate;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
-import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -134,6 +133,7 @@ import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
@@ -155,8 +155,10 @@ import cbit.vcell.model.GeneralPermeabilityKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.NernstKinetics;
@@ -1202,8 +1204,9 @@ private Element getXML(MembraneMapping param) {
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
 	//Add size
-	if(param.getSizeParameter().getExpression() != null)
+	if(param.getSizeParameter().getExpression() != null){
  		membrane.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
+	}
 	
 	// Add area/unit_area and area/unit_vol if they exist
 	if(param.getAreaPerUnitAreaParameter().getExpression() != null) {
@@ -1710,12 +1713,17 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 		particleJumpProcessElement.addContent(e);
 	}
 	//probability rate
-	org.jdom.Element prob = new org.jdom.Element(XMLTags.ParticleProbabilityRateTag);
-	ParticleProbabilityRate particleProbabilityRate = param.getParticleProbabilityRate();
+	Element prob = null;
+	JumpProcessRateDefinition particleProbabilityRate = param.getParticleRateDefinition();
 	if (particleProbabilityRate instanceof MacroscopicRateConstant) {
+		prob = new Element(XMLTags.MacroscopicRateConstantTag);
 		prob.addContent(mangleExpression(((MacroscopicRateConstant)particleProbabilityRate).getExpression()));
-	} else {
-		throw new RuntimeException("ParticleProbabilityRate in XmlProducer not implemented");
+	}else if (particleProbabilityRate instanceof InteractionRadius) {
+		prob = new Element(XMLTags.InteractionRadiusTag);
+		prob.addContent(mangleExpression(((InteractionRadius)particleProbabilityRate).getExpression()));
+	} 
+	else {
+		throw new RuntimeException("ParticleRateDefinition in XmlProducer not implemented");
 	}
 	particleJumpProcessElement.addContent(prob);
 	
@@ -2897,6 +2905,12 @@ private Element getXML(Kinetics param) throws XmlParseException {
 	} else if (param instanceof GeneralPermeabilityKinetics) {
 		//Process a GeneralPermeabilityKinetics
 		kineticsType = XMLTags.KineticsTypeGeneralPermeability;
+	} else if (param instanceof Macroscopic_IRRKinetics) {
+		//Process a Macroscopic_IRRKinetics
+		kineticsType = XMLTags.KineticsTypeMacroscopic_Irr;
+	}  else if (param instanceof Microscopic_IRRKinetics) {
+		//Process a Microscopic_IRRKinetics
+		kineticsType = XMLTags.KineticsTypeMicroscopic_Irr;
 	} 
 	Element kinetics = new Element(XMLTags.KineticsTag);
 	//Add atributes

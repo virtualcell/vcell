@@ -21,7 +21,7 @@ import org.vcell.util.Compare;
 public class ParticleJumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName = null;
 	private List<ParticleVariable> particles = null;
-	private ParticleProbabilityRate  particleProbabilityRate=null;
+	private JumpProcessRateDefinition  rateDefinition = null;
 	private List<Action> actions = null;
 
 /**
@@ -30,11 +30,11 @@ public class ParticleJumpProcess implements org.vcell.util.Matchable,java.io.Ser
  * @param initialExp cbit.vcell.parser.Expression
  * @param rateExp cbit.vcell.parser.Expression
  */
-public ParticleJumpProcess(String name, List<ParticleVariable> particles, ParticleProbabilityRate partProbRate, List<Action> actions)
+public ParticleJumpProcess(String name, List<ParticleVariable> particles, JumpProcessRateDefinition rateDefinition, List<Action> actions)
 {
 	processName = name;
 	this.particles = particles;
-	this.particleProbabilityRate = partProbRate;
+	this.rateDefinition = rateDefinition;
 	this.actions = actions;
 }
 
@@ -61,7 +61,7 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	
 	ParticleJumpProcess jumpProc = (ParticleJumpProcess) object;
 	if(!Compare.isEqual(processName,jumpProc.processName)) return false;//processName
-	if(!Compare.isEqual(particleProbabilityRate,jumpProc.particleProbabilityRate)) return false; //probabilityRate
+	if(!Compare.isEqual(rateDefinition,jumpProc.rateDefinition)) return false; //probabilityRate
 	//actions
 	if((actions != null) && (jumpProc.actions != null))
 	{
@@ -141,8 +141,8 @@ public java.lang.String getName() {
  * Creation date: (6/21/2006 5:31:11 PM)
  * @return cbit.vcell.parser.Expression
  */
-public ParticleProbabilityRate getParticleProbabilityRate() {
-	return particleProbabilityRate;
+public JumpProcessRateDefinition getParticleRateDefinition() {
+	return rateDefinition;
 }
 
 
@@ -158,7 +158,7 @@ public String getVCML()
 	for (ParticleVariable particleVar : particles){
 		buffer.append("\t\t"+VCML.SelectedParticle+"\t"+particleVar.getName()+"\n");
 	}
-	buffer.append("\t\t"+getParticleProbabilityRate().getVCML()+";\n");
+	buffer.append("\t\t"+getParticleRateDefinition().getVCML()+";\n");
 	for(Action action : actions){
 		buffer.append(action.getVCML());
 	}
@@ -169,7 +169,7 @@ public String getVCML()
 public Expression[] getExpressions()
 {
 	ArrayList<Expression> expV = new ArrayList<Expression>();
-	for (Expression exp : getParticleProbabilityRate().getExpressions()){
+	for (Expression exp : getParticleRateDefinition().getExpressions()){
 		expV.add(exp);
 	}
 	for(Action action : actions)
@@ -197,7 +197,7 @@ public static ParticleJumpProcess fromVCML(MathDescription mathDesc, CommentStri
 	}
 	token = tokens.nextToken();
 	ArrayList<ParticleVariable> particles = new ArrayList<ParticleVariable>();
-	ParticleProbabilityRate particleProbRate = null;
+	JumpProcessRateDefinition particleRateDef = null;
 	ArrayList<Action> actions = new ArrayList<Action>();
 	while(!token.equals(VCML.EndBlock)){
 		if (token.equals(VCML.SelectedParticle)){
@@ -211,7 +211,10 @@ public static ParticleJumpProcess fromVCML(MathDescription mathDesc, CommentStri
 			}
 		} else if (token.equals(VCML.MacroscopicRateConstant)){
 			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			particleProbRate = new MacroscopicRateConstant(exp);
+			particleRateDef = new MacroscopicRateConstant(exp);
+		}else if (token.equals(VCML.InteractionRadius)){
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			particleRateDef = new InteractionRadius(exp);
 		} else if (token.equals(VCML.Action)){
 			token = tokens.nextToken();
 			String varName = token;
@@ -233,7 +236,7 @@ public static ParticleJumpProcess fromVCML(MathDescription mathDesc, CommentStri
 		}
 		token = tokens.nextToken();
 	}
-	ParticleJumpProcess pjp = new ParticleJumpProcess(name,particles,particleProbRate,actions);
+	ParticleJumpProcess pjp = new ParticleJumpProcess(name,particles,particleRateDef,actions);
 	return pjp;
 }
 

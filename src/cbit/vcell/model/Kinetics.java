@@ -80,8 +80,16 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_Conductivity	= 12;
 	public static final int ROLE_LumpedReactionRate = 13;
 	public static final int ROLE_LumpedCurrent	= 14;
-
-	public static final int NUM_ROLES			= 15;
+	
+	// spatial stochastic-related roles
+	public static final int ROLE_Binding_Radius  		= 15;
+	public static final int ROLE_KOn  					= 16;
+	public static final int ROLE_Diffusion_Reactant1 	= 17;
+	public static final int ROLE_Diffusion_Reactant2  	= 18;
+	public static final int ROLE_Concentration_Reactant1  = 19;
+	public static final int ROLE_Concentration_Reactant2  = 20;
+	
+	public static final int NUM_ROLES			= 21;
 
 	
 	private static final String RoleDescs[] = {
@@ -100,6 +108,12 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"conductivity",
 		"lumped reaction rate",
 		"lumped current",
+		"binding radius",
+		"reaction forward rate",
+		"diffusion reactant1",
+		"diffusion reactant2",
+		"concentration reactant1",
+		"concentration reactant2",
 	};
 
 
@@ -119,6 +133,12 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.Conductivity,
 		VCMODL.LumpedReactionRate,
 		VCMODL.LumpedCurrent,
+		VCMODL.Binding_Radius,
+		VCMODL.Kon,
+		VCMODL.Diffusion_Reactant1,
+		VCMODL.Diffusion_Reactant2,
+		VCMODL.Concentration_Reactant1,
+		VCMODL.Concentration_Reactant2,
 	};
 
 	private static final String DefaultNames[] = {
@@ -137,6 +157,12 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"C",
 		"LumpedJ",
 		"LumpedI",
+		"Binding_Radius",
+		"Kon",
+		"Diffusion_Reactant1",
+		"Diffusion_Reactant2",
+		"Concentration_Reactant1",
+		"Concentration_Reactant2"
 	};
 
 	private static final RealInterval[] bounds = {
@@ -154,7 +180,13 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Permeability
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conductivity
 		null,   // lumped rate
-		null	// lumped current
+		null,	// lumped current
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Binding radius
+		new RealInterval(0,Double.POSITIVE_INFINITY), // KOn
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Diff_reactant1
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Diff_reactant2
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Conc_reactant1
+		new RealInterval(0,Double.POSITIVE_INFINITY) // Conc_reactant2
 	};
 
 
@@ -233,6 +265,24 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 					return true;
 				}else{
 					return false;
+				}
+			}
+			
+			if (getRole() == ROLE_Binding_Radius){
+				// only allow editing "Current" for GeneralCurrentLumpedKinetics
+				if (Kinetics.this instanceof Macroscopic_IRRKinetics){
+					return false;
+				}else{
+					return true;
+				}
+			}
+			
+			if (getRole() == ROLE_KOn){
+				// only allow editing "Current" for GeneralCurrentLumpedKinetics
+				if (Kinetics.this instanceof Microscopic_IRRKinetics){
+					return false;
+				}else{
+					return true;
 				}
 			}
 			return true;
@@ -1415,11 +1465,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param parm cbit.vcell.model.Parameter
- */
 private boolean isReferenced(Parameter parm, int level) throws ModelException, ExpressionException {
 	//
 	// check for unbounded recursion (level > 10)

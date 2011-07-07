@@ -31,13 +31,13 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    public final static ReservedSymbol Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
+   public final static ReservedSymbol PI_CONSTANT = new ReservedSymbol("_PI_","PI constant",VCUnitDefinition.UNIT_DIMENSIONLESS,new Expression(Math.PI));
    public final static ReservedSymbol FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
    public final static ReservedSymbol FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
    public final static ReservedSymbol N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
    public final static ReservedSymbol K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
    public final static ReservedSymbol GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
    public final static ReservedSymbol KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
- //  public final static ReservedSymbol PI = new ReservedSymbol("pi","\u03C0",null,new Expression(Math.PI));
 
    public final static ReservedSymbol KMOLE;
    static {
@@ -58,6 +58,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    private final static ReservedSymbol[] otherReservedSymbols = {
 	   TEMPERATURE,
 	   GAS_CONSTANT,
+	   PI_CONSTANT,
 	   FARADAY_CONSTANT,
 	   FARADAY_CONSTANT_NMOLE,
 	   KMOLE,
@@ -73,6 +74,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 	   Z,
 	   TEMPERATURE,
 	   GAS_CONSTANT,
+	   PI_CONSTANT,
 	   FARADAY_CONSTANT,
 	   FARADAY_CONSTANT_NMOLE,
 	   KMOLE,
@@ -199,6 +201,13 @@ public boolean isConstant() {
 	return false;  //constantValue!=null;
 }
 
+public boolean isPI_CONSTANT() {
+	if (getName().equals(PI_CONSTANT.getName())){
+		return true;
+	}else{
+		return false;
+	}		
+}
 
 /**
  * This method was created by a SmartGuide.
