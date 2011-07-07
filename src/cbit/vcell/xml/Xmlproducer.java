@@ -103,6 +103,7 @@ import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MacroscopicRateConstant;
@@ -114,7 +115,7 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.ParticleProbabilityRate;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
@@ -1706,12 +1707,17 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 		particleJumpProcessElement.addContent(e);
 	}
 	//probability rate
-	org.jdom.Element prob = new org.jdom.Element(XMLTags.ParticleProbabilityRateTag);
-	ParticleProbabilityRate particleProbabilityRate = param.getParticleProbabilityRate();
+	Element prob = null;
+	JumpProcessRateDefinition particleProbabilityRate = param.getParticleRateDefinition();
 	if (particleProbabilityRate instanceof MacroscopicRateConstant) {
+		prob = new Element(XMLTags.MacroscopicRateConstantTag);
 		prob.addContent(mangleExpression(((MacroscopicRateConstant)particleProbabilityRate).getExpression()));
-	} else {
-		throw new RuntimeException("ParticleProbabilityRate in XmlProducer not implemented");
+	}else if (particleProbabilityRate instanceof InteractionRadius) {
+		prob = new Element(XMLTags.InteractionRadiusTag);
+		prob.addContent(mangleExpression(((InteractionRadius)particleProbabilityRate).getExpression()));
+	} 
+	else {
+		throw new RuntimeException("ParticleRateDefinition in XmlProducer not implemented");
 	}
 	particleJumpProcessElement.addContent(prob);
 	

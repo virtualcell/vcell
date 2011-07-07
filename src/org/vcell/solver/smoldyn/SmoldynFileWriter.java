@@ -48,6 +48,7 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -55,7 +56,7 @@ import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.ParticleProbabilityRate;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.ReservedVariable;
@@ -199,6 +200,8 @@ public class SmoldynFileWriter extends SolverFileWriter
 		//The rate constant for transitions from state1 to state2 of molecules at surface;
 		//The membrane reaction with reactants and products all in volume, use 'rate' instead of using 'reaction' keyword.
 		rate,
+		//The binding radius is used for bimolecular membrane reaction(two reactants all one membrane)
+		binding_radius,
 		
 		max_mol,
 		compartment_mol,
@@ -534,19 +537,25 @@ private void writeReactions() throws ExpressionException, MathException {
 					reactants.add(a.getVar());
 				}
 			}
-			double macroscopicRateConstant = 0;
-			ParticleProbabilityRate ppr = pjp.getParticleProbabilityRate();
-			if(ppr instanceof MacroscopicRateConstant) {
+			double rateDefinition = 0;
+			JumpProcessRateDefinition jprd = pjp.getParticleRateDefinition();
+			if(jprd instanceof MacroscopicRateConstant) {
 				try {
-					macroscopicRateConstant = subsituteFlatten(((MacroscopicRateConstant) ppr).getExpression());
+					rateDefinition = subsituteFlatten(((MacroscopicRateConstant) jprd).getExpression());
 				} catch (NotAConstantException ex) {
-					throw new ExpressionException("reacion rate for jump process " + pjp.getName() + " is not a constant. Constants are required for all reaction rates");
+					throw new ExpressionException("reacion rate for jump process " + pjp.getName() + " is not a constant. Constants are required for all reaction rates.");
+				}
+			} else if(jprd instanceof InteractionRadius) {
+				try {
+					rateDefinition = subsituteFlatten(((InteractionRadius) jprd).getExpression());
+				} catch (NotAConstantException ex) {
+					throw new ExpressionException("interaction radius for jump process " + pjp.getName() + " is not a constant. Constants are required for all interaction radius.");
 				}
 			} else {
-				new RuntimeException("particle probability rate not supported");
+				new RuntimeException("The jump process rate definition is not supported");
 			}
 			
-			if (macroscopicRateConstant == 0) {
+			if (rateDefinition == 0) {
 				continue;
 			}
 			//if the reaction rate is not 0, means we are going to run the simulations
@@ -563,13 +572,13 @@ private void writeReactions() throws ExpressionException, MathException {
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
 				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
-				writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+				writeReactionCommand(reactants, products, subdomain, rateDefinition);
 			} else if (subdomain instanceof MembraneSubDomain){
 				//0th order reaction, product limited to one and it can be on mem or in vol
 				if(reactants.size() == 0 && products.size() == 1)
 				{
 					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-					writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+					writeReactionCommand(reactants, products, subdomain, rateDefinition);
 				}
 				//consuming of a species to nothing, limited to one reactant
 				else if(reactants.size() == 1 && products.size() == 0)
@@ -577,13 +586,13 @@ private void writeReactions() throws ExpressionException, MathException {
 					if(getMembraneVariableCount(reactants) == 1)//consuming a mem species in mem reaction
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						writeReactionCommand(reactants, products, subdomain, rateDefinition);
 					}
 					//consuming a vol spcies in mem reaction
 					//it equals to adsorption, species A from vol adsorbed to mem as again species A, and then we kill the speceis A on mem.
 					else if(getVolumeVariableCount(reactants) == 1)
 					{
-						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						writeRateTransitionCommand(reactants, products, subdomain, rateDefinition);
 						String speciesName = reactants.get(0).getName();
 						String killMolCmd = "cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)";
 						killMolCommands.add(killMolCmd);
@@ -597,11 +606,11 @@ private void writeReactions() throws ExpressionException, MathException {
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						writeReactionCommand(reactants, products, subdomain, rateDefinition);
 					}
 					else//Other single molecular reactions
 					{
-						writeRateTransitionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						writeRateTransitionCommand(reactants, products, subdomain, rateDefinition);
 					}
 				}
 				else //membrane reactions which are not one to one, or 0th order, or consuming species
@@ -610,11 +619,19 @@ private void writeReactions() throws ExpressionException, MathException {
 					if((getMembraneVariableCount(reactants) == 1))
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, macroscopicRateConstant);
+						writeReactionCommand(reactants, products, subdomain, rateDefinition);
 					}
-					else 
+					else // bimolecular membrane reaction
 					{
-						throw new MathException("For 2nd order reactions, VCell spatial stochastic solver requires at least ONE and ONLY ONE membrane bound reactant.");
+						if(jprd instanceof InteractionRadius)
+						{
+							printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+							writeReactionByInteractionRadius(reactants, products, subdomain, rateDefinition, pjp.getName());
+						}
+						else
+						{
+							throw new MathException("VCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
+						}
 					}
 				}
 			}
@@ -648,6 +665,35 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 				
 	printWriter.println(" " + rateConstant);
 }
+
+
+private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double interactionRadius, String reactionName) throws MathException
+{
+	if (reacts.size() == 0) {
+		printWriter.print(0);
+	} else {
+		// find state for each molecule ... (up) for membrane, (fsoln) for front soluble, (bsoln) for back soluble
+		printWriter.print(getVariableName(reacts.get(0),subdomain));
+		for (int i = 1; i < reacts.size(); i ++) {
+			printWriter.print(" + " + getVariableName(reacts.get(i),subdomain));
+		}
+	}
+	printWriter.print(" -> ");
+	// products
+	if (prods.size() == 0) {
+		printWriter.print(0);
+	} else {
+		printWriter.print(getVariableName(prods.get(0),subdomain));
+		for (int i = 1; i < prods.size(); i ++) {
+			printWriter.print(" + " + getVariableName(prods.get(i),subdomain));
+		}
+	}
+	//not rate constant is printed. go to next line.			
+	printWriter.println();
+	//print binding radius to override smoldyn auto-calculated radius.
+	printWriter.println(SmoldynKeyword.binding_radius + " " + reactionName + " " + interactionRadius);
+}
+
 //used to write molecule transition rate command when it interacts with surface, the possible states can be 
 //reflection, transmission, adsorption, desorption  
 private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException

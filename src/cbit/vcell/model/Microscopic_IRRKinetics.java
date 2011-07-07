@@ -125,7 +125,7 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 			}
 			
 			if (kOnParam != null) {
-				kOnParam.setUnitDefinition(VCUnitDefinition.UNIT_per_uM_per_s);
+				kOnParam.setUnitDefinition(VCUnitDefinition.UNIT_per_s.divideBy(VCUnitDefinition.UNIT_molecules_per_um2));
 			}
 			
 			if (diff_react_1Param != null) {
@@ -200,13 +200,15 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 		currentParm.setExpression(new Expression(0.0));
 		
 		// Kon parameter
-		Expression b = Expression.max(getSymbolExpression(conc_react1Param), getSymbolExpression(conc_react2Param));
-		Expression sumD = Expression.add(getSymbolExpression(diff_react1Param), getSymbolExpression(diff_react2Param));
+		Expression Pa = Expression.max(getSymbolExpression(conc_react1Param), getSymbolExpression(conc_react2Param));
+		Expression sqrt_Pa_PI = Expression.sqrt(Expression.mult(Pa, getSymbolExpression(ReservedSymbol.PI_CONSTANT))); //sqrt(Pa*PI)
+		Expression b = Expression.div(new Expression(1), sqrt_Pa_PI); //  1/sqrt(Pa*PI)
 		Expression ln_b = Expression.log(b);
 		Expression ln_Radius = Expression.log(getSymbolExpression(bindingRadiusParam));
-		Expression numeratorExp = Expression.mult(new Expression(2.0), new Expression(ReservedSymbol.PI_CONSTANT.getName()), sumD);
-		Expression denominatorExp = Expression.add(ln_b, Expression.negate(ln_Radius));
-		Expression kOnExp = Expression.div(numeratorExp, denominatorExp);
+		Expression sumD = Expression.add(getSymbolExpression(diff_react1Param), getSymbolExpression(diff_react2Param));
+		Expression exp2_PI_D = Expression.mult(new Expression(2.0), getSymbolExpression(ReservedSymbol.PI_CONSTANT), sumD); //2*PI*D
+		Expression expLnb_LnR = Expression.add(ln_b, Expression.negate(ln_Radius)); //Lnb-LnR
+		Expression kOnExp = Expression.div(exp2_PI_D, expLnb_LnR); // Kon = 2*PI*D/Ln(b/R)
 		
 		if (kOnParam != null && kOn_exp != null) {
 			kOnParam.setExpression(kOnExp);

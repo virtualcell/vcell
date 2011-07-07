@@ -113,8 +113,10 @@ import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -2106,10 +2108,32 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 	}
 	
 	//probability rate
+	JumpProcessRateDefinition jprd = null;
+	//for old models
 	Element pb = param.getChild(XMLTags.ParticleProbabilityRateTag, vcNamespace);
-	Expression exp = unMangleExpression(pb.getText());
-	MacroscopicRateConstant mrc = new MacroscopicRateConstant(exp);
-		
+	if(pb != null)
+	{
+		Expression exp = unMangleExpression(pb.getText());
+		jprd = new MacroscopicRateConstant(exp);
+	}
+	else //for new models
+	{
+		pb = param.getChild(XMLTags.MacroscopicRateConstantTag, vcNamespace);
+		if(pb != null) //jump process rate defined by macroscopic rate constant
+		{
+			Expression exp = unMangleExpression(pb.getText());
+			jprd = new MacroscopicRateConstant(exp);
+		}
+		else //jump process rate defined by binding radius
+		{
+			pb = param.getChild(XMLTags.InteractionRadiusTag, vcNamespace);
+			if(pb != null)
+			{
+				Expression exp = unMangleExpression(pb.getText());
+				jprd = new InteractionRadius(exp);
+			}
+		}
+	}
 	//add actions
 	List<Action> actionList = new ArrayList<Action>();	
 	iterator = param.getChildren(XMLTags.ActionTag, vcNamespace).iterator();
@@ -2126,7 +2150,7 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 		}
 	}
 	
-	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, mrc, actionList);
+	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, jprd, actionList);
 	
 	return jump;
 }

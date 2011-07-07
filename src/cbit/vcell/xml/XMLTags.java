@@ -478,6 +478,8 @@ public class XMLTags {
 	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";
 	public final static String ParticleJumpProcessTag = "ParticleJumpProcess";
 	public final static String ParticleProbabilityRateTag = "ParticleProbabilityRate";
+	public final static String MacroscopicRateConstantTag = "MacroscopicRateConstant";
+	public final static String InteractionRadiusTag = "InteractionRadius";
 	public final static String SelectedParticleTag = "SelectedParticle";
 	public final static String ParticlePropertiesTag 		= "ParticleProperties"; // particle
 	public final static String ParticleInitialCountTag			= "ParticleInitialCount"; // particle
