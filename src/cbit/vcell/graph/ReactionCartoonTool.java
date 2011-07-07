@@ -953,132 +953,134 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							break;
 						} else if (startShapeObject instanceof SpeciesContext) {
 							SpeciesContext speciesContextStart = (SpeciesContext) startShapeObject;
-							Structure structureEnd = speciesContextEnd.getStructure();
-							Structure structureStart = speciesContextStart.getStructure();
-							Species speciesStart = speciesContextStart.getSpecies();
-							Species speciesEnd = speciesContextEnd.getSpecies();
-							boolean bDone = false;
-							if(!bDone && speciesStart.equals(speciesEnd)) {
-								Membrane membraneBetween = null;
-								if(structureEnd instanceof Feature && structureStart instanceof Feature) {
-									membraneBetween = getReactionCartoon().getModel()
-									.getMembrane((Feature) structureStart, (Feature) structureEnd);
+							if(!speciesContextStart.equals(speciesContextEnd)) {
+								Structure structureEnd = speciesContextEnd.getStructure();
+								Structure structureStart = speciesContextStart.getStructure();
+								Species speciesStart = speciesContextStart.getSpecies();
+								Species speciesEnd = speciesContextEnd.getSpecies();
+								boolean bDone = false;
+								if(!bDone && speciesStart.equals(speciesEnd)) {
+									Membrane membraneBetween = null;
+									if(structureEnd instanceof Feature && structureStart instanceof Feature) {
+										membraneBetween = getReactionCartoon().getModel()
+										.getMembrane((Feature) structureStart, (Feature) structureEnd);
+									}
+									if(membraneBetween != null) {
+										Species fluxCarrier = speciesStart;
+										FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(membraneBetween);
+										flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+										getReactionCartoon().notifyChangeEvent();
+										Point startPos = edgeShape.getStart();
+										Point endPos = edgeShape.getEnd();
+										positionShapeForObject(membraneBetween, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(flux);
+										bDone = true;
+									}
 								}
-								if(membraneBetween != null) {
-									Species fluxCarrier = speciesStart;
-									FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(membraneBetween);
-									flux.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+								if(!bDone && !speciesStart.equals(speciesEnd)) {
+									Membrane membraneBetween = null;
+									if(structureEnd instanceof Feature && structureStart instanceof Feature) {
+										membraneBetween = getReactionCartoon().getModel()
+										.getMembrane((Feature) structureStart, (Feature) structureEnd);
+									}
+									if(membraneBetween != null) {
+										SimpleReaction simpleReaction = getReactionCartoon().getModel().createSimpleReaction(membraneBetween);
+										simpleReaction.addReactant(speciesContextStart, 1);
+										simpleReaction.addProduct(speciesContextEnd, 1);
+										getReactionCartoon().notifyChangeEvent();
+										Point startPos = edgeShape.getStart();
+										Point endPos = edgeShape.getEnd();
+										positionShapeForObject(membraneBetween, simpleReaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(simpleReaction);
+										bDone = true;
+									}
+								}
+								if(!bDone && structureEnd.equals(structureStart)) {
+									Model model = getReactionCartoon().getModel();
+									SimpleReaction reaction = model.createSimpleReaction(structureEnd);
+									reaction.addReactant(speciesContextStart, 1);
+									reaction.addProduct(speciesContextEnd, 1);
 									getReactionCartoon().notifyChangeEvent();
-									Point startPos = edgeShape.getStart();
-									Point endPos = edgeShape.getEnd();
-									positionShapeForObject(membraneBetween, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-									getGraphModel().clearSelection();
-									getGraphModel().select(flux);
-									bDone = true;
-								}
-							}
-							if(!bDone && !speciesStart.equals(speciesEnd)) {
-								Membrane membraneBetween = null;
-								if(structureEnd instanceof Feature && structureStart instanceof Feature) {
-									membraneBetween = getReactionCartoon().getModel()
-									.getMembrane((Feature) structureStart, (Feature) structureEnd);
-								}
-								if(membraneBetween != null) {
-									SimpleReaction simpleReaction = getReactionCartoon().getModel().createSimpleReaction(membraneBetween);
-									simpleReaction.addReactant(speciesContextStart, 1);
-									simpleReaction.addProduct(speciesContextEnd, 1);
-									getReactionCartoon().notifyChangeEvent();
-									Point startPos = edgeShape.getStart();
-									Point endPos = edgeShape.getEnd();
-									positionShapeForObject(membraneBetween, simpleReaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-									getGraphModel().clearSelection();
-									getGraphModel().select(simpleReaction);
-									bDone = true;
-								}
-							}
-							if(!bDone && structureEnd.equals(structureStart)) {
-								Model model = getReactionCartoon().getModel();
-								SimpleReaction reaction = model.createSimpleReaction(structureEnd);
-								reaction.addReactant(speciesContextStart, 1);
-								reaction.addProduct(speciesContextEnd, 1);
-								getReactionCartoon().notifyChangeEvent();
-								Point endPos = endShape.getSpaceManager().getAbsLoc();
-								Point startPos = startShape.getSpaceManager().getAbsLoc();
-								positionShapeForObject(structureEnd, reaction, new Point(
-										(endPos.x + startPos.x)/2, 
-										(endPos.y + startPos.y)/2));
-								getGraphModel().clearSelection();
-								getGraphModel().select(reaction);
-								getReactionCartoon().notifyChangeEvent();
-							} else if(!bDone && structureEnd instanceof Membrane && structureStart instanceof Feature) {
-								Membrane endMembrane = (Membrane)structureEnd;
-								Feature startFeature = (Feature)structureStart;
-								if(endMembrane.getOutsideFeature().equals(startFeature) || endMembrane.getInsideFeature().equals(startFeature))
-								{
-									SpeciesContext speciesContext1 = speciesContextStart;
-									SpeciesContext speciesContext2 = speciesContextEnd;
-									SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(endMembrane);
-									reaction.addReactant(speciesContext1, 1);
-									reaction.addProduct(speciesContext2, 1);
-									getReactionCartoon().notifyChangeEvent();
-									Point startPos = edgeShape.getStart();
 									Point endPos = endShape.getSpaceManager().getAbsLoc();
-									positionShapeForObject(structureStart, speciesContext1, startPos);
-									positionShapeForObject(structureEnd, speciesContext2, endPos);
-									//finding correct insertion point for reaction, statements below should be put into a utility if used often
-									int memAbsXmin = endShape.getSpaceManager().getAbsLoc().x;
-									int memAbsXmax = memAbsXmin + endShape.getSpaceManager().getSize().width;
-									int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
-									int reactionAbsX = (startPos.x + endPos.x)/2;
-									if((memAbsXmax - memAbsXmin)<=reactionWidth)
-									{
-										reactionAbsX = memAbsXmin;
-									}
-									else
-									{
-										reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
-										reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
-									}
-									
-									positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+									Point startPos = startShape.getSpaceManager().getAbsLoc();
+									positionShapeForObject(structureEnd, reaction, new Point(
+											(endPos.x + startPos.x)/2, 
+											(endPos.y + startPos.y)/2));
 									getGraphModel().clearSelection();
 									getGraphModel().select(reaction);
-								}
-							}
-							else if(!bDone && structureEnd instanceof Feature && structureStart instanceof Membrane)
-							{
-								Membrane startMembrane = (Membrane) structureStart;
-								Feature endFeature = (Feature) structureEnd;
-								if(startMembrane.getOutsideFeature().equals(endFeature) || startMembrane.getInsideFeature().equals(endFeature))
-								{
-									SpeciesContext speciesContext1 = speciesContextStart;
-									SpeciesContext speciesContext2 = speciesContextEnd;
-									SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startMembrane);
-									reaction.addReactant(speciesContext1, 1);
-									reaction.addProduct(speciesContext2, 1);
 									getReactionCartoon().notifyChangeEvent();
-									Point startPos = edgeShape.getStart();
-									Point endPos = endShape.getSpaceManager().getAbsLoc();
-									positionShapeForObject(structureStart, speciesContext1, startPos);
-									positionShapeForObject(structureEnd, speciesContext2, endPos);
-									//finding correct insertion point for reaction, statements below should be put into a utility if used often
-									int memAbsXmin = startShape.getSpaceManager().getAbsLoc().x;
-									int memAbsXmax = memAbsXmin + startShape.getSpaceManager().getSize().width;
-									int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
-									int reactionAbsX = (startPos.x + endPos.x)/2;
-									if((memAbsXmax - memAbsXmin)<=reactionWidth)
+								} else if(!bDone && structureEnd instanceof Membrane && structureStart instanceof Feature) {
+									Membrane endMembrane = (Membrane)structureEnd;
+									Feature startFeature = (Feature)structureStart;
+									if(endMembrane.getOutsideFeature().equals(startFeature) || endMembrane.getInsideFeature().equals(startFeature))
 									{
-										reactionAbsX = memAbsXmin;
+										SpeciesContext speciesContext1 = speciesContextStart;
+										SpeciesContext speciesContext2 = speciesContextEnd;
+										SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(endMembrane);
+										reaction.addReactant(speciesContext1, 1);
+										reaction.addProduct(speciesContext2, 1);
+										getReactionCartoon().notifyChangeEvent();
+										Point startPos = edgeShape.getStart();
+										Point endPos = endShape.getSpaceManager().getAbsLoc();
+										positionShapeForObject(structureStart, speciesContext1, startPos);
+										positionShapeForObject(structureEnd, speciesContext2, endPos);
+										//finding correct insertion point for reaction, statements below should be put into a utility if used often
+										int memAbsXmin = endShape.getSpaceManager().getAbsLoc().x;
+										int memAbsXmax = memAbsXmin + endShape.getSpaceManager().getSize().width;
+										int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
+										int reactionAbsX = (startPos.x + endPos.x)/2;
+										if((memAbsXmax - memAbsXmin)<=reactionWidth)
+										{
+											reactionAbsX = memAbsXmin;
+										}
+										else
+										{
+											reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
+											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
+										}
+
+										positionShapeForObject(endMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(reaction);
 									}
-									else
+								}
+								else if(!bDone && structureEnd instanceof Feature && structureStart instanceof Membrane)
+								{
+									Membrane startMembrane = (Membrane) structureStart;
+									Feature endFeature = (Feature) structureEnd;
+									if(startMembrane.getOutsideFeature().equals(endFeature) || startMembrane.getInsideFeature().equals(endFeature))
 									{
-										reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
-										reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
+										SpeciesContext speciesContext1 = speciesContextStart;
+										SpeciesContext speciesContext2 = speciesContextEnd;
+										SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startMembrane);
+										reaction.addReactant(speciesContext1, 1);
+										reaction.addProduct(speciesContext2, 1);
+										getReactionCartoon().notifyChangeEvent();
+										Point startPos = edgeShape.getStart();
+										Point endPos = endShape.getSpaceManager().getAbsLoc();
+										positionShapeForObject(structureStart, speciesContext1, startPos);
+										positionShapeForObject(structureEnd, speciesContext2, endPos);
+										//finding correct insertion point for reaction, statements below should be put into a utility if used often
+										int memAbsXmin = startShape.getSpaceManager().getAbsLoc().x;
+										int memAbsXmax = memAbsXmin + startShape.getSpaceManager().getSize().width;
+										int reactionWidth = new SimpleReactionShape(reaction, getReactionCartoon()).getSpaceManager().getSize().width;
+										int reactionAbsX = (startPos.x + endPos.x)/2;
+										if((memAbsXmax - memAbsXmin)<=reactionWidth)
+										{
+											reactionAbsX = memAbsXmin;
+										}
+										else
+										{
+											reactionAbsX = Math.max(reactionAbsX, memAbsXmin);
+											reactionAbsX = Math.min(reactionAbsX, (memAbsXmax-reactionWidth));
+										}
+
+										positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
+										getGraphModel().clearSelection();
+										getGraphModel().select(reaction);
 									}
-									
-									positionShapeForObject(startMembrane, reaction, new Point(reactionAbsX, (startPos.y + endPos.y)/2));
-									getGraphModel().clearSelection();
-									getGraphModel().select(reaction);
 								}
 							}
 						} else if(startShapeObject instanceof Structure) {
