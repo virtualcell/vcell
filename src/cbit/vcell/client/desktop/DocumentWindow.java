@@ -1532,11 +1532,8 @@ private javax.swing.JProgressBar getJProgressBarMemory() {
 			ivjJProgressBarMemory.setName("JProgressBarMemory");
 			ivjJProgressBarMemory.setMinimum(0);
 			ivjJProgressBarMemory.setStringPainted(true);
-			// user code begin {1}
-			// user code end
+			ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
