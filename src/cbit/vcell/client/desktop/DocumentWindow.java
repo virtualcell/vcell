@@ -1511,7 +1511,6 @@ private javax.swing.JProgressBar getJProgressBarConnection() {
  * Return the JProgressBarMemory property value.
  * @return javax.swing.JProgressBar
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JProgressBar getJProgressBarMemory() {
 	if (ivjJProgressBarMemory == null) {
 		try {
@@ -1519,11 +1518,8 @@ private javax.swing.JProgressBar getJProgressBarMemory() {
 			ivjJProgressBarMemory.setName("JProgressBarMemory");
 			ivjJProgressBarMemory.setMinimum(0);
 			ivjJProgressBarMemory.setStringPainted(true);
-			// user code begin {1}
-			// user code end
+			ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
