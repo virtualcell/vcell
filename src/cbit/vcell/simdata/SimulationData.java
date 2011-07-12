@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -19,7 +20,6 @@ import java.util.zip.ZipFile;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -42,13 +42,11 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FunctionFileGenerator;
-import cbit.vcell.solvers.LocalSolverController;
 /**
  * This type was created in VisualAge.
  */
@@ -366,11 +364,11 @@ private void getFunctionDataIdentifiers(OutputContext outputContext) throws Data
 	if (dataSetIdentifierList.size() != 0 && !getIsODEData()){
 		
 		// remove functions from dataIdentifiers since we are reading functions again
-		for (int i = 0; i < dataSetIdentifierList.size(); i ++) {
-			DataSetIdentifier dsi = dataSetIdentifierList.elementAt(i);
+		Iterator<DataSetIdentifier> iter = dataSetIdentifierList.iterator();
+		while (iter.hasNext()) {
+			DataSetIdentifier dsi = iter.next();
 			if (dsi.isFunction()) {
-				dataSetIdentifierList.removeElement(dsi);
-				i --;
+				iter.remove();
 			}
 		}
 	

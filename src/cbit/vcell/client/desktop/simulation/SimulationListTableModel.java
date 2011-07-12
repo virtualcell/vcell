@@ -224,8 +224,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				if (aValue instanceof Double){
 					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 					double newEndTime = (Double) aValue;
-					ClientTaskManager.changeEndTime(ownerTable, solverTaskDescription, newEndTime);
-					simulation.setIsDirty(true);
+					if (newEndTime != solverTaskDescription.getTimeBounds().getEndingTime()) {
+						ClientTaskManager.changeEndTime(ownerTable, solverTaskDescription, newEndTime);
+						simulation.setIsDirty(true);
+					}
 				}
 				break;
 			case COLUMN_OUTPUT:
@@ -276,7 +278,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					} else if (ots instanceof ExplicitOutputTimeSpec) {
 						newOts = ExplicitOutputTimeSpec.fromString((String) aValue);
 					}
-					if (newOts != null) {
+					if (newOts != null && !newOts.compareEqual(ots)) {
 						solverTaskDescription.setOutputTimeSpec(newOts);
 						simulation.setIsDirty(true);
 					}
