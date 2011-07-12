@@ -10,7 +10,9 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
@@ -33,6 +35,7 @@ import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
@@ -162,9 +165,8 @@ private Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesConte
  * Output: Expression. the probability expression.
  * Creation date: (9/14/2006 3:22:58 PM)
  */
-public Expression getProbabilityRate(ReactionStep rs, Expression rateConstant, boolean isForwardDirection) throws MappingException
+public Expression getProbabilityRate(List<ReactionParticipant> involvedRPs, Expression rateConstant, ReactionStep reactionStep) throws MappingException
 {
-	ReactionStep reactionStep = rs;
 	Expression probExp = null;
 	//get kinetics of the reaction step
 	Kinetics kinetics = reactionStep.getKinetics();
@@ -172,119 +174,57 @@ public Expression getProbabilityRate(ReactionStep rs, Expression rateConstant, b
 	Expression rxnProbabilityExpr = null; 	//to compose the stochastic variable(species) expression, e.g. s*(s-1)*(s-2)* speciesFactor.
 	Expression factorExpr = null; //to compose the factor that the probability expression multiplies with, which convert the rate expression under stochastic context
 	//the structure where reaction happens
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure());
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 	try 
 	{
-		if(isForwardDirection) // forward reaction
+		//get the reaction rate constant and convert it to rate of Number of particles
+		rateConstantExpr = rateConstant;
+	    // get convert factor for rate constant( membrane:rateConstant*membrane_Size (factor is membrane_size), feature : rateConstant*(feature_size/KMole)(factor is feature_size/KMOLE)) )
+	    if(sm.getStructure() instanceof Membrane) {
+	    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
+	    } else {
+	    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
+	    	Expression kmoleExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
+	    	factorExpr = Expression.div(factorExpr, kmoleExpr);
+		}
+		
+		//complete the probability expression by the reactants' stoichiometries 
+		for (ReactionParticipant rp : involvedRPs)
 		{
-			//get the reaction rate constant and convert it to rate of Number of particles
-			rateConstantExpr = rateConstant;
-		    // get convert factor for rate constant( membrane:rateConstant*membrane_Size (factor is membrane_size), feature : rateConstant*(feature_size/KMole)(factor is feature_size/KMOLE)) )
-		    if(sm.getStructure() instanceof Membrane) {
-		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    } else {
-		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression kmoleExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
-		    	factorExpr = Expression.div(factorExpr, kmoleExpr);
+			int stoichiometry = rp.getStoichiometry();
+			//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
+			StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(rp.getStructure());
+			Expression speciesFactor = null;//factor expression for species
+			//convert speceis' unit from moles/liter to molecules.
+			if(reactSM.getStructure() instanceof Membrane) {
+				speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
+			} else {
+				Expression numExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
+				Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
+				speciesFactor =  Expression.div(numExpr, denomExpr);
 			}
-			
-			//complete the probability expression by the reactants' stoichiometries 
-			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
-			for (int i=0; i<reacPart.length; i++)
-			{
-				int stoichiometry = 0;
-				if(reacPart[i] instanceof Reactant) 
-				{ 
-					stoichiometry = ((Reactant)reacPart[i]).getStoichiometry();
-					//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
-					Expression speciesFactor = null;//factor expression for species
-					//convert speceis' unit from moles/liter to molecules.
-					if(reactSM.getStructure() instanceof Membrane) {
-						speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
-					} else {
-						Expression numExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
-						Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
-						speciesFactor =  Expression.div(numExpr, denomExpr);
-					}
-					//s*(s-1)(s-2)..(s-stoi+1)
-					SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[i].getSpeciesContext());
-					Expression spCount_exp = new Expression(spCountParam, getNameScope());
-					Expression tempExpr = new Expression(spCount_exp);//species from uM to No. of Particles, form s*(s-1)*(s-2)
-					for(int j = 1; j < stoichiometry; j++) {
-						tempExpr = Expression.mult(tempExpr, Expression.add(spCount_exp, new Expression(-j)));
-					}
-					//update total factor with speceies factor
-					if(stoichiometry == 1) {
-						factorExpr = Expression.mult(factorExpr, speciesFactor);
-					} else if (stoichiometry > 1) {
-						// rxnProbExpr * (structSize^stoichiometry)
-						Expression powerExpr = Expression.power(speciesFactor, new Expression(stoichiometry));
-						factorExpr = Expression.mult(factorExpr, powerExpr);
-					}
-					if (rxnProbabilityExpr == null) {
-						rxnProbabilityExpr = new Expression(tempExpr);
-					} else {//for more than one reactant
-						rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, tempExpr);
-					}
-				}
+			//s*(s-1)(s-2)..(s-stoi+1)
+			SpeciesCountParameter spCountParam = getSpeciesCountParameter(rp.getSpeciesContext());
+			Expression spCount_exp = new Expression(spCountParam, getNameScope());
+			Expression tempExpr = new Expression(spCount_exp);//species from uM to No. of Particles, form s*(s-1)*(s-2)
+			for(int j = 1; j < stoichiometry; j++) {
+				tempExpr = Expression.mult(tempExpr, Expression.add(spCount_exp, new Expression(-j)));
 			}
-		} 
-		else // reverse reaction
-		{
-			rateConstantExpr = rateConstant;
-		    // get convert factor for rate constant( membrane:rateConstant*membrane_Size (factor is membrane_size), feature : rateConstant*(feature_size/KMole)(factor is feature_size/KMOLE)) ) 
-		    if(sm.getStructure() instanceof Membrane) {
-		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    } else {
-		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
-		    	factorExpr = Expression.div(factorExpr, denominatorExpr);
+			//update total factor with speceies factor
+			if(stoichiometry == 1) {
+				factorExpr = Expression.mult(factorExpr, speciesFactor);
+			} else if (stoichiometry > 1) {
+				// rxnProbExpr * (structSize^stoichiometry)
+				Expression powerExpr = Expression.power(speciesFactor, new Expression(stoichiometry));
+				factorExpr = Expression.mult(factorExpr, powerExpr);
 			}
-		    
-			//complete the remaining part of the probability expression by the products' stoichiometries.
-			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
-			
-			for (int i=0; i<reacPart.length; i++)
-			{
-				int stoichiometry = 0;
-				if(reacPart[i] instanceof Product) 
-				{ 
-					stoichiometry = ((Product)reacPart[i]).getStoichiometry();
-					//******the following part is to form the s*(s-1)*(s-2)...(s-stoi+1).portion of the probability rate.
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
-					Expression speciesFactor = null;//factor expression for species
-					//convert speceis' unit from moles/liter to molecules. 
-					if(reactSM.getStructure() instanceof Membrane) {
-						speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
-					} else {
-						Expression numExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
-						Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
-						speciesFactor =  Expression.div(numExpr, denomExpr);
-					}
-					//s*(s-1)*(s-2)...(s-stoi+1)
-					SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[i].getSpeciesContext());
-					Expression spCount_exp = new Expression(spCountParam, getNameScope());
-					Expression tempExpr = new Expression(spCount_exp);//species from uM to No. of Particles, form s*(s-1)*(s-2)
-					for(int j = 1; j < stoichiometry; j++) {
-						tempExpr = Expression.mult(tempExpr, Expression.add(spCount_exp, new Expression(-j)));
-					}
-					//update total factor with speceies factor
-					if(stoichiometry == 1) {
-						factorExpr = Expression.mult(factorExpr, speciesFactor);
-					} else if (stoichiometry > 1) {
-						// rxnProbExpr * (structSize^stoichiometry)
-						Expression powerExpr = Expression.power(speciesFactor, new Expression(stoichiometry));
-						factorExpr = Expression.mult(factorExpr, powerExpr);
-					}
-					if (rxnProbabilityExpr == null) {
-						rxnProbabilityExpr = new Expression(tempExpr);
-					} else {
-						rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, tempExpr);
-					}
-				}
+			if (rxnProbabilityExpr == null) {
+				rxnProbabilityExpr = new Expression(tempExpr);
+			} else {//for more than one reactant
+				rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, tempExpr);
 			}
 		}
+
 
 		// Now construct the probability expression.
 		if(rateConstantExpr == null) {
@@ -655,6 +595,8 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 				// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
 				Expression forwardRate = null;
 				Expression reverseRate = null;
+				List<ReactionParticipant> reactants = null;
+				List<ReactionParticipant> products = null;
 				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 					kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
@@ -669,10 +611,12 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						if(maFunc.getForwardRate() != null)
 						{
 							forwardRate = maFunc.getForwardRate();
+							reactants = maFunc.getReactants();
 						}
 						if(maFunc.getReverseRate() != null)
 						{
 							reverseRate = maFunc.getReverseRate();
+							products = maFunc.getProducts();
 						}
 					}
 				}
@@ -687,6 +631,19 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						try{
 							MassActionSolver.substituteParameters(KonCopy, true).evaluateConstant();
 							forwardRate = new Expression(Kon);
+							//get reactants
+							ReactionParticipant[] reactionParticipants = reactionStep.getReactionParticipants();
+							for(ReactionParticipant rp: reactionParticipants)
+							{
+								if(rp instanceof Reactant || rp instanceof Catalyst)
+								{	
+									if(reactants == null)
+									{
+										reactants = new ArrayList<ReactionParticipant>();
+									}
+									reactants.add(rp);
+								}
+							}
 						}catch(ExpressionException e)
 						{
 							throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Problem with Kon parameter in " + reactionStep.getName() +":  '" + KonCopy.infix() + "', " + e.getMessage()));
@@ -719,7 +676,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 					Expression exp = null;
 									
 					// reactions are of mass action form
-					exp = getProbabilityRate(reactionStep, forwardRate, true);
+					exp = getProbabilityRate(reactants, forwardRate, reactionStep);
 					
 					MathMapping.ProbabilityParameter probParm = null;
 					try{
@@ -770,7 +727,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 					Expression exp = null;
 					
 					// reactions are mass actions
-					exp = getProbabilityRate(reactionStep, reverseRate, false);
+					exp = getProbabilityRate(products, reverseRate, reactionStep);
 					
 					MathMapping.ProbabilityParameter probRevParm = null;
 					try{
