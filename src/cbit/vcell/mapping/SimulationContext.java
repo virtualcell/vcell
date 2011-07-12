@@ -1733,6 +1733,9 @@ public void setGeometry(Geometry geometry) throws MappingException {
 				if (fieldAnalysisTasks != null) {
 					setAnalysisTasks(null);
 				}
+				if (oldGeometry!=null && geometry!=null && oldGeometry.getDimension()==0 && geometry.getDimension()>0){
+					initializeForSpatial();
+				}
 			} catch (PropertyVetoException e) {				
 				e.printStackTrace(System.out);
 				throw new MappingException(e.getMessage());
@@ -2160,4 +2163,12 @@ public boolean isSameTypeAs(SimulationContext simulationContext) {
 public boolean isValidForFitting() {
 	return getGeometry().getDimension() == 0 && !isStoch();
 }
+
+private void initializeForSpatial() {
+	SpeciesContextSpec[] speciesContextSpec = getReactionContext().getSpeciesContextSpecs();
+	for(int i=0;i<speciesContextSpec.length;i++){
+		speciesContextSpec[i].initializeForSpatial();
+	}
+}
+
 }

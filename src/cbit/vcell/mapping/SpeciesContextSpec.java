@@ -318,7 +318,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 				}
 			} 
 		} 
-		
 	}
 
 	
@@ -421,6 +420,28 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 	refreshDependencies();
 }            
 
+public void initializeForSpatial() {
+	if(getDiffusionParameter() != null && getDiffusionParameter().getExpression() != null && getDiffusionParameter().getExpression().isZero()) {
+		Expression e = null;
+		if(speciesContext.getStructure() instanceof Feature) {
+			e = new Expression(10.0);
+		} else if(speciesContext.getStructure() instanceof Membrane) {
+			e = new Expression(0.1);
+		} else {
+			e = new Expression(1.0);
+		}
+		try {
+			getDiffusionParameter().setExpression(e);
+		} catch (ExpressionBindingException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage());
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage());
+		}
+	}
+}
+
 
 public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
 	this.speciesContext = speciesContext;
@@ -462,7 +483,8 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 					RoleDescriptions[ROLE_InitialCount]);
 		}
 	}
-	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(1.0),
+
+	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate], new Expression(0.0),
 														ROLE_DiffusionRate,VCUnitDefinition.UNIT_um2_per_s,
 														RoleDescriptions[ROLE_DiffusionRate]);
 
