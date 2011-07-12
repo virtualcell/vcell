@@ -427,16 +427,38 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 				commandLine.append(TokenMangler.getEscapedPathName(cmd[i]));
 			}
 			System.out.println(commandLine);
+			char charArrayOut[] = new char[10000];
+			char charArrayErr[] = new char[10000];
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
 			Process process = processBuilder.start();
-			InputStream is = process.getInputStream();
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
-//			String line;
+			InputStream errorStream = process.getErrorStream();
+			InputStreamReader errisr = new InputStreamReader(errorStream);
+			InputStream outputStream = process.getInputStream();
+			InputStreamReader outisr = new InputStreamReader(outputStream);
 			
-			while (br.readLine() != null) {
-				//System.out.println(line);
-				//Thread.sleep(100);
+			StringBuilder sb = new StringBuilder();
+			
+			boolean running = true;
+			while(running)
+			{
+				try {
+					int exitValue = process.exitValue();
+					running = false;
+				} catch (IllegalThreadStateException e) {
+					// process didn't exit yet, do nothing
+				}
+				
+				if (outputStream.available() > 0) {
+					outisr.read(charArrayOut, 0, charArrayOut.length);
+				}
+				if (errorStream.available() > 0) {
+					errisr.read(charArrayErr, 0, charArrayErr.length);
+					sb.append(new String(charArrayErr));
+				}
+			}
+			if (sb.length() > 0)
+			{
+				throw new RuntimeException(sb.toString());
 			}
 		}
 	};
