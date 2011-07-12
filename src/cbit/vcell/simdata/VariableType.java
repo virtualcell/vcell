@@ -16,10 +16,12 @@ import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.solvers.CartesianMesh;
 
@@ -296,11 +298,11 @@ public final VariableDomain getVariableDomain() {
 }
 
 public static VariableType getVariableType(Variable var) {
-	if (var instanceof VolVariable) {
+	if (var instanceof VolVariable || var instanceof VolumeParticleVariable) {
 		return VariableType.VOLUME;
 	} else if (var instanceof VolumeRegionVariable) {
 		return VariableType.VOLUME_REGION;
-	} else if (var instanceof MemVariable) {
+	} else if (var instanceof MemVariable || var instanceof MembraneParticleVariable) {
 		return VariableType.MEMBRANE;
 	} else if (var instanceof MembraneRegionVariable) {
 		return VariableType.MEMBRANE_REGION;
