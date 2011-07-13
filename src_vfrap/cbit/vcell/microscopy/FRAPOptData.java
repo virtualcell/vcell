@@ -8,6 +8,7 @@ import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -733,6 +734,10 @@ public class FRAPOptData {
 				public int getProgress() {
 					// TODO Auto-generated method stub
 					return 0;
+				}
+
+				public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+					throw new RuntimeException("not yet implemented");					
 				}
 			});
 				

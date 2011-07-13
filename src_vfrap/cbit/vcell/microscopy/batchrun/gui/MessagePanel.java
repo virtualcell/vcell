@@ -9,6 +9,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import org.vcell.util.gui.ProgressDialogListener;
+
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 @SuppressWarnings("serial")
@@ -75,5 +77,9 @@ public class MessagePanel extends JPanel implements ClientTaskStatusSupport
 
 	public void setMessage(String msg) {
 		message.setText(msg);
+	}
+
+	public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+		throw new RuntimeException("not yet implemented");
 	}
 }
