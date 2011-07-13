@@ -49,6 +49,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
@@ -1428,6 +1429,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						public void setMessage(String message) {}
 						public boolean isInterrupted() {return getClientTaskStatusSupport().isInterrupted();}
 						public int getProgress() {return 0;}
+						public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+							throw new RuntimeException("not yet implemented");
+						}
 					};
 				enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels,enhanceImageOp,localClientTaskStatusSupport);
 				if(getClientTaskStatusSupport().isInterrupted()){

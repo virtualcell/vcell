@@ -11,6 +11,7 @@ import loci.formats.FormatException;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
@@ -161,6 +162,10 @@ public class FRAPParamTest
 						public int getProgress() {
 							// TODO Auto-generated method stub
 							return 0;
+						}
+
+						public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+							throw new RuntimeException("not yet implemented");							
 						}
 					};
 				//get startign index
