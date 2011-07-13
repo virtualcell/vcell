@@ -106,7 +106,6 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "tri";
 	private static final Color bg = new Color(0x0);
 	private Color[] colors = null;
-	private HashMap<Node, HashSet<String>> nodeTriMap = new HashMap<Node, HashSet<String>>(); 
 	
 	private static class TrianglePanel {
 		String name;
@@ -297,18 +296,13 @@ public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, Simu
 }
 
 private void writeMeshFile() throws SolverException {
-	polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
 	FileOutputStream fos = null;
 	try {		 
-		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);
 		//Write Mesh file
 		File meshFile = new File(baseFileName + ".mesh");
 		fos = new FileOutputStream(meshFile);
 		cartesianMesh.write(new PrintStream(fos));
 	} catch (IOException e) {
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
-	} catch (MathFormatException e) {
 		e.printStackTrace(System.out);
 		throw new SolverException(e.getMessage());
 	}finally{
@@ -348,6 +342,10 @@ private void init() throws SolverException {
 		geoSurfaceDesc.setVolumeSampleSize(newSize);
 		geoSurfaceDesc.updateAll();	
 		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
+		// create mesh and polygon membrane element map which is used to determine polygon membrane index
+		// whether we write mesh file or not
+		polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
+		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);		
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new SolverException(e.getMessage());
@@ -1141,6 +1139,8 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		int membraneIndex = -1;
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
+			HashMap<Node, HashSet<String>> nodeTriMap = new HashMap<Node, HashSet<String>>();
+			
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
 			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();

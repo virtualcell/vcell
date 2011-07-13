@@ -119,14 +119,13 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 	this.bCancelable = cancelable;
 	this.progressDialogListener = new ProgressDialogListener() {
 		public void cancelButton_actionPerformed(EventObject newEvent) {
-			if (bCancelable) {
-				dialog.disableCancelButton();
-				setMessage("Cancelling, please wait...");
-				interrupt();
-				nonswingThread.interrupt();
-			}
 			if (arg_progressDialogListener != null) {
 				arg_progressDialogListener.cancelButton_actionPerformed(newEvent);
+			}
+			if (bCancelable) {
+				dialog.dispose();
+				interrupt();
+				nonswingThread.interrupt();
 			}
 		}
 	};
@@ -324,4 +323,9 @@ public void setVisible(final boolean bVisible) {
 		}
 	}.dispatch();			
 }
+
+public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
+	getDialog().addProgressDialogListener(progressDialogListener);	
+}
+
 }
