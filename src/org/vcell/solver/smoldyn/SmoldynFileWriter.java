@@ -298,21 +298,22 @@ public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, Simu
 private void writeMeshFile() throws SolverException {
 	FileOutputStream fos = null;
 	try {		 
+		polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
+		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);		
 		//Write Mesh file
 		File meshFile = new File(baseFileName + ".mesh");
 		fos = new FileOutputStream(meshFile);
 		cartesianMesh.write(new PrintStream(fos));
-	} catch (IOException e) {
+	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new SolverException(e.getMessage());
-	}finally{
+	} finally{
 		try {
 			if(fos != null){
 				fos.close();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			//ignore
 		}
 	}
 	
@@ -342,10 +343,6 @@ private void init() throws SolverException {
 		geoSurfaceDesc.setVolumeSampleSize(newSize);
 		geoSurfaceDesc.updateAll();	
 		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
-		// create mesh and polygon membrane element map which is used to determine polygon membrane index
-		// whether we write mesh file or not
-		polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
-		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);		
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new SolverException(e.getMessage());

@@ -11,7 +11,6 @@
 package cbit.vcell.client;
 
 import java.awt.Dimension;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -34,6 +34,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.ODEDataViewer;
@@ -430,7 +431,13 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			char charArrayOut[] = new char[10000];
 			char charArrayErr[] = new char[10000];
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-			Process process = processBuilder.start();
+			final Process process = processBuilder.start();
+			getClientTaskStatusSupport().addProgressDialogListener(new ProgressDialogListener() {
+
+				public void cancelButton_actionPerformed(EventObject newEvent) {
+					process.destroy();
+				}
+			});
 			InputStream errorStream = process.getErrorStream();
 			InputStreamReader errisr = new InputStreamReader(errorStream);
 			InputStream outputStream = process.getInputStream();
@@ -442,7 +449,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			while(running)
 			{
 				try {
-					int exitValue = process.exitValue();
+					process.exitValue();
 					running = false;
 				} catch (IllegalThreadStateException e) {
 					// process didn't exit yet, do nothing
@@ -462,7 +469,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			}
 		}
 	};
-	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false);
+	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
 }
 
 @SuppressWarnings("serial")
