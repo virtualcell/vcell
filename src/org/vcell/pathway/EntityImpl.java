@@ -8,6 +8,11 @@ import cbit.vcell.biomodel.meta.Identifiable;
 
 public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable {
 	
+	public static final String TYPE_GENE = "Gene";
+	public static final String TYPE_PATHWAY = "Pathway";
+	public static final String TYPE_INTERACTION = "Interaction";
+	public static final String TYPE_PHYSICALENTITY = "PhysicalEntity";
+	
 	private ArrayList<String> name = new ArrayList<String>();
 	private ArrayList<String> availability = new ArrayList<String>();
 	private ArrayList<Xref> xRef = new ArrayList<Xref>();

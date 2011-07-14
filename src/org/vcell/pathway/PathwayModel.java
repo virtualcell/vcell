@@ -211,6 +211,39 @@ public class PathwayModel {
 		return null;
 	}
 	
+	public BioPaxObject findFromNameAndType(String name, String type) {
+		for (BioPaxObject bpObject : biopaxObjects){
+			if(bpObject instanceof PhysicalEntity){
+				PhysicalEntity  pe = (PhysicalEntity) bpObject;
+				if(pe.getName().contains(name) && type.equals(EntityImpl.TYPE_PHYSICALENTITY)){
+					return bpObject;
+				}
+			}else if(bpObject instanceof Interaction){
+				Interaction  in = (Interaction) bpObject;
+				if(in.getName().contains(name) && type.equals(EntityImpl.TYPE_INTERACTION)){
+					return bpObject;
+				}
+			}else if(bpObject instanceof Pathway){
+				Pathway  pw = (Pathway) bpObject;
+				if(pw.getName().contains(name) && type.equals(EntityImpl.TYPE_PATHWAY)){
+					return bpObject;
+				}
+			}else if(bpObject instanceof Gene){
+				Gene  gene = (Gene) bpObject;
+				if(gene.getName().contains(name) && type.equals(EntityImpl.TYPE_GENE)){
+					return bpObject;
+				}
+			}
+			
+//				// contains() won't work, may result in matching objects which are wildly incompatible
+//				if (bpObject.getID().contains(resource)){
+//					return bpObject;
+//				}
+
+		}
+		return null;
+	}
+	
 	private void hideUtilityClassObjects() {
 		// remove all references to UtilityClass objects from the model root (biopaxObjects)
 		// they are still embedded within various Entity objects
