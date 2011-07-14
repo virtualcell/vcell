@@ -337,7 +337,10 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 			}
 		}
 	}
-	
+	if(!simulationContext.isStoch() && bStoch && geoContext.getGeometry().getDimension()>0) {
+		initializeForSpatial();
+	}
+
 	refreshDependencies();
 }
 
@@ -1733,7 +1736,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 				if (fieldAnalysisTasks != null) {
 					setAnalysisTasks(null);
 				}
-				if (oldGeometry!=null && geometry!=null && oldGeometry.getDimension()==0 && geometry.getDimension()>0){
+				if (oldGeometry!=null && oldGeometry.getDimension()==0){	// && geometry != null && geometry.getDimension() > 0
 					initializeForSpatial();
 				}
 			} catch (PropertyVetoException e) {				
