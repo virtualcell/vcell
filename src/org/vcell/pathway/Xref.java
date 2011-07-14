@@ -27,7 +27,9 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 		if(db.equals("REACTOME")){
 			if(id.contains("REACT")) db_id = "REACTOME_STID";
 			else db_id = "REACTOME_ID";
-		}
+		}else if(db.contains("KEGG"))db_id = "KEGG";
+		else if(db.contains("BIOMODELS"))db_id = "BIOMODELS";
+		else if(db.contains("CHEBI"))db_id = "ChEBI";
 		if(urlHashtable.get(db_id) == null){
 //			System.err.println(db);
 			return null;

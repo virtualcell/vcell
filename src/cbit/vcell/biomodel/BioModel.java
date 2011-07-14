@@ -993,7 +993,7 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getModel().getSpeciesContext(localName);
 	}
-	if (vcid.getClassName().equals("Species")){
+	if (vcid.getClassName().equals(VCID.CLASS_SPECIES)){
 		String localName = vcid.getLocalName();
 		return getModel().getSpecies(localName);
 	}
@@ -1001,7 +1001,7 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getModel().getStructure(localName);
 	}
-	if (vcid.getClassName().equals("ReactionStep")){
+	if (vcid.getClassName().equals(VCID.CLASS_REACTION_STEP)){
 		String localName = vcid.getLocalName();
 		return getModel().getReactionStep(localName);
 	}
@@ -1009,7 +1009,7 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 //		String localName = vcid.getLocalName();
 //		return getSimulationContexts(localName);
 //	}
-	if (vcid.getClassName().equals("BioModel")){
+	if (vcid.getClassName().equals(VCID.CLASS_BIOMODEL)){
 		return this;
 	}
 	return null;
@@ -1023,16 +1023,16 @@ public VCID getVCID(Identifiable identifiable) {
 		className = "SpeciesContext";
 	}else if (identifiable instanceof Species){
 		localName = ((Species)identifiable).getCommonName();
-		className = "Species";
+		className = VCID.CLASS_SPECIES;
 	}else if (identifiable instanceof Structure){
 		localName = ((Structure)identifiable).getName();
 		className = "Structure";
 	}else if (identifiable instanceof ReactionStep){
 		localName = ((ReactionStep)identifiable).getName();
-		className = "ReactionStep";
+		className = VCID.CLASS_REACTION_STEP;
 	}else if (identifiable instanceof BioModel){
 		localName = ((BioModel)identifiable).getName();
-		className = "BioModel";
+		className = VCID.CLASS_BIOMODEL;
 //	}else if (identifiable instanceof SimulationContext){
 //		localName = ((SimulationContext)identifiable).getName();
 //		className = "Application";

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -19,7 +20,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
- import org.vcell.sybil.models.annotate.JDOM2Model;
+import org.vcell.relationship.AnnotationMapping;
+import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.sbbox.SBBox;
@@ -29,6 +31,7 @@ import org.vcell.sybil.rdf.SesameRioUtil;
 import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
@@ -307,6 +310,20 @@ public class VCMetaData implements Serializable {
 	public void addPathwayModel(BioModel bioModel, Graph model) {
 		getRdfData().addAll(model);
 		fireAnnotationEventListener(new AnnotationEvent(bioModel, true));
+	}
+	
+	public void createBioPaxObjects(BioModel bioModel){
+		AnnotationMapping annoMapping = new AnnotationMapping();
+		VCMetaData vcMetaData = bioModel.getVCMetaData();
+		Set<Identifiable> identifiables = vcMetaData.getIdentifiableProvider().getAllIdentifiables();
+		TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+		for (Identifiable identifiable : identifiables){
+			Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
+			if (refGroupMap!=null){
+				String info = annoMapping.annotation2BioPaxObject(bioModel, identifiable);
+//				System.out.println(info);
+			}
+		}
 	}
 
 }

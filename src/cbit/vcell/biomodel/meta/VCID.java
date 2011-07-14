@@ -6,6 +6,10 @@ import org.vcell.util.TokenMangler;
 
 
 public class VCID {
+	public static final String CLASS_BIOMODEL = "BioModel";
+	public static final String CLASS_REACTION_STEP = "ReactionStep";
+	public static final String CLASS_SPECIES = "Species";
+
 	private String id;
 	private String className;
 	private String localName;
