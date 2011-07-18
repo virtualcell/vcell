@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import loci.formats.gui.AWTImageTools;
+import loci.formats.gui.BufferedImageWriter;
 import loci.formats.out.TiffWriter;
 
 import org.vcell.util.Extent;
@@ -253,8 +255,10 @@ public class NonGUIFRAPTest {
 		tempF.deleteOnExit();
 		tifWriter.setId(tempF.getAbsolutePath());
 		tifWriter.setCompression("Uncompressed");
-		AWTImageTools.makeImage(shortPixels, width, height,false);
-//		tifWriter.saveImage(timePointBufferedImage, true);
+		BufferedImage timePointBufferedImage =
+				AWTImageTools.makeImage(shortPixels, width, height,false);
+		BufferedImageWriter bufferedImageWriter = BufferedImageWriter.makeBufferedImageWriter(tifWriter);
+		bufferedImageWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;
 	
