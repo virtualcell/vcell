@@ -54,7 +54,7 @@ public class SingleFilePanel extends JPanel
 		gridBagConstraints_3.gridx = 0;
 		add(fileNameTextField, gridBagConstraints_3);
 
-		final JButton browserButton = new JButton(new ImageIcon(getClass().getResource("/images/open.gif")));
+		final JButton browserButton = new JButton(new ImageIcon(getClass().getResource("/images/browse.gif")));
 		browserButton.setMargin(new Insets(0, 2, 0, 2));
 		browserButton.setText("");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();

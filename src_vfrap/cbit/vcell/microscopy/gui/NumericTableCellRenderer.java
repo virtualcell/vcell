@@ -55,10 +55,11 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 		{
     		if (isSelected) {
     			setBackground(table.getSelectionBackground());
+    			setForeground(table.getSelectionForeground());
     		} else {
     			setBackground(table.getBackground());
+    			setForeground(table.getForeground());
     		}
-			setForeground(Color.black);
 		}
     	
     	//the following code is to highlight the entire row of the statistics in batchrun parameters table
@@ -72,10 +73,11 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 				
 				if (isSelected) {
 	    			setBackground(table.getSelectionBackground());
+	    			setForeground(table.getSelectionForeground());
 	    		} else {
 	    			setBackground( new Color(255,255,128));//yellow
+	    			setForeground(table.getForeground());
 	    		}
-				setForeground(Color.black);
 			}
 		}
     	

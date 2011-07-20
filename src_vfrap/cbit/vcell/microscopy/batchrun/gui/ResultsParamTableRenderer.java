@@ -41,14 +41,6 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 			{
 				String fileName = ((File)value).getName();
 				setText(fileName);
-//				if(fileName.indexOf(".") > 0)
-//				{
-//					setText(fileName.substring(0,fileName.indexOf(".")));
-//				}
-//				else
-//				{
-//					setText(fileName);
-//				}
 			}
 			if(value != null)
 	        {
@@ -74,31 +66,30 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 		}
 		
 		Object nameObj = table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); //first column should be name of the parameter
-		if(nameObj instanceof String)
+		if(nameObj instanceof String) //in statistics table, in other tables, the first column class is file
 		{
 			String name = (String)nameObj;
 			if(name.equals(DescriptiveStatistics.MEAN_NAME) ||
-			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME)/* ||
-			   name.equals(DescriptiveStatistics.MEDIAN_NAME) ||
-			   name.equals(DescriptiveStatistics.MIN_NAME) ||
-			   name.equals(DescriptiveStatistics.MAX_NAME)*/)
+			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME))
 			{
 				
 				if (isSelected) {
 	    			setBackground(table.getSelectionBackground());
+	    			setForeground(table.getSelectionForeground());
 	    		} else {
 	    			setBackground( new Color(255,255,128));//yellow
+	    			setForeground(table.getForeground());
 	    		}
-				setForeground(Color.black);
 			}
 			else
 			{
 				if (isSelected) {
 	    			setBackground(table.getSelectionBackground());
+	    			setForeground(table.getSelectionForeground());
 	    		} else {
 	    			setBackground(table.getBackground());
+	    			setForeground(table.getForeground());
 	    		}
-				setForeground(Color.black);
 			}
 		}
 		

@@ -33,8 +33,8 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
 	public final static int COLUMN_IMMOBILE_FRACTION = 9;
 	
 	public final static String COL_LABELS[] = { "Statistics", "Primary Diff Rate", "Primary Mobile Fraction",
-												"Bleach Monitor Rate", "Secondary Mobile Fraction",
-												"Secondary Diff Rate", "Binding site concentration",
+												"Bleach Monitor Rate", "Secondary Diff Rate",
+												"Secondary Mobile Fraction", "Binding site concentration",
 												"Reaction on rate", "Reaction off rate", "Immobile Fraction"};
 	
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;

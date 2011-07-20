@@ -115,15 +115,14 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
-    					//check if there is results, if so, if the loaded frapStudy has the same model type and paramters then proceed
+    					//check if there is results, if so, if the loaded frapStudy contains the same model type(it may have more) and paramters then proceed
     					//otherwise, popup a dialog saying the result will be invalid.
     					if(!batchRunWorkspace.isBatchRunResultsAvailable())
     					{
     						hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					}
     					else if((batchRunWorkspace.isBatchRunResultsAvailable() && inFile.getName().endsWith(VirtualFrapLoader.VFRAP_EXTENSION)) &&
-    							((newFRAPStudy.getSelectedModels().size() == 1) && 
-    							 (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()) != null) &&
+    							((newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()) != null) &&
     		    	    		 (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()).getModelParameters() != null)))
     					{
     						//put newfrapstudy into hashtable to be used for next task

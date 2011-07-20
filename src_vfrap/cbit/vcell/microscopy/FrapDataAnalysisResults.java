@@ -9,6 +9,15 @@ import cbit.vcell.parser.Expression;
  */
 public class FrapDataAnalysisResults /*implements Matchable*/ 
 {
+	//variable below is declared to check if parameters are within their bounds. Used by the static method validateParameter()
+	public static final double boundTolerance = 0.01;//if the estimated parameter is out of bounds but within 1% of the violation, we will clamp it to the bounds
+	public static final int WITHIN_BOUNDS = 0;
+	public static final int LOWER_BOUND_CLAMPED = 1;//exceed lower bound but within tolerance
+	public static final int UPPER_BOUND_CLAMPED = 2;//exceed upper bound but within tolerance
+	public static final int EXCEED_LOWER_BOUND = 3;
+	public static final int EXCEED_UPPER_BOUND = 4;
+	
+	
 	//nested class
 	//for diffusion only, explicit expression fitting
 	public static class DiffusionOnlyAnalysisRestults 
@@ -40,7 +49,37 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		}
 
 		public void setBleachWhileMonitoringTau(Double bleachWhileMonitoringTau) {
-			this.bleachWhileMonitoringTau = bleachWhileMonitoringTau;
+			if(bleachWhileMonitoringTau != null)
+			{
+				double low = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
+				double high = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
+				int returnCode = FrapDataAnalysisResults.validateParameter(bleachWhileMonitoringTau, low, high);
+								
+				if(returnCode == WITHIN_BOUNDS)
+				{
+					this.bleachWhileMonitoringTau = bleachWhileMonitoringTau;
+				}
+				else if(returnCode == LOWER_BOUND_CLAMPED)
+				{
+					this.bleachWhileMonitoringTau = low;
+				}
+				else if(returnCode == UPPER_BOUND_CLAMPED)
+				{
+					this.bleachWhileMonitoringTau = high;
+				}
+				else if(returnCode == EXCEED_LOWER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + bleachWhileMonitoringTau + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE] + "' is below lower bound("+ low +").");
+				}
+				else if(returnCode == EXCEED_UPPER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + bleachWhileMonitoringTau + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE] + "' is above upper bound("+ high +").");
+				}
+			}
+			else
+			{
+				this.bleachWhileMonitoringTau = null;
+			}
 		}
 
 		public Double getRecoveryDiffusionRate() {
@@ -48,7 +87,37 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		}
 
 		public void setRecoveryDiffusionRate(Double recoveryDiffusionRate) {
-			this.recoveryDiffusionRate = recoveryDiffusionRate;
+			if(recoveryDiffusionRate != null)
+			{
+				double low = FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound();
+				double high = FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound();
+				int returnCode = FrapDataAnalysisResults.validateParameter(recoveryDiffusionRate, low, high);
+								
+				if(returnCode == WITHIN_BOUNDS)
+				{
+					this.recoveryDiffusionRate = recoveryDiffusionRate;
+				}
+				else if(returnCode == LOWER_BOUND_CLAMPED)
+				{
+					this.recoveryDiffusionRate = low;
+				}
+				else if(returnCode == UPPER_BOUND_CLAMPED)
+				{
+					this.recoveryDiffusionRate = high;
+				}
+				else if(returnCode == EXCEED_LOWER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + recoveryDiffusionRate + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE] + "' is below lower bound("+ low +").");
+				}
+				else if(returnCode == EXCEED_UPPER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + recoveryDiffusionRate + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE] + "' is above upper bound("+ high +").");
+				}
+			}
+			else
+			{
+				this.recoveryDiffusionRate = null;
+			}
 		}
 
 		public Double getRecoveryTau() {
@@ -64,7 +133,37 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		}
 
 		public void setMobilefraction(Double mobilefraction) {
-			this.mobilefraction = mobilefraction;
+			if(mobilefraction != null)
+			{
+				double low = FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound();
+				double high = FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound();
+				int returnCode = FrapDataAnalysisResults.validateParameter(mobilefraction, low, high);
+								
+				if(returnCode == WITHIN_BOUNDS)
+				{
+					this.mobilefraction = mobilefraction;
+				}
+				else if(returnCode == LOWER_BOUND_CLAMPED)
+				{
+					this.mobilefraction = low;
+				}
+				else if(returnCode == UPPER_BOUND_CLAMPED)
+				{
+					this.mobilefraction = high;
+				}
+				else if(returnCode == EXCEED_LOWER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + mobilefraction + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION] + "' is below lower bound("+ low +").");
+				}
+				else if(returnCode == EXCEED_UPPER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + mobilefraction + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION] + "' is above upper bound("+ high +").");
+				}
+			}
+			else
+			{
+				this.mobilefraction = null;
+			}
 		}
 
 		public Integer getBleachType() {
@@ -116,7 +215,37 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		}
 
 		public void setBleachWhileMonitoringTau(Double bleachWhileMonitoringTau) {
-			this.bleachWhileMonitoringTau = bleachWhileMonitoringTau;
+			if(bleachWhileMonitoringTau != null)
+			{
+				double low = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
+				double high = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
+				int returnCode = FrapDataAnalysisResults.validateParameter(bleachWhileMonitoringTau, low, high);
+								
+				if(returnCode == WITHIN_BOUNDS)
+				{
+					this.bleachWhileMonitoringTau = bleachWhileMonitoringTau;
+				}
+				else if(returnCode == LOWER_BOUND_CLAMPED)
+				{
+					this.bleachWhileMonitoringTau = low;
+				}
+				else if(returnCode == UPPER_BOUND_CLAMPED)
+				{
+					this.bleachWhileMonitoringTau = high;
+				}
+				else if(returnCode == EXCEED_LOWER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + bleachWhileMonitoringTau + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE] + "' is below lower bound("+ low +").");
+				}
+				else if(returnCode == EXCEED_UPPER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + bleachWhileMonitoringTau + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE] + "' is above upper bound("+ high +").");
+				}
+			}
+			else
+			{
+				this.bleachWhileMonitoringTau = null;
+			}
 		}
 
 		public Expression getFitBleachWhileMonitorExpression() {
@@ -138,7 +267,7 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 		public Double getFittingParamA() {
 			return fittingParamA;
 		}
-
+		//we don't check validity of the fitting parameterA, it's just a parameter that will be thrown away after fitting.
 		public void setFittingParamA(Double fittingParamA) {
 			this.fittingParamA = fittingParamA;
 		}
@@ -147,12 +276,89 @@ public class FrapDataAnalysisResults /*implements Matchable*/
 			return offRate;
 		}
 
-		public void setOffRate(Double offRate) {
-			this.offRate = offRate;
+		public void setOffRate(Double offRate) 
+		{
+			if(offRate != null)
+			{
+				double low = FRAPModel.REF_REACTION_OFF_RATE.getLowerBound();
+				double high = FRAPModel.REF_REACTION_OFF_RATE.getUpperBound();
+				int returnCode = FrapDataAnalysisResults.validateParameter(offRate, low, high);
+								
+				if(returnCode == WITHIN_BOUNDS)
+				{
+					this.offRate = offRate;
+				}
+				else if(returnCode == LOWER_BOUND_CLAMPED)
+				{
+					this.offRate = low;
+				}
+				else if(returnCode == UPPER_BOUND_CLAMPED)
+				{
+					this.offRate = high;
+				}
+				else if(returnCode == EXCEED_LOWER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + offRate + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE] + "' is below lower bound("+ low +").");
+				}
+				else if(returnCode == EXCEED_UPPER_BOUND)
+				{
+					throw new RuntimeException("Estimated value(" + offRate + ") for parameter '" + FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE] + "' is above upper bound("+ high +").");
+				}
+			}
+			else
+			{
+				this.offRate = null;
+			}
 		}
+		
 	}
 	
-	
+	public static int validateParameter(double paramVal, double low, double high)
+	{
+		if(paramVal < low)
+		{
+			double deviation = 0;
+			
+			if(low == 0)
+			{
+				deviation = Math.abs(paramVal - low);
+			}
+			else
+			{
+				deviation = Math.abs((paramVal - low)/low);
+			}
+			if(deviation <= boundTolerance)
+			{
+				return LOWER_BOUND_CLAMPED;
+			}
+			else
+			{
+				return EXCEED_LOWER_BOUND;
+			}
+		}
+		else if(paramVal > high)
+		{
+			double deviation = 0;
+			
+			if(high == 0)
+			{
+				deviation = Math.abs(paramVal - high);
+			}
+			else
+			{
+				deviation = Math.abs((paramVal - high)/high);
+			}
+			if(deviation <= boundTolerance)
+			{
+				return UPPER_BOUND_CLAMPED;
+			}
+			else
+			{
+				return EXCEED_UPPER_BOUND;
+			}
+		}
+		return WITHIN_BOUNDS;
+	}
 
 	
 	
