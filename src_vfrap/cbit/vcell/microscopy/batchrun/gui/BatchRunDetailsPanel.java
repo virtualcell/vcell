@@ -33,8 +33,10 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -53,6 +55,8 @@ import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.ExpressionException;
 
 
 @SuppressWarnings("serial")
@@ -142,7 +146,6 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
     	if(toolbar == null)
     	{
 	    	toolbar=new JToolBar();
-	        //System.out.println(buttonLabels.length);
 	        for (int i = 0; i < buttonLabels.length; ++i)
 	        {
 	             icons[i]=new ImageIcon(iconFiles[i]);
@@ -253,8 +256,8 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 		Object source = e.getSource();
   	    if (source == addButton)
 	    {
-  	    	//check file before loading into batch run, if .vfrap and 
-  	    	//have parameters ready, then keep results, otherwise, clear results
+  	    	//check file before loading into batch run, if the file has .vfrap extension 
+  	    	//check if it has the model that is required by the batch run, if no, run the reference simulation and get the parameters
   	    	final Wizard loadWizard = getAddFRAPDataWizard();
    			if(loadWizard != null)
    			{
@@ -262,29 +265,55 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
   	    		//code return 
 				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
    				{
-					//add to frapList in batchrunworkspace
+					//get newly added frapstudy
 					FRAPStudy fStudy = getBatchRunWorkspace().getWorkingFrapStudy();
-					getBatchRunWorkspace().addFrapStudy(fStudy);
-					//if newly loaded frapstudy has same frapmodel and has results ready
-					if(getBatchRunWorkspace().isBatchRunResultsAvailable())
+					//check if the batch run has results already and the newly loaded data should have same model ready
+					int batchRunSelectedModel = getBatchRunWorkspace().getSelectedModel();
+					if(getBatchRunWorkspace().isBatchRunResultsAvailable() && fStudy.getModels()[batchRunSelectedModel] != null &&
+					   fStudy.getFrapModel(batchRunSelectedModel).getModelParameters() != null)
 					{
-						//newly loaded frapstudy doesn't have estimation data ready, generate the data
-						Parameter[] parameters = fStudy.getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+						Parameter[] parameters = fStudy.getFrapModel(batchRunSelectedModel).getModelParameters();
 						double[][] fitData = null;
-						try {
-						    FRAPOptData optData= fStudy.getFrapOptData();
-						    if(optData == null)
-						    {
-								optData = new FRAPOptData(fStudy, parameters.length, getLocalWorkspace(), fStudy.getStoredRefData());
-								fitData = optData.getFitData(parameters);
-							}
-						} catch (Exception ex) {
-								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(BatchRunDetailsPanel.this, ex.getMessage());
+						if(batchRunSelectedModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT || batchRunSelectedModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+						{
+							FRAPOptData optData= fStudy.getFrapOptData();
+							//newly loaded frapstudy doesn't have estimation data ready, generate the data
+							if(optData == null)
+							{
+								try {
+									optData = new FRAPOptData(fStudy, parameters.length, getLocalWorkspace(), fStudy.getStoredRefData());
+									fStudy.setFrapOptData(optData);
+									fitData = optData.getFitData(parameters);
+								} catch (Exception ex) {
+									ex.printStackTrace(System.out);
+									DialogUtils.showErrorDialog(BatchRunDetailsPanel.this, ex.getMessage());
+								}
+							} 
 						}
-						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
+						else if(batchRunSelectedModel == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+						{
+							FRAPOptFunctions optFunc = fStudy.getFrapOptFunc();
+							if(optFunc == null)
+							{
+								try {
+									optFunc = new FRAPOptFunctions(fStudy);
+									fStudy.setFrapOptFunc(optFunc);
+									fitData = optFunc.getFitData(parameters);
+								} catch (Exception ex2) {
+									ex2.printStackTrace();
+									DialogUtils.showErrorDialog(BatchRunDetailsPanel.this, ex2.getMessage() );
+								} 
+							}
+						}
+						fStudy.getModels()[batchRunSelectedModel].setData(fitData);
+						//add new data into the frapStudy list in batch run.
+						getBatchRunWorkspace().addFrapStudy(fStudy);
 						//refresh the results
 						getBatchRunWorkspace().refreshBatchRunResults();
+					}
+					else //batch run has no results, simply add the frapStudy into
+					{
+						getBatchRunWorkspace().addFrapStudy(fStudy);
 					}
 					//set save flag true when a doc has been added successfully
 					getBatchRunWorkspace().setSaveNeeded(true);

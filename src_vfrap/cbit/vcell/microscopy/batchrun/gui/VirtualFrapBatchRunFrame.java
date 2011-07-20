@@ -799,7 +799,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(batchRunWorkspace.getWorkingFrapStudy() == null || batchRunWorkspace.getWorkingFrapStudy().getFrapData() == null)
+				if(batchRunWorkspace.getFrapStudies() == null || batchRunWorkspace.getFrapStudies().size() < 1)
 				{
 					throw new Exception("No FRAP Data exists to save");
 				}else{
@@ -818,7 +818,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	    					if(tempOutputFile.getName().indexOf(".") == -1){
 	    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName()+"."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);
 	    					}else{
-	    						throw new Exception("Virtual FRAP Batchrun document names must have an extension of ."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);//return?
+	    						throw new Exception("Virtual FRAP Batchrun document names must have an extension of ."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);
 	    					}
 	    				}
 			    		if(tempOutputFile.exists())
@@ -862,6 +862,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 			{
 				String fileName = fStudy.getXmlFilename();
 				VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.setDialogTitle("Save "+fileName+" as...");
+				VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.setSelectedFile(new File(new File(fileName).getName()));
 				int option = VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.showSaveDialog(VirtualFrapBatchRunFrame.this);
 				if(option == JFileChooser.APPROVE_OPTION)
 				{

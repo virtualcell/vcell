@@ -705,9 +705,7 @@ public class FRAPStudy implements Matchable{
 		
 		int jobIndex = 0;
 		SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
-		
-		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
-		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
+		ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
@@ -775,7 +773,7 @@ public class FRAPStudy implements Matchable{
 				simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 			}
 			
-			ResourceUtil.prepareSolverExecutable(SolverDescription.FiniteVolumeStandalone);
+			ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
 			FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
 			fvSolver.startSolver();

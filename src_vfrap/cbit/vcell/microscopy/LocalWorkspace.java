@@ -17,6 +17,7 @@ import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
+import cbit.vcell.solver.SolverDescription;
 
 /**
  */
@@ -40,9 +41,6 @@ public class LocalWorkspace {
 
     private File workingDirectory;
     
-	private final static String FINITE_VOLUME_EXECUTABLE_CLASSPATH =
-		"/fvexecutables/" + ResourceUtil.osname + "/FiniteVolume" + ResourceUtil.EXE_SUFFIX;
-
 	public LocalWorkspace(File workingDirectory){
 		this.workingDirectory = workingDirectory;
 		this.userPreferences = new UserPreferences(null);
@@ -58,11 +56,6 @@ public class LocalWorkspace {
 		return new KeyValue(LAST_GENERATED_KEY+"");
 	}
 
-	public static String getFinitVolumeExecutableFullPathname() throws UnsupportedEncodingException
-	{
-		return URLDecoder.decode(LocalWorkspace.class.getResource(FINITE_VOLUME_EXECUTABLE_CLASSPATH).getFile(), "UTF-8");
-
-	}
 	/**
 	 * Method getWorkspaceDirectory.
 	 * @return String
