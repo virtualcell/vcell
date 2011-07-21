@@ -391,27 +391,40 @@ public class LicenseWriter {
         fileExceptions.add("src/org/vcell/wizard/WizardPanelDescriptor.java");
         fileExceptions.add("src/org/vcell/wizard/WizardModel.java");
 
-        // numerics
-		directoryExceptions.add("numerics\\blas");
-		directoryExceptions.add("numerics\\fsqp");				// csfqp?
-		directoryExceptions.add("numerics\\Hy3S");
-		directoryExceptions.add("numerics\\IDAWin");
-		directoryExceptions.add("numerics\\IFortran");
-		directoryExceptions.add("numerics\\JNI");
-		directoryExceptions.add("numerics\\libSBML-3.3.2");
-		directoryExceptions.add("numerics\\libSBML-4.0.0-b2");
-		directoryExceptions.add("numerics\\netcdf-3.6.2");
-		directoryExceptions.add("numerics\\PCGPack");
-		directoryExceptions.add("numerics\\qhull");
-		directoryExceptions.add("numerics\\smoldyn-2.15");
-		directoryExceptions.add("numerics\\SonicCClient");
-		directoryExceptions.add("numerics\\SonicCClient64");
-		directoryExceptions.add("numerics\\sundials");
-		directoryExceptions.add("numerics\\SundialsSolverStandalone");
-		directoryExceptions.add("numerics\\tinyxml");
-		directoryExceptions.add("numerics\\unzip");
-		directoryExceptions.add("numerics\\zip");
-		directoryExceptions.add("numerics\\zlib");
+        // numerics - list of foreign directories (which won't get our license)
+        String numericsPrefix = "numerics_5.0\\";
+		directoryExceptions.add(numericsPrefix + "blas");
+//		directoryExceptions.add(numericsPrefix + "ExpressionParser");
+//		directoryExceptions.add(numericsPrefix + "ExpressionParserTest");
+//		directoryExceptions.add(numericsPrefix + "FiniteVolume");
+		directoryExceptions.add(numericsPrefix + "fsqp");				// csfqp?
+		directoryExceptions.add(numericsPrefix + "glut-3.7.6");
+		directoryExceptions.add(numericsPrefix + "Hy3S");
+//		directoryExceptions.add(numericsPrefix + "IDAWin");
+		directoryExceptions.add(numericsPrefix + "IFortran");
+//		directoryExceptions.add(numericsPrefix + "JavaBinding");
+		directoryExceptions.add(numericsPrefix + "JNI");
+		directoryExceptions.add(numericsPrefix + "libSBML-3.3.2");
+		directoryExceptions.add(numericsPrefix + "libSBML-4.0.0-b2");
+		directoryExceptions.add(numericsPrefix + "netcdf-3.6.2");
+//		directoryExceptions.add(numericsPrefix + "Optimization2");
+//		directoryExceptions.add(numericsPrefix + "OptStandalone2");
+		directoryExceptions.add(numericsPrefix + "PCGPack");
+		directoryExceptions.add(numericsPrefix + "qhull");
+		directoryExceptions.add(numericsPrefix + "smoldyn");
+		directoryExceptions.add(numericsPrefix + "smoldyn-2.15");
+		directoryExceptions.add(numericsPrefix + "SonicCClient");
+		directoryExceptions.add(numericsPrefix + "SonicCClient64");
+//		directoryExceptions.add(numericsPrefix + "Stochastic");
+		directoryExceptions.add(numericsPrefix + "sundials");
+		directoryExceptions.add(numericsPrefix + "SundialsSolverStandalone");
+		directoryExceptions.add(numericsPrefix + "tinyxml");
+		directoryExceptions.add(numericsPrefix + "unzip");
+//		directoryExceptions.add(numericsPrefix + "VCell");
+//		directoryExceptions.add(numericsPrefix + "VCell_CodeGen");
+//		directoryExceptions.add(numericsPrefix + "VCellMTMD");
+		directoryExceptions.add(numericsPrefix + "zip");
+		directoryExceptions.add(numericsPrefix + "zlib");
 
 		if(args.length != 0 && args.length != 3) {
 			throw new IllegalArgumentException("Arguments:  [[command] [java source dir] [license file name]]");
@@ -428,8 +441,8 @@ public class LicenseWriter {
 //			command = "write";
 			licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
 			String vCellSourceDirectory = "C:\\dan\\projects\\VCell_4.8\\src";
-			String numericsSourceDirectory = "C:\\dan\\projects\\numerics";
-			rootDirectory = vCellSourceDirectory;
+			String numericsSourceDirectory = "C:\\dan\\projects\\numerics_5.0";
+			rootDirectory = numericsSourceDirectory;
 			}
 			dir = new File(rootDirectory);
 			licenseFile = new File(licenseFileName);
