@@ -442,8 +442,6 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	super.bioModelChange(evt);
 	BioModel oldValue = (BioModel)evt.getOldValue();
 	if (oldValue!=null){
-		oldValue.removePropertyChangeListener(this);
-		oldValue.getModel().removePropertyChangeListener(this);
 		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
 			parameter.removePropertyChangeListener(this);
 		}
@@ -490,8 +488,6 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	}
 	BioModel newValue = (BioModel)evt.getNewValue();
 	if (newValue != null){
-		newValue.addPropertyChangeListener(this);
-		newValue.getModel().addPropertyChangeListener(this);
 		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
 			modelParameter.addPropertyChangeListener(this);
 		}

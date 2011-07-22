@@ -52,9 +52,6 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	}
 	
 	protected abstract List<T> computeData();
-	protected boolean containedByModel() {
-		return true;
-	}
 	
 	protected void refreshData() {
 		List<T> newData = computeData();
@@ -75,19 +72,13 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 		refreshData();
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
-			if (containedByModel()) {
-				oldValue.getModel().removePropertyChangeListener(this);
-			} else {
-				oldValue.removePropertyChangeListener(this);
-			}
+			oldValue.removePropertyChangeListener(this);
+			oldValue.getModel().removePropertyChangeListener(this);
 		}
 		BioModel newValue = (BioModel)evt.getNewValue();
 		if (newValue != null) {
-			if (containedByModel()) {
-				newValue.getModel().addPropertyChangeListener(this);
-			} else {
-				newValue.addPropertyChangeListener(this);
-			}
+			newValue.addPropertyChangeListener(this);
+			newValue.getModel().addPropertyChangeListener(this);
 		}
 	}
 	
