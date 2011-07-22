@@ -542,11 +542,12 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
+				int size = getFrapStudies().size();
 				for(int i=0; i < getFrapStudies().size(); i++)
 				{
 					FRAPStudy fStudy = getFrapStudies().get(i);
 					File outFile = new File(fStudy.getXmlFilename());
-					this.getClientTaskStatusSupport().setMessage("Saving file: " + outFile.getAbsolutePath()+" ...");
+					this.getClientTaskStatusSupport().setMessage("Saving file " + (i+1) + " of " + size + " :"+ outFile.getAbsolutePath()+" ...");
 					saveProcedure(outFile, fStudy, this.getClientTaskStatusSupport());
 				}
 			}
@@ -620,7 +621,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 						File fStudyFile = new File(fileName);
 						if(fileName.endsWith("."+VirtualFrapLoader.VFRAP_EXTENSION) || fileName.endsWith(".xml")) //.vfrap
 						{
-							this.getClientTaskStatusSupport().setMessage("Loading(.vfrap): " + fileName);
+							this.getClientTaskStatusSupport().setMessage("Loading(.vfrap) " + (i+1) + " of " + size + " : " + fileName);
 							FRAPStudy newFRAPStudy = null;
 							String xmlString = XmlUtil.getXMLString(fStudyFile.getAbsolutePath());
 							MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
@@ -631,6 +632,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 //								throw new Exception("External Files of Frap Document " + fStudyFile.getAbsolutePath() + " are corrupted");
 //							}
 							newFRAPStudy.setXmlFilename(fileName);
+							//get dimentsion reduced experimental data
+							newFRAPStudy.getDimensionReducedExpData();
 							//restore the dimension reduced fitting data(2 dimensional array).
 							int selectedModelIdx = tempBatchRunWorkspace.getSelectedModel();
 							FRAPModel frapModel = newFRAPStudy.getFrapModel(selectedModelIdx);

@@ -1,6 +1,8 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
@@ -11,6 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -30,10 +33,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptFunctions;
@@ -53,11 +58,9 @@ import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.MultiFileDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.ROISummaryDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.SingleFileDescriptor;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.ExpressionException;
-
 
 @SuppressWarnings("serial")
 public class BatchRunDetailsPanel extends JPanel implements ActionListener, PropertyChangeListener
@@ -262,6 +265,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
    			if(loadWizard != null)
    			{
    				loadWizard.showModalDialog(new Dimension(550,640));
+   				//wizard has AsychClientTasks, therefore, we don't have to enclose the following code with client task again.
   	    		//code return 
 				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
    				{
@@ -337,32 +341,47 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
         }
         else if(source == deleteButton)
         {
-        	//remove tree node(doc node removable only)
-        	DefaultMutableTreeNode parent = frapBatchRunViewTree.removeCurrentNode();
-        	//handle differently for doc node and results node
-        	if(parent.equals(BatchRunTree.FRAP_BATCHRUN_DOC_NODE)) //doc node
-        	{
-        		//remove the data & displayed image
-	        	getBatchRunWorkspace().removeFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
-        	}
-        	else if(parent.equals(BatchRunTree.FRAP_BATCHRUN_RESULT_NODE))//results node
-        	{
-        		getBatchRunWorkspace().clearResultData();
-        	}
-        	getBatchRunWorkspace().clearWorkingSingleWorkspace();
-        	//clear tree selection
-			frapBatchRunViewTree.clearSelection();
-			if(batchRunWorkspace.getFrapStudies() == null || batchRunWorkspace.getFrapStudies().size() < 1)
-			{
-				frapBatchRunViewTree.clearAll();
-			}
-			else //if doc has been deleted successfully and frapStudyList still has doc, set save flag true.
-			{
-				batchRunWorkspace.setSaveNeeded(true);
-			}
-			batchRunWorkspace.clearStoredTreeSelection();
-			//clear parameter display
-			clearParameterDisplay();
+    		AsynchClientTask deleteFromWorkspaceTask = new AsynchClientTask("deleting file ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+    		{
+    			public void run(Hashtable<String, Object> hashTable) throws Exception
+    			{
+	        		//remove tree node(doc node removable only)
+	              	DefaultMutableTreeNode parent = frapBatchRunViewTree.removeCurrentNode();
+	      			//handle differently for doc node and results node
+	              	if(parent.equals(BatchRunTree.FRAP_BATCHRUN_DOC_NODE)) //doc node
+	              	{
+	              		//remove the data & displayed image
+	      	        	getBatchRunWorkspace().removeFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
+	              	}
+	              	else if(parent.equals(BatchRunTree.FRAP_BATCHRUN_RESULT_NODE))//results node
+	              	{
+	              		getBatchRunWorkspace().clearResultData();
+	              	}
+	              	getBatchRunWorkspace().clearWorkingSingleWorkspace();
+    			}
+    		};
+    		
+    		AsynchClientTask deleteFromUITask = new AsynchClientTask("deleting file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+    		{
+    			public void run(Hashtable<String, Object> hashTable) throws Exception
+    			{
+	              	//clear tree selection
+	      			frapBatchRunViewTree.clearSelection();
+	      			if(batchRunWorkspace.getFrapStudies() == null || batchRunWorkspace.getFrapStudies().size() < 1)
+	      			{
+	      				frapBatchRunViewTree.clearAll();
+	      			}
+	      			else //if doc has been deleted successfully and frapStudyList still has doc, set save flag true.
+	      			{
+	      				batchRunWorkspace.setSaveNeeded(true);
+	      			}
+	      			batchRunWorkspace.clearStoredTreeSelection();
+	      			//clear parameter display
+	      			clearParameterDisplay();
+    			}
+    		};
+    		ClientTaskDispatcher.dispatch(BatchRunDetailsPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{deleteFromWorkspaceTask, deleteFromUITask}, false, false, false, null, true);
+			
         }
         else if(source == delAllButton)
         {
