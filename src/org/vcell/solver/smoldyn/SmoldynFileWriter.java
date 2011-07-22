@@ -32,9 +32,9 @@ import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
@@ -49,25 +49,23 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.InteractionRadius;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
-import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
-import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.model.Reactant;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -1537,7 +1535,7 @@ private void writeWallSurfaces() throws SolverException {
 			for (int k = 0; k < k_wall.length; k ++) {
 				for (int j = 0; j < numY; j ++) {
 					for (int i = 0; i < numX; i ++) {
-						int volIndex = k_wall[k] * numX * numY + j * numY + i;
+						int volIndex = k_wall[k] * numX * numY + j * numX + i;
 						
 						for (SubVolume sv : subVolumes) {
 							// gather all the points in all the regions
@@ -1562,7 +1560,7 @@ private void writeWallSurfaces() throws SolverException {
 			for (int k = 0; k < numZ; k ++) {
 				for (int j = 0; j < j_wall.length; j ++) {
 					for (int i = 0; i < numX; i ++) {
-						int volIndex = k * numX * numY + j_wall[j] * numY + i;
+						int volIndex = k * numX * numY + j_wall[j] * numX + i;
 						
 						for (SubVolume sv : subVolumes) {
 							// gather all the points in all the regions
@@ -1586,7 +1584,7 @@ private void writeWallSurfaces() throws SolverException {
 		for (int k = 0; k < numZ; k ++) {
 			for (int j = 0; j < numY; j ++) {
 				for (int i = 0; i < i_wall.length; i ++) {
-					int volIndex = k * numX * numY + j * numY + i_wall[i];
+					int volIndex = k * numX * numY + j * numX + i_wall[i];
 					
 					for (SubVolume sv : subVolumes) {
 						// gather all the points in all the regions
