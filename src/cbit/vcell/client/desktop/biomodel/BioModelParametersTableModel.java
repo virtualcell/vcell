@@ -280,10 +280,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					simulationContext.removePropertyChangeListener(this);
 					simulationContext.getGeometryContext().removePropertyChangeListener(this);
 					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+						mapping.removePropertyChangeListener(this);
 						for (Parameter parameter : mapping.getParameters()) {
 							parameter.removePropertyChangeListener(this);
 						}
 					}
+					simulationContext.getReactionContext().removePropertyChangeListener(this);
 					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 						spec.removePropertyChangeListener(this);
 						for (Parameter parameter : spec.getParameters()) {
@@ -299,21 +301,23 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 				SimulationContext[] newValue = (SimulationContext[])evt.getNewValue();
 				for (SimulationContext simulationContext : newValue) {
-					simulationContext.removePropertyChangeListener(this);
-					simulationContext.getGeometryContext().removePropertyChangeListener(this);
+					simulationContext.addPropertyChangeListener(this);
+					simulationContext.getGeometryContext().addPropertyChangeListener(this);
 					for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
+						mapping.addPropertyChangeListener(this);
 						for (Parameter parameter : mapping.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
 					}
+					simulationContext.getReactionContext().addPropertyChangeListener(this);
 					for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
-						spec.removePropertyChangeListener(this);
+						spec.addPropertyChangeListener(this);
 						for (Parameter parameter : spec.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
 					}
 					for (ElectricalStimulus elect : simulationContext.getElectricalStimuli()) {
-						elect.removePropertyChangeListener(this);
+						elect.addPropertyChangeListener(this);
 						for (Parameter parameter : elect.getParameters()) {
 							parameter.addPropertyChangeListener(this);
 						}
@@ -448,8 +452,6 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	super.bioModelChange(evt);
 	BioModel oldValue = (BioModel)evt.getOldValue();
 	if (oldValue!=null){
-		oldValue.removePropertyChangeListener(this);
-		oldValue.getModel().removePropertyChangeListener(this);
 		for (Parameter parameter : oldValue.getModel().getModelParameters()) {
 			parameter.removePropertyChangeListener(this);
 		}
@@ -458,14 +460,15 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 		}
 		for (ReactionStep reactionStep : oldValue.getModel().getReactionSteps()){
 			reactionStep.removePropertyChangeListener(this);
-			reactionStep.getKinetics().removePropertyChangeListener(this);
-			for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+			Kinetics kinetics = reactionStep.getKinetics();
+			kinetics.removePropertyChangeListener(this);
+			for (KineticsParameter kineticsParameter : kinetics.getKineticsParameters()) {
 				kineticsParameter.removePropertyChangeListener(this);
 			}
-			for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+			for (ProxyParameter proxyParameter : kinetics.getProxyParameters()) {
 				proxyParameter.removePropertyChangeListener(this);
 			}
-			for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+			for (UnresolvedParameter unresolvedParameter: kinetics.getUnresolvedParameters()) {
 				unresolvedParameter.removePropertyChangeListener(this);
 			}
 		}
@@ -478,6 +481,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 					parameter.removePropertyChangeListener(this);
 				}
 			}
+			simulationContext.getReactionContext().removePropertyChangeListener(this);
 			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 				spec.removePropertyChangeListener(this);
 				for (Parameter parameter : spec.getParameters()) {
@@ -494,10 +498,6 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 	}
 	BioModel newValue = (BioModel)evt.getNewValue();
 	if (newValue != null){
-		newValue.removePropertyChangeListener(this);
-		newValue.getModel().removePropertyChangeListener(this);
-		newValue.addPropertyChangeListener(this);
-		newValue.getModel().addPropertyChangeListener(this);
 		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
 			modelParameter.addPropertyChangeListener(this);
 		}
@@ -506,14 +506,15 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 		}
 		for (ReactionStep reactionStep : newValue.getModel().getReactionSteps()){
 			reactionStep.addPropertyChangeListener(this);
-			reactionStep.getKinetics().addPropertyChangeListener(this);
-			for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+			Kinetics kinetics = reactionStep.getKinetics();
+			kinetics.addPropertyChangeListener(this);
+			for (KineticsParameter kineticsParameter : kinetics.getKineticsParameters()) {
 				kineticsParameter.addPropertyChangeListener(this);
 			}
-			for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+			for (ProxyParameter proxyParameter : kinetics.getProxyParameters()) {
 				proxyParameter.addPropertyChangeListener(this);
 			}
-			for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+			for (UnresolvedParameter unresolvedParameter: kinetics.getUnresolvedParameters()) {
 				unresolvedParameter.addPropertyChangeListener(this);
 			}
 		}
@@ -526,6 +527,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 					parameter.addPropertyChangeListener(this);
 				}
 			}
+			simulationContext.getReactionContext().addPropertyChangeListener(this);
 			for (SpeciesContextSpec spec : simulationContext.getReactionContext().getSpeciesContextSpecs()) {
 				spec.addPropertyChangeListener(this);
 				for (Parameter parameter : spec.getParameters()) {

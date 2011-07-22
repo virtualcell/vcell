@@ -105,10 +105,6 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 		return columnIndex != COLUMN_MATH_TYPE;
 	}
 	
-	protected boolean containedByModel() {
-		return false;
-	}
-	
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
@@ -126,8 +122,7 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 				}
 			}
 			refreshData();
-		}
-		if (evt.getSource() instanceof SimulationContext) {
+		} else if (evt.getSource() instanceof SimulationContext) {
 			int changeRow = getRowIndex((SimulationContext) evt.getSource());
 			if (changeRow >= 0) {
 				fireTableRowsUpdated(changeRow, changeRow);
