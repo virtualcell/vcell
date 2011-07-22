@@ -144,6 +144,7 @@ public abstract class ProxyParameter extends Parameter implements SymbolProxy {
 	
 	public final void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
 		if (target instanceof EditableSymbolTableEntry){
+			expression.bindExpression(target.getNameScope().getScopedSymbolTable());
 			((EditableSymbolTableEntry)target).setExpression(expression);
 		}else{
 			throw new RuntimeException("ProxyParameter.setExpression(): cannot set expression on target symbol '"+getName()+"'");
