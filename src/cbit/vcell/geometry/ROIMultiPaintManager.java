@@ -321,6 +321,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //	}
 	private void askInitialize(boolean bForceAddDistinct){
 
+		if(bHasOriginalData){
+			calculateHistogram();
+		}
 		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
 		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
 		for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
@@ -336,8 +339,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 		final String addROIManual = "Add ROI, edit manually";
-		final String addROIAssist = "Add ROI, show histogram";
-		final String addAllDistinct = "Add ROIs for all distinct";
+//		final String addROIAssist = "Add ROI, show histogram";
+		final String addAllDistinct = "Add Pre-Segmented";
 		final String cancel = "Cancel";
 		String result = null;
 		String distinctDescr =
@@ -348,13 +351,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
 				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+
 				"1. Add an 'empty' ROI to begin and edit manually."+
-				(!bHasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
-				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n3. Add 'filled' ROIs for every distinct pixel value."),
+//				(!bHasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
+				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n2. Add 'filled' ROIs for every distinct pixel value."),
 				(!bHasOriginalData
 					?new String[] {addROIManual,cancel}
 					:(uniquePixelBS.cardinality() >= 256
-						?new String[] {addROIManual,addROIAssist,cancel}
-						:new String[] {addROIManual,addROIAssist,addAllDistinct,cancel})),
+						?new String[] {addROIManual,/*addROIAssist,*/cancel}
+						:new String[] {addROIManual,/*addROIAssist,*/addAllDistinct,cancel})),
 				cancel);
 		
 			if(result.equals(cancel)){
@@ -399,10 +402,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 			}else{
 				addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
-				if(result.equals(addROIAssist)){
-					calculateHistogram();
-					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
-				}
+//				if(result.equals(addROIAssist)){
+//					calculateHistogram();
+//					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+//				}
 			}
 		}catch(UserCancelException e){
 			//do nothing
