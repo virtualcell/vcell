@@ -855,7 +855,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_4.gridx = 2;
 		editROIButtonPanel.add(delROIButton, gridBagConstraints_4);
 		
-		specialActionsButton = new JButton("Utilitites...");
+		specialActionsButton = new JButton("Tools...");
 		specialActionsButton.setName("roiCheckBtn");
 		specialActionsButton.addActionListener(new ActionListener() {
 			
@@ -941,25 +941,25 @@ public class OverlayEditorPanelJAI extends JPanel{
 				});
 				jp.add(resolveRegionsJMenuItem);
 				
-				JMenuItem histogramToolJMenuItem = new JMenuItem("Histogram Tool ("+(histogramPanel.isVisible()?"Hide":"Show")+")");
-				histogramToolJMenuItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						if(!histogramPanel.isVisible()){
-							firePropertyChange(FRAP_DATA_HISTOGRAM_PROPERTY, null, null);
-						}else{
-							histogramPanel.setVisible(false);
-						}
-					}
-				});
-				jp.add(histogramToolJMenuItem);
+//				JMenuItem histogramToolJMenuItem = new JMenuItem("Histogram Tool ("+(histogramPanel.isVisible()?"Hide":"Show")+")");
+//				histogramToolJMenuItem.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						if(!histogramPanel.isVisible()){
+//							firePropertyChange(FRAP_DATA_HISTOGRAM_PROPERTY, null, null);
+//						}else{
+//							histogramPanel.setVisible(false);
+//						}
+//					}
+//				});
+//				jp.add(histogramToolJMenuItem);
 				
-				JMenuItem addAllDistinctJMenuItem = new JMenuItem("Add ROI for each pixel value...");
-				addAllDistinctJMenuItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						firePropertyChange(FRAP_DATA_ADDALLDISTINCT_PROPERTY, null, null);
-					}
-				});
-				jp.add(addAllDistinctJMenuItem);
+//				JMenuItem addAllDistinctJMenuItem = new JMenuItem("Add ROI for each pixel value...");
+//				addAllDistinctJMenuItem.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						firePropertyChange(FRAP_DATA_ADDALLDISTINCT_PROPERTY, null, null);
+//					}
+//				});
+//				jp.add(addAllDistinctJMenuItem);
 
 				JMenuItem padJMenuItem = new JMenuItem("Add Borders...");
 				padJMenuItem.addActionListener(new ActionListener() {
@@ -1034,7 +1034,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gbc_slider.gridy = 0;
 		blendPercentPanel.add(blendPercentSlider, gbc_slider);
 		
-		JLabel lblRoi = new JLabel("Underlay");
+		JLabel lblRoi = new JLabel("Bkgrnd Image");
 		GridBagConstraints gbc_lblRoi = new GridBagConstraints();
 		gbc_lblRoi.insets = new Insets(0, 0, 0, 1);
 		gbc_lblRoi.anchor = GridBagConstraints.EAST;

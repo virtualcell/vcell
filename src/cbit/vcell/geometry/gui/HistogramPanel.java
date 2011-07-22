@@ -68,8 +68,8 @@ public class HistogramPanel extends JPanel {
 	private JLabel stretchJLabel = new JLabel("zoom");
 	private JLabel moveJLabel = new JLabel("scroll");
 	private JLabel titleJLabel = new JLabel("Histogram Tool");
-	private JButton applyButton = new JButton("ROI...");
-	private JButton hideButton = new JButton("Hide");
+	private JButton applyButton = new JButton("Set ROI...");
+//	private JButton hideButton = new JButton("Hide");
 //	private JScrollBar moveScrollBar = new JScrollBar();
 		
 	private class HistogramLayoutManager implements LayoutManager{
@@ -80,13 +80,17 @@ public class HistogramPanel extends JPanel {
 
 		public void layoutContainer(Container parent) {
 			// TODO Auto-generated method stub
-			int SIDE_BUTTON_WIDTH = 70;
-			hideButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2,
-					2,
-					SIDE_BUTTON_WIDTH/*hideButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
-			applyButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2/*-hideButton.getBounds().width*/,
-					hideButton.getPreferredSize().height+2,
-					SIDE_BUTTON_WIDTH/*applyButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
+			int SIDE_BUTTON_WIDTH = applyButton.getPreferredSize().width;//70;
+			applyButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2,
+			2,
+			SIDE_BUTTON_WIDTH/*hideButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
+
+//			hideButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2,
+//					2,
+//					SIDE_BUTTON_WIDTH/*hideButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
+//			applyButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2/*-hideButton.getBounds().width*/,
+//					hideButton.getPreferredSize().height+2,
+//					SIDE_BUTTON_WIDTH/*applyButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
 			
 			pixValLowJLabel.setBounds(HORZ_EDGE_OFFSET,
 					parent.getHeight()-VERT_EDGE_OFFSET+2,
@@ -305,8 +309,8 @@ public class HistogramPanel extends JPanel {
 		}
 	}
 	private void init(){
-		applyButton.setFont(Font.decode("Dialog-10"));
-		hideButton.setFont(Font.decode("Dialog-10"));
+		applyButton.setFont(Font.decode("Dialog-BOLD-12"));
+//		hideButton.setFont(Font.decode("Dialog-10"));
 		setLayout(new HistogramLayoutManager());
 		this.add(getVertSlider());
 		this.add(getHorzScaleSlider());
@@ -318,7 +322,7 @@ public class HistogramPanel extends JPanel {
 		this.add(moveJLabel);
 		this.add(titleJLabel);
 		this.add(applyButton);
-		this.add(hideButton);
+//		this.add(hideButton);
 //		this.add(moveScrollBar);
 //		moveScrollBar.setOrientation(JScrollBar.HORIZONTAL);
 		getHorzOffsetSlider().setEnabled(false);
@@ -328,13 +332,13 @@ public class HistogramPanel extends JPanel {
 		getHorzScaleSlider().setToolTipText("Zoom pixel 'value' display");
 		getHorzOffsetSlider().setToolTipText("Scroll through pixel 'value' display");
 		applyButton.setToolTipText("Update ROI with histogram selection");
-		hideButton.setToolTipText("Hide histogram tool");
+//		hideButton.setToolTipText("Hide histogram tool");
 		
-		hideButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				firePropertyChange(HISTOGRAM_HIDE_ACTION, null, null);
-			}
-		});
+//		hideButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				firePropertyChange(HISTOGRAM_HIDE_ACTION, null, null);
+//			}
+//		});
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				firePropertyChange(HISTOGRAM_APPLY_ACTION, null, null);
@@ -550,7 +554,7 @@ public class HistogramPanel extends JPanel {
 					if(bInSelection){
 						g.setColor(Color.cyan);
 					}else{
-						g.setColor(Color.white);
+						g.setColor(Color.gray);
 					}
 					double gammaScale = Math.pow((pixCount/((double)maxCount)), 1/(vertScaleSlider.getValue()/10.0));
 					if(pixCount != 0){
