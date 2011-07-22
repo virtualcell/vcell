@@ -161,7 +161,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		Geometry currentGeometry = geometryViewer.getGeometryOwner().getGeometry();
 		createGeometry(currentGeometry,
 				new AsynchClientTask[] {oldEditorTask,precomputeAllTask,setGeomOnSimContextTask}
-				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
+				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT);
 	}
 	
 	if (source instanceof MathematicsPanel && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_MATH_MODEL)) {
