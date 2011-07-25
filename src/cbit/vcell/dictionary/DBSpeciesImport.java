@@ -606,7 +606,7 @@ public static void createReactions(java.io.InputStream bis,ConnectedDictDbDriver
 			try{
 				stmt.executeUpdate("DROP TABLE "+EnzymeReactionTable.table.getTableName());
 			}catch(java.sql.SQLException e){
-				//ORA-00942: table or view does not exist
+				//ORA-00942: table or DBSpeciesImportview does not exist
 				if(e.getErrorCode() != 942){
 					throw e;
 				}
