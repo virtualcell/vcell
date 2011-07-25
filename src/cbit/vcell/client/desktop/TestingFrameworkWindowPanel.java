@@ -478,7 +478,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label);
 		
-		textField_1 = new JTextField("dbs4");
+		textField_1 = new JTextField("");
 		add(textField_1);
 		textField_1.setColumns(10);
 		
@@ -487,7 +487,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label_2.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label_2);
 		
-		textField_2 = new JTextField("orcl");
+		textField_2 = new JTextField("");
 		add(textField_2);
 		textField_2.setColumns(10);
 		
@@ -496,7 +496,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label_3.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label_3);
 		
-		textField_3 = new JTextField("vcell");
+		textField_3 = new JTextField("");
 		add(textField_3);
 		textField_3.setColumns(10);
 		

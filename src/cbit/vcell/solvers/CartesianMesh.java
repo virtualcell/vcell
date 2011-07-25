@@ -2260,8 +2260,8 @@ public static void test() {
 		try {
 			CartesianMesh mesh = null;
 	
-			File meshFile = new File("\\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\fgao\\SimID_28389873_0_.mesh");
-			File membraneMeshMetricsFile = new File("\\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\fgao\\SimID_28389873_0_.meshmetrics");
+			File meshFile = new File("users\\fgao\\SimID_28389873_0_.mesh");
+			File membraneMeshMetricsFile = new File("users\\fgao\\SimID_28389873_0_.meshmetrics");
 			// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 			//
 			mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, null);
