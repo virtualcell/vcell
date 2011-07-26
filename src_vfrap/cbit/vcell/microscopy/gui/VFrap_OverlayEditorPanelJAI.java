@@ -57,6 +57,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
@@ -81,6 +82,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	public static final int DEFINE_CELLROI = 2;
 	public static final int DEFINE_BLEACHEDROI = 3;
 	public static final int DEFINE_BACKGROUNDROI = 4;
+	public static final int SHOW_RIO_ASSISTANT = 5;
+	public static final int HIDE_ROI_ASSISTANT = 6;
 	private VFrap_ROISourceData roiSourceData = null;
 	//scale factors
 	public static final double DEFAULT_SCALE_FACTOR = 1.0;
@@ -424,6 +427,17 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	
 	public void showROIAssist()
 	{
+		//before showing ROI assistant, check if ROI is defined. If yes, ask user if they want to override previous defined ROI. Since ROI assistant always
+		//shows up with automatica detected region of interest regardless of whatever is defined, users may lose defined ROI by accidentally clicking the ROI assistant.
+		if(getRoiSouceData().getCurrentlyDisplayedROI() !=  null && getRoiSouceData().getCurrentlyDisplayedROI().getNonzeroPixelsCount() > 0)
+		{
+			String choice = DialogUtils.showWarningDialog(this, "Invoking the ROI assistant will override already defined '" + getRoiSouceData().getCurrentlyDisplayedROI().getROIName() + "'. Do you want to continue?",
+					                                      new String[]{UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
+			if(choice.equals(UserMessage.OPTION_CANCEL))
+			{
+				return;
+			}
+		}
 		//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
 		if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
 				getRoiSouceData().getRoi(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
@@ -440,6 +454,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		}
 		getROIAssistPanel().init(originalROI, getRoiSouceData(),VFrap_OverlayEditorPanelJAI.this);
 		setROIAssistVisible(true);
+		adjustComponentsForVFRAP(SHOW_RIO_ASSISTANT);
 	}
 	
 	public void setROIAssistVisible(boolean isVisible)
@@ -504,32 +519,20 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			getImportROIMaskButton().setVisible(false);
 			getClearROIbutton().setVisible(false);
 			getRoiTimePlotButton().setVisible(false);
-//			roiAssistButton.setVisible(false);
 			editRoiLabel.setEnabled(true);
 
 		}
 		else if(choice == DEFINE_CROP)
 		{
 			setAllComponentsVisible();
-						
-//			getZoomInButton().setEnabled(false);
-//			getZoomOutButton().setEnabled(false);
-//			getContrastButtonPlus().setEnabled(false);
-//			getContrastButtonMinus().setEnabled(false);
+
+			setDrawingToolButtonEnabled(false);
 			getCropButton().setEnabled(true);
 			getCropButton().setSelected(true);//paint button will not be selected
 			getAutoCropButton().setEnabled(isAutoCroppable());
 			getPaintButton().setSelected(false);
-			getPaintButton().setEnabled(false);
-			getPaintButton().setFocusPainted(false);
-			getPaintButton().setBorderPainted(false);
-			getEraseButton().setEnabled(false);
-			getFillButton().setEnabled(false);
-			getImportROIMaskButton().setEnabled(false);
-			getClearROIbutton().setEnabled(false);
-			getRoiTimePlotButton().setEnabled(false);
-			getRoiAssistButton().setEnabled(false);
 			//other components
+			getRoiAssistButton().setEnabled(false);
 			roiComboBox.setVisible(false);
 			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
@@ -537,36 +540,45 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
 		{
 			setAllComponentsVisible();
-						
-			getZoomInButton().setEnabled(true);
-			getZoomOutButton().setEnabled(true);
-			getContrastButtonPlus().setEnabled(true);
-			getContrastButtonMinus().setEnabled(true);
+			setDrawingToolButtonEnabled(true);			
 			getCropButton().setEnabled(false);
 			getAutoCropButton().setEnabled(false);
-			getPaintButton().setEnabled(true);
-			getEraseButton().setEnabled(true);
-			getFillButton().setEnabled(true);
-			getImportROIMaskButton().setEnabled(true);
-			getClearROIbutton().setEnabled(true);
-			getRoiTimePlotButton().setEnabled(true);
-			getRoiAssistButton().setEnabled(true);
 			//other components
+			getRoiAssistButton().setEnabled(true);
 			roiComboBox.setVisible(false);
 			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
 		}
+		else if(choice == SHOW_RIO_ASSISTANT)
+		{
+			setDrawingToolButtonEnabled(false);
+			getCropButton().setEnabled(false);
+			getAutoCropButton().setEnabled(false);
+		}
+		else if(choice == HIDE_ROI_ASSISTANT)
+		{
+			setDrawingToolButtonEnabled(true);
+			getCropButton().setEnabled(false);
+			getAutoCropButton().setEnabled(false);
+		}
 	}
 	
-	private void setAllComponentsVisible()
+	private void setDrawingToolButtonEnabled(boolean bEnabled)
+	{
+		getPaintButton().setEnabled(bEnabled);
+		getPaintButton().setEnabled(bEnabled);
+		getEraseButton().setEnabled(bEnabled);
+		getFillButton().setEnabled(bEnabled);
+		getImportROIMaskButton().setEnabled(bEnabled);
+		getClearROIbutton().setEnabled(bEnabled);
+		getRoiTimePlotButton().setEnabled(bEnabled);
+	}
+	
+	protected void setAllComponentsVisible()
 	{
 		BeanUtils.enableComponents(getRightPanel(), true);
 		BeanUtils.enableComponents(editROIPanel, true);
 		//buttons
-		getZoomInButton().setVisible(true);
-		getZoomOutButton().setVisible(true);
-		getContrastButtonPlus().setVisible(true);
-		getContrastButtonMinus().setVisible(true);
 		getCropButton().setVisible(true);
 		getAutoCropButton().setVisible(true);
 		getPaintButton().setVisible(true);
@@ -576,7 +588,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		getImportROIMaskButton().setVisible(true);
 		getClearROIbutton().setVisible(true);
 		getRoiTimePlotButton().setVisible(true);
-//		roiAssistButton.setVisible(true);
 		//other components
 		roiComboBox.setVisible(true);
 		editRoiLabel.setVisible(true);
@@ -1614,6 +1625,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 					if(isROIAssistVisible())
 					{
 						setROIAssistVisible(false);
+						adjustComponentsForVFRAP(HIDE_ROI_ASSISTANT);
 					}
 					else
 					{

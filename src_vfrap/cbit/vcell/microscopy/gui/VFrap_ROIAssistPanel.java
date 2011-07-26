@@ -227,6 +227,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 				}
 				overlayEditorPanelJAI.getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
 				VFrap_ROIAssistPanel.this.setVisible(false);
+				overlayEditorPanelJAI.adjustComponentsForVFRAP(VFrap_OverlayEditorPanelJAI.HIDE_ROI_ASSISTANT);
 			}
 		});
 		applyROIButton.setText("Apply and Hide");
@@ -243,6 +244,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 				frapData.addReplaceRoi(originalROI);
 				overlayEditorPanelJAI.getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
 				VFrap_ROIAssistPanel.this.setVisible(false);
+				overlayEditorPanelJAI.adjustComponentsForVFRAP(VFrap_OverlayEditorPanelJAI.HIDE_ROI_ASSISTANT);
 			}
 		});
 		cancelButton.setText("Cancel and Hide");
