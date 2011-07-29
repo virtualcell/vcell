@@ -64,7 +64,7 @@ public class LicenseWriter {
 			String line = null;
 			while(null != (line = reader.readLine())) {
 				if(line.contains("Copyright") && line.contains(oldUConn)) {
-//					System.out.print("old UConn license.");
+					System.out.println("          Old UConn license in " + file.getPath());
 					summaryFilesWithOldUConnLicense++;
 					reader.close();
 					return;
@@ -390,9 +390,13 @@ public class LicenseWriter {
         fileExceptions.add("src/org/vcell/wizard/WizardController.java");
         fileExceptions.add("src/org/vcell/wizard/WizardPanelDescriptor.java");
         fileExceptions.add("src/org/vcell/wizard/WizardModel.java");
+        
+        // from numerics - these files have their own copyright statement
+        fileExceptions.add("VCell/include/VCELL/ilTIFF.h");
+        fileExceptions.add("VCell_CodeGen/include/VCELL/ilTIFF.h");
 
         // numerics - list of foreign directories (which won't get our license)
-        String numericsPrefix = "numerics_5.0\\";
+        String numericsPrefix = "numerics_5.0_branch\\";
 		directoryExceptions.add(numericsPrefix + "blas");
 //		directoryExceptions.add(numericsPrefix + "ExpressionParser");
 //		directoryExceptions.add(numericsPrefix + "ExpressionParserTest");
@@ -441,7 +445,7 @@ public class LicenseWriter {
 //			command = "write";
 			licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
 			String vCellSourceDirectory = "C:\\dan\\projects\\VCell_4.8\\src";
-			String numericsSourceDirectory = "C:\\dan\\projects\\numerics_5.0";
+			String numericsSourceDirectory = "C:\\dan\\projects\\numerics_5.0_branch";
 			rootDirectory = numericsSourceDirectory;
 			}
 			dir = new File(rootDirectory);
@@ -524,11 +528,14 @@ public class LicenseWriter {
 				manageFiles(command, f, licenseWriter, depth+1);	// prepend license statement to child
 			}
 		} else {					// base case, if file represents a file
-			if(!file.getName().endsWith(".java")					// file must have .java extension
-					&& !file.getName().endsWith(".cpp")
-					&& !file.getName().endsWith(".c")
-					&& !file.getName().endsWith(".hpp")
-					&& !file.getName().endsWith(".h")
+			if(
+					!file.getName().endsWith(".java") &&			// file must have .java extension
+					!file.getName().endsWith(".cpp") &&
+					!file.getName().endsWith(".c") &&
+					!file.getName().endsWith(".hpp") &&
+					!file.getName().endsWith(".h")
+//					!file.getName().endsWith(".f") &&				// Fortran files
+//					!file.getName().endsWith(".f90")
 					) {					
 				return;
 			}
@@ -544,9 +551,9 @@ public class LicenseWriter {
 //				System.out.print(spaces.substring(0, 2*depth) + file.getName() + spaces.substring(0, 80-(2*depth+file.getName().length())));
 				licenseWriter.evaluate(file);
 //				System.out.println("");
-			} else if(command.equals("write")) {		// vrites the new copiright notice
+			} else if(command.equals("write")) {		// writes the new copyright notice
 				licenseWriter.write(file);
-			} else if(command.equals("cleanup")) {		// deletes old UConn copiright notices
+			} else if(command.equals("cleanup")) {		// deletes old UConn copyright notices
 				licenseWriter.cleanup(file);
 			} else {
 				throw new IllegalArgumentException("Command must be: evaluate, write or cleanup");
