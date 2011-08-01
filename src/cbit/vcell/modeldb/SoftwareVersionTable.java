@@ -22,7 +22,7 @@ public class SoftwareVersionTable extends cbit.sql.Table {
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	public final Field versionableRef		= new Field("versionableRef",		"integer",		"UNIQUE NOT NULL");
-	public final Field softwareVersion		= new Field("softwareVersion",		"varchar2(32)",	"NOT NULL");
+	public final Field softwareVersion		= new Field("softwareVersion",		"varchar2(64)",	"NOT NULL");
 
 	private final Field fields[] = {versionableRef,softwareVersion};
 	

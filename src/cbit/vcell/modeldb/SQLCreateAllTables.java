@@ -224,11 +224,22 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.CellTypeTable.table,
 		cbit.vcell.modeldb.StructTable.table,
 		cbit.vcell.modeldb.ReactStepTable.table,
+
+		cbit.vcell.dictionary.ProteinTable.table,
+		cbit.vcell.dictionary.ProteinAliasTable.table,
+		cbit.vcell.dictionary.CompoundTable.table,
+		cbit.vcell.dictionary.CompoundAliasTable.table,
+		cbit.vcell.dictionary.EnzymeTable.table,
+		cbit.vcell.dictionary.EnzymeAliasTable.table,
+		cbit.vcell.dictionary.EnzymeReactionTable.table,
+		cbit.vcell.dictionary.DBSpeciesTable.table,
+
 		cbit.vcell.modeldb.SpeciesTable.table,
 		cbit.vcell.modeldb.SpeciesContextModelTable.table,
 		cbit.vcell.modeldb.ModelStructLinkTable.table,
 		cbit.vcell.modeldb.ReactPartTable.table,
 		cbit.vcell.modeldb.DiagramTable.table,
+		cbit.vcell.modeldb.GlobalModelParameterTable.table,
 		cbit.vcell.modeldb.ExtentTable.table,
 		cbit.vcell.modeldb.ImageTable.table,
 		cbit.vcell.modeldb.ImageDataTable.table,
@@ -236,6 +247,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.ImageRegionTable.table,
 		cbit.vcell.modeldb.GeometryTable.table,
 		cbit.vcell.modeldb.SubVolumeTable.table,
+		cbit.vcell.modeldb.SurfaceClassTable.table,
 		cbit.vcell.modeldb.MathDescTable.table,
 		cbit.vcell.modeldb.SimContextTable.table,
 		cbit.vcell.modeldb.SpeciesContextSpecTable.table,
@@ -251,21 +263,16 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.BioModelTable.table,
 		cbit.vcell.modeldb.BioModelSimContextLinkTable.table,
 		cbit.vcell.modeldb.BioModelSimulationLinkTable.table,
+		cbit.vcell.modeldb.VCMetaDataTable.table,
 		cbit.vcell.modeldb.MathModelTable.table,
 		cbit.vcell.modeldb.MathModelSimulationLinkTable.table,
+		cbit.vcell.modeldb.ApplicationMathTable.table,
 		cbit.vcell.modeldb.AvailableTable.table,
 		cbit.vcell.modeldb.UserStatTable.table,
 		cbit.vcell.modeldb.UserLogTable.table,
-		cbit.vcell.dictionary.ProteinTable.table,
-		cbit.vcell.dictionary.ProteinAliasTable.table,
-		cbit.vcell.dictionary.CompoundTable.table,
-		cbit.vcell.dictionary.CompoundAliasTable.table,
-		cbit.vcell.dictionary.EnzymeTable.table,
-		cbit.vcell.dictionary.EnzymeAliasTable.table,
-		cbit.vcell.dictionary.EnzymeReactionTable.table,
+		cbit.vcell.modeldb.UserLoginInfoTable.table,
 		cbit.vcell.modeldb.SimContextStatTable.table,
 		cbit.vcell.modeldb.SimContextStat2Table.table,
-		cbit.vcell.dictionary.DBSpeciesTable.table,
 		cbit.vcell.modeldb.ResultSetExportsTable.table,
 		cbit.vcell.messaging.db.SimulationJobTable.table,
 		cbit.vcell.modeldb.BioModelXMLTable.table,
@@ -279,6 +286,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.TFTestResultTable.table,
 		cbit.vcell.modeldb.SoftwareVersionTable.table,
 		cbit.vcell.modeldb.ExternalDataTable.table,
+		cbit.vcell.modeldb.DataSymbolTable.table,
 		cbit.vcell.modeldb.MathDescExternalDataLinkTable.table,
 		cbit.vcell.modeldb.MIRIAMTable.table,
 		cbit.vcell.messaging.db.ServiceTable.table
@@ -308,13 +316,13 @@ public static void main(java.lang.String[] args) {
             javax.swing.JOptionPane.showConfirmDialog(
                 new JFrame(),
                 "EXTREME DANGER!!!!\nAll Tables in Schema below will be DESTROYED and re-created"
-                    + "connectURL="
+                    + "\nconnectURL="
                     + connectURL
                     + "\nUser="
                     + dbSchemaUser
                     + "\npassword="
                     + dbPassword,
-                "Confirm",
+                "\n\nConfirm",
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE);
         if (ok != javax.swing.JOptionPane.OK_OPTION) {
@@ -324,7 +332,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("SQLCreateAllTables");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new org.vcell.util.PropertyLoader();
+        //new org.vcell.util.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

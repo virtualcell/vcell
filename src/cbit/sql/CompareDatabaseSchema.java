@@ -203,7 +203,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("CompareDatabaseSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new org.vcell.util.PropertyLoader();
+        //new org.vcell.util.PropertyLoader();
 
         //
         // get appropriate database factory objects
