@@ -1,0 +1,103 @@
+vcell.softwareVersion = my_softwareVersion
+vcell.server.id = my_serverid
+
+#
+# Solver executables
+#
+vcell.sundialsSolver.executable = c:\\Developer\\eclipse\\workspace\\numerics\\SundialsSolverStandalone\\Debug_No_Messaging\\SundialsSolverStandalone.exe
+vcell.finitevolume.executable = c:\\Developer\\eclipse\\workspace\\numerics\\FiniteVolume\\Debug_No_Messaging\\FiniteVolume.exe
+vcell.smoldyn.executable = c:\\Developer\\eclipse\\workspace\\VCell\\resources\\cbit\\vcell\\resource\\windows\\smoldyn.exe
+vcell.stoch.executable = c:\\developer\\eclipse\\workspace\\numerics\\Stochastic\\VCellStoch\\VCellStoch.exe
+vcell.hybridEM.executable= c:\\developer\\eclipse\\workspace\\numerics\\Hy3S\\src\\Hybrid_EM.exe
+vcell.hybridMil.executable= c:\\developer\\eclipse\\workspace\\numerics\\Hy3S\\src\\Hybrid_MIL.exe
+
+#
+# RMI Ports (0 means let RMI runtime choose a "random" port).
+#
+vcell.rmi.port.registry = 40222
+vcell.rmi.port.adminDbServer = 40222
+vcell.rmi.port.dataSetController = 40222
+vcell.rmi.port.simulationController = 40222
+vcell.rmi.port.solverController = 40222
+vcell.rmi.port.userMetaDbServer = 40222
+vcell.rmi.port.vcellBootstrap = 40222
+vcell.rmi.port.vcellConnection = 40222
+vcell.rmi.port.vcellServer = 40222
+vcell.rmi.port.messageHandler = 40222
+vcell.rmi.port.bngService = 40222
+
+#
+# server configuration
+#
+vcell.primarySimdatadir = \\\\file_host1\\vcell\\users
+vcell.secondarySimdatadir = \\\\file_host2\\vcell\\users
+vcell.tempdir = c:\\vcell\\temp\\
+vcell.help.userGuideURL = http://vcell.org/user_guide_v3/tocv3.html
+vcell.help.tutorialURL = http://vcell.org/tutorials_v3/tutorials.html
+vcell.export.baseURL = http://apache_host/ExportData/
+vcell.export.baseDir = \\\\Ms2\\Home\\Program Files\\Apache Group\\Apache\\htdocs\\ExportData\\
+vcell.export.useLocalDataServer = true
+vcell.databaseCacheSize = 5000000
+vcell.simdataCacheSize = 200000000
+vcell.numProcessors = 2
+vcell.maxJavaMemoryBytes = 1000000000
+vcell.dataSetCrawlerEnabled = false
+vcell.dataSetCrawlerIntervalMinutes = 120
+vcell.serverStatistics = C:\\PerfLogs\\Free_RAM_and_CPU.bat
+
+#
+# Oracle database info
+#
+vcell.server.dbConnectURL = jdbc:oracle:thin:@database_host:1521:database_sid
+vcell.server.dbDriverName = oracle.jdbc.driver.OracleDriver
+vcell.server.dbUserid = database_user
+vcell.server.dbPassword = database_password
+
+# SonicMQ info
+vcell.jms.provider = SonicMQ
+vcell.jms.url = tcp://jms_host:2506
+vcell.jms.user = jms_user
+vcell.jms.password = jms_password
+vcell.jms.queue.fileChannel = fileChannel
+vcell.jms.queue.simReq = simReq
+vcell.jms.queue.dataReq = simDataReq
+vcell.jms.queue.dbReq = dbReq
+vcell.jms.queue.simJob = simJob
+vcell.jms.queue.workerEvent = workerEvent
+vcell.jms.queue.lsfJobInfo = lsfJobInfo
+vcell.jms.topic.serviceControl = serviceControl
+vcell.jms.topic.daemonControl = daemonControl
+vcell.jms.topic.clientStatus = clientStatus
+vcell.jms.workerPrefetchCount = 1
+vcell.jms.servicePrefetchCount = 1
+
+#
+# Quota info
+#
+vcell.server.maxOdeJobsPerUser = 5
+vcell.server.maxPdeJobsPerUser = 10
+vcell.server.maxJobsPerScan = 40
+
+#
+# LSF info
+#
+vcell.lsf.jobQueue = vcellApha
+vcell.lsf.partition.maximumJobs = 75
+vcell.lsf.partition.shareServerIDs = R4 BETA ALPHA
+
+#
+# BNG info
+#
+vcell.bng.perl.executable = C:\\perl\\bin\\perl.exe
+vcell.bng.script = \\\\SAN2\\RAID\\VCELL\\DEPLOYED\\BioNetGen\\Perl2\\BNG2.pl
+
+#
+# Client Timeout in milliseconds
+#
+vcell.client.timeoutMS = 300000
+
+#
+# Management info
+#
+vcell.messaging.serverManagerConfig = c:\\vcell\\ALPHA\\ServerManagerConfig.xml
+vcell.messaging.bootstrapConfig = c:\\vcell\\ALPHA\\BootstrapConfig.xml

@@ -19,8 +19,8 @@ public class BioModelXMLTable extends cbit.sql.Table {
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	public final Field bioModelRef =	new Field("biomodelRef",		"integer",	"UNIQUE NOT NULL "+BioModelTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bmXML =			new Field("bmxml",	"CLOB",	"NOT NULL");
-	public final Field changeDate =		new Field("changeDate","DATE","NOT NULL");
+	public final Field bmXML =			new Field("bmxml",	"CLOB",	  "");
+	public final Field changeDate =		new Field("changeDate","DATE","");
 	
 	private final Field fields[] = {bioModelRef,bmXML,changeDate};
 	
