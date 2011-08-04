@@ -858,4 +858,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		}
 		return;
 	}
+
+	public void saveNodePositions() {}
+	
 }

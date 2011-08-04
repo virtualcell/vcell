@@ -307,4 +307,6 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		}	
 		return;
 	}
+
+	public void saveNodePositions() { }
 }
