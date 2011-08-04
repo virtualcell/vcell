@@ -368,7 +368,7 @@ public class PathwayGraphTool extends BioCartoonTool {
 		}
 	}
 	
-	public void saveDiagram() throws Exception {
+	public void saveDiagram() {
 		// TODO
 //		for(Structure structure : getReactionCartoon().getStructureSuite().getStructures()) {
 //			getReactionCartoon().setPositionsFromReactionCartoon(
@@ -414,4 +414,9 @@ public class PathwayGraphTool extends BioCartoonTool {
 		// TODO Auto-generated method stub
 
 	}
+
+	public void saveNodePositions() {
+		saveDiagram();
+	}
+	
 }
