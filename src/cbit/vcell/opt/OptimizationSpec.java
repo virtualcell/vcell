@@ -102,14 +102,6 @@ public void gatherIssues(List<Issue> issueList) {
 	// check for validity of objective function
 	//
 	objectiveFunction.gatherIssues(issueList);
-
-	//
-	// check that there is at least one parameter to optimize
-	//
-	if (parameterList.size()==0){
-		issueList.add(new Issue(this,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization. Please select parameters " +
-				"by checking \"optimize\" in \"Parameters\" table.",Issue.SEVERITY_ERROR));
-	}
 }
 
 

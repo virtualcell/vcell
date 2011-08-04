@@ -261,8 +261,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		int selectedIndex = tabbedPane.getSelectedIndex();		
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
 			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
-			|| (selectedIndex == ModelPanelTabID.reaction_table.ordinal() || selectedIndex == ModelPanelTabID.species_table.ordinal()) 
-						&& (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
+			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
 			newButton.setVisible(false);
 		} else {
 			newButton.setVisible(true);
@@ -574,8 +573,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				DialogUtils.showErrorDialog(this, e.getMessage(), e);
 			}
 		} else if (currentSelectedTable == reactionsTable) {
-			SimpleReaction reactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
-			newObject = reactionStep;
+			if (bioModel.getModel().getNumStructures() == 1) {
+				SimpleReaction reactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
+				newObject = reactionStep;
+			} else {
+				addNewReaction();
+			}
 		}
 		if (newObject != null) {
 			for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {

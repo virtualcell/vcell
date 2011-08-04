@@ -1,11 +1,18 @@
 package cbit.vcell.modelopt;
+
+import org.vcell.util.Matchable;
+
+import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.ExpressionException;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:35:15 AM)
  * @author: Jim Schaff
  */
-public class ParameterMappingSpec implements java.io.Serializable, org.vcell.util.Matchable {
-	private cbit.vcell.model.Parameter modelParameter = null;
+@SuppressWarnings("serial")
+public class ParameterMappingSpec implements java.io.Serializable, Matchable {
+	private Parameter modelParameter = null;
 	private double low = Double.NEGATIVE_INFINITY;
 	private double high = Double.POSITIVE_INFINITY;
 	private double current; // must be set in constructor (based on parameter value).
@@ -15,7 +22,7 @@ public class ParameterMappingSpec implements java.io.Serializable, org.vcell.uti
 /**
  * ParameterMapping constructor comment.
  */
-public ParameterMappingSpec(cbit.vcell.model.Parameter argModelParameter) throws cbit.vcell.parser.ExpressionException {
+public ParameterMappingSpec(Parameter argModelParameter) throws ExpressionException {
 	super();
 	this.modelParameter = argModelParameter;
 	this.current = argModelParameter.getExpression().evaluateConstant();
@@ -25,7 +32,7 @@ public ParameterMappingSpec(cbit.vcell.model.Parameter argModelParameter) throws
 /**
  * ParameterMapping constructor comment.
  */
-public ParameterMappingSpec(ParameterMappingSpec parameterMappingSpecToCopy) throws cbit.vcell.parser.ExpressionException {
+public ParameterMappingSpec(ParameterMappingSpec parameterMappingSpecToCopy) throws ExpressionException {
 	super();
 	this.modelParameter = parameterMappingSpecToCopy.getModelParameter();
 	this.current = parameterMappingSpecToCopy.getCurrent();
@@ -44,19 +51,11 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (obj instanceof ParameterMappingSpec){
 		ParameterMappingSpec pms = (ParameterMappingSpec)obj;
 
@@ -89,31 +88,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -153,7 +128,7 @@ public double getLow() {
  * Creation date: (8/22/2005 9:37:50 AM)
  * @return cbit.vcell.model.Parameter
  */
-public cbit.vcell.model.Parameter getModelParameter() {
+public Parameter getModelParameter() {
 	return modelParameter;
 }
 
@@ -192,14 +167,6 @@ public boolean isSelected() {
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
 
@@ -248,5 +215,10 @@ public void setSelected(boolean newSelected) {
 	boolean oldValue = selected;
 	selected = newSelected;
 	firePropertyChange("selected", oldValue, newSelected);
+}
+
+@Override
+public String toString() {
+	return getModelParameter().getName() + " " + getModelParameter().getNameScope().getName() + " " + isSelected();
 }
 }

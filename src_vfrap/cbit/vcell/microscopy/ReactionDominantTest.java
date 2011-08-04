@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 import org.vcell.optimization.OptSolverResultSet.ProfileDistribution;
 
@@ -17,7 +19,6 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.solvers.NewOptimizationSolver;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -110,7 +111,7 @@ public class ReactionDominantTest
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
-		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
 		

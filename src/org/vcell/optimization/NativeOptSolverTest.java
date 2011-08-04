@@ -6,8 +6,6 @@ import java.io.IOException;
 
 import cbit.vcell.resource.ResourceUtil;
 
-import sun.security.action.LoadLibraryAction;
-
 public class NativeOptSolverTest {
 	
 	/**
@@ -17,7 +15,7 @@ public class NativeOptSolverTest {
 		try {
 			ResourceUtil.loadNativeSolverLibrary();
 			String optProblemXML = getXMLString("..\\numerics\\OptStandalone2\\test9.xml");
-			OptSolverCallbacks optSolverCallbacks = new SimpleOptSolverCallbacks();
+			OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 			NativeOptSolver nativeOptSolver = new NativeOptSolver();
 			
 			String optSolverResultSetXML = nativeOptSolver.nativeSolve_CFSQP(optProblemXML, optSolverCallbacks);

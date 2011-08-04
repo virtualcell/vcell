@@ -16,6 +16,7 @@ import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
+import org.vcell.optimization.LocalOptimizationService;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
@@ -36,7 +37,6 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.opt.solvers.LocalOptimizationService;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -56,8 +56,6 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 	private BioModelEditor bioModelEditor = null;
 	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
-	private LocalOptimizationService localOptService = null;
-	
 	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
 	private PropertyChangeListener miriamPropertyChangeListener =
 		new PropertyChangeListener(){
@@ -380,21 +378,6 @@ protected JDesktopPaneEnhanced getJDesktopPane() {
 private javax.swing.JPanel getJPanel() {
 	return (JPanel)getComponent();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/19/2005 9:45:48 PM)
- * @return cbit.vcell.opt.solvers.OptimizationService
- */
-public OptimizationService getOptimizationService() {
-	if (localOptService==null){
-		localOptService = new LocalOptimizationService();
-	}
-
-	return localOptService;
-}
-
 
 /**
  * Insert the method's description here.

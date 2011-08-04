@@ -141,7 +141,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case SIMULATIONS_NODE:
 	    			icon = VCellIcons.simulationIcon;
 	    			break;
-	    		case FITTING_NODE:
+	    		case PARAMETER_ESTIMATION_NODE:
 	    			icon = VCellIcons.fittingIcon;
 	    			break;
 	    		}

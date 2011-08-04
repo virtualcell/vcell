@@ -45,7 +45,9 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		initialize();
 	}
 
-	private void initialize(){			
+	@Override
+	protected void initialize(){
+		super.initialize();
 		geometryViewer = new GeometryViewer();
 		structureMappingCartoonPanel = new StructureMappingCartoonPanel();
 		

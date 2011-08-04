@@ -19,14 +19,17 @@ import javax.swing.JFrame;
 import javax.swing.RootPaneContainer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.GlassPane;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.BNGWindow;
 import cbit.vcell.client.desktop.DatabaseWindow;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
@@ -157,16 +160,17 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
 	int docType = vcDocument.getDocumentType();
 	String docName = (version != null?version.getName():(vcDocument.getName()==null?"NoName":vcDocument.getName()+" (NoVersion)"));
 	java.util.Date docDate = (version != null?version.getDate():null);
-	org.vcell.util.document.VersionFlag versionFlag = (version != null?version.getFlag():null);
-	return
-		(versionFlag != null && versionFlag.compareEqual(org.vcell.util.document.VersionFlag.Archived)? "("+org.vcell.util.document.CurateSpec.CURATE_TYPE_STATES[org.vcell.util.document.CurateSpec.ARCHIVE]+") ":"")+
-		(versionFlag != null && versionFlag.compareEqual(org.vcell.util.document.VersionFlag.Published)?"("+org.vcell.util.document.CurateSpec.CURATE_TYPE_STATES[org.vcell.util.document.CurateSpec.PUBLISH]+") ":"")+
+	VersionFlag versionFlag = (version != null?version.getFlag():null);
+	String title = 
+		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Archived)? "("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.ARCHIVE]+") ":"")+
+		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Published)?"("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.PUBLISH]+") ":"")+
 		(docType == VCDocument.BIOMODEL_DOC?"BIOMODEL: ":"")+
 		(docType == VCDocument.MATHMODEL_DOC?"MATHMODEL: ":"")+
 		(docType == VCDocument.GEOMETRY_DOC?"GEOMETRY: ":"")+
 		docName+" "+
 		"("+(docDate != null?docDate.toString():"NoDate")+")";
-	
+	title +=  " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
+	return title;
 }
 
 

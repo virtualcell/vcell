@@ -3,10 +3,12 @@ package cbit.vcell.opt.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.OptimizationResultSet;
+import org.vcell.optimization.OptSolverCallbacks;
+
 import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.OptimizationSpec;
 /**
  * Insert the type's description here.
  * Creation date: (3/5/00 11:14:15 PM)

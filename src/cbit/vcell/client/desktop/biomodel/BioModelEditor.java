@@ -46,6 +46,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
+import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
@@ -89,6 +90,7 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelParametersPanel bioModelParametersPanel;
 //	private DataSymbolsPanel dataSymbolsPanel = null;
 	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
+	private ParameterEstimationTaskPropertiesPanel parameterEstimationTaskPropertiesPanel = null;
 	
 	/**
  * BioModelEditor constructor comment.
@@ -418,6 +420,9 @@ private void initialize() {
 		bioPaxObjectPropertiesPanel = new BioPaxObjectPropertiesPanel();
 		bioPaxObjectPropertiesPanel.setSelectionManager(selectionManager);
 		
+		parameterEstimationTaskPropertiesPanel = new ParameterEstimationTaskPropertiesPanel();
+		parameterEstimationTaskPropertiesPanel.setSelectionManager(selectionManager);
+		
 		bioModelEditorAnnotationPanel.setSelectionManager(selectionManager);
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
@@ -468,6 +473,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getParameterPropertiesPanel();
 		} else if (singleSelection instanceof SimulationContext) {
 			bottomComponent = getApplicationPropertiesPanel();
+		} else if (singleSelection instanceof ParameterEstimationTask) {
+			bottomComponent = parameterEstimationTaskPropertiesPanel;
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
 			bottomComponent = getReactionParticipantPropertiesPanel();
 		} else if (singleSelection instanceof BioModelInfo) {
@@ -512,7 +519,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bottomComponent = getApplicationsPropertiesPanel();
 				getApplicationsPropertiesPanel().setBioModel(bioModel);
-			} 
+			} else if (folderClass == DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE) {
+				bottomComponent = parameterEstimationTaskPropertiesPanel;
+			}
 		}
 	}
 	if (bShowPathway) {
@@ -625,7 +634,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 				|| folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.GEOMETRY_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.FITTING_NODE) {
+				|| folderClass == DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE) {
 			newTopPanel = bioModelEditorApplicationPanel;
 			bioModelEditorApplicationPanel.setSimulationContext(simulationContext);
 		}

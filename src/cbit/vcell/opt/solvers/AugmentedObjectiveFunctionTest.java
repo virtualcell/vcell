@@ -1,4 +1,6 @@
 package cbit.vcell.opt.solvers;
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+
 import cbit.vcell.parser.*;
 import cbit.function.*;
 /**
@@ -31,7 +33,7 @@ public static AugmentedObjectiveFunction getExample1() {
 		VectorFunction eqConstraints = new DynamicVectorFunction(eqConstraints_exps, ids);
     	VectorFunction ineqConstraints = new DynamicVectorFunction(ineqConstraints_exps, ids);
 
-		AugmentedObjectiveFunction aof = new AugmentedObjectiveFunction(scalarFn, eqConstraints, ineqConstraints, 2.0, 0.1, new OptSolverCallbacks());
+		AugmentedObjectiveFunction aof = new AugmentedObjectiveFunction(scalarFn, eqConstraints, ineqConstraints, 2.0, 0.1, new DefaultOptSolverCallbacks());
 
 		return aof;
 	}catch (ExpressionException e){
@@ -57,7 +59,7 @@ public static AugmentedObjectiveFunction getExample2() {
 		VectorFunction eqConstraints = new DynamicVectorFunction(eqConstraints_exps, ids);
     	VectorFunction ineqConstraints = new DynamicVectorFunction(ineqConstraints_exps, ids);
 
-		AugmentedObjectiveFunction aof = new AugmentedObjectiveFunction(scalarFn, eqConstraints, ineqConstraints, 2.0, 0.1, new OptSolverCallbacks());
+		AugmentedObjectiveFunction aof = new AugmentedObjectiveFunction(scalarFn, eqConstraints, ineqConstraints, 2.0, 0.1, new DefaultOptSolverCallbacks());
 
 		return aof;
 	}catch (ExpressionException e){
@@ -83,12 +85,12 @@ public static void main(String[] args) {
 	// AugmentedObjectiveFunction augObjFn = getExample1();
 	AugmentedObjectiveFunction augObjFn = getExample2();
 
-	cbit.vcell.opt.solvers.ConjGradSolver cgSolver = new cbit.vcell.opt.solvers.ConjGradSolver();
-		
-	for(int i = 1; i <= 5; i++){
-		fret = cgSolver.conjGrad(p , 1.0e-6, augObjFn);
-		System.out.println("\n\n\t\t i = "+ i + " p0 = "+ p[0] + " p1 = " + p[1] +" fmin = " + fret);
-		augObjFn.setMu(augObjFn.getMu()*BETA);
-	}		
+//	cbit.vcell.opt.solvers.ConjGradSolver cgSolver = new cbit.vcell.opt.solvers.ConjGradSolver();
+//		
+//	for(int i = 1; i <= 5; i++){
+//		fret = cgSolver.conjGrad(p , 1.0e-6, augObjFn);
+//		System.out.println("\n\n\t\t i = "+ i + " p0 = "+ p[0] + " p1 = " + p[1] +" fmin = " + fret);
+//		augObjFn.setMu(augObjFn.getMu()*BETA);
+//	}		
 }
 }

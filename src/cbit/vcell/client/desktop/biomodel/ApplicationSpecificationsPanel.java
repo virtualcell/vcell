@@ -44,7 +44,9 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		initialize();
 	}
 
-	private void initialize(){			
+	@Override
+	protected void initialize(){
+		super.initialize();	
 		initialConditionsPanel = new InitialConditionsPanel();
 		reactionSpecsPanel = new ReactionSpecsPanel();
 		

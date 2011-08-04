@@ -83,6 +83,10 @@ public abstract class VCellIcons {
 	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
 	public final static Icon odeQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/ode_quick_run.png"));
 	
+	
+	public final static Icon addIcon = new ImageIcon(VCellIcons.class.getResource("/images/add.gif"));
+	public final static Icon deleteIcon = new ImageIcon(VCellIcons.class.getResource("/images/delete.gif"));
+	
 	public static Icon getOldOutputFunctionIcon() {
 		if (oldOutputFunctionIcon == null) {
 			oldOutputFunctionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/old_function_icon.png"));

@@ -3,6 +3,8 @@ package cbit.vcell.microscopy;
 import java.util.ArrayList;
 
 import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
@@ -22,7 +24,6 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -444,7 +445,7 @@ public class FRAPOptimizationUtils {
 		// create solver spec 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FRAPOptimizationUtils.FTOL);
 		// create solver call back
-		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		// create optimization result set
 		OptimizationResultSet optResultSet = null;
 		for (int i = 0; i < inParams.length; i++) { //add parameters

@@ -1,6 +1,8 @@
 package cbit.vcell.opt.solvers;
 import java.io.PrintWriter;
 
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;

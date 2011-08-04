@@ -39,8 +39,11 @@ public class SelectionManager {
 		simulations,
 		output_functions,
 		generated_math,
-		fitting,
 		parameter_estimation,
+		parameter_estimation_parameters,
+		parameter_estimation_experimental_data_import,
+		parameter_estimation_experimental_data_mapping,
+		parameter_estimation_run_task,
 		
 		math_annotation,
 		math_vcml,

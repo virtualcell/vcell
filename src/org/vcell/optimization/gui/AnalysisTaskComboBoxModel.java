@@ -1,4 +1,4 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
 import javax.swing.AbstractListModel;
 
 import cbit.vcell.mapping.SimulationContext;
