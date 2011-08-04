@@ -18,11 +18,13 @@ public class GraphLayoutTasks {
 		private static final boolean B_SHOW_POPUP = true;
 		
 		protected final GraphLayoutManager manager;
+		protected final GraphView graphView;
 		protected final GraphLayoutManager.VCellTaskClient client;
 		
 		public PerformLayoutTask(GraphLayoutManager manager, GraphView graphView, String layoutName) {
 			super(createTaskName(layoutName), TASKTYPE, B_SHOW_POPUP, SKIP_IF_ABORT, SKIP_IF_CANCEL);
 			this.manager = manager;
+			this.graphView = graphView;
 			this.client = new GraphLayoutManager.VCellTaskClient(graphView, layoutName, this);
 		}
 
@@ -33,6 +35,7 @@ public class GraphLayoutTasks {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			manager.layout(client);
+			graphView.saveNodePositions();
 		}
 		
 	}
