@@ -273,7 +273,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	public void layout(String layoutName) throws Exception {
 		System.out.println(layoutName);
 		GraphLayoutTasks.dispatchTasks(getGraphPane(), graphEmbeddingManager, this, layoutName);
-		saveDiagram();
 	}
 
 	@Override
@@ -1535,7 +1534,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 	
-	public void saveDiagram() throws Exception {
+	public void saveDiagram() {
 		for(Structure structure : getReactionCartoon().getStructureSuite().getStructures()) {
 			getReactionCartoon().setPositionsFromReactionCartoon(
 					getModel().getDiagram(structure));			
@@ -1956,6 +1955,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		edgeShape = null;
 		startPointWorld = null;
 		endPointWorld = null;
+	}
+
+	public void saveNodePositions() {
+		saveDiagram();
 	}
 	
 }

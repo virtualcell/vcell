@@ -657,4 +657,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		}
 		return;
 	}
+
+	public void saveNodePositions() {}
+	
 }

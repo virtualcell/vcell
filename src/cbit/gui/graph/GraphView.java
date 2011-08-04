@@ -26,5 +26,6 @@ public interface GraphView {
 	public int getHeight();
 	public void setSize(Dimension graphSize);
 	public void repaint();
+	public void saveNodePositions();
 	
 }
