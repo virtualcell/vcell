@@ -220,7 +220,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 				BioModelNode settingsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, true), false);
 				BioModelNode protocolsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PROTOCOLS_NODE, true), false); 
 				BioModelNode simulationsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, true), false);
-				BioModelNode fittingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.FITTING_NODE, true), false);
+				BioModelNode fittingNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE, true), false);
 				
 				BioModelNode[] applicationChildNodes = null;
 				if (simulationContext.isValidForFitting()) {
@@ -297,7 +297,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 						for (int i = 0; i < appNode.getChildCount(); i ++) {
 							BioModelNode child = (BioModelNode) appNode.getChildAt(i);
 							if (child.getUserObject() instanceof DocumentEditorTreeFolderNode) {
-								if (((DocumentEditorTreeFolderNode)child.getUserObject()).getFolderClass() == DocumentEditorTreeFolderClass.FITTING_NODE) {
+								if (((DocumentEditorTreeFolderNode)child.getUserObject()).getFolderClass() == DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE) {
 									appNode.remove(child);
 									nodeStructureChanged(appNode);
 									return;

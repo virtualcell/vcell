@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.util.graph.Edge;
@@ -19,26 +20,33 @@ import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FilamentRegionEquation;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleBoundsIssue;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
@@ -49,6 +57,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (8/22/2005 9:21:42 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ModelOptimizationSpec implements java.io.Serializable, Matchable, PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
@@ -58,13 +67,15 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 	private ReferenceDataMappingSpec[] fieldReferenceDataMappingSpecs = null;
 	
 	private boolean bComputeProfileDistributions = false;
+	private ParameterEstimationTask parameterEstimationTask;
 
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(SimulationContext argSimulationContext) throws ExpressionException {
+public ModelOptimizationSpec(ParameterEstimationTask pet) throws ExpressionException {
 	super();
-	this.fieldSimulationContext = argSimulationContext;
+	parameterEstimationTask = pet;
+	this.fieldSimulationContext = pet.getSimulationContext();
 	// ModelOptSpec should listen to changes in model (addition/deletion of model params, species, reaction params, etc.)
 	// ModelOptSpec should listen to changes in simContext MathDesc
 	if (fieldSimulationContext != null) {
@@ -73,6 +84,33 @@ public ModelOptimizationSpec(SimulationContext argSimulationContext) throws Expr
 	refreshParameterMappingSpecs();
 }
 
+public void gatherIssues(java.util.List<Issue> issueList) {
+	boolean bParameterAdded = false;
+	if (fieldParameterMappingSpecs != null) {
+		for (ParameterMappingSpec pms : fieldParameterMappingSpecs) {
+			if (pms.isSelected()) {
+				bParameterAdded = true;
+				break;
+			}
+		}
+	}
+	if (!bParameterAdded) {
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization.",Issue.SEVERITY_WARNING));
+	}
+	
+	boolean bExperimentalDataMapped = true;
+	if (fieldReferenceDataMappingSpecs != null) {
+		for (ReferenceDataMappingSpec rms : fieldReferenceDataMappingSpecs) {
+			if (rms.getModelObject() == null) {
+				bExperimentalDataMapped = false;
+				break;
+			}
+		}
+	}
+	if (!bExperimentalDataMapped) {
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column.",Issue.SEVERITY_WARNING));
+	}	
+}
 
 /**
  * ModelOptimizationSpec constructor comment.
@@ -110,15 +148,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-
 
 /**
  * Insert the method's description here.
@@ -279,31 +308,7 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -555,7 +560,7 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 
 	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	
-	java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
+	java.util.ArrayList<Issue> issueList = new java.util.ArrayList<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
 	Issue[] issues = (Issue[])BeanUtils.getArray(issueList,Issue.class);
@@ -573,7 +578,7 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 		{
 			parameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
 			parameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
-			
+			parameterMappingSpecs[i].setSelected(memoryParameterMappingSpec.isSelected());
 		}
 		else //not found
 		{
@@ -849,41 +854,45 @@ private static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc)
 	hash.addSymbol(new MathSystemHash.IndependentVariable("y"));
 	hash.addSymbol(new MathSystemHash.IndependentVariable("z"));
 
-	cbit.vcell.math.Variable vars[] = (cbit.vcell.math.Variable[])org.vcell.util.BeanUtils.getArray(mathDesc.getVariables(),cbit.vcell.math.Variable.class);
+	Variable vars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
 	for (int i = 0; i < vars.length; i++){
 		hash.addSymbol(new MathSystemHash.Variable(vars[i].getName(),vars[i].getExpression()));
 	}
 
-	cbit.vcell.math.SubDomain subDomains[] = (cbit.vcell.math.SubDomain[])org.vcell.util.BeanUtils.getArray(mathDesc.getSubDomains(),cbit.vcell.math.SubDomain.class);
+	SubDomain subDomains[] = (SubDomain[])BeanUtils.getArray(mathDesc.getSubDomains(),SubDomain.class);
 	for (int i = 0; i < subDomains.length; i++){
 
-		cbit.vcell.math.Equation[] equations = (cbit.vcell.math.Equation[])org.vcell.util.BeanUtils.getArray(subDomains[i].getEquations(),cbit.vcell.math.Equation.class);
+		Equation[] equations = (Equation[])BeanUtils.getArray(subDomains[i].getEquations(),Equation.class);
 		for (int j = 0; j < equations.length; j++){
 			MathSystemHash.Variable var = (MathSystemHash.Variable)hash.getSymbol(equations[j].getVariable().getName());
 			hash.addSymbol(new MathSystemHash.VariableInitial(var,equations[j].getInitialExpression()));
-			if (equations[j] instanceof cbit.vcell.math.PdeEquation){
+			if (equations[j] instanceof PdeEquation){
 				//cbit.vcell.math.PdeEquation pde = (cbit.vcell.math.PdeEquation)equations[j];
 				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,pde.getRateExpression()));
 				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof cbit.vcell.math.VolumeRegionEquation){
+			}else if (equations[j] instanceof VolumeRegionEquation){
 				//cbit.vcell.math.VolumeRegionEquation vre = (cbit.vcell.math.VolumeRegionEquation)equations[j];
 				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,vre.getRateExpression()));
 				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof cbit.vcell.math.MembraneRegionEquation){
+			}else if (equations[j] instanceof MembraneRegionEquation){
 				//cbit.vcell.math.MembraneRegionEquation mre = (cbit.vcell.math.MembraneRegionEquation)equations[j];
 				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,mre.getRateExpression()));
 				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
-			}else if (equations[j] instanceof cbit.vcell.math.FilamentRegionEquation){
+			}else if (equations[j] instanceof FilamentRegionEquation){
 				//cbit.vcell.math.FilamentRegionEquation fre = (cbit.vcell.math.FilamentRegionEquation)equations[j];
 				//hash.addSymbol(new MathSystemHash.VariableDerivative(var,fre.getRateExpression()));
 				throw new RuntimeException("MathSystemHash doesn't yet support spatial models");
 				
-			}else if (equations[j] instanceof cbit.vcell.math.OdeEquation){
-				cbit.vcell.math.OdeEquation ode = (cbit.vcell.math.OdeEquation)equations[j];
+			}else if (equations[j] instanceof OdeEquation){
+				OdeEquation ode = (OdeEquation)equations[j];
 				hash.addSymbol(new MathSystemHash.VariableDerivative(var,ode.getRateExpression()));
 			}
 		}
 	}
 	return hash;
+}
+
+public final ParameterEstimationTask getParameterEstimationTask() {
+	return parameterEstimationTask;
 }
 }

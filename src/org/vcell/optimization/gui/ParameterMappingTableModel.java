@@ -1,6 +1,6 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 import org.vcell.util.gui.ScrollTable;
@@ -24,12 +24,10 @@ public class ParameterMappingTableModel extends VCellSortTableModel<ParameterMap
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_SCOPE = 1;
 	private final static int COLUMN_MODELVALUE = 2;
-	private final static int COLUMN_SELECTED = 3;
-	public final static int COLUMN_CURRENTVALUE = 4;
-	private final static int COLUMN_LOWVALUE = 5;
-	private final static int COLUMN_HIGHVALUE = 6;
-	public final static int COLUMN_SOLUTION = 7;
-	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Optimize", "Initial Guess", "Lower", "Upper", "Solution"  };
+	public final static int COLUMN_CURRENTVALUE = 3;
+	private final static int COLUMN_LOWVALUE = 4;
+	private final static int COLUMN_HIGHVALUE = 5;
+	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Initial Guess", "Lower Bound", "Upper Bound"};
 	private ParameterEstimationTask fieldParameterEstimationTask = null;
 
 	private static class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
@@ -67,11 +65,6 @@ public class ParameterMappingTableModel extends VCellSortTableModel<ParameterMap
 				}
 				case COLUMN_SCOPE:{
 					return scale * parm1.getNameScope().getName().compareToIgnoreCase(parm2.getNameScope().getName());
-				}
-				case COLUMN_SELECTED:{
-					String sel1 = (new Boolean(pms1.isSelected())).toString();
-					String sel2 = (new Boolean(pms2.isSelected())).toString();
-					return scale * sel1.compareToIgnoreCase(sel2);
 				}
 				case COLUMN_CURRENTVALUE:{
 					return scale * (new Double(pms1.getCurrent())).compareTo(new Double(pms2.getCurrent()));
@@ -121,12 +114,6 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_LOWVALUE:{
 			return Double.class;
 		}
-		case COLUMN_SELECTED:{
-			return Boolean.class;
-		}
-		case COLUMN_SOLUTION:{
-			return Double.class;
-		}
 		default:{
 			return Object.class;
 		}
@@ -149,11 +136,15 @@ public ParameterEstimationTask getParameterEstimationTask() {
  * @param row int
  */
 private void refreshData() {
-	if (getParameterEstimationTask() == null) {
-		setData(null);
-	} else {
-		setData(Arrays.asList(getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs()));
+	ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
+	if (getParameterEstimationTask() != null) {
+		for (ParameterMappingSpec pms : getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs()) {
+			if (pms.isSelected()) {
+				list.add(pms);
+			}
+		}
 	}
+	setData(list);
 }
 
 
@@ -200,15 +191,12 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_HIGHVALUE:{
 			return new Double(parameterMappingSpec.getHigh());
 		}
-		case COLUMN_SELECTED:{
-			return new Boolean(parameterMappingSpec.isSelected());
-		}
-		case COLUMN_SOLUTION:{
-			if (getParameterEstimationTask()!=null) {
-				return getParameterEstimationTask().getCurrentSolution(parameterMappingSpec);
-			}
-			return null;
-		}
+//		case COLUMN_SOLUTION:{
+//			if (getParameterEstimationTask()!=null) {
+//				return getParameterEstimationTask().getCurrentSolution(parameterMappingSpec);
+//			}
+//			return null;
+//		}
 		default:{
 			return null;
 		}
@@ -228,8 +216,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}else if (columnIndex == COLUMN_SCOPE){
 		return false;
-	}else if (columnIndex == COLUMN_SELECTED){
-		return true;
 	}else if (columnIndex == COLUMN_CURRENTVALUE){
 		return true;
 	}else if (columnIndex == COLUMN_LOWVALUE){
@@ -237,8 +223,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	}else if (columnIndex == COLUMN_HIGHVALUE){
 		return true;
 	}else if (columnIndex == COLUMN_MODELVALUE){
-		return false;
-	}else if (columnIndex == COLUMN_SOLUTION){
 		return false;
 	}else{
 		return false;
@@ -269,12 +253,9 @@ public boolean isSortable(int col) {
 		case COLUMN_LOWVALUE:{
 			return true;
 		}
-		case COLUMN_SELECTED:{
-			return true;
-		}
-		case COLUMN_SOLUTION:{
-			return false;
-		}
+//		case COLUMN_SOLUTION:{
+//			return false;
+//		}
 		default:{
 			return false;
 		}
@@ -325,7 +306,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		refreshData();
 	} else if (evt.getSource() instanceof ParameterMappingSpec) {
-		fireTableRowsUpdated(0, getRowCount() - 1);
+		refreshData();
 	}
 }
 
@@ -348,16 +329,6 @@ public void setParameterEstimationTask(ParameterEstimationTask parameterEstimati
 		}
 		ParameterMappingSpec parameterMappingSpec = getValueAt(rowIndex);
 		switch (columnIndex){
-			case COLUMN_SELECTED:{
-				if (aValue instanceof Boolean){
-					Boolean bSelected = (Boolean)aValue;
-					if (parameterMappingSpec.isSelected() != bSelected.booleanValue()){
-						parameterMappingSpec.setSelected(bSelected.booleanValue());
-						fireTableRowsUpdated(rowIndex,rowIndex);
-					}
-				}
-				break;
-			}
 			case COLUMN_LOWVALUE:{
 				if (aValue instanceof Double){
 					double value = ((Double)aValue).doubleValue();

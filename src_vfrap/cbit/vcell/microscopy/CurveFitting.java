@@ -2,6 +2,8 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.IOException;
 
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -18,9 +20,7 @@ import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.SpatialReferenceData;
 import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.opt.Weights;
-import cbit.vcell.opt.ExplicitFitObjectiveFunction.ExpressionDataPair;
 import cbit.vcell.opt.solvers.NewOptimizationSolver;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
@@ -363,7 +363,7 @@ public class CurveFitting {
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
-		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		OptimizationResultSet optResultSet = null;
 		optResultSet = optService.solve(optSpec, optSolverSpec, optSolverCallbacks);
 		
@@ -401,7 +401,7 @@ public class CurveFitting {
 		}
 		//Parameters in OptimizationSolverSpec are solver type and objective function change tolerance. 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP,0.000001);
-		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 
 		OptimizationResultSet optResultSet = null;
 		

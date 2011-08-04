@@ -3,7 +3,9 @@ package cbit.vcell.opt.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import org.vcell.optimization.OptSolverCallbacks;
+
+import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
 /**
@@ -20,5 +22,5 @@ public interface OptimizationService {
  * @exception java.rmi.RemoteException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
-OptimizationResultSet solve(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws cbit.vcell.opt.OptimizationException;
+OptimizationResultSet solve(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws OptimizationException;
 }

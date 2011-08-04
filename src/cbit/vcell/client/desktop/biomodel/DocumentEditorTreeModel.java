@@ -66,7 +66,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		SPECIFICATIONS_NODE("Specifications"),
 		PROTOCOLS_NODE("Protocols"),
 		SIMULATIONS_NODE("Simulations"),
-		FITTING_NODE("Fitting"),
+		PARAMETER_ESTIMATION_NODE("Parameter Estimation"),
 		
 		MATH_ANNOTATION_NODE("Annotation"),
 		MATH_VCML_NODE("VCML Editor"),

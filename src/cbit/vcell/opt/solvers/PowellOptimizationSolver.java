@@ -1,5 +1,6 @@
 package cbit.vcell.opt.solvers;
 
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
 import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 
@@ -87,8 +88,8 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 	if (optSolverCallbacks.getStopRequested()) {
 		optStatus = new OptimizationStatus(OptimizationStatus.STOPPED_BY_USER, "Stopped by user");
 	}
-	parameterValues = optSolverCallbacks.getBestEvaluation().parameterVector;
-	fret = optSolverCallbacks.getBestEvaluation().objFunctionValue;
+	parameterValues = optSolverCallbacks.getBestEvaluation().getParameterValues();
+	fret = optSolverCallbacks.getBestEvaluation().getObjectiveFunctionValue();
 	odeSolverResultSet = optSolverCallbacks.getBestResultSet();
 	for (int i = 0; i < parameters.length; i++){
 		System.out.println("final "+parameters[i].getName()+" = "+parameterValues[i]);

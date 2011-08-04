@@ -51,10 +51,9 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 	
 	public ApplicationSubPanel() {
 		super();
-		initialize();
 	}
 
-	private void initialize(){		
+	protected void initialize(){		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		setLayout(new BorderLayout());

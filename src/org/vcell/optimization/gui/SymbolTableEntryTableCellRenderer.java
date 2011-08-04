@@ -1,12 +1,17 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 2:11:10 PM)
  * @author: Jim Schaff
  */
-public class SymbolTableEntryTableCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
+public class SymbolTableEntryTableCellRenderer extends DefaultScrollTableCellRenderer {
 /**
  * SymbolTableEntryTableCellRenderer constructor comment.
  */
@@ -22,11 +27,11 @@ public SymbolTableEntryTableCellRenderer() {
 				return this;
 			}
 			SymbolTableEntry ste = (SymbolTableEntry)value;
-			if (ste instanceof cbit.vcell.model.ReservedSymbol){
+			if (ste instanceof ReservedSymbol){
 				setText(ste.getName());
-			}else if (ste instanceof cbit.vcell.model.SpeciesContext){
+			}else if (ste instanceof SpeciesContext){
 				setText("["+ste.getName()+"]");
-			}else if (ste instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+			}else if (ste instanceof KineticsParameter){
 				setText(ste.getNameScope().getName()+":"+ste.getName());
 			}else if (ste instanceof ModelParameter){
 				setText(ste.getName());

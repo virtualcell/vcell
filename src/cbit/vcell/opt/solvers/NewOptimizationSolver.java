@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.jdom.Element;
 import org.vcell.optimization.NativeOptSolver;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
 import org.vcell.optimization.OptXmlWriter;
@@ -20,7 +20,6 @@ import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
@@ -39,36 +38,13 @@ public class NewOptimizationSolver implements OptimizationSolver {
 public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final OptSolverCallbacks optSolverCallbacks) 
 						throws IOException, ExpressionException, OptimizationException {
 	Element optProblemXML = OptXmlWriter.getOptProblemDescriptionXML(os);
-	org.vcell.optimization.OptSolverCallbacks callbacks = new org.vcell.optimization.OptSolverCallbacks(){
-		
-		public void addEvaluation(double[] paramValues,	double objectiveFuncValue) {
-			optSolverCallbacks.addEvaluation(paramValues, objectiveFuncValue);
-		}
-
-		public Evaluation getBestEvaluation() {
-			return null;
-		}
-
-		public long getEvaluationCount() {
-			return optSolverCallbacks.getEvaluationCount();
-		}
-
-		public boolean getStopRequested() {
-			return optSolverCallbacks.getStopRequested();
-		}
-
-		public void setStopRequested(boolean stopRequested) {
-			optSolverCallbacks.setStopRequested(stopRequested);
-		}
-		
-	};
 	NativeOptSolver newNativeOptSolver = new NativeOptSolver();
 	try {		
 		String inputXML = XmlUtil.xmlToString(optProblemXML);
 //		PrintWriter pw = new PrintWriter("c:\\test10.xml");
 //		pw.println(inputXML);
 //		pw.close();
-		String optResultsXML = newNativeOptSolver.nativeSolve_CFSQP(inputXML, callbacks);		
+		String optResultsXML = newNativeOptSolver.nativeSolve_CFSQP(inputXML, optSolverCallbacks);		
 		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
 		ODESolverResultSet odeSolverResultSet = null;
 		if (os.getObjectiveFunction() instanceof OdeObjectiveFunction){

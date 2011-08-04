@@ -1,4 +1,5 @@
 package cbit.vcell.modelopt;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 
@@ -9,7 +10,6 @@ import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
@@ -27,13 +27,15 @@ public class ParameterEstimationTask extends AnalysisTask {
 	private transient OptimizationResultSet fieldOptimizationResultSet = null;
 	private transient OptSolverCallbacks fieldOptSolverCallbacks = null;
 	private transient java.lang.String fieldSolverMessageText = new String();
+	private SimulationContext simulationContext = null;
 
 /**
  * ParameterEstimationTask constructor comment.
  */
 public ParameterEstimationTask(SimulationContext simContext) throws ExpressionException {
 	super();
-	fieldModelOptimizationSpec = new ModelOptimizationSpec(simContext);
+	simulationContext = simContext;
+	fieldModelOptimizationSpec = new ModelOptimizationSpec(this);
 	fieldModelOptimizationMapping = new ModelOptimizationMapping(fieldModelOptimizationSpec);
 	fieldOptimizationSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_CFSQP);
 }
@@ -93,6 +95,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @param issueList java.util.Vector
  */
 public void gatherIssues(java.util.List<Issue> issueList) {
+	getModelOptimizationSpec().gatherIssues(issueList);
 	if (getModelOptimizationMapping().getOptimizationSpec()!=null){
 		getModelOptimizationMapping().getOptimizationSpec().gatherIssues(issueList);
 	}
@@ -175,7 +178,7 @@ public cbit.vcell.opt.OptimizationSolverSpec getOptimizationSolverSpec() {
  * @return The optSolverCallbacks property value.
  * @see #setOptSolverCallbacks
  */
-public cbit.vcell.opt.solvers.OptSolverCallbacks getOptSolverCallbacks() {
+public OptSolverCallbacks getOptSolverCallbacks() {
 	return fieldOptSolverCallbacks;
 }
 
@@ -226,8 +229,8 @@ public void refreshMappings() throws MappingException, MathException {
  * @param optimizationResultSet The new value for the property.
  * @see #getOptimizationResultSet
  */
-public void setOptimizationResultSet(cbit.vcell.opt.OptimizationResultSet optimizationResultSet) {
-	cbit.vcell.opt.OptimizationResultSet oldValue = fieldOptimizationResultSet;
+public void setOptimizationResultSet(OptimizationResultSet optimizationResultSet) {
+	OptimizationResultSet oldValue = fieldOptimizationResultSet;
 	fieldOptimizationResultSet = optimizationResultSet;
 	firePropertyChange("optimizationResultSet", oldValue, optimizationResultSet);
 }
@@ -238,8 +241,8 @@ public void setOptimizationResultSet(cbit.vcell.opt.OptimizationResultSet optimi
  * @param optimizationSolverSpec The new value for the property.
  * @see #getOptimizationSolverSpec
  */
-public void setOptimizationSolverSpec(cbit.vcell.opt.OptimizationSolverSpec optimizationSolverSpec) {
-	cbit.vcell.opt.OptimizationSolverSpec oldValue = fieldOptimizationSolverSpec;
+public void setOptimizationSolverSpec(OptimizationSolverSpec optimizationSolverSpec) {
+	OptimizationSolverSpec oldValue = fieldOptimizationSolverSpec;
 	fieldOptimizationSolverSpec = optimizationSolverSpec;
 	firePropertyChange("optimizationSolverSpec", oldValue, optimizationSolverSpec);
 }
@@ -250,8 +253,8 @@ public void setOptimizationSolverSpec(cbit.vcell.opt.OptimizationSolverSpec opti
  * @param optSolverCallbacks The new value for the property.
  * @see #getOptSolverCallbacks
  */
-public void setOptSolverCallbacks(cbit.vcell.opt.solvers.OptSolverCallbacks optSolverCallbacks) {
-	cbit.vcell.opt.solvers.OptSolverCallbacks oldValue = fieldOptSolverCallbacks;
+public void setOptSolverCallbacks(OptSolverCallbacks optSolverCallbacks) {
+	OptSolverCallbacks oldValue = fieldOptSolverCallbacks;
 	fieldOptSolverCallbacks = optSolverCallbacks;
 	firePropertyChange("optSolverCallbacks", oldValue, optSolverCallbacks);
 }
@@ -288,5 +291,10 @@ public Double getCurrentSolution(ParameterMappingSpec parameterMappingSpec) {
 		}
 	}
 	return null;
+}
+
+
+public final SimulationContext getSimulationContext() {
+	return simulationContext;
 }
 }

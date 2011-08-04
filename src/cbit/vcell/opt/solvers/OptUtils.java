@@ -1,14 +1,20 @@
 package cbit.vcell.opt.solvers;
-import cbit.vcell.parser.Expression;
 import java.util.Vector;
+
+import org.vcell.optimization.OptSolverCallbacks;
+
+import cbit.function.DoubleHolder;
+import cbit.function.DynamicScalarFunction;
+import cbit.function.DynamicVectorFunction;
+import cbit.function.ScalarFunction;
 import cbit.vcell.opt.Constraint;
+import cbit.vcell.opt.ConstraintType;
+import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
-import cbit.vcell.opt.ExplicitObjectiveFunction;
-import cbit.vcell.opt.Parameter;
-import cbit.function.*;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.ConstraintType;
+import cbit.vcell.opt.Parameter;
+import cbit.vcell.parser.Expression;
 
 /**
  * Insert the type's description here.

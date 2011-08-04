@@ -51,7 +51,9 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		initialize();
 	}
 
-	private void initialize(){
+	@Override
+	protected void initialize(){
+		super.initialize();
 		simulationListPanel = new SimulationListPanel();
 		outputFunctionsPanel = new OutputFunctionsPanel();
 		mathematicsPanel = new MathematicsPanel();

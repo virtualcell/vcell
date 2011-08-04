@@ -30,7 +30,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private ApplicationSpecificationsPanel applicationSpecificationsPanel;
 	private ApplicationProtocolsPanel applicationProtocolsPanel;
 	private ApplicationSimulationsPanel applicationSimulationsPanel;
-	private ApplicationFittingPanel applicationFittingPanel;
+	private ParameterEstimationPanel parameterEstimationPanel;
 	private JTabbedPane tabbedPane = null;
 	private int selectedIndex = -1;
 	private String selectedTabTitle = null;
@@ -42,7 +42,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		settings("Specifications"),
 		protocols("Protocols"),
 		simulations("Simulations"),
-		fitting("Fitting");
+		parameterEstimation("Parameter Estimation");
 		
 		String title = null;
 		ApplicationPanelTabID(String name) {
@@ -98,19 +98,19 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationProtocolsPanel = new ApplicationProtocolsPanel();
 		applicationSpecificationsPanel = new ApplicationSpecificationsPanel();
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
-		applicationFittingPanel = new ApplicationFittingPanel();
+		parameterEstimationPanel = new ParameterEstimationPanel();
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
 		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSpecificationsPanel, VCellIcons.settingsIcon);
 		appPanelTabs[ApplicationPanelTabID.protocols.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.protocols, applicationProtocolsPanel, VCellIcons.protocolsIcon);
 		appPanelTabs[ApplicationPanelTabID.simulations.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.simulations, applicationSimulationsPanel, VCellIcons.simulationIcon);
-		appPanelTabs[ApplicationPanelTabID.fitting.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.fitting, applicationFittingPanel, VCellIcons.fittingIcon);
+		appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.parameterEstimation, parameterEstimationPanel, VCellIcons.fittingIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		
 		for (ApplicationPanelTab tab : appPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			if (tab.id != ApplicationPanelTabID.fitting) {
+			if (tab.id != ApplicationPanelTabID.parameterEstimation) {
 				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 			}
 		}
@@ -139,8 +139,8 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			activeView = applicationProtocolsPanel.getActiveView();
 		} else if (selectedIndex == ApplicationPanelTabID.simulations.ordinal()) {
 			activeView = applicationSimulationsPanel.getActiveView();
-		} else if (selectedIndex == ApplicationPanelTabID.fitting.ordinal()) {
-			activeView = applicationFittingPanel.getActiveView();
+		} else if (selectedIndex == ApplicationPanelTabID.parameterEstimation.ordinal()) {
+			activeView = parameterEstimationPanel.getActiveView();
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -185,13 +185,13 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	}
 
 	private void showOrHideFittingPanel() {
-		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.fitting.ordinal()];
+		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
 		int indexOfFittingPanel = tabbedPane.indexOfComponent(tab.component);
 		if (simulationContext.isValidForFitting()) {
 			if (indexOfFittingPanel < 0) {
 				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 			}
-			applicationFittingPanel.setSimulationContext(simulationContext);
+			parameterEstimationPanel.setSimulationContext(simulationContext);
 		} else {
 			if (indexOfFittingPanel >= 0) {
 //				tabbedPane.putClientProperty("__index_to_remove__", indexOfComponent);
@@ -208,7 +208,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationGeometryPanel.setBioModelWindowManager(bioModelWindowManager);
 		applicationProtocolsPanel.setBioModelWindowManager(newValue);
 		applicationSimulationsPanel.setBioModelWindowManager(newValue);
-		applicationFittingPanel.setBioModelWindowManager(bioModelWindowManager);
+		parameterEstimationPanel.setBioModelWindowManager(bioModelWindowManager);
 	}
 	
 	@Override
@@ -218,11 +218,11 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationSpecificationsPanel.setSelectionManager(selectionManager);
 		applicationProtocolsPanel.setSelectionManager(selectionManager);
 		applicationSimulationsPanel.setSelectionManager(selectionManager);
-		applicationFittingPanel.setSelectionManager(selectionManager);
+		parameterEstimationPanel.setSelectionManager(selectionManager);
 	}
 	
 	private void selectTab(ApplicationPanelTabID tabid) {
-		if (tabid.ordinal() == ApplicationPanelTabID.fitting.ordinal()) {
+		if (tabid.ordinal() == ApplicationPanelTabID.parameterEstimation.ordinal()) {
 			showOrHideFittingPanel();
 		}
 		tabbedPane.setSelectedIndex(tabid.ordinal());
@@ -249,8 +249,9 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		case SIMULATIONS_NODE:
 			selectTab(ApplicationPanelTabID.simulations);
 			break;
-		case FITTING_NODE:
-			selectTab(ApplicationPanelTabID.fitting);
+		case PARAMETER_ESTIMATION_NODE:
+			selectTab(ApplicationPanelTabID.parameterEstimation);
+			setSelectedObjects(new Object[] { parameterEstimationPanel.getParameterEstimationTask() });
 			break;
 		}
 	}
@@ -261,6 +262,6 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationGeometryPanel.setIssueManager(issueManager);
 		applicationSpecificationsPanel.setIssueManager(issueManager);
 		applicationSimulationsPanel.setIssueManager(issueManager);
-		applicationFittingPanel.setIssueManager(issueManager);
+		parameterEstimationPanel.setIssueManager(issueManager);
 	}
 }

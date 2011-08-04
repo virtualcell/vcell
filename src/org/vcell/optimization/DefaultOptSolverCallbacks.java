@@ -1,6 +1,4 @@
-package cbit.vcell.opt.solvers;
-
-import org.vcell.util.DescriptiveStatistics;
+package org.vcell.optimization;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -9,33 +7,20 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * Creation date: (12/1/2005 12:40:31 PM)
  * @author: Jim Schaff
  */
-public class OptSolverCallbacks {
+public class DefaultOptSolverCallbacks implements OptSolverCallbacks {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private boolean fieldStopRequested = false;
 	private Double percentDone = null;
 	private Double penaltyMu = null;
 
-	private java.util.Vector<EvaluationHolder> evaluations = new java.util.Vector<EvaluationHolder>();
-	private EvaluationHolder bestEvaluation = null;
+	private java.util.Vector<OptSolverCallbacks.EvaluationHolder> evaluations = new java.util.Vector<OptSolverCallbacks.EvaluationHolder>();
+	private OptSolverCallbacks.EvaluationHolder bestEvaluation = null;
 	private ODESolverResultSet bestResultSet = null;
 
-	public static class EvaluationHolder {
-		public double[] parameterVector = null;
-		public double objFunctionValue = 0;
-
-		public EvaluationHolder() {
-		}
-		
-		public EvaluationHolder(double[] paramValues, double objectiveFuncValue) {
-			parameterVector = paramValues;
-			objFunctionValue = objectiveFuncValue;
-		}
-	};
-
-/**
+	/**
  * OptSolverCallbacks constructor comment.
  */
-public OptSolverCallbacks() {
+public DefaultOptSolverCallbacks() {
 	super();
 }
 
@@ -46,7 +31,7 @@ public OptSolverCallbacks() {
  * @param newAtBestParameters double
  */
 public void addEvaluation(double[] paramValues, double objectiveFuncValue) {
-	addEvaluation(new EvaluationHolder(paramValues, objectiveFuncValue), null);
+	addEvaluation(new OptSolverCallbacks.EvaluationHolder(paramValues, objectiveFuncValue), null);
 }
 
 public void showStatistics(){
@@ -62,7 +47,7 @@ public void showStatistics(){
 			stat[i][indexMax]=0;
 			stat[i][indexMin]=1e8;
 		}
-		for (EvaluationHolder evalHolder : evaluations)
+		for (OptSolverCallbacks.EvaluationHolder evalHolder : evaluations)
 		{
 			System.out.println("objective funciton error :"+evalHolder.objFunctionValue);
 			for(int i=0; i<evalHolder.parameterVector.length; i++)
@@ -128,7 +113,7 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (12/20/2005 4:11:12 PM)
  * @return double[]
  */
-public OptSolverCallbacks.EvaluationHolder getBestEvaluation() {
+public EvaluationHolder getBestEvaluation() {
 	return bestEvaluation;
 }
 

@@ -46,7 +46,9 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		initialize();
 	}
 
-	private void initialize(){
+	@Override
+	protected void initialize(){
+		super.initialize();
 		eventsDisplayPanel = new EventsDisplayPanel();
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();

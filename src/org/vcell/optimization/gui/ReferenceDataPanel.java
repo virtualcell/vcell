@@ -1,6 +1,7 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
 import java.io.File;
 
+import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.UserCancelException;
@@ -14,6 +15,9 @@ import cbit.vcell.export.CSV;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.gui.MultisourcePlotPane;
+import cbit.vcell.modelopt.gui.DataSource.DataSourceReferenceData;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
@@ -253,7 +257,7 @@ private javax.swing.JPanel geteditorPanel() {
 			ivjeditorPanel = new javax.swing.JPanel();
 			ivjeditorPanel.setName("editorPanel");
 			ivjeditorPanel.setLayout(new java.awt.GridBagLayout());
-			ivjeditorPanel.setBounds(581, 283, 428, 500);
+//			ivjeditorPanel.setBounds(581, 283, 428, 500);
 
 			java.awt.GridBagConstraints constraintseditorPanelHelpLabel = new java.awt.GridBagConstraints();
 			constraintseditorPanelHelpLabel.gridx = 0; constraintseditorPanelHelpLabel.gridy = 0;
@@ -291,9 +295,9 @@ private javax.swing.JLabel geteditorPanelHelpLabel() {
 		try {
 			ivjeditorPanelHelpLabel = new javax.swing.JLabel();
 			ivjeditorPanelHelpLabel.setName("editorPanelHelpLabel");
-			ivjeditorPanelHelpLabel.setPreferredSize(new java.awt.Dimension(1739, 230));
+//			ivjeditorPanelHelpLabel.setPreferredSize(new java.awt.Dimension(1739, 230));
 			ivjeditorPanelHelpLabel.setText("<html>please enter data separated by commas, tabs, or spaces.  Column 1 should contain the times.  Each row represents data at that time-point.  The first row must contain column names.\n<br>\n<br>Example:\n<br>\n<br>time, sample1, sample2\n<br>0.0\t1.2030\t39.3828\n<br>0.1\t1.345\t36.3939\n<br>0.2\t1.2345\t44.334\n<br>...\n</html>");
-			ivjeditorPanelHelpLabel.setMinimumSize(new java.awt.Dimension(68, 230));
+//			ivjeditorPanelHelpLabel.setMinimumSize(new java.awt.Dimension(68, 230));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -605,43 +609,6 @@ private void initialize() {
 }
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ReferenceDataPanel aReferenceDataPanel;
-		aReferenceDataPanel = new ReferenceDataPanel();
-		frame.setContentPane(aReferenceDataPanel);
-		frame.setSize(aReferenceDataPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-		
-		String dataString = "SimpleReferenceData { 3 2 t Ca_er 1 1 0 0.0 0.1 1 0.2 3 }";
-		cbit.vcell.opt.SimpleReferenceData refData = cbit.vcell.opt.SimpleReferenceData.fromVCML(new org.vcell.util.CommentStringTokenizer(dataString));
-		aReferenceDataPanel.setReferenceData(refData);
-		System.out.println("setting 1");
-		Thread.sleep(3000);
-		aReferenceDataPanel.setReferenceData(null);
-		System.out.println("setting 2");
-		Thread.sleep(3000);
-		aReferenceDataPanel.setReferenceData(refData);
-		System.out.println("setting 3");
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
-
-/**
  * Sets the referenceData property (cbit.vcell.opt.ReferenceData) value.
  * @param referenceData The new value for the property.
  * @see #getReferenceData
@@ -701,10 +668,10 @@ private void showEditor() {
 	}else{
 		geteditorTextArea().setText("t, data1, data2\n0.0, 0.1, 0.21\n0.1, 0.15, 0.31\n0.2, 0.16, 0.44");
 	}
-	geteditorPanel().setPreferredSize(new java.awt.Dimension(600,600));
-	geteditorPanel().setMinimumSize(new java.awt.Dimension(600,600));
+//	geteditorPanel().setPreferredSize(new java.awt.Dimension(600,600));
+//	geteditorPanel().setMinimumSize(new java.awt.Dimension(600,600));
 	try {
-		int retVal = DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
+		int retVal = DialogUtils.showComponentOKCancelDialog(JOptionPane.getDesktopPaneForComponent(this),geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
 			RowColumnResultSet rc = (new CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
 			double weights[] = new double[rc.getDataColumnCount()];

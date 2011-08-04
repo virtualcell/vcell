@@ -1,5 +1,9 @@
 package cbit.vcell.opt.solvers;
-import cbit.function.*;
+import org.vcell.optimization.OptSolverCallbacks;
+
+import cbit.function.DefaultScalarFunction;
+import cbit.function.ScalarFunction;
+import cbit.function.VectorFunction;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 

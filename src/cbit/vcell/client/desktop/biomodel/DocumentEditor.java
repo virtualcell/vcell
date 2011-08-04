@@ -208,9 +208,20 @@ public abstract class DocumentEditor extends JPanel {
 			}
 		}
 		public void issueChange(IssueEvent issueEvent) {
-			String title = "Problems (" + issueManager.getNumErrors() + " Errors, " + issueManager.getNumWarnings() + " Warnings)";
+			String errString = issueManager.getNumErrors() + " Errors";
+			String warnString = issueManager.getNumWarnings() + " Warnings";
+			boolean bHtml = false;
 			if (issueManager.getNumErrors() > 0) {
-				title = "<html><b>" + "Problems (<font color=red>" + issueManager.getNumErrors() + " Errors</font>, " + issueManager.getNumWarnings() + " Warnings)</b></html>";
+				bHtml = true;
+				errString = "<font color=red>" + errString + "</font>";
+			}
+			if (issueManager.getNumWarnings() > 0) {
+				bHtml = true;
+				warnString = "<font color=#C35617>" + warnString + "</font>";
+			}
+			String title = "Problems (" + errString + ", " + warnString + ")";
+			if (bHtml) {
+				title = "<html>" + title + "</html>";
 			}
 			rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
 		}

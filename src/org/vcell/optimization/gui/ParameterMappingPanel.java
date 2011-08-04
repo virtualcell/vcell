@@ -1,21 +1,39 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Comparator;
 
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterMappingSpec;
@@ -38,9 +56,16 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuCopyPaste = null;
+	private JButton addButton;
+	private JButton deleteButton;
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == addButton) {
+				addParameter();
+			} else if (e.getSource() == deleteButton) {
+				deleteParameter();
+			}
 			if (e.getSource() == ParameterMappingPanel.this.getJMenuItemCopy()) {
 				jMenuItemCopy_ActionPerformed(e);
 			} else if (e.getSource() == ParameterMappingPanel.this.getJMenuItemCopyAll()) {
@@ -68,7 +93,14 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 			if (evt.getSource() == ParameterMappingPanel.this && (evt.getPropertyName().equals("parameterEstimationTask"))) {
 				ivjparameterMappingTableModel.setParameterEstimationTask(getParameterEstimationTask());
 			}
-		};
+		}
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
+			
+			deleteButton.setEnabled(getScrollPaneTable().getSelectedRowCount() > 0);
+		}
 	};
 
 /**
@@ -79,17 +111,179 @@ public ParameterMappingPanel() {
 	initialize();
 }
 
-/**
- * connEtoC7:  (ParameterMappingPanel.initialize() --> ParameterMappingPanel.parameterMappingPanel_Initialize()V)
- */
-private void connEtoC7() {
-	try {
-		this.parameterMappingPanel_Initialize();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
+public void deleteParameter() {
+	ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
+	for (int row: getScrollPaneTable().getSelectedRows()) {
+		ParameterMappingSpec pms = ivjparameterMappingTableModel.getValueAt(row);
+		list.add(pms);
+	}
+	for (ParameterMappingSpec pms : list) {
+		pms.setSelected(false);
 	}
 }
 
+private static class SelectParameterTableModel extends VCellSortTableModel<ParameterMappingSpec> implements PropertyChangeListener {
+
+	private final static int COLUMN_NAME = 0;
+	private final static int COLUMN_SCOPE = 1;
+	private final static String LABELS[] = { "Parameter", "Context"};
+	
+	private ParameterEstimationTask parameterEstimationTask = null;
+
+	private class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
+		private int index;
+		private int scale = 1;
+
+		public ParameterColumnComparator(int index, boolean ascending){
+			this.index = index;
+			scale = ascending ? 1 : -1;
+		}
+		
+		/**
+		 * Compares its two arguments for order.  Returns a negative integer,
+		 * zero, or a positive integer as the first argument is less than, equal
+		 * to, or greater than the second.<p>
+		 */
+		public int compare(ParameterMappingSpec pms1, ParameterMappingSpec pms2){
+			
+			Parameter parm1 = pms1.getModelParameter();
+			Parameter parm2 = pms2.getModelParameter();
+			
+			switch (index){
+				case COLUMN_NAME:{
+					return scale * parm1.getName().compareToIgnoreCase(parm2.getName());
+				}
+				case COLUMN_SCOPE:{
+					return scale * parm1.getNameScope().getName().compareToIgnoreCase(parm2.getNameScope().getName());
+				}
+			}
+			return 1;
+		}
+	}
+	
+	public SelectParameterTableModel(ScrollTable table, ParameterEstimationTask task) {
+		super(table, LABELS);
+		parameterEstimationTask = task;
+	}
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (2/24/01 12:24:35 AM)
+	 * @return java.lang.Class
+	 * @param column int
+	 */
+	public Class<?> getColumnClass(int column) {
+		switch (column){
+			case COLUMN_NAME:{
+				return String.class;
+			}
+			case COLUMN_SCOPE:{
+				return String.class;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (9/23/2003 1:24:52 PM)
+	 * @return cbit.vcell.model.Parameter
+	 * @param row int
+	 */
+	private void refreshData() {
+		ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
+		if (parameterEstimationTask != null) {
+			for (ParameterMappingSpec pms : parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpecs()) {
+				if (!pms.isSelected()) {
+					list.add(pms);
+				}
+			}
+		}
+		setData(list);
+	}
+	
+	
+	/**
+	 * getValueAt method comment.
+	 */
+	public Object getValueAt(int row, int col) {
+		ParameterMappingSpec parameterMappingSpec = getValueAt(row);
+		switch (col){
+			case COLUMN_NAME:{
+				return parameterMappingSpec.getModelParameter().getName();
+			}
+			case COLUMN_SCOPE:{
+				if (parameterMappingSpec.getModelParameter() instanceof UnresolvedParameter){
+					return "unresolved";
+				}else if (parameterMappingSpec.getModelParameter().getNameScope()==null){
+					return "null";
+				} if (parameterMappingSpec.getModelParameter() instanceof ModelParameter) {
+					return "Model";
+				} else{
+					return parameterMappingSpec.getModelParameter().getNameScope().getName();
+				}
+			}
+			default:{
+				return null;
+			}
+		}
+	}
+	
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (2/24/01 12:27:46 AM)
+	 * @return boolean
+	 * @param rowIndex int
+	 * @param columnIndex int
+	 */
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		return false;
+	}
+	
+	
+	/**
+	 * isSortable method comment.
+	 */
+	public boolean isSortable(int col) {
+		return true;
+	}
+
+	protected Comparator<ParameterMappingSpec> getComparator(int col, boolean ascending) {		
+    	return new ParameterColumnComparator(col, ascending);
+  	}
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		
+	}
+}
+
+public void addParameter() {
+	JPanel panel = new JPanel(new BorderLayout());
+	ArrayList<ParameterMappingSpec> dataList = new ArrayList<ParameterMappingSpec>();
+	if (getParameterEstimationTask() != null) {
+		for (ParameterMappingSpec pms : getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs()) {
+			if (!pms.isSelected()) {
+				dataList.add(pms);
+			}
+		}
+	}
+	ScrollTable table = new ScrollTable();
+	SelectParameterTableModel model = new SelectParameterTableModel(table, getParameterEstimationTask());
+	table.setModel(model);
+	model.refreshData();
+	
+	panel.add(new JScrollPane(table), BorderLayout.CENTER);
+	panel.setPreferredSize(new Dimension(400,300));
+	int returnCode = DialogUtils.showComponentOKCancelDialog(this, panel, "Select Parameters");
+	if (returnCode == JOptionPane.OK_OPTION) {
+		for (int row : table.getSelectedRows()) {
+			ParameterMappingSpec pms = model.getValueAt(row);
+			pms.setSelected(true);
+		}
+	}
+}
 
 /**
  * Return the JMenuItemCopy property value.
@@ -243,9 +437,32 @@ private void initialize() {
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(655, 226);
-		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
+		addButton = new JButton(VCellIcons.addIcon);
+		deleteButton = new JButton(VCellIcons.deleteIcon);
+		deleteButton.setEnabled(false);
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.add(addButton);
+		toolBar.add(deleteButton);
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
+		add(toolBar, BorderLayout.NORTH);
+		
+		addButton.addActionListener(ivjEventHandler);
+		deleteButton.addActionListener(ivjEventHandler);
+		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 		initConnections();
-		connEtoC7();
+		getScrollPaneTable().setDefaultRenderer(Double.class,new DefaultScrollTableCellRenderer() {
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus, int row,
+					int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				setHorizontalAlignment(RIGHT);
+				return this;			
+			}
+			
+		});
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -503,39 +720,16 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void parameterMappingPanel_Initialize() {
-	
-	getScrollPaneTable().setDefaultRenderer(Double.class,new DefaultScrollTableCellRenderer() {
-
-		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			setHorizontalAlignment(RIGHT);
-			return this;			
-		}
-		
-	});
-	
-}
-
-
-/**
- * Comment
- */
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
-		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 		boolean bPastable =
 			obj instanceof VCellTransferable.ResolvedValuesSelection;
 
 		boolean bInitGuessSelected = getScrollPaneTable().getSelectedColumn() == ParameterMappingTableModel.COLUMN_CURRENTVALUE;
 		bPastable = bPastable && bInitGuessSelected;
-		boolean bSolutionSelected = getScrollPaneTable().getSelectedColumn() ==  ParameterMappingTableModel.COLUMN_SOLUTION;
-		boolean bSomethingSelected =
-			//getScrollPaneTable().getSelectedRowCount() > 0 &&
-			(bInitGuessSelected || bSolutionSelected);
+//		boolean bSolutionSelected = getScrollPaneTable().getSelectedColumn() ==  ParameterMappingTableModel.COLUMN_SOLUTION;
+//		boolean bSomethingSelected = (bInitGuessSelected || bSolutionSelected);
 
 		if(bInitGuessSelected){
 			getJMenuItemPaste().setVisible(true);
@@ -544,22 +738,22 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 			getJMenuItemCopyAll().setText("Copy All 'Initial Guess'");
 			getJMenuItemPaste().setText("Paste 'Initial Guess'");
 			getJMenuItemPasteAll().setText("Paste All 'Initial Guess'");
-		}else if(bSolutionSelected){
-			getJMenuItemPaste().setVisible(false);
-			getJMenuItemPasteAll().setVisible(false);
-			getJMenuItemCopy().setText("Copy 'Solution'");
-			getJMenuItemCopyAll().setText("Copy All 'Solution'");
-			getJMenuItemPaste().setText("Paste");
-			getJMenuItemPasteAll().setText("Paste All");
+//		}else if(bSolutionSelected){
+//			getJMenuItemPaste().setVisible(false);
+//			getJMenuItemPasteAll().setVisible(false);
+//			getJMenuItemCopy().setText("Copy 'Solution'");
+//			getJMenuItemCopyAll().setText("Copy All 'Solution'");
+//			getJMenuItemPaste().setText("Paste");
+//			getJMenuItemPasteAll().setText("Paste All");
 		}else{
-			PopupGenerator.showInfoDialog(this, "For Copy/Paste select a cell in the \"Initial Guess\" or \"Solution\" column");
+//			PopupGenerator.showInfoDialog(this, "For Copy/Paste select a cell in the \"Initial Guess\" or \"Solution\" column");
 			return;
 		}
 		
-		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
+		getJMenuItemPaste().setEnabled(bPastable/* && bSomethingSelected*/);
 		getJMenuItemPasteAll().setEnabled(bPastable);
-		getJMenuItemCopy().setEnabled(bSomethingSelected);
-		getJMenuItemCopyAll().setEnabled(bSomethingSelected);
+//		getJMenuItemCopy().setEnabled(bSomethingSelected);
+//		getJMenuItemCopyAll().setEnabled(bSomethingSelected);
 		getJPopupMenuCopyPaste().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
 	}
 }

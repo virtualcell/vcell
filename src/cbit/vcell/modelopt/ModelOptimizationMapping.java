@@ -230,7 +230,6 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	optSpec.gatherIssues(issueList);
 	for (int i = 0; i < issueList.size(); i++){
 		Issue issue = issueList.elementAt(i);
-		System.out.println(issue.toString());
 		if (issue.getSeverity()==Issue.SEVERITY_ERROR){
 			throw new RuntimeException(issue.getMessage());
 		}

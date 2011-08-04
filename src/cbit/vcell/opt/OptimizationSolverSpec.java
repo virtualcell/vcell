@@ -1,5 +1,6 @@
 package cbit.vcell.opt;
 
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.util.Matchable;
 
 /**
@@ -9,9 +10,11 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class OptimizationSolverSpec implements Matchable, java.io.Serializable {
-	private String solverType = null;
+	private String solverType = SOLVERTYPE_CFSQP;
 	private double objectiveFunctionChangeTolerance;
-
+	
+	private CopasiOptimizationMethod copasiOptimizationMethod = null;
+	
 	public final static String SOLVERTYPE_CFSQP = "CFSQP";
 	public final static String SOLVERTYPE_POWELL = "Powell Method";	
 	public final static String[] SOLVER_TYPES = { SOLVERTYPE_CFSQP, SOLVERTYPE_POWELL};
@@ -28,6 +31,17 @@ public OptimizationSolverSpec(OptimizationSolverSpec optimizationSolverSpecToCop
 	super();
 	this.solverType = optimizationSolverSpecToCopy.solverType;
 	this.objectiveFunctionChangeTolerance = optimizationSolverSpecToCopy.objectiveFunctionChangeTolerance;
+}
+
+public OptimizationSolverSpec(CopasiOptimizationMethod argCopasiOptimizationMethod) {
+	copasiOptimizationMethod = argCopasiOptimizationMethod; 
+	/*
+	if (solverType.equals(SOLVERTYPE_CONJUGATE_GRADIENT)){
+		objectiveFunctionChangeTolerance = 1.0e-6;
+	} else if (solverType.equals(SOLVERTYPE_POWELL)){
+		objectiveFunctionChangeTolerance = 1.0e-6;
+	}
+	*/
 }
 
 
@@ -85,11 +99,17 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 public boolean equals(Object obj) {
 	if (obj instanceof OptimizationSolverSpec){
 		OptimizationSolverSpec oss = (OptimizationSolverSpec)obj;
-		if (!solverType.equals(oss.solverType)){
-			return false;
-		}
-		if (objectiveFunctionChangeTolerance != oss.objectiveFunctionChangeTolerance){
-			return false;
+		if (copasiOptimizationMethod == null) {
+			if (!solverType.equals(oss.solverType)){
+				return false;
+			}
+			if (objectiveFunctionChangeTolerance != oss.objectiveFunctionChangeTolerance){
+				return false;
+			}
+		} else {
+			if (!copasiOptimizationMethod.equals(oss.copasiOptimizationMethod)) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -125,4 +145,10 @@ public String getSolverType() {
 public int hashCode() {
 	return (solverType+objectiveFunctionChangeTolerance).hashCode();
 }
+
+
+public final CopasiOptimizationMethod getCopasiOptimizationMethod() {
+	return copasiOptimizationMethod;
+}
+
 }

@@ -1,4 +1,13 @@
 package cbit.vcell.modelopt;
+
+import java.util.List;
+
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+
+import cbit.vcell.client.desktop.biomodel.ParameterEstimationPanel.ParameterEstimationPanelTabID;
+import cbit.vcell.opt.Parameter;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/28/2005 5:48:28 PM)
@@ -38,26 +47,10 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
-}
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -119,48 +112,8 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
@@ -168,14 +121,6 @@ public void fireVetoableChange(java.lang.String propertyName, int oldValue, int 
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -239,26 +184,10 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
-
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -273,5 +202,12 @@ public void setModelObject(cbit.vcell.parser.SymbolTableEntry modelObject) throw
 	fireVetoableChange("modelObject", oldValue, modelObject);
 	fieldModelObject = modelObject;
 	firePropertyChange("modelObject", oldValue, modelObject);
+}
+
+public void gatherIssues(List<Issue> issueList) {
+	if (getModelObject() == null) {
+		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column." +
+				"Go to '" + ParameterEstimationPanelTabID.experimental_data_mapping + "' tab and do the mapping.",Issue.SEVERITY_ERROR));
+	}
 }
 }

@@ -1,4 +1,4 @@
-package cbit.vcell.modelopt.gui;
+package org.vcell.optimization.gui;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -6,11 +6,12 @@ import java.util.Hashtable;
 import javax.swing.SwingUtilities;
 
 import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.DefaultOptSolverCallbacks;
+import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.ProfileData;
-import org.vcell.optimization.ProfileDataElement;
-import org.vcell.optimization.ProfileSummaryData;
 import org.vcell.optimization.OptSolverResultSet.ProfileDistribution;
+import org.vcell.optimization.ProfileSummaryData;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DescriptiveStatistics;
 import org.vcell.util.Issue;
@@ -19,6 +20,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
+import cbit.vcell.client.desktop.biomodel.ParameterEstimationPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.MappingException;
@@ -35,14 +37,14 @@ import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterMappingSpec;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -51,8 +53,8 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * Creation date: (5/4/2006 9:19:47 AM)
  * @author: Jim Schaff
  */
-public class OptimizationController {
-	private OptTestPanel optTestPanel = null;
+public class ParameterEstimationController {
+	private ParameterEstimationRunTaskPanel guiPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 
 	public class OptSolverUpdater extends AsynchGuiUpdater {
@@ -63,7 +65,7 @@ public class OptimizationController {
 			optSolverCallbacks = argOptSolverCallbacks;
 		}
 		private void animationDuringInit() {
-			optTestPanel.setProgress(progressRunner % 100);
+			guiPanel.setProgress(progressRunner % 100);
 			progressRunner += 5;
 		}
 		protected void guiToDo() {
@@ -71,7 +73,7 @@ public class OptimizationController {
 			if (optSolverCallbacks.getPercentDone()==null){
 				animationDuringInit();
 			}else{
-				optTestPanel.setProgress(optSolverCallbacks.getPercentDone().intValue());
+				guiPanel.setProgress(optSolverCallbacks.getPercentDone().intValue());
 			}
 		}
 		protected void guiToDo(java.lang.Object params) {
@@ -79,18 +81,18 @@ public class OptimizationController {
 				parameterEstimationTask.setOptimizationResultSet((OptimizationResultSet)params);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
-				DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage(), (Exception)params);
+				DialogUtils.showErrorDialog(ParameterEstimationController.this.guiPanel,((Exception)params).getMessage(), (Exception)params);
 				parameterEstimationTask.setOptimizationResultSet(null);
 			}
 			this.stop();
-			optTestPanel.updateInterface(false);
+			guiPanel.updateInterface(false);
 		}
 	}
 	private boolean bRunning = false;
 
-	public OptimizationController(OptTestPanel arg_optTestPanel) {
+	public ParameterEstimationController(ParameterEstimationRunTaskPanel arg_taskPanel) {
 		super();
-		optTestPanel = arg_optTestPanel;
+		guiPanel = arg_taskPanel;
 	}
 
 	public ParameterEstimationTask getParameterEstimationTask() {
@@ -143,7 +145,7 @@ public class OptimizationController {
 			nameArray = (String[])BeanUtils.getArray(nameVector, String.class);
 			multisourcePlotPane.select(nameArray);
 
-			DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
+			DialogUtils.showComponentCloseDialog(guiPanel, multisourcePlotPane, "Data Plot");
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 		} catch (InconsistentDomainException e) {
@@ -335,13 +337,13 @@ public class OptimizationController {
 		String objVal = "";
 		if (optSolverCallbacks!=null){
 			numEvals = optSolverCallbacks.getEvaluationCount() + "";
-			OptSolverCallbacks.EvaluationHolder bestEvaluation = optSolverCallbacks.getBestEvaluation();
+			OptSolverCallbacks.Evaluation bestEvaluation = optSolverCallbacks.getBestEvaluation();
 			if (bestEvaluation!=null){
-				objVal = bestEvaluation.objFunctionValue + "";
+				objVal = bestEvaluation.getObjectiveFunctionValue() + "";
 			}
 		}
-		optTestPanel.setNumEvaluations(numEvals);
-		optTestPanel.setObjectFunctionValue(objVal);	
+		guiPanel.setNumEvaluations(numEvals);
+		guiPanel.setObjectFunctionValue(objVal);	
 	}
 
 	public void saveSolutionAsNewSimulation() {
@@ -357,11 +359,11 @@ public class OptimizationController {
 				SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
 				Simulation newSim = simContext.addNewSimulation();
 				parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
-				DialogUtils.showInfoDialog(optTestPanel, "created simulation \""+newSim.getName()+"\"");
+				DialogUtils.showInfoDialog(guiPanel, "created simulation \""+newSim.getName()+"\"");
 			}
 		}catch (Exception e){
 			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage(), e);
+			DialogUtils.showErrorDialog(guiPanel,"Error creating simulation: "+e.getMessage(), e);
 		}
 	}
 
@@ -389,8 +391,7 @@ public class OptimizationController {
 		AsynchClientTask task2 = new AsynchClientTask("refresh mapping", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				StringBuffer issueText = new StringBuffer();
-				parameterEstimationTask.refreshMappings();
+				StringBuffer issueText = new StringBuffer();				
 				java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 				parameterEstimationTask.gatherIssues(issueList);
 				boolean bFailed = false;
@@ -407,15 +408,16 @@ public class OptimizationController {
 					parameterEstimationTask.appendSolverMessageText(issueText.toString());
 					throw new OptimizationException(parameterEstimationTask.getSolverMessageText());
 				}
+				parameterEstimationTask.refreshMappings();
 			}
 		};
 
 		AsynchClientTask task3 = new AsynchClientTask("set message", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				optTestPanel.updateInterface(true);
+				guiPanel.updateInterface(true);
 				parameterEstimationTask.appendSolverMessageText("working...\n");
-				OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+				DefaultOptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 				parameterEstimationTask.setOptSolverCallbacks(optSolverCallbacks);
 			}
 		};
@@ -435,10 +437,11 @@ public class OptimizationController {
 							optSolverUpdater.setDelay(100);
 							optSolverUpdater.start();
 							setRunning(true);
-							optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
-						}catch (final Exception e){
+							optResultSet = CopasiOptimizationSolver.solve(optSpec,optSolverSpec,optSolverCallbacks);
+						} catch (final Exception e){
 							e.printStackTrace(System.out);
-						}finally{
+							parameterEstimationTask.appendSolverMessageText("Failed " + e.getMessage());
+						} finally{
 							final OptimizationResultSet finalResultSet = optResultSet;
 							SwingUtilities.invokeLater(new Runnable(){
 								public void run() {	
@@ -454,7 +457,7 @@ public class OptimizationController {
 				t.start();		
 			}
 		};
-		ClientTaskDispatcher.dispatch(optTestPanel, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3, task4});
+		ClientTaskDispatcher.dispatch(guiPanel, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3, task4});
 	}
 
 	public void stop() {

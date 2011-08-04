@@ -32,8 +32,8 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -49,6 +49,8 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.VCellNames;
+import cbit.vcell.modelopt.ModelOptimizationMapping;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 /**
@@ -1138,8 +1140,10 @@ public SimulationContext getSimulationContext(String name) {
 		} else if (source instanceof UnmappedGeometryClass) {
 			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
 			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
-		}else if (source instanceof GeometryContext) {
+		} else if (source instanceof GeometryContext) {
 			description = "App(" + ((GeometryContext)source).getSimulationContext().getNameScope().getPathDescription() + ")";
+		} else if (source instanceof ModelOptimizationSpec) {
+			description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getNameScope().getPathDescription() + ") / Parameter Estimation";
 		}
 		return description;
 	}
@@ -1168,6 +1172,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
 		}else if (object instanceof GeometryContext) {
 			description = "Geometry";
+		}else if (object instanceof ModelOptimizationSpec) {
+			description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
 		}
 		return description;
 	}

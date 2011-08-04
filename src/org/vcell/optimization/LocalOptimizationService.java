@@ -1,11 +1,16 @@
-package cbit.vcell.opt.solvers;
+package org.vcell.optimization;
 
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.OptimizationResultSet;
+import java.io.IOException;
+
 import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.parser.*;
-import java.io.*;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.solvers.NewOptimizationSolver;
+import cbit.vcell.opt.solvers.OptimizationService;
+import cbit.vcell.opt.solvers.OptimizationSolver;
+import cbit.vcell.opt.solvers.PowellOptimizationSolver;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (3/16/00 3:07:48 PM)
