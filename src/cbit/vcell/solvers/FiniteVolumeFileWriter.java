@@ -266,7 +266,7 @@ VolumePoints 49
 SampleImage 41 0 32742266 field(imageFieldDataName1,mask,0.0,Volume)
 StoreEnabled false
 
-SampleImageFile mask 0.0 \\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\schaff\\SimID_32742646_0_imageFieldDataName1_mask_0_0_Volume.fdat
+SampleImageFile mask 0.0 \\users\\schaff\\SimID_32742646_0_imageFieldDataName1_mask_0_0_Volume.fdat
 DATA_PROCESSOR_END
  * @throws MathException 
  * @throws IOException 
@@ -998,7 +998,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 /**
 # Mesh file
 MESH_BEGIN
-VCG_FILE \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_.vcg
+VCG_FILE \\users\\fgao\\SimID_22489731_0_.vcg
 MESH_END
  * @throws IOException 
 */
@@ -1240,7 +1240,7 @@ private void writeSerialParameterScans() throws ExpressionException,  DivideByZe
  * # Field Data
  * FIELD_DATA_BEGIN
  * #id, name, varname, time filename
- * 0 _VCell_FieldData_0 FRAP_binding_ALPHA rfB 0.1 \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_FRAP_binding_ALPHA_rfB_0_1.fdat
+ * 0 _VCell_FieldData_0 FRAP_binding_ALPHA rfB 0.1 \\users\\fgao\\SimID_22489731_0_FRAP_binding_ALPHA_rfB_0_1.fdat
  * FIELD_DATA_END
  * @throws FileNotFoundException 
  * @throws ExpressionException 
