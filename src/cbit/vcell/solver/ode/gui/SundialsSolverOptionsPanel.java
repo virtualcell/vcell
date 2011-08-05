@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.solver.ode.gui;
 
 import java.awt.Dimension;
@@ -59,7 +69,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 						"in the system are stable, the method is also stable for any choice of step size, at least in the sense of" +
 						"a local linear stability analysis. " +
 						"<p>At orders 3 to 5, the BDF methods are not A-stable, although they are <i>stiffly</i> stable. In each" +
-						"case, in order for the method to be stable at step size <i>h</i> on the scalar model problem, the product \u03BBh¸ " +
+						"case, in order for the method to be stable at step size <i>h</i> on the scalar model problem, the product \u03BBhï¿½ " +
 						"must lie in <i>a region of absolute stability</i>. That region excludes a portion of the left half-plane that is " +
 						"concentrated near the imaginary axis. The size of that region of instability grows as the order increases " +
 						"from 3 to 5. What this means is that, when running BDF at any of these orders, if an eigenvalue \u03BB of " +
@@ -76,7 +86,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 						"to step sizes on the order of 1/\u03BD. It is in this situation that the new option may be of great value." +
 						"<p>In terms of partial differential equations, the typical problems for which the stability limit detection" +
 						" option is appropriate are ODE systems resulting from semi-discretized PDEs " +
-						"(i.e., PDEs discretized in space) with advection and di®usion, but with advection dominating over diffusion. " +
+						"(i.e., PDEs discretized in space) with advection and diï¿½usion, but with advection dominating over diffusion. " +
 						"Diffusion alone produces pure decay modes, while advection tends to produce undamped oscillatory modes. A mix of" +
 						"the two with advection dominant will have weakly damped oscillatory modes.</html>");	
 			}

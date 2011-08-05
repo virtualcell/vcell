@@ -1,9 +1,5 @@
 package cbit.xml.viewer;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.awt.*;
 import javax.swing.*;
 /**

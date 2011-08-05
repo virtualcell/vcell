@@ -1,9 +1,15 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.geometry.gui;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -337,7 +343,7 @@ private javax.swing.JLabel getOriginXUnitLabel() {
 		try {
 			ivjOriginXUnitLabel = new javax.swing.JLabel();
 			ivjOriginXUnitLabel.setName("OriginXUnitLabel");
-			ivjOriginXUnitLabel.setText("µm");
+			ivjOriginXUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -399,7 +405,7 @@ private javax.swing.JLabel getOriginYUnitLabel() {
 		try {
 			ivjOriginYUnitLabel = new javax.swing.JLabel();
 			ivjOriginYUnitLabel.setName("OriginYUnitLabel");
-			ivjOriginYUnitLabel.setText("µm");
+			ivjOriginYUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -461,7 +467,7 @@ private javax.swing.JLabel getOriginZUnitLabel() {
 		try {
 			ivjOriginZUnitLabel = new javax.swing.JLabel();
 			ivjOriginZUnitLabel.setName("OriginZUnitLabel");
-			ivjOriginZUnitLabel.setText("µm");
+			ivjOriginZUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -695,7 +701,7 @@ private javax.swing.JLabel getSizeXUnitLabel() {
 		try {
 			ivjSizeXUnitLabel = new javax.swing.JLabel();
 			ivjSizeXUnitLabel.setName("SizeXUnitLabel");
-			ivjSizeXUnitLabel.setText("µm");
+			ivjSizeXUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -757,7 +763,7 @@ private javax.swing.JLabel getSizeYUnitLabel() {
 		try {
 			ivjSizeYUnitLabel = new javax.swing.JLabel();
 			ivjSizeYUnitLabel.setName("SizeYUnitLabel");
-			ivjSizeYUnitLabel.setText("µm");
+			ivjSizeYUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -819,7 +825,7 @@ private javax.swing.JLabel getSizeZUnitLabel() {
 		try {
 			ivjSizeZUnitLabel = new javax.swing.JLabel();
 			ivjSizeZUnitLabel.setName("SizeZUnitLabel");
-			ivjSizeZUnitLabel.setText("µm");
+			ivjSizeZUnitLabel.setText("ï¿½m");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

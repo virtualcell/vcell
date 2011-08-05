@@ -1,9 +1,5 @@
 package org.vcell.util.gui;
 
-/*�
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
- �*/
 import javax.swing.AbstractListModel;
 
 

@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.solver.smoldyn;
 
 
@@ -231,7 +241,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 //		molecule.		
 		listmols,
 //		This is very similar to listmols but has a slightly different output format.
-//		Each line of text is preceded by the “time counter”, which is an integer
+//		Each line of text is preceded by the ï¿½time counterï¿½, which is an integer
 //		that starts at 1 and is incremented each time the routine is called. Also, the
 //		names and states of molecules are not printed, but instead the identity and
 //		state numbers are printed.
