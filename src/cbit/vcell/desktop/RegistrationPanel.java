@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.desktop;
 
 import java.awt.Dimension;
@@ -21,7 +31,7 @@ public class RegistrationPanel extends JPanel {
 	//http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm
 	public static final String[] COUNTRY_LIST = new String[] {
 		"UNITED STATES",
-		"AFGHANISTAN","ÅLAND ISLANDS","ALBANIA","ALGERIA","AMERICAN SAMOA",
+		"AFGHANISTAN","ï¿½LAND ISLANDS","ALBANIA","ALGERIA","AMERICAN SAMOA",
 		"ANDORRA","ANGOLA","ANGUILLA","ANTARCTICA","ANTIGUA AND BARBUDA",
 		"ARGENTINA","ARMENIA","ARUBA","AUSTRALIA","AUSTRIA",
 		"AZERBAIJAN","BAHAMAS","BAHRAIN","BANGLADESH","BARBADOS",
@@ -57,7 +67,7 @@ public class RegistrationPanel extends JPanel {
 		"OMAN","PAKISTAN","PALAU","PALESTINIAN TERRITORY, OCCUPIED","PANAMA",
 		"PAPUA NEW GUINEA","PARAGUAY","PERU","PHILIPPINES","PITCAIRN",
 		"POLAND","PORTUGAL","PUERTO RICO","QATAR","REUNION",
-		"ROMANIA","RUSSIAN FEDERATION","RWANDA","SAINT BARTHÉLEMY","SAINT HELENA",
+		"ROMANIA","RUSSIAN FEDERATION","RWANDA","SAINT BARTHï¿½LEMY","SAINT HELENA",
 		"SAINT KITTS AND NEVIS","SAINT LUCIA","SAINT MARTIN","SAINT PIERRE AND MIQUELON","SAINT VINCENT AND THE GRENADINES",
 		"SAMOA","SAN MARINO","SAO TOME AND PRINCIPE","SAUDI ARABIA","SENEGAL",
 		"SERBIA","SEYCHELLES","SIERRA LEONE","SINGAPORE","SLOVAKIA",

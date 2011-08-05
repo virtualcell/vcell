@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.export.server;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -681,7 +691,7 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			VideoMediaChunk[] videoMediaChunkArr = movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID).toArray(new VideoMediaChunk[0]);
 			MediaTrack videoTrack = new MediaTrack(videoMediaChunkArr);
 			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), TIMESCALE);
-			newMovie.addUserDataEntry(new UserDataEntry("cpy", "©" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
+			newMovie.addUserDataEntry(new UserDataEntry("cpy", "ï¿½" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
 			newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + simID));
 			newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + allTimes[beginTimeIndex] + " - " + allTimes[endTimeIndex]));
 			for (int i = 0; varNameArr != null && i < varNameArr.length; i++) {

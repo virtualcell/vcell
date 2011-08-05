@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.visit;
 
 import java.awt.GridBagConstraints;
@@ -68,6 +78,7 @@ public class VisitControlPanel extends JPanel {
 	public VisitControlPanel() {
 		commandHistory[0]="";
 		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWidths = new int[]{526};
 		gridBagLayout.rowHeights = new int[]{0, 0, 92, 0, 0, 0, 119};
 		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{1.0};
@@ -291,37 +302,24 @@ public class VisitControlPanel extends JPanel {
 		gbc_MakeMovieButton.gridy = 1;
 		panel_4.add(btnMakeMovieButton, gbc_MakeMovieButton);
 		
-		JButton btnMakeSmoother = new JButton("Apply smoothing");
-		btnMakeSmoother.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				visitSession.applySmoothing(40,0.04);
-			
-			}
-		});
-		GridBagConstraints gbc_btnMakeSmoother = new GridBagConstraints();
-		gbc_btnMakeSmoother.insets = new Insets(0, 0, 5, 5);
-		gbc_btnMakeSmoother.gridx = 3;
-		gbc_btnMakeSmoother.gridy = 1;
-		panel_4.add(btnMakeSmoother, gbc_btnMakeSmoother);
-		
-		JButton btnUndoLastOperator = new JButton("Undo Last Operator");
-		btnUndoLastOperator.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				visitSession.undoLastOperator();
-			}
-		});
-		GridBagConstraints gbc_btnUndoLastOperator = new GridBagConstraints();
-		gbc_btnUndoLastOperator.insets = new Insets(0, 0, 5, 0);
-		gbc_btnUndoLastOperator.gridx = 4;
-		gbc_btnUndoLastOperator.gridy = 1;
-		panel_4.add(btnUndoLastOperator, gbc_btnUndoLastOperator);
-		
 		JButton btnAddClipPlane = new JButton("Add Clip Plane");
 		btnAddClipPlane.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				visitSession.addClipPlaneOperator();
 			}
 		});
+		
+		JButton btnSaveWindowTo = new JButton("Save window to PNG");
+		btnSaveWindowTo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.saveCurrentWindow();
+			}
+		});
+		GridBagConstraints gbc_btnSaveWindowTo = new GridBagConstraints();
+		gbc_btnSaveWindowTo.insets = new Insets(0, 0, 5, 5);
+		gbc_btnSaveWindowTo.gridx = 3;
+		gbc_btnSaveWindowTo.gridy = 1;
+		panel_4.add(btnSaveWindowTo, gbc_btnSaveWindowTo);
 		GridBagConstraints gbc_btnAddClipPlane = new GridBagConstraints();
 		gbc_btnAddClipPlane.insets = new Insets(0, 0, 0, 5);
 		gbc_btnAddClipPlane.gridx = 0;
@@ -351,6 +349,30 @@ public class VisitControlPanel extends JPanel {
 		gbc_btnAddslice.gridx = 2;
 		gbc_btnAddslice.gridy = 2;
 		panel_4.add(btnAddThreeSlice, gbc_btnAddslice);
+		
+		JButton btnMakeSmoother = new JButton("Apply smoothing");
+		btnMakeSmoother.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.applySmoothing(40,0.04);
+			
+			}
+		});
+		GridBagConstraints gbc_btnMakeSmoother = new GridBagConstraints();
+		gbc_btnMakeSmoother.insets = new Insets(0, 0, 0, 5);
+		gbc_btnMakeSmoother.gridx = 3;
+		gbc_btnMakeSmoother.gridy = 2;
+		panel_4.add(btnMakeSmoother, gbc_btnMakeSmoother);
+		
+		JButton btnUndoLastOperator = new JButton("Undo Last Operator");
+		btnUndoLastOperator.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				visitSession.undoLastOperator();
+			}
+		});
+		GridBagConstraints gbc_btnUndoLastOperator = new GridBagConstraints();
+		gbc_btnUndoLastOperator.gridx = 4;
+		gbc_btnUndoLastOperator.gridy = 2;
+		panel_4.add(btnUndoLastOperator, gbc_btnUndoLastOperator);
 		
 		
 		

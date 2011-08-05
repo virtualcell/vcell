@@ -1,8 +1,14 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.geometry.gui;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 
 import java.awt.Color;
 import java.awt.image.MemoryImageSource;
@@ -675,7 +681,7 @@ private javax.swing.JLabel getJLabelExtentTitle() {
 		try {
 			ivjJLabelExtentTitle = new javax.swing.JLabel();
 			ivjJLabelExtentTitle.setName("JLabelExtentTitle");
-			ivjJLabelExtentTitle.setText("Size (µm)");
+			ivjJLabelExtentTitle.setText("Size (ï¿½m)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -721,7 +727,7 @@ private javax.swing.JLabel getJLabelOriginTitle() {
 		try {
 			ivjJLabelOriginTitle = new javax.swing.JLabel();
 			ivjJLabelOriginTitle.setName("JLabelOriginTitle");
-			ivjJLabelOriginTitle.setText("Origin (µm)");
+			ivjJLabelOriginTitle.setText("Origin (ï¿½m)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

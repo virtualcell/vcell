@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.simdata;
 
 import org.vcell.util.Matchable;
@@ -15,10 +25,6 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.solvers.CartesianMesh;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 2:07:11 PM)

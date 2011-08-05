@@ -211,15 +211,15 @@ public class LicenseWriter {
 			}
 			
 			//now read from the temp file and copy the contents to the original file
-//			writer = new BufferedWriter(new FileWriter(file));
-//			reader = new BufferedReader(new FileReader(tempFile));
-//
-//			while(null != (line = reader.readLine())) {
-//				writer.write(line);
-//				writer.write(newLine);
-//			}
-//			writer.close();
-//			reader.close();
+			writer = new BufferedWriter(new FileWriter(file));
+			reader = new BufferedReader(new FileReader(tempFile));
+
+			while(null != (line = reader.readLine())) {
+				writer.write(line);
+				writer.write(newLine);
+			}
+			writer.close();
+			reader.close();
 			tempFile.delete();
 			
 		} catch(Exception ex) {
@@ -289,14 +289,14 @@ public class LicenseWriter {
 			reader.close();
 
 			// now read from the temp file and copy the contents to the original file
-//			writer = new BufferedWriter(new FileWriter(file));
-//			reader = new BufferedReader(new FileReader(tempFile));
-//			while(null != (line = reader.readLine())) {
-//				writer.write(line);
-//				writer.write(newLine);
-//			}
-//			writer.close();
-//			reader.close();
+			writer = new BufferedWriter(new FileWriter(file));
+			reader = new BufferedReader(new FileReader(tempFile));
+			while(null != (line = reader.readLine())) {
+				writer.write(line);
+				writer.write(newLine);
+			}
+			writer.close();
+			reader.close();
 			tempFile.delete();
 			
 			summaryAddedLicenses++;
@@ -396,7 +396,7 @@ public class LicenseWriter {
         fileExceptions.add("VCell_CodeGen/include/VCELL/ilTIFF.h");
 
         // numerics - list of foreign directories (which won't get our license)
-        String numericsPrefix = "numerics_5.0_branch\\";
+        String numericsPrefix = "hyhyhyhy";
 		directoryExceptions.add(numericsPrefix + "blas");
 //		directoryExceptions.add(numericsPrefix + "ExpressionParser");
 //		directoryExceptions.add(numericsPrefix + "ExpressionParserTest");
@@ -443,10 +443,10 @@ public class LicenseWriter {
 			command = "evaluate";
 //			command = "cleanup";
 //			command = "write";
-			licenseFileName = "C:\\dan\\licensetest\\licenseFile.txt";
-			String vCellSourceDirectory = "C:\\dan\\projects\\VCell_4.8\\src";
-			String numericsSourceDirectory = "C:\\dan\\projects\\numerics_5.0_branch";
-			rootDirectory = numericsSourceDirectory;
+			licenseFileName = "/home/CAM/eboyce/Desktop/license.txt";
+    		String vCellSourceDirectory = "/eboyce-local/workspace/VCell";
+//			String numericsSourceDirectory = "/h";
+			rootDirectory = vCellSourceDirectory;
 			}
 			dir = new File(rootDirectory);
 			licenseFile = new File(licenseFileName);

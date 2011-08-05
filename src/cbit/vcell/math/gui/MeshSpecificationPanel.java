@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.math.gui;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -22,10 +32,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.solver.MeshSpecification;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 /**
  * Insert the type's description here.
  * Creation date: (1/9/01 8:56:10 AM)
@@ -165,7 +171,7 @@ private javax.swing.JLabel getGeometrySizeLabel() {
 		try {
 			ivjGeometrySizeLabel = new javax.swing.JLabel();
 			ivjGeometrySizeLabel.setName("GeometrySizeLabel");
-			ivjGeometrySizeLabel.setText("Geometry Size (µm)");
+			ivjGeometrySizeLabel.setText("Geometry Size (ï¿½m)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -593,7 +599,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("Spatial Step (µm)"), gbc);
+		add(new JLabel("Spatial Step (ï¿½m)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 

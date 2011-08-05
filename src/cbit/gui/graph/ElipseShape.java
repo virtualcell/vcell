@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.gui.graph;
 
 import java.awt.Dimension;
@@ -5,10 +15,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
-/*
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
- */
 
 public abstract class ElipseShape extends Shape {
 

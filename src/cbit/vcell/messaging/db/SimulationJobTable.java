@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,11 +25,6 @@ import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
- * This type was created in VisualAge.
- ©*/
 public class SimulationJobTable extends Table {
 	private static final String TABLE_NAME = "vc_simulationjob";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
