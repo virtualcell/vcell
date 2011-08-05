@@ -17,7 +17,6 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.modelopt.gui.DataSource.DataSourceReferenceData;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
@@ -30,13 +29,11 @@ import cbit.vcell.util.RowColumnResultSet;
 @SuppressWarnings("serial")
 public class ReferenceDataPanel extends javax.swing.JPanel {
 	private cbit.vcell.opt.ReferenceData fieldReferenceData = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.client.server.UserPreferences fieldUserPreferences = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private UserPreferences fieldUserPreferences = null;
 	private javax.swing.JButton ivjImportButton = null;
 	private javax.swing.JButton ivjSubsampleButton = null;
-	private boolean ivjConnPtoP1Aligning = false;
 	private MultisourcePlotPane ivjmultisourcePlotPane = null;
-	private cbit.vcell.opt.ReferenceData ivjreferenceData1 = null;
 	private javax.swing.JButton ivjeditButton = null;
 	private javax.swing.JPanel ivjeditorPanel = null;
 	private javax.swing.JLabel ivjeditorPanelHelpLabel = null;
@@ -50,17 +47,21 @@ public class ReferenceDataPanel extends javax.swing.JPanel {
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ReferenceDataPanel.this.getImportButton()) 
-				connEtoM1(e);
+				setReferenceData(importDataFromFile());
 			if (e.getSource() == ReferenceDataPanel.this.getSubsampleButton()) 
-				connEtoM3(e);
-			if (e.getSource() == ReferenceDataPanel.this.gethelpButton()) 
-				connEtoC2(e);
-			if (e.getSource() == ReferenceDataPanel.this.geteditButton()) 
-				connEtoC3(e);
+				setReferenceData(subsample());
+			if (e.getSource() == ReferenceDataPanel.this.gethelpButton())
+				showHelp();
+			if (e.getSource() == ReferenceDataPanel.this.geteditButton())
+				showEditor();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ReferenceDataPanel.this && (evt.getPropertyName().equals("referenceData"))) 
-				connPtoP1SetTarget();
+			if (evt.getSource() == ReferenceDataPanel.this && (evt.getPropertyName().equals("referenceData"))) {
+				updatePlot();
+				if (fieldParameterEstimationTask != null) {
+					fieldParameterEstimationTask.getModelOptimizationSpec().setReferenceData(getReferenceData());
+				}
+			}
 			if (evt.getPropertyName().equals("modelObject")) {
 				updatePlot();
 			}
@@ -74,155 +75,6 @@ public ReferenceDataPanel() {
 	super();
 	initialize();
 }
-
-/**
- * connEtoC1:  (referenceData1.this --> ReferenceDataPanel.updatePlot()V)
- * @param value cbit.vcell.opt.ReferenceData
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(ReferenceData value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updatePlot();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (JButton2.action.actionPerformed(java.awt.event.ActionEvent) --> ReferenceDataPanel.jButton2_ActionPerformed()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showHelp();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC3:  (editButton.action.actionPerformed(java.awt.event.ActionEvent) --> ReferenceDataPanel.showEditor()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showEditor();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (JButton1.action.actionPerformed(java.awt.event.ActionEvent) --> referenceData1.this)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setreferenceData1(this.importDataFromFile());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM3:  (SubsampleButton.action.actionPerformed(java.awt.event.ActionEvent) --> referenceData1.this)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setreferenceData1(this.subsample());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP1SetSource:  (ReferenceDataPanel.referenceData <--> referenceData1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getreferenceData1() != null)) {
-				this.setReferenceData(getreferenceData1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (ReferenceDataPanel.referenceData <--> referenceData1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			setreferenceData1(this.getReferenceData());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * Return the JButton1 property value.
@@ -451,19 +303,6 @@ public ReferenceData getReferenceData() {
 	return fieldReferenceData;
 }
 
-
-/**
- * Return the referenceData1 property value.
- * @return cbit.vcell.opt.ReferenceData
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ReferenceData getreferenceData1() {
-	// user code begin {1}
-	// user code end
-	return ivjreferenceData1;
-}
-
-
 /**
  * Return the JButton2 property value.
  * @return javax.swing.JButton
@@ -511,46 +350,51 @@ private void handleException(java.lang.Throwable exception) {
 /**
  * Comment
  */
-private ReferenceData importDataFromFile() throws UserCancelException, Exception {
-	VCFileChooser fileChooser = new VCFileChooser();
-	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CSV);
-	// Set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_CSV);
-	// remove all selector
-	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-	String defaultPath = null;
-	if (getUserPreferences()!=null){
-	    defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	    if (defaultPath!=null){
-		    fileChooser.setCurrentDirectory(new File(defaultPath));
-	    }
-	}
-
-	fileChooser.setDialogTitle("Import Data File");
-	if (fileChooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
-		// user didn't choose save
-		throw UserCancelException.CANCEL_FILE_SELECTION;
-	} else {
-		File selectedFile = fileChooser.getSelectedFile();
-		if (selectedFile == null) {
-			// no file selected (no name given)
+private ReferenceData importDataFromFile() {
+	try {
+		VCFileChooser fileChooser = new VCFileChooser();
+		fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CSV);
+		// Set the default file filter...
+		fileChooser.setFileFilter(FileFilters.FILE_FILTER_CSV);
+		// remove all selector
+		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+		String defaultPath = null;
+		if (getUserPreferences()!=null){
+		    defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+		    if (defaultPath!=null){
+			    fileChooser.setCurrentDirectory(new File(defaultPath));
+		    }
+		}
+	
+		fileChooser.setDialogTitle("Import Data File");
+		if (fileChooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
+			// user didn't choose save
 			throw UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
-			if (getUserPreferences()!=null){
-				String newPath = selectedFile.getParent();
-				if (!newPath.equals(defaultPath)) {
-					getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			File selectedFile = fileChooser.getSelectedFile();
+			if (selectedFile == null) {
+				// no file selected (no name given)
+				throw UserCancelException.CANCEL_FILE_SELECTION;
+			} else {
+				if (getUserPreferences()!=null){
+					String newPath = selectedFile.getParent();
+					if (!newPath.equals(defaultPath)) {
+						getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+					}
 				}
+				CSV csv = new CSV();
+				RowColumnResultSet rowColumnResultSet = csv.importFrom(new java.io.FileReader(selectedFile));
+				double[] weights = new double[rowColumnResultSet.getDataColumnCount()];
+				java.util.Arrays.fill(weights, 1.0);
+				ReferenceData referenceData = new SimpleReferenceData(rowColumnResultSet, weights);
+				return referenceData;
 			}
-			CSV csv = new CSV();
-			RowColumnResultSet rowColumnResultSet = csv.importFrom(new java.io.FileReader(selectedFile));
-			double[] weights = new double[rowColumnResultSet.getDataColumnCount()];
-			java.util.Arrays.fill(weights, 1.0);
-			ReferenceData referenceData = new SimpleReferenceData(rowColumnResultSet, weights);
-			return referenceData;
 		}
+	} catch (Exception ex) {
+		DialogUtils.showErrorDialog(this, ex.getMessage(), ex);
+		return null;
 	}
 }
 
@@ -568,7 +412,6 @@ private void initConnections() throws java.lang.Exception {
 	getSubsampleButton().addActionListener(ivjEventHandler);
 	gethelpButton().addActionListener(ivjEventHandler);
 	geteditButton().addActionListener(ivjEventHandler);
-	connPtoP1SetTarget();
 }
 
 /**
@@ -619,31 +462,6 @@ private void setReferenceData(ReferenceData referenceData) {
 	firePropertyChange("referenceData", oldValue, referenceData);
 }
 
-
-/**
- * Set the referenceData1 to a new value.
- * @param newValue cbit.vcell.opt.ReferenceData
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setreferenceData1(ReferenceData newValue) {
-	if (ivjreferenceData1 != newValue) {
-		try {
-			ReferenceData oldValue = getreferenceData1();
-			ivjreferenceData1 = newValue;
-			connPtoP1SetSource();
-			connEtoC1(ivjreferenceData1);
-			firePropertyChange("referenceData", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
 
 /**
  * Sets the userPreferences property (cbit.vcell.client.server.UserPreferences) value.

@@ -9,10 +9,10 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -62,9 +62,9 @@ public class CopasiOptimizationSolver {
 			value = dv;
 		}
 
-		CopasiOptimizationParameter(CopasiOptimizationParameter anotherParameter, double dv) {
+		CopasiOptimizationParameter(CopasiOptimizationParameter anotherParameter) {
 			this.type = anotherParameter.type;
-			value = dv;
+			value = anotherParameter.value;
 		}
 		
 		public final double getValue() {
@@ -102,9 +102,9 @@ public class CopasiOptimizationSolver {
 		public CopasiOptimizationMethod(CopasiOptimizationMethodType type) {
 			this.type = type;
 			CopasiOptimizationParameter[] defaultParameters = type.getDefaultParameters();
-			if (defaultParameters != null) {
-				this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
-				System.arraycopy(type.defaultParameters, 0, realParameters, 0, defaultParameters.length);
+			this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
+			for (int i = 0; i < defaultParameters.length; i ++) {
+				realParameters[i] = new CopasiOptimizationParameter(defaultParameters[i]);
 			}
 		}
 		public final CopasiOptimizationMethodType getType() {
@@ -136,7 +136,7 @@ public class CopasiOptimizationSolver {
 	}
 	
 	public enum CopasiOptimizationMethodType {
-		Statistics("Current Solution Statistics", null),
+		Statistics("Current Solution Statistics", new CopasiOptimizationParameter[0]),
 		EvolutionaryProgram("Evolutionary Programming", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Number_of_Generations, 200),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),
@@ -203,7 +203,7 @@ public class CopasiOptimizationSolver {
 	    Praxis("Praxis", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5),
 		}),
-	    TruncatedNewton("Truncated Newton", null);
+	    TruncatedNewton("Truncated Newton", new CopasiOptimizationParameter[0]);
 				    
 		private String name;
 		private String displayName;
@@ -227,21 +227,25 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String modelSbml, String optProblemXml, OptSolverCallbacks optSolverCallbacks);
 	
-public static OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final OptSolverCallbacks optSolverCallbacks) 
+public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
 						throws IOException, ExpressionException, OptimizationException {
-	Element optProblemXML = OptXmlWriter.getOptProblemDescriptionXML(os);
+	OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
+	OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
+
+	Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
 	String modelSbml = null;
 	try {		
 		String inputXML = XmlUtil.xmlToString(optProblemXML);
+		System.out.println(inputXML);
 //		PrintWriter pw = new PrintWriter("c:\\test10.xml");
 //		pw.println(inputXML);
 //		pw.close();
 		String optResultsXML = solve(modelSbml, inputXML, optSolverCallbacks);
 		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
 		ODESolverResultSet odeSolverResultSet = null;
-		if (os.getObjectiveFunction() instanceof OdeObjectiveFunction){
+		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
 			RowColumnResultSet rcResultSet = null;
-			OdeObjectiveFunction odeObjFunc = (OdeObjectiveFunction)os.getObjectiveFunction();
+			OdeObjectiveFunction odeObjFunc = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
 			Element objFuncElement = optProblemXML.getChild(OptXmlTags.ObjectiveFunction_Tag);
 			Element modelElement = objFuncElement.getChild(OptXmlTags.Model_Tag);
 			String modelType = modelElement.getAttributeValue(OptXmlTags.ModelType_Attr);

@@ -3,6 +3,8 @@ package org.vcell.optimization.gui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -91,12 +93,27 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public boolean isSortable(int col) {
 			return false;
 		}
+		@Override
+		public boolean isCellEditable(int rowIndex, int columnIndex) {
+			return columnIndex == COLUMN_Value;
+		}
+		@Override
+		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+			if (columnIndex == COLUMN_Value) {
+				CopasiOptimizationParameter cop = getValueAt(rowIndex);
+				cop.setValue((Double) aValue);
+			}
+		}
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return columnIndex == COLUMN_Value ? Double.class : String.class;
+		}
+		
+		
 	}
 	
-	private class InternalEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private class InternalEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getOptimizationMethodComboBox()) 
-				solverTypeComboBox_ActionPerformed();
 			if (e.getSource() == getPlotButton()) 
 				parameterEstimationController.plot();
 			if (e.getSource() == getSaveSolutionAsNewSimButton()) 
@@ -114,6 +131,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizationResultSet_This(fieldParameterEstimationTask.getOptimizationResultSet());
 			if (evt.getSource() == fieldParameterEstimationTask && (evt.getPropertyName().equals("solverMessageText"))) 
 				getOptimizeResultsTextPane().setText(String.valueOf(fieldParameterEstimationTask.getSolverMessageText()));
+		}
+		public void itemStateChanged(ItemEvent e) {
+			if (e.getSource() == getOptimizationMethodComboBox()) 
+				optimizationMethodComboBox_ActionPerformed();			
 		};
 	}
 	
@@ -163,7 +184,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		
 		getSolveButton().addActionListener(eventHandler);
 		getStopButton().addActionListener(eventHandler);
-		getOptimizationMethodComboBox().addActionListener(eventHandler);
+		getOptimizationMethodComboBox().addItemListener(eventHandler);
 		getPlotButton().addActionListener(eventHandler);
 	}
 	
@@ -222,6 +243,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizationMethodParameterTable.setModel(optimizationMethodParameterTableModel);
 				
 				computeProfileDistributionsCheckBox = new JCheckBox("Compute Profile Distributions");
+				computeProfileDistributionsCheckBox.setEnabled(false);
+				
 				java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 0; 
 				gbc.gridy = 0;
@@ -256,7 +279,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				gbc.gridy = 3;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.weightx = 1.0;
-				gbc.anchor = GridBagConstraints.PAGE_START;
+				gbc.anchor = GridBagConstraints.LINE_END;
 				solverPanel.add(getSolveButton(), gbc);
 
 				gbc = new java.awt.GridBagConstraints();
@@ -264,8 +287,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				gbc.gridy = 3;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.weightx = 1.0;
-//				gbc.weighty = 0.5;
-				gbc.anchor = GridBagConstraints.PAGE_START;
+				gbc.anchor = GridBagConstraints.LINE_START;
 				solverPanel.add(getStopButton(), gbc);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -579,7 +601,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	/**
 	 * Comment
 	 */
-	private void solverTypeComboBox_ActionPerformed() {
+	private void optimizationMethodComboBox_ActionPerformed() {
 		if (fieldParameterEstimationTask==null){
 			return;
 		}
@@ -600,7 +622,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	public void updateInterface(boolean bSolving) {
 		getPlotButton().setEnabled(!bSolving);
 		getSaveSolutionAsNewSimButton().setEnabled(!bSolving);
-		getEvaluateConfidenceIntervalButton().setEnabled(!bSolving);
+//		getEvaluateConfidenceIntervalButton().setEnabled(!bSolving);
 		getSolveButton().setEnabled(!bSolving);
 		getStopButton().setEnabled(bSolving);
 

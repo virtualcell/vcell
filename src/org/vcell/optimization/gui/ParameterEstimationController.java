@@ -437,7 +437,7 @@ public class ParameterEstimationController {
 							optSolverUpdater.setDelay(100);
 							optSolverUpdater.start();
 							setRunning(true);
-							optResultSet = CopasiOptimizationSolver.solve(optSpec,optSolverSpec,optSolverCallbacks);
+							optResultSet = CopasiOptimizationSolver.solve(parameterEstimationTask);
 						} catch (final Exception e){
 							e.printStackTrace(System.out);
 							parameterEstimationTask.appendSolverMessageText("Failed " + e.getMessage());
