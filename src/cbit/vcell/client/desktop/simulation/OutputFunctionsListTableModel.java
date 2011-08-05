@@ -184,6 +184,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		case COLUMN_OUTPUTFN_EXPRESSION:{
 			try {
 				Expression exp = new Expression((String)aValue);
+				if (exp.compareEqual(outputFunction.getExpression())) {
+					return;
+				}
 				exp.bindExpression(outputFunctionContext);
 				VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(outputFunction, exp);
 				if (!vt.compareEqual(outputFunction.getFunctionType())) {

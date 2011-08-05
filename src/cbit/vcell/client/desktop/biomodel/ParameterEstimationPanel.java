@@ -106,8 +106,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 				mapButton_ActionPerformed();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == referenceDataPanel && (evt.getPropertyName().equals("referenceData"))) 
-				referenceDataPanel_ReferenceData(referenceDataPanel.getReferenceData());
 			if (fieldParameterEstimationTask != null && evt.getSource() == getParameterEstimationTask().getModelOptimizationSpec() && (evt.getPropertyName().equals("referenceData"))) 
 				referenceDataPanel.setParameterEstimationTask(getParameterEstimationTask());
 			if (evt.getSource() == fieldParameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
@@ -176,7 +174,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		getCopyButton().addActionListener(eventHandler);
 		getAnalysisTaskComboBox().addActionListener(eventHandler);
 		
-		referenceDataPanel.addPropertyChangeListener(eventHandler);
 		getMapButton().addActionListener(eventHandler);
 		getSaveSolutionAsNewSimButton().addActionListener(eventHandler);
 		getEvaluateConfidenceIntervalButton().addActionListener(eventHandler);
@@ -641,21 +638,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private void optimizationResultSet_This(OptimizationResultSet optResultSet) {
 		String message = displayResults(optResultSet);
 		getParameterEstimationTask().appendSolverMessageText("\n"+message);
-		if (optResultSet!=null){
-			getSaveSolutionAsNewSimButton().setEnabled(true);
-		}else{
-			getSaveSolutionAsNewSimButton().setEnabled(false);
-		}
-	}
-
-
-	/**
-	 * Comment
-	 */
-	private void referenceDataPanel_ReferenceData(ReferenceData arg1) {
-		if (getParameterEstimationTask()!=null && getParameterEstimationTask().getModelOptimizationSpec().getReferenceData()!=arg1){
-			getParameterEstimationTask().getModelOptimizationSpec().setReferenceData(arg1);
-		}
+		getSaveSolutionAsNewSimButton().setEnabled(optResultSet!=null);
 	}
 
 	/**

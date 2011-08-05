@@ -6,6 +6,8 @@ import java.io.StringWriter;
 
 import org.jdom.CDATA;
 import org.jdom.Element;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
@@ -16,6 +18,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
 import cbit.vcell.opt.ElementWeights;
@@ -24,6 +27,7 @@ import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
@@ -48,6 +52,33 @@ import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 
 public class OptXmlWriter {
+	
+	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask){
+		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
+
+		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
+		if (optimizationSpec.isComputeProfileDistributions()) {
+			optProblemDescriptionElement.setAttribute(OptXmlTags.ComputeProfileDistributions_Attr, optimizationSpec.isComputeProfileDistributions() + "");
+		}
+		optProblemDescriptionElement.addContent(getParameterDescriptionXML(optimizationSpec));
+		Element dataElement = getDataXML((SimpleReferenceData)parameterEstimationTask.getModelOptimizationSpec().getReferenceData());
+		optProblemDescriptionElement.addContent(dataElement);
+		Element element = getCopasiOptimizationMethodXML(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod());
+		optProblemDescriptionElement.addContent(element);		
+		return optProblemDescriptionElement;
+	}
+
+	public static Element getCopasiOptimizationMethodXML(CopasiOptimizationMethod copasiOptimizationMethod) {
+		Element element = new Element(OptXmlTags.CopasiOptimizationMethod);
+		element.setAttribute(OptXmlTags.Name_Attr, copasiOptimizationMethod.getType().getName());
+		for (CopasiOptimizationParameter cop : copasiOptimizationMethod.getParameters()) {
+			Element e = new Element(OptXmlTags.CopasiOptimizationParameter);
+			e.setAttribute(OptXmlTags.Name_Attr, cop.getType().getDisplayName());
+			e.setAttribute(OptXmlTags.Value_Attr, "" + cop.getValue());
+			element.addContent(e);
+		}
+		return element;
+	}
 	
 	public static Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec){
 		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
