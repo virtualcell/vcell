@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Chapter 1    Reaction Diagram" target="target1">
+
+	<introduction>blah blah introduction
+		<link target="target2"> yahoo </link>
+		below is a testing image.
+		<imgReference target = "vcell.gif"> vcell logo </imgReference>
+		after the image. again blah blah
+	</introduction>
+	
+	<appearance>blah blah appearance
+	1234567890 
+	</appearance>
+	
+	<operations>blah blah operation</operations>
+	
+	<properties>blah blah properties</properties>
+
+</page>
+
+</vcelldoc>

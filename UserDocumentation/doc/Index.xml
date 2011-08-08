@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE index
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/index_1_0.dtd">
+
+<index version="1.0">
+<indexitem text="Overview">
+    <indexitem target="intro" text="Background"/>  
+    <indexitem target="intro" text="Functionalities"/>
+    <indexitem target="requirements" text="System requirements"/>    
+    <indexitem target="installation" text="Installation"/>
+</indexitem>
+<indexitem text="Data Operations">
+    <indexitem target="loading" text="Load"/>  
+    <indexitem target="adjusting" text="Modify"/>
+    <indexitem target="definingROI" text="Define ROIs"/>
+    <indexitem target="primaryFit" text="Primary Fit"/>
+    <indexitem target="refinedFit" text="Refined Fit"/>    
+    <indexitem target="fitModel" text="Validate"/>    
+</indexitem>
+</index>

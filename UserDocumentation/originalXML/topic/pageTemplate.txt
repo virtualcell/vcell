@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="title" target="target">
+
+	<introduction>
+	
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</introduction>
+	
+	<appearance>
+	
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</appearance>
+	
+	<operations>
+
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+
+	</operations>
+	
+	<properties>
+	
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</properties>
+
+</page>
+
+</vcelldoc>
