@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+
+  <mapID target="toplevelfolder" url="topic/toplevel.gif"/>
+  
+  <mapID target="General" url="topic/chapter_1/page1.htm"/>
+  
+  <mapID target="Top_Menu" url="topic/chapter_1/page1_1.htm"/>
+  <mapID target="File" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="View" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="Server" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="Window" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="Tools" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="Help" url="topic/chapter_1/page1_1_1.htm"/>
+  <mapID target="General_navigation" url="topic/chapter_1/page1_2.htm"/>
+  
+  <mapID target="Physiology" url="topic/chapter_2/page2.htm"/>
+  
+  <mapID target="Physiological_Structures" url="topic/chapter_2/page2_1.htm"/>
+  <mapID target="Structure_Diagram" url="topic/chapter_2/page2_1_1.htm"/>
+  <mapID target="Pathway_Links" url="topic/chapter_2/page2_1_1_1.htm"/>
+  <mapID target="Properties_Pane2112" url="topic/chapter_2/page2_1_1_2.htm"/>
+  <mapID target="Species_Properites" url="topic/chapter_2/page2_1_1_2.htm"/>
+  <mapID target="Structure_Properties" url="topic/chapter_2/page2_1_1_2.htm"/>
+  <mapID target="Structure_Tabular" url="topic/chapter_2/page2_1_2.htm"/>
+  <mapID target="Properties_Pane2121" url="topic/chapter_2/page2_1_2_1.htm"/>
+  <mapID target="Species_Property" url="topic/chapter_2/page2_1_2_1.htm"/>
+  <mapID target="Structure_Property" url="topic/chapter_2/page2_1_2_1.htm"/>
+  
+  <mapID target="Species" url="topic/chapter_2/page2_2.htm"/>
+  <mapID target="Species_View" url="topic/chapter_2/page2_2_1.htm"/>
+  <mapID target="Properties_Pane2211" url="topic/chapter_2/page2_2_1_1.htm"/>
+  <mapID target="Species_Prop" url="topic/chapter_2/page2_2_1_1.htm"/>
+  
+  <mapID target="Reactions" url="topic/chapter_2/page2_3.htm"/>
+  <mapID target="Reaction_Tabular" url="topic/chapter_2/page2_3_1.htm"/>
+  <mapID target="Properties_Pane2311" url="topic/chapter_2/page2_3_1_1.htm"/>
+  <mapID target="Reaction_Property" url="topic/chapter_2/page2_3_1_1.htm"/>
+  <mapID target="Reaction_Diagrammatic" url="topic/chapter_2/page2_3_2.htm"/>
+  <mapID target="Properties_Pane2321" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  <mapID target="Reaction_Prop" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  <mapID target="Membrane_Flux" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  <mapID target="Stoichiometry" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  <mapID target="Species_Pro" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  <mapID target="Structure_Property" url="topic/chapter_2/page2_3_2_1Btw.htm"/>
+  
+  
+  
+  <mapID target="Applications" url="topic/chapter_3/page3.htm"/>
+  
+  <mapID target="Geometry" url="topic/chapter_3/page3_1.htm"/>
+  <mapID target="Structure_Mapping" url="topic/chapter_3/page3_1_1.htm"/>
+  <mapID target="Properties_Pane3111" url="topic/chapter_3/page3_1_1_1.htm"/>
+  <mapID target="Object_Property" url="topic/chapter_3/page3_1_1_1.htm"/>
+  <mapID target="Defining_Geometry" url="topic/chapter_3/page3_1_2.htm"/>
+  <mapID target="Geometry_from_analytic" url="topic/chapter_3/page3_1_2_1.htm"/>
+  <mapID target="Geometry_from_Images" url="topic/chapter_3/page3_1_2_2.htm"/>
+  <mapID target="Imported_Images" url="topic/chapter_3/page3_1_2_2.htm"/>
+  <mapID target="Segmenting_Images" url="topic/chapter_3/page3_1_2_2.htm"/>
+  <mapID target="Draw_your_own" url="topic/chapter_3/page3_1_2_2.htm"/>
+  <mapID target="Structure_Mapping_Spatial" url="topic/chapter_3/page3_1_3.htm"/>
+  <mapID target="Properties_Pane3131" url="topic/chapter_3/page3_1_3_1.htm"/>
+  
+  <mapID target="Specifications" url="topic/chapter_3/page3_2.htm"/>
+  <mapID target="Species_Spec" url="topic/chapter_3/page3_2_1.htm"/>
+  <mapID target="Initial_conditions" url="topic/chapter_3/page3_2_1_1.htm"/>
+  <mapID target="Field_Data" url="topic/chapter_3/page3_2_1_1.htm"/>
+  <mapID target="Functions" url="topic/chapter_3/page3_2_1_1.htm"/>
+  <mapID target="Properties_Pane3212" url="topic/chapter_3/page3_2_1_2.htm"/>
+  <mapID target="Initial_condition_Properties_Pane" url="topic/chapter_3/page3_2_1_2.htm"/>
+
+  <mapID target="Protocols" url="topic/chapter_3/page3_3.htm"/>
+  <mapID target="Events" url="topic/chapter_3/page3_3_1.htm"/>
+  <mapID target="Properties_Pane3311" url="topic/chapter_3/page3_3_1_1.htm"/>
+  <mapID target="Electrical" url="topic/chapter_3/page3_3_2.htm"/>
+  <mapID target="Properties_Pane3321" url="topic/chapter_3/page3_3_2_1.htm"/>
+  
+  <mapID target="Simulations" url="topic/chapter_3/page3_4.htm"/>
+  <mapID target="Simulations_topic" url="topic/chapter_3/page3_4_1.htm"/>
+  <mapID target="Properties_Pane3411" url="topic/chapter_3/page3_4_1_1.htm"/>
+  <mapID target="Simulation_Properties_Pane" url="topic/chapter_3/page3_4_1_1.htm"/>
+  <mapID target="Edit_Simulations" url="topic/chapter_3/page3_4_1_2.htm"/>
+  <mapID target="Run_Simulations" url="topic/chapter_3/page3_4_1_3.htm"/>
+  <mapID target="Simulation_Results" url="topic/chapter_3/page3_4_1_4.htm"/>
+  <mapID target="Output_Functions" url="topic/chapter_3/page3_4_2.htm"/>
+  <mapID target="Properties_Pane3421" url="topic/chapter_3/page3_4_2_1.htm"/>
+  <mapID target="Math_Equations" url="topic/chapter_3/page3_4_3.htm"/>
+  <mapID target="Properties_Pane3431" url="topic/chapter_3/page3_4_3_1.htm"/>
+  <mapID target="Math_Description" url="topic/chapter_3/page3_4_4.htm"/>
+  <mapID target="Properties_Pane3441" url="topic/chapter_3/page3_4_4_1.htm"/>
+  
+  <mapID target="Results" url="topic/chapter_4/page4.htm"/>
+  
+  <mapID target="View_Data" url="topic/chapter_4/page4_1.htm"/>
+  <mapID target="Output_Functions" url="topic/chapter_4/page4_1_1.htm"/>
+  <mapID target="Export_Data" url="topic/chapter_4/page4_2.htm"/>
+  <mapID target="Post_Processing" url="topic/chapter_4/page4_3.htm"/>
+  
+  <mapID target="Parameters" url="topic/chapter_5/page5.htm"/>
+  
+  <mapID target="Parameters_Functions" url="topic/chapter_5/page5_1.htm"/>
+  <mapID target="Properties_Pane511" url="topic/chapter_5/page5_1_1.htm"/>
+  <mapID target="Predefined_Constants" url="topic/chapter_5/page5_2.htm"/>
+  
+  <mapID target="Pathways" url="topic/chapter_6/page6.htm"/>
+  
+  <mapID target="Pathways_Diagram" url="topic/chapter_6/page6_1.htm"/>
+  <mapID target="Pathways_Objects" url="topic/chapter_6/page6_2.htm"/>
+  <mapID target="BioPax" url="topic/chapter_6/page6_3.htm"/>
+  
+  <mapID target="Database_Sources" url="topic/chapter_7/page7.htm"/>
+  
+  <mapID target="VCell_Database" url="topic/chapter_7/page7_1.htm"/>
+  <mapID target="BioModels" url="topic/chapter_7/page7_1_1.htm"/>
+  <mapID target="Properties_Pane7111" url="topic/chapter_7/page7_1_1_1.htm"/>
+  <mapID target="Database_File_Properties" url="topic/chapter_7/page7_1_1_1.htm"/>
+  <mapID target="Math_Models" url="topic/chapter_7/page7_1_2.htm"/>
+  <mapID target="Geometries" url="topic/chapter_7/page7_1_3.htm"/>
+ 
+  <mapID target="BioModels_Net" url="topic/chapter_7/page7_2.htm"/>
+  <mapID target="Search" url="topic/chapter_7/page7_2_1.htm"/>
+  <mapID target="Properties_Pane722" url="topic/chapter_7/page7_2_2.htm"/>
+  <mapID target="Pathway_Properties" url="topic/chapter_7/page7_2_2.htm"/>
+  
+  <mapID target="Pathway_Commons" url="topic/chapter_7/page7_3.htm"/>
+  <mapID target="Search_Commons" url="topic/chapter_7/page7_3_1.htm"/>
+</map>
