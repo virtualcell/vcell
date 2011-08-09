@@ -1314,7 +1314,7 @@ private void changeSize(TopLevelWindowManager requster,FieldDataFileOperationSpe
 				int ysize = (int)((double)fdfos.isize.getY()*scaleFactor);
 				if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
 					//resize each z section to xsize,ysize
-				    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance( (double)xsize/(double)fdfos.isize.getX(),  (double)ysize/(double)fdfos.isize.getY() ); 
+				    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor); 
 				    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
 					short[][][] resizeData = new short[1][1][fdfos.isize.getZ()*xsize*ysize];
 					BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
