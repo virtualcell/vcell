@@ -16,6 +16,11 @@ import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -1116,7 +1121,6 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						fdfos.extent = extent;
 						fdfos.isize = isize;
 						fdfos.shortSpecData = new short[][][] {dataToSegment};
-
 					}else{
 						if(numChannels > 1){
 							bMergeChannels = ClientRequestManager.askMergeChannels(guiParent, imageFile, numChannels);
@@ -1146,7 +1150,9 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels);
 						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,new Integer(userPreferredTime));
 					}
-					
+					if(fdfos.isize.getZ() > 1){
+						changeSize(requester,fdfos);
+					}
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
@@ -1275,6 +1281,62 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}
 	return tasksV.toArray(new AsynchClientTask[0]);
+}
+
+private void changeSize(TopLevelWindowManager requster,FieldDataFileOperationSpec fdfos) throws Exception{
+//	String initialValue = fdfos.isize.getX()+","+fdfos.isize.getY();
+	final int XYSIZE = fdfos.isize.getX()*fdfos.isize.getY();
+	try{
+		do{
+			//If you want to scale down the size of the imported image to improve performance
+			//please enter a scale factor below (between 1 and 100).
+			String result = DialogUtils.showInputDialog0(requster.getComponent(),
+				"Imported image size:\n( x,y,z = "+
+				fdfos.isize.getX()+","+fdfos.isize.getY()+","+fdfos.isize.getZ()+
+				" -- total="+fdfos.isize.getX()*fdfos.isize.getY()*fdfos.isize.getZ()+")\n"+
+				"If you want to scale down the size of the imported image to improve performance please enter a scale factor below (less than 1.0).",
+				"1.0"
+			);			
+			String tempResult = result;
+			try{
+				if(result == null || result.length() == 0){
+					result = "";
+					throw new Exception("No size values entered.");
+				}
+//				int xsize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
+//				tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
+//				int ysize = Integer.parseInt(tempResult);
+				double scaleFactor = Double.parseDouble(tempResult);
+				if(scaleFactor <= 0 || scaleFactor > 1.0){
+					throw new Exception("Enter scale factor > 0 and <= 1.0");
+				}
+				int xsize = (int)((double)fdfos.isize.getX()*scaleFactor);
+				int ysize = (int)((double)fdfos.isize.getY()*scaleFactor);
+				if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
+					//resize each z section to xsize,ysize
+				    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance( (double)xsize/(double)fdfos.isize.getX(),  (double)ysize/(double)fdfos.isize.getY() ); 
+				    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
+					short[][][] resizeData = new short[1][1][fdfos.isize.getZ()*xsize*ysize];
+					BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
+					BufferedImage scaledImage = new BufferedImage(xsize,ysize, BufferedImage.TYPE_USHORT_GRAY);
+					for (int z = 0; z < fdfos.isize.getZ(); z++) {
+						short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
+						System.arraycopy(fdfos.shortSpecData[0][0], z*XYSIZE, originalImageBuffer, 0, XYSIZE);
+						scaleAffineTransformOp.filter( originalImage, scaledImage);
+					    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
+					    System.arraycopy(scaledImageBuffer, 0, resizeData[0][0], z*xsize*ysize, xsize*ysize);
+					}
+					fdfos.isize = new ISize(xsize, ysize, fdfos.isize.getZ());
+					fdfos.shortSpecData = resizeData;
+				}
+				break;
+			}catch(Exception e){
+				DialogUtils.showErrorDialog(requster.getComponent(), "Error entering resize values\n"+e.getMessage(), e);
+			}
+		}while(true);
+	}catch(UtilCancelException e2){
+		throw UserCancelException.CANCEL_GENERIC;
+	}
 }
 /**
  * Insert the method's description here.
