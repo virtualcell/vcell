@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modelopt;
+import org.vcell.optimization.DefaultOptSolverCallbacks;
 import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -35,7 +36,7 @@ public class ParameterEstimationTask extends AnalysisTask {
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null;
 	private transient MathSymbolMapping fieldMathSymbolMapping = null;
 	private transient OptimizationResultSet fieldOptimizationResultSet = null;
-	private transient OptSolverCallbacks fieldOptSolverCallbacks = null;
+	private transient OptSolverCallbacks fieldOptSolverCallbacks = new DefaultOptSolverCallbacks();
 	private transient java.lang.String fieldSolverMessageText = new String();
 	private SimulationContext simulationContext = null;
 

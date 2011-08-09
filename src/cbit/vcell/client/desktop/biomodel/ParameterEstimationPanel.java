@@ -38,6 +38,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -57,7 +58,6 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.SymbolTableEntryListCellRenderer;
 import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
@@ -171,6 +171,10 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		tabbedPane = new javax.swing.JTabbedPane();
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.setName("JTabbedPane1");
+		getparameterMappingPanel().setBorder(GuiConstants.TAB_PANEL_BORDER);
+		referenceDataPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		getDataMappingPanel().setBorder(GuiConstants.TAB_PANEL_BORDER);
+		runTaskPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		tabbedPane.addTab(ParameterEstimationPanelTabID.parameters.title, getparameterMappingPanel());
 		tabbedPane.addTab(ParameterEstimationPanelTabID.experimental_data_import.title, referenceDataPanel);
 		tabbedPane.addTab(ParameterEstimationPanelTabID.experimental_data_mapping.title, getDataMappingPanel());

@@ -123,7 +123,7 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 				arg_progressDialogListener.cancelButton_actionPerformed(newEvent);
 			}
 			if (bCancelable) {
-				dialog.dispose();
+				getDialog().dispose();
 				interrupt();
 				nonswingThread.interrupt();
 			}
@@ -131,10 +131,32 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 	};
 }
 
-private ProgressDialog getDialog() {
+public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thread arg_nonswingThread, boolean inputBlocking, 
+		boolean knowsProgress, boolean cancelable, final ProgressDialogListener arg_progressDialogListener) {
+	this.requester = requester;
+	this.dialog = customDialog;
+	this.nonswingThread = arg_nonswingThread;
+	this.inputBlocking = inputBlocking;
+	this.knowsProgress = knowsProgress;
+	this.bCancelable = cancelable;
+	this.progressDialogListener = new ProgressDialogListener() {
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			if (arg_progressDialogListener != null) {
+				arg_progressDialogListener.cancelButton_actionPerformed(newEvent);
+			}
+			if (bCancelable) {
+				getDialog().dispose();
+				interrupt();
+				nonswingThread.interrupt();
+			}
+		}
+	};
+}
+
+protected ProgressDialog getDialog() {
 	if (dialog == null) {
 		Frame owner = JOptionPane.getFrameForComponent(requester);
-		dialog = new ProgressDialog(owner);
+		dialog = new DefaultProgressDialog(owner);
 		if (bCancelable && progressDialogListener!=null){
 			dialog.setCancelButtonVisible(true);
 			dialog.addProgressDialogListener(progressDialogListener);

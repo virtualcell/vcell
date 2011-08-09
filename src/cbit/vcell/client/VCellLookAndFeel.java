@@ -19,7 +19,7 @@ import cbit.vcell.resource.ResourceUtil;
 
 public class VCellLookAndFeel {
 	
-	private static Font defaultFont = null;
+	public static Font defaultFont = null;
 	public static void setVCellLookAndFeel() {
 		if (!ResourceUtil.bLinux) {
 			try {
