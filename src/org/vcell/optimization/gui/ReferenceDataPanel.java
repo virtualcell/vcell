@@ -12,7 +12,6 @@ package org.vcell.optimization.gui;
 import java.io.File;
 
 import javax.swing.JOptionPane;
-import javax.swing.border.TitledBorder;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -427,17 +426,10 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("ReferenceDataPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(670, 222);
-		TitledBorder ivjLocalBorder = new TitledBorder("Time Series Data");
-		ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
-		setBorder(ivjLocalBorder);
 
 		java.awt.GridBagConstraints constraintsmultisourcePlotPane = new java.awt.GridBagConstraints();
 		constraintsmultisourcePlotPane.gridx = 0; constraintsmultisourcePlotPane.gridy = 0;
@@ -457,8 +449,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**

@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.ProgressDialogListener;
 
 import swingthreads.SwingWorker;
@@ -63,12 +64,17 @@ public static void dispatch(Component requester, Hashtable<String, Object> hash,
 	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+	dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final ProgressDialog customDialog,
 		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
 	// check tasks - swing non-blocking can be only at the end
 //	if (bInProgress) {
@@ -93,7 +99,11 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		private Frame frameParent = null;
 		public Object construct() {
 			if (bShowProgressPopup) {
-				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
+				if (customDialog == null) {
+					pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
+				} else {
+					pp = new AsynchProgressPopup(requester, customDialog, Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
+				}
 				if (bInputBlocking) {
 					pp.startKeepOnTop();
 				} else {
