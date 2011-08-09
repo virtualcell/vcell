@@ -237,7 +237,7 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String modelSbml, String optProblemXml, OptSolverCallbacks optSolverCallbacks);
 	
-public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
+public static void solve(ParameterEstimationTask parameterEstimationTask) 
 						throws IOException, ExpressionException, OptimizationException {
 	OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
 	OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
@@ -279,8 +279,7 @@ public static OptimizationResultSet solve(ParameterEstimationTask parameterEstim
 			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, simSymbolTable, parameterNames, parameterValues);
 		}	
 		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, odeSolverResultSet);
-		return optResultSet;
-		
+		parameterEstimationTask.setOptimizationResultSet(optResultSet);
 	} catch (Throwable e){
 		e.printStackTrace(System.out);
 		throw new OptimizationException(e.getMessage());
