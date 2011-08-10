@@ -494,7 +494,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 					rowDataHiddenIndex[i][hiddenColumnIndex] = i;
 				}
 			}
-			VCellSortTableModel<Object[]> tableModel = new VCellSortTableModel<Object[]>(columnNames) {
+			VCellSortTableModel<Object[]> tableModel = new VCellSortTableModel<Object[]>(columnNames, rowDataOrig.length) {
 				@Override
 				public boolean isSortable(int col) {
 					if (rowSortComparator != null) {
@@ -519,17 +519,16 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 					};
 				}
 			};
-			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
 			final JSortTable table = new JSortTable();
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			table.setModel(tableModel);
+			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
 			if(listSelectionModel_SelectMode != null){
 				table.setSelectionMode(listSelectionModel_SelectMode);
 			}else{
 				table.setRowSelectionAllowed(false);
 				table.setColumnSelectionAllowed(false);
 			}
-			JScrollPane scrollPane = new JScrollPane(table);
 			table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 			table.disableUneditableForeground();
 						
@@ -562,12 +561,12 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			TableListResult tableListResult = new TableListResult();
 			if(options == null){
-				if(showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler) != JOptionPane.OK_OPTION){
+				if(showComponentOKCancelDialog(requester, table.getEnclosingScrollPane(), title,tableListOKEnabler) != JOptionPane.OK_OPTION){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				tableListResult.selectedTableRows = table.getSelectedRows();
 			}else{
-				tableListResult.selectedOption = showOptionsDialog(requester, scrollPane, JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler,title);
+				tableListResult.selectedOption = showOptionsDialog(requester, table.getEnclosingScrollPane(), JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler,title);
 				tableListResult.selectedTableRows = table.getSelectedRows();
 			}
 			if(rowSortComparator != null){
