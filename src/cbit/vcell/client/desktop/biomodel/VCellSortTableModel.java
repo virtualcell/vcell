@@ -36,7 +36,7 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	protected List<Issue> issueList = new ArrayList<Issue>();
 	protected ScrollTable ownerTable = null;
 	protected int currentPageIndex = 0;
-	private static int MAX_ROWS_PER_PAGE = 200;
+	private int MAX_ROWS_PER_PAGE = 200;
 	private List<T> allRows = Collections.synchronizedList(new ArrayList<T>());
 
 	private static final String PROPERTY_NAME_SORT_PREFERENCE = "sortPreference";
@@ -53,6 +53,10 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	}
 	public VCellSortTableModel(String[] cols) {
 		this(null, cols);
+	}
+	public VCellSortTableModel(String[] cols,int MAX_ROWS_PER_PAGE) {
+		this(null, cols);
+		this.MAX_ROWS_PER_PAGE = MAX_ROWS_PER_PAGE;
 	}	
 	public VCellSortTableModel(ScrollTable table, String[] cols) {
 		ownerTable = table;
