@@ -1150,9 +1150,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels);
 						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,new Integer(userPreferredTime));
 					}
-					if(fdfos.isize.getZ() > 1){
-						changeSize(requester,fdfos);
-					}
+					changeSize(requester,fdfos);
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
