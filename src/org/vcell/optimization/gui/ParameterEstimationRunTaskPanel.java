@@ -808,9 +808,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		DialogUtils.showComponentCloseDialog(this, scrollPane, "Profile Likelihood of Parameters");
 	}
 	
-	private Throwable solveException = null;
 	private void solve() {
-		solveException = null;
 		CopasiOptimizationMethod com = optimizationMethodParameterTableModel.copasiOptimizationMethod;
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(com);
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
@@ -841,45 +839,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				solveException = null;
-				Thread t = new Thread() {
-					public void run() {
-						try {
-							CopasiOptimizationSolver.solve(parameterEstimationTask);
-							System.out.println("OK");
-						} catch (final Exception e){
-							solveException = e;
-						}
-					}
-				};
-				t.setName("Parameter Estimation");
-				t.start();
+				CopasiOptimizationSolver.solve(parameterEstimationTask);
 			}
-		};
-				
-		AsynchClientTask task3 = new AsynchClientTask("showing dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if (solveException != null) {
-					String message = solveException.getMessage();
-					solveException = null;
-					throw new Exception(message);
-				}
-			}
-		};
 
-		AsynchClientTask task4 = new AsynchClientTask("showing results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, true) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if (solveException != null) {
-					throw new Exception(solveException);
-				}
-				OptimizationResultSet optResultSet = parameterEstimationTask.getOptimizationResultSet();
-				if (optResultSet != null) {
-				}				
-			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3, task4}, getRunStatusDialog(), true, true, true, null, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, getRunStatusDialog(), true, true, true, null, false);
 	}
 	
 	private ProfileSummaryData[] getSummaryFromOptSolverResultSet(OptSolverResultSet osrs) throws MappingException, MathException, MatrixException, ExpressionException, ModelException 

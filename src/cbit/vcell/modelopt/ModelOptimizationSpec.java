@@ -586,6 +586,7 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 		//parameter mapping spec already exist
 		if(memoryParameterMappingSpec != null)
 		{
+			parameterMappingSpecs[i].setCurrent(memoryParameterMappingSpec.getCurrent());
 			parameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
 			parameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
 			parameterMappingSpecs[i].setSelected(memoryParameterMappingSpec.isSelected());
