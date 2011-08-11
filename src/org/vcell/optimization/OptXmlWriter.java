@@ -11,6 +11,8 @@
 package org.vcell.optimization;
 
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -18,17 +20,22 @@ import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.Variable;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
 import cbit.vcell.opt.ElementWeights;
@@ -37,7 +44,6 @@ import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
@@ -48,6 +54,7 @@ import cbit.vcell.opt.TimeWeights;
 import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -60,20 +67,38 @@ import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
+import cbit.vcell.xml.XmlParseException;
 
 public class OptXmlWriter {
 	
-	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask){
+	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask) throws IOException, XmlParseException, ExpressionException{
 		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 
 		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
+		
+		File modelSbmlFile = File.createTempFile("mathModel", ".xml", ResourceUtil.getVcellHome());
+		SimulationContext simulationContext = parameterEstimationTask.getSimulationContext();
+		simulationContext.refreshMathDescription();
+        MathModel vcellMathModel = new MathModel(null);
+        vcellMathModel.setMathDescription(simulationContext.getMathDescription());
+        //get math model string
+        String sbmlString = MathModel_SBMLExporter.getSBMLString(vcellMathModel, 2, 4);
+
+//		String modelSbml = XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, false, simulationContext, null);
+        
+        XmlUtil.writeXMLStringToFile(sbmlString, modelSbmlFile.getAbsolutePath(), true);
+        Element element = new Element(OptXmlTags.MathModelSbmlFile_Tag);
+        element.addContent(modelSbmlFile.getAbsolutePath());
+        optProblemDescriptionElement.addContent(element);
+
 		if (optimizationSpec.isComputeProfileDistributions()) {
 			optProblemDescriptionElement.setAttribute(OptXmlTags.ComputeProfileDistributions_Attr, optimizationSpec.isComputeProfileDistributions() + "");
 		}
 		optProblemDescriptionElement.addContent(getParameterDescriptionXML(optimizationSpec));
-		Element dataElement = getDataXML((SimpleReferenceData)parameterEstimationTask.getModelOptimizationSpec().getReferenceData());
+		Element dataElement = getCopasiDataXML(parameterEstimationTask);
 		optProblemDescriptionElement.addContent(dataElement);
-		Element element = getCopasiOptimizationMethodXML(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod());
+		
+		element = getCopasiOptimizationMethodXML(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod());
 		optProblemDescriptionElement.addContent(element);		
 		return optProblemDescriptionElement;
 	}
@@ -90,7 +115,7 @@ public class OptXmlWriter {
 		return element;
 	}
 	
-	public static Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec){
+	public static Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec) {
 		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
 		if (optimizationSpec.isComputeProfileDistributions()) {
 			optProblemDescriptionElement.setAttribute(OptXmlTags.ComputeProfileDistributions_Attr, optimizationSpec.isComputeProfileDistributions() + "");
@@ -168,7 +193,7 @@ public class OptXmlWriter {
 			}
 			if(explicitFitObjectiveFunction.getReferenceData() instanceof SimpleReferenceData)
 			{
-				Element dataElement = getDataXML((SimpleReferenceData)explicitFitObjectiveFunction.getReferenceData());
+				Element dataElement = getDataXML(explicitFitObjectiveFunction.getReferenceData());
 				objectiveFunctionElement.addContent(dataElement);
 			}
 			else
@@ -492,5 +517,63 @@ public class OptXmlWriter {
 			throw new OptimizationException("failed to create fv input file: "+e.getMessage());
 		}
 		return modelElement;
+	}
+	
+	public static Element getCopasiDataXML(ParameterEstimationTask parameterEstimationTask) throws IOException{
+		ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+		Element refDataElement = null; 
+		if(refData instanceof SimpleReferenceData)
+		{
+			refDataElement = new Element(OptXmlTags.SimpleReferenceData_Tag);
+		}
+		else if(refData instanceof SpatialReferenceData)
+		{
+			refDataElement = new Element(OptXmlTags.SpatialReferenceData_Tag);
+		}
+		
+		if(refDataElement != null)
+		{
+			// write variable declarations
+			// independent variable is t and dimension is 1, these are fixed.
+			Element timeVarElement = new Element(OptXmlTags.Variable_Tag);
+			timeVarElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Independent);
+			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
+			refDataElement.addContent(timeVarElement);
+			// check if t is at the first column
+			int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
+			if (timeIndex != 0) {
+				throw new RuntimeException("t must be the first column");
+			}
+			// add all other dependent variables, recall that the dependent variables start from 2nd column onward in reference data
+			File expDataFile = File.createTempFile("expData", ".txt", ResourceUtil.getVcellHome());
+			PrintWriter	pw = new PrintWriter(expDataFile);	
+			pw.print("# Time\t");			
+			for (int i = 1; i < refData.getNumDataColumns(); i++) {
+				ReferenceDataMappingSpec rdms = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpec(refData.getColumnNames()[i]);
+				
+				Element variableElement = new Element(OptXmlTags.Variable_Tag);
+				variableElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Dependent);
+				variableElement.setAttribute(OptXmlTags.VariableName_Attr,rdms.getModelObject().getName());
+				refDataElement.addContent(variableElement);
+				
+				pw.print(refData.getColumnNames()[i] + "\t");
+			}
+			pw.println();
+			
+			// write data
+			for (int i = 0; i < refData.getNumDataRows(); i ++) {
+				double[] data = refData.getDataByRow(i);
+				for (int j = 0; j < data.length; j++) {
+					pw.print(data[j] + "\t");
+				}
+				pw.println();
+			}
+			
+			pw.close();
+			Element dataFileElement = new Element(OptXmlTags.ExperimentalDataFile_Tag);
+			dataFileElement.addContent(expDataFile.getAbsolutePath());
+			refDataElement.addContent(dataFileElement);
+		}
+		return refDataElement;
 	}
 }

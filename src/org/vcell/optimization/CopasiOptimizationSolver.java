@@ -235,22 +235,17 @@ public class CopasiOptimizationSolver {
 		
 	}
 	
-	private static native String solve(String modelSbml, String optProblemXml, OptSolverCallbacks optSolverCallbacks);
+	private static native String solve(String optProblemXml, OptSolverCallbacks optSolverCallbacks);
 	
 public static void solve(ParameterEstimationTask parameterEstimationTask) 
 						throws IOException, ExpressionException, OptimizationException {
 	OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
 	OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
-
-	Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
-	String modelSbml = null;
 	try {		
+		Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
 		String inputXML = XmlUtil.xmlToString(optProblemXML);
 		System.out.println(inputXML);
-//		PrintWriter pw = new PrintWriter("c:\\test10.xml");
-//		pw.println(inputXML);
-//		pw.close();
-		String optResultsXML = solve(modelSbml, inputXML, optSolverCallbacks);
+		String optResultsXML = solve(inputXML, optSolverCallbacks);
 		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
 		ODESolverResultSet odeSolverResultSet = null;
 		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){

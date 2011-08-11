@@ -19,6 +19,9 @@ public class OptXmlTags {
 	public static final String Value_Attr = "value";
 	public static final String Name_Attr = "name";
 	
+	public static final String MathModelSbmlFile_Tag = "MathModelSbmlFile";
+	public static final String ExperimentalDataFile_Tag = "ExperimentalDataFile";
+	
 	public static final String ComputeProfileDistributions_Attr = "ComputeProfileDistributions";
 
 	public static final String ObjectiveFunction_Tag = "objectiveFunction";
