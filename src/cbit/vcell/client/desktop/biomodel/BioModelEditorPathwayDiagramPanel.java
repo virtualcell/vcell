@@ -535,7 +535,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addTab("Pathway Diagram", VCellIcons.diagramIcon, graphTabPanel);
 		tabbedPane.addTab("Pathway Objects", VCellIcons.tableIcon, pathwayModelTable.getEnclosingScrollPane());
-		tabbedPane.addTab("BioPAX Source", null, sourceTabPanel);
+		tabbedPane.addTab("BioPAX Summary", null, sourceTabPanel);
 
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
