@@ -44,8 +44,7 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 //			System.err.println(db);
 			return null;
 		}
-		return urlHashtable.get(db_id) + id;
-
+		return urlHashtable.get(db_id).replace("%", id);
 	}
 	public void setDb(String db) {
 		this.db = db;

@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
@@ -156,13 +157,22 @@ public class PathwayModelTableModel extends VCellSortTableModel<BioPaxObject> im
 		if (bioModel != null) {			
 			bioPaxObjectList = new ArrayList<BioPaxObject>();
 			if (searchText == null || searchText.length() == 0) {
-				bioPaxObjectList.addAll(bioModel.getPathwayModel().getBiopaxObjects());
+				for (BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
+					if ((bpObject instanceof Control)) {
+						continue;
+					}
+					bioPaxObjectList.add(bpObject);
+				}
+//				bioPaxObjectList.addAll(bioModel.getPathwayModel().getBiopaxObjects());
 			} else { 
 				String lowerCaseSearchText = searchText.toLowerCase();			
 				for (BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
-					if (getLabel(bpObject).toLowerCase().contains(lowerCaseSearchText)				
+					if ((bpObject instanceof Control)) {
+						continue;
+					}
+					if ((getLabel(bpObject).toLowerCase().contains(lowerCaseSearchText)				
 						|| getType(bpObject).toLowerCase().contains(lowerCaseSearchText) 
-						|| getLinkedModelObjectsDisplayText(bpObject).toLowerCase().contains(lowerCaseSearchText)) {
+						|| getLinkedModelObjectsDisplayText(bpObject).toLowerCase().contains(lowerCaseSearchText))) {
 						bioPaxObjectList.add(bpObject);
 					}
 				}

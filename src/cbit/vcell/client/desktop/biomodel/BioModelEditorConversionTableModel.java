@@ -67,8 +67,8 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	public static final int iColEntity = 2;
 	public static final int iColType = 3;
 	public static final int iColStoich = 4;
-	public static final int iColID = 5;
-	public static final int iColLocation = 6;
+	public static final int iColLocation = 5;
+	public static final int iColID = 6;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -85,7 +85,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 	public BioModelEditorConversionTableModel(EditorScrollTable table) {
 		super(table, new String[] {
 				"Interaction", "Type", "Entity Name", "Entity Type", 
-				"Stoich.\nCoef.", "  ID  ", "Location/Compartment"});
+				"Stoich.\nCoef.", "Location/Compartment", "  ID  "});
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
@@ -146,7 +146,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			editable = false;
 		}
 		// only allow users to edit the stoich and location
-		return ((iCol == iColStoich && editable) || iCol == iColLocation);
+		return ((iCol == iColStoich && editable) || iCol == iColLocation || iCol == iColID);
 	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
@@ -167,9 +167,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				if(valueNew instanceof String) {
 					ConversionTableRow conversonTableRow = getValueAt(iRow);
 					if(isValid(((String)valueNew).trim()))
-						conversonTableRow.setId(((String)valueNew).trim());
+						conversonTableRow.setId(getSafetyName(((String)valueNew).trim()));
 					else
-						conversonTableRow.setId((changeID(((String)valueNew).trim())));
+						conversonTableRow.setId(getSafetyName((changeID(((String)valueNew).trim()))));
 				}
 				break;
 			}
@@ -178,7 +178,8 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 					ConversionTableRow conversonTableRow = getValueAt(iRow);
 					conversonTableRow.setLocation(((Structure)valueNew).getName().trim());
 					// update id value
-					setValueAt(getLabel(conversonTableRow.getBioPaxObject())+"_"+((Structure)valueNew).getName().trim(),iRow,iColID);
+					setValueAt(getSafetyName(getLabel(conversonTableRow.getBioPaxObject()))+"_"+
+							getSafetyName(((Structure)valueNew).getName().trim()),iRow,iColID);
 				}
 				break;
 			}

@@ -25,30 +25,32 @@ public class PathwayXMLHelper {
 	
 	public static final Hashtable<String, String> urlHashtable = new Hashtable<String, String>(){
         {
-            put("PUBMED", "http://www.ncbi.nlm.nih.gov/pubmed?term=");
-            put("CPATH", "http://www.pathwaycommons.org/pc/record2.do?id=");
-            put("UNIPROT", "http://www.uniprot.org/uniprot/");
-            put("REF_SEQ", "http://www.ncbi.nlm.nih.gov/protein/");
-            put("GENE_SYMBOL", "http://www.ncbi.nlm.nih.gov/gene?term=");
-            put("ENTREZ_GENE", "http://www.ncbi.nlm.nih.gov/gene/");
-            put("REACTOME_STID", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID="); // only works for ST_IDs look like "REACT_12870" in REACTOME 
-            put("REACTOME_ID", "http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID="); // only works for IDs look like "180523" in REACTOME
-            put("ChEBI", "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=");
-            put("GENE_ONTOLOGY", "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:");
-            put("INTERPRO", "http://www.ebi.ac.uk/interpro/DisplayIproEntry?ac=");
-            put("OMIM", "http://www.ncbi.nlm.nih.gov/omim/");
-            put("TAXONOMY", "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=");
-            put("BIOMODELS", "http://www.ebi.ac.uk/biomodels-main/");
-            put("KEGG","http://www.genome.jp/dbget-bin/www_bget?cpd:");
-            put("EC-CODE", "http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=");
+            put("PUBMED", "http://www.ncbi.nlm.nih.gov/pubmed?term=%");
+            put("CPATH", "http://www.pathwaycommons.org/pc/record2.do?id=%");
+            put("UNIPROT", "http://www.uniprot.org/uniprot/%");
+            put("REF_SEQ", "http://www.ncbi.nlm.nih.gov/protein/%");
+            put("GENE_SYMBOL", "http://www.ncbi.nlm.nih.gov/gene?term=%");
+            put("ENTREZ_GENE", "http://www.ncbi.nlm.nih.gov/gene/%");
+            put("REACTOME_STID", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=%"); // only works for ST_IDs look like "REACT_12870" in REACTOME 
+            put("REACTOME_ID", "http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&ID=%"); // only works for IDs look like "180523" in REACTOME
+            put("ChEBI", "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=%");
+            put("GENE_ONTOLOGY", "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:%");
+            put("INTERPRO", "http://www.ebi.ac.uk/interpro/DisplayIproEntry?ac=%");
+            put("OMIM", "http://www.ncbi.nlm.nih.gov/omim/%");
+            put("TAXONOMY", "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=%");
+            put("BIOMODELS", "http://www.ebi.ac.uk/biomodels-main/%");
+            put("KEGG","http://www.genome.jp/dbget-bin/www_bget?cpd:%");
+            put("EC-CODE", "http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=%");
             
             // more
-            put("HUMANCYC", "http://biocyc.org/HUMAN/NEW-IMAGE?object=");
-            put("METACYC", "http://biocyc.org/META/NEW-IMAGE?object=");
-            put("PUBCHEM","http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=");
-            put("CAS", "http://webbook.nist.gov/cgi/cbook.cgi?ID=");
-            put("PDB", "http://www.pdb.org/pdb/explore/explore.do?structureId=");
-            put("KNAPSACK", "http://kanaya.naist.jp/knapsack_jsp/information.jsp?word=");
+            put("HUMANCYC", "http://biocyc.org/HUMAN/NEW-IMAGE?object=%");
+            put("METACYC", "http://biocyc.org/META/NEW-IMAGE?object=%");
+            put("PUBCHEM","http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%");
+            put("CAS", "http://webbook.nist.gov/cgi/cbook.cgi?ID=%");
+            put("PDB", "http://www.pdb.org/pdb/explore/explore.do?structureId=%");
+            put("KNAPSACK", "http://kanaya.naist.jp/knapsack_jsp/information.jsp?word=%");
+            put("WIKIPEDIA", "http://en.wikipedia.org/wiki/%");
+            put("ENTREZ", "http://www.ncbi.nlm.nih.gov/protein/%?report=GenPept");
         }
     };
 	

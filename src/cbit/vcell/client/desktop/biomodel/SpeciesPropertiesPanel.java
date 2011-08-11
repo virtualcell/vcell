@@ -37,6 +37,9 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
@@ -68,6 +71,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private BioModel bioModel = null;
 	
 	private JTextArea annotationTextArea;
+	private JTextArea linkedPOTextArea;
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField nameTextField = null;
 	
@@ -180,7 +184,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 				changeFreeTextAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
-			}
+			} 
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSpeciesContext) {
@@ -261,7 +265,31 @@ private void initialize() {
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+		add(new JLabel("Linked Pathway Object(s)"), gbc);
+
+		linkedPOTextArea = new javax.swing.JTextArea("", 1, 30);
+		linkedPOTextArea.setLineWrap(true);
+		linkedPOTextArea.setWrapStyleWord(true);
+		linkedPOTextArea.setEditable(false);
+		javax.swing.JScrollPane jsp1 = new javax.swing.JScrollPane(linkedPOTextArea);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.1;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		add(jsp1, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(new JLabel("Annotation"), gbc);
 
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
@@ -305,6 +333,27 @@ private void changeFreeTextAnnotation() {
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
 	}
 }
+
+// wei's code
+private String listLinkedPathwayObjects(){
+	if (getSpeciesContext() == null) {
+		return "no selected species";
+	}
+	if(bioModel == null || bioModel.getModel() == null){
+		return "no biomodel";
+	}
+	String linkedPOlist = "";
+	for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(getSpeciesContext())){
+		BioPaxObject bpObject = relObject.getBioPaxObject();
+		if(bpObject instanceof Entity){
+			linkedPOlist += ((Entity)bpObject).getName().get(0)+"\n";
+		}
+		
+	}
+	linkedPOTextArea.setText(linkedPOlist);
+	return linkedPOlist;
+}
+// done
 
 public synchronized void addActionListener(ActionListener l) {
     listenerList.add(ActionListener.class, l);
@@ -358,6 +407,7 @@ private void updateInterface() {
 		getPCLinkValueEditorPane().setText(null);
 		nameTextField.setText(null);
 	}
+	listLinkedPathwayObjects();
 }
 
 	private JEditorPane getPCLinkValueEditorPane() {
