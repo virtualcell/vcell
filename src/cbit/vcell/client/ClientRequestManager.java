@@ -13,6 +13,7 @@ package cbit.vcell.client;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -79,6 +80,7 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.gui.ImageResizePanel;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
@@ -1150,7 +1152,6 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels);
 						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,new Integer(userPreferredTime));
 					}
-					changeSize(requester,fdfos);
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
@@ -1223,6 +1224,37 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			}
 		}
 	};
+	final String NEW_IMAGE_RESIZE = "NEW_IMAGE_RESIZE";
+	AsynchClientTask queryImageResizeTask = new AsynchClientTask("Query File Image Resize...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
+				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
+				File imageFile = (File)hashTable.get("imageFile");
+				ImageResizePanel imageResizePanel = new ImageResizePanel();
+				imageResizePanel.init(fdfos.isize, imageFile.getName());
+				imageResizePanel.setPreferredSize(new Dimension(300, 150));
+				int flag = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), imageResizePanel, "Optionally reduce imported image size.");
+				if(flag != JOptionPane.OK_OPTION){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				if(imageResizePanel.getNewISize() != null){
+					//User wants size change (other than 100%), put newSize in hashtable
+					hashTable.put(NEW_IMAGE_RESIZE, imageResizePanel.getNewISize());
+				}
+			}
+		}
+	};
+	AsynchClientTask resizeImageTask = new AsynchClientTask("Resizing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			ISize newImageSize = (ISize)hashTable.get(NEW_IMAGE_RESIZE);
+			if(newImageSize != null){
+				//If newImageSize exists in hash, user wants a size change, otherwise do nothing (leave size unchanged)
+				resizeImage(requester, (FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSize);
+			}
+		}
+	};
 	AsynchClientTask finishTask = new AsynchClientTask("Finishing...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(final Hashtable<String, Object> hashTable) throws Exception {
@@ -1274,73 +1306,38 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
-		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,finishTask}));
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,resizeImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}
 	return tasksV.toArray(new AsynchClientTask[0]);
 }
 
-private void changeSize(TopLevelWindowManager requster,FieldDataFileOperationSpec fdfos) throws Exception{
-	final int XYSIZE = fdfos.isize.getX()*fdfos.isize.getY();
-	try{
-		do{
-			String result = DialogUtils.showInputDialog0(requster.getComponent(),
-				"Imported image size:\n( x,y,z = "+
-				fdfos.isize.getX()+","+fdfos.isize.getY()+","+fdfos.isize.getZ()+
-				" -- total="+fdfos.isize.getX()*fdfos.isize.getY()*fdfos.isize.getZ()+")\n"+
-				"If you want to scale down the size of the imported image to improve performance please enter a scale factor below (less than 1.0).",
-				"1.0"
-			);			
-			String tempResult = result;
-			try{
-				if(result == null || result.length() == 0){
-					result = "";
-					throw new Exception("Error parsing text, Enter scale factor > 0 and <= 1.0");
-				}
-//				int xsize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
-//				tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
-//				int ysize = Integer.parseInt(tempResult);
-				double scaleFactor = 1.0;
-				try{
-					scaleFactor = Double.parseDouble(tempResult);
-				}catch(Exception e){
-					throw new Exception("Error parsing text, Enter scale factor > 0 and <= 1.0");
-				}
-				if(scaleFactor <= 0 || scaleFactor > 1.0){
-					throw new Exception("Enter scale factor > 0 and <= 1.0");
-				}
-				try {
-					int xsize = (int)((double)fdfos.isize.getX()*scaleFactor);
-					int ysize = (int)((double)fdfos.isize.getY()*scaleFactor);
-					if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
-						//resize each z section to xsize,ysize
-					    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor); 
-					    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
-						short[][][] resizeData = new short[1][1][fdfos.isize.getZ()*xsize*ysize];
-						BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
-						BufferedImage scaledImage = new BufferedImage(xsize,ysize, BufferedImage.TYPE_USHORT_GRAY);
-						for (int z = 0; z < fdfos.isize.getZ(); z++) {
-							short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
-							System.arraycopy(fdfos.shortSpecData[0][0], z*XYSIZE, originalImageBuffer, 0, XYSIZE);
-							scaleAffineTransformOp.filter( originalImage, scaledImage);
-						    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
-						    System.arraycopy(scaledImageBuffer, 0, resizeData[0][0], z*xsize*ysize, xsize*ysize);
-						}
-						fdfos.isize = new ISize(xsize, ysize, fdfos.isize.getZ());
-						fdfos.shortSpecData = resizeData;
-					}
-				} catch (Exception e) {
-					throw new Exception("Error scaling imported image:\n"+e.getMessage());
-				}
-				break;
-			}catch(Exception e){
-				e.printStackTrace();
-				DialogUtils.showErrorDialog(requster.getComponent(), e.getMessage(), e);
+private void resizeImage(TopLevelWindowManager requster,FieldDataFileOperationSpec fdfos,ISize newImagesISize) throws Exception{
+	final int ORIG_XYSIZE = fdfos.isize.getX()*fdfos.isize.getY();
+	try {
+		int xsize = newImagesISize.getX();
+		int ysize = newImagesISize.getY();
+		double scaleFactor = (double)newImagesISize.getX()/(double)fdfos.isize.getX();
+		if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
+			//resize each z section to xsize,ysize
+		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor); 
+		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
+			short[][][] resizeData = new short[1][1][fdfos.isize.getZ()*xsize*ysize];
+			BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
+			BufferedImage scaledImage = new BufferedImage(xsize,ysize, BufferedImage.TYPE_USHORT_GRAY);
+			for (int z = 0; z < fdfos.isize.getZ(); z++) {
+				short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
+				System.arraycopy(fdfos.shortSpecData[0][0], z*ORIG_XYSIZE, originalImageBuffer, 0, ORIG_XYSIZE);
+				scaleAffineTransformOp.filter( originalImage, scaledImage);
+			    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
+			    System.arraycopy(scaledImageBuffer, 0, resizeData[0][0], z*xsize*ysize, xsize*ysize);
 			}
-		}while(true);
-	}catch(UtilCancelException e2){
-		throw UserCancelException.CANCEL_GENERIC;
+			fdfos.isize = new ISize(xsize, ysize, fdfos.isize.getZ());
+			fdfos.shortSpecData = resizeData;
+		}
+	} catch (Exception e) {
+		throw new Exception("Error scaling imported image:\n"+e.getMessage());
 	}
 }
 /**
