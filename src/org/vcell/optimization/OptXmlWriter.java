@@ -110,6 +110,7 @@ public class OptXmlWriter {
 			Element e = new Element(OptXmlTags.CopasiOptimizationParameter);
 			e.setAttribute(OptXmlTags.Name_Attr, cop.getType().getDisplayName());
 			e.setAttribute(OptXmlTags.Value_Attr, "" + cop.getValue());
+			e.setAttribute(OptXmlTags.DataType_Attr, "" + cop.getType().getDataType());
 			element.addContent(e);
 		}
 		return element;
@@ -547,7 +548,7 @@ public class OptXmlWriter {
 			// add all other dependent variables, recall that the dependent variables start from 2nd column onward in reference data
 			File expDataFile = File.createTempFile("expData", ".txt", ResourceUtil.getVcellHome());
 			PrintWriter	pw = new PrintWriter(expDataFile);	
-			pw.print("# Time\t");			
+			pw.print("# Time\t");
 			for (int i = 1; i < refData.getNumDataColumns(); i++) {
 				ReferenceDataMappingSpec rdms = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpec(refData.getColumnNames()[i]);
 				
@@ -571,6 +572,7 @@ public class OptXmlWriter {
 			
 			pw.close();
 			Element dataFileElement = new Element(OptXmlTags.ExperimentalDataFile_Tag);
+			dataFileElement.setAttribute(OptXmlTags.ExperimentalDataFile_Attr_LastRow, (refData.getNumDataRows() + 1) + "");
 			dataFileElement.addContent(expDataFile.getAbsolutePath());
 			refDataElement.addContent(dataFileElement);
 		}

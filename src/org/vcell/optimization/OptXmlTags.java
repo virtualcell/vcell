@@ -17,10 +17,12 @@ public class OptXmlTags {
 	public static final String CopasiOptimizationMethod = "CopasiOptimizationMethod";
 	public static final String CopasiOptimizationParameter = "CopasiOptimizationParameter";
 	public static final String Value_Attr = "value";
+	public static final String DataType_Attr = "dataType";
 	public static final String Name_Attr = "name";
 	
 	public static final String MathModelSbmlFile_Tag = "MathModelSbmlFile";
 	public static final String ExperimentalDataFile_Tag = "ExperimentalDataFile";
+	public static final String ExperimentalDataFile_Attr_LastRow = "LastRow";
 	
 	public static final String ComputeProfileDistributions_Attr = "ComputeProfileDistributions";
 
