@@ -134,7 +134,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		 }
 	 }
 	 if (evt.getSource() instanceof AnalysisTask){
-		 fireContentsChanged(this,0,getSize()-1);
+		 if(evt.getPropertyName().equals("name"))
+		 {
+			 fireContentsChanged(this,0,getSize()-1);
+		 }
 	 }
 }
 

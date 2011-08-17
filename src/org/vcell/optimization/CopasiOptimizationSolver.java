@@ -26,6 +26,7 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -38,28 +39,38 @@ import cbit.vcell.util.RowColumnResultSet;
 
 
 public class CopasiOptimizationSolver {	
+	static {
+		ResourceUtil.loadCopasiSolverLibrary();
+	}
+	private static final String DataType_int = "int";
+	private static final String DataType_float = "float";
 	public enum CopasiOptimizationParameterType {
-		Number_of_Generations("Number of Generations"),
-		Number_of_Iterations("Number of Iterations"),
-		Population_Size("Population Size"),
-		Random_Number_Generator("Random Number Generator"),
-		Seed("Seed"),
-		IterationLimit("Iteration Limit"),
-		Tolerance("Tolerance"),
-		Rho("Rho"),
-		Scale("Scale"),
-		Swarm_Size("Swarm Size"),
-		Std_Deviation("Std. Deviation"),
-		Start_Temperature("Start Temperature"),
-		Cooling_Factor("Cooling Factor"),
-		Pf("Pf");
+		Number_of_Generations("Number of Generations", DataType_int),
+		Number_of_Iterations("Number of Iterations", DataType_int),
+		Population_Size("Population Size", DataType_int),
+		Random_Number_Generator("Random Number Generator", DataType_int),
+		Seed("Seed", DataType_int),
+		IterationLimit("Iteration Limit", DataType_int),
+		Tolerance("Tolerance", DataType_float),
+		Rho("Rho", DataType_float),
+		Scale("Scale", DataType_float),
+		Swarm_Size("Swarm Size", DataType_int),
+		Std_Deviation("Std Deviation", DataType_float),
+		Start_Temperature("Start Temperature", DataType_float),
+		Cooling_Factor("Cooling Factor", DataType_float),
+		Pf("Pf", DataType_float);
 		
 		String displayName;
-		CopasiOptimizationParameterType(String displayName) {
+		String dataType;
+		CopasiOptimizationParameterType(String displayName, String dataType) {
 			this.displayName = displayName;
+			this.dataType = dataType;
 		}
 		public final String getDisplayName() {
 			return displayName;
+		}
+		public final String getDataType(){
+			return dataType;
 		}
 	}
 	
@@ -237,7 +248,7 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String optProblemXml, OptSolverCallbacks optSolverCallbacks);
 	
-public static void solve(ParameterEstimationTask parameterEstimationTask) 
+public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
 						throws IOException, ExpressionException, OptimizationException {
 	OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
 	OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
@@ -248,33 +259,33 @@ public static void solve(ParameterEstimationTask parameterEstimationTask)
 		String optResultsXML = solve(inputXML, optSolverCallbacks);
 		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
 		ODESolverResultSet odeSolverResultSet = null;
-		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
-			RowColumnResultSet rcResultSet = null;
-			OdeObjectiveFunction odeObjFunc = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
-			Element objFuncElement = optProblemXML.getChild(OptXmlTags.ObjectiveFunction_Tag);
-			Element modelElement = objFuncElement.getChild(OptXmlTags.Model_Tag);
-			String modelType = modelElement.getAttributeValue(OptXmlTags.ModelType_Attr);
-			String modelInput = modelElement.getText();
-			if (modelType.equals(OptXmlTags.ModelType_Attr_IDA)){
-				NativeIDASolver nativeIDASolver = new NativeIDASolver();
-				rcResultSet = nativeIDASolver.solve(modelInput,newOptResultSet.getBestEstimates());
-			}else if (modelType.equals(OptXmlTags.ModelType_Attr_CVODE)){
-				NativeCVODESolver nativeCVODESolver = new NativeCVODESolver();
-				rcResultSet = nativeCVODESolver.solve(modelInput,newOptResultSet.getBestEstimates());
-			}
-			MathDescription mathDesc = odeObjFunc.getMathDescription();
-			Simulation sim = new Simulation(mathDesc);
-			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
-			MathOverrides mathOverrides = sim.getMathOverrides();
-			String[] parameterNames = newOptResultSet.getParameterNames();
-			double[] parameterValues = newOptResultSet.getBestEstimates();
-			for (int i = 0; i < parameterValues.length; i++) {
-				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterValues[i])));
-			}
-			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, simSymbolTable, parameterNames, parameterValues);
-		}	
-		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, odeSolverResultSet);
-		parameterEstimationTask.setOptimizationResultSet(optResultSet);
+//		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
+//			RowColumnResultSet rcResultSet = null;
+//			OdeObjectiveFunction odeObjFunc = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
+//			Element objFuncElement = optProblemXML.getChild(OptXmlTags.ObjectiveFunction_Tag);
+//			Element modelElement = objFuncElement.getChild(OptXmlTags.Model_Tag);
+//			String modelType = modelElement.getAttributeValue(OptXmlTags.ModelType_Attr);
+//			String modelInput = modelElement.getText();
+//			if (modelType.equals(OptXmlTags.ModelType_Attr_IDA)){
+//				NativeIDASolver nativeIDASolver = new NativeIDASolver();
+//				rcResultSet = nativeIDASolver.solve(modelInput,newOptResultSet.getBestEstimates());
+//			}else if (modelType.equals(OptXmlTags.ModelType_Attr_CVODE)){
+//				NativeCVODESolver nativeCVODESolver = new NativeCVODESolver();
+//				rcResultSet = nativeCVODESolver.solve(modelInput,newOptResultSet.getBestEstimates());
+//			}
+//			MathDescription mathDesc = odeObjFunc.getMathDescription();
+//			Simulation sim = new Simulation(mathDesc);
+//			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+//			MathOverrides mathOverrides = sim.getMathOverrides();
+//			String[] parameterNames = newOptResultSet.getParameterNames();
+//			double[] parameterValues = newOptResultSet.getBestEstimates();
+//			for (int i = 0; i < parameterValues.length; i++) {
+//				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterValues[i])));
+//			}
+//			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, simSymbolTable, parameterNames, parameterValues);
+//		}	
+		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, null /*odeSolverResultSet*/);
+		return optResultSet;
 	} catch (Throwable e){
 		e.printStackTrace(System.out);
 		throw new OptimizationException(e.getMessage());

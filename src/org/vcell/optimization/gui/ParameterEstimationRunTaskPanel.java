@@ -270,8 +270,12 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			return null;
 		}
 		
-		private void refreshData() {
-			List<OptimizationTaskSummary> list = null;			
+		public void refresh(OptimizationResultSet optimizationResultSet) {
+			ArrayList<OptimizationTaskSummary> list = new ArrayList<OptimizationTaskSummary>();
+			double objVal = optimizationResultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue();
+			long numEval = optimizationResultSet.getOptSolverResultSet().getObjFunctionEvaluations();
+			list.add(new OptimizationTaskSummary("Objective Value", objVal));
+			list.add(new OptimizationTaskSummary("No. of Evaluations", numEval));
 			setData(list);
 		}
 
@@ -319,6 +323,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
 			return columnIndex == COLUMN_Value ? Double.class : String.class;
+		}
+		
+		public void refresh(OptimizationResultSet optimizationResultSet) {
+			ArrayList<OptimizationSolutionParameter> list = new ArrayList<OptimizationSolutionParameter>();
+			int len = optimizationResultSet.getOptSolverResultSet().getParameterNames().length;
+			for (int i = 0; i < len; i ++) {
+				list.add(new OptimizationSolutionParameter(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i], optimizationResultSet.getOptSolverResultSet().getBestEstimates()[i]));
+			}
+			setData(list);
 		}
 	}
 		
@@ -394,9 +407,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
-				optimizationResultSet_This(parameterEstimationTask.getOptimizationResultSet());
-			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("solverMessageText"))) 
-				getOptimizeResultsTextPane().setText(String.valueOf(parameterEstimationTask.getSolverMessageText()));
+				optimizationResultSet_This();
+//			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("solverMessageText"))) 
+				//getOptimizeResultsTextPane().setText(String.valueOf(parameterEstimationTask.getSolverMessageText()));
 		}
 	}
 	
@@ -739,8 +752,12 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	/**
 	 * Comment
 	 */
-	private void optimizationResultSet_This(OptimizationResultSet optResultSet) {
-		String message = displayResults(optResultSet);
+	private void optimizationResultSet_This() 
+	{
+		OptimizationResultSet optResultSet = parameterEstimationTask.getOptimizationResultSet();
+		optimizationSolutionParameterTableModel.refresh(optResultSet);
+		optimizationTaskSummaryTableModel.refresh(optResultSet);
+ 		String message = displayResults(optResultSet);
 		parameterEstimationTask.appendSolverMessageText("\n"+message);
 		if (optResultSet!=null){
 			getSaveSolutionAsNewSimButton().setEnabled(true);
@@ -839,11 +856,23 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				CopasiOptimizationSolver.solve(parameterEstimationTask);
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(parameterEstimationTask);
+				hashTable.put("Optimiation Result Set", optResultSet);
 			}
 
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, getRunStatusDialog(), true, true, true, null, false);
+		
+		AsynchClientTask setResultTask = new AsynchClientTask("set results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				OptimizationResultSet optResultSet = (OptimizationResultSet) hashTable.get("Optimiation Result Set"); 
+				parameterEstimationTask.setOptimizationResultSet(optResultSet);
+			}
+
+		};
+		
+		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, setResultTask}, getRunStatusDialog(), true, true, true, null, false);
 	}
 	
 	private ProfileSummaryData[] getSummaryFromOptSolverResultSet(OptSolverResultSet osrs) throws MappingException, MathException, MatrixException, ExpressionException, ModelException 

@@ -237,6 +237,14 @@ public class ResourceUtil {
 		}
 	}
 	
+	public static void loadCopasiSolverLibrary () {
+		try {
+	        System.loadLibrary("vcellCopasiOptDriver");
+	    } catch (Throwable ex1) {
+    		throw new RuntimeException("ResourceUtil::loadCopasiSolverLibrary() : failed to load copasi solver library " + ex1.getMessage());
+		}
+	}
+	
 	public static void loadlibSbmlLibray () {
 		try {
 //			System.loadLibrary("expat");
