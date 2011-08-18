@@ -34,6 +34,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -66,10 +67,10 @@ import org.vcell.util.gui.ZEnforcer;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -2377,32 +2378,23 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							highlightROIInfo.coordIndexForRegionsMap.size() != allRegionInfos.length){
 						throw new Exception("generateHighlightROIInfo returned different region count than allRegions");
 					}
-					//sort region/neighbors list for display
-					TreeMap<RegionImage.RegionInfo,TreeSet<Integer>> neighborsForRegionsTreeMap =
-					new TreeMap<RegionImage.RegionInfo,TreeSet<Integer>>(new Comparator<RegionImage.RegionInfo>() {
-						public int compare(RegionImage.RegionInfo o1, RegionImage.RegionInfo o2) {
-							int retVal = 0;
-							if(o1.getPixelValue() == o2.getPixelValue()){
-								if(o1.getNumPixels() == o2.getNumPixels()){
-									CoordinateIndex o1CI = highlightROIInfo.coordIndexForRegionsMap.get(o1);
-									CoordinateIndex o2CI = highlightROIInfo.coordIndexForRegionsMap.get(o2);
-									return compareCoordinateIndex(o1CI, o2CI);
-								}else{
-									retVal = -(o1.getNumPixels() - o2.getNumPixels());
-								}
-							}else{
-								retVal =  o1.getPixelValue() - o2.getPixelValue();
+					//Sort regionInfos by size for list display
+					RegionImage.RegionInfo[] sortedRegionInfoArr =
+							new RegionImage.RegionInfo[highlightROIInfo.neighborsForRegionsMap.size()];
+					Enumeration<RegionInfo> enumRegionInfo = highlightROIInfo.neighborsForRegionsMap.keys();
+					for (int i = 0; i < sortedRegionInfoArr.length; i++) {
+						sortedRegionInfoArr[i] = enumRegionInfo.nextElement();
+					}
+					Arrays.sort(sortedRegionInfoArr,new Comparator<RegionInfo>() {
+						public int compare(RegionInfo o1, RegionInfo o2) {
+							int retval = o2.getNumPixels() - o1.getNumPixels();
+							if(retval == 0){
+								retval =  o1.getPixelValue() - o2.getPixelValue();
 							}
-							return retVal;
+							return retval;
 						}
 					});
-					
-					neighborsForRegionsTreeMap.putAll(highlightROIInfo.neighborsForRegionsMap);
-					
-					//construct Region list
-					RegionImage.RegionInfo[] sortedRegionInfoArr =
-						(RegionImage.RegionInfo[])neighborsForRegionsTreeMap.keySet().toArray(new RegionImage.RegionInfo[0]);
-					
+										
 					Vector<String> colROIName = new Vector<String>();
 					final Vector<RegionImage.RegionInfo> colRegionInfo = new Vector<RegionImage.RegionInfo>();
 					Vector<String> colNeighbors = new Vector<String>();
