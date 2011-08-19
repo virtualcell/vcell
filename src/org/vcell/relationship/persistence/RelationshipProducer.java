@@ -60,7 +60,7 @@ public class RelationshipProducer {
 			attr = provider.getVCID(relationshipObject.getBioPaxObject()).toASCIIString();
 			element.setAttribute(XMLTags.bioPaxObjectIdTag, attr);
 		}
-		if(relationshipObject.getBioModelEntityObject().toString() != null) {
+		if(relationshipObject.getBioModelEntityObject() != null) {
 			attr = provider.getVCID(relationshipObject.getBioModelEntityObject()).toASCIIString();
 			element.setAttribute(XMLTags.bioModelObjectIdTag, attr);
 		}

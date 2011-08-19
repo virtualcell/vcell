@@ -687,13 +687,7 @@ private javax.swing.JLabel getMaxLabel() {
 private javax.swing.JLabel getMaxRangeJLabel() {
 	if (ivjMaxRangeJLabel == null) {
 		try {
-
-			java.awt.GridBagConstraints constraintsMaxLabel = new java.awt.GridBagConstraints();
-			constraintsMaxLabel.gridx = 0; constraintsMaxLabel.gridy = 1;
-			constraintsMaxLabel.insets = new java.awt.Insets(4, 4, 0, 0);
-			getScalePanel().add(getMaxLabel(), constraintsMaxLabel);
 			ivjMaxRangeJLabel = new javax.swing.JLabel();
-			ivjMaxRangeJLabel.setFont(new Font("", Font.PLAIN, 10));
 			ivjMaxRangeJLabel.setName("MaxRangeJLabel");
 			ivjMaxRangeJLabel.setText("(Max)");
 			// user code begin {1}
@@ -761,13 +755,7 @@ private javax.swing.JLabel getMinRangeJLabel() {
 	if (ivjMinRangeJLabel == null) {
 		try {
 
-			java.awt.GridBagConstraints constraintsMinLabel = new java.awt.GridBagConstraints();
-			constraintsMinLabel.anchor = GridBagConstraints.EAST;
-			constraintsMinLabel.gridx = 0; constraintsMinLabel.gridy = 3;
-			constraintsMinLabel.insets = new java.awt.Insets(4, 4, 0, 0);
-			getScalePanel().add(getMinLabel(), constraintsMinLabel);
 			ivjMinRangeJLabel = new javax.swing.JLabel();
-			ivjMinRangeJLabel.setFont(new Font("", Font.PLAIN, 10));
 			ivjMinRangeJLabel.setName("MinRangeJLabel");
 			ivjMinRangeJLabel.setText("(Min)");
 			// user code begin {1}
@@ -852,6 +840,12 @@ private javax.swing.JPanel getScalePanel() {
 			gridBagLayout.rowHeights = new int[] {0,7,0,0,7,0,0};
 			ivjScalePanel.setLayout(gridBagLayout);
 
+			java.awt.GridBagConstraints constraintsMinLabel = new java.awt.GridBagConstraints();
+			constraintsMinLabel.anchor = GridBagConstraints.EAST;
+			constraintsMinLabel.gridx = 0; constraintsMinLabel.gridy = 3;
+			constraintsMinLabel.insets = new java.awt.Insets(4, 4, 0, 0);
+			getScalePanel().add(getMinLabel(), constraintsMinLabel);
+
 			java.awt.GridBagConstraints constraintsMinRangeJLabel = new java.awt.GridBagConstraints();
 			constraintsMinRangeJLabel.gridx = 1; constraintsMinRangeJLabel.gridy = 3;
 			constraintsMinRangeJLabel.insets = new java.awt.Insets(4, 0, 4, 0);
@@ -865,6 +859,11 @@ private javax.swing.JPanel getScalePanel() {
 			constraintsMinTextField.insets = new java.awt.Insets(0, 4, 4, 4);
 			getScalePanel().add(getMinTextField(), constraintsMinTextField);
 
+			java.awt.GridBagConstraints constraintsMaxLabel = new java.awt.GridBagConstraints();
+			constraintsMaxLabel.gridx = 0; constraintsMaxLabel.gridy = 1;
+			constraintsMaxLabel.insets = new java.awt.Insets(4, 4, 0, 0);
+			getScalePanel().add(getMaxLabel(), constraintsMaxLabel);
+			
 			java.awt.GridBagConstraints constraintsMaxRangeJLabel = new java.awt.GridBagConstraints();
 			constraintsMaxRangeJLabel.gridx = 1; constraintsMaxRangeJLabel.gridy = 1;
 			constraintsMaxRangeJLabel.insets = new java.awt.Insets(4, 0, 4, 0);
