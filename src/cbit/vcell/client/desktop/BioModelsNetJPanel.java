@@ -74,7 +74,6 @@ public class BioModelsNetJPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JLabel biomodelsnetLabel = new JLabel();
-		biomodelsnetLabel.setFont(new Font("", Font.BOLD, 20));
 		biomodelsnetLabel.setText("BioModels DataBase");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.insets = new Insets(0, 0, 5, 0);
@@ -83,7 +82,6 @@ public class BioModelsNetJPanel extends JPanel {
 		add(biomodelsnetLabel, gridBagConstraints_4);
 
 		final JLabel helpingToDefineLabel_1 = new JLabel();
-		helpingToDefineLabel_1.setFont(new Font("", Font.BOLD, 14));
 		helpingToDefineLabel_1.setText("A data resource that allows researchers to ");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.insets = new Insets(0, 0, 5, 0);
@@ -92,7 +90,6 @@ public class BioModelsNetJPanel extends JPanel {
 		add(helpingToDefineLabel_1, gridBagConstraints_2);
 
 		final JLabel helpingToDefineLabel = new JLabel();
-		helpingToDefineLabel.setFont(new Font("", Font.BOLD, 14));
 		helpingToDefineLabel.setText("store, search and retrieve published mathematical models");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(0, 0, 5, 0);
@@ -101,7 +98,6 @@ public class BioModelsNetJPanel extends JPanel {
 		add(helpingToDefineLabel, gridBagConstraints_1);
 
 		final JLabel modelsOfBiologicalLabel = new JLabel();
-		modelsOfBiologicalLabel.setFont(new Font("", Font.BOLD, 14));
 		modelsOfBiologicalLabel.setText("of biological interest.");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(0, 0, 5, 0);
@@ -115,7 +111,6 @@ public class BioModelsNetJPanel extends JPanel {
 				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL, false);
 			}
 		});
-		httpbiomodelsnetLabel.setFont(new Font("", Font.BOLD, 14));
 		httpbiomodelsnetLabel.setText(BIOMODELS_DATABASE_URL);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(4, 4, 5, 4);

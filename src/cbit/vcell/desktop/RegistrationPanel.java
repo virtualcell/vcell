@@ -107,7 +107,6 @@ public class RegistrationPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JLabel virtualCellUserLabel = new JLabel();
-		virtualCellUserLabel.setFont(new Font("", Font.BOLD, 20));
 		virtualCellUserLabel.setText("Virtual Cell User Registration");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.weightx = 0;
