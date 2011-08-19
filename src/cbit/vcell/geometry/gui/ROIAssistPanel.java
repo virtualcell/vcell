@@ -116,7 +116,6 @@ public class ROIAssistPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JLabel roiSourceLabel = new JLabel();
-		roiSourceLabel.setFont(new Font("", Font.BOLD, 12));
 		roiSourceLabel.setText("ROI Threshold Source");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(10, 4, 0, 4);
@@ -126,7 +125,6 @@ public class ROIAssistPanel extends JPanel {
 		add(roiSourceLabel, gridBagConstraints_1);
 
 		final JLabel spatialEnahnceLabel = new JLabel();
-		spatialEnahnceLabel.setFont(new Font("", Font.BOLD, 12));
 		spatialEnahnceLabel.setText("Smooth Threshold Source");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(10, 4, 0, 4);
@@ -206,7 +204,6 @@ public class ROIAssistPanel extends JPanel {
 		thresholdForRoiJPanel.add(chckbxInvert);
 
 		final JLabel lowerLabel = new JLabel();
-		lowerLabel.setFont(new Font("", Font.BOLD, 14));
 		lowerLabel.setText("ROI Shrink");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(0, 4, 0, 0);
@@ -216,7 +213,6 @@ public class ROIAssistPanel extends JPanel {
 		add(lowerLabel, gridBagConstraints_8);
 
 		final JLabel higherLabel = new JLabel();
-		higherLabel.setFont(new Font("", Font.BOLD, 14));
 		higherLabel.setText("ROI Grow");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(0, 0, 0, 4);
