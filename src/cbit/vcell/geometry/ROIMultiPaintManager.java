@@ -698,7 +698,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		geomAttr.dimension = 1+
 //			(roiComposite.length>2?1:0)+
 //			(roiComposite.length>1?1:0);
-		JPanel okCancelJPanel = new JPanel(new FlowLayout());
+		final JPanel okCancelJPanel = new JPanel(new FlowLayout());
 		JButton okJButton = new JButton(okButtonText);
 		okJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -722,7 +722,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		JButton cancelJButton = new JButton("Cancel");
 		cancelJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				jDialog.dispose();
+				final String QUIT_ANSWER = "OK";
+				String result = DialogUtils.showWarningDialog(parentComponent, "Confirm cancel","Quit geometry editor and lose all changes?", new String[] {QUIT_ANSWER,"back"}, QUIT_ANSWER);
+				if(result != null && result.equals(QUIT_ANSWER)){
+					jDialog.dispose();
+				}
 			}
 		});
 		JButton attributesJButton = new JButton("Attributes...");
@@ -1592,8 +1596,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	
 	private void autoCropQuestion(){
-		final String useUnderlying = "Use Underlying";
-		final String useROI = "Use all ROI";
+		final String useUnderlying = "Use Underlying...";
+		final String useROI = "Use all ROI...";
 		final String cancel = "Cancel";
 		String result = useUnderlying;
 		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
