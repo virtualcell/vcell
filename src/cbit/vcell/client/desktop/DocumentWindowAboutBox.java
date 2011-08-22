@@ -165,7 +165,7 @@ public class DocumentWindowAboutBox extends JDialog {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 2004");
+				copyright.setText("(c) Copyright 1998-2011");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
