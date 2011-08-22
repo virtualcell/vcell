@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
@@ -112,22 +113,14 @@ private void refreshData() {
 		speciesContextSpecList = Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs());
 	}
 	setData(speciesContextSpecList);
+	GuiUtils.flexResizeTableColumns(ownerTable);
 }
 
 /**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	try {
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (col<0 || col>=getColumnCount()){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
-		}
-		if (getRowCount() <= row){
-			refreshData();
-		}	
+	try {	
 		SpeciesContextSpec scSpec = getValueAt(row);
 		switch (col){
 			case COLUMN_SPECIESCONTEXT:{
@@ -177,12 +170,6 @@ public Object getValueAt(int row, int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=getColumnCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
 	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_SPECIESCONTEXT:{
@@ -245,12 +232,17 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
+	int oldColumnCount = getColumnCount();
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
 		oldValue.getGeometryContext().removePropertyChangeListener(this);
 		updateListenersReactionContext(oldValue.getReactionContext(),true);
 	}
-	fieldSimulationContext = simulationContext;	
+	fieldSimulationContext = simulationContext;
+	int newColumnCount = getColumnCount();
+	if (oldColumnCount != newColumnCount) {
+		fireTableStructureChanged();
+	}
 	if (simulationContext!=null){
 		simulationContext.addPropertyChangeListener(this);
 		simulationContext.getGeometryContext().addPropertyChangeListener(this);
@@ -259,19 +251,10 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
 		refreshData();
 	}
-	firePropertyChange("simulationContext", oldValue, simulationContext);
-	fireTableStructureChanged();
-	fireTableDataChanged();
 }
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=getColumnCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
 	SpeciesContextSpec scSpec = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_CLAMPED:{

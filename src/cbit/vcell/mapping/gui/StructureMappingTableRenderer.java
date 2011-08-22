@@ -43,21 +43,32 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 		private int height = 20;
 		private int superScriptStartIndex = -1;
 		private int superScriptEndIndex = -1;
+		private Color userColor = null;
 		 
 		public TextIcon(String text) {
-			this(text, -1, -1);		
+			this(text, null);
 		}
-		
+		public TextIcon(String text, Color c) {
+			this(text, -1, -1, c);
+		}
 		public TextIcon(String text, int start, int end) {
+			this(text, start, end, null);
+		}
+		public TextIcon(String text, int start, int end, Color c) {
 			this.text = text;
 			this.superScriptStartIndex = start;
 			this.superScriptEndIndex = end;
+			this.userColor = c;
 		}
 		public void paintIcon(Component c, Graphics g, int x, int y) {
 			Graphics2D g2d = (Graphics2D) g.create();
 			g2d.setColor(c.getBackground());
 		    g2d.fillRect(x, y, width, height);
-            g2d.setColor(c.getForeground());
+		    if (userColor != null) {
+		    	g2d.setColor(userColor);
+		    } else {
+		    	g2d.setColor(c.getForeground());
+		    }
             Font font = g2d.getFont();
             font = font.deriveFont(font.getSize2D() - 1);
             FontMetrics fm = g.getFontMetrics();
