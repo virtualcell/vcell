@@ -29,6 +29,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -39,12 +40,15 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * This type was created in VisualAge.
@@ -56,8 +60,8 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JPanel radioButtonPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
 	private ButtonGroup radioGroup = null; //added in July, 2008. Enable selection of initial concentration or amount
-	private JSortTable ivjScrollPaneTable = null;
-	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
+	private JSortTable table = null;
+	private SpeciesContextSpecsTableModel tableModel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
@@ -107,20 +111,6 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == InitialConditionsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
-			{
-				SimulationContext oldValue = (SimulationContext) evt.getOldValue();
-				if (oldValue != null) {
-					oldValue.removePropertyChangeListener(ivjEventHandler);
-				}			
-				SimulationContext newValue = (SimulationContext) evt.getNewValue();
-				if (newValue != null) {
-					newValue.addPropertyChangeListener(ivjEventHandler);
-				}
-				getSpeciesContextSpecsTableModel().setSimulationContext(getSimulationContext());
-				updateTopScrollPanel();
-			}
-			
 			if (evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_USE_CONCENTRATION)) {
 				updateTopScrollPanel();
 			}
@@ -130,7 +120,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 				return;
 			}
 			if (e.getSource() == getScrollPaneTable().getSelectionModel()) 
-				setSelectedObjectsFromTable(getScrollPaneTable(), getSpeciesContextSpecsTableModel());
+				setSelectedObjectsFromTable(getScrollPaneTable(), tableModel);
 		};
 	};
 
@@ -351,23 +341,20 @@ private void updateTopScrollPanel()
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private JSortTable getScrollPaneTable() {
-	if (ivjScrollPaneTable == null) {
+	if (table == null) {
 		try {
-			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setScrollTableActionManager(new InternalScrollTableActionManager(ivjScrollPaneTable));
-			ivjScrollPaneTable.setName("ScrollPaneTable");
-			ivjScrollPaneTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-			// user code begin {1}
-			// user code end
+			table = new JSortTable();
+			table.setName("spceciesContextSpecsTable");
+			tableModel = new SpeciesContextSpecsTableModel(table);
+			table.setModel(tableModel);
+			table.setScrollTableActionManager(new InternalScrollTableActionManager(table));
+			table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjScrollPaneTable;
+	return table;
 }
 
 /**
@@ -378,27 +365,6 @@ private JSortTable getScrollPaneTable() {
 public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
-
-/**
- * Return the SpeciesContextSpecsTableModel property value.
- * @return cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private SpeciesContextSpecsTableModel getSpeciesContextSpecsTableModel() {
-	if (ivjSpeciesContextSpecsTableModel == null) {
-		try {
-			ivjSpeciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSpeciesContextSpecsTableModel;
-}
-
 
 /**
  * Called whenever the part throws an exception.
@@ -413,44 +379,6 @@ private void handleException(Throwable exception) {
 
 
 /**
- * Initializes connections
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
-	getJMenuItemPaste().addActionListener(ivjEventHandler);
-	getJMenuItemCopy().addActionListener(ivjEventHandler);
-	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
-	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-	getAmountRadioButton().addActionListener(ivjEventHandler);
-	getConcentrationRadioButton().addActionListener(ivjEventHandler);
-	
-	getScrollPaneTable().setModel(getSpeciesContextSpecsTableModel());
-	getScrollPaneTable().createDefaultColumnsFromModel();	
-	DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-		{
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			if (value instanceof Species) {
-				setText(((Species)value).getCommonName());
-			} else if (value instanceof SpeciesContext) {
-				setText(((SpeciesContext)value).getName());
-			} else if (value instanceof Structure) {
-				setText(((Structure)value).getName());
-			}
-			return this;
-		}
-	};
-	getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
-	getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
-	getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
-}
-
-/**
  * Initialize the class.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -462,14 +390,51 @@ private void initialize() {
 		setLayout(new BorderLayout());
 		add(getRadioButtonPanel(), BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
-		//setSize(456, 539);
 
-		initConnections();
+		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+		getJMenuItemPaste().addActionListener(ivjEventHandler);
+		getJMenuItemCopy().addActionListener(ivjEventHandler);
+		getJMenuItemCopyAll().addActionListener(ivjEventHandler);
+		getJMenuItemPasteAll().addActionListener(ivjEventHandler);
+		getAmountRadioButton().addActionListener(ivjEventHandler);
+		getConcentrationRadioButton().addActionListener(ivjEventHandler);
+			
+		DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+			{
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				setIcon(null);
+				if (value instanceof Species) {
+					setText(((Species)value).getCommonName());
+				} else if (value instanceof SpeciesContext) {
+					setText(((SpeciesContext)value).getName());
+				} else if (value instanceof Structure) {
+					setText(((Structure)value).getName());
+				} else if (value instanceof ScopedExpression) {
+					SpeciesContextSpec scSpec = tableModel.getValueAt(row);
+					VCUnitDefinition unit = null;
+					if (column == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
+						SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
+						unit = initialConditionParameter.getUnitDefinition();
+					} else if (column == SpeciesContextSpecsTableModel.COLUMN_DIFFUSION) {
+						SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
+						unit = diffusionParameter.getUnitDefinition();
+					}
+					if (unit != null) {
+						setHorizontalTextPosition(JLabel.LEFT);
+						setIcon(new TextIcon("[" + unit.getSymbol() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+					}
+				}
+				return this;
+			}
+		};
+		getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
+		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
+		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
+		getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -506,7 +471,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
 			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 			for(int i=0;i<rows.length;i+= 1){
-				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(rows[i]);
+				SpeciesContextSpec scs = tableModel.getValueAt(rows[i]);
 				if(scs.isConstant()){
 					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
 					if (msm!=null){
@@ -596,7 +561,7 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 				//
 				StringBuffer errors = null;
 				for(int i=0;i<rows.length;i+= 1){
-					SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(rows[i]);
+					SpeciesContextSpec scs = tableModel.getValueAt(rows[i]);
 					try{
 						if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 							VCellTransferable.ResolvedValuesSelection rvs = (VCellTransferable.ResolvedValuesSelection)pasteThis;
@@ -712,43 +677,25 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		InitialConditionsPanel aInitialConditionsPanel;
-		aInitialConditionsPanel = new InitialConditionsPanel();
-		frame.setContentPane(aInitialConditionsPanel);
-		frame.setSize(aInitialConditionsPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
-/**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(SimulationContext simulationContext) {
+public void setSimulationContext(SimulationContext newValue) {
 	SimulationContext oldValue = fieldSimulationContext;
-	fieldSimulationContext = simulationContext;
-	firePropertyChange("simulationContext", oldValue, simulationContext);
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+	}
+	fieldSimulationContext = newValue;
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(ivjEventHandler);
+	}
+	tableModel.setSimulationContext(fieldSimulationContext);
+	updateTopScrollPanel();
 }
 
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
-	setTableSelections(selectedObjects, getScrollPaneTable(), getSpeciesContextSpecsTableModel());
+	setTableSelections(selectedObjects, getScrollPaneTable(), tableModel);
 }
 }
