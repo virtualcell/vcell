@@ -533,7 +533,6 @@ public class HistogramPanel extends JPanel {
 		}
 	}
 	private static final int MIN_MAX_BARWIDTH_COMPENSATION = 2;//add this much to width when drawing xmin bar and xmax bar
-	private static Color BAR_OTHER_COLOR = new Color(144,144,144);
 	public void drawHistogram(Graphics2D g){
 		try{
 			if(originalTreeMap != null){
@@ -555,7 +554,7 @@ public class HistogramPanel extends JPanel {
 					if(bInSelection){
 						g.setColor(Color.cyan);
 					}else{
-						g.setColor((index0%2==0?Color.gray:BAR_OTHER_COLOR));//make alternating histogram bars a different color
+						g.setColor(Color.gray);
 					}
 					double gammaScale = Math.pow((pixCount/((double)maxCount)), 1/(vertScaleSlider.getValue()/10.0));
 					if(pixCount != 0){

@@ -20,6 +20,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -30,6 +31,7 @@ import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
@@ -435,6 +437,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	private AllPixelValuesRange allPixelValuesRange;
 	
+	private Cursor paintCursor = createCursor("paint");
+	private Cursor eraserCursor = createCursor("eraser");
+	private Cursor fillCursor = createCursor("fill");
+	private Cursor cropCursor = createCursor("crop");
+
 	//variable used to avoid unnecessary firing of the combobox action event
 	private String roiName;
 	
@@ -1434,6 +1441,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			//imagePane = new ZoomableOverlayImagePane();
 			imagePane.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseExited(MouseEvent e){
+					imagePane.setCursor(Cursor.getDefaultCursor());
 					updateLabel(-1, -1);
 					if(histogramPanel.isVisible()){
 						histogramPanel.setSpecialValue(null);
@@ -1507,6 +1515,22 @@ public class OverlayEditorPanelJAI extends JPanel{
 								new Point((int)(e.getPoint().getX()/imagePane.getZoom()),(int)(e.getPoint().getY()/imagePane.getZoom())));
 					}
 				}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					//Set cursor
+					if(paintButton.isSelected()){
+						imagePane.setCursor(paintCursor);
+					}else if(eraseButton.isSelected()){
+						imagePane.setCursor(eraserCursor);
+					}else if(fillButton.isSelected()){
+						imagePane.setCursor(fillCursor);
+					}else if(cropButton.isSelected()){
+						imagePane.setCursor(cropCursor);
+					}else{
+						imagePane.setCursor(Cursor.getDefaultCursor());
+					}
+					
+				}
 			});
 			imagePane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {   
 				@Override
@@ -1531,6 +1555,35 @@ public class OverlayEditorPanelJAI extends JPanel{
 		return imagePane;
 	}
 	
+
+	private Cursor createCursor(String cursorName){
+		URL cursorURL = null;
+		Dimension bestCursorDim = Toolkit.getDefaultToolkit().getBestCursorSize(16, 16);
+		boolean bUseSmall = true;
+		if((bestCursorDim.width*bestCursorDim.height) == (32*32)){
+			bUseSmall = false;
+		}
+		int xp = 0;
+		int yp = 0;
+		if(cursorName.equals("paint")){
+			cursorURL = (bUseSmall?OverlayEditorPanelJAI.class.getResource("/images/paint_cursor_16x16.gif"):OverlayEditorPanelJAI.class.getResource("/images/paint_cursor_32x32.gif"));
+		}else if(cursorName.equals("eraser")){
+			cursorURL = (bUseSmall?OverlayEditorPanelJAI.class.getResource("/images/eraser_cursor_16x16.gif"):OverlayEditorPanelJAI.class.getResource("/images/eraser_cursor_32x32.gif"));
+			yp = 15;
+		}else if(cursorName.equals("fill")){
+			cursorURL = (bUseSmall?OverlayEditorPanelJAI.class.getResource("/images/fill_cursor_16x16.gif"):OverlayEditorPanelJAI.class.getResource("/images/fill_cursor_32x32.gif"));
+			yp = 15;
+		}else if(cursorName.equals("crop")){
+			cursorURL = (bUseSmall?OverlayEditorPanelJAI.class.getResource("/images/crop_cursor_16x16.gif"):OverlayEditorPanelJAI.class.getResource("/images/crop_cursor_32x32.gif"));
+		}
+		if(cursorURL != null){
+			ImageIcon imageIcon = new ImageIcon(cursorURL);
+			if(imageIcon.getImage() != null){
+				return Toolkit.getDefaultToolkit().createCustomCursor(imageIcon.getImage(), new Point(xp,yp), cursorName);
+			}
+		}
+		return Cursor.getDefaultCursor();
+	}
 	private void giveROIRequiredWarning(String toolDescription){
 		DialogUtils.showWarningDialog(this, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
 		addROIActionListener.actionPerformed(null);
