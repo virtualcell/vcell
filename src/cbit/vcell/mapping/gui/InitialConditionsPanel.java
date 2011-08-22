@@ -406,10 +406,13 @@ private void initialize() {
 				setIcon(null);
 				if (value instanceof Species) {
 					setText(((Species)value).getCommonName());
+					setToolTipText(getText());
 				} else if (value instanceof SpeciesContext) {
 					setText(((SpeciesContext)value).getName());
+					setToolTipText(getText());
 				} else if (value instanceof Structure) {
 					setText(((Structure)value).getName());
+					setToolTipText(getText());
 				} else if (value instanceof ScopedExpression) {
 					SpeciesContextSpec scSpec = tableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
@@ -424,6 +427,9 @@ private void initialize() {
 						setHorizontalTextPosition(JLabel.LEFT);
 						setIcon(new TextIcon("[" + unit.getSymbol() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
 					}
+					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+					String tooltip = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbol() + "] </font></html>";
+					setToolTipText(tooltip);
 				}
 				return this;
 			}
