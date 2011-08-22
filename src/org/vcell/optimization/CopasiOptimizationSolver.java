@@ -11,29 +11,32 @@
 package org.vcell.optimization;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.jdom.Element;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
 import cbit.vcell.util.RowColumnResultSet;
 
@@ -250,7 +253,6 @@ public class CopasiOptimizationSolver {
 	
 public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
 						throws IOException, ExpressionException, OptimizationException {
-	OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
 	OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
 	try {		
 		Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
@@ -258,33 +260,36 @@ public static OptimizationResultSet solve(ParameterEstimationTask parameterEstim
 		System.out.println(inputXML);
 		String optResultsXML = solve(inputXML, optSolverCallbacks);
 		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
-		ODESolverResultSet odeSolverResultSet = null;
-//		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
-//			RowColumnResultSet rcResultSet = null;
-//			OdeObjectiveFunction odeObjFunc = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
-//			Element objFuncElement = optProblemXML.getChild(OptXmlTags.ObjectiveFunction_Tag);
-//			Element modelElement = objFuncElement.getChild(OptXmlTags.Model_Tag);
-//			String modelType = modelElement.getAttributeValue(OptXmlTags.ModelType_Attr);
-//			String modelInput = modelElement.getText();
-//			if (modelType.equals(OptXmlTags.ModelType_Attr_IDA)){
-//				NativeIDASolver nativeIDASolver = new NativeIDASolver();
-//				rcResultSet = nativeIDASolver.solve(modelInput,newOptResultSet.getBestEstimates());
-//			}else if (modelType.equals(OptXmlTags.ModelType_Attr_CVODE)){
-//				NativeCVODESolver nativeCVODESolver = new NativeCVODESolver();
-//				rcResultSet = nativeCVODESolver.solve(modelInput,newOptResultSet.getBestEstimates());
-//			}
-//			MathDescription mathDesc = odeObjFunc.getMathDescription();
-//			Simulation sim = new Simulation(mathDesc);
-//			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
-//			MathOverrides mathOverrides = sim.getMathOverrides();
-//			String[] parameterNames = newOptResultSet.getParameterNames();
-//			double[] parameterValues = newOptResultSet.getBestEstimates();
-//			for (int i = 0; i < parameterValues.length; i++) {
-//				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterValues[i])));
-//			}
-//			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, simSymbolTable, parameterNames, parameterValues);
-//		}	
-		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, null /*odeSolverResultSet*/);
+		//create a temp simulation based on math description
+		Simulation simulation = new Simulation(parameterEstimationTask.getSimulationContext().getMathDescription());
+		
+		String[] parameterNames = newOptResultSet.getParameterNames();
+		double[] parameterVals = newOptResultSet.getBestEstimates();
+		ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+		double[] times = refData.getDataByColumn(0);
+		double endTime = times[times.length-1];
+		ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
+		//set simulation ending time and output interval
+		simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
+		simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
+		//set parameters as math overrides
+		MathOverrides mathOverrides = simulation.getMathOverrides();
+		for (int i = 0; i < parameterNames.length; i++){
+			mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterVals[i])));
+		}
+		//get input model string
+		StringWriter stringWriter = new StringWriter();
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
+		idaFileWriter.write();
+		stringWriter.close();
+		StringBuffer buffer = stringWriter.getBuffer();
+		String idaInputString = buffer.toString();
+		
+		RowColumnResultSet rcResultSet = null;
+		NativeIDASolver nativeIDASolver = new NativeIDASolver();
+		rcResultSet = nativeIDASolver.solve(idaInputString);
+		
+		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
 		return optResultSet;
 	} catch (Throwable e){
 		e.printStackTrace(System.out);
