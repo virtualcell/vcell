@@ -13,7 +13,7 @@ package cbit.vcell.opt;
 import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.util.RowColumnResultSet;
 
 /**
  * Insert the type's description here.
@@ -30,7 +30,7 @@ public class OptimizationResultSet implements java.io.Serializable {
 /**
  * OptimizationResultSet constructor comment.
  */
-public OptimizationResultSet(OptSolverResultSet ors, ODESolverResultSet odeSolverResultSet) {
+public OptimizationResultSet(OptSolverResultSet ors, RowColumnResultSet odeSolverResultSet) {
 	optSolverResultSet = ors;
 	if (odeSolverResultSet!=null){
 		try {

@@ -438,6 +438,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		gbc.gridx = 1; 
 		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSolutionPanel(), gbc);
@@ -761,8 +762,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		parameterEstimationTask.appendSolverMessageText("\n"+message);
 		if (optResultSet!=null){
 			getSaveSolutionAsNewSimButton().setEnabled(true);
+			getPlotButton().setEnabled(true);
 		}else{
 			getSaveSolutionAsNewSimButton().setEnabled(false);
+			getPlotButton().setEnabled(false);
 		}
 	}
 
