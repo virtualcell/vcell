@@ -143,7 +143,7 @@ private javax.swing.JLabel getCopyright() {
 		try {
 			ivjCopyright = new javax.swing.JLabel();
 			ivjCopyright.setName("Copyright");
-			ivjCopyright.setText("(c) Copyright 2004");
+			ivjCopyright.setText("(c) Copyright 1998-2011");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
