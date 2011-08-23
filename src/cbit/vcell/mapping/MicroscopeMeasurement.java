@@ -33,7 +33,7 @@ public class MicroscopeMeasurement implements Serializable  {
 	private transient PropertyChangeSupport propertyChangeSupport = null;
 	
 
-	public static abstract class ConvolutionKernel {
+	public static abstract class ConvolutionKernel implements Serializable{
 	}
 	
 	public static class ExperimentalPSF extends ConvolutionKernel {
