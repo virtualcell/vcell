@@ -16,6 +16,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.io.Serializable;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -32,7 +33,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @version $Revision: 1.0 $
  */
 
-public abstract class DataSymbol implements SymbolTableEntry,Matchable {
+public abstract class DataSymbol implements SymbolTableEntry,Matchable,Serializable {
 	private String dataSymbolName = null;					// name of data symbol
 	private DataSymbolType dataSymbolType;
 	private VCUnitDefinition vcUnitDefinition = null;
