@@ -1210,6 +1210,8 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.add(getJMenuItemOnlineHelp());
 			ivjHelpMenu.add(getJSeparator6());
 			ivjHelpMenu.add(getAbout_BoxMenuItem());
+			ivjHelpMenu.add(getSeparator());
+			ivjHelpMenu.add(getMntmLicenseInformation());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2106,6 +2108,8 @@ private javax.swing.JMenuItem getSpatialExistingMenuItem() {
 }
 
 private static final String MATHMODEL_SPATIAL_CREATENEW = "Spatial from new geometry";
+private JMenuItem mntmLicenseInformation;
+private JSeparator separator;
 private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
 	if (ivjSpatialCreateNewMenuItem == null) {
 		try {
@@ -2393,7 +2397,7 @@ private void initialize() {
 		setJMenuBar(getDocumentWindowJMenuBar());
 		setSize(460, 536);
 		setTitle("DocumentWindow");
-		add(getStatusBarPane(), BorderLayout.SOUTH);
+		getContentPane().add(getStatusBarPane(), BorderLayout.SOUTH);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -2552,7 +2556,7 @@ public void setWindowManager(DocumentWindowManager windowManager) {
  * @param c java.awt.Component
  */
 public void setWorkArea(Component c) {
-	add(c, BorderLayout.CENTER);
+	getContentPane().add(c, BorderLayout.CENTER);
 }
 
 
@@ -2877,4 +2881,31 @@ public void showTransMADialog()
 	}
 }
 
+	private JMenuItem getMntmLicenseInformation() {
+		if (mntmLicenseInformation == null) {
+			mntmLicenseInformation = new JMenuItem("Virtual Cell License Information");
+			mntmLicenseInformation.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					DialogUtils.showInfoDialog(DocumentWindow.this,
+							"The Virtual Cell is free software distributed under the following MIT licensing terms:\n\n"+
+							"Copyright (c) 1998-2011 University of Connecticut Health Center\n\n" +
+							"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
+							"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n"+
+							"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n"+
+							"Please see http://vcell.org for licensing information on third party software included with the Virtual Cell."
+							);
+					
+					
+					//DialogUtils.browserLauncher(DocumentWindow.this,"http://vcell.org","Can't reach the host",false);
+				}
+			});
+		}
+		return mntmLicenseInformation;
+	}
+	private JSeparator getSeparator() {
+		if (separator == null) {
+			separator = new JSeparator();
+		}
+		return separator;
+	}
 }
