@@ -49,6 +49,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import loci.formats.ImageTools;
 
@@ -678,9 +679,20 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				allPixelValuesRangeChannels[imageDatasetChannel]);
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
+		jDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
 		jDialog.setModal(true);
 		
+		final JButton cancelJButton = new JButton("Cancel");
+		cancelJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				final String QUIT_ANSWER = "Quit Geometry Editor";
+				String result = DialogUtils.showWarningDialog(parentComponent, "Confirm cancel","Quit geometry editor and lose all changes?", new String[] {QUIT_ANSWER,"back"}, QUIT_ANSWER);
+				if(result != null && result.equals(QUIT_ANSWER)){
+					jDialog.dispose();
+				}
+			}
+		});
 		jDialog.addWindowListener(
 			new WindowAdapter() {
 				@Override
@@ -688,6 +700,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					super.windowOpened(e);
 					askInitialize(false);
 				}
+
+				@Override
+				public void windowClosing(WindowEvent e) {
+					// TODO Auto-generated method stub
+					super.windowClosing(e);
+					cancelJButton.doClick();
+				}
+				
 			}
 		);
 		
@@ -698,7 +718,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		geomAttr.dimension = 1+
 //			(roiComposite.length>2?1:0)+
 //			(roiComposite.length>1?1:0);
-		JPanel okCancelJPanel = new JPanel(new FlowLayout());
+		final JPanel okCancelJPanel = new JPanel(new FlowLayout());
 		JButton okJButton = new JButton(okButtonText);
 		okJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -717,12 +737,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
 							"Error validating compartments.\n"+exc.getMessage(), exc);
 				}
-			}
-		});
-		JButton cancelJButton = new JButton("Cancel");
-		cancelJButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				jDialog.dispose();
 			}
 		});
 		JButton attributesJButton = new JButton("Attributes...");
@@ -1592,8 +1606,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	
 	private void autoCropQuestion(){
-		final String useUnderlying = "Use Underlying";
-		final String useROI = "Use all ROI";
+		final String useUnderlying = "Use Underlying...";
+		final String useROI = "Use all ROI...";
 		final String cancel = "Cancel";
 		String result = useUnderlying;
 		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
