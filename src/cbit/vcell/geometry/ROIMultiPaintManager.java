@@ -411,7 +411,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						}
 					}
 				}
-				overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+				overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 			}else{
 				addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
 //				if(result.equals(addROIAssist)){
@@ -775,7 +775,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return finalGeometryHolder[0];
 	}
 	private VCImage checkAll() throws Exception{
-		if(overlayEditorPanelJAI.getROI() != null){
+		if(overlayEditorPanelJAI.getHighliteInfo() != null){
 			final String highlightDiscard = "discard 'highlights'";
 			final String cancelAssign = "Cancel, back to segmentation...";
 			String result = DialogUtils.showWarningDialog(
@@ -785,7 +785,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					"2.  Go back to segmentation tool. (Use 'Utilities' menu to apply highlights)",
 					new String[] {highlightDiscard,cancelAssign}, highlightDiscard);
 			if(result.equals(highlightDiscard)){
-				overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
+				overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
 			}else{
 				throw UserCancelException.CANCEL_GENERIC;
 			}	
@@ -1382,7 +1382,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOCROP_PROPERTY)){
 			autoCropQuestion();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY)){
-			overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY);
+			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY);
 			calculateHistogram();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY)){
 			highlightHistogramPixels((DefaultListSelectionModel)evt.getNewValue());
@@ -1391,11 +1391,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			updateROIWithHighlight();
 			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY)){
-			overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY);
+			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY);
 			enhanceImageOp = (String)evt.getNewValue();
 			smoothUnderlay();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY)){
-			overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY);
+			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY)){
 			fillFromPoint((Point)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY)){
@@ -1442,7 +1442,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				roiComposite[overlayEditorPanelJAI.getZ()],
 				overlayEditorPanelJAI.getCurrentROIInfo().getHighlightColor().getRGB());
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
-		overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
+		overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
 	}
 	private void smoothUnderlay(){
 		AsynchClientTask smoothTask = new AsynchClientTask("Processing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -1538,7 +1538,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	private void updateROIWithHighlight(){
-		if(overlayEditorPanelJAI.getROI() != null){
+		if(overlayEditorPanelJAI.getHighliteInfo() != null){
 			final String applyROI = "Update ROI";
 			final String createROI = "Create ROI";
 			final String cancel = "Cancel";
@@ -1576,7 +1576,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		AsynchClientTask histoROITask = new AsynchClientTask("Calculating histogram highlight...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ROI highlight = overlayEditorPanelJAI.getROI();
+				ROI highlight = overlayEditorPanelJAI.getHighliteInfo();
 				if(highlight == null){
 					highlight = createEmptyROI();
 				}
@@ -1597,7 +1597,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		AsynchClientTask updatedisplayTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				overlayEditorPanelJAI.setROI((ROI)hashTable.get(HISTO_HIGHLIGHT),OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY);
+				overlayEditorPanelJAI.setHighliteInfo((ROI)hashTable.get(HISTO_HIGHLIGHT),OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY);
 			}
 		};
 		
@@ -2106,7 +2106,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//Update display with cropped images
 				if(overlayEditorPanelJAI != null){
 					int currentContrast = overlayEditorPanelJAI.getDisplayContrastFactor();
-					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
+					overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setAllROICompositeImage(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					updateUnderlayHistogramDisplay();
 					overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
@@ -2147,7 +2147,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				Arrays.fill(((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), (byte)0);
 			}
 			overlayEditorPanelJAI.deleteROIName(null);
-			overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY);//force update
+			overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY);//force update
 		}
 		if(overlayEditorPanelJAI.getCurrentROIInfo() == null){
 			//no rois so set blend so we can see underlay
@@ -2213,7 +2213,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	
 	private void applyHighlightToROI(ROIMultiPaintManager.ComboboxROIName currentComboboxROIName){
 		boolean bOverWrite = true;
-		UShortImage[] roiZ = overlayEditorPanelJAI.getROI().getRoiImages();
+		UShortImage[] roiZ = overlayEditorPanelJAI.getHighliteInfo().getRoiImages();
 		//Check for existing ROI
 		final String OVERWRITE_ALL = "Overwrite any existing ROIs";
 		final String KEEP_EXISTING = "Keep existing ROIs when overlapping";
@@ -2233,7 +2233,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					if(result.equals(KEEP_EXISTING)){
 						bOverWrite = false;
 					}else if(result.equals(CANCEL_ROI_UPDATE)){
-//						overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
+//						overlayEditorPanelJAI.setHighliteInfo(null);//Clear highlight ROI leftover from ROIAssistPanel
 						return;
 					}
 					break;
@@ -2269,7 +2269,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
-		overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
+		overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
 	}
 	private void clearROI(boolean bAskClear,Color roiColor,String action){
 		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length;
@@ -2287,7 +2287,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				optionListV.add(clearAll);
 				sb.append("2. Clear all roiS.");
 			}
-			if(overlayEditorPanelJAI.getROI() != null){
+			if(overlayEditorPanelJAI.getHighliteInfo() != null){
 				optionListV.add(clearHighlight);
 				sb.append((roiCount>1?"3. ":"2. ")+"Clear only the highlighted region in the current ROI.");
 			}
@@ -2304,7 +2304,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					byte[] roiData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
 					Arrays.fill(roiData, (byte)0);
 				}
-				overlayEditorPanelJAI.setROI(null,action);
+				overlayEditorPanelJAI.setHighliteInfo(null,action);
 				return;
 			}else if (result.equals(cancel)){
 				return;
@@ -2325,7 +2325,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			for (int xy = 0; xy < roiData.length; xy++) {
 				if((roiData[xy]&0x000000FF) == roiColorIndex){
 					if(bHighlightOnly){
-						if(overlayEditorPanelJAI.getROI().getRoiImages()[z].getPixels()[xy]==0){
+						if(overlayEditorPanelJAI.getHighliteInfo().getRoiImages()[z].getPixels()[xy]==0){
 							continue;
 						}
 					}
@@ -2333,7 +2333,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}
 		}
-		overlayEditorPanelJAI.setROI(null,action);
+		overlayEditorPanelJAI.setHighliteInfo(null,action);
 
 	}
 	private void checkROI(){
@@ -2350,9 +2350,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //							new String[] {recheck,/*fixCheck,*/clear,cancel},
 //							recheck);
 //					if(result.equals(recheck)){
-//						overlayEditorPanelJAI.setROI(null);
+//						overlayEditorPanelJAI.setHighliteInfo(null);
 //					}else if(result.equals(clear)){
-//						overlayEditorPanelJAI.setROI(null);
+//						overlayEditorPanelJAI.setHighliteInfo(null);
 //						throw UserCancelException.CANCEL_GENERIC;
 //					}else if(result.equals(cancel)){
 //						throw UserCancelException.CANCEL_GENERIC;
@@ -2559,10 +2559,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				ROI highlightROI = (ROI)hashTable.get(HIGHLIGHT_ROI);
 				if(highlightROI != null){
-					overlayEditorPanelJAI.setROI(highlightROI, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
+					overlayEditorPanelJAI.setHighliteInfo(highlightROI, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 					wantBlendSetToEnhance();
 				}else{
-					overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
+					overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 				}
 			}
 		};
