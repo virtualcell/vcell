@@ -387,7 +387,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private OverlayImageDisplayJAI imagePane = null;
 	private JSlider timeSlider = null;
 	private ImageDataset imageDataset = null;
-	private ROI roi = null;
+	private ROI highliteInfo = null;
 	private StringBuffer sb = new StringBuffer();
 	private JScrollPane jScrollPane2 = null;
 	private JPanel leftJPanel = null;
@@ -439,9 +439,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private Cursor eraserCursor = createCursor("eraser");
 	private Cursor fillCursor = createCursor("fill");
 	private Cursor cropCursor = createCursor("crop");
-
-	//variable used to avoid unnecessary firing of the combobox action event
-	private String roiName;
 	
 	//ROI comboBox action
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
@@ -451,13 +448,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 				if(selectedItem != null){
 					delROIButton.setEnabled(selectedItem.isDeleteable());
 					String selectedName = selectedItem.getROIName();
-					if (!selectedName.equals(roiName)) {					
-						firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,selectedItem.getROIName());
-						roiName = selectedName;
-					}
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,selectedItem.getROIName());
 				}else{
 					delROIButton.setEnabled(false);
-					roiName = null;
 					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,null);
 				}
 			}
@@ -853,7 +846,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 							OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY, null, null);
 					}
 				});
-				applyHighlightsJMenuItem.setEnabled(getROI() != null /*&& roiComboBox.getItemCount() > 0*/);
+				applyHighlightsJMenuItem.setEnabled(getHighliteInfo() != null /*&& roiComboBox.getItemCount() > 0*/);
 				jp.add(applyHighlightsJMenuItem);
 
 				JMenuItem discardHighlightsJMenuItem = new JMenuItem("Discard highlights");
@@ -862,7 +855,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 						firePropertyChange(FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY,null,null);
 					}
 				});
-				discardHighlightsJMenuItem.setEnabled(getROI() != null);
+				discardHighlightsJMenuItem.setEnabled(getHighliteInfo() != null);
 				jp.add(discardHighlightsJMenuItem);
 				
 				JMenu smoothingJMenu = new JMenu("Smooth Underlay");
@@ -1067,10 +1060,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	
 	private void refreshROI(){
-		if (roi!=null){
+		if (getHighliteInfo()!=null){
 			getImagePane().setHighlightImageAndWritebackBuffer(
-				createHighlightImageFromROI(getROI()),
-				roi.getRoiImages()[getRoiImageIndex()].getPixels());
+				createHighlightImageFromROI(getHighliteInfo()),
+				getHighliteInfo().getRoiImages()[getRoiImageIndex()].getPixels());
 		}else{
 			getImagePane().setHighlightImageAndWritebackBuffer(null,null);
 		}
@@ -1085,8 +1078,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 		return allCompositeROINamesAndColors;
 	}
-	public ROI getROI(){
-		return roi;
+	public ROI getHighliteInfo(){
+		return highliteInfo;
 	}
 	public ROIMultiPaintManager.ComboboxROIName getCurrentROIInfo(){
 		return (ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem();
@@ -1104,17 +1097,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	/**
 	 * Method setROI.
-	 * @param argROI ROI
+	 * @param argHighliteInfo ROI
 	 */
-	public void setROI(ROI argROI,String action){
+	public void setHighliteInfo(ROI highliteInfo,String action){
 		histogramPanel.highlightsChanged(action);
-		if (argROI != null){
-			roi = argROI;
-			roiName = roi.getROIName();
-		}else{
-			roi = null;
-			roiName =  null;
-		}
+		this.highliteInfo = highliteInfo;
 		refreshROI();
 	}
 	
@@ -1407,8 +1394,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		ISize isizeDataset = null;
 		if(imageDataset != null){
 			return imageDataset.getISize();
-		}else if(roi != null){
-			return roi.getISize();
+		}else if(getHighliteInfo() != null){
+			return getHighliteInfo().getISize();
 		}else if(allROICompositeImageArr != null){
 			isizeDataset = new ISize(allROICompositeImageArr[0].getWidth(), allROICompositeImageArr[0].getHeight(), allROICompositeImageArr.length);
 		}
