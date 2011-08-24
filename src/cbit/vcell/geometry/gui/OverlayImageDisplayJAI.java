@@ -359,30 +359,30 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		
 	}
 		
-	public void drawHighlight(int x, int y, int radius, boolean erase,Color highlightColor,Color compositeColor,Point lastHighlightPoint){
-		if(lastHighlightPoint == null){
-			lastHighlightPoint = new Point(x,y);
+	public void drawPaint(int x, int y, int radius, boolean erase,/*Color highlightColor,*/Color compositeColor,Point lastPaintPoint){
+		if(lastPaintPoint == null){
+			lastPaintPoint = new Point(x,y);
 		}
 		
 		if (erase){
-			highlightColor = Color.black;
+//			highlightColor = Color.black;
 			compositeColor = Color.black;
 		}
 //		if(bRemoveROIWhenDrawing){
-			highlightColor = Color.black;//erase highlight when drawing
+//			highlightColor = Color.black;//erase highlight when drawing
 //		}
 		float zoom = getZoom();
-		if (getHighlightImage()!=null || allROICompositeImage != null){
-			Graphics2D highlightGraphics = (getHighlightImage() != null?getHighlightImage().createGraphics():null);
+		if (/*getHighlightImage()!=null ||*/ allROICompositeImage != null){
+//			Graphics2D highlightGraphics = (getHighlightImage() != null?getHighlightImage().createGraphics():null);
 			Graphics2D allROICompositeGraphics = (allROICompositeImage != null?allROICompositeImage.createGraphics():null);
-			if(highlightGraphics != null){highlightGraphics.setColor(highlightColor);}
+//			if(highlightGraphics != null){highlightGraphics.setColor(highlightColor);}
 			if(allROICompositeGraphics != null){allROICompositeGraphics.setColor(compositeColor);}
 			int size = (int)(radius/zoom/*+radius/zoom*/+1);
 			//-----Interpolate between paint points for continuous lines
-			double currentX = lastHighlightPoint.x;
-			double currentY = lastHighlightPoint.y;
-			int dx = x-lastHighlightPoint.x;
-			int dy = y-lastHighlightPoint.y;
+			double currentX = lastPaintPoint.x;
+			double currentY = lastPaintPoint.y;
+			int dx = x-lastPaintPoint.x;
+			int dy = y-lastPaintPoint.y;
 			double delta = 1.0/(dx==0 && dy==0?1.0:Math.max(Math.abs(dx), Math.abs(dy)));
 			int lastX = (int)currentX;
 			int lastY = (int)currentY;
@@ -390,15 +390,15 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 				if(i== 0 || (int)currentX != lastX || (int)currentY != lastY){
 					lastX = (int)currentX;
 					lastY = (int)currentY;
-					if(highlightGraphics != null){highlightGraphics.fillOval((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);}
+//					if(highlightGraphics != null){highlightGraphics.fillOval((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);}
 					if(allROICompositeGraphics != null){allROICompositeGraphics.fillOval((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);}
 //					graphicsScaled.fillOval(lastX-size, lastY-size, size, size);
 				}
-				currentX = lastHighlightPoint.x+(i+1)*delta*dx;
-				currentY = lastHighlightPoint.y+(i+1)*delta*dy;
+				currentX = lastPaintPoint.x+(i+1)*delta*dx;
+				currentY = lastPaintPoint.y+(i+1)*delta*dy;
 			}
 			//------
-			if(highlightGraphics != null){highlightGraphics.dispose();}
+//			if(highlightGraphics != null){highlightGraphics.dispose();}
 			if(allROICompositeGraphics != null){allROICompositeGraphics.dispose();}
 //			graphicsScaled.dispose();
 			refreshImage();
