@@ -484,7 +484,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				showPathway();
 			}
 		});
-		// done
+
 		responseTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 			
 			public void valueChanged(TreeSelectionEvent e) {

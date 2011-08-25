@@ -21,6 +21,8 @@ import java.util.Set;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.Entity;
+import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
@@ -138,6 +140,8 @@ public class PathwayModelTableModel extends VCellSortTableModel<BioPaxObject> im
 			}else{
 				return physicalEntity.getID();
 			}
+		}else if (bpObject instanceof GroupObject){
+			return ((Entity)bpObject).getName().get(0);
 		}else{
 			return bpObject.getID();
 		}

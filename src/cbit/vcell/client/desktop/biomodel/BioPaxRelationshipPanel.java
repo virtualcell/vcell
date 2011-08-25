@@ -84,7 +84,19 @@ private void initialize() {
 		table.disableUneditableForeground();
 		
 		int gridy = 0;
-		GridBagConstraints gbc = new java.awt.GridBagConstraints();		
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();	
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.01;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		JLabel info = new JLabel("Edit physiology links by checking or unchecking the Link boxes.");
+		add(info, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();	
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -99,7 +111,7 @@ private void initialize() {
 		gbc.gridx = 8;
 		gbc.gridy = gridy;
 		add(Box.createRigidArea(new Dimension(0, 75)), gbc);
-
+		
 		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -123,7 +135,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 0, 4, 0);
 		add(textFieldSearch, gbc);
 		
-		showLinkedEntityCheckBox = new JCheckBox("Show linked pathway entities only");
+		showLinkedEntityCheckBox = new JCheckBox("Show linked physiology objects only");
 		showLinkedEntityCheckBox.setBackground(Color.white);
 		showLinkedEntityCheckBox.addActionListener(eventHandler);
 		gbc = new java.awt.GridBagConstraints();

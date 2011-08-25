@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+
 import cbit.vcell.biomodel.meta.Identifiable;
 
 public class PathwayModel {
@@ -145,6 +146,17 @@ public class PathwayModel {
 //		System.err.println("add all BioPaxObject children of this object to pathwayModel");
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		return bioPaxObject;
+	}
+	
+	public ArrayList <BioPaxObject> add(ArrayList <BioPaxObject> bpObjects){
+		if (bpObjects==null){
+			throw new RuntimeException("added a null object to pathway model");
+		}
+		for(BioPaxObject bioPaxObject : bpObjects)
+			biopaxObjects.add(bioPaxObject);
+//		System.err.println("add all BioPaxObject children of this object to pathwayModel");
+		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
+		return bpObjects;
 	}
 
 	public Pathway getTopLevelPathway(){
@@ -281,12 +293,53 @@ public class PathwayModel {
 		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
 		biopaxObjects = new2BiopaxObjects;
 	}
-
-	public Map<BioPaxObject, HashSet<BioPaxObject>> getParentHashtable(){
-		return parentMap;
+	
+	public Map<BioPaxObject, BioPaxObject> refreshGroupMap(){
+		Map<BioPaxObject, BioPaxObject> groupMap = new Hashtable<BioPaxObject, BioPaxObject> ();
+		for(BioPaxObject bpObject : biopaxObjects){
+			if(bpObject instanceof GroupObject){
+				GroupObject gObject = (GroupObject) bpObject;
+				for(BioPaxObject bpo : gObject.getGroupedObjects()){
+					groupMap.put(bpo, gObject);
+				}
+			}
+		}
+		return groupMap;
 	}
 	
-	public void refreshParentMap(){
+	public Set<BioPaxObject> getBioPaxComponents(BioPaxObject bioPaxObject){
+		Set<BioPaxObject> components = new HashSet<BioPaxObject>();
+		if(bioPaxObject instanceof PhysicalEntity){// for physicalEntity:: get its members and components
+			components.addAll(((PhysicalEntity)bioPaxObject).getMemberPhysicalEntity());
+			if(bioPaxObject instanceof Complex){
+				components.addAll(((Complex)bioPaxObject).getComponents());
+			}
+		}else if(bioPaxObject instanceof Interaction){// for interaction:: get its participants
+			List<InteractionParticipant> participants = ((Interaction) bioPaxObject).getParticipants();
+			if(participants != null) {
+				for(InteractionParticipant participant : participants) {
+					components.add(participant.getPhysicalEntity());
+				}
+			}
+			if(bioPaxObject instanceof Control){// for Control
+				// TODO
+				if(bioPaxObject instanceof Catalysis){// for Catalysis
+					// TODO
+				}
+			}else if(bioPaxObject instanceof Conversion){// for Conversion
+				// TODO
+			}else if(bioPaxObject instanceof TemplateReaction){// for TemplateReaction
+				// TODO
+			}
+		}else if(bioPaxObject instanceof Pathway){// for Pathway
+			// TODO
+		}else{ // for Gene
+			// TODO
+		}
+		return components;
+	}
+	
+	public Map<BioPaxObject, HashSet<BioPaxObject>> refreshParentMap(){
 		parentMap =  new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
 		for (BioPaxObject bpObject : biopaxObjects){
 			// only build the parent hashtable for Entity
@@ -299,7 +352,7 @@ public class PathwayModel {
 					if(complex.getComponents() != null)
 						addToParentMap(bpObject, complex.getComponents());
 				}
-			}else if(bpObject instanceof InteractionImpl){
+			}else if(bpObject instanceof Interaction){
 				List<InteractionParticipant> participants = ((Interaction) bpObject).getParticipants();
 				if(participants != null) {
 					Set<BioPaxObject> physicalEntities = new HashSet<BioPaxObject>();
@@ -371,6 +424,7 @@ public class PathwayModel {
 			}
 		}
 		*/
+		return parentMap;
 	}
 
 	private void addToParentMap(BioPaxObject parent, Collection<? extends BioPaxObject> children){
@@ -427,6 +481,5 @@ public class PathwayModel {
 		biopaxObjects.removeAll(bioPaxObjects);
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
-
 
 }
