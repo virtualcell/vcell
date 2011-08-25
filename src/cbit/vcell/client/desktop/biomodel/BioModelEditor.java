@@ -689,9 +689,9 @@ public void setBioModel(BioModel bioModel) {
 	
 	bioModelEditorTreeCellRenderer.setBioModel(bioModel);
 	
-	getReactionPropertiesPanel().setBioModel(bioModel); // wei's code
-	getSpeciesPropertiesPanel().setBioModel(bioModel); // wei's code
-	bioPaxObjectPropertiesPanel.setBioModel(bioModel); // wei's code
+	getReactionPropertiesPanel().setBioModel(bioModel); 
+	getSpeciesPropertiesPanel().setBioModel(bioModel);
+	bioPaxObjectPropertiesPanel.setBioModel(bioModel);
 }
 
 /**

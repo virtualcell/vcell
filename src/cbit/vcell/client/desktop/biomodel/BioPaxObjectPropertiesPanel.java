@@ -30,6 +30,7 @@ import org.vcell.pathway.Control;
 import org.vcell.pathway.Dna;
 import org.vcell.pathway.DnaRegion;
 import org.vcell.pathway.Entity;
+import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
@@ -42,11 +43,14 @@ import org.vcell.pathway.RnaRegion;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.group.PathwayGrouping;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.BioModelEntityObject;
 
 
 @SuppressWarnings("serial")
@@ -140,7 +144,7 @@ private void initialize() {
 			    if(table.convertColumnIndexToModel(ccol) == BioPaxObjectPropertiesTableModel.Column_Value) {
 			    	BioPaxObjectProperty property = tableModel.getValueAt(crow);
 			    	BioPaxObject bioPaxObject = property.bioPaxObject;
-			    	if (bioPaxObject instanceof Xref) { // if xRef
+			    	if (bioPaxObject instanceof Xref) { // if xRef, get url 
 			    		String url = ((Xref) bioPaxObject).getURL();
 			    		DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
 			    	}
@@ -221,6 +225,12 @@ protected void refreshInterface() {
 		// entity::availability (***ignored***)
 		// entity::dataSource (***ignored***)
 		// entity::evidence (***ignored***)
+		
+		// entity::Link
+		for(RelationshipObject rObject : bioModel.getRelationshipModel().getRelationshipObjects(bioPaxObject)){
+			BioModelEntityObject beObject = rObject.getBioModelEntityObject();
+			propertyList.add(new BioPaxObjectProperty("Linked physiology object", beObject.getName(), bioPaxObject));
+		}
 		
 		if(entity instanceof PhysicalEntity){
 			PhysicalEntity physicalEntity = (PhysicalEntity)entity;
@@ -314,8 +324,24 @@ protected void refreshInterface() {
 				}
 			}
 			
+		}else if(entity instanceof GroupObject){
+			GroupObject groupObject = (GroupObject)entity;
+			for(BioPaxObject bpo : groupObject.getGroupedObjects()){
+				propertyList.add(new BioPaxObjectProperty("Component", ((Entity)bpo).getName().get(0), bpo));
+			}
 		}
-
+		
+		//Neighbor
+		PathwayGrouping pathwayGrouping = new PathwayGrouping();
+		Set<BioPaxObject> neighbors = pathwayGrouping.computeNeighbors(bioModel.getPathwayModel(), (Entity) bioPaxObject);
+		if(neighbors != null){
+			for(BioPaxObject bpo : neighbors){
+				if(((Entity)bpo).getName() != null)
+					propertyList.add(new BioPaxObjectProperty("Neighbors", (((Entity)bpo).getName().get(0)), bpo));
+			}
+		}
+		
+		// entity::xRef
 		ArrayList<Xref> xrefList = ((Entity) bioPaxObject).getxRef();
 		for (Xref xref : xrefList) {
 			if (xref instanceof UnificationXref){

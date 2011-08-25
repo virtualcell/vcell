@@ -18,10 +18,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,17 +52,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Complex;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Transport;
+import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
@@ -69,6 +73,7 @@ import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ViewPortStabilizer;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -81,6 +86,7 @@ import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -105,7 +111,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private GraphPane graphPane;
 	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
-	private JMenuItem importIntoModelMenuItem = null; // wei's code
+	private JMenuItem importIntoModelMenuItem = null; 
 	private JSortTable pathwayModelTable = null;
 	private PathwayModelTableModel pathwayModelTableModel = null;
 	private JTextField searchTextField;
@@ -116,13 +122,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 	protected JScrollPane graphScrollPane;
 	protected ViewPortStabilizer viewPortStabilizer;
 	
-	private JButton deleteButton, physiologyLinkButton;
+	private JButton deleteButton, physiologyLinkButton, groupButton;
 	private JMenuItem showPhysiologyLinksMenuItem, editPhysiologyLinksMenuItem;
 	private JPopupMenu physiologyLinkPopupMenu;
+	private JPopupMenu groupPopupMenu;
+	private JMenuItem groupMenuItem, ungroupMenuItem;
 	private BioPaxRelationshipPanel bioPaxRelationshipPanel;
 	private ConversionPanel conversionPanel;
 	
-	private class EventHandler implements ListSelectionListener, AnnotationEventListener, PropertyChangeListener, DocumentListener, ChangeListener, PathwayListener, ActionListener {
+	private class EventHandler implements ListSelectionListener, AnnotationEventListener, 
+			PropertyChangeListener, DocumentListener, ChangeListener, PathwayListener, ActionListener, MouseListener {
 
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -172,7 +181,36 @@ implements PathwayEditor, ActionBuilder.Generator {
 				deleteButtonPressed();
 			} else if (e.getSource() == importIntoModelMenuItem) {
 				importIntoModel();
+			} else if(e.getSource() == groupButton) {
+				getGroupPopupMenu().show(groupButton, 0, groupButton.getHeight());
+			} else if (e.getSource() == groupMenuItem) {
+				groupBioPaxObjects();
+			} else if (e.getSource() == ungroupMenuItem) {
+				ungroupBioPaxObjects();				
 			}
+		}
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2 ) {
+				if(getSelectedBioPaxObjects().size() == 1 ){
+//					groupBioPaxObjects(getSelectedBioPaxObject());
+				}
+			}
+		}
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -453,7 +491,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 			showPhysiologyLinksMenuItem.addActionListener(eventHandler);			
 			editPhysiologyLinksMenuItem = new JMenuItem("Edit Physiology Links...");
 			editPhysiologyLinksMenuItem.addActionListener(eventHandler);
-			importIntoModelMenuItem = new JMenuItem("Import into Physiology...");// new ConversionPanel()));
+			importIntoModelMenuItem = new JMenuItem("Import into Physiology...");
 			importIntoModelMenuItem.addActionListener(eventHandler);
 			physiologyLinkPopupMenu.add(showPhysiologyLinksMenuItem);
 			physiologyLinkPopupMenu.add(editPhysiologyLinksMenuItem);
@@ -461,6 +499,20 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 		refreshButtons();
 		return physiologyLinkPopupMenu;
+	}
+	
+	private JPopupMenu getGroupPopupMenu() {
+		if (groupPopupMenu == null) {
+			groupPopupMenu = new JPopupMenu();
+			groupMenuItem = new JMenuItem("Group");
+			groupMenuItem.addActionListener(eventHandler);			
+			ungroupMenuItem = new JMenuItem("Ungroup");
+			ungroupMenuItem.addActionListener(eventHandler);
+			groupPopupMenu.add(groupMenuItem);
+			groupPopupMenu.add(ungroupMenuItem);	
+		}
+		refreshButtons();
+		return groupPopupMenu;
 	}
 	
 	private void initialize() {
@@ -471,6 +523,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		pathwayGraphModel = new PathwayGraphModel();
 		pathwayGraphModel.addPropertyChangeListener(eventHandler);
 		graphPane.setGraphModel(pathwayGraphModel);
+		graphPane.addMouseListener(eventHandler);
 		
 		graphCartoonTool = new PathwayGraphTool();
 		graphCartoonTool.setGraphPane(graphPane);
@@ -494,6 +547,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 		searchTextField = new JTextField();
 		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
+		groupButton = new JButton("Group Selected", new DownArrowIcon());
+		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		groupButton.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete Selected");
 		deleteButton.addActionListener(eventHandler);
 		physiologyLinkButton = new JButton("Physiology Links", new DownArrowIcon());
@@ -521,10 +577,17 @@ implements PathwayEditor, ActionBuilder.Generator {
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		bottomPanel.add(deleteButton, gbc);
+		bottomPanel.add(groupButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		bottomPanel.add(deleteButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -588,6 +651,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private void refreshButtons() {
 		deleteButton.setEnabled(false);
 		physiologyLinkButton.setEnabled(false);
+		groupButton.setEnabled(false);
 		if (showPhysiologyLinksMenuItem != null) {
 			showPhysiologyLinksMenuItem.setEnabled(false);
 		}
@@ -596,6 +660,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 		if (importIntoModelMenuItem != null) {
 			importIntoModelMenuItem.setEnabled(false);
+		}
+		if (groupMenuItem != null) {
+			groupMenuItem.setEnabled(false);
+		}
+		if (ungroupMenuItem != null) {
+			ungroupMenuItem.setEnabled(false);
 		}
 		if (selectionManager != null && tabbedPane.getSelectedComponent() != sourceTabPanel) {
 			ArrayList<Object> selectedObjects = selectionManager.getSelectedObjects(BioPaxObject.class);
@@ -611,6 +681,25 @@ implements PathwayEditor, ActionBuilder.Generator {
 					}
 					if (editPhysiologyLinksMenuItem != null) {
 						editPhysiologyLinksMenuItem.setEnabled(true);
+					}
+				}
+				if(selectedObjects.size() > 1){ // only provide the "group" function when users select more than one object
+					groupButton.setEnabled(true);
+					if (groupMenuItem != null) {
+						groupMenuItem.setEnabled(true);
+					}
+				}
+				boolean includingGroup = false;
+				for(Object object : selectedObjects){
+					if(object instanceof GroupObject){
+						includingGroup = true;
+						break;
+					}
+				}
+				if(includingGroup){ // only provide the "ungroup" function when selected objects contain at least one GroupObject
+					groupButton.setEnabled(true);
+					if (ungroupMenuItem != null) {
+						ungroupMenuItem.setEnabled(true);
 					}
 				}
 			}
@@ -650,7 +739,6 @@ implements PathwayEditor, ActionBuilder.Generator {
 		refreshInterface();
 	}
 	
-	// wei's code
 	public static List<BioPaxObject> getSelectedBioPaxObjects(GraphModel graphModel){
 		ArrayList<BioPaxObject> bpObjects = new ArrayList<BioPaxObject>();
 		for(Object selected : graphModel.getSelectedObjects()) {
@@ -788,5 +876,47 @@ implements PathwayEditor, ActionBuilder.Generator {
 			DialogUtils.showComponentCloseDialog(this, bioPaxRelationshipPanel, "Edit Physiology Links");
 		}
 		refreshButtons();
+	}
+	
+	private void groupBioPaxObjects(){
+			HashSet<BioPaxObject> selected = new HashSet<BioPaxObject>();
+			selected.addAll(getSelectedBioPaxObjects());
+			if (selected.size() == 0) return;
+			if(bioModel == null || bioModel.getPathwayModel() == null) return;
+			PathwayGrouping pathwayGrouping = new PathwayGrouping();
+			ArrayList<String> names = new ArrayList<String>();
+			String id = pathwayGrouping.groupIdGenerator(bioModel.getPathwayModel());
+			String newName = null;
+			try{
+				newName = DialogUtils.showInputDialog0(this, "Name of the GroupObject", id);
+			} catch (UtilCancelException ex) {
+				// user canceled; it's ok
+			}
+			if(newName != null ){
+				if(newName.length() == 0){
+					PopupGenerator.showErrorDialog(this, "The Name of the GroupObject should be provided.");
+				}else{
+					names.add(newName);
+					GroupObject groupObject = pathwayGrouping.createGroupObject(bioModel.getPathwayModel(), names, id, selected);
+					if(groupObject == null){
+						// error message
+						DialogUtils.showErrorDialog(this, "The set of selected objects is a subset of one group object in the model. They will not be grouped together again.");
+					}else{
+						bioModel.getPathwayModel().add(groupObject);
+					}
+				}
+			}
+	}
+	
+	private void ungroupBioPaxObjects(){
+		HashSet<BioPaxObject> selected = new HashSet<BioPaxObject>();
+		selected.addAll(getSelectedBioPaxObjects());
+		if (selected.size() == 0) return;
+		if(bioModel == null || bioModel.getPathwayModel() == null) return;
+		for(BioPaxObject bpObject : selected){
+			if(bpObject instanceof GroupObject){ // remove the GroupObject from pathway model
+				bioModel.getPathwayModel().remove(bpObject);
+			}
+		}
 	}
 }
