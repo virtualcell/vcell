@@ -613,8 +613,7 @@ private javax.swing.JPanel getButtonPanel() {
 							});
 							d.setModal(true);
 							d.getContentPane().add(main);
-							d.setSize(300,300);
-							d.setLocation(300,200);
+							d.pack();
 							ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
 
 							if(acceptFlag[0]){
