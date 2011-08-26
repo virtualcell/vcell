@@ -9,8 +9,7 @@
  */
 
 package cbit.vcell.modelopt;
-import org.vcell.optimization.DefaultOptSolverCallbacks;
-import org.vcell.optimization.OptSolverCallbacks;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 
@@ -36,7 +35,7 @@ public class ParameterEstimationTask extends AnalysisTask {
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null;
 	private transient MathSymbolMapping fieldMathSymbolMapping = null;
 	private transient OptimizationResultSet fieldOptimizationResultSet = null;
-	private transient OptSolverCallbacks fieldOptSolverCallbacks = new DefaultOptSolverCallbacks();
+	private transient CopasiOptSolverCallbacks fieldOptSolverCallbacks = new CopasiOptSolverCallbacks();
 	private transient java.lang.String fieldSolverMessageText = new String();
 	private SimulationContext simulationContext = null;
 
@@ -189,7 +188,7 @@ public cbit.vcell.opt.OptimizationSolverSpec getOptimizationSolverSpec() {
  * @return The optSolverCallbacks property value.
  * @see #setOptSolverCallbacks
  */
-public OptSolverCallbacks getOptSolverCallbacks() {
+public CopasiOptSolverCallbacks getOptSolverCallbacks() {
 	return fieldOptSolverCallbacks;
 }
 
@@ -257,19 +256,6 @@ public void setOptimizationSolverSpec(OptimizationSolverSpec optimizationSolverS
 	fieldOptimizationSolverSpec = optimizationSolverSpec;
 	firePropertyChange("optimizationSolverSpec", oldValue, optimizationSolverSpec);
 }
-
-
-/**
- * Sets the optSolverCallbacks property (cbit.vcell.opt.solvers.OptSolverCallbacks) value.
- * @param optSolverCallbacks The new value for the property.
- * @see #getOptSolverCallbacks
- */
-public void setOptSolverCallbacks(OptSolverCallbacks optSolverCallbacks) {
-	OptSolverCallbacks oldValue = fieldOptSolverCallbacks;
-	fieldOptSolverCallbacks = optSolverCallbacks;
-	firePropertyChange("optSolverCallbacks", oldValue, optSolverCallbacks);
-}
-
 
 /**
  * Sets the solverMessageText property (java.lang.String) value.

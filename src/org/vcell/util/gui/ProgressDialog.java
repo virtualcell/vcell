@@ -26,18 +26,6 @@ public abstract class ProgressDialog extends JDialog {
 	protected transient ProgressDialogListener fieldProgressDialogListenerEventMulticaster = null;
 	private JButton cancelButton = null;
 
-public ProgressDialog() {
-	super();
-	getCancelButton().addActionListener(new ActionListener() {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getCancelButton()) {
-				fireCancelButton_actionPerformed(new java.util.EventObject(this));
-			}
-		};
-	});
-	initialize();
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 6:08:36 PM)
@@ -45,7 +33,13 @@ public ProgressDialog() {
  */
 public ProgressDialog(Frame owner) {
 	super(owner);
-	initialize();
+	getCancelButton().addActionListener(new ActionListener() {
+		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == getCancelButton()) {
+				fireCancelButton_actionPerformed(new java.util.EventObject(this));
+			}
+		};
+	});
 }
 
 
@@ -73,11 +67,6 @@ protected javax.swing.JProgressBar getProgressBar() {
 }
 
 /**
- * Initialize the class.
- */
-protected abstract void initialize();
-
-/**
  * 
  * @param newListener cbit.util.ProgressDialogListener
  */
@@ -99,7 +88,7 @@ public abstract void setMessage(String message);
  * Creation date: (5/19/2004 1:06:18 PM)
  * @param progress int
  */
-void setProgress(int progress) {
+public void setProgress(int progress) {
 	getProgressBar().setValue(progress);
 }
 

@@ -99,8 +99,7 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-@Override
-protected void initialize() {
+private void initialize() {
 	try {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setSize(341, 116);
