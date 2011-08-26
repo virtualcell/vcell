@@ -351,7 +351,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_ADDALLDISTINCT_PROPERTY = "FRAP_DATA_ADDALLDISTINCT_PROPERTY";
 	public static final String FRAP_DATA_END_PROPERTY = "FRAP_DATA_END_PROPERTY";
 	public static final String FRAP_DATA_FILL_PROPERTY = "FRAP_DATA_FILL_PROPERTY";
-	public static final String FRAP_DATA_PAINT_PROPERTY = "FRAP_DATA_PAINT_PROPERTY";
+	public static final String FRAP_DATA_PAINTERASE_PROPERTY = "FRAP_DATA_PAINTERASE_PROPERTY";
 	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
 	public static final String FRAP_DATA_AUTOCROP_PROPERTY = "FRAP_DATA_AUTOCROP_PROPERTY";
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
@@ -373,8 +373,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final double DEFAULT_OFFSET_FACTOR = 0.0;
 	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
 	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
-//	private ISize originalISize;
-	//panel components
 	private JComboBox roiComboBox;
 	private JButton contrastButtonMinus;
 	private JButton contrastButtonPlus;
@@ -390,7 +388,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private ROI highliteInfo = null;
 	private StringBuffer sb = new StringBuffer();
 	private JScrollPane jScrollPane2 = null;
-	private JPanel leftJPanel = null;
+	private JPanel toolButtonPanel = null;
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
 	private Color highlightColor = Color.yellow.darker();
@@ -447,7 +445,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 				ROIMultiPaintManager.ComboboxROIName selectedItem = ((ROIMultiPaintManager.ComboboxROIName)roiComboBox.getSelectedItem());
 				if(selectedItem != null){
 					delROIButton.setEnabled(selectedItem.isDeleteable());
-					String selectedName = selectedItem.getROIName();
 					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,selectedItem.getROIName());
 				}else{
 					delROIButton.setEnabled(false);
@@ -771,13 +768,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gbc_jScrollPane2.gridx = 0;
 		gbc_jScrollPane2.gridy = 0;
 		panel_2.add(getJScrollPane2(), gbc_jScrollPane2);
-		GridBagConstraints gbc_leftJPanel = new GridBagConstraints();
-		gbc_leftJPanel.weighty = 1.0;
-		gbc_leftJPanel.insets = new Insets(2, 2, 2, 2);
-		gbc_leftJPanel.anchor = GridBagConstraints.NORTH;
-		gbc_leftJPanel.gridx = 2;
-		gbc_leftJPanel.gridy = 0;
-		panel_2.add(getLeftJPanel(), gbc_leftJPanel);
+		GridBagConstraints gbc_toolButtonPanel = new GridBagConstraints();
+		gbc_toolButtonPanel.weighty = 1.0;
+		gbc_toolButtonPanel.insets = new Insets(2, 2, 2, 2);
+		gbc_toolButtonPanel.anchor = GridBagConstraints.NORTH;
+		gbc_toolButtonPanel.gridx = 2;
+		gbc_toolButtonPanel.gridy = 0;
+		panel_2.add(getToolButtonPanel(), gbc_toolButtonPanel);
 
 		roiComboBox = new JComboBox();
 		roiComboBox.setName("activeROIComboBox");
@@ -1025,7 +1022,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiDrawButtonGroup.add(fillButton);
 		roiDrawButtonGroup.add(cropButton);
 		
-		BeanUtils.enableComponents(getLeftJPanel(), false);
+		BeanUtils.enableComponents(getToolButtonPanel(), false);
 		BeanUtils.enableComponents(editROIPanel, false);
 		
 		histogramPanel = new HistogramPanel();
@@ -1215,6 +1212,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		eraseButton.setVisible(bAllowAddROI);
 		fillButton.setVisible(bAllowAddROI);
 		clearROIbutton.setVisible(bAllowAddROI);
+		undoButton.setVisible(bAllowAddROI);
 	}
 
 	public void addROIName(String roiName,
@@ -1272,7 +1270,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			this.originalOffsetFactor = originalOffsetFactor;
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
-				BeanUtils.enableComponents(leftJPanel, true);
+				BeanUtils.enableComponents(toolButtonPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
 			}
 			if(!bAllowAddROI){
@@ -1327,7 +1325,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zSlider.setMaximum(1);
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
-			BeanUtils.enableComponents(leftJPanel, false);
+			BeanUtils.enableComponents(toolButtonPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
 		}
@@ -1428,6 +1426,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 							giveROIRequiredWarning("paint or erase");
 							return;
 						}
+						firePropertyChange(FRAP_DATA_PAINTERASE_PROPERTY, null, null);
 						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
 					}
 				}
@@ -1779,25 +1778,31 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getLeftJPanel() {
-		if (leftJPanel == null) {
+	private JPanel getToolButtonPanel() {
+		if (toolButtonPanel == null) {
 			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-			gridBagConstraints3.gridy = 0;
+			gridBagConstraints3.gridy = 1;
 			gridBagConstraints3.ipady = 0;
 			gridBagConstraints3.ipadx = 0;
 			gridBagConstraints3.gridx = 1;
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.ipady = 0;
-			gridBagConstraints.gridy = 0;
+			gridBagConstraints.gridy = 1;
 			
-			//this so call "leftPanel" has been move to the right side of the editor panel for the new frap.
-			leftJPanel = new JPanel();
-			final GridBagLayout gridBagLayout = new GridBagLayout();
-			gridBagLayout.rowHeights = new int[] {0,0,0,0,0,0};
-			leftJPanel.setLayout(gridBagLayout);
-			leftJPanel.add(getZoomInButton(), gridBagConstraints);
-			leftJPanel.add(getZoomOutButton(), gridBagConstraints3);
+			GridBagConstraints gridBagConstraintsUndo = new GridBagConstraints();
+			gridBagConstraintsUndo.gridy = 0;
+			gridBagConstraintsUndo.ipady = 0;
+			gridBagConstraintsUndo.ipadx = 0;
+			gridBagConstraintsUndo.gridx = 0;
+			
+			toolButtonPanel = new JPanel();
+			final GridBagLayout gbl_toolButtonPanel = new GridBagLayout();
+			gbl_toolButtonPanel.rowHeights = new int[] {0,0,0,0,0,0};
+			toolButtonPanel.setLayout(gbl_toolButtonPanel);
+			toolButtonPanel.add(getUndoButton(), gridBagConstraintsUndo);
+			toolButtonPanel.add(getZoomInButton(), gridBagConstraints);
+			toolButtonPanel.add(getZoomOutButton(), gridBagConstraints3);
 
 			contrastButtonPlus = new JButton(new ImageIcon(getClass().getResource("/images/contrastUp.gif")));
 			contrastButtonPlus.setName("contrastPlusBtn");
@@ -1813,9 +1818,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			contrastButtonPlus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonPlus.setToolTipText("Increase Contrast");
 			final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-			gridBagConstraints_4.gridy = 1;
+			gridBagConstraints_4.gridy = 2;
 			gridBagConstraints_4.gridx = 0;
-			leftJPanel.add(contrastButtonPlus, gridBagConstraints_4);
+			toolButtonPanel.add(contrastButtonPlus, gridBagConstraints_4);
 
 			contrastButtonMinus = new JButton(new ImageIcon(getClass().getResource("/images/contrastDown.gif")));
 			contrastButtonMinus.setName("contrastMinusBtn");
@@ -1831,9 +1836,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonMinus.setToolTipText("Decrease Contrast");
 			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-			gridBagConstraints_6.gridy = 1;
+			gridBagConstraints_6.gridy = 2;
 			gridBagConstraints_6.gridx = 1;
-			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
+			toolButtonPanel.add(contrastButtonMinus, gridBagConstraints_6);
 
 			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
 			cropButton.setName("roiCropBtn");
@@ -1844,9 +1849,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			cropButton.setToolTipText("Crop");
 			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 			gridBagConstraints_5.insets = new Insets(10, 0, 0, 0);
-			gridBagConstraints_5.gridy = 2;
+			gridBagConstraints_5.gridy = 3;
 			gridBagConstraints_5.gridx = 0;
-			leftJPanel.add(cropButton, gridBagConstraints_5);
+			toolButtonPanel.add(cropButton, gridBagConstraints_5);
 			
 			
 			autoCropButton.setPreferredSize(new Dimension(32, 32));
@@ -1856,9 +1861,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			autoCropButton.setToolTipText("Auto Crop");
 			final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 			gridBagConstraints_7.insets = new Insets(10, 0, 0, 0);
-			gridBagConstraints_7.gridy = 2;
+			gridBagConstraints_7.gridy = 3;
 			gridBagConstraints_7.gridx = 1;
-			leftJPanel.add(autoCropButton, gridBagConstraints_7);
+			toolButtonPanel.add(autoCropButton, gridBagConstraints_7);
 			
 			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
 			paintButton.setName("roiPaintBtn");
@@ -1872,9 +1877,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			paintButton.setMargin(new Insets(2, 2, 2, 2));
 			paintButton.setToolTipText("Paint");
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-			gridBagConstraints_1.gridy = 3;
+			gridBagConstraints_1.gridy = 4;
 			gridBagConstraints_1.gridx = 0;
-			leftJPanel.add(paintButton, gridBagConstraints_1);
+			toolButtonPanel.add(paintButton, gridBagConstraints_1);
 
 			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
 			eraseButton.setName("roiEraseBtn");
@@ -1887,9 +1892,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			eraseButton.setMargin(new Insets(2, 2, 2, 2));
 			eraseButton.setToolTipText("Erase");
 			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-			gridBagConstraints_2.gridy = 3;
+			gridBagConstraints_2.gridy = 4;
 			gridBagConstraints_2.gridx = 1;
-			leftJPanel.add(eraseButton, gridBagConstraints_2);
+			toolButtonPanel.add(eraseButton, gridBagConstraints_2);
 
 			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
 			fillButton.setName("roiFillBtn");
@@ -1902,9 +1907,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			fillButton.setMargin(new Insets(2, 2, 2, 2));
 			fillButton.setToolTipText("Fill");
 			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-			gridBagConstraints_3.gridy = 4;
+			gridBagConstraints_3.gridy = 5;
 			gridBagConstraints_3.gridx = 0;
-			leftJPanel.add(fillButton, gridBagConstraints_3);
+			toolButtonPanel.add(fillButton, gridBagConstraints_3);
 
 //			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
 //			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
@@ -1929,9 +1934,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			clearROIbutton.setMargin(new Insets(2, 2, 2, 2));
 			clearROIbutton.setToolTipText("Clear ROI");
 			final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-			gridBagConstraints_9.gridy = 4;
+			gridBagConstraints_9.gridy = 5;
 			gridBagConstraints_9.gridx = 1;
-			leftJPanel.add(clearROIbutton, gridBagConstraints_9);
+			toolButtonPanel.add(clearROIbutton, gridBagConstraints_9);
 			
 //			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
 //			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
@@ -1948,7 +1953,27 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			leftJPanel.add(roiTimePlotButton, gridBagConstraints_10);
 			
 		}
-		return leftJPanel;
+		return toolButtonPanel;
+	}
+
+	private JButton undoButton;
+	private JButton getUndoButton() {
+		if (undoButton == null) {
+			undoButton = new JButton();
+			undoButton.setName("undoBtn");
+			undoButton.setMargin(new Insets(2, 2, 2, 2));
+			undoButton.setMinimumSize(new Dimension(32, 32));
+			undoButton.setMaximumSize(new Dimension(32, 32));
+			undoButton.setIcon(new ImageIcon(getClass().getResource("/images/undo.gif")));
+			undoButton.setPreferredSize(new Dimension(32, 32));
+			undoButton.setToolTipText("Zoom In");
+			undoButton.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					firePropertyChange(FRAP_DATA_UNDOROI_PROPERTY, null, null);
+				}
+			});
+		}
+		return undoButton;
 	}
 
 	/**
@@ -2036,5 +2061,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	    for (int i = 0; i < fileFilterArr.length; i++) {
 	    	openJFileChooser.addChoosableFileFilter(fileFilterArr[i]);
 		}
+	}
+	public void setUndo(boolean bUndo){
+		undoButton.setEnabled(bUndo);
 	}
 }

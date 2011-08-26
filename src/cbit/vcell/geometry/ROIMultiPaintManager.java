@@ -1357,7 +1357,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
 		}
 	}
-	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
 			if(overlayEditorPanelJAI.cropDrawAndConfirm((Rectangle)evt.getNewValue())){
@@ -1371,13 +1370,16 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
 			deleteROI((ComboboxROIName)evt.getOldValue());
+			updateUndoAfter(false);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDNEWROI_PROPERTY)){
-			try{addNewROI((ComboboxROIName[])evt.getOldValue());}catch(UserCancelException e){/*ignore*/}
+			try{addNewROI((ComboboxROIName[])evt.getOldValue());updateUndoAfter(false);}catch(UserCancelException e){/*ignore*/}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
+			updateUndo(UNDO_INIT.ALLZ);
 			clearROI(true,((ComboboxROIName)evt.getOldValue()).getHighlightColor(),OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_BLEND_PROPERTY)){
 			overlayEditorPanelJAI.setBlendPercent((Integer)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY)){
+			updateUndo(UNDO_INIT.ALLZ);
 			checkROI();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOCROP_PROPERTY)){
 			autoCropQuestion();
@@ -1388,6 +1390,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			highlightHistogramPixels((DefaultListSelectionModel)evt.getNewValue());
 			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY)){
+			updateUndo(UNDO_INIT.ALLZ);
 			updateROIWithHighlight();
 			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY)){
@@ -1397,6 +1400,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY)){
 			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY)){
+			updateUndo(UNDO_INIT.ONEZ);
 			fillFromPoint((Point)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY)){
 			imageDatasetChannel = (Integer)evt.getNewValue();
@@ -1405,11 +1409,90 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			askInitialize(true);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAD_PROPERTY)){
 			padROIDataAsk();
+			updateUndoAfter(false);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DUPLICATE_PROPERTY)){
 			duplicateROIDataAsk();
+			updateUndoAfter(false);
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAINTERASE_PROPERTY)){
+			updateUndo(UNDO_INIT.ONEZ);
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
+			recoverUndo();
 		}
 	}
 
+	
+	//-----UNDO methods-------------------------
+	private BufferedImage[] undoROIComposite;
+	private enum UNDO_INIT {ALLZ,ONEZ};
+	private void updateUndoAfter(boolean bUndoable){
+		if(!bUndoable){
+			//Remove undo because caller of this method did something that CANNOT be undone
+			undoROIComposite = null;
+		}
+		//update GUI with undo info
+		overlayEditorPanelJAI.setUndo(bUndoable);
+	}
+	private void updateUndo(UNDO_INIT initType){
+		//Caller of this method did something that CAN be undone so save undo info
+		if(initType == UNDO_INIT.ALLZ){
+			undoROIComposite = new BufferedImage[roiComposite.length];
+			for (int i = 0; i < roiComposite.length; i++) {
+				undoROIComposite[i] =
+					new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
+							BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+				System.arraycopy((byte[])((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0,
+						(byte[])((DataBufferByte)undoROIComposite[i].getRaster().getDataBuffer()).getData(), 0,
+						roiComposite[0].getWidth()*roiComposite[0].getHeight());
+			}
+		}
+		if(initType == UNDO_INIT.ONEZ){
+			//Some operations (paint,erase,fill) only need 1 zslice saved for undo
+			if(undoROIComposite == null || undoROIComposite[overlayEditorPanelJAI.getZ()] == null){
+				undoROIComposite = new BufferedImage[roiComposite.length];
+				undoROIComposite[overlayEditorPanelJAI.getZ()] =
+						new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
+								BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+			}
+			System.arraycopy((byte[])((DataBufferByte)roiComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
+				(byte[])((DataBufferByte)undoROIComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
+				roiComposite[0].getWidth()*roiComposite[0].getHeight());
+		}
+		updateUndoAfter(true);
+	}
+	private void recoverUndo(){
+		try {
+			if(roiComposite == null || undoROIComposite == null || 
+					roiComposite.length != undoROIComposite.length){
+				throw new Exception("Undo operation has wrong undo information");
+			}else{
+				//Reset to last undo
+				for (int i = 0; i < roiComposite.length; i++) {
+					if(undoROIComposite[i] != null){
+						if(roiComposite[i].getWidth() != undoROIComposite[i].getWidth() ||
+							roiComposite[i].getHeight() != undoROIComposite[i].getHeight()){
+							throw new Exception("Undo operation z-slice size not match");
+						}
+						System.arraycopy((byte[])((DataBufferByte)undoROIComposite[i].getRaster().getDataBuffer()).getData(), 0,
+							(byte[])((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0,
+							roiComposite[0].getWidth()*roiComposite[0].getHeight());
+					}
+				}
+				undoROIComposite = null;
+				overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
+				overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//Something is wrong, throw out undo
+			undoROIComposite = null;
+			System.out.println("Error: undoROIComposite inconsistent state.\n"+e.getMessage());
+
+		}
+		updateUndoAfter(false);
+	}
+	//-----End UNDO methods-------------------------
+	
+	
 	private void duplicateROIDataAsk(){
 		try{
 			String zCountS = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Convert 2D to 3D. Enter desired Z count:", "1");
@@ -1560,6 +1643,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				try{
 					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
 					applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo());
+					updateUndoAfter(false);
 				}catch(UserCancelException e){
 					return;
 				}
@@ -2111,6 +2195,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					updateUnderlayHistogramDisplay();
 					overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setDisplayContrastFactor(currentContrast);
+					updateUndoAfter(false);
 				}
 			}
 		};
@@ -2564,6 +2649,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}else{
 					overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 				}
+				updateUndoAfter(true);
 			}
 		};
 
