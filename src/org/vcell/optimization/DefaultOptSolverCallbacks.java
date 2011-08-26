@@ -23,8 +23,8 @@ public class DefaultOptSolverCallbacks implements OptSolverCallbacks {
 	private Double percentDone = null;
 	private Double penaltyMu = null;
 
-	private java.util.Vector<OptSolverCallbacks.EvaluationHolder> evaluations = new java.util.Vector<OptSolverCallbacks.EvaluationHolder>();
-	private OptSolverCallbacks.EvaluationHolder bestEvaluation = null;
+	private java.util.Vector<OptSolverCallbacks.Evaluation> evaluations = new java.util.Vector<OptSolverCallbacks.Evaluation>();
+	private OptSolverCallbacks.Evaluation bestEvaluation = null;
 	private ODESolverResultSet bestResultSet = null;
 
 	/**
@@ -50,25 +50,26 @@ public void showStatistics(){
 		//index 0 stores max of parameter value, and index 1 stores min of parameter value
 		int indexMax = 0;
 		int indexMin = 1;
-		int numParameters = evaluations.get(0).parameterVector.length;
+		int numParameters = evaluations.get(0).getParameterValues().length;
 		double[][] stat= new double[numParameters][2]; 
 		for(int i=0; i<numParameters; i++)
 		{
 			stat[i][indexMax]=0;
 			stat[i][indexMin]=1e8;
 		}
-		for (OptSolverCallbacks.EvaluationHolder evalHolder : evaluations)
+		for (OptSolverCallbacks.Evaluation evalHolder : evaluations)
 		{
-			System.out.println("objective funciton error :"+evalHolder.objFunctionValue);
-			for(int i=0; i<evalHolder.parameterVector.length; i++)
+			System.out.println("objective funciton error :"+evalHolder.getObjectiveFunctionValue());
+			double[] parameterValues = evalHolder.getParameterValues();
+			for(int i=0; i<parameterValues.length; i++)
 			{
-				if(stat[i][indexMax]<evalHolder.parameterVector[i])
+				if(stat[i][indexMax]<parameterValues[i])
 				{
-					stat[i][indexMax] = evalHolder.parameterVector[i];
+					stat[i][indexMax] = parameterValues[i];
 				}
-				if(stat[i][indexMin]>evalHolder.parameterVector[i])
+				if(stat[i][indexMin]>parameterValues[i])
 				{
-					stat[i][indexMin] = evalHolder.parameterVector[i];
+					stat[i][indexMin] = parameterValues[i];
 				}
 			}
 		}
@@ -93,9 +94,9 @@ public void showStatistics(){
  * Creation date: (12/20/2005 4:11:12 PM)
  * @param newAtBestParameters double
  */
-public void addEvaluation(OptSolverCallbacks.EvaluationHolder evaluation, ODESolverResultSet resultSet) {
+public void addEvaluation(OptSolverCallbacks.Evaluation evaluation, ODESolverResultSet resultSet) {
 	evaluations.add(evaluation);
-	if (bestEvaluation==null || bestEvaluation.objFunctionValue > evaluation.objFunctionValue){
+	if (bestEvaluation==null || bestEvaluation.getObjectiveFunctionValue() > evaluation.getObjectiveFunctionValue()){
 		bestEvaluation = evaluation;
 		bestResultSet = resultSet;
 	}
@@ -123,7 +124,7 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (12/20/2005 4:11:12 PM)
  * @return double[]
  */
-public EvaluationHolder getBestEvaluation() {
+public Evaluation getBestEvaluation() {
 	return bestEvaluation;
 }
 

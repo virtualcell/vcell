@@ -25,12 +25,9 @@ public interface OptSolverCallbacks {
 	}
 
 	public static class EvaluationHolder implements Evaluation{
-		public double[] parameterVector = null;
-		public double objFunctionValue = 0;
+		private double[] parameterVector = null;
+		private double objFunctionValue = 0;
 	
-		public EvaluationHolder() {
-		}
-		
 		public EvaluationHolder(double[] paramValues, double objectiveFuncValue) {
 			parameterVector = paramValues;
 			objFunctionValue = objectiveFuncValue;
@@ -51,7 +48,7 @@ public interface OptSolverCallbacks {
  * @param newAtBestParameters double
  */
 public void addEvaluation(double[] paramValues, double objectiveFuncValue);
-public void addEvaluation(OptSolverCallbacks.EvaluationHolder evaluation, ODESolverResultSet resultSet);
+public void addEvaluation(OptSolverCallbacks.Evaluation evaluation, ODESolverResultSet resultSet);
 
 public void addPropertyChangeListener(java.beans.PropertyChangeListener listener);
 	

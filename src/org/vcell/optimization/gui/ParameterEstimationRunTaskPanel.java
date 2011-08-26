@@ -29,6 +29,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -39,7 +40,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptProgressType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
@@ -67,7 +70,6 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.InconsistentDomainException;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
@@ -107,7 +109,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private OptimizationMethodParameterTableModel optimizationMethodParameterTableModel;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private ProgressDialog runStatusDialog;
+	private RunStatusProgressDialog runStatusDialog;
 	private ScrollTable optimizationSolutionParameterTable = null;
 	private OptimizationSolutionParameterTableModel optimizationSolutionParameterTableModel;
 
@@ -117,12 +119,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private class RunStatusProgressDialog extends ProgressDialog {
 		private JTextField numEvaluationsTextField = null;
 		private JTextField objectiveFunctionValueTextField = null;
+		private JTextField currentValueTextField = null;
+		private JLabel progressLabel;
 		RunStatusProgressDialog(Frame owner) {
 			super(owner);
+			initialize();
 		}	
 		
-		@Override
-		protected void initialize() {
+		private void initialize() {
 			setTitle("Running Parameter Estimation");
 			setResizable(true);
 			setModal(true);
@@ -136,6 +140,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			numEvaluationsTextField = new javax.swing.JTextField();
 			numEvaluationsTextField.setEditable(false);
 
+			currentValueTextField = new javax.swing.JTextField();
+			currentValueTextField.setEditable(false);
+			
 			int gridy = 0;		
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = gridy;
@@ -173,7 +180,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.LINE_END;
-			runStatusPanel.add(new javax.swing.JLabel("Progress: "), gbc);
+			progressLabel = new javax.swing.JLabel("Progress: ");
+			runStatusPanel.add(progressLabel, gbc);
 			
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; 
@@ -183,6 +191,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			runStatusPanel.add(getProgressBar(), gbc);
 				
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			runStatusPanel.add(currentValueTextField, gbc);
+			
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -205,19 +221,46 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 
 		@Override
-		public void setCancelButtonVisible(boolean arg1) {
+		public void setCancelButtonVisible(boolean bVisible) {
 		}
 
 		@Override
 		public void setMessage(String message) {
 		}
-		
-		private void setNumEvaluations(String num) {
-			numEvaluationsTextField.setText(num);
+		@Override
+		public void setProgress(int progress) {
+			super.setProgress(progress);
 		}
-
-		private void setObjectFunctionValue(String d) {
-			objectiveFunctionValueTextField.setText(d);
+		public void setCurrentValue(double value) {
+			currentValueTextField.setText("" + value);
+		}
+		public void setNumEvaluations(int num) {
+			numEvaluationsTextField.setText("" + num);
+		}
+		public void setObjectFunctionValue(double d) {
+			objectiveFunctionValueTextField.setText("" + d);
+		}		
+		public void showProgressBar(CopasiOptimizationMethod com) {
+			progressBar.setValue(0);
+			progressLabel.setText(com.getType().getProgressLabel() + ": ");
+			currentValueTextField.setText(null);
+			switch(com.getType().getProgressType()) {
+			case NO_Progress:
+				progressLabel.setVisible(false);
+				progressBar.setVisible(false);
+				currentValueTextField.setVisible(false);
+				break;
+			case Progress:
+				progressLabel.setVisible(true);
+				progressBar.setVisible(true);
+				currentValueTextField.setVisible(false);
+				break;
+			case Current_Value:
+				progressLabel.setVisible(true);
+				progressBar.setVisible(false);
+				currentValueTextField.setVisible(true);
+				break;
+			}
 		}
 	}
 
@@ -408,8 +451,17 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
 				optimizationResultSet_This();
-//			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("solverMessageText"))) 
-				//getOptimizeResultsTextPane().setText(String.valueOf(parameterEstimationTask.getSolverMessageText()));
+			if (evt.getSource() == parameterEstimationTask.getOptSolverCallbacks() 
+					&& (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
+				getRunStatusDialog().setNumEvaluations(parameterEstimationTask.getOptSolverCallbacks().getEvaluationCount());
+				getRunStatusDialog().setObjectFunctionValue(parameterEstimationTask.getOptSolverCallbacks().getObjectiveFunctionValue());
+				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Progress) {
+					getRunStatusDialog().setProgress(parameterEstimationTask.getOptSolverCallbacks().getPercent());
+				}
+				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Current_Value) {
+					getRunStatusDialog().setCurrentValue(parameterEstimationTask.getOptSolverCallbacks().getCurrentValue());
+				}
+			}
 		}
 	}
 	
@@ -564,7 +616,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		return solverPanel;
 	}
 	
-	private ProgressDialog getRunStatusDialog() {
+	private RunStatusProgressDialog getRunStatusDialog() {
 		if (runStatusDialog == null) {
 			runStatusDialog = new RunStatusProgressDialog(JOptionPane.getFrameForComponent(this));
 		}	
@@ -781,11 +833,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		/* Stop listening for events from the current object */
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(eventHandler);
+			oldValue.getOptSolverCallbacks().removePropertyChangeListener(eventHandler);
 		}
 
 		/* Listen for events from the new object */
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(eventHandler);
+			newValue.getOptSolverCallbacks().addPropertyChangeListener(eventHandler);
 		}
 		getOptimizeResultsTextPane().setText(this.getSolverMessageText());
 	}
@@ -833,6 +887,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(com);
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
+		parameterEstimationTask.getOptSolverCallbacks().reset();
+		Double endValue = com.getEndValue();
+		parameterEstimationTask.getOptSolverCallbacks().setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue);
+		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		AsynchClientTask task1 = new AsynchClientTask("checking issues", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -889,8 +947,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			StructureMapping structureMapping = simulationContext.getGeometryContext().getStructureMappings()[0];
 			ParameterMappingSpec[] parameterMappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpecs();
 			MathMapping mathMapping = simulationContext.createNewMathMapping();
-			MathDescription origMathDesc = mathMapping.getMathDescription();
-//			mathSymbolMapping = mathMapping.getMathSymbolMapping();
 			summaryData = new ProfileSummaryData[profileDistributionList.size()];
 			for(int k=0; k < profileDistributionList.size(); k++)
 			{
@@ -1126,7 +1182,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		if (parameterEstimationTask!=null && parameterEstimationTask.getOptSolverCallbacks()!=null){
 			parameterEstimationTask.getOptSolverCallbacks().setStopRequested(true);
 		}
-		return;
 	}
 
 
