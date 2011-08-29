@@ -1262,6 +1262,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
 			roiMultiPaintManager.initROIData((FieldDataFileOperationSpec)hashTable.get(FDFOS));
 			final Geometry[] geomHolder = new Geometry[1];
+			final VCImage dbImage = (VCImage)hashTable.get(IMAGE_FROM_DB);
 			AsynchClientTask task1 = new AsynchClientTask("edit geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false) {
 				
 				@Override
@@ -1270,7 +1271,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							okButtonText,
 							(String)hashTable.get(IMPORT_SOURCE_NAME),
 							(Component)hashTable.get(GUI_PARENT),
-							(String)hashTable.get(INITIAL_ANNOTATION)
+							(String)hashTable.get(INITIAL_ANNOTATION),
+							(dbImage==null?null:dbImage.getPixelClasses())
 						);
 				}
 			};
