@@ -626,11 +626,78 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return finalGeometryAttributesHolder[0];
 	}
+	private void applyPixelClasses(VCPixelClass[] vcPixelClasses,Component parentComponent){
+		if(vcPixelClasses != null){
+			int backgroundIndex = -1;
+//			int xysize = roiComposite[0].getWidth()*roiComposite[0].getHeight();
+//			EdgeIndexInfo edgeIndexInfo =
+//					ROIMultiPaintManager.calculateEdgeIndexes(roiComposite[0].getWidth(),roiComposite[0].getHeight(),roiComposite.length);
+			int[] pixelValMapPixelClassIndex = new int[256];
+			Arrays.fill(pixelValMapPixelClassIndex, -1);
+			String[][] rowData = new String[vcPixelClasses.length][1];
+			for (int i = 0; i < vcPixelClasses.length; i++) {
+				pixelValMapPixelClassIndex[vcPixelClasses[i].getPixel()] = i;
+				rowData[i][0] = vcPixelClasses[i].getPixelClassName();
+				if(vcPixelClasses[i].getPixel() == 0 && vcPixelClasses[i].getPixelClassName().equals(RESERVED_NAME_BACKGROUND)){
+					//choose background automatically
+					backgroundIndex = i;
+				}
+			}
+//			if(backgroundIndex == -1){
+//				//Couldn't find automatically, have user choose a background
+//				int[] result =
+//					DialogUtils.showComponentOKCancelTableList(parentComponent, "Choose \"background\" area from ROI list", new String[] {"Predefined ROIs"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+//				if(result != null){
+//					backgroundIndex = result[0];
+//				}
+//			}
+			//if(backgroundIndex != -1){
+//				int[] pixelClassCount = new int[vcPixelClasses.length];
+//				int maxindex = 0;
+//				int maxcount = 0;
+//				for (int i = 0; i < edgeIndexInfo.allEdgeIndexes.length; i++) {
+//					int zindex = edgeIndexInfo.allEdgeIndexes[i]/xysize;
+//					int xyindex = edgeIndexInfo.allEdgeIndexes[i]%xysize;
+//					UShortImage uShortImage = initImageDataSetChannels[0].getImage(zindex, 0, 0);
+//					int pixelval = uShortImage.getPixels()[xyindex] & 0x000000FF;//unsigned short
+//					pixelClassCount[pixelValMapPixelClassIndex[pixelval]]++;
+//					if(pixelClassCount[pixelValMapPixelClassIndex[pixelval]] > maxcount){
+//						maxcount = pixelClassCount[pixelValMapPixelClassIndex[pixelval]];
+//						maxindex = pixelValMapPixelClassIndex[pixelval];
+//					}
+//				}
+				
+				//Create ROIs from VCPixelclasses
+				int roiCount = 1;//start 1 after background index color
+				int[] pixelClassIndexMaproiIndex = new int[vcPixelClasses.length];
+				for (int i = 0; i < vcPixelClasses.length; i++) {
+					if(i == backgroundIndex){
+						pixelClassIndexMaproiIndex[i] = 0;//background
+						continue;
+					}
+					overlayEditorPanelJAI.addROIName(vcPixelClasses[i].getPixelClassName(), true, vcPixelClasses[0].getPixelClassName(),true,/*true,true,*/OverlayEditorPanelJAI.CONTRAST_COLORS[roiCount]);
+					pixelClassIndexMaproiIndex[i] = roiCount;
+					roiCount++;
+				}
+				
+				//fill in rois using pixel value and VCPixelClass mappings
+				for (int zindex = 0; zindex < roiComposite.length; zindex++) {
+					byte[] zdata = ((DataBufferByte)roiComposite[zindex].getRaster().getDataBuffer()).getData();
+					UShortImage uShortImage = initImageDataSetChannels[0].getImage(zindex, 0, 0);
+					for (int xyindex = 0; xyindex < zdata.length; xyindex++) {
+						int pixelval = uShortImage.getPixels()[xyindex] & 0x000000FF;//unsigned short
+						zdata[xyindex] = (byte)pixelClassIndexMaproiIndex[pixelValMapPixelClassIndex[pixelval]];
+					}
+				}
+			//}
+		}
+	}
 	public Geometry showGUI(
 			final String okButtonText,
 			final String sourceDataName,
 			final Component parentComponent,
-			String initalAnnotation){
+			String initalAnnotation,
+			final VCPixelClass[] vcPixelClasses){
 
 		originalAnnotation = initalAnnotation;
 		final Geometry[] finalGeometryHolder = new Geometry[1];
@@ -642,27 +709,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
 		}
 		overlayEditorPanelJAI.deleteROIName(null);//delete all names
-//		if(previouslyEditedVCImage != null){
-//			//initialize the ROI names with previouslyEditedVCImage pixelClass names
-//			VCPixelClass[] previousPixelClasses = previouslyEditedVCImage.getPixelClasses();
-//			String firstROI = null;
-//			for (int i = 0; i < previousPixelClasses.length; i++) {
-//				if(previousPixelClasses[i].getPixel() == 0){//don't add background
-//					continue;
-//				}
-//				String nextName = previousPixelClasses[i].getPixelClassName();
-//				if(nextName.equals(RESERVED_NAME_BACKGROUND)){
-//					//Change reserved background name that didn't have a value of 0
-//					nextName = "ROI"+(new Random().nextInt());
-//				}
-//				if(firstROI == null){
-//					firstROI = nextName;
-//				}
-//				overlayEditorPanelJAI.addROIName(
-//						previousPixelClasses[i].getPixelClassName(), true, firstROI,
-//						true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
-//			}
-//		}
+		
+		applyPixelClasses(vcPixelClasses, parentComponent);//when user selects image "from DB" or "from current geometry"
+		
 		if(getImageDataset().length > 1){
 			String[] channelNames = new String[getImageDataset().length];
 			for (int i = 0; i < channelNames.length; i++) {
@@ -698,7 +747,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				@Override
 				public void windowOpened(WindowEvent e) {
 					super.windowOpened(e);
-					askInitialize(false);
+					if(vcPixelClasses == null){
+						askInitialize(false);
+					}
 				}
 
 				@Override
