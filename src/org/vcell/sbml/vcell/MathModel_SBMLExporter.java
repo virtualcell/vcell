@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-    package org.vcell.sbml.vcell;
+package org.vcell.sbml.vcell;
 import java.io.File;
 
 import org.sbml.libsbml.ASTNode;
@@ -17,6 +17,7 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLError;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.libsbml;
 import org.vcell.util.TokenMangler;
@@ -41,7 +42,7 @@ public class MathModel_SBMLExporter {
  * @return org.sbml.libsbml.Model
  * @param mathModel cbit.vcell.mathmodel.MathModel
  */
-public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, long level, long version) throws cbit.vcell.parser.ExpressionException, java.io.IOException {
+public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, long level, long version) throws cbit.vcell.parser.ExpressionException, java.io.IOException{
 
 	if (mathModel.getMathDescription().isSpatial()){
 		throw new RuntimeException("spatial models export to SBML not supported");
@@ -63,7 +64,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	String compartmentId = "compartment";
 	SBMLDocument sbmlDocument = new SBMLDocument(level, version);
 	org.sbml.libsbml.Model sbmlModel = sbmlDocument.createModel();
-	sbmlModel.setId("MathModel_"+mathModel.getName());
+	sbmlModel.setId("MathModel_"+TokenMangler.mangleToSName(mathModel.getName()));
 	org.sbml.libsbml.Compartment compartment = sbmlModel.createCompartment();
 	compartment.setId(compartmentId);
 
@@ -87,12 +88,12 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 //			species.setCompartment(compartmentId);
 		}else if (vcVar instanceof cbit.vcell.math.Constant && ((cbit.vcell.math.Constant)vcVar).getExpression().isNumeric()){
 			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
-			param.setId(vcVar.getName());
+			param.setId(TokenMangler.mangleToSName(vcVar.getName()));
 			param.setConstant(true);
 			param.setValue(vcVar.getExpression().evaluateConstant());
 		}else if (vcVar instanceof cbit.vcell.math.Constant || vcVar instanceof cbit.vcell.math.Function) {
 			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
-			param.setId(vcVar.getName());
+			param.setId(TokenMangler.mangleToSName(vcVar.getName()));
 			param.setConstant(false);
 			//
 			// Function or Constant with expressions - create assignment rule and add to model.
@@ -101,7 +102,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 			AssignmentRule assignmentRule = sbmlModel.createAssignmentRule();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			assignmentRule.setId(dummyID);
-			assignmentRule.setVariable(vcVar.getName());
+			assignmentRule.setVariable(TokenMangler.mangleToSName(vcVar.getName()));
 			
 			assignmentRule.setMath(mathNode);
 			// Create a parameter for this function/non-numeric constant, set its value to be 'not-constant', 
@@ -118,19 +119,19 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 		if (equ instanceof cbit.vcell.math.OdeEquation){
 			// For ODE equations, add the ode variable as a parameter, add rate as a rate rule and init condition as an initial assignment rule.
 			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
-			param.setId(equ.getVariable().getName());
+			param.setId(TokenMangler.mangleToSName(equ.getVariable().getName()));
 			param.setConstant(false);
 			
 			// try to obtain the constant to which the init expression evaluates.
 			RateRule rateRule = sbmlModel.createRateRule();
-			rateRule.setVariable(equ.getVariable().getName());
+			rateRule.setVariable(TokenMangler.mangleToSName(equ.getVariable().getName()));
 			rateRule.setMath(getFormulaFromExpression(equ.getRateExpression()));
 
 			InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			initialAssignment.setId(dummyID);
 			initialAssignment.setMath(getFormulaFromExpression(equ.getInitialExpression()));
-			initialAssignment.setSymbol(equ.getVariable().getName());
+			initialAssignment.setSymbol(TokenMangler.mangleToSName(equ.getVariable().getName()));
 		 }else{
 		 	throw new RuntimeException("equation type "+equ.getClass().getName()+" not supported");
 		 }
@@ -138,6 +139,49 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
+	//validate the sbml document
+	sbmlDocument.checkInternalConsistency();
+	long internalErrCount = sbmlDocument.getNumErrors();
+	if(internalErrCount>0)
+	{
+		StringBuffer sbmlErrbuf = new StringBuffer();
+		for(long i=0; i<internalErrCount; i++)
+		{
+			SBMLError sbmlErr = sbmlDocument.getError(i);
+			if (sbmlErr.isError() || sbmlErr.isFatal()){
+				sbmlErrbuf.append(sbmlErr.getCategoryAsString() + " :: " + sbmlErr.getSeverityAsString() + " :: " + sbmlErr.getMessage()+"\n");
+			}
+		}
+		if (sbmlErrbuf.length()>0){
+			throw new RuntimeException("SBML Internal consistency checks failed: \n"+sbmlErrbuf.toString());
+		}
+	}
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_GENERAL_CONSISTENCY, true);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_IDENTIFIER_CONSISTENCY, true);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_UNITS_CONSISTENCY, false);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_MATHML_CONSISTENCY, true);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_SBO_CONSISTENCY, false);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_OVERDETERMINED_MODEL, true);
+	sbmlDocument.setConsistencyChecks(libsbml.LIBSBML_CAT_MODELING_PRACTICE, false);
+	
+	sbmlDocument.checkConsistency();
+	long errCount = sbmlDocument.getNumErrors();
+	if(errCount>0)
+	{
+		StringBuffer sbmlErrbuf = new StringBuffer();
+		for(long i=0; i<errCount; i++)
+		{
+			SBMLError sbmlErr = sbmlDocument.getError(i);
+			if (sbmlErr.isError() || sbmlErr.isFatal()){
+				sbmlErrbuf.append(sbmlErr.getCategoryAsString() + " :: " + sbmlErr.getSeverityAsString() + " :: " + sbmlErr.getMessage()+"\n");
+			}
+		}
+		if (sbmlErrbuf.length() > 0){
+			throw new RuntimeException("SBML validation failed: \n"+sbmlErrbuf.toString());
+		}
+	}
+	//end of validation
+	//start writing
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 
 	// Error check - use libSBML's document.printError to print to outputstream
@@ -168,7 +212,19 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 	String expMathMLStr = null;
 
 	try {
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
+		//mangling the identifiers in the expression to make them proper SBase ids.
+		Expression mangledExpression = new Expression(expression);
+		String[] symbols = mangledExpression.getSymbols();
+		if(symbols != null)
+		{
+			for (String symbol : mangledExpression.getSymbols()){
+				String mangledSymbol = TokenMangler.mangleToSName(symbol);
+				if (!mangledSymbol.equals(symbol)){
+					mangledExpression.substituteInPlace(new Expression(symbol), new Expression(mangledSymbol));
+				}
+			}
+		}
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
