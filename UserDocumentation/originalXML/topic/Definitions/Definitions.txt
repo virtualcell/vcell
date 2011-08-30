@@ -1,0 +1,3 @@
+Definitions
+
+<def target = "def_species"> Species are any group of molecules/entities that exist within structures (either membranes or compartments) and can be acted upon by reactions or fluxes.  Species are unique to a particular structural class (e.g. cytosol, nuclear membrane) for all instances of a given class. Older version of VCell append species context to the given name (e..g a species called "Calcium" within "Cytosol" was given the name Calcium_cytoplasm

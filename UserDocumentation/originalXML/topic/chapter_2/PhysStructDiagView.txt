@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Physiology Structures - Diagram View" target="PhysStructDiagView">
+
+	<introduction> 
+This view uses diagrams and icons to add cellular compartments and assign species to specific compartments. 
+	</introduction>
+	
+	<appearance> 
+The  tool bar on the left of the screen includes buttons for selection (arrow), add compartment (circle outline), and add species (green dot) tools. Below the window is a “Delete selected” button and a <link target = "PathLink"> "Pathway Links” </link> button. 
+	</appearance>
+	
+	<operations> 
+Create a compartment by selecting the “add compartment” tool, then clicking on the parent compartment and naming.
+Add species to a compartment by selecting the add species tool and click on the appropriate volume or membrane. If you wish to use pathways commons data, select the species and use the <link target = "PathLink"> "Pathway Links” </link> button.
+To edit any property use the arrow to select the object and edit within the <link target = "Prop_pane"> object properties pane </link>
+Delete a compartment or species by selecting the compartment, then select the “delete selected” button at the bottom right of the window.  
+		
+	</operations>
+	
+	<properties>
+The bottom pane of the window displays a <link target = "StructProp"> structure properties </link> pane or a <link target = "SpecProp">species properties pane depending on the current selection.
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</properties>
+
+</page>
+
+</vcelldoc>
+
+
+
+PhysStructDiagView
