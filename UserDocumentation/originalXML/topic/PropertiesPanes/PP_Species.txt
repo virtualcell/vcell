@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Species Properties Pane" target="PP_Species">
+
+	<introduction>
+The object properties for any selected species is shown in the bottom right pane.  Properties that can be edited are clear, properties that cannot be edited are greyed.	
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</introduction>
+	
+	<appearance>
+Under the Object Properties tab the Species Name is the name provided by the user with an extension containing the structure association.  Annotations are provided in the box.  The <link target = "PP_Problems"> Problems Tab </link> provides errors and warnings identified by VCell.
+
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</appearance>
+	
+	<operations>
+Select a single species to view that species' properties (multple species cannot be selected to view properties). Edit Object Properties by clicking within the field.  Fields that cannot be edited are greyed.  
+
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+
+	</operations>
+	
+	<properties>
+	
+		<link target = "target">
+		</link>
+		
+		<imgReference target = "target">
+		</imgReference>
+	
+	</properties>
+
+</page>
+
+</vcelldoc>

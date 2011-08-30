@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title=" Structures Tabular View" target="PhysStructTabView">
+
+	<introduction>
+
+	</introduction>
+	
+	<appearance>
+The table lists structures and their properties (Type of structure, Inside structure and Outside Parent).  Items in black can be edited; items that cannot be edited are in brown.
+	</appearance>
+	
+	<operations>
+Add a new compartment by double clicking “add new here” and typing a new name to the list, or by using the "Add new" button below the table. A new volume and membrane structure will automatically be generated The new compartment becomes the inner most compartment.  Compartments with different parent compartents can only be created using the <link target = "PhysStructDiagView ">  Structure Diagram View </link> 
+Edit the structure name by double clicking in the table, or within the <link target = "def_prop_pane"> Properties pane  </link>
+Delete compartments by selecting one or more compartments and using the "delete selected" button.  Compartments that contain species cannot be deleted.
+	</operations>
+	
+	<properties>
+The bottom pane of the window will displays  <link target = "SpecProp"> Species Properties  </link> or the  <link target = "StructProp">Structure Properties depending on on the current selection.
+	</properties>
+
+</page>
+
+</vcelldoc>
