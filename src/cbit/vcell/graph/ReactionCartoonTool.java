@@ -441,6 +441,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							((ReactionContainerShape) shape).getStructure(), resType);
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
 		} else if (menuAction.equals(CartoonToolMiscActions.Annotate.MENU_ACTION)) {
@@ -1872,7 +1873,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 		VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);
 		fileChooser.setSelectedFile(defaultFile);
