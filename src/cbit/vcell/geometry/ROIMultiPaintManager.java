@@ -747,6 +747,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				@Override
 				public void windowOpened(WindowEvent e) {
 					super.windowOpened(e);
+					updateUndoAfter(false);
 					if(vcPixelClasses == null){
 						askInitialize(false);
 					}
