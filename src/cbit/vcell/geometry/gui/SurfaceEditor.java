@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.AlphaComposite;
 import java.util.Hashtable;
 
 import cbit.image.ImageException;
@@ -20,6 +21,15 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.parser.ExpressionException;
+import javax.swing.JSlider;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.SwingConstants;
+import javax.swing.JLabel;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 /**
  * Insert the type's description here.
  * Creation date: (5/25/2004 4:45:55 PM)
@@ -45,6 +55,8 @@ public class SurfaceEditor extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjJPanel3 = null;
 	private javax.swing.JButton ivjApplyButton = null;
 	private javax.swing.JButton ivjhomeButton = null;
+	private JSlider opacityslider;
+	private JLabel opacityLabel;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -431,7 +443,7 @@ private javax.swing.JButton gethomeButton() {
 		try {
 			ivjhomeButton = new javax.swing.JButton();
 			ivjhomeButton.setName("homeButton");
-			ivjhomeButton.setText("Reset");
+			ivjhomeButton.setText("Reset View");
 			ivjhomeButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 			// user code begin {1}
 			// user code end
@@ -556,11 +568,24 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintshomeButton = new java.awt.GridBagConstraints();
+			constraintshomeButton.anchor = GridBagConstraints.NORTH;
+			constraintshomeButton.weighty = 1.0;
+			constraintshomeButton.insets = new Insets(0, 0, 5, 0);
 			constraintshomeButton.gridx = 0; constraintshomeButton.gridy = 0;
 			constraintshomeButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//			constraintshomeButton.anchor = java.awt.GridBagConstraints.NORTH;
-			constraintshomeButton.weighty = 1.0;
 			getJPanel1().add(gethomeButton(), constraintshomeButton);
+			GridBagConstraints gbc_opacityLabel = new GridBagConstraints();
+			gbc_opacityLabel.insets = new Insets(0, 4, 0, 4);
+			gbc_opacityLabel.gridx = 0;
+			gbc_opacityLabel.gridy = 1;
+			ivjJPanel1.add(getOpacityLabel(), gbc_opacityLabel);
+			GridBagConstraints gbc_opacityslider = new GridBagConstraints();
+			gbc_opacityslider.weighty = 0.5;
+			gbc_opacityslider.anchor = GridBagConstraints.NORTH;
+			gbc_opacityslider.fill = GridBagConstraints.VERTICAL;
+			gbc_opacityslider.gridx = 0;
+			gbc_opacityslider.gridy = 2;
+			ivjJPanel1.add(getOpacityslider(), gbc_opacityslider);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -934,6 +959,14 @@ private void onNewSurfaceCollection(SurfaceCollection argSurfaceCollection) {
 				(0x000000FF & (colorModel.getBlue(Math.min(255, i+colorOffset))));
 		}
 		getSurfaceCanvas1().setSurfacesColors(surfaceColors);
+		updateSurfaceOpacity();
+		if(argSurfaceCollection.getSurfaceCount()  < 2 || getgeometrySurfaceDescription1().getGeometry().getDimension() < 3){
+			opacityslider.setVisible(false);
+			opacityLabel.setVisible(false);
+		}else{
+			opacityslider.setVisible(true);
+			opacityLabel.setVisible(true);
+		}
 		getSurfaceViewerTool1().resetView();
 	}
 }
@@ -1073,4 +1106,45 @@ public void updateSurface() throws java.beans.PropertyVetoException, ImageExcept
 //		//getSurfaceCanvas1().repaint();
 //	}
 }
+	private void updateSurfaceOpacity(){
+		//Transparency
+		if(getsurfaceCollection() != null &&
+				getsurfaceCollection().getSurfaceCount() > 1 &&
+				opacityslider.getValue() != 100 &&
+				getgeometrySurfaceDescription1().getGeometry().getDimension() > 2){
+			AlphaComposite alphaComposite = java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER,(float)opacityslider.getValue()/100.0f);
+			AlphaComposite[] surfaceTransparency = new AlphaComposite[getsurfaceCollection().getSurfaceCount()];
+			for (int i = 0; i < surfaceTransparency.length; i++) {
+				surfaceTransparency[i] = alphaComposite;
+			}
+			getSurfaceCanvas1().setSurfaceTransparency(surfaceTransparency);
+		}else{
+			getSurfaceCanvas1().setSurfaceTransparency(null);
+		}
+	}
+	private JSlider getOpacityslider() {
+		if (opacityslider == null) {
+			opacityslider = new JSlider();
+			opacityslider.setPaintLabels(true);
+			opacityslider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					if(!opacityslider.getValueIsAdjusting()){
+						updateSurfaceOpacity();
+						getSurfaceCanvas1().repaint();
+					}
+				}
+			});
+			opacityslider.setMajorTickSpacing(25);
+			opacityslider.setValue(75);
+			opacityslider.setPaintTicks(true);
+			opacityslider.setOrientation(SwingConstants.VERTICAL);
+		}
+		return opacityslider;
+	}
+	private JLabel getOpacityLabel() {
+		if (opacityLabel == null) {
+			opacityLabel = new JLabel("Opacity");
+		}
+		return opacityLabel;
+	}
 }
