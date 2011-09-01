@@ -42,6 +42,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -367,6 +368,7 @@ private void initialize() {
 			rowHeight = 20; 
 		}
 		documentEditorTree.setRowHeight(rowHeight + 2);
+		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
