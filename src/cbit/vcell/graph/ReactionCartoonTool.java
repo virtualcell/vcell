@@ -1574,7 +1574,6 @@ public void showReactionBrowserDialog(ReactionCartoon sCartoon, Structure struct
 		UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 		VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);
 		fileChooser.setSelectedFile(defaultFile);
