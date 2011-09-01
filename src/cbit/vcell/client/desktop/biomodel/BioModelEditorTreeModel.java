@@ -310,6 +310,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 								if (((DocumentEditorTreeFolderNode)child.getUserObject()).getFolderClass() == DocumentEditorTreeFolderClass.FITTING_NODE) {
 									appNode.remove(child);
 									nodeStructureChanged(appNode);
+									restoreTreeSelection();
 									return;
 								}			
 							}
