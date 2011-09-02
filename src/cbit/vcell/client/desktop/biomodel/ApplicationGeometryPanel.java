@@ -82,7 +82,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	public void setBioModelWindowManager(BioModelWindowManager newValue) {
 		super.setBioModelWindowManager(newValue);
 		geometryViewer.addActionListener(bioModelWindowManager);
-		geometryViewer.setGeometryOwner(simulationContext,(bioModelWindowManager==null?null:bioModelWindowManager.getUserPreferences()));
+		updateGeometryViewerOwner();
 	}	
 
 	@Override
