@@ -15,13 +15,16 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileFilter;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
@@ -30,6 +33,7 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
@@ -42,11 +46,15 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.mathmodel.MathModel;
 /**
  * This type was created in VisualAge.
  */
@@ -94,16 +102,42 @@ public GeometryViewer(boolean bShowReplaceButton) {
  * @param e java.awt.event.ActionEvent
  */
 public void actionPerformed(java.awt.event.ActionEvent e) {
-	if (e.getSource() == getJButtonChangeDomain())
+	if (e.getSource() == getJButtonChangeDomain()){
 		this.showSizeDialog();
-	else if (e.getSource() == newGeometryMenuItem || e.getSource() == existingGeometryMenuItem) {
+	}else if (e.getSource() == newGeometryMenuItem || e.getSource() == existingGeometryMenuItem) {
 		refireActionPerformed(e);
 	} else if (e.getSource() == getJButtonReplace()) {
 		getPopupMenu().show(getJButtonReplace(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
+	}else if (e.getSource() == getJButtonExport()) {
+		exportGeometry();
+//		getPopupMenuExport().show(getJButtonExport(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
 	}
+//	else if (e.getSource() == plyMenuItem || e.getSource() == stlMenuItem || e.getSource() == avsMenuItem) {
+//		exportGeometry(e.getActionCommand());
+//	}
 }
 
+private void exportGeometry(/*String exportType*/){
+	AsynchClientTask computeSurface = new AsynchClientTask("computing Surface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getGeometry().getGeometrySurfaceDescription() == null || getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null){
+				getGeometry().getGeometrySurfaceDescription().updateAll();
+			}
+		}
+	};
+	AsynchClientTask[] tasks = new AsynchClientTask[] {
+		new ChooseFile(),
+		computeSurface,
+		new ExportToXML()
+	};
 
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	hash.put("documentToExport",getGeometry());
+	hash.put("userPreferences",userPreferences);
+	hash.put("component", this);
+	ClientTaskDispatcher.dispatch(this, hash, tasks, false);
+}
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -317,6 +351,7 @@ private void initConnections() throws java.lang.Exception {
 	getImagePlaneManagerPanel1().setCurveRenderer(getCurveRendererGeometry1());
 	tabbedPane.addChangeListener(this);
 	getJButtonReplace().addActionListener(this);
+	getJButtonExport().addActionListener(this);
 }
 
 /**
@@ -329,38 +364,56 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		//setSize(506, 564);
 		
+		JPanel topHeader = new JPanel();
+		topHeader.setLayout(new java.awt.GridBagLayout());
+		java.awt.GridBagConstraints topH1 = new java.awt.GridBagConstraints();
+		topH1.weightx = 1.0;
+		topH1.gridx = 0; topH1.gridy = 0;
+		topH1.gridwidth = 1;
+		topH1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		topH1.insets = new java.awt.Insets(2, 2, 0, 0);
+		add(topHeader, topH1);
+
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel1.insets = new java.awt.Insets(2, 2, 0, 0);
 		JLabel label = new javax.swing.JLabel("Domain:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, constraintsJLabel1);
+		topHeader.add(label, constraintsJLabel1);
 
 		java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();
+		constraintsSizeLabel.anchor = GridBagConstraints.WEST;
 		constraintsSizeLabel.gridx = 1; constraintsSizeLabel.gridy = 0;
-		constraintsSizeLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsSizeLabel.weightx = 1.0;
 		constraintsSizeLabel.insets = new java.awt.Insets(2, 2, 0, 2);
-		add(getSizeLabel(), constraintsSizeLabel);
+		topHeader.add(getSizeLabel(), constraintsSizeLabel);
 
+		
+		java.awt.GridBagConstraints constraintsJButtonExport = new java.awt.GridBagConstraints();
+		constraintsJButtonExport.weightx = 1.0;
+		constraintsJButtonExport.anchor = GridBagConstraints.WEST;
+		constraintsJButtonExport.gridx = 2; constraintsJButtonExport.gridy = 0;
+		constraintsJButtonExport.insets = new java.awt.Insets(2, 2, 0, 2);
+		topHeader.add(getJButtonExport(), constraintsJButtonExport);
+		getJButtonExport().setEnabled(getGeometry() != null && getGeometry().getDimension() > 1);
+		
 		java.awt.GridBagConstraints constraintsJButtonChangeDomain = new java.awt.GridBagConstraints();
 		constraintsJButtonChangeDomain.gridx = 3; constraintsJButtonChangeDomain.gridy = 0;
 		constraintsJButtonChangeDomain.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJButtonChangeDomain.insets = new java.awt.Insets(2, 2, 0, 2);
-		add(getJButtonChangeDomain(), constraintsJButtonChangeDomain);
+		topHeader.add(getJButtonChangeDomain(), constraintsJButtonChangeDomain);
 		
-		if (bShowReplaceButton) {
-			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 4; gbc.gridy = 0;
-			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(2, 0, 0, 2);
-			add(getJButtonReplace(), gbc);
-		}
+		java.awt.GridBagConstraints gbcr = new java.awt.GridBagConstraints();
+		gbcr.gridx = 4; gbcr.gridy = 0;
+		gbcr.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbcr.insets = new java.awt.Insets(2, 0, 0, 2);
+		topHeader.add(getJButtonReplace(), gbcr);
+		getJButtonReplace().setVisible(bShowReplaceButton);
 
 		java.awt.GridBagConstraints constraintsGeometrySubVolumePanel = new java.awt.GridBagConstraints();
+		constraintsGeometrySubVolumePanel.weightx = 1.0;
 		constraintsGeometrySubVolumePanel.gridx = 0; constraintsGeometrySubVolumePanel.gridy = 1;
-		constraintsGeometrySubVolumePanel.gridwidth = 5;
+		constraintsGeometrySubVolumePanel.gridwidth = 1;
 		constraintsGeometrySubVolumePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsGeometrySubVolumePanel.insets = new java.awt.Insets(0, 4, 0, 4);
 		constraintsGeometrySubVolumePanel.weighty = 0.15;
@@ -379,7 +432,7 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = 2;
-		gbc.gridwidth = 5;
+		gbc.gridwidth = 1;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
@@ -556,6 +609,20 @@ private javax.swing.JButton getJButtonReplace() {
 	return ivjJButtonReplace;
 }
 
+private JButton ivjJButtonExport;
+private javax.swing.JButton getJButtonExport() {
+	if (ivjJButtonExport == null) {
+		try {
+			ivjJButtonExport = new javax.swing.JButton("Export...");
+//			ivjJButtonExport.setIcon(new DownArrowIcon());
+//			ivjJButtonExport.setHorizontalTextPosition(SwingConstants.LEFT);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJButtonExport;
+}
+
 private JPopupMenu getPopupMenu() {
 	if (popupMenu == null) {
 		try {
@@ -575,6 +642,33 @@ private JPopupMenu getPopupMenu() {
 	return popupMenu;
 }
 
+//private JMenuItem plyMenuItem;
+//private JMenuItem stlMenuItem;
+//private JMenuItem avsMenuItem;
+//private JPopupMenu getPopupMenuExport() {
+//	if (popupMenu == null) {
+//		try {
+//			popupMenu = new JPopupMenu();
+//			plyMenuItem = new JMenuItem(FileFilters.FILE_FILTER_PLY.getDescription());
+//			plyMenuItem.setActionCommand("ply");
+//			plyMenuItem.addActionListener(this);
+//			popupMenu.add(plyMenuItem);
+//			
+//			stlMenuItem = new JMenuItem(FileFilters.FILE_FILTER_STL.getDescription());
+//			stlMenuItem.setActionCommand("stl");
+//			stlMenuItem.addActionListener(this);
+//			popupMenu.add(stlMenuItem);
+//
+//			avsMenuItem = new JMenuItem(FileFilters.FILE_FILTER_AVS.getDescription());
+//			avsMenuItem.setActionCommand("avs");
+//			avsMenuItem.addActionListener(this);
+//			popupMenu.add(avsMenuItem);
+//		} catch (java.lang.Throwable ivjExc) {
+//			handleException(ivjExc);
+//		}
+//	}
+//	return popupMenu;
+//}
 
 public synchronized void addActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.add(actionListener, l);
@@ -597,7 +691,9 @@ public synchronized void removeActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.remove(actionListener, l);
 }
 
-public void setGeometryOwner(GeometryOwner newValue) {
+private UserPreferences userPreferences;
+public void setGeometryOwner(GeometryOwner newValue,UserPreferences userPreferences) {
+	this.userPreferences = userPreferences;
 	if (geometryOwner == newValue) {
 		return;
 	}
@@ -621,9 +717,11 @@ public void onGeometryChange() {
 			getJButtonChangeDomain().setVisible(false);
 			tabbedPane.setVisible(false);
 			getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
+			getJButtonExport().setEnabled(false);
 		} else {
 			getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 			getJButtonChangeDomain().setVisible(true);
+			getJButtonExport().setEnabled(true);
 			tabbedPane.setVisible(true);
 		}
 		updateSurfaceView();
