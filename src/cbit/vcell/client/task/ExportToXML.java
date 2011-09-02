@@ -12,6 +12,9 @@ package cbit.vcell.client.task;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
@@ -23,6 +26,9 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -78,7 +84,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	File exportFile = (File)hashTable.get("exportFile");
 	FileFilter fileFilter = (FileFilter)hashTable.get("fileFilter");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
-	String resultString = null;			
+	String resultString = null;
+	java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
 	if (documentToExport instanceof BioModel) {
 		BioModel bioModel = (BioModel)documentToExport;
 		// check format requested
@@ -187,23 +194,49 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 			resultString = XmlHelper.geometryToXML(geom);
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_AVS)) {
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			cbit.vcell.geometry.surface.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(),stringWriter);
-			stringWriter.flush();
-			stringWriter.close();
-			resultString = stringWriter.getBuffer().toString();
+			cbit.vcell.geometry.surface.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(),fileWriter);
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_STL)) {
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			cbit.vcell.geometry.surface.StlExporter.writeStl(geom.getGeometrySurfaceDescription(),stringWriter);
-			stringWriter.flush();
-			stringWriter.close();
-			resultString = stringWriter.getBuffer().toString();
+			cbit.vcell.geometry.surface.StlExporter.writeStl(geom.getGeometrySurfaceDescription(),fileWriter);
+		}else if (fileFilter.equals(FileFilters.FILE_FILTER_PLY)) {
+			writeStanfordPolygon(geom.getGeometrySurfaceDescription(), fileWriter);
 		}
 	}
-	java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
-	fileWriter.write(resultString);
+	if(resultString != null){
+		fileWriter.write(resultString);
+	}
 	fileWriter.flush();
 	fileWriter.close();
 }
 
+	public static void writeStanfordPolygon(GeometrySurfaceDescription geometrySurfaceDescription,Writer writer) throws IOException{
+		int faceCount = geometrySurfaceDescription.getSurfaceCollection().getTotalPolygonCount();
+		int vertCount = geometrySurfaceDescription.getSurfaceCollection().getNodes().length;
+		writer.write("ply\n");
+		writer.write("format ascii 1.0\n");
+		writer.write("comment "+geometrySurfaceDescription.getGeometry().getName()+"\n");
+		writer.write("element vertex "+vertCount+"\n");
+		writer.write("property float x\n");
+		writer.write("property float y\n");
+		writer.write("property float z\n");
+		writer.write("element face "+faceCount+"\n");
+		writer.write("property list uchar int vertex_index\n");
+		writer.write("end_header\n");
+		//write verts x y z
+		for (int i = 0; i < vertCount; i++) {
+			Node vertex = geometrySurfaceDescription.getSurfaceCollection().getNodes()[i];
+			writer.write((float)vertex.getX()+" "+(float)vertex.getY()+" "+(float)vertex.getZ()+"\n");
+		}
+		//write faces as a set of connected vertex indexes
+		for (int i = 0; i < geometrySurfaceDescription.getSurfaceCollection().getSurfaceCount(); i++) {
+			for (int j = 0; j < geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygonCount(); j++) {
+				Quadrilateral quad = (Quadrilateral)geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygons(j);
+				writer.write(quad.getNodeCount()+"");
+				for (int k = 0; k < quad.getNodeCount(); k++) {
+					writer.write(" ");
+					writer.write(quad.getNodes(k).getGlobalIndex()+"");
+				}
+				writer.write("\n");
+			}
+		}
+	}
 }

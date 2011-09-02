@@ -222,7 +222,7 @@ public void setMathModel(MathModel newValue) {
 	}
 	this.mathModel = newValue;
 	vcmlEditorPanel.setMathModel(mathModel);
-	geometryViewer.setGeometryOwner(mathModel);	
+	updateGeometryViewerOwner();	
 	mathModelEditorTreeModel.setMathModel(mathModel);
 	
 	issueManager.setVCDocument(mathModel);
@@ -248,6 +248,7 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	databaseWindowPanel.setDocumentManager(documentManager);
 	
 	geometryMetaDataPanel.setDocumentManager(documentManager);
+	updateGeometryViewerOwner();
 }
 
 /**
@@ -326,5 +327,8 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 }
 
 
+private void updateGeometryViewerOwner(){
+	geometryViewer.setGeometryOwner(mathModel,(mathModelWindowManager == null?null:mathModelWindowManager.getUserPreferences()));
+}
 
 }
