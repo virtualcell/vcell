@@ -73,13 +73,14 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
 		structureMappingCartoonPanel.setSimulationContext(simulationContext);		
-		geometryViewer.setGeometryOwner(simulationContext);
+		updateGeometryViewerOwner();
 	}
 
 	@Override
 	public void setBioModelWindowManager(BioModelWindowManager newValue) {
 		super.setBioModelWindowManager(newValue);
 		geometryViewer.addActionListener(bioModelWindowManager);
+		updateGeometryViewerOwner();
 	}	
 
 	@Override
@@ -121,4 +122,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 		geometryViewer.setIssueManager(issueManager);
 	}
 	
+	private void updateGeometryViewerOwner(){
+		geometryViewer.setGeometryOwner(simulationContext,(bioModelWindowManager==null?null:bioModelWindowManager.getUserPreferences()));
+	}
 }

@@ -40,9 +40,9 @@ public static void writeStl(GeometrySurfaceDescription geometrySurfaceDescriptio
 	if (surfaceCollection==null){
 		throw new RuntimeException("Surfaces not defined");
 	}
+	writer.write("solid\n");
 	for (int i = 0; i < regions.length; i++){
 		if (regions[i] instanceof VolumeGeometricRegion){
-			writer.write("solid\n");
 			VolumeGeometricRegion volRegion = (VolumeGeometricRegion)regions[i];
 			//
 			// find surfaces that border this region (and invert normals if necessary)
@@ -124,8 +124,8 @@ public static void writeStl(GeometrySurfaceDescription geometrySurfaceDescriptio
 					}
 				}
 			}
-			writer.write("endsolid\n");
 		}
 	}
+	writer.write("endsolid\n");
 }
 }
