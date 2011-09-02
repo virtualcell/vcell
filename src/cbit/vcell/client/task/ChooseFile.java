@@ -11,6 +11,7 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.server.*;
 import java.util.*;
+import java.awt.Component;
 import java.io.*;
 import javax.swing.*;
 
@@ -374,6 +375,8 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	Component comp = (Component)hashTable.get("component");
+	comp = (comp==null?(currentWindow==null?(topLevelWindowManager==null?null:topLevelWindowManager.getComponent()):currentWindow):comp);
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -383,6 +386,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	if (geom.getDimension()>0){
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_AVS);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_STL);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PLY);
 	}
 	// set the default file filter...
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
@@ -391,7 +395,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
-	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
+	if (fileChooser.showSaveDialog(comp) != JFileChooser.APPROVE_OPTION) {
 		// user didn't choose save
 		throw UserCancelException.CANCEL_FILE_SELECTION;
 	} else {
@@ -403,7 +407,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 		} else {
 			// we have a file selection, check for overwrites
 			if (selectedFile.exists()) {
-				String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
+				String answer = PopupGenerator.showWarningDialog(comp, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
 				if (answer.equals(UserMessage.OPTION_CANCEL)){
 					throw UserCancelException.CANCEL_FILE_SELECTION;
 				}
