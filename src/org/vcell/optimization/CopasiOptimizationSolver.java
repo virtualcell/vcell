@@ -10,11 +10,13 @@
 
 package org.vcell.optimization;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.jdom.Element;
+import org.vcell.util.FileUtils;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.math.Constant;
@@ -397,30 +399,15 @@ private static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcRes
 }
 
 public static void main(String[] args) {
-	
-String optXML = "<optProblemDescription>\n" + 
-   "<MathModelSbmlFile>C:\\Users\\liye\\.vcell\\mathModel3142107243170865112.xml</MathModelSbmlFile>\n" +
-   "<parameterDescription>\n" +
-      "<parameter name=\"Kf_reaction0\" low=\"1.0E-8\" high=\"200.0\" init=\"1.5\" scale=\"1.5\" />\n" +
-      "<parameter name=\"Kf_reaction1\" low=\"1.0E-8\" high=\"200.0\" init=\"1.5\" scale=\"1.5\" />\n" +
-   "</parameterDescription>\n" +
-   "<SimpleReferenceData>\n" +
-      "<variable type=\"independent\" name=\"t\" />\n" +
-      "<variable type=\"dependent\" name=\"ES_Cellular\" />\n" +
-      "<variable type=\"dependent\" name=\"E_Cellular\" />\n" +
-      "<variable type=\"dependent\" name=\"P_Cellular\" />\n" +
-      "<variable type=\"dependent\" name=\"S_Cellular\" />\n" +
-     " <ExperimentalDataFile LastRow=\"30\">C:\\Users\\liye\\.vcell\\expData8907614706840459782.txt</ExperimentalDataFile>\n" +
-   "</SimpleReferenceData>\n" +
-   "<CopasiOptimizationMethod name=\"Evolutionary Programming\">\n" +
-      "<CopasiOptimizationParameter name=\"Number of Generations\" value=\"20.0\" dataType=\"int\" />\n" +
-      "<CopasiOptimizationParameter name=\"Population Size\" value=\"20.0\" dataType=\"int\" />\n" +
-      "<CopasiOptimizationParameter name=\"Random Number Generator\" value=\"1.0\" dataType=\"int\" />\n" +
-      "<CopasiOptimizationParameter name=\"Seed\" value=\"0.0\" dataType=\"int\" />\n" +
-   "</CopasiOptimizationMethod>\n" +
-"</optProblemDescription>\n";
-System.out.println(optXML);
-CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
-solve(optXML, coc);
+	try{
+		String fileName = "D:\\COPASI\\copasiOptXml.txt";
+		String optXML = FileUtils.readFileToString(new File(fileName));
+		System.out.println(optXML);
+		CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
+		solve(optXML, coc);
+	}catch(Throwable t)
+	{
+		t.printStackTrace(System.err);
+	}
 }
 }
