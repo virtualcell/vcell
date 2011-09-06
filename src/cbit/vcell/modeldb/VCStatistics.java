@@ -92,16 +92,18 @@ public class VCStatistics {
 			SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy");
 			pw.println(sdf.format(currentDate));
 			pw.println("==========================================");
-			pw.println("Total Registered VCell Users - " + userIDList.size());		
-			pw.println("Users Who Ran Simulations - " + howManyUsersWhoRanSimulations());
+			pw.format("%30s - %10d%n", "Total Registered VCell Users", userIDList.size());		
+			pw.format("%30s - %10d%n", "Users Who Ran Simulations", howManyUsersWhoRanSimulations());
 			int howmanyBio = howManyBioModels();
 			int howmanyMath = howManyMathModels();
-			pw.println("Currently Stored Models - " + (howmanyBio + howmanyMath));
-			pw.println("Currently Stored Simulations - " + howManySimulations());
+			pw.format("%30s - %10d%n", "Total Models", (howmanyBio + howmanyMath));
+			int numApplications = howManySimulationContexts();
+			pw.format("%30s - %10d%n", "Total Applications", numApplications);
+			pw.format("%30s - %10d%n", "Total Simulations", howManySimulations());
 			int howmanyPublicBio = howManyPublicBioModels();
 			int howmanyPublicMath = howManyPublicMathModels();
-			pw.println("Publicly Available Models - " + (howmanyPublicBio + howmanyPublicMath));
-			pw.println("Publicly Available Simulations - " + howManyPublicSimulations());
+			pw.format("%30s - %10d%n", "Public Models", (howmanyPublicBio + howmanyPublicMath));
+			pw.format("%30s - %10d%n", "Public Simulations", howManyPublicSimulations());
 			pw.println();
 			UserModelCountHistogram histogram = getHistogramOnModels();
 			if (histogram != null) {
@@ -239,6 +241,27 @@ public class VCStatistics {
 		Statement stmt = con.createStatement();
 		try {			
 			String sql = "SELECT COUNT(*) FROM VC_BIOMODEL where PRIVACY=0";
+			ResultSet rset = stmt.executeQuery(sql);
+			if (rset.next()){
+				howmany = rset.getInt(1);
+			}			
+			rset.close();			
+		} catch (Throwable e) {
+			e.printStackTrace(System.out);
+			failed(con);
+		}finally{
+			stmt.close();
+			release(con);
+		}		
+		return howmany;
+	}	
+	
+	private int howManySimulationContexts() throws SQLException {
+		int howmany = 0;
+		Connection con = getConnection();
+		Statement stmt = con.createStatement();
+		try {			
+			String sql = "SELECT COUNT(*) FROM VC_SimContext";
 			ResultSet rset = stmt.executeQuery(sql);
 			if (rset.next()){
 				howmany = rset.getInt(1);

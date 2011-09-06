@@ -1348,7 +1348,7 @@ private void openInVisit() {
 		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
 		//
 		String visitBinDirProp = null;
-		if (ResourceUtil.osname == "mac" || ResourceUtil.osname == "linux") {
+		if (ResourceUtil.bMac || ResourceUtil.bLinux) {
 		
 			visitBinDirProp = new File(ResourceUtil.getVcellHome(),"visit2_2_2/bin").getCanonicalPath();    //TODO: Replace visit2_2_2 with property of latest VCell supported version
 		}

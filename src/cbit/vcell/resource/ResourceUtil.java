@@ -30,7 +30,9 @@ public class ResourceUtil {
 	public final static boolean bWindows = system_osname.contains("Windows");
 	public final static boolean bMac = system_osname.contains("Mac");
 	public final static boolean bLinux = system_osname.contains("Linux");
-	public final static String osname;
+	private final static String osarch = System.getProperty("os.arch");
+	private final static boolean b64bit = osarch.endsWith("64");
+	private final static String osname;
 	static {
 		if (bWindows) {
 			osname = "windows";
@@ -238,6 +240,9 @@ public class ResourceUtil {
 	}
 	
 	public static void loadCopasiSolverLibrary () {
+		if (!bWindows || b64bit) {
+			throw new RuntimeException("Parameter Estimation is only supported on 32bit Windows at this time.");
+		}
 		try {
 	        System.loadLibrary("vcellCopasiOptDriver");
 	    } catch (Throwable ex1) {
