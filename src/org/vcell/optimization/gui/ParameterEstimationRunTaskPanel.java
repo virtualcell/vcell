@@ -516,6 +516,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		
 		getSolveButton().addActionListener(eventHandler);
 		getPlotButton().addActionListener(eventHandler);
+		getSaveSolutionAsNewSimButton().addActionListener(eventHandler);
 	}
 	
 	/**
@@ -1183,6 +1184,5 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			parameterEstimationTask.getOptSolverCallbacks().setStopRequested(true);
 		}
 	}
-
 
 }

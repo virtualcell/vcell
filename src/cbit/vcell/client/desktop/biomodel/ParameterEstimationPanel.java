@@ -76,7 +76,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private ParameterEstimationRunTaskPanel runTaskPanel = null;
 	private ReferenceDataPanel referenceDataPanel = null;
 	private UserPreferences fieldUserPreferences = null;
-	private javax.swing.JButton saveSolutionAsNewSimButton = null;
 	private javax.swing.JTabbedPane tabbedPane = null;
 	private javax.swing.JPanel dataMappingPanel = null;
 	private ReferenceDataMappingSpecTableModel referenceDataMappingSpecTableModel = null;
@@ -189,7 +188,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		getAnalysisTaskComboBox().addActionListener(eventHandler);
 		
 		getMapButton().addActionListener(eventHandler);
-		getSaveSolutionAsNewSimButton().addActionListener(eventHandler);
 		getEvaluateConfidenceIntervalButton().addActionListener(eventHandler);
 		getDataModelMappingTable().getSelectionModel().addListSelectionListener(eventHandler);
 		dataModelMappingTable.addMouseListener(eventHandler);
@@ -559,24 +557,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	}
 
 	/**
-	 * Return the SaveAsNewSimulationButton property value.
-	 * @return javax.swing.JButton
-	 */
-	private javax.swing.JButton getSaveSolutionAsNewSimButton() {
-		if (saveSolutionAsNewSimButton == null) {
-			try {
-				saveSolutionAsNewSimButton = new javax.swing.JButton();
-				saveSolutionAsNewSimButton.setName("SaveSolutionAsNewSimButton");
-				saveSolutionAsNewSimButton.setText("Save Solution as New Simulation...");
-				saveSolutionAsNewSimButton.setEnabled(false);
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return saveSolutionAsNewSimButton;
-	}
-
-	/**
 	 * Gets the userPreferences property (cbit.vcell.client.server.UserPreferences) value.
 	 * @return The userPreferences property value.
 	 * @see #setUserPreferences
@@ -652,7 +632,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private void optimizationResultSet_This(OptimizationResultSet optResultSet) {
 		String message = displayResults(optResultSet);
 		getParameterEstimationTask().appendSolverMessageText("\n"+message);
-		getSaveSolutionAsNewSimButton().setEnabled(optResultSet!=null);
 	}
 
 	/**
