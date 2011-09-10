@@ -436,7 +436,8 @@ public class MediaSettingsPanel extends JPanel {
 				Dimension imageDim = null;
 				int meshMode = -1;
 				int imageScale = -1;
-				if(isSmoldyn && particleRadioButton.isSelected()){
+				boolean bSmoldynParticle = (isSmoldyn && particleRadioButton.isSelected());
+				if(bSmoldynParticle){
 					imageDim = FormatSpecificSpecs.SMOLDYN_DEFAULT_FRAME_SIZE;
 				}else{
 					meshMode = (scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)?ImagePaneModel.MESH_MODE:ImagePaneModel.NORMAL_MODE);
@@ -446,7 +447,7 @@ public class MediaSettingsPanel extends JPanel {
 					imageDim.height = (bSeparate?imageDim.height:imageDim.height*variableNames.length);
 				}
 				String finalFileDescription = null;
-				if(numMedia > 1){
+				if(!bSmoldynParticle && (numMedia > 1)){
 					finalFileDescription = "ZIP file containing "+numMedia+" files of type "+mediaDescription;
 				}else{
 					finalFileDescription = "1 "+mediaDescription;
@@ -468,7 +469,7 @@ public class MediaSettingsPanel extends JPanel {
 					}
 					exportInfoJTextArea.append("\n");
 				}
-				if(isSmoldyn && particleRadioButton.isSelected()){
+				if(bSmoldynParticle){
 					exportInfoJTextArea.append("Composition: All particles rendered together in each frame.\n");
 				}else{
 					exportInfoJTextArea.append("Composition: "+(bSeparate?"Export variables individually":"Export variables composited together vertically")+"\n");					
@@ -483,7 +484,7 @@ public class MediaSettingsPanel extends JPanel {
 				exportInfoJTextArea.append("Num Slices: "+numSlices+"\n");
 				exportInfoJTextArea.append("Num TimePoints: "+numTimePoints+" (from "+timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]+" to "+timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]+")\n");
 
-				if(isSmoldyn && particleRadioButton.isSelected()){
+				if(bSmoldynParticle){
 					exportInfoJTextArea.append("Particle Mode: "+(isSmoldyn?"Particle Data ("+(particleRadioButton.isSelected()?"Render Particles":"Render Particle Counts")+")":"Non Particle Data")+"\n");
 				}else{
 					if(volVarMembrOutlineThicknessSlider.isEnabled() && volVarMembrOutlineThicknessSlider.getValue() == 0){
