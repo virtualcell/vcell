@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -53,6 +55,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
@@ -483,7 +486,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 				false /*false means NOT USE alpha*/   ,
 				-1/*NO transparent single pixel*/,
 				java.awt.image.DataBuffer.TYPE_BYTE);
-
+		
+		initCtrlz();
 	}
 	
 	/**
@@ -1399,6 +1403,20 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 		return isizeDataset;
 	}
+	
+	private void initCtrlz(){
+		this.getActionMap().put("Undo",
+			    new AbstractAction("Undo") {
+			        public void actionPerformed(ActionEvent evt) {
+			            getUndoButton().doClick();
+			        }
+			   }
+		);
+		this.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
+		this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
+		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
+		//comp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Redo" );//redo, to be impl
+	}
 	/**
 	 * Method getImagePane.
 	 * @return OverlayImageDisplayJAI
@@ -2064,5 +2082,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	public void setUndo(boolean bUndo){
 		undoButton.setEnabled(bUndo);
+		this.requestFocusInWindow();//needed because focus for window is lost (prevents keyboard event listening for cntrl-z) when button enable changes
 	}
 }
