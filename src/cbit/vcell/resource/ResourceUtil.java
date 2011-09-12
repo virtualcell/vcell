@@ -234,8 +234,8 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
-			if (b64bit) {
-				throw new RuntimeException("Parameter Estimation is only supported on 32bit OS at this time.");
+			if ((bLinux || bWindows) && b64bit) {
+				throw new RuntimeException("Native solvers are only supported on Mac OS X, 32bit Windows and 32bit Linux at this time.");
 			}
 	        System.loadLibrary("NativeSolvers");
 	    } catch (Throwable ex1) {
@@ -256,8 +256,8 @@ public class ResourceUtil {
 	
 	public static void loadlibSbmlLibray () {
 		try {
-			if (b64bit) {
-				throw new RuntimeException("Parameter Estimation is only supported on 32bit OS at this time.");
+			if (bLinux || bWindows && b64bit) {
+				throw new RuntimeException("SBML is only supported on Mac OS X and 32bit Windows at this time.");
 			}		
 //			System.loadLibrary("expat");
 //			System.loadLibrary("sbml");
