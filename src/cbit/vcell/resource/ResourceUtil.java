@@ -45,7 +45,7 @@ public class ResourceUtil {
 		}
 	}
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
-	public final static String NATIVELIB_SUFFIX = bWindows ? "_x64" : "";
+	public final static String NATIVELIB_SUFFIX = bWindows && b64bit ? "_x64" : "";
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
 	private static File userHome = null;
