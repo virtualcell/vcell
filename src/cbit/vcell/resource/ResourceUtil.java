@@ -30,8 +30,8 @@ public class ResourceUtil {
 	public final static boolean bWindows = system_osname.contains("Windows");
 	public final static boolean bMac = system_osname.contains("Mac");
 	public final static boolean bLinux = system_osname.contains("Linux");
-	private final static String osarch = System.getProperty("os.arch");
-	private final static boolean b64bit = osarch.endsWith("64");
+	private final static String system_osarch = System.getProperty("os.arch");
+	private final static boolean b64bit = system_osarch.endsWith("64");
 	private final static String osname;
 	static {
 		if (bWindows) {
@@ -45,6 +45,7 @@ public class ResourceUtil {
 		}
 	}
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
+	public final static String NATIVELIB_SUFFIX = bWindows ? "_x64" : "";
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
 	private static File userHome = null;
@@ -233,6 +234,9 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
+			if (b64bit) {
+				throw new RuntimeException("Parameter Estimation is only supported on 32bit OS at this time.");
+			}
 	        System.loadLibrary("NativeSolvers");
 	    } catch (Throwable ex1) {
     		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex1.getMessage());
@@ -240,11 +244,11 @@ public class ResourceUtil {
 	}
 	
 	public static void loadCopasiSolverLibrary () {
-		if (!bWindows || b64bit) {
-			throw new RuntimeException("Parameter Estimation is only supported on 32bit Windows at this time.");
+		if (!bWindows) {
+			throw new RuntimeException("Parameter Estimation is only supported on Windows at this time.");
 		}
 		try {
-	        System.loadLibrary("vcellCopasiOptDriver");
+	        System.loadLibrary("vcellCopasiOptDriver" + NATIVELIB_SUFFIX);
 	    } catch (Throwable ex1) {
     		throw new RuntimeException("ResourceUtil::loadCopasiSolverLibrary() : failed to load copasi solver library " + ex1.getMessage());
 		}
@@ -252,6 +256,9 @@ public class ResourceUtil {
 	
 	public static void loadlibSbmlLibray () {
 		try {
+			if (b64bit) {
+				throw new RuntimeException("Parameter Estimation is only supported on 32bit OS at this time.");
+			}		
 //			System.loadLibrary("expat");
 //			System.loadLibrary("sbml");
 //			System.loadLibrary("sbml-requiredElements");
