@@ -348,7 +348,7 @@ public static OptimizationResultSet solve(ParameterEstimationTask parameterEstim
 		return optResultSet;
 	} catch (Throwable e){
 		e.printStackTrace(System.out);
-		throw new OptimizationException(e.getMessage());
+		throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());	
 	}
 }
 	
@@ -369,7 +369,7 @@ private static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcRes
 	//
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (cbit.vcell.solver.SimulationSymbolTable.isFunctionSaved(functions[i])){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();

@@ -32,6 +32,7 @@ public class ResourceUtil {
 	public final static boolean bLinux = system_osname.contains("Linux");
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
+	private final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
 	private final static String osname;
 	static {
 		if (bWindows) {
@@ -234,43 +235,50 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
-			if ((bLinux || bWindows) && b64bit) {
-				throw new RuntimeException("Native solvers are only supported on Mac OS X, 32bit Windows and 32bit Linux at this time.");
+			if (bMacPpc) {
+				throw new RuntimeException("Native solvers is not supported on Mac OS X PowerPC.");
 			}
-	        System.loadLibrary("NativeSolvers");
+			if (bLinux && b64bit) {
+				throw new RuntimeException("Native solvers are supported on Mac OS X, Windows and 32bit Linux at this time.");
+			}
+	        System.loadLibrary("NativeSolvers" + NATIVELIB_SUFFIX);
 	    } catch (Throwable ex1) {
-    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex1.getMessage());
+    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary(): " + ex1.getMessage());
 		}
 	}
 	
 	public static void loadCopasiSolverLibrary () {
+		if (bMacPpc) {
+			throw new RuntimeException("Parameter Estimation is not supported on Mac OS X PowerPC.");
+		}
 		if (!bWindows) {
 			throw new RuntimeException("Parameter Estimation is only supported on Windows at this time.");
 		}
 		try {
 	        System.loadLibrary("vcellCopasiOptDriver" + NATIVELIB_SUFFIX);
 	    } catch (Throwable ex1) {
-    		throw new RuntimeException("ResourceUtil::loadCopasiSolverLibrary() : failed to load copasi solver library " + ex1.getMessage());
+    		throw new RuntimeException("ResourceUtil::loadCopasiSolverLibrary(): " + ex1.getMessage());
 		}
 	}
 	
 	public static void loadlibSbmlLibray () {
 		try {
-			if (bLinux || bWindows && b64bit) {
-				throw new RuntimeException("SBML is only supported on Mac OS X and 32bit Windows at this time.");
-			}		
-//			System.loadLibrary("expat");
-//			System.loadLibrary("sbml");
-//			System.loadLibrary("sbml-requiredElements");
-//			System.loadLibrary("sbml-spatial");
-//			System.loadLibrary("libsbml");
-			System.loadLibrary("sbmlj");
+			if (bMacPpc) {
+				throw new RuntimeException("SBML is no longer supported on Mac OS X PowerPC.");
+			}
+			if (bLinux) {
+				throw new RuntimeException("SBML is only supported on Mac OS X and Windows at this time.");
+			}
+			System.loadLibrary("sbmlj" + NATIVELIB_SUFFIX);
 		} catch (Throwable ex1){
-			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
+			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray(): " + ex1.getMessage());
 		}
 	}
 		
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
+		if (bMacPpc) {
+			throw new RuntimeException("Native solvers is not supported on Mac OS X PowerPC.");
+		}
 		if (solverDescription.equals(SolverDescription.CombinedSundials)
 				|| solverDescription.equals(SolverDescription.CVODE)
 				|| solverDescription.equals(SolverDescription.IDA)) {

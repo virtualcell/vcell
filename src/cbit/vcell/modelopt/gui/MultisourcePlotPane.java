@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modelopt.gui;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Vector;
 
@@ -268,12 +269,7 @@ private PlotPane getplotPane() {
 		try {
 			ivjplotPane = new PlotPane();
 			ivjplotPane.setName("plotPane");
-			ivjplotPane.setPreferredSize(new java.awt.Dimension(700, 700));
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -293,13 +289,8 @@ private javax.swing.JScrollPane getReferenceDataListScrollPane() {
 			ivjReferenceDataListScrollPane.setAutoscrolls(true);
 			ivjReferenceDataListScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			ivjReferenceDataListScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			ivjReferenceDataListScrollPane.setPreferredSize(new java.awt.Dimension(274, 146));
 			getReferenceDataListScrollPane().setViewportView(getJList1());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -343,8 +334,8 @@ private void initialize() {
 		setName("MultisourcePlotPane");
 		setLayout(new java.awt.BorderLayout());
 		setSize(568, 498);
-		add(getplotPane(), "Center");
-		add(getReferenceDataListScrollPane(), "West");
+		add(getplotPane(), BorderLayout.CENTER);
+		add(getReferenceDataListScrollPane(), BorderLayout.WEST);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -352,32 +343,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		MultisourcePlotPane aMultisourcePlotPane;
-		aMultisourcePlotPane = new MultisourcePlotPane();
-		frame.setContentPane(aMultisourcePlotPane);
-		frame.setSize(aMultisourcePlotPane.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * Insert the method's description here.
