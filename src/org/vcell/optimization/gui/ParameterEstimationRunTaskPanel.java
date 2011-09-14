@@ -1119,19 +1119,20 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	
 			ReferenceData referenceData = modelOptimizationSpec.getReferenceData();
 			if (referenceData!=null) {
-				dataSourceList.add(new DataSource.DataSourceReferenceData("refData", timeIndex, referenceData));
+				dataSourceList.add(new DataSource.DataSourceReferenceData("EXPT", timeIndex, referenceData));
 				String[] refColumnNames = referenceData.getColumnNames();
 				for (int i = 0; i < refColumnNames.length; i ++) {
 					if (i == timeIndex) {
 						continue;
 					}
-					nameVector.add(refColumnNames[i]);			
+					nameVector.add(refColumnNames[i]);
+					break;
 				}
 			}
 	
 			ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
 			if (odeSolverResultSet!=null){
-				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("estData", odeSolverResultSet));
+				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("EST", odeSolverResultSet));
 				if (mappingSpecs != null) {
 					for (int i = 0; i < mappingSpecs.length; i ++) {
 						if (i == timeIndex) {
@@ -1139,6 +1140,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 						}
 						Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(mappingSpecs[i].getModelObject());
 						nameVector.add(var.getName());
+						break;
 					}
 				}
 			}
@@ -1150,7 +1152,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			nameArray = (String[])BeanUtils.getArray(nameVector, String.class);
 			multisourcePlotPane.select(nameArray);
 	
-			DialogUtils.showComponentCloseDialog(this, multisourcePlotPane, "Data Plot");
+			DialogUtils.showComponentCloseDialog(JOptionPane.getFrameForComponent(this), multisourcePlotPane, "Data Plot");
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 		} catch (InconsistentDomainException e) {
