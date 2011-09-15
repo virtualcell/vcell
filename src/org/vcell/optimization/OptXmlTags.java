@@ -20,6 +20,10 @@ public class OptXmlTags {
 	public static final String DataType_Attr = "dataType";
 	public static final String Name_Attr = "name";
 	
+	//for VCell optimization options that are not in copasi method options
+	public static final String VCellOptions_Tag = "VCellOptions";
+	public static final String NumOptimizationRuns_Tag = "NumberOfOptimizationRuns";
+	
 	public static final String MathModelSbmlFile_Tag = "MathModelSbmlFile";
 	public static final String ExperimentalDataFile_Tag = "ExperimentalDataFile";
 	public static final String ExperimentalDataFile_Attr_LastRow = "LastRow";

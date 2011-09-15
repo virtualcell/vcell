@@ -29,14 +29,16 @@ public class CopasiOptSolverCallbacks {
 		private double currentValue;
 		private int numEvaluations = 0;
 		private Double endValue;
+		private int runNo = 1;
 
 		public CopasiEvaluationHolder(int numEvaluations, double objFunctionValue,
-				double currentValue, Double endValue) {
+				double currentValue, Double endValue, int runNo) {
 			super();
 			this.numEvaluations = numEvaluations;
 			this.objFunctionValue = objFunctionValue;
 			this.currentValue = currentValue;
 			this.endValue = endValue;
+			this.runNo = runNo;
 		}
 		
 		public double getObjFunctionValue() {
@@ -54,13 +56,18 @@ public class CopasiOptSolverCallbacks {
 		public Double getEndValue() {
 			return endValue;
 		}
+		
+		public int getRunNumber()
+		{
+			return runNo;
+		}
 
 	}
 
-	public void setEvaluation(int numEvaluations, double objFunctionValue, double currentValue, Double endValue)
+	public void setEvaluation(int numEvaluations, double objFunctionValue, double currentValue, Double endValue, int runNo)
 	{
 		CopasiEvaluationHolder oldValue = this.copasiEvaluationHolder;
-		copasiEvaluationHolder = new CopasiEvaluationHolder(numEvaluations, objFunctionValue, currentValue, endValue);
+		copasiEvaluationHolder = new CopasiEvaluationHolder(numEvaluations, objFunctionValue, currentValue, endValue, runNo);
 		firePropertyChange(COPASI_EVALUATION_HOLDER, oldValue, copasiEvaluationHolder);
 	}
 	
@@ -135,6 +142,16 @@ public class CopasiOptSolverCallbacks {
 			return copasiEvaluationHolder.getCurrentValue() ;
 		}
 		return 0;
+	}
+	
+
+	public int getRunNumber()
+	{
+		if(copasiEvaluationHolder != null)
+		{
+			return copasiEvaluationHolder.getRunNumber();
+		}
+		return 1;
 	}
 	
 	public void reset() {
