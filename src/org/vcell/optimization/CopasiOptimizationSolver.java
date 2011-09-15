@@ -65,7 +65,8 @@ public class CopasiOptimizationSolver {
 		Std_Deviation("Std Deviation", DataType_float),
 		Start_Temperature("Start Temperature", DataType_float),
 		Cooling_Factor("Cooling Factor", DataType_float),
-		Pf("Pf", DataType_float);
+		Pf("Pf", DataType_float),
+		Num_of_Runs("Number of Runs", DataType_int);
 		
 		private String displayName;
 		private String dataType;
@@ -127,13 +128,27 @@ public class CopasiOptimizationSolver {
 		private CopasiOptimizationMethodType type;
 		private CopasiOptimizationParameter[] realParameters;
 		
+		CopasiOptimizationParameter numRuns = new CopasiOptimizationParameter(CopasiOptimizationParameterType.Num_of_Runs, 1);
+		
 		public CopasiOptimizationMethod(CopasiOptimizationMethodType type) {
 			this.type = type;
 			CopasiOptimizationParameter[] defaultParameters = type.getDefaultParameters();
-			this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
+			if(type.isStochasticMethod())
+			{
+				this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
+			}
+			else
+			{
+				this.realParameters = new CopasiOptimizationParameter[defaultParameters.length + 1];
+			}
 			for (int i = 0; i < defaultParameters.length; i ++) {
 				realParameters[i] = new CopasiOptimizationParameter(defaultParameters[i]);
 			}
+			if(type.isStochasticMethod())
+			{
+				this.realParameters[realParameters.length - 1] = numRuns;
+			}
+			
 		}
 		public final CopasiOptimizationMethodType getType() {
 			return type;
@@ -149,7 +164,17 @@ public class CopasiOptimizationSolver {
 			}
 			return null;
 		}
-				
+		//get number of runs, by default return 1.
+		public final int getNumOfRuns()
+		{
+			for (CopasiOptimizationParameter cop : realParameters) {
+				if (cop.getType() == CopasiOptimizationParameterType.Num_of_Runs)
+				{
+					return (int)cop.getValue();
+				}
+			}
+			return 1;
+		}
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof CopasiOptimizationMethod) {
@@ -172,12 +197,13 @@ public class CopasiOptimizationSolver {
 	}
 	
 	public enum CopasiOptimizationMethodType {
-		Statistics("Current Solution Statistics", new CopasiOptimizationParameter[0], null, CopasiOptProgressType.NO_Progress),
+		Statistics("Current Solution Statistics", new CopasiOptimizationParameter[0], false, null, CopasiOptProgressType.NO_Progress),
 		EvolutionaryProgram("Evolutionary Programming", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Number_of_Generations, 200),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0)},
+				true,
 				Label_Progress,
 				CopasiOptProgressType.Progress
 		),
@@ -186,7 +212,8 @@ public class CopasiOptimizationSolver {
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Pf, 0.475),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Pf, 0.475)},
+				true,
 				Label_Progress,
 				CopasiOptProgressType.Progress
 		),
@@ -194,7 +221,8 @@ public class CopasiOptimizationSolver {
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Number_of_Generations, 200),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0)},
+				true,
 				Label_Progress,
 				CopasiOptProgressType.Progress
 		),
@@ -203,27 +231,31 @@ public class CopasiOptimizationSolver {
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Pf, 0.475),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Pf, 0.475)},
+				true,
 				Label_Progress,
 				CopasiOptProgressType.Progress
 		),
 		HookeJeeves("Hooke & Jeeves", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.IterationLimit, 50),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Rho, 0.2),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Rho, 0.2)},
+				false,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
 		LevenbergMarquardt("Levenberg - Marquardt", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.IterationLimit, 200),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5)},
+				false,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
 		NelderMead("Nelder - Mead", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.IterationLimit, 200),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Scale, 10),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Scale, 10)},
+				false,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
@@ -232,13 +264,15 @@ public class CopasiOptimizationSolver {
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Swarm_Size, 50),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Std_Deviation, 1e-6),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0)},
+				true,
 				Label_Progress,
 				CopasiOptProgressType.Progress),
 	    RandomSearch("Random Search", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Number_of_Iterations, 100000),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0)},
+				true,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
@@ -247,36 +281,42 @@ public class CopasiOptimizationSolver {
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Cooling_Factor, 0.85),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-6),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Random_Number_Generator, 1),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Seed, 0)},
+				true,
 				"Current Temperature",
 				CopasiOptProgressType.Current_Value
 		),
 	    SteepestDescent("Steepest Descent", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.IterationLimit, 100),
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-6),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-6)},
+				false,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
 	    Praxis("Praxis", new CopasiOptimizationParameter[]{
-				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5),},
+				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Tolerance, 1e-5)},
+				false,
 				null,
 				CopasiOptProgressType.NO_Progress
 		),
 	    TruncatedNewton("Truncated Newton", new CopasiOptimizationParameter[0],
-				null,
+				false,
+	    		null,
 				CopasiOptProgressType.NO_Progress
 		);
 		
 		private String name;
 		private String displayName;
 		private CopasiOptimizationParameter[] defaultParameters;
+		private boolean bStochastic;
 		private String progressLabel;
 		private CopasiOptProgressType progressType;
 		
-		CopasiOptimizationMethodType(String name, CopasiOptimizationParameter[] parameters, String progressLabel, CopasiOptProgressType progressType) {
+		CopasiOptimizationMethodType(String name, CopasiOptimizationParameter[] parameters, boolean bStochastic, String progressLabel, CopasiOptProgressType progressType) {
 			this.name = name;
 			displayName = name;
 			this.defaultParameters = parameters;
+			this.bStochastic = bStochastic; 
 			this.progressLabel = progressLabel;
 			this.progressType = progressType;
 		}
@@ -295,7 +335,9 @@ public class CopasiOptimizationSolver {
 		public CopasiOptProgressType getProgressType() {
 			return progressType;
 		}
-		 
+		public boolean isStochasticMethod(){
+			return bStochastic;
+		}
 	}
 	
 	public enum CopasiOptProgressType {
@@ -306,108 +348,108 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
-public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
-						throws IOException, ExpressionException, OptimizationException {
-	CopasiOptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
-	try {		
-		Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
-		String inputXML = XmlUtil.xmlToString(optProblemXML);
-		System.out.println(inputXML);
-		String optResultsXML = solve(inputXML, optSolverCallbacks);
-		OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
-		//create a temp simulation based on math description
-		Simulation simulation = new Simulation(parameterEstimationTask.getSimulationContext().getMathDescription());
-		
-		String[] parameterNames = newOptResultSet.getParameterNames();
-		double[] parameterVals = newOptResultSet.getBestEstimates();
-		ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
-		double[] times = refData.getDataByColumn(0);
-		double endTime = times[times.length-1];
-		ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
-		//set simulation ending time and output interval
-		simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
-		simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
-		//set parameters as math overrides
-		MathOverrides mathOverrides = simulation.getMathOverrides();
-		for (int i = 0; i < parameterNames.length; i++){
-			mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterVals[i])));
-		}
-		//get input model string
-		StringWriter stringWriter = new StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
-		idaFileWriter.write();
-		stringWriter.close();
-		StringBuffer buffer = stringWriter.getBuffer();
-		String idaInputString = buffer.toString();
-		
-		RowColumnResultSet rcResultSet = null;
-		NativeIDASolver nativeIDASolver = new NativeIDASolver();
-		rcResultSet = nativeIDASolver.solve(idaInputString);
-		
-		OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
-		return optResultSet;
-	} catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());	
-	}
-}
-	
-private static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResultSet, SimulationSymbolTable simSymbolTable, String[] parameterNames, double[] parameterValues){
-	//
-	// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
-	//
-	
-	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
-	for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-		odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
-	}
-	for (int i = 0; i < rcResultSet.getRowCount(); i++){
-		odeSolverResultSet.addRow(rcResultSet.getRow(i));
-	}
-	//
-	// add appropriate Function columns to result set
-	//
-	Function functions[] = simSymbolTable.getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-				//
-				// substitute in place all "optimization parameter" values.
-				//
-				for (int j = 0; parameterNames!=null && j < parameterNames.length; j++) {
-					exp1.substituteInPlace(new Expression(parameterNames[j]), new Expression(parameterValues[j]));
-				}
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
+	public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
+							throws IOException, ExpressionException, OptimizationException {
+		CopasiOptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
+		try {		
+			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
+			String inputXML = XmlUtil.xmlToString(optProblemXML);
+			System.out.println(inputXML);
+			String optResultsXML = solve(inputXML, optSolverCallbacks);
+			OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
+			//create a temp simulation based on math description
+			Simulation simulation = new Simulation(parameterEstimationTask.getSimulationContext().getMathDescription());
 			
-			try {
-				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
-				odeSolverResultSet.addFunctionColumn(cd);
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
+			String[] parameterNames = newOptResultSet.getParameterNames();
+			double[] parameterVals = newOptResultSet.getBestEstimates();
+			ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+			double[] times = refData.getDataByColumn(0);
+			double endTime = times[times.length-1];
+			ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
+			//set simulation ending time and output interval
+			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
+			simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
+			//set parameters as math overrides
+			MathOverrides mathOverrides = simulation.getMathOverrides();
+			for (int i = 0; i < parameterNames.length; i++){
+				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterVals[i])));
 			}
+			//get input model string
+			StringWriter stringWriter = new StringWriter();
+			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
+			idaFileWriter.write();
+			stringWriter.close();
+			StringBuffer buffer = stringWriter.getBuffer();
+			String idaInputString = buffer.toString();
+			
+			RowColumnResultSet rcResultSet = null;
+			NativeIDASolver nativeIDASolver = new NativeIDASolver();
+			rcResultSet = nativeIDASolver.solve(idaInputString);
+			
+			OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
+			return optResultSet;
+		} catch (Throwable e){
+			e.printStackTrace(System.out);
+			throw new OptimizationException(e.getMessage());
 		}
 	}
-	return odeSolverResultSet;
-}
-
-public static void main(String[] args) {
-	try{
-		String fileName = "D:\\COPASI\\copasiOptXml.txt";
-		String optXML = FileUtils.readFileToString(new File(fileName));
-		System.out.println(optXML);
-		CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
-		solve(optXML, coc);
-	}catch(Throwable t)
-	{
-		t.printStackTrace(System.err);
+		
+	private static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResultSet, SimulationSymbolTable simSymbolTable, String[] parameterNames, double[] parameterValues){
+		//
+		// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
+		//
+		
+		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
+		for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
+			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
+		}
+		for (int i = 0; i < rcResultSet.getRowCount(); i++){
+			odeSolverResultSet.addRow(rcResultSet.getRow(i));
+		}
+		//
+		// add appropriate Function columns to result set
+		//
+		Function functions[] = simSymbolTable.getFunctions();
+		for (int i = 0; i < functions.length; i++){
+			if (SimulationSymbolTable.isFunctionSaved(functions[i])){
+				Expression exp1 = new Expression(functions[i].getExpression());
+				try {
+					exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
+					//
+					// substitute in place all "optimization parameter" values.
+					//
+					for (int j = 0; parameterNames!=null && j < parameterNames.length; j++) {
+						exp1.substituteInPlace(new Expression(parameterNames[j]), new Expression(parameterValues[j]));
+					}
+				} catch (MathException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				} catch (ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				}
+				
+				try {
+					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
+					odeSolverResultSet.addFunctionColumn(cd);
+				}catch (ExpressionException e){
+					e.printStackTrace(System.out);
+				}
+			}
+		}
+		return odeSolverResultSet;
 	}
-}
+	
+	public static void main(String[] args) {
+		try{
+			String fileName = "D:\\COPASI\\copasiOptXml.txt";
+			String optXML = FileUtils.readFileToString(new File(fileName));
+			System.out.println(optXML);
+			CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
+			solve(optXML, coc);
+		}catch(Throwable t)
+		{
+			t.printStackTrace(System.err);
+		}
+	}
 }

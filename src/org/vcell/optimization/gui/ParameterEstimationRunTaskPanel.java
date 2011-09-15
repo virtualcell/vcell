@@ -121,6 +121,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		private JTextField objectiveFunctionValueTextField = null;
 		private JTextField currentValueTextField = null;
 		private JLabel progressLabel;
+		private JLabel numRunsLabel;
 		RunStatusProgressDialog(Frame owner) {
 			super(owner);
 			initialize();
@@ -143,8 +144,16 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			currentValueTextField = new javax.swing.JTextField();
 			currentValueTextField.setEditable(false);
 			
-			int gridy = 0;		
+			int gridy = 0;	//number of runs label
+			numRunsLabel = new JLabel("");
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(10, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			runStatusPanel.add(numRunsLabel, gbc);
+			
+			gridy++;
+			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.LINE_END;
@@ -204,7 +213,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
 			gbc.gridwidth = 2;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.insets = new java.awt.Insets(4, 4, 10, 4);
 			gbc.weightx = 1.0;
 			getCancelButton().setText("Stop");
 			runStatusPanel.add(getCancelButton(), gbc);
@@ -239,7 +248,19 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 		public void setObjectFunctionValue(double d) {
 			objectiveFunctionValueTextField.setText("" + d);
-		}		
+		}	
+		public void setNumRunMessage(int currentRun, int totalRun)
+		{
+			if(totalRun == 1)
+			{
+				numRunsLabel.setVisible(false);
+			}
+			else
+			{
+				numRunsLabel.setVisible(true);
+				numRunsLabel.setText("Running No." + (currentRun+1)  + " of total " + totalRun + " runs.");
+			}
+		}
 		public void showProgressBar(CopasiOptimizationMethod com) {
 			progressBar.setValue(0);
 			progressLabel.setText(com.getType().getProgressLabel() + ": ");
@@ -455,6 +476,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					&& (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
 				getRunStatusDialog().setNumEvaluations(parameterEstimationTask.getOptSolverCallbacks().getEvaluationCount());
 				getRunStatusDialog().setObjectFunctionValue(parameterEstimationTask.getOptSolverCallbacks().getObjectiveFunctionValue());
+				getRunStatusDialog().setNumRunMessage(parameterEstimationTask.getOptSolverCallbacks().getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod().getNumOfRuns());
 				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Progress) {
 					getRunStatusDialog().setProgress(parameterEstimationTask.getOptSolverCallbacks().getPercent());
 				}
@@ -890,7 +912,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
 		parameterEstimationTask.getOptSolverCallbacks().reset();
 		Double endValue = com.getEndValue();
-		parameterEstimationTask.getOptSolverCallbacks().setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue);
+		parameterEstimationTask.getOptSolverCallbacks().setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		AsynchClientTask task1 = new AsynchClientTask("checking issues", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
