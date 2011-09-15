@@ -1239,7 +1239,7 @@ public class PathwayReader {
 				boolean found = false;
 				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
 				// always create a proxy, the real PhysicalEntity (if present) is not ready to be inserted as is because it is incomplete
-				// the reason is that PhysicalEntity object is a "species" in v2 but becames a "species context" in v3
+				// the reason is that PhysicalEntity object is a "species" in v2 but becomes a "species context" in v3
 				PhysicalEntityProxy physicalEntityProxy = null;
 				if (physicalEntityPropertyElement != null){
 					found = true;

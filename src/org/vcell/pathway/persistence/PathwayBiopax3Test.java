@@ -31,11 +31,18 @@ public class PathwayBiopax3Test {
 	
 	public static void main(String args[]){
 		try {
-			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\Reactome3_189445.owl"));
+			// sbpax: http://www.signaling-gateway.org/molecule/query?afcsid=A000037&type=sbPAXExport
+			// items within items
+//			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\sbpax3fullexample.xml"));
+			
+			// biopax with URI-like IDs and resources 
+			// http://www.pathwaycommons.org/pc2/get?uri=HTTP:%2F%2FWWW.REACTOME.ORG%2FBIOPAX/48887%23PATHWAY1076_1_9606
+			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\biopax3_no_id.xml"));	// sbpax3_uri_id.xml 
+//			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\SBPax3.owl"));
+//			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\Reactome3_189445.owl"));
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
-			System.out.println("starting parsing");
 			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
-			System.out.println("ending parsing");
+//			System.out.print(pathwayModel.show(true));
 			pathwayModel.reconcileReferences();
 			
 			bioModelToXML(pathwayModel);
