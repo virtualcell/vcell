@@ -21,9 +21,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 
-import loci.formats.ImageTools;
-import loci.formats.gui.AWTImageTools;
-
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -269,7 +266,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
+		BufferedImage roiImage = UShortImage.createUnsignedBufferedImage(roi.getPixelsXYZ(),xSize,ySize);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {
@@ -311,7 +308,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
+		BufferedImage roiImage = UShortImage.createUnsignedBufferedImage(roi.getPixelsXYZ(),xSize,ySize);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {

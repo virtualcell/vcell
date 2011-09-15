@@ -63,8 +63,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import loci.formats.gui.AWTImageTools;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
@@ -1118,13 +1116,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
 		if (roiPixels!=null){
 			BufferedImage highlightImage = imagePane.getHighlightImage();
-			byte[] redChannelPixels = AWTImageTools.getBytes(highlightImage)[0];
+			byte[] hiLiteArr = ((DataBufferByte)highlightImage.getRaster().getDataBuffer()).getData();
 			for (int i = 0; i < roiPixels.length; i++) {
-				if (redChannelPixels[i]==0){
-					roiPixels[i] = 0;
-				}else{
-					roiPixels[i] = (short)0xffff;
-				}
+				roiPixels[i] = (hiLiteArr[i] == 0?0:(short)0xffff);
 			}
 		}
 	}
@@ -1165,6 +1159,27 @@ public class OverlayEditorPanelJAI extends JPanel{
 		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
 		imagePane.setUnderlyingImage(specialBufferedImage,/* false,*/null);
 	}
+
+	IndexColorModel hiLiteColorModel;
+	private IndexColorModel getHiliteColorModel(){
+		if(hiLiteColorModel == null){
+			int[] cmap = new int[256];
+			for(int i=0;i<256;i+= 1){
+				if(i != 0){
+					cmap[i] = 0xFF000000 | highlightColor.getRGB();
+				}else{
+					cmap[1] = 0xFF000000;
+				}
+			}
+			hiLiteColorModel =
+				new java.awt.image.IndexColorModel(
+					8, cmap.length,cmap,0,
+					false /*false means NOT USE alpha*/   ,
+					-1/*NO transparent single pixel*/,
+					java.awt.image.DataBuffer.TYPE_BYTE);
+		}
+		return hiLiteColorModel;
+	}
 	/**
 	 * Method createHighlightImageFromROI.
 	 * @return BufferedImage
@@ -1173,34 +1188,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 		UShortImage roiImage = highlightImageROI.getRoiImages()[getRoiImageIndex()];
 		int width = roiImage.getNumX();
 		int height = roiImage.getNumY();
-		byte[][] highlightData = new byte[1][width*height];
-		for (int i = 0; i < highlightData[0].length; i++) {
-			if (roiImage.getPixels()[i] != 0){
-				highlightData[0][i] = (byte)highlightColor.getRed();
-//				highlightData[1][i] = (byte)highlightColor.getGreen();
-//				highlightData[2][i] = (byte)highlightColor.getBlue();
-			}
+		BufferedImage hiLiteImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED, getHiliteColorModel());
+		byte[] hiLiteArr = ((DataBufferByte)hiLiteImage.getRaster().getDataBuffer()).getData();
+		for (int i = 0; i < roiImage.getPixels().length; i++) {
+			hiLiteArr[i] = (roiImage.getPixels()[i] != 0?(byte)highlightColor.getRed():0);
 		}
-		Image tempImage = AWTImageTools.makeImage(highlightData, width, height,false);
-		int[] cmap = new int[256];
-		//colormap (grayscale)
-		for(int i=0;i<256;i+= 1){
-//			int iv = (int)(0x000000FF&i);
-//			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
-			if(i != 0){
-				cmap[i] = 0xFF000000 | highlightColor.getRGB();//0xFFFFFF00;
-			}else{
-				cmap[1] = 0xFF000000;
-			}
-		}
-		IndexColorModel indexColorModel =
-			new java.awt.image.IndexColorModel(
-				8, cmap.length,cmap,0,
-				false /*false means NOT USE alpha*/   ,
-				-1/*NO transparent single pixel*/,
-				java.awt.image.DataBuffer.TYPE_BYTE);
-
-		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
+		return hiLiteImage;
 	}
 	
 	public void setAllowAddROI(boolean bAllowAddROI){

@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Hashtable;
@@ -51,11 +52,6 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
-import loci.formats.IFormatReader;
-import loci.formats.ImageReader;
-import loci.formats.gui.AWTImageTools;
-import loci.formats.gui.BufferedImageReader;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
@@ -64,6 +60,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
@@ -670,13 +667,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
 		if (roiPixels!=null){
 			BufferedImage highlightImage = imagePane.getHighlightImage();
-			byte[] redChannelPixels = AWTImageTools.getBytes(highlightImage)[0];
+			byte[] hiLiteArr = ((DataBufferByte)highlightImage.getRaster().getDataBuffer()).getData();
 			for (int i = 0; i < roiPixels.length; i++) {
-				if (redChannelPixels[i]==0){
-					roiPixels[i] = 0;
-				}else{
-					roiPixels[i] = (short)0xffff;
-				}
+				roiPixels[i] = (hiLiteArr[i] == 0?0:(short)0xffff);
 			}
 		}
 	}
@@ -687,18 +680,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * @return BufferedImage
 	 */
 	private BufferedImage createUnderlyingImage(UShortImage image){
-		int width = image.getNumX();
-		int height = image.getNumY();
-		ImageStatistics imageStats = image.getImageStatistics();
-		short[] pixels = image.getPixels();
-		byte[][] byteData = new byte[1][width*height];
-		for (int i = 0; i < byteData[0].length; i++) {
-			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
-//			byteData[1][i] = byteData[0][i];
-//			byteData[2][i] = byteData[0][i];
-		}
-//		return AWTImageTools.makeImage(byteData, width, height,false);
-		Image tempImage = AWTImageTools.makeImage(byteData, width, height,false);
 		int[] cmap = new int[256];
 		//colormap (grayscale)
 		for(int i=0;i<256;i+= 1){
@@ -713,7 +694,17 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				-1/*NO transparent single pixel*/,
 				java.awt.image.DataBuffer.TYPE_BYTE);
 
-		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
+		int width = image.getNumX();
+		int height = image.getNumY();
+		ImageStatistics imageStats = image.getImageStatistics();
+		short[] pixels = image.getPixels();
+		BufferedImage underImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+		byte[] byteData = ((DataBufferByte)underImage.getRaster().getDataBuffer()).getData();
+		for (int i = 0; i < byteData.length; i++) {
+			byteData[i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
+		}
+		
+		return underImage;
 	}
 	
 	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
@@ -730,23 +721,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * @return BufferedImage
 	 */
 	private BufferedImage createHighlightImageFromROI(){
-		UShortImage roiImage = roi.getRoiImages()[getRoiImageIndex()];
-		int width = roiImage.getNumX();
-		int height = roiImage.getNumY();
-		byte[][] highlightData = new byte[1][width*height];
-		for (int i = 0; i < highlightData[0].length; i++) {
-			if (roiImage.getPixels()[i] != 0){
-				highlightData[0][i] = (byte)highlightColor.getRed();
-//				highlightData[1][i] = (byte)highlightColor.getGreen();
-//				highlightData[2][i] = (byte)highlightColor.getBlue();
-			}
-		}
-		Image tempImage = AWTImageTools.makeImage(highlightData, width, height,false);
 		int[] cmap = new int[256];
 		//colormap (grayscale)
 		for(int i=0;i<256;i+= 1){
-//			int iv = (int)(0x000000FF&i);
-//			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
 			if(i != 0){
 				cmap[i] = 0xFF000000 | highlightColor.getRGB();
 			}else{
@@ -760,7 +737,15 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				-1/*NO transparent single pixel*/,
 				java.awt.image.DataBuffer.TYPE_BYTE);
 
-		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
+		UShortImage roiImage = roi.getRoiImages()[getRoiImageIndex()];
+		int width = roiImage.getNumX();
+		int height = roiImage.getNumY();
+		BufferedImage hiLiteImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+		byte[] hiLiteArr = ((DataBufferByte)hiLiteImage.getRaster().getDataBuffer()).getData();
+		for (int i = 0; i < roiImage.getPixels().length; i++) {
+			hiLiteArr[i] = (roiImage.getPixels()[i] != 0?(byte)highlightColor.getRed():0);
+		}
+		return hiLiteImage;
 	}
 	
 	public void setROITimePlotVisible(boolean bROITimePlotVisible){
@@ -1476,7 +1461,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			importROIMaskButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					File inputFile = null;
-					IFormatReader iFormatReader = null;
 					try {
 						int option = openJFileChooser.showOpenDialog(VFrap_OverlayEditorPanelJAI.this);
 						if (option == JFileChooser.APPROVE_OPTION){
@@ -1485,23 +1469,22 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 						if(!customROIImport.importROI(inputFile)){
-							ImageReader imageReader = new ImageReader();
-							iFormatReader = imageReader.getReader(inputFile.getAbsolutePath());
-							iFormatReader.setId(inputFile.getAbsolutePath());
-							if(iFormatReader.getSizeX() * iFormatReader.getSizeY() != 
+							ImageDataset importImageDataset = ImageDatasetReader.readImageDataset(inputFile.getAbsolutePath(), null);
+							if(importImageDataset.getISize().getX() * importImageDataset.getISize().getY() != 
 								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
 								throw new Exception(
 									"Imported ROI mask size ("+
-									iFormatReader.getSizeX()+","+iFormatReader.getSizeY()+")"+
+											importImageDataset.getISize().getX()+","+importImageDataset.getISize().getY()+")"+
 									" does not match current Frap DataSet size ("+
 									getImagePane().getHighlightImage().getWidth()+","+
 									getImagePane().getHighlightImage().getHeight()+")");
 							}
-							BufferedImage roiMaskImage = BufferedImageReader.makeBufferedImageReader(iFormatReader).openImage(0);
+//							BufferedImage roiMaskImage = BufferedImageReader.makeBufferedImageReader(iFormatReader).openImage(0);
+							UShortImage roiMaskImage = importImageDataset.getImage(0, 0, 0);
 							int maskColor = highlightColor.getRGB();
-							for (int y = 0; y < iFormatReader.getSizeY(); y++) {
-								for (int x = 0; x < iFormatReader.getSizeX(); x++) {
-									if((roiMaskImage.getRGB(x, y)&0x00FFFFFF) != 0){
+							for (int y = 0; y < importImageDataset.getISize().getY(); y++) {
+								for (int x = 0; x < importImageDataset.getISize().getX(); x++) {
+									if((roiMaskImage.getPixel(x,y,0)&0xFFFF) != 0){
 										getImagePane().getHighlightImage().setRGB(x,y,maskColor);
 									}
 								}
@@ -1513,8 +1496,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						DialogUtils.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "Error importing ROI"+e1.getMessage());
-					}finally{
-						if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
 					}
 				}
 			});

@@ -17,8 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import loci.formats.FormatException;
-
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.gui.ProgressDialogListener;
@@ -62,11 +60,7 @@ public class FRAPParamTest
 		File inFile = new File(fileName);
 		try {
 			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, null);
-		} catch (ImageException e) {
-			e.printStackTrace(System.out);
-		} catch (IOException e) {
-			e.printStackTrace(System.out);
-		} catch (FormatException e) {
+		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
 		System.out.println("File " + fileName +" has been loaded.");

@@ -13,8 +13,6 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.IOException;
 
-import loci.formats.FormatException;
-
 import org.vcell.util.document.KeyValue;
 
 import cbit.image.ImageException;
@@ -25,24 +23,13 @@ import cbit.vcell.simdata.SimDataConstants;
 
 public abstract class FRAPWorkspace 
 {
-	public static FRAPStudy loadFRAPDataFromImageFile(File inputFile, ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException, IOException, FormatException
+	public static FRAPStudy loadFRAPDataFromImageFile(File inputFile, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
-		try{
-			ImageDataset imageDataset = ImageDatasetReader.readImageDataset(inputFile.getAbsolutePath(), clientTaskStatusSupport);
-			newFrapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
-		}catch(ImageException ie)
-		{
-			throw new ImageException(ie.getMessage());
-		}catch(IOException ioe)
-		{
-			throw new IOException(ioe.getMessage());
-		}catch(FormatException fe)
-		{
-			throw new FormatException(fe.getMessage());
-		}
+		ImageDataset imageDataset = ImageDatasetReader.readImageDataset(inputFile.getAbsolutePath(), clientTaskStatusSupport);
+		newFrapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
 		newFrapStudy.setFrapData(newFrapData);
 		
 		return newFrapStudy;
@@ -63,25 +50,14 @@ public abstract class FRAPWorkspace
 		return newFrapStudy;
 	}
 	
-	public static FRAPStudy loadFRAPDataFromMultipleFiles(File[] inputFiles, ClientTaskStatusSupport clientTaskStatusSupport, boolean isTimeSeries, double timeInterval) throws ImageException, IOException, FormatException
+	public static FRAPStudy loadFRAPDataFromMultipleFiles(File[] inputFiles, ClientTaskStatusSupport clientTaskStatusSupport, boolean isTimeSeries, double timeInterval) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		ImageDataset imageDataset;
-		try {
-			imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(inputFiles, clientTaskStatusSupport, isTimeSeries, timeInterval);
-			newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-		} catch(ImageException ie)
-		{
-			throw new ImageException(ie.getMessage());
-		}catch(IOException ioe)
-		{
-			throw new IOException(ioe.getMessage());
-		}catch(FormatException fe)
-		{
-			throw new FormatException(fe.getMessage());
-		}
+		imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(inputFiles, clientTaskStatusSupport, isTimeSeries, timeInterval);
+		newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
 		newFrapStudy.setFrapData(newFrapData);
 		
 		return newFrapStudy;

@@ -26,8 +26,10 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferUShort;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.IndexColorModel;
+import java.awt.image.RenderedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
@@ -42,6 +44,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.media.jai.BorderExtender;
+import javax.media.jai.BorderExtenderZero;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.operator.BorderDescriptor;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -50,8 +56,6 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-
-import loci.formats.ImageTools;
 
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
@@ -1949,9 +1953,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			Object paddedCurrZSection = null;
 			if(bXYChanged){
 				if(origArr instanceof short[]){
-					paddedCurrZSection = ImageTools.padImage((short[])currZSection, false, 1, origISize.getX(), newSizeX, newSizeY);
+					paddedCurrZSection = padXYUShort((short[])currZSection,origISize.getX(),origISize.getY());
 				}else if(origArr instanceof byte[]){
-					paddedCurrZSection = ImageTools.padImage((byte[])currZSection, false, 1, origISize.getX(), newSizeX, newSizeY);
+					paddedCurrZSection = padXYByte((byte[])currZSection,origISize.getX(),origISize.getY());
 				}else{
 					throw new IllegalArgumentException(origArr.getClass().getName() +"not implement for 'copyToPadded'");
 				}
@@ -1970,6 +1974,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		paddedInfo.paddedISize = new ISize(newSizeX, newSizeY, newSizeZ);
 		return paddedInfo;
 	}
+	public static byte[] padXYByte(byte[] byteArr,int numX,int numY){
+		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_BYTE_GRAY);
+		byte[] byteData = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
+		System.arraycopy(byteArr, 0, byteData, 0, byteArr.length);
+		PlanarImage planarImage = BorderDescriptor.create(bufferedImage, 1, 1, 1, 1,null, null).getRendering();
+		return ((DataBufferByte)planarImage.getData().getDataBuffer()).getData();
+	}
+	public static short[] padXYUShort(short[] shortArr,int numX,int numY){
+		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_USHORT_GRAY);
+		short[] shortData = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
+		System.arraycopy(shortArr, 0, shortData, 0, shortArr.length);
+		PlanarImage planarImage = BorderDescriptor.create(bufferedImage, 1, 1, 1, 1,null, null).getRendering();
+		return ((DataBufferUShort)planarImage.getData().getDataBuffer()).getData();
+	}
+
 	public static class Crop3D {
 		@Override
 		public String toString() {
