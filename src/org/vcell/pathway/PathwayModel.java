@@ -183,6 +183,7 @@ public class PathwayModel {
 		
 	}
 
+	// You're not expected to understand this
 	public void reconcileReferences() {
 		ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
 		reconcileReferencesPreprocessing();

@@ -22,6 +22,7 @@ public interface BioPaxObject extends Identifiable, Matchable {
 
 	String getID();
 	void setID(String value);
+	void setAbout(String about);
 	boolean hasID();
 	
 	String resourceFromID();

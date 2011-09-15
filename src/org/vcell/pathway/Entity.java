@@ -13,6 +13,7 @@ package org.vcell.pathway;
 import java.util.ArrayList;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.sbpax.SBEntity;
 
 public interface Entity extends BioPaxObject {
 	public ArrayList<String> getName();
@@ -29,4 +30,7 @@ public interface Entity extends BioPaxObject {
 
 	public ArrayList<Evidence> getEvidence();
 	public void setEvidence(ArrayList<Evidence> evidence);
+
+	public ArrayList<SBEntity> getSBSubEntity();
+	public void setSBSubEntity(ArrayList<SBEntity> sbSubEntity);
 }

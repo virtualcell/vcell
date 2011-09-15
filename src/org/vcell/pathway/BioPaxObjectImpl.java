@@ -21,6 +21,7 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                                                                                                                                                                                                        ";
 	private final static int MAX_DEPTH = 30;
 	private String ID;
+	private String about;
 	private ArrayList<String> comments = new ArrayList<String>();
 	private ArrayList<String> parserWarnings = new ArrayList<String>();
 	
@@ -37,9 +38,15 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public void setID(String value) {
 		this.ID = value;
 	}
+	public void setAbout(String about) {
+		this.ID = about;
+		this.about = about;
+	}
 	public String resourceFromID() {
-		if (ID != null){
-			String resourceID = "#" + this.getID();
+		if (about != null){			// if we have an about we're sure to also have an ID
+			return this.getID();	// ID and about are identical and represent an URL
+		} else if(ID != null) {
+			String resourceID = "#" + this.getID();		// just ID, "old" style
 			return resourceID;
 		}else{
 			return ("#0");
