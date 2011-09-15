@@ -11,6 +11,7 @@
 package cbit.vcell.microscopy;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,9 +23,8 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import loci.formats.gui.AWTImageTools;
-import loci.formats.gui.BufferedImageWriter;
-import loci.formats.out.TiffWriter;
+import javax.media.jai.JAI;
+import javax.media.jai.operator.FileStoreDescriptor;
 
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
@@ -260,18 +260,11 @@ public class NonGUIFRAPTest {
 	
 
 	public static File writeTempTiff(short[] shortPixels,int width,int height) throws Exception{
-		TiffWriter tifWriter = new TiffWriter();
 		File tempF = File.createTempFile("imageDataSetTest", ".tif");
 		tempF.deleteOnExit();
-		tifWriter.setId(tempF.getAbsolutePath());
-		tifWriter.setCompression("Uncompressed");
-		BufferedImage timePointBufferedImage =
-				AWTImageTools.makeImage(shortPixels, width, height,false);
-		BufferedImageWriter bufferedImageWriter = BufferedImageWriter.makeBufferedImageWriter(tifWriter);
-		bufferedImageWriter.saveImage(timePointBufferedImage, true);
-		tifWriter.close();
+		BufferedImage bufferedImage = UShortImage.createUnsignedBufferedImage(shortPixels, width, height);
+		FileStoreDescriptor.create(bufferedImage, tempF.getAbsolutePath(), "tiff", null, true, null).getRendering();
 		return tempF;
-	
 	}
 	public static void main(String[] args) {
 		try{

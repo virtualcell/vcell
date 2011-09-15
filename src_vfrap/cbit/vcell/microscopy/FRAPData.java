@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferShort;
 import java.io.File;
 import java.util.BitSet;
 import java.util.Random;
@@ -31,8 +32,6 @@ import javax.media.jai.operator.DilateDescriptor;
 import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
-
-import loci.formats.gui.AWTImageTools;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -428,7 +427,7 @@ private KernelJAI createCircularBinaryKernel(int radius){
 }
 private PlanarImage binarize(UShortImage source)
 {
-	return binarize(AWTImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY(),false));
+	return binarize(UShortImage.createUnsignedBufferedImage(source));
 }
 
 private PlanarImage binarize(BufferedImage source)
