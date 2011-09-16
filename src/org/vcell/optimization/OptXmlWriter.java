@@ -45,6 +45,7 @@ import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
@@ -95,7 +96,7 @@ public class OptXmlWriter {
 		if (optimizationSpec.isComputeProfileDistributions()) {
 			optProblemDescriptionElement.setAttribute(OptXmlTags.ComputeProfileDistributions_Attr, optimizationSpec.isComputeProfileDistributions() + "");
 		}
-		optProblemDescriptionElement.addContent(getVCellOptionsXML(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod()));
+		optProblemDescriptionElement.addContent(getVCellOptionsXML(parameterEstimationTask.getOptimizationSolverSpec()));
 		optProblemDescriptionElement.addContent(getParameterDescriptionXML(optimizationSpec));
 		Element dataElement = getCopasiDataXML(parameterEstimationTask);
 		optProblemDescriptionElement.addContent(dataElement);
@@ -105,12 +106,12 @@ public class OptXmlWriter {
 		return optProblemDescriptionElement;
 	}
 
-	public static Element getVCellOptionsXML(CopasiOptimizationMethod copasiOptimizationMethod)
+	public static Element getVCellOptionsXML(OptimizationSolverSpec optSolverSpec)
 	{
 		Element vcOptionElement = new Element(OptXmlTags.VCellOptions_Tag);
 		Element numRunsElement = new Element(OptXmlTags.NumOptimizationRuns_Tag);
 		
-		numRunsElement.addContent(copasiOptimizationMethod.getNumOfRuns()+"");
+		numRunsElement.addContent(optSolverSpec.getNumOfRuns()+"");
 		vcOptionElement.addContent(numRunsElement);
 		return vcOptionElement;
 	}
@@ -119,16 +120,11 @@ public class OptXmlWriter {
 		Element element = new Element(OptXmlTags.CopasiOptimizationMethod);
 		element.setAttribute(OptXmlTags.Name_Attr, copasiOptimizationMethod.getType().getName());
 		for (CopasiOptimizationParameter cop : copasiOptimizationMethod.getParameters()) {
-			//do not write "Num of runs" parameter within copasi parameters, it's a vcell option.
-			//it is written under "VCellOptions" --> "NumberOfOptimizationRuns" tags.
-			if(cop.getType() != CopasiOptimizationParameterType.Num_of_Runs) 
-			{
-				Element e = new Element(OptXmlTags.CopasiOptimizationParameter);
-				e.setAttribute(OptXmlTags.Name_Attr, cop.getType().getDisplayName());
-				e.setAttribute(OptXmlTags.Value_Attr, "" + cop.getValue());
-				e.setAttribute(OptXmlTags.DataType_Attr, "" + cop.getType().getDataType());
-				element.addContent(e);
-			}
+			Element e = new Element(OptXmlTags.CopasiOptimizationParameter);
+			e.setAttribute(OptXmlTags.Name_Attr, cop.getType().getDisplayName());
+			e.setAttribute(OptXmlTags.Value_Attr, "" + cop.getValue());
+			e.setAttribute(OptXmlTags.DataType_Attr, "" + cop.getType().getDataType());
+			element.addContent(e);
 		}
 		return element;
 	}
