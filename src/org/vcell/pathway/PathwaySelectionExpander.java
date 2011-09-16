@@ -20,24 +20,27 @@ public class PathwaySelectionExpander {
 	
 	public boolean includeAllComponents = false;
 
-	public void expandSelection(PathwayModel pathwayModel, List<BioPaxObject> selectedList) {
+	public void expandSelection(PathwayModel pathwayModel, List<BioPaxObject> selectedList, boolean isNeighborsIncluded) {
+		includeAllComponents = isNeighborsIncluded;
 		Set<BioPaxObject> selectedSet = new HashSet<BioPaxObject> (selectedList);
 		Set<BioPaxObject> selectedToAdd = new HashSet<BioPaxObject>();
 		// Add all entity ancestors (e.g. complexes for components, interactions for participants, etc.)
-		do {
-			selectedToAdd.clear();
-			for(BioPaxObject selected : selectedSet) {
-				ArrayList<BioPaxObject> parents = pathwayModel.getParents(selected);
-				if(parents != null){
-					for(BioPaxObject parent : parents){
-						if((!selectedSet.contains(parent)) && (parent instanceof Entity)) {
-							selectedToAdd.add(parent);							
+		if(includeAllComponents){
+			do {
+				selectedToAdd.clear();
+				for(BioPaxObject selected : selectedSet) {
+					ArrayList<BioPaxObject> parents = pathwayModel.getParents(selected);
+					if(parents != null){
+						for(BioPaxObject parent : parents){
+							if((!selectedSet.contains(parent)) && (parent instanceof Entity)) {
+								selectedToAdd.add(parent);							
+							}
 						}
-					}
-				}				
-			}
-			selectedSet.addAll(selectedToAdd);
-		} while(selectedToAdd.size() > 0);
+					}				
+				}
+				selectedSet.addAll(selectedToAdd);
+			} while(selectedToAdd.size() > 0);
+		}
 		// Add certain children (e.g. participants, components, controlled interactions)
 		do {
 			selectedToAdd.clear();
