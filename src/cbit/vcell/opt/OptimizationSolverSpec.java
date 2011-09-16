@@ -22,7 +22,8 @@ import org.vcell.util.Matchable;
 public class OptimizationSolverSpec implements Matchable, java.io.Serializable {
 	private String solverType = SOLVERTYPE_CFSQP;
 	private double objectiveFunctionChangeTolerance;
-	
+	private int numOfRuns = 1;
+
 	private CopasiOptimizationMethod copasiOptimizationMethod = null;
 	
 	public final static String SOLVERTYPE_CFSQP = "CFSQP";
@@ -159,6 +160,14 @@ public int hashCode() {
 
 public final CopasiOptimizationMethod getCopasiOptimizationMethod() {
 	return copasiOptimizationMethod;
+}
+
+public int getNumOfRuns() {
+	return numOfRuns;
+}
+
+public void setNumOfRuns(int numOfRuns) {
+	this.numOfRuns = numOfRuns;
 }
 
 }

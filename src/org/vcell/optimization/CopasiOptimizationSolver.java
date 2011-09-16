@@ -65,9 +65,8 @@ public class CopasiOptimizationSolver {
 		Std_Deviation("Std Deviation", DataType_float),
 		Start_Temperature("Start Temperature", DataType_float),
 		Cooling_Factor("Cooling Factor", DataType_float),
-		Pf("Pf", DataType_float),
-		Num_of_Runs("Number of Runs", DataType_int);
-		
+		Pf("Pf", DataType_float);
+				
 		private String displayName;
 		private String dataType;
 		CopasiOptimizationParameterType(String displayName, String dataType) {
@@ -128,27 +127,13 @@ public class CopasiOptimizationSolver {
 		private CopasiOptimizationMethodType type;
 		private CopasiOptimizationParameter[] realParameters;
 		
-		CopasiOptimizationParameter numRuns = new CopasiOptimizationParameter(CopasiOptimizationParameterType.Num_of_Runs, 1);
-		
 		public CopasiOptimizationMethod(CopasiOptimizationMethodType type) {
 			this.type = type;
 			CopasiOptimizationParameter[] defaultParameters = type.getDefaultParameters();
-			if(type.isStochasticMethod())
-			{
-				this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
-			}
-			else
-			{
-				this.realParameters = new CopasiOptimizationParameter[defaultParameters.length + 1];
-			}
+			this.realParameters = new CopasiOptimizationParameter[defaultParameters.length];
 			for (int i = 0; i < defaultParameters.length; i ++) {
 				realParameters[i] = new CopasiOptimizationParameter(defaultParameters[i]);
 			}
-			if(type.isStochasticMethod())
-			{
-				this.realParameters[realParameters.length - 1] = numRuns;
-			}
-			
 		}
 		public final CopasiOptimizationMethodType getType() {
 			return type;
@@ -164,17 +149,7 @@ public class CopasiOptimizationSolver {
 			}
 			return null;
 		}
-		//get number of runs, by default return 1.
-		public final int getNumOfRuns()
-		{
-			for (CopasiOptimizationParameter cop : realParameters) {
-				if (cop.getType() == CopasiOptimizationParameterType.Num_of_Runs)
-				{
-					return (int)cop.getValue();
-				}
-			}
-			return 1;
-		}
+		
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof CopasiOptimizationMethod) {

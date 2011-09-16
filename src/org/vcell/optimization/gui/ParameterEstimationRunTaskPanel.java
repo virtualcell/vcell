@@ -17,6 +17,11 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Label;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,12 +34,14 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -93,14 +100,14 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 @SuppressWarnings("serial")
 public class ParameterEstimationRunTaskPanel extends JPanel {
 
-	private javax.swing.JTextArea optimizeResultsTextArea = null;
-	private javax.swing.JComboBox optimizationMethodComboBox = null;
-	private javax.swing.JButton plotButton = null;
-	private javax.swing.JButton saveSolutionAsNewSimButton = null;
-	private javax.swing.JPanel solutionPanel = null;
-	private javax.swing.JButton solveButton = null;
-	private javax.swing.JButton helpButton = null;
-	private javax.swing.JPanel solverPanel = null;
+	private JTextArea optimizeResultsTextArea = null;
+	private JComboBox optimizationMethodComboBox = null;
+	private JButton plotButton = null;
+	private JButton saveSolutionAsNewSimButton = null;
+	private JPanel solutionPanel = null;
+	private JButton solveButton = null;
+	private JButton helpButton = null;
+	private JPanel solverPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 	private JCheckBox computeProfileDistributionsCheckBox = null;
 	private JButton evaluateConfidenceIntervalButton = null;
@@ -108,6 +115,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private ScrollTable optimizationMethodParameterTable = null;
 	private OptimizationMethodParameterTableModel optimizationMethodParameterTableModel;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
+	private JComboBox numberOfRunComboBox = null;
+	private JLabel numberOfRunLabel = new JLabel("Number of Runs: ");
 	
 	private RunStatusProgressDialog runStatusDialog;
 	private ScrollTable optimizationSolutionParameterTable = null;
@@ -453,7 +462,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 	}
 	
-	private class InternalEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getPlotButton()) 
 				plot();
@@ -476,7 +485,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					&& (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
 				getRunStatusDialog().setNumEvaluations(parameterEstimationTask.getOptSolverCallbacks().getEvaluationCount());
 				getRunStatusDialog().setObjectFunctionValue(parameterEstimationTask.getOptSolverCallbacks().getObjectiveFunctionValue());
-				getRunStatusDialog().setNumRunMessage(parameterEstimationTask.getOptSolverCallbacks().getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod().getNumOfRuns());
+				getRunStatusDialog().setNumRunMessage(parameterEstimationTask.getOptSolverCallbacks().getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
 				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Progress) {
 					getRunStatusDialog().setProgress(parameterEstimationTask.getOptSolverCallbacks().getPercent());
 				}
@@ -517,7 +526,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSolutionPanel(), gbc);
 		
-		javax.swing.DefaultComboBoxModel model = new DefaultComboBoxModel();
+		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for (CopasiOptimizationMethodType com : CopasiOptimizationMethodType.values()){
 			model.addElement(com);
 		}
@@ -537,6 +546,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		});
 		
 		getSolveButton().addActionListener(eventHandler);
+		helpButton.addActionListener(eventHandler);
 		getPlotButton().addActionListener(eventHandler);
 		getSaveSolutionAsNewSimButton().addActionListener(eventHandler);
 	}
@@ -544,7 +554,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	/**
 	 * Comment
 	 */
-	private java.lang.String displayResults(OptimizationResultSet optResultSet) {
+	private String displayResults(OptimizationResultSet optResultSet) {
 		if (optResultSet==null){
 			return "no results";
 		}
@@ -571,11 +581,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the JPanel10 property value.
 	 * @return javax.swing.JPanel
 	 */
-	private javax.swing.JPanel getSolverPanel() {
+	private JPanel getSolverPanel() {
 		if (solverPanel == null) {
 			try {
 				solverPanel = new javax.swing.JPanel();
-				solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "COPASI Method", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+				solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
 				solverPanel.setLayout(new java.awt.GridBagLayout());
 
 				optimizationMethodParameterTable = new ScrollTable();
@@ -583,10 +593,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizationMethodParameterTable.setModel(optimizationMethodParameterTableModel);
 				
 				computeProfileDistributionsCheckBox = new JCheckBox("Compute Profile Distributions");
-				computeProfileDistributionsCheckBox.setEnabled(false);
+				computeProfileDistributionsCheckBox.setVisible(false);//TODO: need to implement it later
 				
 				helpButton = new JButton("Help...");
-				helpButton.addActionListener(eventHandler);
 				
 				java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 0; 
@@ -615,10 +624,28 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.gridwidth = 2;
 				solverPanel.add(new JScrollPane(optimizationMethodParameterTable), gbc);
-								
+				
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 0; 
 				gbc.gridy = 3;
+				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+				gbc.weightx = 1.0;
+				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				gbc.gridwidth = 2;
+				solverPanel.add(numberOfRunLabel, gbc);
+				
+				gbc = new java.awt.GridBagConstraints();
+				gbc.gridx = 1; 
+				gbc.gridy = 3;
+				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+				gbc.weightx = 1.0;
+				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				gbc.gridwidth = 2;
+				solverPanel.add(getNumberOfRunComboBox(), gbc);
+				
+				gbc = new java.awt.GridBagConstraints();
+				gbc.gridx = 0; 
+				gbc.gridy = 4;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.weightx = 1.0;
 				gbc.anchor = GridBagConstraints.LINE_END;
@@ -626,7 +653,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 1; 
-				gbc.gridy = 3;
+				gbc.gridy = 4;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.weightx = 1.0;
 				gbc.anchor = GridBagConstraints.LINE_START;
@@ -651,7 +678,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * @return javax.swing.JPanel
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JPanel getSolutionPanel() {
+	private JPanel getSolutionPanel() {
 		if (solutionPanel == null) {
 			try {
 				solutionPanel = new javax.swing.JPanel();
@@ -692,7 +719,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				panel.setLayout(new java.awt.FlowLayout());
 				panel.add(getPlotButton());
 				panel.add(getSaveSolutionAsNewSimButton());
-				panel.add(getEvaluateConfidenceIntervalButton());
+//				panel.add(getEvaluateConfidenceIntervalButton()); //TODO: put it back after implemented the confidence interval evaluations
 
 				gridy ++;
 				gbc = new java.awt.GridBagConstraints();
@@ -714,7 +741,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the JTextPane1 property value.
 	 * @return javax.swing.JTextPane
 	 */
-	private javax.swing.JTextArea getOptimizeResultsTextPane() {
+	private JTextArea getOptimizeResultsTextPane() {
 		if (optimizeResultsTextArea == null) {
 			try {
 				optimizeResultsTextArea = new javax.swing.JTextArea(5,20);
@@ -758,7 +785,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the SaveAsNewSimulationButton property value.
 	 * @return javax.swing.JButton
 	 */
-	private javax.swing.JButton getSaveSolutionAsNewSimButton() {
+	private JButton getSaveSolutionAsNewSimButton() {
 		if (saveSolutionAsNewSimButton == null) {
 			try {
 				saveSolutionAsNewSimButton = new javax.swing.JButton();
@@ -776,7 +803,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the JButton2 property value.
 	 * @return javax.swing.JButton
 	 */
-	private javax.swing.JButton getSolveButton() {
+	private JButton getSolveButton() {
 		if (solveButton == null) {
 			try {
 				solveButton = new javax.swing.JButton("Run");
@@ -790,7 +817,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	/**
 	 * Comment
 	 */
-	private java.lang.String getSolverMessageText() {
+	private String getSolverMessageText() {
 		if (parameterEstimationTask!=null){
 			return parameterEstimationTask.getSolverMessageText();
 		}else{
@@ -803,23 +830,45 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the SolverTypeComboBox property value.
 	 * @return javax.swing.JComboBox
 	 */
-	private javax.swing.JComboBox getOptimizationMethodComboBox() {
+	private JComboBox getOptimizationMethodComboBox() {
 		if (optimizationMethodComboBox == null) {
 			try {
-				optimizationMethodComboBox = new javax.swing.JComboBox();
+				optimizationMethodComboBox = new JComboBox();
 				optimizationMethodComboBox.setName("SolverTypeComboBox");
-			} catch (java.lang.Throwable ivjExc) {
+			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
 		return optimizationMethodComboBox;
+	}
+	
+	private JComboBox getNumberOfRunComboBox()
+	{
+		if(numberOfRunComboBox == null)
+		{
+			numberOfRunComboBox = new JComboBox();
+			for(int i = 1; i <= 25; i++) //add 1..25
+			{
+				numberOfRunComboBox.addItem(i+"");
+			}
+			for(int i=2; i<=4; i++)//add 50,75,100
+			{
+				numberOfRunComboBox.addItem(i*25+"");
+			}
+			for(int i=2; i<=10; i++)//add 200..1000
+			{
+				numberOfRunComboBox.addItem(i*100+"");
+			}
+			numberOfRunComboBox.setEditable(true);
+		}
+		return numberOfRunComboBox;
 	}
 
 	/**
 	 * Called whenever the part throws an exception.
 	 * @param exception java.lang.Throwable
 	 */
-	private void handleException(java.lang.Throwable exception) {
+	private void handleException(Throwable exception) {
 		System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 		exception.printStackTrace(System.out);
 	}
@@ -874,6 +923,16 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		CopasiOptimizationMethodType methodType = (CopasiOptimizationMethodType)getOptimizationMethodComboBox().getSelectedItem();
 		CopasiOptimizationMethod com = new CopasiOptimizationMethod(methodType);
 		optimizationMethodParameterTableModel.setCopasiOptimizationMethod(com);
+		if(methodType.isStochasticMethod())
+		{
+			numberOfRunComboBox.setVisible(true);
+			numberOfRunLabel.setVisible(true);
+		}	
+		else
+		{
+			numberOfRunComboBox.setVisible(false);
+			numberOfRunLabel.setVisible(false);
+		}
 	}
 
 	private void evaluateConfidenceInterval() {
@@ -905,9 +964,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		DialogUtils.showComponentCloseDialog(this, scrollPane, "Profile Likelihood of Parameters");
 	}
 	
-	private void solve() {
+	private void solve() throws NumberFormatException{
 		CopasiOptimizationMethod com = optimizationMethodParameterTableModel.copasiOptimizationMethod;
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(com);
+		//get num runs for stochstic opt mehtods before starting solving...
+		if(com.getType().isStochasticMethod())
+		{
+			int numRuns = Integer.parseInt(((String)numberOfRunComboBox.getSelectedItem()));
+			optSolverSpec.setNumOfRuns(numRuns);
+		}
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
 		parameterEstimationTask.getOptSolverCallbacks().reset();
