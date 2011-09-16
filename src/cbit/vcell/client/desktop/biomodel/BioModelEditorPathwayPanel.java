@@ -20,15 +20,24 @@ import java.util.HashSet;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Complex;
+import org.vcell.pathway.GroupObject;
+import org.vcell.pathway.Interaction;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwaySelectionExpander;
+import org.vcell.pathway.Protein;
+import org.vcell.pathway.SmallMolecule;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -46,6 +55,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private PathwayTableModel tableModel = null;
 	private JButton importButton = null;
 	private JTextField textFieldSearch = null;
+	private JPopupMenu addPopupMenu;
+	private JMenuItem addSelectedOnlyMenuItem, addWithNeighborsMenuItem;
 	
 	private void searchTable() {
 		String searchText = textFieldSearch.getText();
@@ -59,7 +70,12 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == importButton) {
-				importPathway();
+				getAddPopupMenu().show(importButton, 0, importButton.getHeight());
+//				importPathway();
+			} else if (e.getSource() == addSelectedOnlyMenuItem) {
+				importPathway(false);
+			} else if (e.getSource() == addWithNeighborsMenuItem) {
+				importPathway(true);
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -86,7 +102,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	public void importPathway() {
+	public void importPathway(boolean isNeighborsIncluded) {
 		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
 		for (int i = 0; i < table.getRowCount(); i ++) {
 			PhysiologyRelationshipTableRow entitySelectionTableRow = tableModel.getValueAt(i);
@@ -94,8 +110,10 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}
 		}
-		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
-		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects);
+		if(isNeighborsIncluded){
+			PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
+			selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects);
+		}
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		HashSet<BioPaxObject> objectsToDelete = new HashSet<BioPaxObject>();
 		for (BioPaxObject candidateObject : selectedBioPaxObjects){
@@ -126,6 +144,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		// jump the view to pathway diagram panel
 		if (selectionManager != null){
 			selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
+			selectionManager.setSelectedObjects(selectedPathwayModel.getBiopaxObjects().toArray());
 		}
 	}
 
@@ -134,9 +153,10 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		tableModel = new PathwayTableModel(table);
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
-		importButton = new JButton("Add Selected");
+		importButton = new JButton("Add Selected", new DownArrowIcon());
 		importButton.setEnabled(false);
 		importButton.addActionListener(eventHandler);
+		
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 		
 		int gridy = 0;
@@ -213,4 +233,18 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	public void setBioModel(BioModel bioModel) {
 		this.bioModel = bioModel;
 	}
+	
+	private JPopupMenu getAddPopupMenu() {
+		if (addPopupMenu == null) {
+			addPopupMenu = new JPopupMenu();
+			addSelectedOnlyMenuItem = new JMenuItem("Add Selected Only");
+			addSelectedOnlyMenuItem.addActionListener(eventHandler);			
+			addWithNeighborsMenuItem = new JMenuItem("Add with Neighbors");
+			addWithNeighborsMenuItem.addActionListener(eventHandler);
+			addPopupMenu.add(addSelectedOnlyMenuItem);
+			addPopupMenu.add(addWithNeighborsMenuItem);	
+		}
+		return addPopupMenu;
+	}
+
 }

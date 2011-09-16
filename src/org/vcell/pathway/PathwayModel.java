@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 import cbit.vcell.biomodel.meta.Identifiable;
@@ -30,10 +31,12 @@ public class PathwayModel {
 
 	protected Map<BioPaxObject, HashSet<BioPaxObject>> parentMap = 
 		new Hashtable<BioPaxObject, HashSet<BioPaxObject>>();
+	private Map<BioPaxObject, BioPaxObject> groupMap = new Hashtable<BioPaxObject, BioPaxObject> ();
 	
 	public Set<BioPaxObject> getBiopaxObjects(){
 		return biopaxObjects;
 	}
+
 //	public Set<BioPaxObject> getBiopaxObjects(){
 //		return Collections.unmodifiableSet(biopaxObjects);
 //	}
@@ -128,6 +131,8 @@ public class PathwayModel {
 		for (PathwayListener l : getPathwayListeners()){
 			l.pathwayChanged(event);
 		}
+		refreshParentMap();
+		refreshGroupMap();
 	}
 
 	public void addPathwayListener(PathwayListener listener) {
@@ -143,7 +148,6 @@ public class PathwayModel {
 			throw new RuntimeException("added a null object to pathway model");
 		}
 		biopaxObjects.add(bioPaxObject);
-//		System.err.println("add all BioPaxObject children of this object to pathwayModel");
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		return bioPaxObject;
 	}
@@ -154,7 +158,6 @@ public class PathwayModel {
 		}
 		for(BioPaxObject bioPaxObject : bpObjects)
 			biopaxObjects.add(bioPaxObject);
-//		System.err.println("add all BioPaxObject children of this object to pathwayModel");
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		return bpObjects;
 	}
@@ -295,20 +298,24 @@ public class PathwayModel {
 		biopaxObjects = new2BiopaxObjects;
 	}
 	
-	public Map<BioPaxObject, BioPaxObject> refreshGroupMap(){
-		Map<BioPaxObject, BioPaxObject> groupMap = new Hashtable<BioPaxObject, BioPaxObject> ();
+	public void refreshGroupMap(){
+		Hashtable<BioPaxObject, BioPaxObject> newGroupMap = new Hashtable<BioPaxObject, BioPaxObject> ();
 		for(BioPaxObject bpObject : biopaxObjects){
 			if(bpObject instanceof GroupObject){
 				GroupObject gObject = (GroupObject) bpObject;
 				for(BioPaxObject bpo : gObject.getGroupedObjects()){
-					groupMap.put(bpo, gObject);
+					newGroupMap.put(bpo, gObject);
 				}
 			}
 		}
+		groupMap = newGroupMap;
+	}
+	
+	public Map<BioPaxObject, BioPaxObject> getGroupMap(){
 		return groupMap;
 	}
 	
-	public Set<BioPaxObject> getBioPaxComponents(BioPaxObject bioPaxObject){
+	public Set<BioPaxObject> getBioPaxElements(BioPaxObject bioPaxObject){
 		Set<BioPaxObject> components = new HashSet<BioPaxObject>();
 		if(bioPaxObject instanceof PhysicalEntity){// for physicalEntity:: get its members and components
 			components.addAll(((PhysicalEntity)bioPaxObject).getMemberPhysicalEntity());
@@ -483,4 +490,44 @@ public class PathwayModel {
 		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
 
+	public Set<BioPaxObject> getDisplayableBioPaxObjectList(){
+		PathwayGrouping pathwayGrouping = new PathwayGrouping();
+		return pathwayGrouping.updateBioPaxObjectList(this);
+	}
+	public BioPaxObject findTopLevelGroupAncestor(BioPaxObject bpObject){
+		Map<BioPaxObject, BioPaxObject> groupMap = getGroupMap();
+		PathwayGrouping pathwayGrouping = new PathwayGrouping();
+		return pathwayGrouping.findGroupAncestor(groupMap, bpObject);
+	}
+	
+	private Set<BioPaxObject> getLeafElements(GroupObject groupObject){
+		Set<BioPaxObject> leaves = new HashSet<BioPaxObject>();
+		for(BioPaxObject bpo : groupObject.getGroupedObjects()){
+			if(bpo instanceof GroupObject){
+				leaves.addAll(getLeafElements((GroupObject)bpo));
+			}else{
+				leaves.add(bpo);
+			}
+		}
+		return leaves;
+	}
+	
+	public void cleanGroupObjects(){
+		ArrayList<BioPaxObject> emptyGroups = new ArrayList<BioPaxObject>();
+		for(BioPaxObject bpObject : biopaxObjects){
+			if(bpObject instanceof GroupObject){
+				boolean isEmpty = true;
+				for(BioPaxObject bpo : getLeafElements((GroupObject)bpObject)){
+					if(biopaxObjects.contains(bpo)){
+						isEmpty = false;
+						break;
+					}
+				}
+				if(isEmpty){
+					emptyGroups.add(bpObject);
+				}
+			}
+		}
+		remove(emptyGroups);
+	}
 }

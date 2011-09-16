@@ -26,17 +26,17 @@ public class PathwayGrouping {
 					if(parentMap.get(bpObject) != null){
 						neighbors_temp.addAll(parentMap.get(bpObject));
 					}
-					neighbors_temp.addAll(pathwayModel.getBioPaxComponents(bpObject));
+					neighbors_temp.addAll(pathwayModel.getBioPaxElements(bpObject));
 				}
 			}
 		}else{
-			neighbors_temp.addAll(pathwayModel.getBioPaxComponents(bioPaxObject));
+			neighbors_temp.addAll(pathwayModel.getBioPaxElements(bioPaxObject));
 			if(parentMap.get(bioPaxObject) != null){
 				neighbors_temp.addAll(parentMap.get(bioPaxObject));
 			}
 			
 		}
-		Map<BioPaxObject, BioPaxObject> groupMap = pathwayModel.refreshGroupMap();
+		Map<BioPaxObject, BioPaxObject> groupMap = pathwayModel.getGroupMap();
 		HashSet<BioPaxObject> neighbors = new HashSet<BioPaxObject>();
 		for(BioPaxObject bpo : neighbors_temp){
 			neighbors.add(findGroupAncestor(groupMap, bpo));
@@ -44,6 +44,13 @@ public class PathwayGrouping {
 		neighbors.removeAll(components);
 		neighbors.remove(null);
 		neighbors.remove(bioPaxObject);
+		HashSet<BioPaxObject> notImported = new HashSet<BioPaxObject>();
+		for(BioPaxObject bpo : neighbors){
+			if(!pathwayModel.getBiopaxObjects().contains(bpo)){
+				notImported.add(bpo);
+			}
+		}
+		neighbors.remove(notImported);
 		return neighbors;
 	}
 
@@ -58,26 +65,27 @@ public class PathwayGrouping {
 				if(parentMap.get(bpObject) != null){
 					neighbors.addAll(parentMap.get(bpObject));
 				}
-				neighbors.addAll(pathwayModel.getBioPaxComponents(bpObject));
+				neighbors.addAll(pathwayModel.getBioPaxElements(bpObject));
 			}
 		}
 		return neighbors;
 	}
 	
 	// create a group object in pathway model
-	public GroupObject createGroupObject(PathwayModel pathwayModel, ArrayList<String> names, String id, HashSet<BioPaxObject> bpObjects){
+	public GroupObject createGroupObject(PathwayModel pathwayModel, ArrayList<String> names, String id, HashSet<BioPaxObject> bpObjects, GroupObject.Type newType){
 		HashSet<BioPaxObject> groupable = updateGroupableList(pathwayModel, bpObjects);
 		if(groupable.size() <= 1) return null;
 		GroupObject gObject = new GroupObject();
 		gObject.setName(names);
 		gObject.setID(id);
 		gObject.setGroupedeObjects(groupable);
+		gObject.setType(newType);
 		return gObject;
 	}
 	
 	private HashSet<BioPaxObject> updateGroupableList(PathwayModel pathwayModel, HashSet<BioPaxObject> bpObjects){
 		HashSet<BioPaxObject> groupable = new HashSet<BioPaxObject>();
-		Map<BioPaxObject, BioPaxObject> groupMap = pathwayModel.refreshGroupMap();
+		Map<BioPaxObject, BioPaxObject> groupMap = pathwayModel.getGroupMap();
 		// the group object should be a tree structure. so we will group the parents of the selected objects together.
 		for(BioPaxObject bpObject : bpObjects){
 			groupable.add(findGroupAncestor(groupMap, bpObject));
@@ -85,7 +93,8 @@ public class PathwayGrouping {
 		return groupable;
 	}
 	
-	private BioPaxObject findGroupAncestor(Map<BioPaxObject, BioPaxObject> groupMap, BioPaxObject bpObject){
+	
+	public BioPaxObject findGroupAncestor(Map<BioPaxObject, BioPaxObject> groupMap, BioPaxObject bpObject){
 		BioPaxObject ancestor = groupMap.get(bpObject);
 		if(ancestor == null) return bpObject;
 		else{
@@ -112,17 +121,18 @@ public class PathwayGrouping {
 	
 	// get a list of independent biopax Objects including groupObjects
 	public Set<BioPaxObject> updateBioPaxObjectList(PathwayModel pathwayModel){
-		Set<BioPaxObject> originalList = pathwayModel.getBiopaxObjects();
-		Set<BioPaxObject> updatedList = originalList;
-		for(BioPaxObject bpObject : originalList){
+		Set<BioPaxObject> clonedOriginalList = new HashSet<BioPaxObject>(pathwayModel.getBiopaxObjects());
+		Set<BioPaxObject> removedList = new HashSet<BioPaxObject> ();
+		for(BioPaxObject bpObject : clonedOriginalList){
 			if(bpObject instanceof GroupObject){
 				GroupObject gObject = (GroupObject)bpObject;
 				for(BioPaxObject bpo : gObject.getGroupedObjects()){
-					updatedList.remove(bpo);
+					removedList.add(bpo);
 				}
 			}
 		}
-		return updatedList;
+		clonedOriginalList.removeAll(removedList);
+		return clonedOriginalList;
 	} 
 	
 	// generate auto-ID for groupObject

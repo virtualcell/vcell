@@ -256,7 +256,7 @@ protected void refreshInterface() {
 
 				// complex::components
 				for(PhysicalEntity pe : complex.getComponents()){
-					propertyList.add(new BioPaxObjectProperty("Component", pe.getName().get(0), pe));
+					propertyList.add(new BioPaxObjectProperty("Component", getEntityName(pe), pe));
 				}
 				
 			} else if (entity instanceof Protein){
@@ -327,19 +327,20 @@ protected void refreshInterface() {
 		}else if(entity instanceof GroupObject){
 			GroupObject groupObject = (GroupObject)entity;
 			for(BioPaxObject bpo : groupObject.getGroupedObjects()){
-				propertyList.add(new BioPaxObjectProperty("Component", ((Entity)bpo).getName().get(0), bpo));
+				propertyList.add(new BioPaxObjectProperty("Element::" + bpo.getTypeLabel(), 
+						getEntityName((Entity)bpo), bpo));
 			}
 		}
-		
-		//Neighbor
-		PathwayGrouping pathwayGrouping = new PathwayGrouping();
-		Set<BioPaxObject> neighbors = pathwayGrouping.computeNeighbors(bioModel.getPathwayModel(), (Entity) bioPaxObject);
-		if(neighbors != null){
-			for(BioPaxObject bpo : neighbors){
-				if(((Entity)bpo).getName() != null)
-					propertyList.add(new BioPaxObjectProperty("Neighbors", (((Entity)bpo).getName().get(0)), bpo));
-			}
-		}
+//		
+//		//Neighbor: this function will be removed later
+//		PathwayGrouping pathwayGrouping = new PathwayGrouping();
+//		Set<BioPaxObject> neighbors = pathwayGrouping.computeNeighbors(bioModel.getPathwayModel(), (Entity) bioPaxObject);
+//		if(neighbors != null ){
+//			for(BioPaxObject bpo : neighbors){
+//				if(((Entity)bpo).getName() != null && ((Entity)bpo).getName().size()>0)
+//					propertyList.add(new BioPaxObjectProperty("Neighbors", (((Entity)bpo).getName().get(0)), bpo));
+//			}
+//		}
 		
 		// entity::xRef
 		ArrayList<Xref> xrefList = ((Entity) bioPaxObject).getxRef();
@@ -412,6 +413,14 @@ private Set<String> getControlSet(Interaction interaction){
 		}
 	}
 	return controlList;
+}
+
+private String getEntityName(Entity bpObject){
+	if(bpObject.getName().size() == 0){
+		return bpObject.getID();
+	}else{
+		return bpObject.getName().get(0);
+	}
 }
 
 }
