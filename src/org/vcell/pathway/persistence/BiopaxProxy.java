@@ -42,6 +42,11 @@ import org.vcell.pathway.SequenceSite;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.pathway.TissueVocabulary;
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBMeasurable;
+import org.vcell.pathway.sbpax.SBState;
+import org.vcell.pathway.sbpax.SBVocabulary;
+import org.vcell.pathway.sbpax.UnitOfMeasurement;
 
 public class BiopaxProxy {
 
@@ -51,6 +56,51 @@ public class BiopaxProxy {
 		public void setResource(String resource);
 	}
 	public static class InteractionProxy extends InteractionImpl implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+	}
+	public static class SBEntityProxy extends SBEntity implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+	}
+	public static class SBMeasurableProxy extends SBMeasurable implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+	}
+	public static class SBStateProxy extends SBState implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+	}
+	public static class UnitOfMeasurementProxy extends UnitOfMeasurement implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+	}
+	public static class SBVocabularyProxy extends SBVocabulary implements RdfObjectProxy {
 		private String resource;
 		public String getResource() {
 			return resource;
