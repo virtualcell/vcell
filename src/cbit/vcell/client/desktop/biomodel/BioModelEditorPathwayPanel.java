@@ -110,10 +110,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
 			}
 		}
-		if(isNeighborsIncluded){
-			PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
-			selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects);
-		}
+		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
+		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects, isNeighborsIncluded);
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		HashSet<BioPaxObject> objectsToDelete = new HashSet<BioPaxObject>();
 		for (BioPaxObject candidateObject : selectedBioPaxObjects){
