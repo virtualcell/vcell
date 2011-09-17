@@ -1322,18 +1322,21 @@ private void resizeImage(TopLevelWindowManager requster,FieldDataFileOperationSp
 		int ysize = newImagesISize.getY();
 		double scaleFactor = (double)newImagesISize.getX()/(double)fdfos.isize.getX();
 		if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
+			int numChannels = fdfos.shortSpecData[0].length;//this normally contains different variables but is used for channels here
 			//resize each z section to xsize,ysize
 		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor); 
 		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
-			short[][][] resizeData = new short[1][1][fdfos.isize.getZ()*xsize*ysize];
-			BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
-			BufferedImage scaledImage = new BufferedImage(xsize,ysize, BufferedImage.TYPE_USHORT_GRAY);
-			for (int z = 0; z < fdfos.isize.getZ(); z++) {
-				short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
-				System.arraycopy(fdfos.shortSpecData[0][0], z*ORIG_XYSIZE, originalImageBuffer, 0, ORIG_XYSIZE);
-				scaleAffineTransformOp.filter( originalImage, scaledImage);
-			    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
-			    System.arraycopy(scaledImageBuffer, 0, resizeData[0][0], z*xsize*ysize, xsize*ysize);
+			short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ()*xsize*ysize];
+			for (int c = 0; c < numChannels; c++) {
+				BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
+				BufferedImage scaledImage = new BufferedImage(xsize,ysize, BufferedImage.TYPE_USHORT_GRAY);
+				for (int z = 0; z < fdfos.isize.getZ(); z++) {
+					short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
+					System.arraycopy(fdfos.shortSpecData[0][c], z*ORIG_XYSIZE, originalImageBuffer, 0, ORIG_XYSIZE);
+					scaleAffineTransformOp.filter( originalImage, scaledImage);
+				    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
+				    System.arraycopy(scaledImageBuffer, 0, resizeData[0][c], z*xsize*ysize, xsize*ysize);
+				}
 			}
 			fdfos.isize = new ISize(xsize, ysize, fdfos.isize.getZ());
 			fdfos.shortSpecData = resizeData;
