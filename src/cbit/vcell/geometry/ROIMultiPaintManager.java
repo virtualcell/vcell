@@ -29,7 +29,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.IndexColorModel;
-import java.awt.image.RenderedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
@@ -44,8 +43,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.BorderExtenderZero;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.swing.DefaultListSelectionModel;
@@ -417,7 +414,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 			}else{
-				addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
+				addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
 //				if(result.equals(addROIAssist)){
 //					calculateHistogram();
 //					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
@@ -960,7 +957,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					for (int i = 0; i < missingROINames.size(); i++) {
 						if(missingROINames.elementAt(i).equals(roiName)){
 							Color deleteThisColor = roiNamesAndColors[k].getHighlightColor();
-							clearROI(false, deleteThisColor,OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
+							clearROI(FLAG_CLEAR_ROI.CLEARCURRENT, deleteThisColor,OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
 							for (int j = 0; j < vcPixelClassV.size(); j++) {
 								if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
 									vcPixelClassV.remove(j);
@@ -1415,30 +1412,50 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
-			if(overlayEditorPanelJAI.cropDrawAndConfirm((Rectangle)evt.getNewValue())){
-				//2D crop
+			try{
+				overlayEditorPanelJAI.cropDrawAndConfirm((Rectangle)evt.getNewValue());
 				Rectangle rect2D = (Rectangle)evt.getNewValue();
 				ROIMultiPaintManager.Crop3D crop3D = new ROIMultiPaintManager.Crop3D();
 				crop3D.setBounds(rect2D.x, rect2D.y, 0, rect2D.width, rect2D.height, roiComposite.length);
 				cropROIData(crop3D,true);
+			}catch(UserCancelException e){
+				updateUndoAfter(null);
 			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 			
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
-			deleteROI((ComboboxROIName)evt.getOldValue());
-			updateUndoAfter(false);
+			try {
+				deleteROI((ComboboxROIName)evt.getOldValue());
+				updateUndoAfter(false);
+			} catch (Exception e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDNEWROI_PROPERTY)){
-			try{addNewROI((ComboboxROIName[])evt.getOldValue());updateUndoAfter(false);}catch(UserCancelException e){/*ignore*/}
+			try{
+				addNewROI((ComboboxROIName[])evt.getOldValue(),(String)evt.getNewValue());
+				updateUndoAfter(false);
+			}catch(UserCancelException e){
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
-			updateUndo(UNDO_INIT.ALLZ);
-			clearROI(true,((ComboboxROIName)evt.getOldValue()).getHighlightColor(),OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY);
+			try {
+				FLAG_CLEAR_ROI flag = askClearROI();
+				updateUndo(UNDO_INIT.ALLZ);
+				clearROI(flag,((ComboboxROIName)evt.getOldValue()).getHighlightColor(),OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY);
+				updateUndoAfter(true);
+			} catch (UserCancelException e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_BLEND_PROPERTY)){
 			overlayEditorPanelJAI.setBlendPercent((Integer)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY)){
-			updateUndo(UNDO_INIT.ALLZ);
 			checkROI();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOCROP_PROPERTY)){
-			autoCropQuestion();
+			try {
+				autoCropQuestion();
+			} catch (UserCancelException e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY)){
 			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY);
 			calculateHistogram();
@@ -1446,9 +1463,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			highlightHistogramPixels((DefaultListSelectionModel)evt.getNewValue());
 			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY)){
-			updateUndo(UNDO_INIT.ALLZ);
-			updateROIWithHighlight();
-			wantBlendSetToEnhance();
+			try {
+				updateROIWithHighlight();
+				wantBlendSetToEnhance();
+			} catch (Exception e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY)){
 			overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY);
 			enhanceImageOp = (String)evt.getNewValue();
@@ -1458,19 +1478,27 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY)){
 			updateUndo(UNDO_INIT.ONEZ);
 			fillFromPoint((Point)evt.getNewValue());
+			updateUndoAfter(true);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY)){
 			imageDatasetChannel = (Integer)evt.getNewValue();
 			updateUnderlayHistogramDisplay();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDALLDISTINCT_PROPERTY)){
 			askInitialize(true);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAD_PROPERTY)){
-			padROIDataAsk();
-			updateUndoAfter(false);
+			try {
+				padROIDataAsk();
+			} catch (Exception e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DUPLICATE_PROPERTY)){
-			duplicateROIDataAsk();
-			updateUndoAfter(false);
+			try {
+				duplicateROIDataAsk();
+			} catch (Exception e) {
+				updateUndoAfter(null);
+			}
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAINTERASE_PROPERTY)){
 			updateUndo(UNDO_INIT.ONEZ);
+			updateUndoAfter(true);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
 			recoverUndo();
 		}
@@ -1480,13 +1508,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	//-----UNDO methods-------------------------
 	private BufferedImage[] undoROIComposite;
 	private enum UNDO_INIT {ALLZ,ONEZ};
-	private void updateUndoAfter(boolean bUndoable){
-		if(!bUndoable){
+	private void updateUndoAfter(Boolean bUndoable){
+		if(bUndoable != null && !bUndoable){
 			//Remove undo because caller of this method did something that CANNOT be undone
 			undoROIComposite = null;
 		}
 		//update GUI with undo info
-		overlayEditorPanelJAI.setUndo(bUndoable);
+		overlayEditorPanelJAI.setUndoAndFocus(bUndoable);
 	}
 	private void updateUndo(UNDO_INIT initType){
 		//Caller of this method did something that CAN be undone so save undo info
@@ -1513,7 +1541,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				(byte[])((DataBufferByte)undoROIComposite[overlayEditorPanelJAI.getZ()].getRaster().getDataBuffer()).getData(), 0,
 				roiComposite[0].getWidth()*roiComposite[0].getHeight());
 		}
-		updateUndoAfter(true);
 	}
 	private void recoverUndo(){
 		try {
@@ -1550,13 +1577,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	
 	
 	private void duplicateROIDataAsk(){
-		try{
-			String zCountS = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Convert 2D to 3D. Enter desired Z count:", "1");
-			duplicateROIData(Integer.parseInt(zCountS));
-		}catch(UtilCancelException uce){
-			return;
-		}catch(Exception e){
-			DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error Z count must be >= 1:\n"+e.getMessage());
+		String extraInfo = null;
+		while(true){
+			try{
+				String zCountS = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Convert 2D to 3D. Enter desired Z count:"+(extraInfo==null?"":"\n"+extraInfo), "1");
+				int zCount = Integer.parseInt(zCountS);
+				if(zCount == 1){
+					throw UtilCancelException.CANCEL_GENERIC;
+				}
+				duplicateROIData(zCount);
+				break;
+			}catch(UtilCancelException uce){
+				throw UserCancelException.CANCEL_GENERIC;
+			}catch(Exception e){
+				extraInfo = "Error: Z count must be >= 1:\n'"+e.getMessage()+"'";
+			}
 		}
 	}
 	private void padROIDataAsk(){
@@ -1570,7 +1605,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				"This operation will increase the number of pixels by 2 in each selected dimension",
 				new String[] {padXYZ,padXY,padZ,cancel}, padXYZ);
 		if(result.equals(cancel)){
-			return;
+			throw UserCancelException.CANCEL_GENERIC;
 		}
 		boolean bPadXY = result.equals(padXY) || result.equals(padXYZ);
 		boolean bPadZ = result.equals(padZ) || result.equals(padXYZ);
@@ -1694,17 +1729,22 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				result = createROI;	
 			}
 			if(result.equals(cancel)){
-				return;
-			}else if(result.equals(createROI)){
-				try{
-					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
-					applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo());
-					updateUndoAfter(false);
-				}catch(UserCancelException e){
-					return;
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			try{
+				boolean bOverWrite = askApplyHighlightToROI();
+				if(result.equals(createROI)){
+						addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
+						applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo(),bOverWrite);
+						updateUndoAfter(false);
+					
+				}else if(result.equals(applyROI)){
+					updateUndo(UNDO_INIT.ALLZ);
+					applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo(),bOverWrite);
+					updateUndoAfter(true);
 				}
-			}else if(result.equals(applyROI)){
-				applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo());
+			}catch(UserCancelException e){
+				return;
 			}
 		}else{
 			DialogUtils.showWarningDialog(overlayEditorPanelJAI, "No highlighted regions exist to update ROIs with");
@@ -1758,7 +1798,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					new String[] {useUnderlying,useROI,cancel}, useUnderlying);				
 		}
 		if(result.equals(cancel)){
-			return;
+			throw UserCancelException.CANCEL_GENERIC;
 		}else if(result.equals(useUnderlying)){
 			autoCrop(false);
 		}else{
@@ -1890,7 +1930,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							"\nDo you want to include the empty Z-sections in the crop?",
 							options, defaultOption);
 					if(result.equals(cancel)){
-						return;
+						throw UserCancelException.CANCEL_GENERIC;
 					}else if(result.equals(cropOnlyZ)){
 						bIncludeXY = false;
 					}else if(result.equals(cropOnlyXY)){
@@ -1900,9 +1940,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				if(isAutoCroppable2D && bIncludeXY){
 					Rectangle crop2D =  new Rectangle();
 					crop2D.setBounds(nonZeroBoundingBox3D.low.x, nonZeroBoundingBox3D.low.y, nonZeroBoundingBox3D.width, nonZeroBoundingBox3D.height);
-					if(!overlayEditorPanelJAI.cropDrawAndConfirm(crop2D)){
-						return;
-					}
+					overlayEditorPanelJAI.cropDrawAndConfirm(crop2D);
 				}
 				if(!bIncludeZ){
 					nonZeroBoundingBox3D.low.z = 0;
@@ -2293,9 +2331,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		String result =
 			DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Choose delete option.",
 					new String[] {deleteCurrentROI,deleteAllROI,cancel}, deleteCurrentROI);
-		
+		if(result.equals(cancel)){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
 		if(result.equals(deleteCurrentROI)){
-			clearROI(false, currentComboboxROIName.getHighlightColor(),OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY);
+			clearROI(FLAG_CLEAR_ROI.CLEARCURRENT, currentComboboxROIName.getHighlightColor(),OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY);
 			overlayEditorPanelJAI.deleteROIName(currentComboboxROIName);
 
 		}else if(result.equals(deleteAllROI)){
@@ -2309,16 +2349,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			//no rois so set blend so we can see underlay
 			overlayEditorPanelJAI.setBlendPercent(50);
 		}
+
 		
 	}
-	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr){
+	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr,String specialMessage){
 		try{
 			String newROIName = null;
 			boolean bNameOK;
 			do{
 				bNameOK = true;
 				if(newROIName == null){
-					newROIName = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "New ROI Name", "cell");
+					newROIName = DialogUtils.showInputDialog0(overlayEditorPanelJAI, (specialMessage==null?"":specialMessage+"\n")+"Enter new ROI name:", "cell");
 				}
 				if(newROIName == null || newROIName.length() == 0){
 				bNameOK = false;
@@ -2367,9 +2408,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 	
-	private void applyHighlightToROI(ROIMultiPaintManager.ComboboxROIName currentComboboxROIName){
-		boolean bOverWrite = true;
+	private boolean askApplyHighlightToROI(){
 		UShortImage[] roiZ = overlayEditorPanelJAI.getHighliteInfo().getRoiImages();
+		boolean bOverWrite = true;
 		//Check for existing ROI
 		final String OVERWRITE_ALL = "Overwrite any existing ROIs";
 		final String KEEP_EXISTING = "Keep existing ROIs when overlapping";
@@ -2389,8 +2430,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					if(result.equals(KEEP_EXISTING)){
 						bOverWrite = false;
 					}else if(result.equals(CANCEL_ROI_UPDATE)){
-//						overlayEditorPanelJAI.setHighliteInfo(null);//Clear highlight ROI leftover from ROIAssistPanel
-						return;
+						throw UserCancelException.CANCEL_GENERIC;
 					}
 					break;
 				}
@@ -2399,9 +2439,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				break;
 			}
 		}
-//		if(!bHadAny){
-//			return;
-//		}
+		return bOverWrite;
+
+	}
+	private void applyHighlightToROI(ROIMultiPaintManager.ComboboxROIName currentComboboxROIName,boolean bOverWrite){
+		UShortImage[] roiZ = overlayEditorPanelJAI.getHighliteInfo().getRoiImages();
 		//Update composite ROI
 		Color roiColor = currentComboboxROIName.getHighlightColor();
 		int roiColorIndex = -1;
@@ -2427,46 +2469,54 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
 		overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY);
 	}
-	private void clearROI(boolean bAskClear,Color roiColor,String action){
+	
+	private enum FLAG_CLEAR_ROI {CLEARALL,CLEARCURRENT,CLEARUNDERHILITE};
+	private FLAG_CLEAR_ROI askClearROI(){
+		FLAG_CLEAR_ROI flag = null;
 		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length;
-		boolean bHighlightOnly = false;
-		if(bAskClear/* && roiCount > 1*/){
-			final String clearAll = "Clear all ROIs";
-			final String clearCurrentOnly = "Clear current ROI";
-			final String clearHighlight = "Clear current ROI under highlight";
-			final String cancel = "Cancel";
-			Vector<String> optionListV = new Vector<String>();// String[] {clearCurrentOnly,clearAll,cancel};
-			optionListV.add(clearCurrentOnly);
-			StringBuffer sb = new StringBuffer();
-			sb.append("ROI will be set to background (cleared). Choose action:\n1. Clear current ROI.\n");
-			if(roiCount > 1){
-				optionListV.add(clearAll);
-				sb.append("2. Clear all roiS.");
+		final String clearAll = "Clear all ROIs";
+		final String clearCurrentOnly = "Clear current ROI";
+		final String clearHighlight = "Clear current ROI under highlight";
+		final String cancel = "Cancel";
+		Vector<String> optionListV = new Vector<String>();// String[] {clearCurrentOnly,clearAll,cancel};
+		optionListV.add(clearCurrentOnly);
+		StringBuffer sb = new StringBuffer();
+		sb.append("ROI will be set to background (cleared). Choose action:\n1. Clear current ROI.\n");
+		if(roiCount > 1){
+			optionListV.add(clearAll);
+			sb.append("2. Clear all roiS.");
+		}
+		if(overlayEditorPanelJAI.getHighliteInfo() != null){
+			optionListV.add(clearHighlight);
+			sb.append((roiCount>1?"3. ":"2. ")+"Clear only the highlighted region in the current ROI.");
+		}
+		optionListV.add(cancel);
+		String result = DialogUtils.showWarningDialog(
+				overlayEditorPanelJAI,
+				"Choose action:\n"+
+				sb.toString(),
+				optionListV.toArray(new String[0]),
+				clearCurrentOnly);
+		if(result.equals(clearAll)){
+			return FLAG_CLEAR_ROI.CLEARALL;
+		}else if (result.equals(cancel)){
+			throw UserCancelException.CANCEL_GENERIC;
+		}else if(result.equals(clearHighlight)){
+			return FLAG_CLEAR_ROI.CLEARUNDERHILITE;
+		}else if(result.equals(clearCurrentOnly)){
+			return FLAG_CLEAR_ROI.CLEARCURRENT;
+		}
+		return flag;
+	}
+	private void clearROI(FLAG_CLEAR_ROI flag,Color roiColor,String action){
+
+		if(flag.equals(FLAG_CLEAR_ROI.CLEARALL)){
+			for (int i = 0; i < roiComposite.length; i++) {
+				byte[] roiData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+				Arrays.fill(roiData, (byte)0);
 			}
-			if(overlayEditorPanelJAI.getHighliteInfo() != null){
-				optionListV.add(clearHighlight);
-				sb.append((roiCount>1?"3. ":"2. ")+"Clear only the highlighted region in the current ROI.");
-			}
-			optionListV.add(cancel);
-			String result = DialogUtils.showWarningDialog(
-					overlayEditorPanelJAI,
-					"Choose action:\n"+
-					sb.toString(),
-					optionListV.toArray(new String[0]),
-					clearCurrentOnly);
-			if(result == null){return;}
-			if(result.equals(clearAll)){
-				for (int i = 0; i < roiComposite.length; i++) {
-					byte[] roiData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-					Arrays.fill(roiData, (byte)0);
-				}
-				overlayEditorPanelJAI.setHighliteInfo(null,action);
-				return;
-			}else if (result.equals(cancel)){
-				return;
-			}else if(result.equals(clearHighlight)){
-				bHighlightOnly = true;
-			}
+			overlayEditorPanelJAI.setHighliteInfo(null,action);
+			return;
 		}
 
 		int roiColorIndex = -1;
@@ -2480,7 +2530,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			byte[] roiData = ((DataBufferByte)roiComposite[z].getRaster().getDataBuffer()).getData();
 			for (int xy = 0; xy < roiData.length; xy++) {
 				if((roiData[xy]&0x000000FF) == roiColorIndex){
-					if(bHighlightOnly){
+					if(flag.equals(FLAG_CLEAR_ROI.CLEARUNDERHILITE)){
 						if(overlayEditorPanelJAI.getHighliteInfo().getRoiImages()[z].getPixels()[xy]==0){
 							continue;
 						}
@@ -2695,6 +2745,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							}
 						}
 
+						updateUndo(UNDO_INIT.ALLZ);
 						generateHighlightROIInfo(regionImage,
 								RegionAction.createMergeSelectedWithNeighborsRegionAction(
 										allRegionInfos,
@@ -2717,10 +2768,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				if(highlightROI != null){
 					overlayEditorPanelJAI.setHighliteInfo(highlightROI, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 					wantBlendSetToEnhance();
+//					updateUndoAfter(null);
 				}else{
 					overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
+					updateUndoAfter(true);
 				}
-				updateUndoAfter(true);
 			}
 		};
 

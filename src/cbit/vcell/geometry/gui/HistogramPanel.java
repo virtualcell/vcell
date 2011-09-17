@@ -342,8 +342,6 @@ public class HistogramPanel extends JPanel {
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				firePropertyChange(HISTOGRAM_APPLY_ACTION, null, null);
-				HistogramPanel.this.pixelListSelectionModel.clearSelection();
-				HistogramPanel.this.repaint();
 			}
 		});
 
