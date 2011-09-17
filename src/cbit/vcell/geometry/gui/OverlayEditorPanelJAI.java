@@ -16,7 +16,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -58,16 +57,16 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import loci.formats.gui.AWTImageTools;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 
@@ -464,7 +463,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 						comboboxROINameArr[i] =(ROIMultiPaintManager.ComboboxROIName)roiComboBox.getModel().getElementAt(i);
 					}
 				}
-				firePropertyChange(FRAP_DATA_ADDNEWROI_PROPERTY, comboboxROINameArr, null);
+				firePropertyChange(FRAP_DATA_ADDNEWROI_PROPERTY, comboboxROINameArr, (e.getSource() == OverlayEditorPanelJAI.this?e.getActionCommand():null));
 			}
 		};
 	/**
@@ -1118,13 +1117,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
 		if (roiPixels!=null){
 			BufferedImage highlightImage = imagePane.getHighlightImage();
-			byte[] redChannelPixels = AWTImageTools.getBytes(highlightImage)[0];
+			byte[] hiLiteArr = ((DataBufferByte)highlightImage.getRaster().getDataBuffer()).getData();
 			for (int i = 0; i < roiPixels.length; i++) {
-				if (redChannelPixels[i]==0){
-					roiPixels[i] = 0;
-				}else{
-					roiPixels[i] = (short)0xffff;
-				}
+				roiPixels[i] = (hiLiteArr[i] == 0?0:(short)0xffff);
 			}
 		}
 	}
@@ -1165,6 +1160,27 @@ public class OverlayEditorPanelJAI extends JPanel{
 		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
 		imagePane.setUnderlyingImage(specialBufferedImage,/* false,*/null);
 	}
+
+	IndexColorModel hiLiteColorModel;
+	private IndexColorModel getHiliteColorModel(){
+		if(hiLiteColorModel == null){
+			int[] cmap = new int[256];
+			for(int i=0;i<256;i+= 1){
+				if(i != 0){
+					cmap[i] = 0xFF000000 | highlightColor.getRGB();
+				}else{
+					cmap[1] = 0xFF000000;
+				}
+			}
+			hiLiteColorModel =
+				new java.awt.image.IndexColorModel(
+					8, cmap.length,cmap,0,
+					false /*false means NOT USE alpha*/   ,
+					-1/*NO transparent single pixel*/,
+					java.awt.image.DataBuffer.TYPE_BYTE);
+		}
+		return hiLiteColorModel;
+	}
 	/**
 	 * Method createHighlightImageFromROI.
 	 * @return BufferedImage
@@ -1173,34 +1189,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 		UShortImage roiImage = highlightImageROI.getRoiImages()[getRoiImageIndex()];
 		int width = roiImage.getNumX();
 		int height = roiImage.getNumY();
-		byte[][] highlightData = new byte[1][width*height];
-		for (int i = 0; i < highlightData[0].length; i++) {
-			if (roiImage.getPixels()[i] != 0){
-				highlightData[0][i] = (byte)highlightColor.getRed();
-//				highlightData[1][i] = (byte)highlightColor.getGreen();
-//				highlightData[2][i] = (byte)highlightColor.getBlue();
-			}
+		BufferedImage hiLiteImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED, getHiliteColorModel());
+		byte[] hiLiteArr = ((DataBufferByte)hiLiteImage.getRaster().getDataBuffer()).getData();
+		for (int i = 0; i < roiImage.getPixels().length; i++) {
+			hiLiteArr[i] = (roiImage.getPixels()[i] != 0?(byte)highlightColor.getRed():0);
 		}
-		Image tempImage = AWTImageTools.makeImage(highlightData, width, height,false);
-		int[] cmap = new int[256];
-		//colormap (grayscale)
-		for(int i=0;i<256;i+= 1){
-//			int iv = (int)(0x000000FF&i);
-//			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
-			if(i != 0){
-				cmap[i] = 0xFF000000 | highlightColor.getRGB();//0xFFFFFF00;
-			}else{
-				cmap[1] = 0xFF000000;
-			}
-		}
-		IndexColorModel indexColorModel =
-			new java.awt.image.IndexColorModel(
-				8, cmap.length,cmap,0,
-				false /*false means NOT USE alpha*/   ,
-				-1/*NO transparent single pixel*/,
-				java.awt.image.DataBuffer.TYPE_BYTE);
-
-		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
+		return hiLiteImage;
 	}
 	
 	public void setAllowAddROI(boolean bAllowAddROI){
@@ -1216,7 +1210,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		eraseButton.setVisible(bAllowAddROI);
 		fillButton.setVisible(bAllowAddROI);
 		clearROIbutton.setVisible(bAllowAddROI);
-		undoButton.setVisible(bAllowAddROI);
+		getUndoButton().setVisible(bAllowAddROI);
 	}
 
 	public void addROIName(String roiName,
@@ -1274,8 +1268,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 			this.originalOffsetFactor = originalOffsetFactor;
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
+				boolean bUndoEnbld = getUndoButton().isEnabled();//undo state controlled elsewhere
 				BeanUtils.enableComponents(toolButtonPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
+				getUndoButton().setEnabled(bUndoEnbld);
 			}
 			if(!bAllowAddROI){
 				addROIButton.setEnabled(false);
@@ -1572,11 +1568,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 		return Cursor.getDefaultCursor();
 	}
 	private void giveROIRequiredWarning(String toolDescription){
-		DialogUtils.showWarningDialog(this, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
-		addROIActionListener.actionPerformed(null);
+		ActionEvent actionEvent = new ActionEvent(this, 0, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
+		addROIActionListener.actionPerformed(actionEvent);
 	}
 
-	public boolean cropDrawAndConfirm(Rectangle cropRect){
+	public void cropDrawAndConfirm(Rectangle cropRect){
 		try{
 			imagePane.setCrop(
 				new Point(
@@ -1591,14 +1587,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 						(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
 			cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
 			cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
-			boolean result = true;
 			if(DialogUtils.showComponentOKCancelDialog(
 				OverlayEditorPanelJAI.this,
 				cropConfirmJlabel,
 				"Confirm Crop Data to new boundaries.") != JOptionPane.OK_OPTION){
-				result  = false;
+				throw UserCancelException.CANCEL_GENERIC;
 			}
-			return result;
 		}finally{
 			imagePane.setCrop(null, null);
 
@@ -2080,8 +2074,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 	    	openJFileChooser.addChoosableFileFilter(fileFilterArr[i]);
 		}
 	}
-	public void setUndo(boolean bUndo){
-		undoButton.setEnabled(bUndo);
-		this.requestFocusInWindow();//needed because focus for window is lost (prevents keyboard event listening for cntrl-z) when button enable changes
+	public void setUndoAndFocus(Boolean bUndo){
+		if(bUndo != null){
+			getUndoButton().setEnabled(bUndo);
+		}
+		//needed because focus for this window is lost (prevents keyboard event listening for ctrl-z) when button enable changes
+		//or dialogs are shown for user actions.
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				OverlayEditorPanelJAI.this.requestFocusInWindow();
+			}
+		});
+		
 	}
 }
