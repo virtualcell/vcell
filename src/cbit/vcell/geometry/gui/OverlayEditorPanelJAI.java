@@ -16,7 +16,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -58,6 +57,7 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,6 +66,7 @@ import javax.swing.filechooser.FileFilter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 
@@ -462,7 +463,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 						comboboxROINameArr[i] =(ROIMultiPaintManager.ComboboxROIName)roiComboBox.getModel().getElementAt(i);
 					}
 				}
-				firePropertyChange(FRAP_DATA_ADDNEWROI_PROPERTY, comboboxROINameArr, null);
+				firePropertyChange(FRAP_DATA_ADDNEWROI_PROPERTY, comboboxROINameArr, (e.getSource() == OverlayEditorPanelJAI.this?e.getActionCommand():null));
 			}
 		};
 	/**
@@ -1209,7 +1210,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		eraseButton.setVisible(bAllowAddROI);
 		fillButton.setVisible(bAllowAddROI);
 		clearROIbutton.setVisible(bAllowAddROI);
-		undoButton.setVisible(bAllowAddROI);
+		getUndoButton().setVisible(bAllowAddROI);
 	}
 
 	public void addROIName(String roiName,
@@ -1267,8 +1268,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 			this.originalOffsetFactor = originalOffsetFactor;
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
+				boolean bUndoEnbld = getUndoButton().isEnabled();//undo state controlled elsewhere
 				BeanUtils.enableComponents(toolButtonPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
+				getUndoButton().setEnabled(bUndoEnbld);
 			}
 			if(!bAllowAddROI){
 				addROIButton.setEnabled(false);
@@ -1565,11 +1568,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 		return Cursor.getDefaultCursor();
 	}
 	private void giveROIRequiredWarning(String toolDescription){
-		DialogUtils.showWarningDialog(this, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
-		addROIActionListener.actionPerformed(null);
+		ActionEvent actionEvent = new ActionEvent(this, 0, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
+		addROIActionListener.actionPerformed(actionEvent);
 	}
 
-	public boolean cropDrawAndConfirm(Rectangle cropRect){
+	public void cropDrawAndConfirm(Rectangle cropRect){
 		try{
 			imagePane.setCrop(
 				new Point(
@@ -1584,14 +1587,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 						(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
 			cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
 			cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
-			boolean result = true;
 			if(DialogUtils.showComponentOKCancelDialog(
 				OverlayEditorPanelJAI.this,
 				cropConfirmJlabel,
 				"Confirm Crop Data to new boundaries.") != JOptionPane.OK_OPTION){
-				result  = false;
+				throw UserCancelException.CANCEL_GENERIC;
 			}
-			return result;
 		}finally{
 			imagePane.setCrop(null, null);
 
@@ -2073,8 +2074,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 	    	openJFileChooser.addChoosableFileFilter(fileFilterArr[i]);
 		}
 	}
-	public void setUndo(boolean bUndo){
-		undoButton.setEnabled(bUndo);
-		this.requestFocusInWindow();//needed because focus for window is lost (prevents keyboard event listening for cntrl-z) when button enable changes
+	public void setUndoAndFocus(Boolean bUndo){
+		if(bUndo != null){
+			getUndoButton().setEnabled(bUndo);
+		}
+		//needed because focus for this window is lost (prevents keyboard event listening for ctrl-z) when button enable changes
+		//or dialogs are shown for user actions.
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				OverlayEditorPanelJAI.this.requestFocusInWindow();
+			}
+		});
+		
 	}
 }
