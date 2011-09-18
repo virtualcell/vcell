@@ -1096,7 +1096,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						int sizeXY = 0;
 						ISize firstImageISize = null;
 						for (int i = 0; i < dirFiles.length; i++) {
-							ImageDataset[] imageDatasets = ImageDatasetReader.readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels);
+							ImageDataset[] imageDatasets = ImageDatasetReader.readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null);
 							for (int c = 0; c < imageDatasets.length; c++) {
 								if(imageDatasets[c].getSizeZ() != 1 || imageDatasets[c].getSizeT() != 1){
 									throwImportWholeDirectoryException(imageFile,
@@ -1128,7 +1128,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							bMergeChannels = ClientRequestManager.askMergeChannels(guiParent, imageFile, numChannels);
 						}
 						hashTable.put(INITIAL_ANNOTATION, imageFile.getAbsolutePath());
-						int userPreferredTime = 0;
+						int userPreferredTimeIndex = 0;
 						try{
 							getClientTaskStatusSupport().setMessage("Checking file for time information...");
 							double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
@@ -1137,7 +1137,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								for (int i = 0; i < rowData.length; i++) {
 									rowData[i][0] = allTimes[i]+"";
 								}
-								userPreferredTime = DialogUtils.showComponentOKCancelTableList(
+								userPreferredTimeIndex = DialogUtils.showComponentOKCancelTableList(
 										guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
 										new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
 							}
@@ -1149,8 +1149,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						}
 						getClientTaskStatusSupport().setMessage("Reading file...");
 						ImageDataset[] imageDatasets =
-							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels);
-						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,new Integer(userPreferredTime));
+							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex);
+						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,null);
 					}
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
@@ -1324,8 +1324,8 @@ private void resizeImage(TopLevelWindowManager requster,FieldDataFileOperationSp
 		if(xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()){
 			int numChannels = fdfos.shortSpecData[0].length;//this normally contains different variables but is used for channels here
 			//resize each z section to xsize,ysize
-		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor); 
-		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR ); 
+		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
+		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR); 
 			short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ()*xsize*ysize];
 			for (int c = 0; c < numChannels; c++) {
 				BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
