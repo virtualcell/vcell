@@ -643,7 +643,7 @@ public class PSLIDPanel extends JPanel{
 					fos = new FileOutputStream(generatedImageFile);
 					fos.write(generatedCellProteinImage);
 					fos.close();
-					ImageDataset[] generatedImageDatasetArr = ImageDatasetReader.readImageDatasetChannels(generatedImageFile.getAbsolutePath(), null, false);
+					ImageDataset[] generatedImageDatasetArr = ImageDatasetReader.readImageDatasetChannels(generatedImageFile.getAbsolutePath(), null, false,null);
 					short[][] generatedChannels = new short[3][];
 					for (int i = 0; i < generatedChannels.length; i++) {
 						generatedChannels[i] = generatedImageDatasetArr[i].getImage(0,0,0).getPixels();
