@@ -110,25 +110,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && evt.getPropertyName().equals("modelOptimizationSpec")) {
-		ModelOptimizationSpec oldValue = (ModelOptimizationSpec)evt.getOldValue();
-		if (oldValue!=null){
-			oldValue.removePropertyChangeListener(this);
-			ReferenceDataMappingSpec[] refDataMappingSpecs = oldValue.getReferenceDataMappingSpecs();
-			for (int i = 0;refDataMappingSpecs!=null && i < refDataMappingSpecs.length; i++){
-				refDataMappingSpecs[i].removePropertyChangeListener(this);
-			}
-		}
-		ModelOptimizationSpec newValue = (ModelOptimizationSpec)evt.getNewValue();
-		if (newValue!=null){
-			newValue.addPropertyChangeListener(this);
-			ReferenceDataMappingSpec[] refDataMappingSpecs = newValue.getReferenceDataMappingSpecs();
-			for (int i = 0;refDataMappingSpecs!=null && i < refDataMappingSpecs.length; i++){
-				refDataMappingSpecs[i].addPropertyChangeListener(this);
-			}
-		}
-		fireTableDataChanged();
-	}
 	if (evt.getSource() == getModelOptimizationSpec() && evt.getPropertyName().equals("referenceDataMappingSpecs")) {
 		ReferenceDataMappingSpec[] oldSpecs = (ReferenceDataMappingSpec[])evt.getOldValue();
 		for (int i = 0; oldSpecs!=null && i < oldSpecs.length; i++){
@@ -150,10 +131,24 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param modelOptimizationSpec The new value for the property.
  * @see #getModelOptimizationSpec
  */
-public void setModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpec) {
+public void setModelOptimizationSpec(ModelOptimizationSpec newValue) {
 	ModelOptimizationSpec oldValue = fieldModelOptimizationSpec;
-	fieldModelOptimizationSpec = modelOptimizationSpec;
-	firePropertyChange("modelOptimizationSpec", oldValue, modelOptimizationSpec);
+	if (oldValue!=null){
+		oldValue.removePropertyChangeListener(this);
+		ReferenceDataMappingSpec[] refDataMappingSpecs = oldValue.getReferenceDataMappingSpecs();
+		for (int i = 0;refDataMappingSpecs!=null && i < refDataMappingSpecs.length; i++){
+			refDataMappingSpecs[i].removePropertyChangeListener(this);
+		}
+	}
+	fieldModelOptimizationSpec = newValue;
+	if (newValue!=null){
+		newValue.addPropertyChangeListener(this);
+		ReferenceDataMappingSpec[] refDataMappingSpecs = newValue.getReferenceDataMappingSpecs();
+		for (int i = 0;refDataMappingSpecs!=null && i < refDataMappingSpecs.length; i++){
+			refDataMappingSpecs[i].addPropertyChangeListener(this);
+		}
+	}
+	fireTableDataChanged();
 }
 
 @Override

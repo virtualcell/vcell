@@ -34,6 +34,9 @@ public class ParameterEstimationTaskPropertiesPanel extends DocumentEditorSubPan
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == taskNameTextField) {
 				try {
+					if (fieldParameterEstimationTask == null) {
+						return;
+					}
 					fieldParameterEstimationTask.setName(taskNameTextField.getText());
 				} catch (Exception ex) {
 					DialogUtils.showErrorDialog(ParameterEstimationTaskPropertiesPanel.this, ex.getMessage());
@@ -43,6 +46,9 @@ public class ParameterEstimationTaskPropertiesPanel extends DocumentEditorSubPan
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
 			try {
+				if (fieldParameterEstimationTask == null) {
+					return;
+				}
 				if (e.getSource() == ParameterEstimationTaskPropertiesPanel.this.taskNameTextField) 
 					fieldParameterEstimationTask.setName(taskNameTextField.getText());
 				if (e.getSource() == annotationTextArea) 
@@ -85,7 +91,7 @@ public class ParameterEstimationTaskPropertiesPanel extends DocumentEditorSubPan
 		gbc.gridy = 0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(new JLabel("Name"), gbc);
+		add(new JLabel("Parameter Estimation Task Name"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 

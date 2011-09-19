@@ -69,6 +69,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class ModelOptimizationSpec implements java.io.Serializable, Matchable, PropertyChangeListener {
+	public static final String PROPERTY_NAME_REFERENCE_DATA = "referenceData";
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -639,6 +640,7 @@ public void refreshDependencies() {
 private void refreshReferenceDataMappingSpecs() {
 	if (fieldReferenceData == null || fieldReferenceData.getColumnNames()==null || fieldReferenceData.getColumnNames().length == 0){
 		setReferenceDataMappingSpecs(null);
+		return;
 	}
 
 	String refDataColumnNames[] = fieldReferenceData.getColumnNames();
@@ -740,7 +742,7 @@ public void setReferenceData(ReferenceData referenceData) {
 
 	refreshReferenceDataMappingSpecs();
 	
-	firePropertyChange("referenceData", oldValue, referenceData);
+	firePropertyChange(PROPERTY_NAME_REFERENCE_DATA, oldValue, referenceData);
 }
 
 

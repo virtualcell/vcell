@@ -95,7 +95,6 @@ public class ParameterMappingTableModel extends VCellSortTableModel<ParameterMap
  */
 public ParameterMappingTableModel(ScrollTable table) {
 	super(table, LABELS);
-	addPropertyChangeListener(this);
 }
 
 /**
@@ -279,27 +278,7 @@ public boolean isSortable(int col) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && evt.getPropertyName().equals("parameterEstimationTask")) {
-		ParameterEstimationTask oldValue = (ParameterEstimationTask)evt.getOldValue();
-		if (oldValue!=null){
-			oldValue.removePropertyChangeListener(this);
-			oldValue.getModelOptimizationSpec().removePropertyChangeListener(this);
-			ParameterMappingSpec[] oldPMS = oldValue.getModelOptimizationSpec().getParameterMappingSpecs();
-			for (int i = 0; oldPMS!=null && i < oldPMS.length; i++){
-				oldPMS[i].removePropertyChangeListener(this);
-			}
-		}
-		ParameterEstimationTask newValue = (ParameterEstimationTask)evt.getNewValue();
-		if (newValue!=null){
-			newValue.addPropertyChangeListener(this);
-			newValue.getModelOptimizationSpec().addPropertyChangeListener(this);
-			ParameterMappingSpec[] newPMS = newValue.getModelOptimizationSpec().getParameterMappingSpecs();
-			for (int i = 0; newPMS!=null && i < newPMS.length; i++){
-				newPMS[i].addPropertyChangeListener(this);
-			}
-		}
-		refreshData();
-	} else if (evt.getSource() == getParameterEstimationTask() && evt.getPropertyName().equals("optimizationResultSet")) {
+	if (evt.getSource() == getParameterEstimationTask() && evt.getPropertyName().equals("optimizationResultSet")) {
 		refreshData();
 	} else if (evt.getSource() instanceof ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
 		ParameterMappingSpec[] oldValues = (ParameterMappingSpec[])evt.getOldValue();
@@ -326,10 +305,29 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param parameterEstimationTask The new value for the property.
  * @see #getParameterEstimationTask
  */
-public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+public void setParameterEstimationTask(ParameterEstimationTask newValue) {
+	if (fieldParameterEstimationTask == newValue) {
+		return;
+	}
 	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
-	fieldParameterEstimationTask = parameterEstimationTask;
-	firePropertyChange("parameterEstimationTask", oldValue, parameterEstimationTask);
+	if (oldValue!=null){
+		oldValue.removePropertyChangeListener(this);
+		oldValue.getModelOptimizationSpec().removePropertyChangeListener(this);
+		ParameterMappingSpec[] oldPMS = oldValue.getModelOptimizationSpec().getParameterMappingSpecs();
+		for (int i = 0; oldPMS!=null && i < oldPMS.length; i++){
+			oldPMS[i].removePropertyChangeListener(this);
+		}
+	}
+	fieldParameterEstimationTask = newValue;
+	if (newValue!=null){
+		newValue.addPropertyChangeListener(this);
+		newValue.getModelOptimizationSpec().addPropertyChangeListener(this);
+		ParameterMappingSpec[] newPMS = newValue.getModelOptimizationSpec().getParameterMappingSpecs();
+		for (int i = 0; newPMS!=null && i < newPMS.length; i++){
+			newPMS[i].addPropertyChangeListener(this);
+		}
+	}
+	refreshData();
 }
 
 

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import javax.swing.JTree;
+
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
@@ -20,8 +22,7 @@ import cbit.vcell.solver.Simulation;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class ApplicationPropertiesTreeModel extends javax.swing.tree.DefaultTreeModel implements java.beans.PropertyChangeListener {
-	private static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
+public class ApplicationPropertiesTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext simulationContext = null;
 	private BioModelNode rootNode = null;
@@ -32,7 +33,6 @@ public class ApplicationPropertiesTreeModel extends javax.swing.tree.DefaultTree
 public ApplicationPropertiesTreeModel() {
 	super(new BioModelNode("Select an application to show properties", true), true);
 	rootNode = (BioModelNode)root;
-	addPropertyChangeListener(this);
 }
 /**
  * Insert the method's description here.
@@ -53,47 +53,22 @@ private void populateRootNode() {
 		BioModelNode appTypeNode = new BioModelNode(typeInfo,false);
 		appTypeNode.setRenderHint("type","AppType");
 		rootNode.add(appTypeNode);
-		//
-		// Display Annotation on tree
-		//
-		rootNode.add(new BioModelNode(new Annotation(simulationContext.getDescription()),false));
-			
+	
 		rootNode.add(new BioModelNode(simulationContext.getGeometry(),false));
-		if (simulationContext.getMathDescription()!=null){
-			rootNode.add(new BioModelNode(simulationContext.getMathDescription(),false));
-		}else{
-			rootNode.add(new BioModelNode("math not generated",false));
-		}
+		rootNode.add(new BioModelNode(simulationContext.getMathDescription()==null ? "math not generated" : "math generated",false));
 	
 		Simulation simArray[] = simulationContext.getSimulations();
 		if (simArray!=null){
-			for (int j=0;j<simArray.length;j++){
-				BioModelNode simNode = new BioModelNode(simArray[j],true);
+			for (Simulation sim : simArray){
+				BioModelNode simNode = new BioModelNode(sim,true);
+				simNode.add(new BioModelNode(new Annotation(sim.getDescription()),false));
 				rootNode.add(simNode);
-				simNode.add(new BioModelNode(new Annotation(simArray[j].getDescription()),false));
 			}
 		}
 	}
 	nodeStructureChanged(rootNode);	
-//	expandAll(rootNode);
 }
 
-//private void expandAll(BioModelNode treeNode) {
-//	int childCount = treeNode.getChildCount();
-//	if (childCount > 0) {
-//		for (int i = 0; i < childCount; i++) {
-//			TreeNode n = treeNode.getChildAt(i);
-//			if (n instanceof BioModelNode) {
-//				expandAll((BioModelNode)n);
-//			}
-//		}
-//	} else {
-//		TreePath path = new TreePath(treeNode.getPath());
-//		if (!ownerTree.isExpanded(path)) {
-//			ownerTree.expandPath(path.getParentPath());
-//		}
-//	}
-//}
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -120,20 +95,6 @@ private java.beans.PropertyChangeSupport getPropertyChange() {
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
-}
-/**
- * Insert the method's description here.
- * Creation date: (5/9/01 8:28:22 AM)
- * @param evt java.beans.PropertyChangeEvent
- */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	try {
-		if (evt.getSource() == ApplicationPropertiesTreeModel.this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT)) {
-			populateRootNode();
-		}
-	} catch (Exception e){
-		e.printStackTrace(System.out);
-	}
 }
 
 /**
