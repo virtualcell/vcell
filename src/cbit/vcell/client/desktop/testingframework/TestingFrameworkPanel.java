@@ -38,6 +38,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
+import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.modeldb.TFTestSuiteTable;
@@ -195,7 +197,18 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem  ivjGenerateTCRiteportUserDefinedReferenceMenuItem1 = null;
 	private javax.swing.JMenuItem  ivjCompareUserDefinedMenuItem = null;
 
-class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener {
+class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener, DatabaseListener {
+	public void databaseDelete(DatabaseEvent event) {
+	}
+	public void databaseInsert(DatabaseEvent event) {};
+	public void databaseRefresh(DatabaseEvent event) {
+		if (event.getSource() == getDocumentManager()){
+			refreshTFTree((TestSuiteInfoNew)null);
+		}
+	}
+	public void databaseUpdate(DatabaseEvent event) {
+	}
+
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == TestingFrameworkPanel.this.getAddTestSuiteMenuItem()) 
 				connEtoC1(e);
@@ -2230,6 +2243,12 @@ private void setdocumentManager1(DocumentManager newValue) {
 		try {
 			DocumentManager oldValue = getdocumentManager1();
 			ivjdocumentManager1 = newValue;
+			if (oldValue != null) {
+				oldValue.removeDatabaseListener(ivjEventHandler);
+			}
+			if (ivjdocumentManager1 != null) {
+				ivjdocumentManager1.addDatabaseListener(ivjEventHandler);				
+			}
 			connPtoP2SetSource();
 			connEtoM1(ivjdocumentManager1);
 			firePropertyChange("documentManager", oldValue, newValue);
