@@ -266,8 +266,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 										double n = outputTime/timeStep;
 										int intn = (int)Math.round(n);
 										if (intn != n) {
-											bValid = false;
 											suggestedInterval = (intn * timeStep);
+											if (suggestedInterval != outputTime) {
+												bValid = false;
+											}
 										}
 									} 
 									if (bValid) {

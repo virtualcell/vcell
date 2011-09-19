@@ -12,6 +12,7 @@ package org.vcell.optimization.gui;
 import java.io.File;
 
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -22,6 +23,7 @@ import org.vcell.util.gui.VCFileChooser;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.CSV;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.DataSource;
@@ -37,7 +39,6 @@ import cbit.vcell.util.RowColumnResultSet;
  */
 @SuppressWarnings("serial")
 public class ReferenceDataPanel extends javax.swing.JPanel {
-	private cbit.vcell.opt.ReferenceData fieldReferenceData = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private UserPreferences fieldUserPreferences = null;
 	private javax.swing.JButton ivjImportButton = null;
@@ -46,7 +47,6 @@ public class ReferenceDataPanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjeditButton = null;
 	private javax.swing.JPanel ivjeditorPanel = null;
 	private javax.swing.JLabel ivjeditorPanelHelpLabel = null;
-	private javax.swing.JScrollPane ivjeditorTextFieldScrollPane = null;
 	private javax.swing.JButton ivjhelpButton = null;
 	private javax.swing.JTextArea ivjeditorTextArea = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
@@ -56,22 +56,18 @@ public class ReferenceDataPanel extends javax.swing.JPanel {
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ReferenceDataPanel.this.getImportButton()) 
-				setReferenceData(importDataFromFile());
+				updateReferenceData(importDataFromFile());
 			if (e.getSource() == ReferenceDataPanel.this.getSubsampleButton()) 
-				setReferenceData(subsample());
+				updateReferenceData(subsample());
 			if (e.getSource() == ReferenceDataPanel.this.gethelpButton())
 				showHelp();
 			if (e.getSource() == ReferenceDataPanel.this.geteditButton())
 				showEditor();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ReferenceDataPanel.this && (evt.getPropertyName().equals("referenceData"))) {
-				updatePlot();
-				if (fieldParameterEstimationTask != null) {
-					fieldParameterEstimationTask.getModelOptimizationSpec().setReferenceData(getReferenceData());
-				}
-			}
-			if (evt.getPropertyName().equals("modelObject")) {
+			if (fieldParameterEstimationTask != null 
+					&& evt.getSource() == fieldParameterEstimationTask.getModelOptimizationSpec() 
+					&& evt.getPropertyName().equals(ModelOptimizationSpec.PROPERTY_NAME_REFERENCE_DATA)) {
 				updatePlot();
 			}
 		};
@@ -118,7 +114,6 @@ private javax.swing.JPanel geteditorPanel() {
 			ivjeditorPanel = new javax.swing.JPanel();
 			ivjeditorPanel.setName("editorPanel");
 			ivjeditorPanel.setLayout(new java.awt.GridBagLayout());
-//			ivjeditorPanel.setBounds(581, 283, 428, 500);
 
 			java.awt.GridBagConstraints constraintseditorPanelHelpLabel = new java.awt.GridBagConstraints();
 			constraintseditorPanelHelpLabel.gridx = 0; constraintseditorPanelHelpLabel.gridy = 0;
@@ -133,7 +128,7 @@ private javax.swing.JPanel geteditorPanel() {
 			constraintseditorTextFieldScrollPane.weightx = 1.0;
 			constraintseditorTextFieldScrollPane.weighty = 1.0;
 			constraintseditorTextFieldScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
-			geteditorPanel().add(geteditorTextFieldScrollPane(), constraintseditorTextFieldScrollPane);
+			geteditorPanel().add(new JScrollPane(geteditorTextArea()), constraintseditorTextFieldScrollPane);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -156,14 +151,15 @@ private javax.swing.JLabel geteditorPanelHelpLabel() {
 		try {
 			ivjeditorPanelHelpLabel = new javax.swing.JLabel();
 			ivjeditorPanelHelpLabel.setName("editorPanelHelpLabel");
-//			ivjeditorPanelHelpLabel.setPreferredSize(new java.awt.Dimension(1739, 230));
-			ivjeditorPanelHelpLabel.setText("<html>please enter data separated by commas, tabs, or spaces.  Column 1 should contain the times.  Each row represents data at that time-point.  The first row must contain column names.\n<br>\n<br>Example:\n<br>\n<br>time, sample1, sample2\n<br>0.0\t1.2030\t39.3828\n<br>0.1\t1.345\t36.3939\n<br>0.2\t1.2345\t44.334\n<br>...\n</html>");
-//			ivjeditorPanelHelpLabel.setMinimumSize(new java.awt.Dimension(68, 230));
-			// user code begin {1}
-			// user code end
+			ivjeditorPanelHelpLabel.setText("<html>Please enter data separated by commas, tabs, or spaces.  Column 1 should contain the times.  " +
+					"Each row represents data at that time point.  The first row must contain column names." +
+					"<br><br>Example:<br><br>" +
+					"time, sample1, sample2<br>" +
+					"0.0\t1.2030\t39.3828<br>" +
+					"0.1\t1.345\t36.3939" +
+					"<br>0.2\t1.2345\t44.334" +
+					"<br>...</html>");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -178,42 +174,15 @@ private javax.swing.JLabel geteditorPanelHelpLabel() {
 private javax.swing.JTextArea geteditorTextArea() {
 	if (ivjeditorTextArea == null) {
 		try {
-			ivjeditorTextArea = new javax.swing.JTextArea();
+			ivjeditorTextArea = new javax.swing.JTextArea(15, 40);
 			ivjeditorTextArea.setName("editorTextArea");
-			ivjeditorTextArea.setBounds(0, 0, 376, 68);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjeditorTextArea;
 }
 
-
-/**
- * Return the editorTextFieldScrollPane property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane geteditorTextFieldScrollPane() {
-	if (ivjeditorTextFieldScrollPane == null) {
-		try {
-			ivjeditorTextFieldScrollPane = new javax.swing.JScrollPane();
-			ivjeditorTextFieldScrollPane.setName("editorTextFieldScrollPane");
-			geteditorTextFieldScrollPane().setViewportView(geteditorTextArea());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjeditorTextFieldScrollPane;
-}
 
 /**
  * Return the JButton2 property value.
@@ -301,15 +270,6 @@ private MultisourcePlotPane getmultisourcePlotPane() {
 		}
 	}
 	return ivjmultisourcePlotPane;
-}
-
-/**
- * Gets the referenceData property (cbit.vcell.opt.ReferenceData) value.
- * @return The referenceData property value.
- * @see #setReferenceData
- */
-public ReferenceData getReferenceData() {
-	return fieldReferenceData;
 }
 
 /**
@@ -452,18 +412,6 @@ private void initialize() {
 }
 
 /**
- * Sets the referenceData property (cbit.vcell.opt.ReferenceData) value.
- * @param referenceData The new value for the property.
- * @see #getReferenceData
- */
-private void setReferenceData(ReferenceData referenceData) {
-	ReferenceData oldValue = fieldReferenceData;
-	fieldReferenceData = referenceData;
-	firePropertyChange("referenceData", oldValue, referenceData);
-}
-
-
-/**
  * Sets the userPreferences property (cbit.vcell.client.server.UserPreferences) value.
  * @param userPreferences The new value for the property.
  * @see #getUserPreferences
@@ -479,15 +427,13 @@ public void setUserPreferences(UserPreferences userPreferences) {
  * Comment
  */
 private void showEditor() {
-	//char[] newlines = new char[100];
-	//java.util.Arrays.fill(newlines,'\n');
-	if (getReferenceData()!=null){
-		geteditorTextArea().setText(((SimpleReferenceData)getReferenceData()).getCSV());
+	ReferenceData referenceData = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+	if (referenceData!=null){
+		geteditorTextArea().setText(((SimpleReferenceData)referenceData).getCSV());
 	}else{
 		geteditorTextArea().setText("t, data1, data2\n0.0, 0.1, 0.21\n0.1, 0.15, 0.31\n0.2, 0.16, 0.44");
 	}
-//	geteditorPanel().setPreferredSize(new java.awt.Dimension(600,600));
-//	geteditorPanel().setMinimumSize(new java.awt.Dimension(600,600));
+	geteditorTextArea().setCaretPosition(0);
 	try {
 		int retVal = DialogUtils.showComponentOKCancelDialog(JOptionPane.getDesktopPaneForComponent(this),geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
@@ -495,14 +441,13 @@ private void showEditor() {
 			double weights[] = new double[rc.getDataColumnCount()];
 			java.util.Arrays.fill(weights,1.0);
 			SimpleReferenceData simpleRefData = new SimpleReferenceData(rc,weights);
-			setReferenceData(simpleRefData);
+			updateReferenceData(simpleRefData);
 		}
 	}catch (UtilCancelException e){
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this,e.getMessage(), e);
 	}
-	return;
 }
 
 
@@ -511,11 +456,13 @@ private void showEditor() {
  */
 private void showHelp() {
 	String message =
-		"Time Series Data format\n"+
-		"   Column 1 should contain the times.  \n"+
-		"   The first row must contain column names (e.g. t, var1, var2).\n"+
-		"   Each sucessive row represents data at a time-point.\n"+
-		"	";
+		"<html>Time Series Data format:" +
+		"<ul>"+
+		"<li>Column 1 should contain the times.</li>"+
+		"<li>The first row must contain column names (e.g. t, var1, var2).</li>"+
+		"<li>Each sucessive row represents data at a time point.</li>"+
+		"</ul>" +
+		"</html>";
 	DialogUtils.showInfoDialog(this, message);
 }
 
@@ -524,7 +471,7 @@ private void showHelp() {
  * Comment
  */
 private ReferenceData subsample() {
-	ReferenceData refData = getReferenceData();
+	ReferenceData refData = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 	if (refData==null){
 		return refData;
 	}
@@ -561,29 +508,35 @@ private ReferenceData subsample() {
 	
 }
 
+private void updateReferenceData(ReferenceData refData) {
+	if (fieldParameterEstimationTask != null) {
+		fieldParameterEstimationTask.getModelOptimizationSpec().setReferenceData(refData);
+	}
+}
 
 /**
  * Comment
  */
 private void updatePlot() {
-	if (getReferenceData()==null){
+	if (fieldParameterEstimationTask == null || fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData()==null){
 		getmultisourcePlotPane().setDataSources(null);
 		return;
 	}
 	
 	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource.DataSourceReferenceData("refData", timeIndex < 0 ? 0 : timeIndex, getReferenceData());
+	dataSources[0] = new DataSource.DataSourceReferenceData("refData", timeIndex < 0 ? 0 : timeIndex, fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
 	getmultisourcePlotPane().setDataSources(dataSources);
 
 	getmultisourcePlotPane().selectAll();
 
 }
 
-public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+public void setParameterEstimationTask(ParameterEstimationTask newValue) {
 	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
-	fieldParameterEstimationTask = parameterEstimationTask;
+	fieldParameterEstimationTask = newValue;
 	
 	if (oldValue!=null){
+		oldValue.getModelOptimizationSpec().removePropertyChangeListener(ivjEventHandler);
 		ReferenceDataMappingSpec[] refDataMappingSpecs = oldValue.getModelOptimizationSpec().getReferenceDataMappingSpecs();
 		if (refDataMappingSpecs != null) {
 			for (ReferenceDataMappingSpec refDataMappingSpec : refDataMappingSpecs){
@@ -592,6 +545,7 @@ public void setParameterEstimationTask(ParameterEstimationTask parameterEstimati
 		}
 	}
 	if (fieldParameterEstimationTask!=null){
+		newValue.getModelOptimizationSpec().addPropertyChangeListener(ivjEventHandler);
 		ReferenceDataMappingSpec[] refDataMappingSpecs = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
 		if (refDataMappingSpecs != null) {
 			for (ReferenceDataMappingSpec refDataMappingSpec : refDataMappingSpecs){
@@ -599,11 +553,9 @@ public void setParameterEstimationTask(ParameterEstimationTask parameterEstimati
 			}
 		}
 		timeIndex = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataTimeColumnIndex();
-		setReferenceData(fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
 	} else {
 		// fieldParameterEstimationTask is null, so referenceData cannot have any data, should be null too?
 		timeIndex = 0;
-		setReferenceData(null);
 	}
 	updatePlot();
 }

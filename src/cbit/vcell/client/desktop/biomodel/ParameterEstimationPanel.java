@@ -54,6 +54,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelopt.AnalysisTask;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.SymbolTableEntryListCellRenderer;
@@ -115,11 +116,12 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 				mapButton_ActionPerformed();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (fieldParameterEstimationTask != null && evt.getSource() == getParameterEstimationTask().getModelOptimizationSpec() && (evt.getPropertyName().equals("referenceData"))) 
-				referenceDataPanel.setParameterEstimationTask(getParameterEstimationTask());
-			if (evt.getSource() == fieldParameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
-				optimizationResultSet_This(fieldParameterEstimationTask.getOptimizationResultSet());
-		};
+			if (fieldParameterEstimationTask != null) {
+				if (evt.getSource() == fieldParameterEstimationTask && (evt.getPropertyName().equals(ParameterEstimationTask.PROPERTY_NAME_OPTIMIZATION_RESULT_SET))) { 
+					optimizationResultSet_This(fieldParameterEstimationTask.getOptimizationResultSet());
+				}
+			}
+		}
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == getDataModelMappingTable().getSelectionModel()) 
 				getMapButton().setEnabled(dataModelMappingTable.getSelectedRowCount() == 1);
@@ -386,7 +388,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	
 	private void refreshAnalysisTaskEnables() {
 		boolean bHasTasks = getAnalysisTaskComboBox().getItemCount() > 0;
-		getNewAnalysisTaskButton().setEnabled(simulationContext.getGeometry().getDimension() == 0);
+		getNewAnalysisTaskButton().setEnabled(simulationContext != null && simulationContext.getGeometry().getDimension() == 0);
 		getAnalysisTaskComboBox().setEnabled(bHasTasks);
 		getDeleteAnalysisTaskButton().setEnabled(bHasTasks);
 		getCopyButton().setEnabled(bHasTasks);
@@ -657,10 +659,9 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 			}
 		}
 		
-		getreferenceDataMappingSpecTableModel().setModelOptimizationSpec(fieldParameterEstimationTask.getModelOptimizationSpec());
-		referenceDataPanel.setParameterEstimationTask(getParameterEstimationTask());		
+		getreferenceDataMappingSpecTableModel().setModelOptimizationSpec(fieldParameterEstimationTask == null ? null : fieldParameterEstimationTask.getModelOptimizationSpec());
+		referenceDataPanel.setParameterEstimationTask(fieldParameterEstimationTask);		
 		getparameterMappingPanel().setParameterEstimationTask(fieldParameterEstimationTask);
-		referenceDataPanel.setParameterEstimationTask(getParameterEstimationTask());
 		getAnalysisTaskComboBox().setSelectedItem(fieldParameterEstimationTask);
 		runTaskPanel.setParameterEstimationTask(fieldParameterEstimationTask);
 	}

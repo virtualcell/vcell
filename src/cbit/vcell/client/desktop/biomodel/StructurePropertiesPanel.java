@@ -108,7 +108,7 @@ private void initConnections() throws java.lang.Exception {
  */
 private void initialize() {
 	try {
-		setName("SpeciesEditorPanel");
+		setName(this.getClass().getName());
 		setLayout(new GridBagLayout());
 		
 		nameTextField = new JTextField();
@@ -227,7 +227,7 @@ private void changeAnnotation() {
 		vcMetaData.setFreeTextAnnotation(structure, annotationTextArea.getText());
 	} catch(Exception e){
 		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 	}
 }
 

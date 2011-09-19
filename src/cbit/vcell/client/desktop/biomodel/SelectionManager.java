@@ -172,6 +172,9 @@ public class SelectionManager {
 		ArrayList<Object> objectList = new ArrayList<Object>();
 		if (selectedObjects != null) {
 			for (Object object : selectedObjects) {
+				if (object == null) {
+					continue;
+				}
 				if (cls.isAssignableFrom(object.getClass())) {
 					objectList.add(object);
 				}

@@ -29,6 +29,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  */
 @SuppressWarnings("serial")
 public class ParameterEstimationTask extends AnalysisTask {
+	public static final String PROPERTY_NAME_OPTIMIZATION_RESULT_SET = "optimizationResultSet";
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null;
 	private OptimizationSolverSpec fieldOptimizationSolverSpec = null;
 	
@@ -242,7 +243,7 @@ public void refreshMappings() throws MappingException, MathException {
 public void setOptimizationResultSet(OptimizationResultSet optimizationResultSet) {
 	OptimizationResultSet oldValue = fieldOptimizationResultSet;
 	fieldOptimizationResultSet = optimizationResultSet;
-	firePropertyChange("optimizationResultSet", oldValue, optimizationResultSet);
+	firePropertyChange(PROPERTY_NAME_OPTIMIZATION_RESULT_SET, oldValue, optimizationResultSet);
 }
 
 

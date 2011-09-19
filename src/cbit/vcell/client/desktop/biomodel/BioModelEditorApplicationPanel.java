@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -205,7 +206,11 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		} else {
 			if (indexOfFittingPanel >= 0) {
 //				tabbedPane.putClientProperty("__index_to_remove__", indexOfComponent);
+				Component selectedComponent = tabbedPane.getSelectedComponent();
 				tabbedPane.remove(tab.component);
+				if (selectedComponent == tab.component) {
+					tabbedPane.setSelectedIndex(0);
+				}
 			}
 		}
 	}

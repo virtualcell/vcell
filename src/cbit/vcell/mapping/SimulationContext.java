@@ -83,6 +83,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
+	public static final String PROPERTY_NAME_DESCRIPTION = "description";
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
 	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
@@ -1675,9 +1676,9 @@ public void setCharacteristicSize(Double size) throws java.beans.PropertyVetoExc
  */
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
 	String oldValue = fieldDescription;
-	fireVetoableChange("description", oldValue, description);
+	fireVetoableChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
 	fieldDescription = description;
-	firePropertyChange("description", oldValue, description);
+	firePropertyChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
 }
 
 
@@ -1801,9 +1802,9 @@ public void setModel(Model model) throws MappingException, PropertyVetoException
  */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
-	fireVetoableChange("name", oldValue, name);
+	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
 	fieldName = name;
-	firePropertyChange("name", oldValue, name);
+	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
 }
 
 /**
