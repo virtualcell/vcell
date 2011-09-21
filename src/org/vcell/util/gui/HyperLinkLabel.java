@@ -44,7 +44,7 @@ public class HyperLinkLabel extends JLabel implements MouseListener {
         super(text);
         setForeground(color);
 //        setBackground(Color.white);
-        setOpaque(true);
+        setOpaque(false);
         this.listener = listener;
         this.id = id;
         addMouseListener(this);
@@ -80,6 +80,11 @@ public class HyperLinkLabel extends JLabel implements MouseListener {
 
     }
 
+    public void setColor(Color color)
+    {
+    	this.color = color;
+    	setForeground(color);
+    }
     /**
      * Paint under line text
      */

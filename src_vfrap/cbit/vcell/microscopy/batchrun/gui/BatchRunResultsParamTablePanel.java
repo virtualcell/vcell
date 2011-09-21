@@ -52,7 +52,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 	private JTable table_param;
 	private JTable table_stat;
     private BatchRunResultsParameterPanel parent;
-    private JLabel modelLable;
+    private JLabel modelLabel;
     private HyperLinkLabel hypDetail;
     private BatchRunResultsParamTableModel resultsTableModel = null;
     private BatchRunResultsStatTableModel statTableModel = null;
@@ -74,10 +74,10 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         
-        modelLable = new JLabel("Many VFRAP Docs");
-        modelLable.setOpaque(true);
-        modelLable.setBackground(new Color(166, 166, 255));
-        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLabel = new JLabel("Many VFRAP Docs");
+        modelLabel.setOpaque(true);
+        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -101,7 +101,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(modelLable, gc3);
+        add(modelLabel, gc3);
         //create table model
         resultsTableModel = new BatchRunResultsParamTableModel();
         statTableModel = new BatchRunResultsStatTableModel();
@@ -155,7 +155,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            modelLable.setVisible(false);
+            modelLabel.setVisible(false);
             statTablePanel.setVisible(true);
             paramTablePanel.setVisible(true);
         }
@@ -168,9 +168,9 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
             }
             if(batchRunWorkspace != null)
             {
-            	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
+            	modelLabel.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
-            modelLable.setVisible(true);
+            modelLabel.setVisible(true);
         }
         parent.repaint();
     }

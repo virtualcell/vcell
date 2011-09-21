@@ -36,7 +36,7 @@ import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 public class SubPlotPanel extends JPanel
 {
     private SummaryPlotPanel parent;
-    private JLabel modelLable;
+    private JLabel modelLabel;
     private HyperLinkLabel hypDetail;
     private MultisourcePlotPane plotPane;
     private FRAPSingleWorkspace frapWorkspace;
@@ -53,10 +53,10 @@ public class SubPlotPanel extends JPanel
         hypDetail = new HyperLinkLabel("Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 
-        modelLable = new JLabel("3 Models");
-        modelLable.setOpaque(true);
-        modelLable.setBackground(new Color(166, 166, 255));
-        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLabel = new JLabel("3 Models");
+        modelLabel.setOpaque(true);
+        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -80,7 +80,7 @@ public class SubPlotPanel extends JPanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(modelLable, gc3);
+        add(modelLabel, gc3);
         //add plot pane
         plotPane = new MultisourcePlotPane();
         plotPane.setPreferredSize(new Dimension(660,460));
@@ -108,7 +108,7 @@ public class SubPlotPanel extends JPanel
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            modelLable.setVisible(false);
+            modelLabel.setVisible(false);
             if(plotPane != null)
             {
             	plotPane.setVisible(true);
@@ -121,9 +121,9 @@ public class SubPlotPanel extends JPanel
         	}
         	if(frapWorkspace != null)
             {
-            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            	modelLabel.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
             }
-            modelLable.setVisible(true);
+            modelLabel.setVisible(true);
         }
         parent.repaint();
     }
@@ -185,6 +185,6 @@ public class SubPlotPanel extends JPanel
     public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
-		modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+		modelLabel.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
