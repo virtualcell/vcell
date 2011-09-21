@@ -64,7 +64,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 {
     private AnalysisTableModel anaTableModel;
     private AnalysisResultsPanel parent;
-    private JLabel modelLable;
+    private JLabel modelLabel;
     private HyperLinkLabel hypDetail;
     private JScrollPane scrTable;
     private JPanel confidenceButtonPanel;
@@ -88,10 +88,10 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         
-        modelLable = new JLabel("3 Models");
-        modelLable.setOpaque(true);
-        modelLable.setBackground(new Color(166, 166, 255));
-        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLabel = new JLabel("3 Models");
+        modelLabel.setOpaque(true);
+        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -125,7 +125,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         gc4.gridwidth = 2;
         gc4.weightx = 1.0;
         gc4.fill = GridBagConstraints.BOTH;
-        add(modelLable, gc4);
+        add(modelLabel, gc4);
         
         
         //create table model
@@ -186,7 +186,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 
     public void setDetail(boolean isDetail) {
     	if (isDetail) {
-            modelLable.setVisible(false);
+            modelLabel.setVisible(false);
             if(table != null)
             {
             	table.getTableHeader().setVisible(true);
@@ -201,9 +201,9 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
             }
             if(frapWorkspace != null)
             {
-            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            	modelLabel.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
             }
-            modelLable.setVisible(true);
+            modelLabel.setVisible(true);
             getConfidenceButtonPanel().setVisible(false);
         }
         parent.repaint();

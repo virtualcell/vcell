@@ -36,7 +36,7 @@ public class MSETablePanel extends AdvancedTablePanel
 {
 
     private MSEPanel parent;
-    private JLabel modelLable;
+    private JLabel modelLabel;
     private HyperLinkLabel hypDetail;
     private JScrollPane scrTable;
     MSETableModel mseTableModel;
@@ -56,10 +56,10 @@ public class MSETablePanel extends AdvancedTablePanel
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 
-        modelLable = new JLabel("3 Models");
-        modelLable.setOpaque(true);
-        modelLable.setBackground(new Color(166, 166, 255));
-        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLabel = new JLabel("3 Models");
+        modelLabel.setOpaque(true);
+        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -83,7 +83,7 @@ public class MSETablePanel extends AdvancedTablePanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(modelLable, gc3);
+        add(modelLabel, gc3);
         //create table model
         mseTableModel = new MSETableModel();
         //by default, expend this table
@@ -115,7 +115,7 @@ public class MSETablePanel extends AdvancedTablePanel
 
     public void setDetail(boolean isDetail) {
     	if (isDetail) {
-            modelLable.setVisible(false);
+            modelLabel.setVisible(false);
             if(table != null)
             {
             	table.getTableHeader().setVisible(true);
@@ -129,9 +129,9 @@ public class MSETablePanel extends AdvancedTablePanel
             }
             if(frapWorkspace != null)
             {
-            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            	modelLabel.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
             }
-            modelLable.setVisible(true);
+            modelLabel.setVisible(true);
         }
         parent.repaint();
     }

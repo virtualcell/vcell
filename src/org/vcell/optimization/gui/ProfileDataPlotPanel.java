@@ -31,7 +31,7 @@ import org.vcell.util.gui.HyperLinkLabel;
 public class ProfileDataPlotPanel extends JPanel
 {
     private JPanel parent;
-    private JLabel profileLable;
+    private JLabel profileLabel;
     private ConfidenceIntervalPlotPanel plotPanel;//put plotpane and confidence panel together
     private HyperLinkLabel hypDetail;
 
@@ -50,10 +50,10 @@ public class ProfileDataPlotPanel extends JPanel
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         
-        profileLable = new JLabel(paramName);
-        profileLable.setOpaque(true);
-        profileLable.setBackground(new Color(166, 166, 255));
-        profileLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        profileLabel = new JLabel(paramName);
+        profileLabel.setOpaque(true);
+        profileLabel.setBackground(new Color(166, 166, 255));
+        profileLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -77,7 +77,7 @@ public class ProfileDataPlotPanel extends JPanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(profileLable, gc3);
+        add(profileLabel, gc3);
          //by default expand panel
         
         GridBagConstraints gc = new GridBagConstraints();
@@ -110,7 +110,7 @@ public class ProfileDataPlotPanel extends JPanel
 
     public void setDetail(boolean isDetail) {
     	if (isDetail) {
-            profileLable.setVisible(false);
+            profileLabel.setVisible(false);
             if(plotPanel != null)
             {
             	plotPanel.setVisible(true);
@@ -121,13 +121,13 @@ public class ProfileDataPlotPanel extends JPanel
             	plotPanel.setVisible(false);
             }
 
-            profileLable.setVisible(true);
+            profileLabel.setVisible(true);
         }
         parent.repaint();
     }
     
     public void setProfileLable(String paramName)
     {
-    	profileLable.setText(paramName);
+    	profileLabel.setText(paramName);
     }
 }

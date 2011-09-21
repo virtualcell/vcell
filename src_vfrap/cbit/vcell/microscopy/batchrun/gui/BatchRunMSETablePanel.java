@@ -34,7 +34,7 @@ import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 public class BatchRunMSETablePanel extends AdvancedTablePanel
 {
     private BatchRunMSEPanel parent;
-    private JLabel modelLable;
+    private JLabel modelLabel;
     private HyperLinkLabel hypDetail;
     private BatchRunMSETableModel mseTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
@@ -52,10 +52,10 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 
-        modelLable = new JLabel("Documents");
-        modelLable.setOpaque(true);
-        modelLable.setBackground(new Color(166, 166, 255));
-        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLabel = new JLabel("Documents");
+        modelLabel.setOpaque(true);
+        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -79,7 +79,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(modelLable, gc3);
+        add(modelLabel, gc3);
         //create table model
         mseTableModel = new BatchRunMSETableModel();
         //by default, expend this table
@@ -109,7 +109,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            modelLable.setVisible(false);
+            modelLabel.setVisible(false);
             if(table != null)
             {
             	table.getTableHeader().setVisible(true);
@@ -123,9 +123,9 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
             }
             if(batchRunWorkspace != null)
             {
-            	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
+            	modelLabel.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
-            modelLable.setVisible(true);
+            modelLabel.setVisible(true);
         }
         parent.repaint();
     }

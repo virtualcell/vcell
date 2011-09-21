@@ -35,6 +35,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -125,6 +126,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private ScrollTable optimizationTaskSummaryTable = null;
 	private OptimizationTaskSummaryTableModel optimizationTaskSummaryTableModel;
 
+	private CopasiOptimizationMethodsHelpPanel copasiHelpPanel = null;
+	
 	private class RunStatusProgressDialog extends ProgressDialog {
 		private JTextField numEvaluationsTextField = null;
 		private JTextField objectiveFunctionValueTextField = null;
@@ -475,7 +478,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			} else if (e.getSource() == getOptimizationMethodComboBox()) { 
 				optimizationMethodComboBox_ActionPerformed();	
 			} else if (e.getSource() == helpButton) {
-				copasiMethodHelp();
+				showCopasiMethodHelp();
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -501,8 +504,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		initialize();
 	}
 	
-	public void copasiMethodHelp() {
-		
+	public void showCopasiMethodHelp() 
+	{
+		CopasiOptimizationMethodType methodType = ((CopasiOptimizationMethodType)optimizationMethodComboBox.getSelectedItem());
+		getCopasiOptimizationHelpPanel().refreshSolverInfo(methodType);
+		JOptionPane helpPane = new JOptionPane(copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = helpPane.createDialog(this, "Copasi Methods Help Information");
+		dialog.setResizable(true);
+		dialog.setVisible(true);
 	}
 
 	private void initialize() {
@@ -513,7 +522,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSolverPanel(), gbc);
 
@@ -551,6 +559,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		getSaveSolutionAsNewSimButton().addActionListener(eventHandler);
 	}
 	
+	private CopasiOptimizationMethodsHelpPanel getCopasiOptimizationHelpPanel()
+	{
+		if(copasiHelpPanel == null)
+		{
+			copasiHelpPanel = new CopasiOptimizationMethodsHelpPanel();
+		}
+		return copasiHelpPanel;
+	}
+	
 	/**
 	 * Comment
 	 */
@@ -585,7 +602,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		if (solverPanel == null) {
 			try {
 				solverPanel = new javax.swing.JPanel();
-				solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+				solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Supported COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
 				solverPanel.setLayout(new java.awt.GridBagLayout());
 
 				optimizationMethodParameterTable = new ScrollTable();
@@ -595,7 +612,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				computeProfileDistributionsCheckBox = new JCheckBox("Compute Profile Distributions");
 				computeProfileDistributionsCheckBox.setVisible(false);//TODO: need to implement it later
 				
-				helpButton = new JButton("Help...");
+				helpButton = new JButton("Copasi Methods Help");
 				
 				java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 0; 
@@ -630,8 +647,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				gbc.gridy = 3;
 				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				gbc.weightx = 1.0;
-				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-				gbc.gridwidth = 2;
+				gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+				gbc.anchor = GridBagConstraints.LINE_END;
 				solverPanel.add(numberOfRunLabel, gbc);
 				
 				gbc = new java.awt.GridBagConstraints();
@@ -639,22 +656,21 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				gbc.gridy = 3;
 				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				gbc.weightx = 1.0;
-				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-				gbc.gridwidth = 2;
+				gbc.insets = new java.awt.Insets(4, 0, 4, 4);
 				solverPanel.add(getNumberOfRunComboBox(), gbc);
 				
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 0; 
 				gbc.gridy = 4;
-				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				gbc.insets = new java.awt.Insets(4, 0, 4, 0);
 				gbc.weightx = 1.0;
-				gbc.anchor = GridBagConstraints.LINE_END;
+//				gbc.anchor = GridBagConstraints.LINE_END;
 				solverPanel.add(getSolveButton(), gbc);
 
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 1; 
 				gbc.gridy = 4;
-				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				gbc.insets = new java.awt.Insets(4, 0, 4, 0);
 				gbc.weightx = 1.0;
 				gbc.anchor = GridBagConstraints.LINE_START;
 				solverPanel.add(helpButton, gbc);
@@ -806,7 +822,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private JButton getSolveButton() {
 		if (solveButton == null) {
 			try {
-				solveButton = new javax.swing.JButton("Run");
+				solveButton = new javax.swing.JButton("Solve by Copasi");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
