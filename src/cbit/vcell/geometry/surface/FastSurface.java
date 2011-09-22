@@ -27,9 +27,28 @@ public class FastSurface implements Surface, java.io.Serializable {
 	private int fieldInteriorRegionIndex = 0;
 	private int fieldExteriorRegionIndex = 0;
 
+
+	// masks are temporary and are used during algorithms.
+	// the ray-tracer assigns interior/exterior masks to (1<<(2*N) and 1<<(2*N+1)) for surface N.
+	private long interiorMask = 0;
+	private long exteriorMask = 0;
+
 	public static boolean bVerify = true;
 	private java.util.HashMap nodePolygonInstanceMap = new java.util.HashMap();
 	private java.util.ArrayList polygonList = new java.util.ArrayList();
+	
+	public long getInteriorMask() {
+		return interiorMask;
+	}
+	public long getExteriorMask() {
+		return exteriorMask;
+	}
+	public void setInteriorMask(long mask) {
+		this.interiorMask = mask;
+	}
+	public void setExteriorMask(long mask) {
+		this.exteriorMask = mask;
+	}
 
 	//private class Edge {
 		//private Node node1 = null;
@@ -397,4 +416,6 @@ private void verifyNoDuplicateNodes(Node[] nodes) {
 		}
 	}
 }
+
+
 }

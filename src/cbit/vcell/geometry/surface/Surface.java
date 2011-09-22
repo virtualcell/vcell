@@ -46,7 +46,14 @@ int getExteriorRegionIndex();
  */
 int getInteriorRegionIndex();
 
-
+/**
+ * masks are temporary and are used during algorithms.
+ * the ray-tracer assigns interior/exterior masks to (1<<(2*N) and 1<<(2*N+1)) for surface N.
+*/
+long getInteriorMask();
+long getExteriorMask();
+void setInteriorMask(long mask);
+void setExteriorMask(long mask);
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 4:59:38 PM)

@@ -16,7 +16,7 @@ import cbit.vcell.geometry.surface.Surface;
  * Creation date: (7/20/2004 12:08:18 PM)
  * @author: Jim Schaff
  */
-public class HitEvent {
+public class HitEvent implements Comparable<HitEvent> {
 	private cbit.vcell.geometry.surface.Surface surface = null;
 	private cbit.vcell.geometry.surface.Polygon polygon = null;
 	private boolean entering;
@@ -71,5 +71,15 @@ public cbit.vcell.geometry.surface.Surface getSurface() {
  */
 public boolean isEntering() {
 	return entering;
+}
+
+public int compareTo(HitEvent o) {
+	if (hitRayZ < o.hitRayZ){
+		return -1;
+	}else if (hitRayZ > o.hitRayZ){
+		return 1;
+	}else{
+		return 0;
+	}
 }
 }

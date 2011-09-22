@@ -1074,7 +1074,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	
 	PrintWriter tmppw = null;  
 	try {
-		if (DEBUG) tmppw = new PrintWriter("D:\\smoldyn-2.15\\surfacepoints.m");
+		if (DEBUG) tmppw = new PrintWriter("surfacepoints.m");
 	} catch (FileNotFoundException e) {
 		e.printStackTrace();
 	}
@@ -1082,16 +1082,13 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
 	
 	if (DEBUG) {
-		PrintWriter stlpw = null;  
 		try {
-			stlpw = new PrintWriter("D:\\smoldyn-2.15\\surface.stl");
-			StlExporter.writeStl(geometrySurfaceDescription, stlpw);
+			File file = new File("surface.stl");
+			StlExporter.writeBinaryStl(geometrySurfaceDescription, file);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			if (stlpw != null) stlpw.close();
 		}
 	}
 	
