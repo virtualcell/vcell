@@ -26,6 +26,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -33,6 +34,8 @@ import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLConnection;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +58,9 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
+
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -867,4 +873,120 @@ public final class BeanUtils {
 	//	}
 	//	return bCheckSucceeded;
 	//}
+	public static void setMessage(ClientTaskStatusSupport clientTaskStatusSupport,String message){
+		//convenience method in case clientTaskStatusSupport is null
+		if(clientTaskStatusSupport != null){
+			clientTaskStatusSupport.setMessage(message);
+		}
+	}
+	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
+	public static byte[] downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
+		final Exception[] exception = new Exception[1];
+		final FLAG_STATE[] bFlag = new FLAG_STATE[] {FLAG_STATE.START};
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+		final Thread readBytesThread = new Thread(new Runnable() {
+			public void run() {
+				try{
+					final URLConnection connection = url.openConnection();
+					setMessage(clientTaskStatusSupport,"Contacting outside server: "+url.getHost()+"...");
+					int contentLength = connection.getContentLength();
+					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+						return;
+					}
+					InputStream is = connection.getInputStream();
+					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+						return;
+					}
+					byte[] data = new byte[64000];
+					int nRead;
+					int accum = 0;
+					while ((nRead = is.read(data, 0, data.length)) != -1) { 
+						bos.write(data, 0, nRead);
+						accum+= nRead;
+						setMessage(clientTaskStatusSupport,"Download "+contentLength+" bytes: "+(int)(((double)accum*100)/(double)contentLength)+"% done... "+url.getHost());
+						if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+							return;
+						}
+					} 
+					bos.flush();
+					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+						return;
+					}
+					bFlag[0] = FLAG_STATE.FINISHED;
+				}catch(Exception e){
+					e.printStackTrace();
+					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+						return;
+					}
+					bFlag[0] = FLAG_STATE.FAILED;
+					exception[0] = new RuntimeException("contacting outside server "+url.toString()+" failed.\n"+e.getMessage(),e);
+				}
+			}
+		});
+		readBytesThread.start();
+
+		//Monitor content
+		long startTime = System.currentTimeMillis();
+		while(true){
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			if(clientTaskStatusSupport != null){
+				if(clientTaskStatusSupport.isInterrupted()){
+					bFlag[0] = FLAG_STATE.INTERRUPTED;
+					readBytesThread.stop();//deprecated, but use in case readBytesThread is stuck and does not read flag
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+			}else if((System.currentTimeMillis()-startTime) > 1000*60*5/*5 minutes*/){
+				bFlag[0] = FLAG_STATE.INTERRUPTED;
+				readBytesThread.stop();//deprecated, but use in case readBytesThread is stuck and does not read flag
+				throw new RuntimeException("User timeout ended");
+			}
+			if(bFlag[0] == FLAG_STATE.FINISHED){//finished normally
+				break;
+			}
+			if(bFlag[0] == FLAG_STATE.FAILED){//finished error
+				if(exception[0] instanceof RuntimeException){
+					throw (RuntimeException)exception[0];
+				}
+				throw new RuntimeException(exception[0]);
+			}
+		}
+		byte[] bytes  = bos.toByteArray();
+		try{
+			bos.close();
+		}catch(Exception e){
+			//shouldn't happen, ignore
+			e.printStackTrace();
+		}
+		return bytes;
+	}
+	public static org.jdom.Document getJDOMDocument(URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
+		//parse content
+		final byte[] bytes = downloadBytes(url, clientTaskStatusSupport);
+		final ByteArrayInputStream bis  = new ByteArrayInputStream(bytes){
+			@Override
+			public synchronized int read() {
+				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				return super.read();
+			}
+			@Override
+			public synchronized int read(byte[] b, int off, int len) {
+				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				return super.read(b, off, len);
+			}
+			@Override
+			public int read(byte[] b) throws IOException {
+				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				return super.read(b);
+			}
+			
+		};
+		org.jdom.Document jdomDocument = null;
+		jdomDocument = XmlUtil.readXML(bis);
+		return jdomDocument;
+	}
+
 }

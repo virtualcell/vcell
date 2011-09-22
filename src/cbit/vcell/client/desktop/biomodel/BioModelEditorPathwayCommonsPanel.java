@@ -19,8 +19,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -48,8 +53,11 @@ import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.text.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -57,6 +65,7 @@ import cbit.gui.TextFieldAutoCompletion;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.desktop.BioModelNode;
 
 @SuppressWarnings("serial")
@@ -257,45 +266,30 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		}
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				URL url = new URL(defaultBaseURL + "?" 
+			public void run(final Hashtable<String, Object> hashTable) throws Exception {
+				final URL url = new URL(defaultBaseURL + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
 				
-				org.jdom.Document jdomDocument = null;
+				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
-				String ERROR_MSG_TAG = "error_msg";
-				int max_try = 2;
-				for (int i = 0; i < max_try; i ++) {
-					URLConnection connection = url.openConnection();	
-					jdomDocument = XmlUtil.readXML(connection.getInputStream());
-	//				String xmlText = XmlUtil.xmlToString(jdomDocument, false);
-					
-					// report error 
-					org.jdom.Element rootElement = jdomDocument.getRootElement();
-					String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
-//					String errorMsg = rootElement.getChildText(ERROR_MSG_TAG);
-					if (errorCode == null) {
-						break;
-					} 
-					if (i < (max_try-1)) {
-						//getClientTaskStatusSupport().setMessage("failed once, try again");
-						continue;
-					}
-					if (errorCode != null){
-						throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
-					}
+//				String ERROR_MSG_TAG = "error_msg";
+				org.jdom.Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
+				org.jdom.Element rootElement = jdomDocument.getRootElement();
+				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
+				if (errorCode != null){
+					throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
 				}
 				
-//				String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
-//				PathwayReader pathwayReader = new PathwayReader();
-//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
+//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
+//						PathwayReader pathwayReader = new PathwayReader();
+//						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
 				
-//				String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
-//				PathwayReader pathwayReader = new PathwayReader();
-//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
+//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
+//						PathwayReader pathwayReader = new PathwayReader();
+//						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
 				
 				PathwayModel pathwayModel = null;
 				Namespace namespace = jdomDocument.getRootElement().getNamespace("bp");
@@ -305,10 +299,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				} else {		// if it's not level3 we assume it to be level2
 				// TODO: once biopax version3 becomes dominant change the code to use that as the default
 					PathwayReader pathwayReader = new PathwayReader();
-					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
+					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement(),getClientTaskStatusSupport());
 				}
 				
-				pathwayModel.reconcileReferences();
+				pathwayModel.reconcileReferences(getClientTaskStatusSupport());
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 				pathwayModel.refreshParentMap();
@@ -325,7 +319,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				}
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false,true,null);
 	}
 
 	public Pathway computeSelectedPathway() {
@@ -367,9 +361,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.q + "=" + searchText
 						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
-//				System.out.println("url=" + url);
-				URLConnection connection = url.openConnection();
-				Document document = DOMUtil.parse(connection.getInputStream());		
+				System.out.println(url);
+//				URLConnection connection = url.openConnection();
+				byte[] bytes = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
+				Document document = DOMUtil.parse(new ByteArrayInputStream(bytes));	
 
 //				org.jdom.Document d = XmlUtil.readXML(connection.getInputStream());
 				
@@ -396,7 +391,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				}
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false,true,null);
 	}
 	
 	private void initialize() {

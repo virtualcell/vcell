@@ -12,6 +12,7 @@ package org.vcell.pathway.persistence;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jdom.Attribute;
@@ -63,6 +64,7 @@ import org.vcell.pathway.ModificationFeature;
 import org.vcell.pathway.Modulation;
 import org.vcell.pathway.MolecularInteraction;
 import org.vcell.pathway.Pathway;
+import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwayStep;
 import org.vcell.pathway.PhenotypeVocabulary;
@@ -98,7 +100,11 @@ import org.vcell.pathway.Xref;
 import org.vcell.pathway.persistence.BiopaxProxy.*;
 
 import org.vcell.sybil.rdf.NameSpace;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
+
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayReader {
@@ -114,9 +120,9 @@ public class PathwayReader {
 			Document document = XmlUtil.readXML(new File("C:\\Developer\\eclipse\\workspace\\VCell_Standard\\temp.xml"));
 			PathwayReader pathwayReader = new PathwayReader();
 			System.out.println("starting parsing");
-			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
+			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement(),null);
 			System.out.println("ending parsing");
-			pathwayModel.reconcileReferences();
+			pathwayModel.reconcileReferences(null);
 			System.out.println(pathwayModel.show(true));
 			
 		}catch (Exception e){
@@ -124,59 +130,74 @@ public class PathwayReader {
 		}
 	}
 
-	public PathwayModel parse(Element rootElement) {
-		int counterObjects = 0;
-		
-		for (Object child : rootElement.getChildren()){
-			if (child instanceof Element){
-				Element childElement = (Element)child;
+	public PathwayModel parse(Element rootElement,ClientTaskStatusSupport clientTaskStatusSupport) {
+		try{
+			pathwayModel.setDisableUpdate(true);
+			int counterObjects = 0;
+			List<Element> children = rootElement.getChildren();
+			int numChildren = children.size();
+			Iterator<Element> iter = children.iterator();
+			while(iter.hasNext()){
+				Object child = iter.next();
+				double prog = ((int)(((double)counterObjects*1000)/(double)numChildren))/10.0;
+				BeanUtils.setMessage(clientTaskStatusSupport, "Read Doc "+prog+"% done...");
+				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
 				counterObjects++;
-				if (childElement.getName().equals("pathway")){
-					pathwayModel.add(addObjectPathway(childElement));
-				}else if (childElement.getName().equals("modulation")){
-					addObjectModulation(childElement);
-				}else if (childElement.getName().equals("biochemicalReaction")){
-					addObjectBiochemicalReaction(childElement);
-				}else if (childElement.getName().equals("smallMolecule")){
-					addObjectSmallMolecule(childElement);
-				}else if (childElement.getName().equals("protein")){
-					addObjectProtein(childElement);
-				}else if (childElement.getName().equals("complex")){
-					addObjectComplex(childElement);
-				}else if (childElement.getName().equals("catalysis")){
-					addObjectCatalysis(childElement);
-				}else if (childElement.getName().equals("control")){
-					addObjectControl(childElement);
-				}else if (childElement.getName().equals("Ontology")){
-					showIgnored(childElement, "Ontology not implemented in BioPAX 3.");
-				}else if (childElement.getName().equals("interaction")){
-					addObjectInteraction(childElement);
-				// we deal with physicalInteraction as if it's a v3 interaction
-				}else if (childElement.getName().equals("physicalInteraction")){
-					addObjectInteraction(childElement);
-				}else if (childElement.getName().equals("transport")){
-					addObjectTransport(childElement);
-				}else if (childElement.getName().equals("transportWithBiochemicalReaction")){
-					addObjectTransportWithBiochemicalReaction(childElement);
-				}else if (childElement.getName().equals("complexAssembly")){
-					addObjectComplexAssembly(childElement);
-				}else if (childElement.getName().equals("rna")){
-					addObjectRna(childElement);
-				}else if (childElement.getName().equals("physicalEntity")){
-					addObjectPhysicalEntity(childElement);
-				}else if (childElement.getName().equals("publicationXref")){
-					pathwayModel.add(addObjectPublicationXref(childElement));
-				}else if (childElement.getName().equals("relationshipXref")){
-					pathwayModel.add(addObjectRelationshipXref(childElement));
-				}else if (childElement.getName().equals("unificationXref")){
-					pathwayModel.add(addObjectUnificationXref(childElement));
-				}else{
-					showUnexpected(childElement);
+				if (child instanceof Element){
+					Element childElement = (Element)child;
+					if (childElement.getName().equals("pathway")){
+						pathwayModel.add(addObjectPathway(childElement));
+					}else if (childElement.getName().equals("modulation")){
+						addObjectModulation(childElement);
+					}else if (childElement.getName().equals("biochemicalReaction")){
+						addObjectBiochemicalReaction(childElement);
+					}else if (childElement.getName().equals("smallMolecule")){
+						addObjectSmallMolecule(childElement);
+					}else if (childElement.getName().equals("protein")){
+						addObjectProtein(childElement);
+					}else if (childElement.getName().equals("complex")){
+						addObjectComplex(childElement);
+					}else if (childElement.getName().equals("catalysis")){
+						addObjectCatalysis(childElement);
+					}else if (childElement.getName().equals("control")){
+						addObjectControl(childElement);
+					}else if (childElement.getName().equals("Ontology")){
+						showIgnored(childElement, "Ontology not implemented in BioPAX 3.");
+					}else if (childElement.getName().equals("interaction")){
+						addObjectInteraction(childElement);
+					// we deal with physicalInteraction as if it's a v3 interaction
+					}else if (childElement.getName().equals("physicalInteraction")){
+						addObjectInteraction(childElement);
+					}else if (childElement.getName().equals("transport")){
+						addObjectTransport(childElement);
+					}else if (childElement.getName().equals("transportWithBiochemicalReaction")){
+						addObjectTransportWithBiochemicalReaction(childElement);
+					}else if (childElement.getName().equals("complexAssembly")){
+						addObjectComplexAssembly(childElement);
+					}else if (childElement.getName().equals("rna")){
+						addObjectRna(childElement);
+					}else if (childElement.getName().equals("physicalEntity")){
+						addObjectPhysicalEntity(childElement);
+					}else if (childElement.getName().equals("publicationXref")){
+						pathwayModel.add(addObjectPublicationXref(childElement));
+					}else if (childElement.getName().equals("relationshipXref")){
+						pathwayModel.add(addObjectRelationshipXref(childElement));
+					}else if (childElement.getName().equals("unificationXref")){
+						pathwayModel.add(addObjectUnificationXref(childElement));
+					}else{
+						showUnexpected(childElement);
+					}
 				}
 			}
+			//System.out.println("Parsed " + counterObjects + " objects");
+			pathwayModel.setDisableUpdate(false);
+			pathwayModel.firePathwayChanged(new PathwayEvent(pathwayModel, PathwayEvent.CHANGED));
+			return pathwayModel;
+		}finally{
+			pathwayModel.setDisableUpdate(false);
 		}
-		System.out.println("Parsed " + counterObjects + " objects");
-		return pathwayModel;
 	}
 
 	private ComplexAssembly addObjectComplexAssembly(Element element) {
@@ -1267,13 +1288,13 @@ public class PathwayReader {
 						} else {
 							addObjectCellularLocationVocabulary(controlledVocabularyElement);
 						}
-						System.out.println(" -          " + controlledVocabularyElement.getName());
+//						System.out.println(" -          " + controlledVocabularyElement.getName());
 						// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
 					}
 				}
 				Element stoichiometricCoefficientElement = physicalEntityParticipantElement.getChild("STOICHIOMETRIC-COEFFICIENT",bp);
 				if(stoichiometricCoefficientElement != null && found == true) {
-					System.out.println(" -          " + stoichiometricCoefficientElement.getTextTrim());
+//					System.out.println(" -          " + stoichiometricCoefficientElement.getTextTrim());
 					// Create a Stoichiometry object from the stoichiometricCoefficient and from PhysicalEntity object
 					Stoichiometry stoichiometry = new Stoichiometry();
 					stoichiometry.setID(generateInstanceID());
