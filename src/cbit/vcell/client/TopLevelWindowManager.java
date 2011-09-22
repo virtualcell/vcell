@@ -296,15 +296,17 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int ANALYTIC_3D = 2;
 	final int IMAGE_DB = 3;
 	final int IMAGE_FILE = 4;
-	final int COPY_FROM_BIOMODEL = 5;
-	final int COPY_FROM_MATHMODEL = 6;
-	final int COPY_FROM_GEOMETRY = 7;
-	final int FROM_SCRATCH = 8;
-	final int FROM_CURRENT_GEOM = 9;
+	final int MESH_FILE = 5;
+	final int COPY_FROM_BIOMODEL = 6;
+	final int COPY_FROM_MATHMODEL = 7;
+	final int COPY_FROM_GEOMETRY = 8;
+	final int FROM_SCRATCH = 9;
+	final int FROM_CURRENT_GEOM = 10;
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
 			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
+			{"Mesh based (import from STL file)"},
 			{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
 			{"From scratch"}};
 	if(bShowCurrentGeomChoice){
@@ -329,7 +331,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D);
 	}else if(geomType[0] == IMAGE_DB){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE);
-	}else if(geomType[0] == IMAGE_FILE){
+	}else if(geomType[0] == IMAGE_FILE || geomType[0] == MESH_FILE){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == COPY_FROM_BIOMODEL){
 		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC, this);

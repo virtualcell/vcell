@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.surface;
 
+import java.util.ArrayList;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2003 12:10:01 AM)
@@ -18,7 +20,12 @@ package cbit.vcell.geometry.surface;
 public class OrigSurface implements Surface, java.io.Serializable {
 	private int fieldInteriorRegionIndex = 0;
 	private int fieldExteriorRegionIndex = 0;
-	private java.util.Vector fieldPolygons = new java.util.Vector();
+	private ArrayList<Polygon> fieldPolygons = new ArrayList<Polygon>();
+
+	// masks are temporary and are used during algorithms.
+	// the ray-tracer assigns interior/exterior masks to (1<<(2*N) and 1<<(2*N+1)) for surface N.
+	private long interiorMask = 0;
+	private long exteriorMask = 0;
 /**
  * Boundary constructor comment.
  */
@@ -36,11 +43,23 @@ public OrigSurface(int interiorRegionIndex, int exteriorRegionIndex, Polygon pol
 	fieldExteriorRegionIndex = exteriorRegionIndex;
 	addPolygon(polygon);
 }
+public long getInteriorMask() {
+	return interiorMask;
+}
+public long getExteriorMask() {
+	return exteriorMask;
+}
+public void setInteriorMask(long mask) {
+	this.interiorMask = mask;
+}
+public void setExteriorMask(long mask) {
+	this.exteriorMask = mask;
+}
 /**
  * Boundary constructor comment.
  */
 public void addPolygon(Polygon quadrilateral) {
-	fieldPolygons.addElement(quadrilateral);
+	fieldPolygons.add(quadrilateral);
 }
 /**
  * Boundary constructor comment.
@@ -63,7 +82,7 @@ public void addSurface(Surface surface) {
 public double getArea() {
 	double area = 0.0;
 	for (int i = 0; i < fieldPolygons.size(); i++){
-		area += ((Polygon)fieldPolygons.elementAt(i)).getArea();
+		area += fieldPolygons.get(i).getArea();
 	}
 	return area;
 }
@@ -89,7 +108,7 @@ public int getPolygonCount() {
  * Boundary constructor comment.
  */
 public Polygon getPolygons(int i) {
-	return((Polygon) fieldPolygons.elementAt(i));
+	return fieldPolygons.get(i);
 }
 /**
  * Quadrilateral constructor comment.

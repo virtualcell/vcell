@@ -20,6 +20,11 @@ public class SlowSurface implements Surface {
 	private int fieldInteriorRegionIndex = 0;
 	private int fieldExteriorRegionIndex = 0;
 
+	// masks are temporary and are used during algorithms.
+	// the ray-tracer assigns interior/exterior masks to (1<<(2*N) and 1<<(2*N+1)) for surface N.
+	private long interiorMask = 0;
+	private long exteriorMask = 0;
+
 	private java.util.Vector polygonList = new java.util.Vector();
 
 	//Associates Polygon index with Node indexes (implicit reference to polygonList, references nodeList indexes in this polygon int[x]
@@ -53,6 +58,18 @@ public SlowSurface(int argInteriorRegionIndex, int argExteriorRegionIndex) {
 public SlowSurface(int argInteriorRegionIndex, int argExteriorRegionIndex, Polygon polygon) {
 	this(argInteriorRegionIndex,argExteriorRegionIndex);
 	addPolygon(polygon);
+}
+public long getInteriorMask() {
+	return interiorMask;
+}
+public long getExteriorMask() {
+	return exteriorMask;
+}
+public void setInteriorMask(long mask) {
+	this.interiorMask = mask;
+}
+public void setExteriorMask(long mask) {
+	this.exteriorMask = mask;
 }
 /**
  * Boundary constructor comment.

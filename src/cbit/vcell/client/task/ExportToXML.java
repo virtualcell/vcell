@@ -85,7 +85,6 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	FileFilter fileFilter = (FileFilter)hashTable.get("fileFilter");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	String resultString = null;
-	java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
 	if (documentToExport instanceof BioModel) {
 		BioModel bioModel = (BioModel)documentToExport;
 		// check format requested
@@ -194,18 +193,25 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 			resultString = XmlHelper.geometryToXML(geom);
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_AVS)) {
+			FileWriter fileWriter = new java.io.FileWriter(exportFile);
 			cbit.vcell.geometry.surface.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(),fileWriter);
+			fileWriter.flush();
+			fileWriter.close();
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_STL)) {
-			cbit.vcell.geometry.surface.StlExporter.writeStl(geom.getGeometrySurfaceDescription(),fileWriter);
+			cbit.vcell.geometry.surface.StlExporter.writeBinaryStl(geom.getGeometrySurfaceDescription(),exportFile);
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_PLY)) {
+			FileWriter fileWriter = new java.io.FileWriter(exportFile);
 			writeStanfordPolygon(geom.getGeometrySurfaceDescription(), fileWriter);
+			fileWriter.flush();
+			fileWriter.close();
 		}
 	}
 	if(resultString != null){
+		FileWriter fileWriter = new java.io.FileWriter(exportFile);
 		fileWriter.write(resultString);
+		fileWriter.flush();
+		fileWriter.close();
 	}
-	fileWriter.flush();
-	fileWriter.close();
 }
 
 	public static void writeStanfordPolygon(GeometrySurfaceDescription geometrySurfaceDescription,Writer writer) throws IOException{

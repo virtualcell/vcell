@@ -54,3 +54,4 @@ void getUnitNormal(cbit.vcell.render.Vect3d unitNormal);
  */
 public void reverseDirection();
 }
+
