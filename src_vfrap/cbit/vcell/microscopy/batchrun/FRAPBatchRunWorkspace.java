@@ -648,7 +648,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 							int selectedModelIdx = tempBatchRunWorkspace.getSelectedModel();
 							FRAPModel frapModel = newFRAPStudy.getFrapModel(selectedModelIdx);
 							//optimization was done but data wasn't save with file, need to restore data
-							if(frapModel.getModelParameters() != null && frapModel.getModelParameters().length > 0 && frapModel.getData() == null)
+							if(frapModel!= null && frapModel.getModelParameters() != null && frapModel.getModelParameters().length > 0 && frapModel.getData() == null)
 							{
 								if(frapModel.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]))
 								{
