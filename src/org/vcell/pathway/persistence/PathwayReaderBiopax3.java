@@ -134,7 +134,7 @@ public class PathwayReaderBiopax3 {
 			System.out.println("starting parsing");
 			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
 			System.out.println("ending parsing");
-			pathwayModel.reconcileReferences();
+			pathwayModel.reconcileReferences(null);
 			System.out.println(pathwayModel.show(false));
 		}catch (Exception e){
 			e.printStackTrace(System.out);			

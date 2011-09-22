@@ -12,6 +12,7 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -21,8 +22,11 @@ import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
@@ -127,12 +131,18 @@ public class PathwayModel {
 		}
 		return aPathwayListeners;
 	}
-	protected void firePathwayChanged(PathwayEvent event) {
+	private boolean bDisableUpdate = false;
+	public void setDisableUpdate(boolean bDisableUpdate){
+		this.bDisableUpdate = bDisableUpdate;
+	}
+	public void firePathwayChanged(PathwayEvent event) {
 		for (PathwayListener l : getPathwayListeners()){
 			l.pathwayChanged(event);
 		}
-		refreshParentMap();
-		refreshGroupMap();
+		if(!bDisableUpdate){
+			refreshParentMap();
+			refreshGroupMap();
+		}
 	}
 
 	public void addPathwayListener(PathwayListener listener) {
@@ -187,32 +197,52 @@ public class PathwayModel {
 	}
 
 	// You're not expected to understand this
-	public void reconcileReferences() {
-		ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
-		reconcileReferencesPreprocessing();
-		for (BioPaxObject bpObject : biopaxObjects){
-			if (bpObject instanceof RdfObjectProxy){
-				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = findFromResourceID(rdfObjectProxy.getResource());
-					if (concreteObject != null){
-						//System.out.println("replacing "+rdfObjectProxy.toString()+" with "+concreteObject.toString());
-						replace(rdfObjectProxy,concreteObject);
-						proxiesToDelete.add(rdfObjectProxy);
-					}else{
-						System.out.println("unable to resolve reference to "+rdfObjectProxy.toString());
-					}
-				}else{
-					System.out.println("rdfProxy had no resource set "+rdfObjectProxy.toString());
+	public void reconcileReferences(ClientTaskStatusSupport clientTaskStatusSupport) {
+		try{
+			HashMap<String, BioPaxObject> resourceMap = new HashMap<String, BioPaxObject>();
+			for (BioPaxObject bpObject : biopaxObjects){
+				if (bpObject.getID() != null){
+					resourceMap.put(bpObject.getID(), bpObject);
 				}
 			}
+
+			setDisableUpdate(true);
+			ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
+			reconcileReferencesPreprocessing();
+			int count = 0;
+			for (BioPaxObject bpObject : biopaxObjects){
+				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				double prog = ((int)(((double)count*1000)/(double)biopaxObjects.size()))/10.0;
+				count++;
+				BeanUtils.setMessage(clientTaskStatusSupport, "Finish "+prog+"% done..");
+				if (bpObject instanceof RdfObjectProxy){
+					RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
+					if (rdfObjectProxy.getResource() != null){
+						String resource = rdfObjectProxy.getResource().replace("#","");
+						BioPaxObject concreteObject = resourceMap.get(resource);//findFromResourceID(rdfObjectProxy.getResource());
+						if (concreteObject != null){
+							//System.out.println("replacing "+rdfObjectProxy.toString()+" with "+concreteObject.toString());
+							replace(rdfObjectProxy,concreteObject);
+							proxiesToDelete.add(rdfObjectProxy);
+						}else{
+//							System.out.println("unable to resolve reference to "+rdfObjectProxy.toString());
+						}
+					}else{
+//						System.out.println("rdfProxy had no resource set "+rdfObjectProxy.toString());
+					}
+				}
+			}
+			biopaxObjects.removeAll(proxiesToDelete);
+			
+			hideUtilityClassObjects();
+			cleanupUnresolvedProxies();
+			setDisableUpdate(false);
+			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
+		}finally{
+			setDisableUpdate(false);
 		}
-		biopaxObjects.removeAll(proxiesToDelete);
-		
-		hideUtilityClassObjects();
-		cleanupUnresolvedProxies();
-		
-		firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 	}
 
 	private void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject) {
@@ -294,7 +324,7 @@ public class PathwayModel {
 				unresolvedProxiesCount++;
 			}
 		}
-		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
+//		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
 		biopaxObjects = new2BiopaxObjects;
 	}
 	
