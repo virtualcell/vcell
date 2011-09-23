@@ -15,12 +15,10 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileFilter;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -33,7 +31,6 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
@@ -42,11 +39,11 @@ import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
-import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -54,7 +51,6 @@ import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.mathmodel.MathModel;
 /**
  * This type was created in VisualAge.
  */
@@ -134,7 +130,8 @@ private void exportGeometry(/*String exportType*/){
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("documentToExport",getGeometry());
-	hash.put("userPreferences",userPreferences);
+	hash.put("userPreferences",(documentWindowManager==null?null:documentWindowManager.getUserPreferences()));
+	hash.put("documentManager",(documentWindowManager==null?null:documentWindowManager.getRequestManager().getDocumentManager()));
 	hash.put("component", this);
 	ClientTaskDispatcher.dispatch(this, hash, tasks, false);
 }
@@ -691,9 +688,9 @@ public synchronized void removeActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.remove(actionListener, l);
 }
 
-private UserPreferences userPreferences;
-public void setGeometryOwner(GeometryOwner newValue,UserPreferences userPreferences) {
-	this.userPreferences = userPreferences;
+private DocumentWindowManager documentWindowManager;
+public void setGeometryOwner(GeometryOwner newValue,DocumentWindowManager documentWindowManager) {
+	this.documentWindowManager = documentWindowManager;
 	if (geometryOwner == newValue) {
 		return;
 	}
