@@ -12,6 +12,7 @@ package org.vcell.solver.smoldyn;
 
 
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,17 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.math.random.RandomDataImpl;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
+import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
+import cbit.image.VCImage;
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -49,6 +53,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.geometry.surface.StlExporter;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -278,6 +283,12 @@ public class SmoldynFileWriter extends SolverFileWriter
 		variable,
 		membrane,
 		volume,
+		
+		// high resolution volume samples
+		Origin,
+		Size,
+		VolumeSamples,
+		CompartmentHighResPixelMap,
 	}
 	
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
@@ -309,7 +320,7 @@ private void writeMeshFile() throws SolverException {
 		polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
 		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);		
 		//Write Mesh file
-		File meshFile = new File(baseFileName + ".mesh");
+		File meshFile = new File(baseFileName + SimDataConstants.MESHFILE_EXTENSION);
 		fos = new FileOutputStream(meshFile);
 		cartesianMesh.write(new PrintStream(fos));
 	} catch (Exception e) {
@@ -372,6 +383,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSpecies();	
 	writeDiffusions();
 	writeGraphicsOpenGL();
+	writeHighResVolumeSamples();
 	writeSurfacesAndCompartments();	
 	writeReactions();
 	writeMolecules();	
@@ -380,6 +392,43 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSimulationSettings();
 	printWriter.println(SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
+}
+
+private void writeHighResVolumeSamples() {	
+	PrintWriter pw = null;
+	try {
+		File hrvsFile = new File(baseFileName + SimDataConstants.SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION);
+		pw = new PrintWriter(hrvsFile);
+		Origin origin = resampledGeometry.getOrigin();
+		Extent extent = resampledGeometry.getExtent();
+		int numSamples = 10000000;
+		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
+		VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
+		
+		pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
+		pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
+		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
+		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
+			pw.println(subVolume.getName() + " " + subVolume.getHandle());
+		}
+		pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
+		
+		if (vcImage != null) {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+			byte[] pixels = vcImage.getPixels();
+			dos.write(pixels, 0, pixels.length);
+			dos.close();
+			byte[] compressedPixels = bos.toByteArray();
+			pw.println(Hex.toString(compressedPixels));
+		}		
+	} catch (Exception ex) {
+		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
+	}
 }
 
 private void writeSimulationSettings() {
