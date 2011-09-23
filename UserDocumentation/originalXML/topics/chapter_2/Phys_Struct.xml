@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Physiological Structures" target="PhyStruct">
+
+	<introduction> Structures are the biological compartments within which 
+		<def target = "def_species"> species </def> 
+exist and undergo 
+         <link target = "def_reactions"> reactions </link>.  
+         <link target = "def_compartments"> Compartments </link> are made up of 
+         <link target = "def_membrane">  membranes </link>
+and      <link target = "def_volume"> volumes </link>.  They can be created, viewed and edited in 
+         <link target = "PhysStructTabView"> tabular </link> or <link target = "PhysStructDiagView"> diagrammatic tabs</link>.  Properties for structures can be found in the 
+<link target = "def_prop_pane"> object properties pane </link> in the bottom of the panel	
+	</introduction>
+	
+</page>
+
+</vcelldoc>
