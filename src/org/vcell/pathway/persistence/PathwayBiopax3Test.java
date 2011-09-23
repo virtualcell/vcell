@@ -43,7 +43,7 @@ public class PathwayBiopax3Test {
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
 			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
 //			System.out.print(pathwayModel.show(true));
-			pathwayModel.reconcileReferences();
+			pathwayModel.reconcileReferences(null);
 			
 			bioModelToXML(pathwayModel);
 			
