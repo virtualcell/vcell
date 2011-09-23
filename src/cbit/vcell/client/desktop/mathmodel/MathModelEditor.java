@@ -328,7 +328,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 
 
 private void updateGeometryViewerOwner(){
-	geometryViewer.setGeometryOwner(mathModel,(mathModelWindowManager == null?null:mathModelWindowManager.getUserPreferences()));
+	geometryViewer.setGeometryOwner(mathModel,mathModelWindowManager);
 }
 
 }

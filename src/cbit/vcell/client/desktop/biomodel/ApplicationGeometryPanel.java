@@ -125,6 +125,6 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	}
 	
 	private void updateGeometryViewerOwner(){
-		geometryViewer.setGeometryOwner(simulationContext,(bioModelWindowManager==null?null:bioModelWindowManager.getUserPreferences()));
+		geometryViewer.setGeometryOwner(simulationContext,bioModelWindowManager);
 	}
 }
