@@ -11,6 +11,8 @@
 package cbit.vcell.VirtualMicroscopy;
 
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -24,7 +26,6 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import loci.common.DataTools;
 import loci.formats.FormatException;
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
@@ -40,6 +41,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class ImageDatasetReader {
@@ -51,12 +53,16 @@ public class ImageDatasetReader {
 			return getTimes(getImageReader(fileName));
 		}
 	}
-	public static int getChannelCount(String fileName) throws Exception{
+	public static ClientRequestManager.ImageSizeInfo getImageSizeInfo(String fileName) throws Exception{
+		ClientRequestManager.ImageSizeInfo imageSizeInfo = null;
 		if(fileName.toUpperCase().endsWith(".ZIP")){
-			return readZipFile(fileName, false, false).length;
+			ImageDataset[] imageDatasets  =  readZipFile(fileName, false, false,null);
+			imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName, imageDatasets[0].getISize(), imageDatasets.length,new double[] {0.0},0);
 		}else{
-			return getImageReader(fileName).getSizeC();
+			ImageReader imageReader = getImageReader(fileName);
+			imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName, getDomainInfo(imageReader).getiSize(),imageReader.getSizeC(),getTimes(imageReader),0);
 		}
+		return imageSizeInfo;
 	}
 	private static ImageReader getImageReader(String imageID) throws FormatException,IOException{
 		ImageReader imageReader = new ImageReader();
@@ -74,14 +80,13 @@ public class ImageDatasetReader {
 	}
 	
 	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws FormatException, IOException, ImageException {
-		return ImageDatasetReader.readImageDatasetChannels(imageID, status,true,null)[0];
+		return ImageDatasetReader.readImageDatasetChannels(imageID, status,true,null,null)[0];
 	}
 	
-	private static ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels) throws IOException,ImageException,FormatException{
+	private static ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels,ISize resize) throws IOException,ImageException,FormatException{
 		ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
 		Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
 		Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
-		int noOfZipEntry = 0;//added Jan 2008
 		int numChannels = -1;
 		//Sort entryNames because ZipFile doesn't guarantee order
 		TreeMap<String, Integer> sortedChannelsTreeMap = new TreeMap<String, Integer>();
@@ -108,7 +113,7 @@ public class ImageDatasetReader {
 			}
 			fos.close();
 			zipInputStream.close(); 
-			ImageDataset[] imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(), null,bMergeChannels,null);
+			ImageDataset[] imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(), null,bMergeChannels,null,resize);
 			if(numChannels == -1){
 				numChannels = imageDatasetChannels.length;
 				for (int i = 0; i < numChannels; i++) {
@@ -125,7 +130,6 @@ public class ImageDatasetReader {
 			}
 			
 			tempImageFile.delete();
-			noOfZipEntry ++;
 			if(!bAll){
 				break;
 			}
@@ -196,9 +200,9 @@ public class ImageDatasetReader {
 		return new DomainInfo(iSize, extent,origin);
 	}
 
-	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels,Integer timeIndex) throws FormatException, IOException, ImageException {
+	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels,Integer timeIndex,ISize resize) throws FormatException, IOException, ImageException {
 		if (imageID.toUpperCase().endsWith(".ZIP")){
-			return readZipFile(imageID, true, bMergeChannels);
+			return readZipFile(imageID, true, bMergeChannels,resize);
 		}
 		if(status != null){
 			status.setProgress(0);
@@ -249,13 +253,33 @@ public class ImageDatasetReader {
 					int imgndx = formatReader.getIndex(zndx, 0, tndx);
 					byte[] bytes = formatReader.openBytes(imgndx);
 					BufferedImage bi = AWTImageTools.openImage(bytes, formatReader, formatReader.getSizeX(), formatReader.getSizeY());
+					if(resize != null){
+						double scaleFactor = (double)resize.getX()/(double)formatReader.getSizeX();
+					    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
+					    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR);
+					    if(bi.getType() == BufferedImage.TYPE_CUSTOM){
+					    	//special processing because scaleAffineTransformOp doesn't know how to do BufferedImage.TYPE_CUSTOM
+					    	BufferedImage[] imgChannels = AWTImageTools.splitChannels(bi);
+					    	BufferedImage[] resizedChannels = new BufferedImage[imgChannels.length];
+					    	for (int i = 0; i < resizedChannels.length; i++) {
+					    		BufferedImage scaledImage = new BufferedImage(resize.getX(),resize.getY(),imgChannels[i].getType());
+								resizedChannels[i] = scaleAffineTransformOp.filter(imgChannels[i],scaledImage);
+							}
+					    	bi = AWTImageTools.mergeChannels(resizedChannels);
+					    }else{
+					    	BufferedImage scaledImage = new BufferedImage(resize.getX(),resize.getY(),bi.getType());
+					    	bi = scaleAffineTransformOp.filter( bi, scaledImage);
+					    }
+					}
 					if(bMergeChannels){
 					    ColorModel cm = AWTImageTools.makeColorModel(1, (formatReader.getPixelType() == FormatTools.INT8?DataBuffer.TYPE_BYTE:DataBuffer.TYPE_USHORT));
 						bi = AWTImageTools.makeBuffered(bi, cm);
 					}
 					short[][] shorts = AWTImageTools.getShorts(bi);
 					for (int i = 0; i < shorts.length; i++) {
-						ushortImageCTZArr[i][tzIndex] = new UShortImage(shorts[i],domainInfo.getOrigin(),domainInfo.getExtent(),domainInfo.getiSize().getX(),domainInfo.getiSize().getY(),1);
+						ushortImageCTZArr[i][tzIndex] = new UShortImage(shorts[i],domainInfo.getOrigin(),domainInfo.getExtent(),
+								(resize==null?domainInfo.getiSize().getX():resize.getX()),
+								(resize==null?domainInfo.getiSize().getY():resize.getY()),1);
 					}
 					tzIndex++;
 					if(status != null){

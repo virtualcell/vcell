@@ -23,9 +23,8 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.TreeMap;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.zip.DataFormatException;
 
 import javax.swing.BoxLayout;
@@ -42,7 +41,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -59,11 +57,11 @@ import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.FieldDataWindowManager.FDSimBioModelInfo;
 import cbit.vcell.client.FieldDataWindowManager.FDSimMathModelInfo;
 import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -71,7 +69,6 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.model.ModelInfo;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
@@ -1708,12 +1705,6 @@ private JButton getJButtonCreateGeom() {
 						if(ppLastPathComp.getUserObject() instanceof FieldDataMainList){
 							ExternalDataIdentifier extDataID =
 								((FieldDataMainList)ppLastPathComp.getUserObject()).externalDataIdentifier;
-							SelectedTimes selectedTimes = null;
-							try{
-								selectedTimes = selectTimeFromNode(ppLastPathComp);
-							}catch(UserCancelException uce){
-								return;
-							}
 							
 							final OpenModelInfoHolder openModelInfoHolder =
 								fieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this, false,"Select BioModel or MathModel to receive new geometry");
@@ -1734,7 +1725,7 @@ private JButton getJButtonCreateGeom() {
 										if(newGeom.getName() == null){
 											newGeom.setName(modelName+"_"+ClientRequestManager.generateDateTimeString());
 										}
-										String message = "Set new FieldData derived geometry on MathModel '"+modelName+"'";
+										String message = "Confirm Setting new FieldData derived geometry on MathModel '"+modelName+"'";
 										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){
 											((FDSimMathModelInfo)openModelInfoHolder).getMathDescription().setGeometry(newGeom);											
 										}
@@ -1745,7 +1736,7 @@ private JButton getJButtonCreateGeom() {
 										if(newGeom.getName() == null){
 											newGeom.setName(modelName+"_"+simContextName+"_"+ClientRequestManager.generateDateTimeString());
 										}
-										String message = "Set new FieldData derived geometry on BioModel '"+modelName+"' , Application '"+simContextName+"'";
+										String message = "Confirm Setting new FieldData derived geometry on BioModel '"+modelName+"' , Application '"+simContextName+"'";
 										if(DialogUtils.showWarningDialog(FieldDataGUIPanel.this, message, new String[] {OK_OPTION,"Cancel"}, OK_OPTION).equals(OK_OPTION)){
 											((FDSimBioModelInfo)openModelInfoHolder).getSimulationContext().setGeometry(newGeom);
 										}
@@ -1754,13 +1745,15 @@ private JButton getJButtonCreateGeom() {
 							};
 							VCDocument.GeomFromFieldDataCreationInfo geomFromFieldDataCreationInfo =
 								new VCDocument.GeomFromFieldDataCreationInfo(
-									extDataID,dataIdentifier.getName(),selectedTimes.getSelectedIndex());
+									extDataID,dataIdentifier.getName());
 							AsynchClientTask[] createGeomTask = clientRequestManager.createNewGeometryTasks(fieldDataWindowManager,
 									geomFromFieldDataCreationInfo,
 									new AsynchClientTask[] {applyGeomTask},
 									"Apply Geometry");
-
-							ClientTaskDispatcher.dispatch(FieldDataGUIPanel.this, new Hashtable<String, Object>(),
+							
+							Hashtable<String, Object> hash = new Hashtable<String, Object>();
+							hash.put(ClientRequestManager.GUI_PARENT, fieldDataWindowManager.getComponent());
+							ClientTaskDispatcher.dispatch(FieldDataGUIPanel.this, hash,
 									createGeomTask, false,false,null,true);
 
 						}
