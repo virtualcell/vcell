@@ -65,21 +65,16 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 
 		private ExternalDataIdentifier externalDataID = null;
 		private String varName = null;
-		private int timeIndex = 0;
-		public GeomFromFieldDataCreationInfo(ExternalDataIdentifier edi, String v, int ti) {
+		public GeomFromFieldDataCreationInfo(ExternalDataIdentifier edi, String v) {
 			super(GEOMETRY_DOC,GEOM_OPTION_FIELDDATA);
 			externalDataID = edi;
 			varName = v;
-			timeIndex = ti;
 		}
 		public ExternalDataIdentifier getExternalDataID() {
 			return externalDataID;
 		}
 		public String getVarName() {
 			return varName;
-		}
-		public int getTimeIndex() {
-			return timeIndex;
 		}
 		
 	}
