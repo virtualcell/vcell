@@ -46,7 +46,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -405,11 +404,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JButton specialActionsButton;
 	private JSlider blendPercentSlider;
 	private JPanel blendPercentPanel;
+	private JSlider smoothslider;
 	
 	private JButton addROIButton;
 	private JButton delROIButton;
 	private boolean bAllowAddROI = true;
-
 		
 	private BufferedImage[] allROICompositeImageArr;
 		
@@ -858,58 +857,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 				discardHighlightsJMenuItem.setEnabled(getHighliteInfo() != null);
 				jp.add(discardHighlightsJMenuItem);
 				
-				JMenu smoothingJMenu = new JMenu("Smooth Underlay");
-				
-					JMenuItem smoothNone = new JMenuItem(ROIMultiPaintManager.ENHANCE_NONE);
-					smoothNone.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_NONE);
-						}
-					});
-					smoothingJMenu.add(smoothNone);
-					
-					JMenuItem avg3x3 = new JMenuItem(ROIMultiPaintManager.ENHANCE_AVG_3X3);
-					avg3x3.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_AVG_3X3);
-						}
-					});
-					smoothingJMenu.add(avg3x3);
-	
-					JMenuItem avg5x5 = new JMenuItem(ROIMultiPaintManager.ENHANCE_AVG_5x5);
-					avg5x5.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_AVG_5x5);
-						}
-					});
-					smoothingJMenu.add(avg5x5);
-	
-					JMenuItem avg7x7 = new JMenuItem(ROIMultiPaintManager.ENHANCE_AVG_7x7);
-					avg7x7.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_AVG_7x7);
-						}
-					});
-					smoothingJMenu.add(avg7x7);
-	
-//					JMenuItem med3x3 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
-//					med3x3.addActionListener(new ActionListener() {
-//						public void actionPerformed(ActionEvent e) {
-//							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
-//						}
-//					});
-//					smoothingJMenu.add(med3x3);
-//	
-//					JMenuItem med5x5 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
-//					med5x5.addActionListener(new ActionListener() {
-//						public void actionPerformed(ActionEvent e) {
-//							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
-//						}
-//					});
-//					smoothingJMenu.add(med5x5);
-
-				jp.add(smoothingJMenu);
-				
 				JMenuItem resolveRegionsJMenuItem = new JMenuItem("Resolve regions...");
 				resolveRegionsJMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -990,7 +937,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 		
 		JLabel lblUnderlay = new JLabel("ROI");
 		GridBagConstraints gbc_lblUnderlay = new GridBagConstraints();
-		gbc_lblUnderlay.insets = new Insets(0, 1, 0, 0);
 		gbc_lblUnderlay.anchor = GridBagConstraints.WEST;
 		gbc_lblUnderlay.gridx = 0;
 		gbc_lblUnderlay.gridy = 0;
@@ -1005,20 +951,52 @@ public class OverlayEditorPanelJAI extends JPanel{
 //				}
 			}
 		});
-		GridBagConstraints gbc_slider = new GridBagConstraints();
-		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider.weightx = 1.0;
-		gbc_slider.gridx = 1;
-		gbc_slider.gridy = 0;
-		blendPercentPanel.add(blendPercentSlider, gbc_slider);
+		GridBagConstraints gbc_blendPercentSlider = new GridBagConstraints();
+		gbc_blendPercentSlider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_blendPercentSlider.weightx = 0.5;
+		gbc_blendPercentSlider.gridx = 1;
+		gbc_blendPercentSlider.gridy = 0;
+		blendPercentPanel.add(blendPercentSlider, gbc_blendPercentSlider);
 		
-		JLabel lblRoi = new JLabel("Bkgrnd Image");
+		JLabel lblRoi = new JLabel("Image");
 		GridBagConstraints gbc_lblRoi = new GridBagConstraints();
-		gbc_lblRoi.insets = new Insets(0, 0, 0, 1);
 		gbc_lblRoi.anchor = GridBagConstraints.EAST;
 		gbc_lblRoi.gridx = 2;
 		gbc_lblRoi.gridy = 0;
 		blendPercentPanel.add(lblRoi, gbc_lblRoi);
+		
+		smoothOrigLabel = new JLabel("Original");
+		GridBagConstraints gbc_smoothOrigLabel = new GridBagConstraints();
+		gbc_smoothOrigLabel.insets = new Insets(0, 20, 0, 0);
+		gbc_smoothOrigLabel.gridx = 3;
+		gbc_smoothOrigLabel.gridy = 0;
+		blendPercentPanel.add(smoothOrigLabel, gbc_smoothOrigLabel);
+		
+		smoothslider = new JSlider();
+		smoothslider.setSnapToTicks(true);
+		smoothslider.setPaintTicks(true);
+		smoothslider.setMajorTickSpacing(1);
+		smoothslider.setMaximum(10);
+		smoothslider.setValue(0);
+		smoothslider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if(!smoothslider.getValueIsAdjusting()){
+					firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY, null, new Integer(smoothslider.getValue()));
+				}
+			}
+		});
+		GridBagConstraints gbc_smoothslider = new GridBagConstraints();
+		gbc_smoothslider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_smoothslider.weightx = 0.5;
+		gbc_smoothslider.gridx = 4;
+		gbc_smoothslider.gridy = 0;
+		blendPercentPanel.add(smoothslider, gbc_smoothslider);
+		
+		smootherLabel = new JLabel("Smoother");
+		GridBagConstraints gbc_smootherLabel = new GridBagConstraints();
+		gbc_smootherLabel.gridx = 5;
+		gbc_smootherLabel.gridy = 0;
+		blendPercentPanel.add(smootherLabel, gbc_smootherLabel);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -1969,6 +1947,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 
 	private JButton undoButton;
+	private JLabel smoothOrigLabel;
+	private JLabel smootherLabel;
 	private JButton getUndoButton() {
 		if (undoButton == null) {
 			undoButton = new JButton();
@@ -2086,5 +2066,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 			}
 		});
 		
+	}
+	public void setUnderlayState(boolean bIgnoreUnderlay){
+		if(bIgnoreUnderlay){
+			blendPercentSlider.setValue(0);
+			BeanUtils.enableComponents(blendPercentPanel, false);
+		}else{
+			blendPercentSlider.setValue(50);
+			BeanUtils.enableComponents(blendPercentPanel, true);
+		}
 	}
 }
