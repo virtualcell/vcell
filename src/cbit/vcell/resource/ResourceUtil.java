@@ -46,7 +46,7 @@ public class ResourceUtil {
 		}
 	}
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
-	public final static String NATIVELIB_SUFFIX = bWindows && b64bit ? "_x64" : "";
+	public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
 	private static File userHome = null;
@@ -235,10 +235,7 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
-			if (bMacPpc) {
-				throw new RuntimeException("Native solvers is not supported on Mac OS X PowerPC.");
-			}
-			if (bLinux && b64bit) {
+			if (!bWindows && !bMac && !bLinux || (bLinux && b64bit)) {
 				throw new RuntimeException("Native solvers are supported on Mac OS X, Windows and 32bit Linux at this time.");
 			}
 	        System.loadLibrary("NativeSolvers" + NATIVELIB_SUFFIX);
@@ -248,11 +245,8 @@ public class ResourceUtil {
 	}
 	
 	public static void loadCopasiSolverLibrary () {
-		if (bMacPpc) {
-			throw new RuntimeException("Parameter Estimation is not supported on Mac OS X PowerPC.");
-		}
-		if (!bWindows) {
-			throw new RuntimeException("Parameter Estimation is only supported on Windows at this time.");
+		if (!bWindows && !bMac) {
+			throw new RuntimeException("Parameter Estimation is supported on Windows and Mac OS X at this time.");
 		}
 		try {
 	        System.loadLibrary("vcellCopasiOptDriver" + NATIVELIB_SUFFIX);
@@ -263,11 +257,8 @@ public class ResourceUtil {
 	
 	public static void loadlibSbmlLibray () {
 		try {
-			if (bMacPpc) {
-				throw new RuntimeException("SBML is no longer supported on Mac OS X PowerPC.");
-			}
-			if (bLinux) {
-				throw new RuntimeException("SBML is only supported on Mac OS X and Windows at this time.");
+			if (!bWindows && !bMac) {
+				throw new RuntimeException("SBML is supported on Mac OS X and Windows at this time.");
 			}
 			System.loadLibrary("sbmlj" + NATIVELIB_SUFFIX);
 		} catch (Throwable ex1){
@@ -276,8 +267,8 @@ public class ResourceUtil {
 	}
 		
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
-		if (bMacPpc) {
-			throw new RuntimeException("Native solvers is not supported on Mac OS X PowerPC.");
+		if (!bWindows && !bMac || bMacPpc) {
+			throw new RuntimeException("Native solvers are supported on Windows and Mac OS X (excluding PowerPC).");
 		}
 		if (solverDescription.equals(SolverDescription.CombinedSundials)
 				|| solverDescription.equals(SolverDescription.CVODE)

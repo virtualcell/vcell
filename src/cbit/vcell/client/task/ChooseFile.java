@@ -455,10 +455,10 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
-	// set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+	// set the default file filter...
+	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(mathModel.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell MathModel As...");
