@@ -20,7 +20,6 @@ import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameterType;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;

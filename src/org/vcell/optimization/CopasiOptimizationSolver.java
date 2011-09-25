@@ -365,7 +365,7 @@ public class CopasiOptimizationSolver {
 			return optResultSet;
 		} catch (Throwable e){
 			e.printStackTrace(System.out);
-			throw new OptimizationException(e.getMessage());
+			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
 		}
 	}
 		
@@ -417,7 +417,12 @@ public class CopasiOptimizationSolver {
 	
 	public static void main(String[] args) {
 		try{
-			String fileName = "D:\\COPASI\\copasiOptXml.txt";
+			String fileName = "";
+			if (ResourceUtil.bWindows) {
+				fileName = "D:\\COPASI\\copasiOptXml.txt";
+			} else	if (ResourceUtil.bMac) {
+				fileName = "/Users/fgao/opttest/opt.xml";
+			}
 			String optXML = FileUtils.readFileToString(new File(fileName));
 			System.out.println(optXML);
 			CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
