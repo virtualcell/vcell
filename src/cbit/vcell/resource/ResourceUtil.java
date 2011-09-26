@@ -257,8 +257,8 @@ public class ResourceUtil {
 	
 	public static void loadlibSbmlLibray () {
 		try {
-			if (!bWindows && !bMac) {
-				throw new RuntimeException("SBML is supported on Mac OS X and Windows at this time.");
+			if (!bWindows && !bMac && !bLinux) {
+				throw new RuntimeException("libSBML is supported on Windows, Linux and Mac OS X at this time.");
 			}
 			System.loadLibrary("sbmlj" + NATIVELIB_SUFFIX);
 		} catch (Throwable ex1){
