@@ -874,7 +874,7 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	}
 	
 	if (surfaceCollection != null){
-		correctQuadVertexOrdering();
+//		correctQuadVertexOrdering();
 	}
 	//System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
