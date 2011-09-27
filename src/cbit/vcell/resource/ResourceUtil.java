@@ -235,8 +235,8 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
-			if (!bWindows && !bMac && !bLinux || (bLinux && b64bit)) {
-				throw new RuntimeException("Native solvers are supported on Mac OS X, Windows and 32bit Linux at this time.");
+			if (!bWindows && !bMac && !bLinux) {
+				throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X at this time.");
 			}
 	        System.loadLibrary("NativeSolvers" + NATIVELIB_SUFFIX);
 	    } catch (Throwable ex1) {
@@ -245,8 +245,8 @@ public class ResourceUtil {
 	}
 	
 	public static void loadCopasiSolverLibrary () {
-		if (!bWindows && !bMac) {
-			throw new RuntimeException("Parameter Estimation is supported on Windows and Mac OS X at this time.");
+		if (!bWindows && !bMac && !bLinux) {
+			throw new RuntimeException("Parameter Estimation is supported on Windows, Linux and Mac OS X at this time.");
 		}
 		try {
 	        System.loadLibrary("vcellCopasiOptDriver" + NATIVELIB_SUFFIX);

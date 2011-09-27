@@ -422,6 +422,8 @@ public class CopasiOptimizationSolver {
 				fileName = "D:\\COPASI\\copasiOptXml.txt";
 			} else	if (ResourceUtil.bMac) {
 				fileName = "/Users/fgao/opttest/opt.xml";
+			} else if (ResourceUtil.bLinux) {
+				fileName = "/home/CAM/eboyce/opttest/opt.xml";
 			}
 			String optXML = FileUtils.readFileToString(new File(fileName));
 			System.out.println(optXML);
