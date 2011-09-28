@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Reactions" target="Reactions">
+
+	<introduction>
+Reactions define the stoichiometry and kinetics of the biological model. They consist of <def target = "def_species"> species 
+		</def> (variables) and kinetic laws for reactions or membrane fluxes. Reactions involve species within a particular compartment volume or between a volume species and a species within an associated membrane.  Fluxes occur within membrane structures and involve volume species of the neighboring volumes. They can be created viewed and edited in <link target =  "ReactTabView"> tabular </link> or <link target = "ReactDiagView"> diagrammatic </link> views.  Properties for reactions can be found in the properties pane in the bottom of the window.	
+	</introduction>
+	
+	<appearance>
+	</appearance>
+	
+	<operations>
+	</operations>
+</page>
+</vcelldoc>
