@@ -245,8 +245,8 @@ public class ResourceUtil {
 	}
 	
 	public static void loadCopasiSolverLibrary () {
-		if (!bWindows && !bMac && !bLinux) {
-			throw new RuntimeException("Parameter Estimation is supported on Windows, Linux and Mac OS X at this time.");
+		if (!bWindows && !bMac && !bLinux || bMacPpc) {
+			throw new RuntimeException("Parameter Estimation is supported on Windows, Linux and Mac OS X (excluding PowerPC) at this time.");
 		}
 		try {
 	        System.loadLibrary("vcellCopasiOptDriver" + NATIVELIB_SUFFIX);
