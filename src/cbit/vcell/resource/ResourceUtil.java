@@ -45,7 +45,7 @@ public class ResourceUtil {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
 	}
-	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
+	public final static String EXE_SUFFIX = bWindows ? ".exe" : (b64bit ? "_x64" : "");
 	public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
@@ -267,8 +267,8 @@ public class ResourceUtil {
 	}
 		
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
-		if (!bWindows && !bMac || bMacPpc) {
-			throw new RuntimeException("Native solvers are supported on Windows and Mac OS X (excluding PowerPC).");
+		if (!bWindows && !bMac && !bLinux) {
+			throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X.");
 		}
 		if (solverDescription.equals(SolverDescription.CombinedSundials)
 				|| solverDescription.equals(SolverDescription.CVODE)

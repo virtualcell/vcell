@@ -13,9 +13,14 @@ package cbit.vcell.visit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Vector;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.JFileChooser;
+import javax.swing.event.InternalFrameAdapter;
 
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableStatus;
@@ -25,6 +30,8 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import llnl.visit.ViewerMethods;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ClientMethod;
@@ -37,16 +44,25 @@ import llnl.visit.operators.ClipAttributes;
 import llnl.visit.operators.SliceAttributes;
 import llnl.visit.operators.SmoothOperatorAttributes;
 import llnl.visit.operators.ThreeSliceAttributes;
+import llnl.visit.GlobalAttributes;
 //import llnl.visit.VisitClients;
 
 public class VisitSession {
-	
+	public static final String PROPERTY_NAME_VIEWER_WAS_CLOSED = "viewerWasClosed";
+	private transient java.beans.PropertyChangeSupport propertyChange;
+	private boolean viewerWasClosed = false;
 	public static class VisitSessionException extends Exception {
 		public VisitSessionException(String message){
 			super(message);
 		}
 	}
 
+//	public static class VisitSessionEndedException extends Exception {
+//		public VisitSessionEndedException(String message){
+//			super(message);
+//		}
+//	}
+	
 	private ClientRequestManager clientRequestManager;
 	private VisitConnectionInfo visitConnectionInfo;
 	private String visitPath;
@@ -60,6 +76,89 @@ public class VisitSession {
 		this.visitConnectionInfo = visitConnectionInfo;
 		this.visitPath = visitPath;
 		System.out.println(visitPath);
+	}
+	
+	public boolean[] pollViewerPoll() {
+		final boolean[] bClose = new boolean[] {false};
+		AsynchClientTask pollViewerTask = new AsynchClientTask("Poll Viewer",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				System.out.println("Poll Viewer started");
+				while (true){
+					//System.out.println("Greetings from the pollViewer thread");
+
+					// assuming no return value required
+					FutureTask<?> theTask = null;
+					try {
+					    // create new task
+					    theTask = new FutureTask(new Runnable() {
+					        public void run() {
+					        	VisitSession.this.doSychronize();
+					        }
+					    }, null);
+
+					    // start task in a new thread
+					    new Thread(theTask).start();
+
+					    // wait for the execution to finish, timeout after 10 secs 
+					    theTask.get(2L, TimeUnit.SECONDS); 
+					}
+					
+					catch (TimeoutException e) {
+						bClose[0]=true;
+						setViewerWasClosed(true);
+					 
+						System.out.println("Timed out.  Did user close the viewer? Nulling the ViewerProxy object.");
+						//throw new VisitSession.VisitSessionEndedException("The Viewer Poll timed out");
+						viewer = null;
+					    
+					}
+					
+					if (bClose[0]){
+						System.out.println("pollViewer ending");
+						break;
+					}
+
+					Thread.sleep(1000);
+					
+					
+				}
+				
+			}
+		};
+		ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[]{pollViewerTask});
+		return bClose;
+	}
+	
+	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().addPropertyChangeListener(listener);
+	}
+
+	private void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
+		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	private java.beans.PropertyChangeSupport getPropertyChange() {
+		if (propertyChange == null) {
+			propertyChange = new java.beans.PropertyChangeSupport(this);
+		};
+		return propertyChange;
+	}
+	
+	private synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().removePropertyChangeListener(listener);
+	}
+	
+	public void setViewerWasClosed(boolean newValue){
+		System.out.println("Hey, the Viewer was closed!");
+		boolean oldValue = viewerWasClosed;
+		viewerWasClosed = newValue;
+		firePropertyChange(PROPERTY_NAME_VIEWER_WAS_CLOSED, oldValue, newValue);
+	}
+	
+	public boolean viewerIsClosed() {
+		return viewerWasClosed;
 	}
 	
 	public void initViewerProxyOpenWindows() {
@@ -90,8 +189,16 @@ public class VisitSession {
             // Show the windows
             getViewerMethods().ShowAllWindows();
 
-        } else
+        } else {
             System.out.println("ViewerProxy could not open the viewer.");
+        }
+//        new Thread(new Runnable() {
+//			public void run() {
+//				System.out.println("Entering Event Loop");
+//				viewer.GetEventLoop().Execute();
+//				System.out.println("Exited Event Loop");
+//			}
+//		}).start();
     }
 	
 //	public void runEventLoop(){
@@ -164,6 +271,11 @@ public class VisitSession {
 		return viewer.GetViewerMethods();
 	}
 	
+	public void doSychronize() {
+		getViewerMethods().DoSynchronize();
+	
+	}
+	
 	public void openDatabase(User user, String simLogName) throws VisitSessionException {
 		String s = getVisitConnectionInfo().getIPAddress()+":"+getVisitConnectionInfo().getDatabaseOpenPath(user,simLogName);
 		System.out.println("About to open " + s);
@@ -188,6 +300,19 @@ public class VisitSession {
 		return visitConnectionInfo;
 	} 
 	
+	public GlobalAttributes getGlobalAttributes() {
+		return getViewerState().GetGlobalAttributes();
+	}
+	
+	public void addWindow(){
+		getViewerMethods().AddWindow();
+	}
+	
+	
+	public void closeActiveWindow(){
+		getViewerMethods().DeleteWindow();
+	}
+	
 	public void close(){
 		VCellThreadChecker.checkRemoteInvocation();
 		if (viewer!=null){
@@ -196,6 +321,7 @@ public class VisitSession {
 			}catch (VisitSessionException e){
 				e.printStackTrace(System.out);
 			}
+			setViewerWasClosed(true);
 			viewer.Close();
 			bServerOpen = false;
 		}
@@ -242,6 +368,8 @@ public class VisitSession {
 		//InterpretPython("SaveSession(\""+fileNameWithPath+"\")");   //Python equivalent
 	
 	}
+	
+	
 	
 	public void restoreSession(String fileNameWithPath){
 		
