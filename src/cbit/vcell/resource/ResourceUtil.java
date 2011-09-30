@@ -270,6 +270,11 @@ public class ResourceUtil {
 		if (!bWindows && !bMac && !bLinux) {
 			throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X.");
 		}
+		if (bMacPpc && (solverDescription.equals(SolverDescription.HybridEuler)
+				|| solverDescription.equals(SolverDescription.HybridMilstein)
+				|| solverDescription.equals(SolverDescription.HybridMilAdaptive))) {
+			throw new RuntimeException(solverDescription.getDisplayLabel() + " is supported on Windows, Linux and Mac OS X (excluding PowerPC).");
+		}
 		if (solverDescription.equals(SolverDescription.CombinedSundials)
 				|| solverDescription.equals(SolverDescription.CVODE)
 				|| solverDescription.equals(SolverDescription.IDA)) {
