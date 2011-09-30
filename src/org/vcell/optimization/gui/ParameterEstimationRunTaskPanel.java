@@ -147,7 +147,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			JPanel runStatusPanel = new JPanel();
 			runStatusPanel.setLayout(new GridBagLayout());
 			
-			objectiveFunctionValueTextField = new javax.swing.JTextField();
+			objectiveFunctionValueTextField = new javax.swing.JTextField(20);
 			objectiveFunctionValueTextField.setEditable(false);
 			
 			numEvaluationsTextField = new javax.swing.JTextField();
