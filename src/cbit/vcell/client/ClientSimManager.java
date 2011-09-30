@@ -29,6 +29,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.Version;
@@ -76,6 +77,21 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  * @author: Ion Moraru
  */
 public class ClientSimManager implements java.beans.PropertyChangeListener {
+	
+public class LocalVCSimulationDataIdentifier extends VCSimulationDataIdentifier implements LocalVCDataIdentifier {
+
+	private File localSimDir = null;
+	public LocalVCSimulationDataIdentifier(VCSimulationIdentifier vcSimID, int jobIndex, File localDir) {
+		super(vcSimID, jobIndex);
+		localSimDir = localDir;
+	}
+
+	public File getLocalDirectory() {
+		return localSimDir;
+	}
+}
+
+
 	private DocumentWindowManager documentWindowManager = null;
 	private SimulationWorkspace simWorkspace = null;
 	private SimulationStatusHash simHash = new SimulationStatusHash();
@@ -260,7 +276,8 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
 							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, dataSetControllerImpl);
 							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-							VCDataIdentifier vcDataId = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
+							File localSimDir = ResourceUtil.getLocalSimDir();
+							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
 							DataManager dataManager = null;
 							if (sim.isSpatial()) {
 								dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);

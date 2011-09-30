@@ -223,7 +223,7 @@ public class ViewerMethods
 
     /**
      * Clear the plots in all visualization windows.
-     *
+     *doSychronize
      * @return true on success; false otherwise.
      */
     public boolean ClearAllWindows()
@@ -3479,4 +3479,10 @@ public class ViewerMethods
     }
 
     private ProxyInterface proxy;
+    
+    
+    // Convenience function added by Ed Boyce:
+    public boolean DoSynchronize() {
+    	return Synchronize();
+    }
 }
