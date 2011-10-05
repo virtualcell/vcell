@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE map
+	PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+		"http://java.sun.com/products/javahelp/map_1_0.dtd">-->
+<map version="1.0">
+   <mapID target="toplevelfolder" url="resources\vcellDoc\topics\toplevel.gif" />
+   <mapID target="PropertiesPanes" url="topics\PropertiesPanes\PP_Problems.html" />
+   <mapID target="PP_Problems" url="topics\PropertiesPanes\PP_Problems.html" />
+   <mapID target="PP_Species" url="topics\PropertiesPanes\PP_Species.html" />
+   <mapID target="PP_Structure" url="topics\PropertiesPanes\PP_Structure.html" />
+   <mapID target="chapter_2" url="topics\chapter_2\PhysStructDiagView.html" />
+   <mapID target="PhysStructDiagView" url="topics\chapter_2\PhysStructDiagView.html" />
+   <mapID target="PhysStructTabView" url="topics\chapter_2\PhysStructTabView.html" />
+   <mapID target="Phys_Struct" url="topics\chapter_2\Phys_Struct.html" />
+   <mapID target="Reactions" url="topics\chapter_2\Reactions.html" />
+   <mapID target="ReactTabView" url="topics\chapter_2\ReactTabView.html" />
+   <mapID target="Species" url="topics\chapter_2\Species.html" />
+</map>
+
