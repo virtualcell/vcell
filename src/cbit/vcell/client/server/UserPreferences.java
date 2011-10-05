@@ -10,8 +10,9 @@
 
 package cbit.vcell.client.server;
 
-import cbit.util.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Preference;
@@ -56,11 +57,13 @@ public class UserPreferences {
 	public final static int WARN_CHANGE_USER = 12;
 	public final static int WARN_DELETE_DOCUMENT = 13; 
 	public final static int WARN_EXPORT_MEMBRANE_DATA_3D = 14; 
+	public final static int WARN_GEOMEDIT_HISTOGRAM_APPLY = 15; 
 
-	private final static int NUM_WARNING_PREFERENCES = 15;
+	private final static int NUM_WARNING_PREFERENCES = 16;
 	
 	// default
 	private boolean[] showWarningDefaults = new boolean[] {
+		true,
 		true,
 		true,
 		true,

@@ -39,9 +39,13 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.Range;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.server.UserPreferences;
+
 public class HistogramPanel extends JPanel {
 
-	public static final String HISTOGRAM_HIDE_ACTION = "HISTOGRAM_HIDE_ACTION";
+//	public static final String HISTOGRAM_HIDE_ACTION = "HISTOGRAM_HIDE_ACTION";
 	public static final String HISTOGRAM_APPLY_ACTION = "HISTOGRAM_APPLY_ACTION";
 	public static final String HISTOGRAM_SELECT_PROPERTY = "HISTOGRAM_SELECT_PROPERTY";
 
@@ -68,7 +72,7 @@ public class HistogramPanel extends JPanel {
 	private JLabel stretchJLabel = new JLabel("zoom");
 	private JLabel moveJLabel = new JLabel("scroll");
 	private JLabel titleJLabel = new JLabel("Histogram Tool");
-	private JButton applyButton = new JButton("Set ROI...");
+	private JButton applyButton = new JButton("Apply...");
 //	private JButton hideButton = new JButton("Hide");
 //	private JScrollBar moveScrollBar = new JScrollBar();
 		
@@ -331,7 +335,7 @@ public class HistogramPanel extends JPanel {
 		getVertSlider().setToolTipText("Scale pixel 'count' display");
 		getHorzScaleSlider().setToolTipText("Zoom pixel 'value' display");
 		getHorzOffsetSlider().setToolTipText("Scroll through pixel 'value' display");
-		applyButton.setToolTipText("Update ROI with histogram selection");
+		applyButton.setToolTipText("Update/Create Domain Regions using histogram selection");
 //		hideButton.setToolTipText("Hide histogram tool");
 		
 //		hideButton.addActionListener(new ActionListener() {
@@ -380,6 +384,19 @@ public class HistogramPanel extends JPanel {
 						mouseStartPoint = null;
 					}
 					repaint();
+					if(!isSelectionEmpty() && userPreferences != null){
+						PopupGenerator.showWarningDialog(HistogramPanel.this, userPreferences, UserMessage.warn_geom_histogram_apply,null);
+					}
+//					if(bWarn && !isSelectionEmpty()){
+//						final String OK = "OK";
+//						final String OK_STOP = "OK, don't warn again";
+//						String result = DialogUtils.showWarningDialog(HistogramPanel.this,
+//							"Histogram tool has an active pixel range selection, press the 'Apply...' button to create update/create Domain Regions.",
+//							new String[] {OK,OK_STOP}, OK_STOP);
+//						if(OK_STOP.equals(result)){
+//							bWarn = false;
+//						}
+//					}
 				}
 			}
 		);
@@ -644,4 +661,11 @@ public class HistogramPanel extends JPanel {
 		repaint();
 	}
 
+	public boolean isSelectionEmpty(){
+		return pixelListSelectionModel.isSelectionEmpty();
+	}
+	private UserPreferences userPreferences;
+	public void setUserPreferences(UserPreferences userPreferences){
+		this.userPreferences = userPreferences;
+	}
 }

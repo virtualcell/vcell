@@ -91,6 +91,9 @@ public class UserMessage {
 	public final static UserMessage warn_exportMembraneData3D = new UserMessage("There is one or more membrane variable selected\n\nMembrane variable data will not be exported as slice data, but as a list of values at all points over the entire 3D membrane area",
 				new String[] {OPTION_OK, OPTION_CANCEL},						OPTION_OK,				UserPreferences.WARN_EXPORT_MEMBRANE_DATA_3D);
 
+	public final static UserMessage warn_geom_histogram_apply = new UserMessage("Histogram tool has an active pixel range selection, press the 'Apply...' button to update/create Domain Regions.",
+			new String[] {OPTION_OK},					OPTION_OK,		UserPreferences.WARN_GEOMEDIT_HISTOGRAM_APPLY);
+
 /**
  * UserMessage constructor comment.
  */

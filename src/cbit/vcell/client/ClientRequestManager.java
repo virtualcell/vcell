@@ -1350,7 +1350,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							(String)hashTable.get(IMPORT_SOURCE_NAME),
 							(Component)hashTable.get(GUI_PARENT),
 							(String)hashTable.get(INITIAL_ANNOTATION),
-							(dbImage==null?null:dbImage.getPixelClasses())
+							(dbImage==null?null:dbImage.getPixelClasses()),
+							getUserPreferences()
 						);
 				}
 			};
