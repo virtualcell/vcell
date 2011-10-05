@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -13,7 +14,12 @@ import org.jdom.Text;
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.FileUtils;
 
+import com.lowagie.text.Chapter;
+
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.client.ClientRequestManager.ImageSizeInfo;
+import cbit.vcell.server.manage.VCellHost;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 
@@ -21,15 +27,20 @@ public class DocumentCompiler {
 
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
 	public final static String xmlFile = "";
-	public final static String WorkingParentDir = "UserDocumentation\\doc\\topic\\";
-	public final static String OriginalDocParentDir = "UserDocumentation\\originalXML\\topic\\";
-	public final static String[] DocGenerationDirs = new String[]{"chapter_2"};
+	public final static String htmlRelativeParentDir = "topics\\";
+	public final static String WorkingParentDir = "resources\\vcellDoc\\topics\\";
+	public final static String OriginalDocParentDir = "UserDocumentation\\originalXML\\topics\\";
+	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_5"};
+	public final static String ImageDir = "image";
+	public final static String mapFileName = "Map.jhm";
+	public final static String tocFileName = "TOC.xml";
 	//test have two html pages and they point to each other, in addion, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
 			DocumentCompiler docCompiler = new DocumentCompiler();
 			docCompiler.batchRun();
-//			
+			docCompiler.generateHelpMap();
+			docCompiler.generateTOC();
 //			File xmlFile1 = new File(WorkingParentDir + "pageTest1.xml");
 //			File xmlFile2 = new File(WorkingParentDir + "pageTest2.xml");
 //			
@@ -58,10 +69,10 @@ public class DocumentCompiler {
 	{
 		Documentation documentation = new Documentation();
 		//generate document images
-		File origImgDir = new File(OriginalDocParentDir, "image");
+		File origImgDir = new File(OriginalDocParentDir, ImageDir);
 		if(origImgDir.exists())
 		{
-			File workingImgDir= new File(WorkingParentDir, "image");
+			File workingImgDir= new File(WorkingParentDir, ImageDir);
 			if(!workingImgDir.exists()){
 				workingImgDir.mkdirs();	
 			}
@@ -85,7 +96,10 @@ public class DocumentCompiler {
 					{
 						File workingImgFile = new File(workingImgDir, fileNameStr);
 						FileUtils.copyFile(imgFile, workingImgFile);
-						DocumentImage tempImg = new DocumentImage(workingImgFile, " ", 80,80,80,80);//TODO: how to set size?
+						ImageSizeInfo sizeInfo = ImageDatasetReader.getImageSizeInfo(imgFile.getAbsolutePath());
+						int imgWidth = sizeInfo.getiSize().getX();
+						int imgHeight = sizeInfo.getiSize().getY();
+						DocumentImage tempImg = new DocumentImage(new File(fileNameStr), ImageDir, " ", imgWidth, imgHeight, imgWidth, imgHeight);//TODO: how to set size?
 						documentation.add(tempImg);
 					}
 				}
@@ -117,7 +131,7 @@ public class DocumentCompiler {
 				{
 					for(File xmlFile: xmlFiles)
 					{
-						DocumentPage documentPage = readTemplateFile(xmlFile);
+						DocumentPage documentPage = readTemplateFile(xmlFile, dirStr);
 						documentation.add(documentPage);
 						File htmlFile = documentation.getTargetFilename(documentPage);
 						writeHTML(documentation,documentPage,htmlFile, workingDir);
@@ -125,6 +139,134 @@ public class DocumentCompiler {
 				}
 			}
 		}
+	}
+	
+	private void generateHelpMap() throws Exception
+	{
+		String dir = new File(WorkingParentDir).getParent();
+		File mapFile =  new File(dir, mapFileName);
+		
+		try{
+			Element mapElement = new Element(VCellDocTags.map_tag);
+			mapElement.setAttribute(VCellDocTags.version_tag, "1.0");
+			//add toplevelfolder element
+			Element topLevelElement = new Element(VCellDocTags.mapID_tag);
+			topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
+			topLevelElement.setAttribute(VCellDocTags.url_attr, new File(WorkingParentDir, "toplevel.gif").getPath());
+			mapElement.addContent(topLevelElement);
+						
+			//add mapID elements to mapElement
+			for(String dirStr : DocGenerationDirs)//loop through all the folders
+			{
+				File workingDir = new File(WorkingParentDir, dirStr);
+				File htmlRelativeWorkingDir = new File(htmlRelativeParentDir, dirStr);
+				//get all html files
+				File[] htmlFiles = workingDir.listFiles();
+				if(htmlFiles != null && htmlFiles.length > 0)
+				{
+					boolean bFirstHtmlFile = true;
+					for(int i=0; i<htmlFiles.length; i++)
+					{
+						File onefile = htmlFiles[i];
+						if(onefile.getName().contains(".html"))
+						{
+							if(bFirstHtmlFile)
+							{
+								Element chapterMapIDElement = new Element(VCellDocTags.mapID_tag);
+								chapterMapIDElement.setAttribute(VCellDocTags.target_attr, dirStr);
+								chapterMapIDElement.setAttribute(VCellDocTags.url_attr, new File(htmlRelativeWorkingDir,onefile.getName()).getPath());
+								mapElement.addContent(chapterMapIDElement);
+								bFirstHtmlFile = false;
+							}
+							int extIdx = onefile.getName().indexOf(".html");
+							String fileNameNoExt = onefile.getName().substring(0,extIdx);
+							Element mapIDElement = new Element(VCellDocTags.mapID_tag);
+							mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
+							mapIDElement.setAttribute(VCellDocTags.url_attr, new File(htmlRelativeWorkingDir,onefile.getName()).getPath());
+							mapElement.addContent(mapIDElement);
+						}
+						else
+						{
+							continue;
+						}
+					}
+				}
+				
+			}//end of for loop
+			//convert mapdocument to string
+			Document mapDoc = new Document();
+			Comment docComment = new Comment(VCellDocTags.HelpMapHeader); 
+			mapDoc.addContent(docComment);
+			mapDoc.setRootElement(mapElement);
+			String mapString = XmlUtil.xmlToString(mapDoc, false);
+			
+			XmlUtil.writeXMLStringToFile(mapString, mapFile.getPath(), true);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw e;
+		} 
+			
+	}
+	
+	private void generateTOC() throws Exception
+	{
+		String dir = new File(WorkingParentDir).getParent();
+		File tocFile =  new File(dir, tocFileName);
+		try{
+			Element tocElement = new Element(VCellDocTags.toc_tag);
+			tocElement.setAttribute(VCellDocTags.version_tag, "1.0");
+			//add toplevelfolder element
+			Element topLevelElement = new Element(VCellDocTags.tocitem_tag);
+			topLevelElement.setAttribute(VCellDocTags.image_attr, "toplevelfolder");
+			topLevelElement.setAttribute(VCellDocTags.text_attr, "The Virtual Cell Help");
+			tocElement.addContent(topLevelElement);
+						
+			//add mapID elements to mapElement
+			for(String dirStr : DocGenerationDirs)//loop through all the folders
+			{
+				File workingDir = new File(WorkingParentDir, dirStr);
+				//chapters are under topLevelElement, chapter has files and childern, clicking on chapter points to the first file.
+				Element chapterElement = new Element(VCellDocTags.tocitem_tag);
+				chapterElement.setAttribute(VCellDocTags.target_attr, dirStr);
+				chapterElement.setAttribute(VCellDocTags.text_attr, dirStr);
+				topLevelElement.addContent(chapterElement);
+				//get all html files
+				File[] htmlFiles = workingDir.listFiles();
+				if(htmlFiles != null && htmlFiles.length > 0)
+				{
+					for(int i=0; i<htmlFiles.length; i++)
+					{
+						File onefile = htmlFiles[i];
+						if(onefile.getName().contains(".html"))
+						{
+							int extIdx = onefile.getName().indexOf(".html");
+							String fileNameNoExt = onefile.getName().substring(0,extIdx);
+							Element fileElement = new Element(VCellDocTags.tocitem_tag);
+							fileElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
+							fileElement.setAttribute(VCellDocTags.text_attr, fileNameNoExt);
+							chapterElement.addContent(fileElement);
+						}
+						else
+						{
+							continue;
+						}
+					}
+				}
+				
+			}//end of for loop
+			//convert toc to string
+			Document tocDoc = new Document();
+			Comment tocComment = new Comment(VCellDocTags.HelpTOCHeader); 
+			tocDoc.addContent(tocComment);
+			tocDoc.setRootElement(tocElement);
+			String tocString = XmlUtil.xmlToString(tocDoc, false);
+			
+			XmlUtil.writeXMLStringToFile(tocString, tocFile.getPath(), true);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw e;
+		} 
+			
 	}
 	
 	private File[] getXmlFiles(File workingDir)
@@ -143,7 +285,7 @@ public class DocumentCompiler {
 		return resultFiles.toArray(new File[len]);
 	}
 	
-	private DocumentPage readTemplateFile(File file) throws XmlParseException {
+	private DocumentPage readTemplateFile(File file, String parentDir) throws XmlParseException {
 		Document doc = XmlUtil.readXML(file);
 		Element root = doc.getRootElement();
 		if (!root.getName().equals(VCellDocTags.VCellDoc_tag)){
@@ -160,7 +302,7 @@ public class DocumentCompiler {
 			ArrayList<DocTextComponent> introduction = getSection(pageElement,VCellDocTags.introduction_tag);
 			ArrayList<DocTextComponent> operations = getSection(pageElement,VCellDocTags.operations_tag);
 			ArrayList<DocTextComponent> properties = getSection(pageElement,VCellDocTags.properties_tag);
-			DocumentPage documentTemplate = new DocumentPage(filename, title, target, introduction, appearance, operations, properties);
+			DocumentPage documentTemplate = new DocumentPage(filename, parentDir, title, target, introduction, appearance, operations, properties);
 			return documentTemplate;
 		}
 		return null;
@@ -290,7 +432,7 @@ public class DocumentCompiler {
 				 if(docImage != null && documentation.getTargetFilename(docImage) != null)
 				 {
 					 File imageFile = documentation.getTargetFilename(docImage);
-					 pw.printf("<img src=\""+imageFile.getPath()+"\" width=/"+docImage.getDisplayWidth()+"\" height=\""+docImage.getDisplayHeight()+"\">");
+					 pw.printf("<img src=\""+imageFile.getPath()+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
 				 }
 			 }
 		 }

@@ -36,8 +36,10 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.vcell.documentation.VcellHelp;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -127,6 +129,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
+	private JMenuItem newHelpMenuItem = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjRunVFrapMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
@@ -196,6 +199,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC37(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp()) 
 				connEtoC25(e);
+			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem()) 
+				invokeNewHelp(e);
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getRunVFrapItem()) 
@@ -212,6 +217,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			}
 			
 		};
+		
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem()) 
 				connEtoC2(e);
@@ -443,6 +449,17 @@ private void connEtoC19(java.awt.event.ActionEvent arg1) {
 	}
 }
 
+
+private void invokeNewHelp(ActionEvent e) {
+	// TODO Auto-generated method stub
+	SwingUtilities.invokeLater(new Runnable() {
+		
+		public void run() {
+			// TODO Auto-generated method stub
+			new VcellHelp();
+		}
+	});
+}
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
  * @param arg1 java.awt.event.ItemEvent
@@ -567,11 +584,9 @@ private void connEtoC24(java.awt.event.ActionEvent arg1) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC25(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
+		
 		this.invokeOnlineHelp();
-		// user code begin {2}
-		// user code end
+		
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -1208,6 +1223,7 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.setName("HelpMenu");
 			ivjHelpMenu.setText("Help");
 			ivjHelpMenu.add(getJMenuItemOnlineHelp());
+			ivjHelpMenu.add(getNewHelpMenuItem());
 			ivjHelpMenu.add(getJSeparator6());
 			ivjHelpMenu.add(getAbout_BoxMenuItem());
 			ivjHelpMenu.add(getSeparator());
@@ -1357,6 +1373,23 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 		}
 	}
 	return ivjJMenuItemOnlineHelp;
+}
+
+private javax.swing.JMenuItem getNewHelpMenuItem() {
+	if (newHelpMenuItem == null) {
+		try {
+			newHelpMenuItem = new javax.swing.JMenuItem();
+			newHelpMenuItem.setName("newHelpMenuItem");
+			newHelpMenuItem.setText("New Help");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return newHelpMenuItem;
 }
 
 /**
@@ -2378,6 +2411,7 @@ private void initConnections() throws java.lang.Exception {
 	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
+	getNewHelpMenuItem().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getRunVFrapItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);

@@ -4,16 +4,18 @@ import java.io.File;
 
 public class DocumentImage {
 	private File sourceFilename;
+	private String sourceFileDir;
 	private String target;
 	private int fileWidth;
 	private int fileHeight;
 	private int displayWidth;
 	private int displayHeight;
 	
-	public DocumentImage(File sourceFilename, String target, int fileWidth, int fileHeight,
+	public DocumentImage(File sourceFilename,String sourceFileDir, String target, int fileWidth, int fileHeight,
 			int displayWidth, int displayHeight) {
 		super();
 		this.sourceFilename = sourceFilename;
+		this.sourceFileDir = sourceFileDir;
 		this.target = target;
 		this.fileWidth = fileWidth;
 		this.fileHeight = fileHeight;
@@ -25,6 +27,11 @@ public class DocumentImage {
 		return sourceFilename;
 	}
 
+	public String getSourceFileDir()
+	{
+		return sourceFileDir;
+	}
+	
 	public int getFileWidth() {
 		return fileWidth;
 	}
