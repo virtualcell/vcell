@@ -45,7 +45,7 @@ public class ResourceUtil {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
 	}
-	public final static String EXE_SUFFIX = bWindows ? ".exe" : (b64bit ? "_x64" : "");
+	public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
 	public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
@@ -58,9 +58,9 @@ public class ResourceUtil {
 	private final static String DLL_GLUT;
 	static {
 		if (bWindows) {
-			DLL_GLUT = "glut32.dll";
+			DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
 		} else {
-			DLL_GLUT = "libglut.so";
+			DLL_GLUT = null;
 		}
 	}
 	private static File solversDirectory = null;
