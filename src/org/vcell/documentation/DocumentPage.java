@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class DocumentPage {
 	private String templateFilename;
+	private String templateFileDir;
 	private String title;
 	private String target;
 	private ArrayList<DocTextComponent> introduction;
@@ -11,13 +12,14 @@ public class DocumentPage {
 	private ArrayList<DocTextComponent> operations;
 	private ArrayList<DocTextComponent> properties;
 	
-	public DocumentPage(String templateFilename, String title, String target,
+	public DocumentPage(String templateFilename, String templateFileDir, String title, String target,
 			ArrayList<DocTextComponent> introduction, 
 			ArrayList<DocTextComponent> appearance,
 			ArrayList<DocTextComponent> operations,
 			ArrayList<DocTextComponent> properties) {
 	
 		this.templateFilename = templateFilename;
+		this.templateFileDir = templateFileDir;
 		this.title = title;
 		this.target = target;
 		this.introduction = introduction;
@@ -30,6 +32,10 @@ public class DocumentPage {
 		return templateFilename;
 	}
 
+	public String getTemplateFileDir() {
+		return templateFileDir;
+	}
+	
 	public String getTitle() {
 		return title;
 	}
