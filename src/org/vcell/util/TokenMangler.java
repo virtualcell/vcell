@@ -292,7 +292,7 @@ public static String getNextEnumeratedToken(String originalToken) {
 		digits = originalToken.substring(baseName.length(),originalToken.length());
 	}
 	int count = Integer.parseInt(digits);
-	System.out.println("original = '"+originalToken+"', baseName = '"+baseName+"', digits = '"+digits+"', count = "+count);
+//	System.out.println("original = '"+originalToken+"', baseName = '"+baseName+"', digits = '"+digits+"', count = "+count);
 	return baseName + (count+1);
 }
 

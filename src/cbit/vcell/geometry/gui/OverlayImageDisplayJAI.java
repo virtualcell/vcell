@@ -10,11 +10,14 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
@@ -23,17 +26,13 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedImageAdapter;
 import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-
-import org.vcell.util.Range;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -446,6 +445,11 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		}
 		repaint();
 	}
+	private Shape starShape;
+	public void drawStar(Shape starShape){
+		this.starShape = starShape;
+		repaint();
+	}
 	public Rectangle getCrop(){
 		return cropRect;
 	}
@@ -457,6 +461,23 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			g.setColor(Color.green);
 			g.drawRect(getCrop().x,getCrop().y,getCrop().width,getCrop().height);
 //			((Graphics2D)g).setComposite(origComposite);
+		}else if(starShape != null){
+			Graphics2D tempG = (Graphics2D)g.create();
+			try{
+				Stroke bigStroke = new BasicStroke(3.0f);
+				Stroke smallStroke = new BasicStroke(1.0f);
+//				tempG.scale(getZoom(), getZoom());
+				Rectangle rect = starShape.getBounds();
+				tempG.translate((rect.getX()+rect.getWidth()/2)*(getZoom()-1), (rect.getY()+rect.getHeight()/2)*(getZoom()-1));
+				tempG.setColor(Color.black);
+				tempG.setStroke(bigStroke);
+				tempG.draw(starShape);
+				tempG.setColor(Color.white);
+				tempG.setStroke(smallStroke);
+				tempG.draw(starShape);
+			}finally{
+				tempG.dispose();
+			}
 		}
 	}
 
