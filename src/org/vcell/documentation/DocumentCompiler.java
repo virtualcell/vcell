@@ -1,10 +1,13 @@
 package org.vcell.documentation;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.jdom.Comment;
 import org.jdom.Document;
@@ -96,9 +99,9 @@ public class DocumentCompiler {
 					{
 						File workingImgFile = new File(workingImgDir, fileNameStr);
 						FileUtils.copyFile(imgFile, workingImgFile);
-						ImageSizeInfo sizeInfo = ImageDatasetReader.getImageSizeInfo(imgFile.getAbsolutePath());
-						int imgWidth = sizeInfo.getiSize().getX();
-						int imgHeight = sizeInfo.getiSize().getY();
+						BufferedImage img = ImageIO.read(imgFile);
+						int imgWidth = img.getWidth();
+						int imgHeight = img.getHeight();
 						DocumentImage tempImg = new DocumentImage(new File(fileNameStr), ImageDir, " ", imgWidth, imgHeight, imgWidth, imgHeight);//TODO: how to set size?
 						documentation.add(tempImg);
 					}
