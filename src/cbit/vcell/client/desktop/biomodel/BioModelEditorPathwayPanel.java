@@ -141,7 +141,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		
 		// jump the view to pathway diagram panel
 		if (selectionManager != null){
-			selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
+			selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
 			selectionManager.setSelectedObjects(selectedPathwayModel.getBiopaxObjects().toArray());
 		}
 	}

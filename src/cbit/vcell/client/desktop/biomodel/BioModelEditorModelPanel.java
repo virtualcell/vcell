@@ -395,52 +395,54 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
+		/* button panel */
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1.5;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(textFieldSearch, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 0;
-		gbc.weightx = 0.5;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
+		gbc.gridx = 1;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(deleteButton, gbc);
 				
 		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
+		gbc.gridx = 2;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(pathwayButton, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.weightx = 0.5;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		buttonPanel.add(new JLabel("Search "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.gridy = 0;
+		gbc.weightx = 1.5;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		buttonPanel.add(textFieldSearch, gbc);
+		/* button panel */
 		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

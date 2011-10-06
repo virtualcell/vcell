@@ -72,6 +72,10 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
 		SPECIES_NODE("Species"),
 		
+		PATHWAY_DIAGRAM_NODE("Pathway Diagram"),
+		PATHWAY_OBJECTS_NODE("Pathway Objects"),
+		BIOPAX_SUMMARY_NODE("BioPAX Summary"),
+		
 		GEOMETRY_NODE("Geometry"),
 		SPECIFICATIONS_NODE("Specifications"),
 		PROTOCOLS_NODE("Protocols"),

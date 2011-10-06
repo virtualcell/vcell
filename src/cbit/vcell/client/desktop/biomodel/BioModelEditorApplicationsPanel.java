@@ -96,45 +96,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,50,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addNewButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.insets = new Insets(4,4,4,20);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(moreActionsButton, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
@@ -142,7 +103,46 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(table.getEnclosingScrollPane(), gbc);
-				
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(addNewButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(deleteButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(moreActionsButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		add(new JLabel("Search "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		add(textFieldSearch, gbc);
+						
 		moreActionsButton.setEnabled(false);
 		moreActionsButton.addActionListener(eventHandler);		
 		getJMenuAppCopyAs().addActionListener(eventHandler);
