@@ -21,18 +21,18 @@ import javax.swing.UIManager;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class VcellHelp extends JFrame 
+public class VcellHelpViewer extends JFrame 
 {
 	public static final int DEFAULT_HELP_DIALOG_WIDTH = 900;
 	public static final int DEFAULT_HELP_DIALOG_HIGHT = 700;
 	private static final int DEFAULT_HELP_DIALOG_LOCX = 300;
 	private static final int DEFAULT_HELP_DIALOG_LOCY = 200;
 	
-	public VcellHelp() {
+	public VcellHelpViewer() {
 		super("Virtual Cell Help");
 //		setIconImage(new ImageIcon("//vcell.gif").getImage());
 
-		URL resourceURL = VcellHelp.class.getResource("/vcellDoc/HelpSet.hs");
+		URL resourceURL = VcellHelpViewer.class.getResource("/vcellDoc/HelpSet.hs");
 
 		Container contentPane = getContentPane();
 		//URL hsURL;
@@ -53,15 +53,14 @@ public class VcellHelp extends JFrame
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
-//				System.exit(0);
-				VcellHelp.this.dispose();
+				VcellHelpViewer.this.setVisible(false);
 			}
 		});
 		
 		setLocation(DEFAULT_HELP_DIALOG_LOCX,DEFAULT_HELP_DIALOG_LOCY);
 		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HIGHT));
 		pack();
-		setVisible(true);
+//		setVisible(true);
 	}
 
 
@@ -70,7 +69,7 @@ public class VcellHelp extends JFrame
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (Exception e) { }
 
-		new VcellHelp();
+		new VcellHelpViewer();
 	}
 
 }

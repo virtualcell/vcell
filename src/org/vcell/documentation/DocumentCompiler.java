@@ -224,6 +224,10 @@ public class DocumentCompiler {
 			//add mapID elements to mapElement
 			for(String dirStr : DocGenerationDirs)//loop through all the folders
 			{
+				if(dirStr.equals("PropertiesPanes"))
+				{
+					continue;
+				}
 				File workingDir = new File(WorkingParentDir, dirStr);
 				//chapters are under topLevelElement, chapter has files and childern, clicking on chapter points to the first file.
 				Element chapterElement = new Element(VCellDocTags.tocitem_tag);
