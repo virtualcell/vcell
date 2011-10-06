@@ -91,13 +91,13 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		}
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
-	    		case PATHWAY_NODE:
-	    			if (bioModel == null) {
-	    				labelText = folder.getName() + "(00000)";
-	    			} else {
-	    				labelText = folder.getName() + " (" + bioModel.getPathwayModel().getBiopaxObjects().size() + ")";
-	    			}
-	    			break;
+//	    		case PATHWAY_NODE:
+//	    			if (bioModel == null) {
+//	    				labelText = folder.getName() + "(00000)";
+//	    			} else {
+//	    				labelText = folder.getName() + " (" + bioModel.getPathwayModel().getBiopaxObjects().size() + ")";
+//	    			}
+//	    			break;
 	    		case REACTIONS_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {
@@ -149,6 +149,20 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			break;
 	    		case PARAMETER_ESTIMATION_NODE:
 	    			icon = VCellIcons.fittingIcon;
+	    			break;
+	    		case PATHWAY_DIAGRAM_NODE:
+	    			icon = VCellIcons.diagramIcon;
+	    			break;
+	    		case PATHWAY_OBJECTS_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "(00000)";
+	    			} else {
+	    				labelText = folder.getName() + " (" + bioModel.getPathwayModel().getBiopaxObjects().size() + ")";
+	    			}
+	    			break;
+	    		case BIOPAX_SUMMARY_NODE:
+	    			icon = VCellIcons.textNotesIcon;
 	    			break;
 	    		}
 	    	}

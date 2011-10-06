@@ -21,6 +21,8 @@ import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
+import org.vcell.pathway.PathwayEvent;
+import org.vcell.pathway.PathwayListener;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
 import cbit.vcell.biomodel.BioModel;
@@ -32,7 +34,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 
 @SuppressWarnings("serial")
-public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
+public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements PathwayListener {
 
 	private BioModel bioModel = null;
 	
@@ -53,7 +55,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
 	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
-	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], false);
+	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], true);
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);	
 //	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[5], false);	
 	private BioModelNode  bioModelChildNodes[] = {
@@ -87,6 +89,22 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 			structuresNode,
 			speciesNode,
 	};
+	
+	// Pathway	
+	private DocumentEditorTreeFolderNode pathwayChildFolderNodes[] = {			
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, true),			
+		};	
+	private BioModelNode pathwayDiagramNode = new BioModelNode(pathwayChildFolderNodes[0], false); 
+	private BioModelNode pathwayObjectsNode = new BioModelNode(pathwayChildFolderNodes[1], false); 
+	private BioModelNode biopaxSummaryNode = new BioModelNode(pathwayChildFolderNodes[2], false); 
+	private BioModelNode pathwayChildNodes[] = new BioModelNode[] {
+			pathwayDiagramNode,
+			pathwayObjectsNode,
+			biopaxSummaryNode,
+	};
+
 	private BioModelNode defaultSelectModelNode = structureDiagramNode;
 		
 	public BioModelEditorTreeModel(JTree tree) {
@@ -96,6 +114,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 		}
 		for (BioModelNode bioModeNode : modelChildNodes) {
 			modelNode.add(bioModeNode);
+		}
+		for (BioModelNode bioModeNode : pathwayChildNodes) {
+			pathwayNode.add(bioModeNode);
 		}
 	}
 	
@@ -110,6 +131,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 		if (oldValue != null) {	
 			oldValue.removePropertyChangeListener(this);
 			oldValue.getModel().removePropertyChangeListener(this);
+			oldValue.getPathwayModel().removePathwayListener(this);
 			for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
 				simulationContext.removePropertyChangeListener(this);
 				simulationContext.getDataContext().removePropertyChangeListener(this);
@@ -118,6 +140,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
 			newValue.getModel().addPropertyChangeListener(this);
+			newValue.getPathwayModel().addPathwayListener(this);
 			for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
 				simulationContext.addPropertyChangeListener(this);
 				simulationContext.getDataContext().addPropertyChangeListener(this);
@@ -326,5 +349,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel {
 	@Override
 	protected BioModelNode getDefaultSelectionNode() {
 		return reactionsNode;
+	}
+
+	public void pathwayChanged(PathwayEvent event) {
+		nodeChanged(rootNode);
 	}
 }

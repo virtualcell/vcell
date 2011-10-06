@@ -36,6 +36,10 @@ public class SelectionManager {
 		reaction_diagram,
 		structure_diagram,
 		
+		pathway_diagram,
+		pathway_objects,
+		biopax_summary,
+		
 		geometry_definition,
 		structure_mapping,
 		

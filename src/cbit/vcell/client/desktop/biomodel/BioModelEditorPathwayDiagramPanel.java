@@ -32,9 +32,10 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,7 +55,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.DefaultEditorKit;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Complex;
@@ -72,12 +72,12 @@ import org.vcell.pathway.Protein;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.group.PathwayGrouping;
+import org.vcell.relationship.PathwayMapping;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.ActionBuilder;
-import org.vcell.relationship.PathwayMapping;
-import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -85,7 +85,6 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ViewPortStabilizer;
 import org.vcell.util.gui.sorttable.JSortTable;
-
 
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
@@ -95,6 +94,7 @@ import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -103,6 +103,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayEditor;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphTool;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
 
 @SuppressWarnings("serial")
@@ -113,6 +114,41 @@ implements PathwayEditor, ActionBuilder.Generator {
 		select, zoomIn, zoomOut, randomLayout, circularLayout, annealedLayout, levelledLayout, 
 		relaxedLayout, glgLayout, reactionsOnlyShown, reactionNetworkShown, componentsShown;
 	}
+	
+	public enum PathwayPanelTabID {
+		pathway_diagram("Pathway Diagram"),
+		pathway_objects("Pathway Objects"),
+		biopax_summary("BioPAX Summary");
+		
+		private String name = null;
+		PathwayPanelTabID(String name) {
+			this.name = name;
+		}
+		final String getName() {
+			return name;
+		}
+	}
+	
+	private class PathwayPanelTab {
+		PathwayPanelTabID id;
+		JComponent component = null;
+		Icon icon = null;
+		PathwayPanelTab(PathwayPanelTabID id, JComponent component, Icon icon) {
+			this.id = id;
+			this.component = component;
+			this.icon = icon;
+		}
+		final String getName() {
+			return id.getName();
+		}
+		final JComponent getComponent() {
+			return component;
+		}
+		final Icon getIcon() {
+			return icon;
+		}
+	}
+	private PathwayPanelTab pathwayPanelTabs[] = new PathwayPanelTab[PathwayPanelTabID.values().length]; 
 	
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private EventHandler eventHandler = new EventHandler();
@@ -175,9 +211,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 		public void stateChanged(ChangeEvent e) {
 			if (e.getSource() == tabbedPane) {
-				searchTextField.setText(null);
-				searchTextField.setEditable(tabbedPane.getSelectedComponent() != sourceTabPanel);
-				refreshButtons();
+				tabbedPaneSelectionChanged();
 			}			
 		}
 		public void pathwayChanged(PathwayEvent event) {
@@ -677,49 +711,54 @@ implements PathwayEditor, ActionBuilder.Generator {
 		physiologyLinkButton.addActionListener(eventHandler);
 		
 		JPanel bottomPanel = new JPanel();
-		bottomPanel.setLayout(new GridBagLayout());
+		bottomPanel.setLayout(new GridBagLayout());	
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(4, 4, 4, 4);
-		bottomPanel.add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		bottomPanel.add(searchTextField, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		bottomPanel.add(groupButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
+		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		bottomPanel.add(deleteButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
+		gbc.gridx = 2;
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		bottomPanel.add(physiologyLinkButton, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(4, 20, 4, 4);
+		bottomPanel.add(new JLabel("Search "), gbc);
 		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		bottomPanel.add(searchTextField, gbc);
 		
 		tabbedPane = new JTabbedPane();
+		pathwayPanelTabs[PathwayPanelTabID.pathway_diagram.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_diagram, graphTabPanel, VCellIcons.diagramIcon);
+		pathwayPanelTabs[PathwayPanelTabID.pathway_objects.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_objects, pathwayModelTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		pathwayPanelTabs[PathwayPanelTabID.biopax_summary.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_summary, sourceTabPanel, VCellIcons.textNotesIcon);
 		tabbedPane.addChangeListener(eventHandler);
-		tabbedPane.addTab("Pathway Diagram", VCellIcons.diagramIcon, graphTabPanel);
-		tabbedPane.addTab("Pathway Objects", VCellIcons.tableIcon, pathwayModelTable.getEnclosingScrollPane());
-		tabbedPane.addTab("BioPAX Summary", null, sourceTabPanel);
-
+		tabbedPane.addChangeListener(eventHandler);
+		
+		for (PathwayPanelTab tab : pathwayPanelTabs) {
+			tab.getComponent().setBorder(GuiConstants.TAB_PANEL_BORDER);
+			tabbedPane.addTab(tab.getName(), tab.getIcon(), tab.getComponent());
+		}
+		
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
 		add(bottomPanel, BorderLayout.SOUTH);
@@ -1245,5 +1284,52 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}else{
 			return bpObject.getName().get(0);
 		}
-	} 
+	}
+	
+	public void tabbedPaneSelectionChanged() {
+		searchTextField.setText(null);
+		searchTextField.setEditable(tabbedPane.getSelectedComponent() != sourceTabPanel);
+		refreshButtons();
+
+		int selectedIndex = tabbedPane.getSelectedIndex();
+		PathwayPanelTabID[] tabIdValues = PathwayPanelTabID.values();
+		tabbedPane.setTitleAt(selectedIndex, "<html><b>"+ tabIdValues[selectedIndex].name + "</b></html>");
+		for (int i = 0; i < tabbedPane.getTabCount(); i ++) {
+			if (i != selectedIndex) {
+				tabbedPane.setTitleAt(i, tabIdValues[i].name);
+			}
+		}
+		ActiveView activeView = null;
+		if (selectedIndex == PathwayPanelTabID.pathway_diagram.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram);
+		} else if (selectedIndex == PathwayPanelTabID.pathway_objects.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, ActiveViewID.pathway_objects);
+		} else if (selectedIndex == PathwayPanelTabID.biopax_summary.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, ActiveViewID.biopax_summary);
+		}
+		if (activeView != null) {
+			setActiveView(activeView);
+		}
+	}
+	
+	@Override
+	protected void onActiveViewChange(ActiveView activeView) {
+		super.onActiveViewChange(activeView);
+		SimulationContext selectedSimContext = activeView.getSimulationContext();
+		DocumentEditorTreeFolderClass folderClass = activeView.getDocumentEditorTreeFolderClass();
+		if (selectedSimContext != null || folderClass == null) {
+			return;
+		}		
+		switch (folderClass) {
+		case PATHWAY_DIAGRAM_NODE:
+			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_diagram.ordinal());
+			break;
+		case PATHWAY_OBJECTS_NODE:
+			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_objects.ordinal());
+			break;
+		case BIOPAX_SUMMARY_NODE:
+			tabbedPane.setSelectedIndex(PathwayPanelTabID.biopax_summary.ordinal());
+			break;
+		}
+	}
 }
