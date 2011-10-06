@@ -1510,7 +1510,7 @@ private void openInLocalVisit() {
 		if (ResourceUtil.bMac || ResourceUtil.bLinux) {
 		
 			//visitBinDirProp = new File(ResourceUtil.getVcellHome(),"visit2_2_2/bin").getCanonicalPath();    //TODO: Replace visit2_2_2 with property of latest VCell supported version
-			visitBinDirProp = "/home/VCELL/visit/visit2_3_2.linux-x86_64/bin";
+			//visitBinDirProp = "/home/VCELL/visit/visit2_3_2.linux-x86_64/bin";
 		}
 		else {
 				visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
@@ -1525,12 +1525,19 @@ private void openInLocalVisit() {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle("Please locate the VisIt executable");
 			chooser.showOpenDialog(this);
-			
+			if (chooser.getSelectedFile()==null) {return;}
 			if (!chooser.getSelectedFile().getName().toLowerCase().startsWith("visit")) {
 				DialogUtils.showErrorDialog(this, "Expecting filename to begin with 'visit'");
 				return;
 			}
-			visitLocalBin=chooser.getSelectedFile().getCanonicalPath();
+			if (ResourceUtil.bMac || ResourceUtil.bLinux) {
+				visitLocalBin=chooser.getSelectedFile().getParentFile().getCanonicalPath()+File.separator+"visit";
+				System.out.println("Unix visitLocalBin= "+visitLocalBin);
+			}
+			else {
+			
+				visitLocalBin=chooser.getSelectedFile().getCanonicalPath();
+			}
 		}
 		
 //		JFileChooser simResultsChooser = new JFileChooser();
