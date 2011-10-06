@@ -39,7 +39,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.vcell.documentation.VcellHelp;
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -136,6 +136,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
+	private VcellHelpViewer helpFrame = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -232,6 +233,15 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DocumentWindow() {
 	super();
 	initialize();
+}
+
+public VcellHelpViewer getHelpFrame()
+{
+	if(helpFrame == null)
+	{
+		helpFrame = new VcellHelpViewer();
+	}
+	return helpFrame;
 }
 
 /**
@@ -452,13 +462,7 @@ private void connEtoC19(java.awt.event.ActionEvent arg1) {
 
 private void invokeNewHelp(ActionEvent e) {
 	// TODO Auto-generated method stub
-	SwingUtilities.invokeLater(new Runnable() {
-		
-		public void run() {
-			// TODO Auto-generated method stub
-			new VcellHelp();
-		}
-	});
+	getHelpFrame().setVisible(true);
 }
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
