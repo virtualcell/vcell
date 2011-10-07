@@ -14,7 +14,24 @@
 <page title="title">
 
 	
-	<introduction> 	</introduction>
+	<introduction>
+	Some stuff before a para. 
+	<para>Some text. Some more text. <bold>Some bold text.</bold> Some more text. Some text. Some more text. 
+	Some text. Some more text. Some text. Some more text. 
+	Some text. Some more text. Some text. Some more text. Some text. 
+	Some more text. Some text. Some more text. 
+	Some text. Some more text. Some text. Some more text. Some text. Some more text. </para>
+	<para>Some text. Some more text. Some text. Some more text. Some text. Some more text. 
+	Some text. Some more text. Some text. Some more text. Some text. Some more text. </para>
+	<para>Some text. Some more text. 
+	<list><item>Some item text. </item>
+	<item>Some more item text. </item>
+	<item>Some item text. </item>
+	<item>Some more item text. </item></list>
+	Some more stuff outside a list.</para> Some more stuff after a para.
+	
+	
+	</introduction>
 	
 	<appearance>  </appearance>
 	
