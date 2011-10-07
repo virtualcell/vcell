@@ -7,16 +7,16 @@ public class DocumentPage {
 	private String templateFileDir;
 	private String title;
 	private String target;
-	private ArrayList<DocTextComponent> introduction;
-	private ArrayList<DocTextComponent> appearance;
-	private ArrayList<DocTextComponent> operations;
-	private ArrayList<DocTextComponent> properties;
+	private ArrayList<DocumentCompiler.Section> introduction;
+	private ArrayList<DocumentCompiler.Section> appearance;
+	private ArrayList<DocumentCompiler.Section> operations;
+	private ArrayList<DocumentCompiler.Section> properties;
 	
 	public DocumentPage(String templateFilename, String templateFileDir, String title, String target,
-			ArrayList<DocTextComponent> introduction, 
-			ArrayList<DocTextComponent> appearance,
-			ArrayList<DocTextComponent> operations,
-			ArrayList<DocTextComponent> properties) {
+			ArrayList<DocumentCompiler.Section> introduction, 
+			ArrayList<DocumentCompiler.Section> appearance,
+			ArrayList<DocumentCompiler.Section> operations,
+			ArrayList<DocumentCompiler.Section> properties) {
 	
 		this.templateFilename = templateFilename;
 		this.templateFileDir = templateFileDir;
@@ -44,19 +44,19 @@ public class DocumentPage {
 		return target;
 	}
 
-	public ArrayList<DocTextComponent> getIntroduction() {
+	public ArrayList<DocumentCompiler.Section> getIntroduction() {
 		return introduction;
 	}
 
-	public ArrayList<DocTextComponent> getAppearance() {
+	public ArrayList<DocumentCompiler.Section> getAppearance() {
 		return appearance;
 	}
 
-	public ArrayList<DocTextComponent> getOperations() {
+	public ArrayList<DocumentCompiler.Section> getOperations() {
 		return operations;
 	}
 
-	public ArrayList<DocTextComponent> getProperties() {
+	public ArrayList<DocumentCompiler.Section> getProperties() {
 		return properties;
 	}
 }

@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.documentation;
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -10,6 +20,8 @@ import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
+
+import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 
 /**
  * This helpviewer enables navigate virtual frap help through table of contents. 
@@ -29,7 +41,7 @@ public class VcellHelpViewer extends JFrame
 	private static final int DEFAULT_HELP_DIALOG_LOCY = 200;
 	
 	public VcellHelpViewer() {
-		super("Virtual Cell Help");
+		super("Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")");
 //		setIconImage(new ImageIcon("//vcell.gif").getImage());
 
 		URL resourceURL = VcellHelpViewer.class.getResource("/vcellDoc/HelpSet.hs");

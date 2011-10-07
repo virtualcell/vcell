@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.documentation;
 
 import java.awt.image.BufferedImage;
@@ -33,10 +43,23 @@ public class DocumentCompiler {
 	public final static String htmlRelativeParentDir = "topics\\";
 	public final static String WorkingParentDir = "resources\\vcellDoc\\topics\\";
 	public final static String OriginalDocParentDir = "UserDocumentation\\originalXML\\topics\\";
-	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_5"};
+	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_6"};
 	public final static String ImageDir = "image";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
+	
+	public static class Section{
+		ArrayList<DocTextComponent> components = null;
+		public Section(ArrayList<DocTextComponent> components)
+		{
+			this.components = components;
+		}
+		public ArrayList<DocTextComponent> getSectionComponents()
+		{
+			return components;
+		}
+	}
+	
 	//test have two html pages and they point to each other, in addion, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
@@ -305,19 +328,31 @@ public class DocumentCompiler {
 			String filename = file.getName();
 			String title = pageElement.getAttributeValue(VCellDocTags.page_title_attr);
 			String target = pageElement.getAttributeValue(VCellDocTags.target_attr);
-			ArrayList<DocTextComponent> appearance = getSection(pageElement,VCellDocTags.appearance_tag);
-			ArrayList<DocTextComponent> introduction = getSection(pageElement,VCellDocTags.introduction_tag);
-			ArrayList<DocTextComponent> operations = getSection(pageElement,VCellDocTags.operations_tag);
-			ArrayList<DocTextComponent> properties = getSection(pageElement,VCellDocTags.properties_tag);
+			ArrayList<Section> appearance = getSectionList(pageElement,VCellDocTags.appearance_tag);
+			ArrayList<Section> introduction = getSectionList(pageElement,VCellDocTags.introduction_tag);
+			ArrayList<Section> operations = getSectionList(pageElement,VCellDocTags.operations_tag);
+			ArrayList<Section> properties = getSectionList(pageElement,VCellDocTags.properties_tag);
 			DocumentPage documentTemplate = new DocumentPage(filename, parentDir, title, target, introduction, appearance, operations, properties);
 			return documentTemplate;
 		}
 		return null;
 	}
 	
-	private ArrayList<DocTextComponent> getSection(Element root, String tagName) throws XmlParseException{
+	private ArrayList<Section> getSectionList(Element root, String tagName) throws XmlParseException
+	{
+		ArrayList<Section> sectionList = new ArrayList<Section>();
+		//get all the sections for name = tagName
+		List<Element> sectionElementList = root.getChildren(tagName);
+		for(Element sectionElement:sectionElementList)
+		{
+			Section section = getSection(sectionElement);
+			sectionList.add(section);
+		}
+		return sectionList;
+	}
+	
+	private Section getSection(Element sectionElement) throws XmlParseException{
 		ArrayList<DocTextComponent> docTextComponents = new ArrayList<DocTextComponent>();
-		Element sectionElement = root.getChild(tagName);
 		if(sectionElement != null)
 		{
 			List children = sectionElement.getContent();
@@ -342,7 +377,7 @@ public class DocumentCompiler {
 				}
 			}
 		}
-		return docTextComponents;
+		return new Section(docTextComponents);
 	}
 			
 	private void writeHTML(Documentation documentation, DocumentPage documentPage, File file, File directory) throws Exception
@@ -374,27 +409,47 @@ public class DocumentCompiler {
 			 pw.println();
 			 
 			 //introduction
-			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 printSection(documentation,documentPage.getIntroduction(), pw);
-			 pw.print("</" + VCellDocTags.html_new_line + ">");
+			 ArrayList<Section> introSectionList = documentPage.getIntroduction();
+			 for(Section introSection:introSectionList)
+			 {
+				 pw.print("<" + VCellDocTags.html_new_line + ">");
+				 printSection(documentation,introSection.getSectionComponents(), pw);
+				 pw.print("</" + VCellDocTags.html_new_line + ">");
+				 pw.println();
+			 }
 			 pw.println();
 
 			 //appearance
-			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 printSection(documentation,documentPage.getAppearance(), pw);
-			 pw.print("</" + VCellDocTags.html_new_line + ">");
+			 ArrayList<Section> appSectionList = documentPage.getAppearance();
+			 for(Section appSection:appSectionList)
+			 {
+				 pw.print("<" + VCellDocTags.html_new_line + ">");
+				 printSection(documentation,appSection.getSectionComponents(), pw);
+				 pw.print("</" + VCellDocTags.html_new_line + ">");
+				 pw.println();
+			 }
 			 pw.println();
 
 			 //operation
-			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 printSection(documentation,documentPage.getOperations(), pw);
-			 pw.print("</" + VCellDocTags.html_new_line + ">");
+			 ArrayList<Section> opSectionList = documentPage.getOperations();
+			 for(Section opSection:opSectionList)
+			 {
+				 pw.print("<" + VCellDocTags.html_new_line + ">");
+				 printSection(documentation,opSection.getSectionComponents(), pw);
+				 pw.print("</" + VCellDocTags.html_new_line + ">");
+				 pw.println();
+			 }
 			 pw.println();
 
 			 //properties
-			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 printSection(documentation,documentPage.getProperties(), pw);
-			 pw.print("</" + VCellDocTags.html_new_line + ">");
+			 ArrayList<Section> propSectionList = documentPage.getProperties();
+			 for(Section propSection:propSectionList)
+			 {
+				 pw.print("<" + VCellDocTags.html_new_line + ">");
+				 printSection(documentation,propSection.getSectionComponents(), pw);
+				 pw.print("</" + VCellDocTags.html_new_line + ">");
+				 pw.println();
+			 }
 			 pw.println();
 
 			 //end body
