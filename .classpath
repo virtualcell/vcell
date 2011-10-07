@@ -47,13 +47,13 @@
 	<classpathentry kind="lib" path="sesame/aduna-commons-net-2.7.0.jar"/>
 	<classpathentry kind="lib" path="sesame/aduna-commons-text-2.7.0.jar"/>
 	<classpathentry kind="lib" path="sesame/aduna-commons-xml-2.7.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-model-2.4.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-queryalgebra-evaluation-2.4.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-api-2.4.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-n3-2.4.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-rdfxml-2.4.0.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-turtle-2.4.0.jar"/>
 	<classpathentry kind="lib" path="sesame/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-model-2.5.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-queryalgebra-evaluation-2.5.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-api-2.5.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-n3-2.5.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-rdfxml-2.5.0.jar"/>
+	<classpathentry kind="lib" path="sesame/sesame-rio-turtle-2.5.0.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
