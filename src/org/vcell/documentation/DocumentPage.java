@@ -1,22 +1,18 @@
 package org.vcell.documentation;
 
-import java.util.ArrayList;
-
 public class DocumentPage {
 	private String templateFilename;
 	private String templateFileDir;
 	private String title;
 	private String target;
-	private ArrayList<DocumentCompiler.Section> introduction;
-	private ArrayList<DocumentCompiler.Section> appearance;
-	private ArrayList<DocumentCompiler.Section> operations;
-	private ArrayList<DocumentCompiler.Section> properties;
+	private DocSection introduction;
+	private DocSection appearance;
+	private DocSection operations;
 	
 	public DocumentPage(String templateFilename, String templateFileDir, String title, String target,
-			ArrayList<DocumentCompiler.Section> introduction, 
-			ArrayList<DocumentCompiler.Section> appearance,
-			ArrayList<DocumentCompiler.Section> operations,
-			ArrayList<DocumentCompiler.Section> properties) {
+			DocSection introduction, 
+			DocSection appearance,
+			DocSection operations) {
 	
 		this.templateFilename = templateFilename;
 		this.templateFileDir = templateFileDir;
@@ -25,7 +21,6 @@ public class DocumentPage {
 		this.introduction = introduction;
 		this.appearance = appearance;
 		this.operations = operations;
-		this.properties = properties;
 	}
 
 	public String getTemplateFilename() {
@@ -44,19 +39,16 @@ public class DocumentPage {
 		return target;
 	}
 
-	public ArrayList<DocumentCompiler.Section> getIntroduction() {
+	public DocSection getIntroduction() {
 		return introduction;
 	}
 
-	public ArrayList<DocumentCompiler.Section> getAppearance() {
+	public DocSection getAppearance() {
 		return appearance;
 	}
 
-	public ArrayList<DocumentCompiler.Section> getOperations() {
+	public DocSection getOperations() {
 		return operations;
 	}
 
-	public ArrayList<DocumentCompiler.Section> getProperties() {
-		return properties;
-	}
 }

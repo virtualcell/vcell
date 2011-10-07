@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -22,18 +21,10 @@ import javax.imageio.ImageIO;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.Namespace;
 import org.jdom.Text;
-import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.FileUtils;
 
-import com.lowagie.text.Chapter;
-
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.client.ClientRequestManager.ImageSizeInfo;
-import cbit.vcell.server.manage.VCellHost;
-import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 
 public class DocumentCompiler {
@@ -43,23 +34,11 @@ public class DocumentCompiler {
 	public final static String htmlRelativeParentDir = "topics\\";
 	public final static String WorkingParentDir = "resources\\vcellDoc\\topics\\";
 	public final static String OriginalDocParentDir = "UserDocumentation\\originalXML\\topics\\";
-	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_6"};
+	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_5"};
 	public final static String ImageDir = "image";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
-	
-	public static class Section{
-		ArrayList<DocTextComponent> components = null;
-		public Section(ArrayList<DocTextComponent> components)
-		{
-			this.components = components;
-		}
-		public ArrayList<DocTextComponent> getSectionComponents()
-		{
-			return components;
-		}
-	}
-	
+		
 	//test have two html pages and they point to each other, in addion, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
@@ -67,25 +46,6 @@ public class DocumentCompiler {
 			docCompiler.batchRun();
 			docCompiler.generateHelpMap();
 			docCompiler.generateTOC();
-//			File xmlFile1 = new File(WorkingParentDir + "pageTest1.xml");
-//			File xmlFile2 = new File(WorkingParentDir + "pageTest2.xml");
-//			
-////			File xmlFile = new File("C:\\mm.xml");
-//			DocumentPage documentPage1 = docCompiler.readTemplateFile(xmlFile1);
-//			Documentation documentation = new Documentation();
-//			documentation.add(documentPage1);
-//			
-//			DocumentPage documentPage2 = docCompiler.readTemplateFile(xmlFile2);
-//			documentation.add(documentPage2);
-//			
-//			DocumentImage documentImg1 = new DocumentImage(new File("vcell.gif"), " ", 64,64,64,64);
-//			documentation.add(documentImg1);
-//			
-//			File htmlFile1 = documentation.getTargetFilename(documentPage1);
-//			docCompiler.writeHTML(documentation,documentPage1,htmlFile1);
-//			File htmlFile2 = documentation.getTargetFilename(documentPage2);
-//			docCompiler.writeHTML(documentation,documentPage2,htmlFile2);
-			
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
@@ -328,56 +288,65 @@ public class DocumentCompiler {
 			String filename = file.getName();
 			String title = pageElement.getAttributeValue(VCellDocTags.page_title_attr);
 			String target = pageElement.getAttributeValue(VCellDocTags.target_attr);
-			ArrayList<Section> appearance = getSectionList(pageElement,VCellDocTags.appearance_tag);
-			ArrayList<Section> introduction = getSectionList(pageElement,VCellDocTags.introduction_tag);
-			ArrayList<Section> operations = getSectionList(pageElement,VCellDocTags.operations_tag);
-			ArrayList<Section> properties = getSectionList(pageElement,VCellDocTags.properties_tag);
-			DocumentPage documentTemplate = new DocumentPage(filename, parentDir, title, target, introduction, appearance, operations, properties);
+			DocSection appearance = getSection(pageElement,VCellDocTags.appearance_tag);
+			DocSection introduction = getSection(pageElement,VCellDocTags.introduction_tag);
+			DocSection operations = getSection(pageElement,VCellDocTags.operations_tag);
+			DocumentPage documentTemplate = new DocumentPage(filename, parentDir, title, target, introduction, appearance, operations);
 			return documentTemplate;
 		}
 		return null;
 	}
 	
-	private ArrayList<Section> getSectionList(Element root, String tagName) throws XmlParseException
-	{
-		ArrayList<Section> sectionList = new ArrayList<Section>();
-		//get all the sections for name = tagName
-		List<Element> sectionElementList = root.getChildren(tagName);
-		for(Element sectionElement:sectionElementList)
-		{
-			Section section = getSection(sectionElement);
-			sectionList.add(section);
-		}
-		return sectionList;
+	// top level section parse method.
+	private DocSection getSection(Element root, String tagName) throws XmlParseException{
+		DocSection docSection = new DocSection();
+		readBlock(docSection,root.getChild(tagName));
+		
+		return docSection;
 	}
 	
-	private Section getSection(Element sectionElement) throws XmlParseException{
-		ArrayList<DocTextComponent> docTextComponents = new ArrayList<DocTextComponent>();
-		if(sectionElement != null)
-		{
-			List children = sectionElement.getContent();
-			for (Object child : children){
-				if (child instanceof Text){
-					Text childText = (Text)child;
-					docTextComponents.add(new DocText(childText.getText()));
-				}else if (child instanceof Element){
-					Element childElement = (Element)child;
-					if (childElement.getName().equals(VCellDocTags.link_tag)){
-						String linkText = childElement.getText();
-						String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
-						docTextComponents.add(new DocLink(linkTarget,linkText));
-					}else if (childElement.getName().equals(VCellDocTags.img_ref_tag)){
-						String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
-						docTextComponents.add(new DocImageReference(linkTarget));
-					}else{
-						//TODO: we may need to add more tags such as : Definition
-						//comment this statement since our tags are not complete yet. once everything is settled, we'll uncomment this statement.
-//						throw new XmlParseException("unexpected element "+childElement.getName());
+	private void readBlock(DocTextComponent docComponent, Element element) {
+		List children = element.getContent();
+		for (Object child : children){
+			if (child instanceof Text){
+				Text childText = (Text)child;
+				if (childText.getText().trim().length()>0){
+					docComponent.add(new DocText(childText.getText(),false));
+				}
+			}else if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (childElement.getName().equals(VCellDocTags.link_tag)){
+					String linkText = childElement.getText();
+					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
+					docComponent.add(new DocLink(linkTarget,linkText));
+				}else if (childElement.getName().equals(VCellDocTags.img_ref_tag)){
+					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
+					docComponent.add(new DocImageReference(linkTarget));
+				}else if (childElement.getName().equals(VCellDocTags.bold_tag)){
+					List boldChildren = childElement.getContent();
+					for (Object boldChild : boldChildren){
+						if (boldChild instanceof Text){
+							Text childText = (Text)boldChild;
+							docComponent.add(new DocText(childText.getText(),true));
+						}else if (boldChild instanceof Element){
+							throw new RuntimeException("only plain text is allowed within <bold></bold> elements");
+						}
 					}
+				}else if (childElement.getName().equals(VCellDocTags.list_tag)){
+					DocList docList = new DocList();
+					docComponent.add(docList);
+					readBlock(docList, childElement);
+				}else if (childElement.getName().equals(VCellDocTags.listItem_tag)){
+					DocListItem docListItem = new DocListItem();
+					docComponent.add(docListItem);
+					readBlock(docListItem, childElement);
+				}else if (childElement.getName().equals(VCellDocTags.paragraph_tag)){
+					DocParagraph docParagraph = new DocParagraph();
+					docComponent.add(docParagraph);
+					readBlock(docParagraph, childElement);
 				}
 			}
 		}
-		return new Section(docTextComponents);
 	}
 			
 	private void writeHTML(Documentation documentation, DocumentPage documentPage, File file, File directory) throws Exception
@@ -409,49 +378,32 @@ public class DocumentCompiler {
 			 pw.println();
 			 
 			 //introduction
-			 ArrayList<Section> introSectionList = documentPage.getIntroduction();
-			 for(Section introSection:introSectionList)
+			 DocSection introSection = documentPage.getIntroduction();
+			 if(introSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printSection(documentation,introSection.getSectionComponents(), pw);
+				 printComponent(documentation,introSection, pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
-			 pw.println();
-
 			 //appearance
-			 ArrayList<Section> appSectionList = documentPage.getAppearance();
-			 for(Section appSection:appSectionList)
+			 DocSection appSection = documentPage.getAppearance();
+			 if(appSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printSection(documentation,appSection.getSectionComponents(), pw);
+				 printComponent(documentation,appSection, pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
-			 pw.println();
-
 			 //operation
-			 ArrayList<Section> opSectionList = documentPage.getOperations();
-			 for(Section opSection:opSectionList)
+			 DocSection opSection = documentPage.getOperations();
+			 if(opSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printSection(documentation,opSection.getSectionComponents(), pw);
+				 printComponent(documentation,opSection, pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
-			 pw.println();
-
-			 //properties
-			 ArrayList<Section> propSectionList = documentPage.getProperties();
-			 for(Section propSection:propSectionList)
-			 {
-				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printSection(documentation,propSection.getSectionComponents(), pw);
-				 pw.print("</" + VCellDocTags.html_new_line + ">");
-				 pw.println();
-			 }
-			 pw.println();
-
 			 //end body
 			 pw.println("</" + VCellDocTags.html_body_tag + ">");
 		} catch (Exception e) {
@@ -463,42 +415,59 @@ public class DocumentCompiler {
 			}
 		}
 	}
-
-	private void printSection(Documentation documentation, ArrayList<DocTextComponent> docTextComponents, PrintWriter pw){
-		 for (DocTextComponent docComp : docTextComponents){
-			 if (docComp instanceof DocText){
-				 DocText text = (DocText)docComp;
-				 pw.print(text.getText());
-			 }else if (docComp instanceof DocLink){
-				 DocLink docLink = (DocLink)docComp;
-				 DocumentPage docPage = documentation.getDocumentPage(docLink);
-				 if (docPage==null){
-					 //temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
-					 //TODO:once everything is ready, we should uncomment this statement.
+	
+	private void printComponent(Documentation documentation, DocTextComponent docComp, PrintWriter pw){
+		 if (docComp instanceof DocText){
+			 DocText text = (DocText)docComp;
+			 pw.print(text.getText());
+		 }else if (docComp instanceof DocLink){
+			 DocLink docLink = (DocLink)docComp;
+			 DocumentPage docPage = documentation.getDocumentPage(docLink);
+			 if (docPage==null){
+				 //temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
+				 //TODO:once everything is ready, we should uncomment this statement.
 //					 throw new RuntimeException("cannot find the page with target "+docLink.getTarget());
-				 }
-				 if(docPage != null && documentation.getTargetFilename(docPage) != null)
-				 {
-					 pw.printf("<a href=\""+documentation.getTargetFilename(docPage)+"\">");
-					 pw.printf(docLink.getText());
-					 pw.printf("</a>");
-				 }
-			 }else if (docComp instanceof DocImageReference){
-				 DocImageReference imageReference = (DocImageReference)docComp;
-				 DocumentImage docImage = documentation.getDocumentImage(imageReference);
-				 if (docImage==null){
-					//temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
-					 //TODO:once everything is ready, we should uncomment this statement.
+			 }
+			 if(docPage != null && documentation.getTargetFilename(docPage) != null)
+			 {
+				 pw.printf("<a href=\""+documentation.getTargetFilename(docPage)+"\">");
+				 pw.printf(docLink.getText());
+				 pw.printf("</a>");
+			 }
+		 }else if (docComp instanceof DocImageReference){
+			 DocImageReference imageReference = (DocImageReference)docComp;
+			 DocumentImage docImage = documentation.getDocumentImage(imageReference);
+			 if (docImage==null){
+				//temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
+				 //TODO:once everything is ready, we should uncomment this statement.
 //					 throw new RuntimeException("cannot find the image with target "+imageReference.getImageTarget());
-				 }
-				 if(docImage != null && documentation.getTargetFilename(docImage) != null)
-				 {
-					 File imageFile = documentation.getTargetFilename(docImage);
-					 pw.printf("<img src=\""+imageFile.getPath()+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
-				 }
+			 }
+			 if (docImage != null && documentation.getTargetFilename(docImage) != null){
+				 File imageFile = documentation.getTargetFilename(docImage);
+				 pw.printf("<img src=\""+imageFile.getPath()+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
+			 }
+		 }else if (docComp instanceof DocList){
+			 pw.printf("<ul>");
+			 for (DocTextComponent comp : docComp.getComponents()){
+				 printComponent(documentation, comp, pw);
+			 }
+			 pw.printf("</ul>");
+		 }else if (docComp instanceof DocParagraph){
+			 pw.printf("<p>");
+			 for (DocTextComponent comp : docComp.getComponents()){
+				 printComponent(documentation, comp, pw);
+			 }
+			 pw.printf("</p>");
+		 }else if (docComp instanceof DocListItem){
+			 pw.printf("<li>");
+			 for (DocTextComponent comp : docComp.getComponents()){
+				 printComponent(documentation, comp, pw);
+			 }
+			 pw.printf("</li>");
+		 }else if (docComp instanceof DocSection){
+			 for (DocTextComponent comp : docComp.getComponents()){
+				 printComponent(documentation, comp, pw);
 			 }
 		 }
-
 	}
-	
 }

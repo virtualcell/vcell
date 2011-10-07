@@ -9,6 +9,11 @@
           Please be noted no space and special chars are allowed in the file name. 
           Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
           Before you commit, please try it out in browser first.
+		  
+		  allowable formatting tags:
+		  <bold> </bold>
+		  <para> </para>
+		  <list> <item> </item> ... </list> NOTE: no embeded lists
 -->
 <vcelldoc>
 <page title="title">
@@ -20,8 +25,6 @@
 	
 	<operations>  </operations>
 	
-	<comments>  </comments>
-
 </page>
 
 </vcelldoc>

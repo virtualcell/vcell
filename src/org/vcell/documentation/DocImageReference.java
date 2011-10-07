@@ -11,6 +11,11 @@ public class DocImageReference extends DocTextComponent {
 	public String getImageTarget() {
 		return imageTarget;
 	}
+
+	@Override
+	public void add(DocTextComponent docComponent) {
+		throw new RuntimeException("children not supported");
+	}
 	
 	
 }

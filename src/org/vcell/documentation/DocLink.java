@@ -20,4 +20,11 @@ public class DocLink extends DocTextComponent {
 	public String getText() {
 		return text;
 	}
+
+
+
+	@Override
+	public void add(DocTextComponent docComponent) {
+		throw new RuntimeException("not supported");
+	}
 }
