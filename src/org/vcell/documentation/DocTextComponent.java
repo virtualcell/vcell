@@ -1,5 +1,13 @@
 package org.vcell.documentation;
 
-public abstract class DocTextComponent {
+import java.util.ArrayList;
 
+public abstract class DocTextComponent {
+	ArrayList<DocTextComponent> components = new ArrayList<DocTextComponent>();
+
+	public abstract void add(DocTextComponent docComponent);
+
+	public ArrayList<DocTextComponent> getComponents(){
+		return components;
+	}
 }
