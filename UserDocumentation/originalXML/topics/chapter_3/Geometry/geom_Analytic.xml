@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Creating analytic geometries in VCell">
+
+	
+	<introduction>
+	Analytic geometry is defined by one or more boolean functions of x, y and z in the spatial domain.
+	The Analytic Geometry Editor, accessible from the geometry view of a BioModel application or MathModel, provides an interface for entering 1, 2, or 3 dimensional boolean functions.
+	</introduction>
+	
+	<appearance>  </appearance>
+	
+	<operations>
+	The size of the overall range over which x, y, z coordinates are generated (the domain) is set by clicking the “Change domain” button.
+	The origin (minimum) x, y, z spatial geometry coordinates are entered as well as the size (length) of each geometry dimension.
+	Functions are entered by clicking the “Add Subdomain…” button.
+	The functions define points in the overall geometry where each subdomain is to be assigned.
+	Simple definitions are provided for commonly used analytic function shapes or functions can be entered completely manually.
+	The simple definitions (e.g. circle) can be used as is or are useful as templates for more complicated shapes.
+	Simple definitions require the user to enter only a few parameters (e.g. center and radius) that define a particular shape.
+	Clicking “Add New Subdomain” places the current function definition at the top of the subdomain table list.
+	Selected function entries can be moved within the list by pressing the “front” or “back” buttons.
+	The overall analytic geometry is created from the subdomain list by evaluating each function at values of x, y, z starting at the bottom of the list.
+	Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function’s subdomain.
+	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.
+	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
+	</operations>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>
