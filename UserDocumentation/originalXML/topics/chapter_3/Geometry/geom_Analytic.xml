@@ -22,6 +22,7 @@
 	<appearance>  </appearance>
 	
 	<operations>
+	<para>
 	The size of the overall range over which x, y, z coordinates are generated (the domain) is set by clicking the “Change domain” button.
 	The origin (minimum) x, y, z spatial geometry coordinates are entered as well as the size (length) of each geometry dimension.
 	Functions are entered by clicking the “Add Subdomain…” button.
@@ -35,6 +36,7 @@
 	Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function’s subdomain.
 	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.
 	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
+	</para>
 	</operations>
 	
 	<comments>  </comments>
