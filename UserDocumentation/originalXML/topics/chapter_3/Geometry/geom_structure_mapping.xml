@@ -24,6 +24,7 @@
 	</appearance>
 	
 	<operations>
+	<para>
 	MathModel structure mappings are implicit in the definition of a MathModel document (described elsewhere).
 	Compartmental (non-spatial) BioModel structure mapping (to an empty geometry) is created automatically.  
 	Spatial BioModel structure mappings are defined by the user within an "Application" after all physiology compartments and a spatial geometry have been added.
@@ -33,9 +34,8 @@
 	1.  For each distinct physiology structure, select the "mapping" tool and click on a point within the physiology structure (left panel) and drag to a colored square next to the appropriate geometry subdomain (right panel).  (ignore any 2-color squares).
 	- or -
 	2.  In the "Structure Mapping" table click the table under the "Subdomain" heading next to the "Structure" you want to map and choose a geometry domain from the pop-up list that appears to define the mapping.
-	</operations>
-	
-	<operations>
+	</para>
+	<para>
 	The BioModel "Structure Mapping" table also provides 2 additional parameter editing capabilities depending on the type of geometry defined.
 	1.  For applications with NON-SPATIAL geometries the "Structure Mapping" table allows the user to enter "Size" information.
 	"Size" information defines the volume (in units of um2) of a particular structure.  The size does not include the sizes of any other structures or membrane surface areas.
@@ -48,6 +48,7 @@
 	The boundary condition chosen will determine how a species interacts with the simulation world boundary.
 	The actual constant or function is defined for each species in the "Specifications->Species" panel (described elsewhere).
 	One or more of the structures may be mapped to a spatial geometry domain that does not intersect the edge of the simulation world and this setting will have no effect.
+	</para>
 	</operations>
 	
 	<comments>
