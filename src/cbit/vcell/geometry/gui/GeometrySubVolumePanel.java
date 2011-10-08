@@ -24,6 +24,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -572,7 +573,7 @@ private javax.swing.JPanel getButtonPanel() {
 					while(true){
 						try {
 							final boolean[] acceptFlag = new boolean[] {false};
-							final JDialog d = new JDialog();
+							final JDialog d = new JDialog(JOptionPane.getFrameForComponent(GeometrySubVolumePanel.this));
 							d.setTitle("Define New Subdomain Shape");
 							
 							JPanel main = new JPanel();
