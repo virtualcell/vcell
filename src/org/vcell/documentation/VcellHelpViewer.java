@@ -72,7 +72,6 @@ public class VcellHelpViewer extends JFrame
 		setLocation(DEFAULT_HELP_DIALOG_LOCX,DEFAULT_HELP_DIALOG_LOCY);
 		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HIGHT));
 		pack();
-//		setVisible(true);
 	}
 
 
@@ -81,7 +80,8 @@ public class VcellHelpViewer extends JFrame
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (Exception e) { }
 
-		new VcellHelpViewer();
+		VcellHelpViewer viewer = new VcellHelpViewer();
+		viewer.setVisible(true);
 	}
 
 }

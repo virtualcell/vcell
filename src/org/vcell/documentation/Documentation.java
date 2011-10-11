@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.documentation;
 
 import java.io.File;
@@ -6,21 +16,6 @@ import java.util.ArrayList;
 public class Documentation {
 	private ArrayList<DocumentPage> documentPages = new ArrayList<DocumentPage>();
 	private ArrayList<DocumentImage> documentImages = new ArrayList<DocumentImage>();
-	
-	public File getTargetFilename(DocumentPage documentPage){
-		String xmlFileName = documentPage.getTemplateFilename();
-		String xmlFileDir = documentPage.getTemplateFileDir();
-		int extIdx = xmlFileName.indexOf(".");
-		String baseFileName = xmlFileName.substring(0, extIdx);
-		String htmlFilename = ".." + System.getProperty("file.separator") + xmlFileDir + System.getProperty("file.separator") + baseFileName + DocumentCompiler.VCELL_DOC_HTML_FILE_EXT;
-		return new File(htmlFilename);
-	}	
-	
-	public File getTargetFilename(DocumentImage documentImage) {
-		String sourceFileDir = documentImage.getSourceFileDir();
-		String imgFilename = ".." + System.getProperty("file.separator") + sourceFileDir + System.getProperty("file.separator") + documentImage.getSourceFile();
-		return new File(imgFilename);
-	}
 	
 	public DocumentPage getDocumentPage(DocLink docLink) {
 		for (DocumentPage docPage : documentPages){
@@ -50,5 +45,9 @@ public class Documentation {
 		if (!documentImages.contains(documentImg)){
 			documentImages.add(documentImg);
 		}
+	}
+	
+	public DocumentPage[] getDocumentPages(){
+		return documentPages.toArray(new DocumentPage[documentPages.size()]);
 	}
 }
