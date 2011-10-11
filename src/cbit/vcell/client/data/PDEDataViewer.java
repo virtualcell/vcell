@@ -71,6 +71,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Executable;
+import org.vcell.util.ExecutableException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
@@ -154,6 +155,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.visit.VisitConnectionInfo;
 import cbit.vcell.visit.VisitControlPanel;
 import cbit.vcell.visit.VisitSession;
 /**
@@ -1483,7 +1485,7 @@ private void openInLocalVisit() {
 		KeyValue fieldDataKey = null;
 		int jobIndex = 0;
 		boolean isOldStyle = false;
-		boolean isLocalRun = false;
+		final boolean[] isLocalRun = new boolean[] {false};
 		VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
 		if (vcdid instanceof VCSimulationDataIdentifier){
 			fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
@@ -1496,12 +1498,12 @@ private void openInLocalVisit() {
 			throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
 		}
 
-		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-		File localDir = null;
+		final String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
+		final File[] localDir = new File[1];
 		if (vcdid instanceof LocalVCDataIdentifier){
-			localDir = ((LocalVCDataIdentifier)vcdid).getLocalDirectory();
-			if (localDir == null) {throw new RuntimeException("local directory not found");}
-			isLocalRun = true;
+			localDir[0] = ((LocalVCDataIdentifier)vcdid).getLocalDirectory();
+			if (localDir[0] == null) {throw new RuntimeException("local directory not found");}
+			isLocalRun[0] = true;
 		}
 		
 		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
@@ -1517,10 +1519,10 @@ private void openInLocalVisit() {
 		}
 		
 		System.out.println("visitBinDirProp = " + visitBinDirProp);
-		String visitLocalBin = new String();
+		final StringBuffer visitLocalBin = new StringBuffer();
 		if (visitBinDirProp != null && (new File(visitBinDirProp,"visit.exe").exists()|| new File(visitBinDirProp,"visit").exists())) {
 			visitBinDir=visitBinDirProp;
-			visitLocalBin=visitBinDirProp+"/visit";
+			visitLocalBin.append(visitBinDirProp+"/visit");
 		}else {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle("Please locate the VisIt executable");
@@ -1531,43 +1533,74 @@ private void openInLocalVisit() {
 				return;
 			}
 			if (ResourceUtil.bMac || ResourceUtil.bLinux) {
-				visitLocalBin=chooser.getSelectedFile().getParentFile().getCanonicalPath()+File.separator+"visit";
+				visitLocalBin.append(chooser.getSelectedFile().getParentFile().getCanonicalPath()+File.separator+"visit");
 				System.out.println("Unix visitLocalBin= "+visitLocalBin);
 			}
 			else {
 			
-				visitLocalBin=chooser.getSelectedFile().getCanonicalPath();
+				visitLocalBin.append(chooser.getSelectedFile().getCanonicalPath());
 			}
 		}
 		
-//		JFileChooser simResultsChooser = new JFileChooser();
+//		JFileChooser simResultsChooser = new JFileChooser();visit2_3_2.linux-x86_64
 //		simResultsChooser.setDialogTitle("Please locate .log file");
 //		simResultsChooser.showOpenDialog(this);
 		
 		//String localSimResultLogFile = simResultsChooser.getSelectedFile().getCanonicalPath();
-			
-		String varName = getPdeDataContext().getVariableName();		
+			new Thread(new Runnable() {
+				
+				public void run() {
+					// TODO Auto-generated method stub
+					try {
+						VisitConnectionInfo localVisitConnInfo =  getDataViewerManager().getRequestManager().createNewLocalVisitSessionConnectionInfo(visitLocalBin.toString());
+						String varName = getPdeDataContext().getVariableName();	
+						
+//						String visitMDServerHost = PropertyLoader.getProperty("vcell.visit.mdserverhost", null);
+//						String serverResultsDataPath = PropertyLoader.getProperty("vcell.primarySimdatadir", null);
+						
+						String visitMDServerHost = localVisitConnInfo.getIPAddress();
+						String serverResultsDataPath = localVisitConnInfo.getDataPath();
+						
+						if (visitMDServerHost == null || serverResultsDataPath == null) {
+							System.out.println("Unable to get properties from the server");
+							return;
+						}
 
-		try {
-			ArrayList<String> args = new ArrayList<String>();
-			args.add(visitLocalBin);
-			args.add("-o");
-			if (isLocalRun) {
-				args.add(new File(localDir,simlogname).getPath());
-			}
-			else
-			{
+						
+							final ArrayList<String> args = new ArrayList<String>();
+							args.add(visitLocalBin.toString());
+							args.add("-o");
+							if (isLocalRun[0]) {
+								args.add(new File(localDir[0],simlogname).getPath());
+							}
+							else
+							{
+							 
+								args.add(visitMDServerHost+":"+serverResultsDataPath+"/"+getSimulation().getVersion().getOwner().getName()+"/"+simlogname);
+							}
+							System.out.println("args: "+args);
+							
+							final Executable executable = new Executable(args.toArray(new String[0]));
+
+						executable.start();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						DialogUtils.showErrorDialog(PDEDataViewer.this, e.getMessage());
+					}
+				}
+			}).start();
 			
-				args.add("visitphineas.cam.uchc.edu:/share/apps/vcell/users/"+getSimulation().getVersion().getOwner().getName()+File.separator+simlogname);
-			}
-			System.out.println("args: "+args);
-			Executable executable = new Executable(args.toArray(new String[0]));
-			executable.start();
-		}
-		
-		catch(Exception e2){
-			e2.printStackTrace();
-		}
+//			AsynchClientTask visitTask = new AsynchClientTask("Starting Local Visit Executable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//				
+//				@Override
+//				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					Runtime.getRuntime().exec(args.toArray(new String[0]));
+//					//executable.start();
+//					
+//				}
+//			};
+//			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {visitTask});
 			
 			
 
@@ -1584,6 +1617,7 @@ private JButton getJButtonVisit(){
 		ivjButtonVisit.setName("JButtonVisit");
 		ivjButtonVisit.setText("Open in VisIt");
 		ivjButtonVisit.addActionListener(ivjEventHandler);
+		ivjButtonVisit.setEnabled(false);
 
 	}
 	return ivjButtonVisit;

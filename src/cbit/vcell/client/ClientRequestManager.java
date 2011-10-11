@@ -3386,6 +3386,14 @@ public VisitSession createNewVisitSession(String visitBinPath) throws DataAccess
 	return visitSession;
 }
 
+public VisitConnectionInfo createNewLocalVisitSessionConnectionInfo (String visitBinPath) throws DataAccessException {
+	VisitConnectionInfo visitConnInfo = getClientServerManager().createNewVisitConnection();
+	
+	return visitConnInfo;
+}
+
+
+
 public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
 	return updateMath(requester, simulationContext, true);
 }
