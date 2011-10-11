@@ -1584,7 +1584,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private void updateROIWithHighlight(){
 		if(overlayEditorPanelJAI.getHighliteInfo() != null){
 			final String applyROI = "Update Domain";
-			final String createROI = "Create Doamin";
+			final String createROI = "Create Domain";
 			final String cancel = "Cancel";
 			String result = null;
 			
