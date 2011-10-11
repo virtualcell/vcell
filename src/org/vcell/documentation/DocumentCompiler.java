@@ -12,8 +12,13 @@ package org.vcell.documentation;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -25,27 +30,53 @@ import org.jdom.Text;
 import org.vcell.util.FileUtils;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class DocumentCompiler {
 
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
-	public final static String xmlFile = "";
-	public final static String htmlRelativeParentDir = "topics\\";
-	public final static String WorkingParentDir = "resources\\vcellDoc\\topics\\";
-	public final static String OriginalDocParentDir = "UserDocumentation\\originalXML\\topics\\";
-	public final static String[] DocGenerationDirs = new String[]{"PropertiesPanes","chapter_1", "chapter_2", "chapter_3", "chapter_4", "chapter_5"};
-	public final static String ImageDir = "image";
+	public static File docTargetDir;
+	public static File docSourceDir;
+	public final static String ImageDir = "topics\\image";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
+	
+	private Documentation documentation = new Documentation();
+
+	
+	FileFilter directoryFileFilter = new FileFilter() {
+		public boolean accept(File pathname) {
+			return pathname.isDirectory();
+		}
+	};
+	FileFilter xmlFileFilter = new FileFilter() {
+		public boolean accept(File pathname) {
+			return pathname.getName().endsWith(".xml");
+		}
+	};
 		
 	//test have two html pages and they point to each other, in addion, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
+			if (args.length==2){
+				docSourceDir = new File(args[0]);
+				if (!docSourceDir.exists() || !docSourceDir.isDirectory()){
+					throw new RuntimeException("document source directory "+docSourceDir.getPath()+" doesn't exist or isn't a directory");
+				}
+				docTargetDir = new File(args[1]);
+				if (!docTargetDir.exists()){
+					docTargetDir.mkdirs();
+				}else if (!docTargetDir.isDirectory()){
+					throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
+				}
+			}else{
+				throw new RuntimeException("expecting xmlSource and resource directories for documentation");
+			}
 			DocumentCompiler docCompiler = new DocumentCompiler();
 			docCompiler.batchRun();
 			docCompiler.generateHelpMap();
-			docCompiler.generateTOC();
+			docCompiler.validateTOC();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
@@ -53,140 +84,114 @@ public class DocumentCompiler {
 	
 	public void batchRun() throws Exception
 	{
-		Documentation documentation = new Documentation();
 		//generate document images
-		File origImgDir = new File(OriginalDocParentDir, ImageDir);
-		if(origImgDir.exists())
+		File imgSourceDir = new File(docSourceDir, ImageDir);
+		if (!imgSourceDir.exists() || !imgSourceDir.isDirectory()){
+			throw new RuntimeException("cannot find source image directory "+imgSourceDir.getPath());
+		}
+
+		File workingImgDir= new File(docTargetDir, ImageDir);
+		if(!workingImgDir.exists()){
+			workingImgDir.mkdirs();	
+		}
+		//delete all images
+		File[] oldImgFiles = workingImgDir.listFiles();
+		for(File file : oldImgFiles)
 		{
-			File workingImgDir= new File(WorkingParentDir, ImageDir);
-			if(!workingImgDir.exists()){
-				workingImgDir.mkdirs();	
-			}
-			//delete all images
-			File[] oldImgFiles = workingImgDir.listFiles();
-			for(File file : oldImgFiles)
+			if(!file.getName().contains(".svn"))//dont' delete svn file
 			{
-				if(!file.getName().contains(".svn"))//dont' delete svn file
-				{
-					file.delete();
-				}
-			}
-			//get images from the original image directory
-			File[] imgFiles = origImgDir.listFiles();
-			if(imgFiles != null)
-			{
-				for(File imgFile: imgFiles)
-				{
-					String fileNameStr = imgFile.getName(); 
-					if(!fileNameStr.contains(".svn") && imgFile.isFile())//dont' move over svn file
-					{
-						File workingImgFile = new File(workingImgDir, fileNameStr);
-						FileUtils.copyFile(imgFile, workingImgFile);
-						BufferedImage img = ImageIO.read(imgFile);
-						int imgWidth = img.getWidth();
-						int imgHeight = img.getHeight();
-						DocumentImage tempImg = new DocumentImage(new File(fileNameStr), ImageDir, " ", imgWidth, imgHeight, imgWidth, imgHeight);//TODO: how to set size?
-						documentation.add(tempImg);
-					}
-				}
+				file.delete();
 			}
 		}
 		
-		//generate document pages
-		for(String dirStr : DocGenerationDirs)
-		{
-			File workingDir = new File(WorkingParentDir, dirStr);
-			File origDir = new File(OriginalDocParentDir, dirStr);
-			if(origDir.exists())
+		File[] sourceDirectories = FileUtils.getAllDirectories(docSourceDir);
+		for (File sourceDir : sourceDirectories){
+			//
+			// the targetDirectory is the source directory with the source/target root directories replaced.
+			//
+			File targetDir = getTargetDirectory(sourceDir);
+			if(!targetDir.exists()){
+				targetDir.mkdirs();
+			}
+			//delete all working directory files
+			File[] oldHtmlFiles = targetDir.listFiles();
+			for(File htmlFile : oldHtmlFiles)
 			{
-				if(!workingDir.exists()){
-					workingDir.mkdirs();	
-				}
-				//delete all working directory files
-				File[] oldXmlFiles = workingDir.listFiles();
-				for(File file : oldXmlFiles)
+				if(!htmlFile.getName().contains(".svn"))//dont' delete svn file
 				{
-					if(!file.getName().contains(".svn"))//dont' delete svn file
-					{
-						file.delete();
-					}
-				}
-				//get all xml files from the original xml directory.
-				File[] xmlFiles = getXmlFiles(origDir);
-				if(xmlFiles != null)
-				{
-					for(File xmlFile: xmlFiles)
-					{
-						DocumentPage documentPage = readTemplateFile(xmlFile, dirStr);
-						documentation.add(documentPage);
-						File htmlFile = documentation.getTargetFilename(documentPage);
-						writeHTML(documentation,documentPage,htmlFile, workingDir);
-					}
+					htmlFile.delete();
 				}
 			}
+			//get all xml files from the original xml directory.
+			for(File xmlFile : sourceDir.listFiles(xmlFileFilter)) {
+				if (xmlFile.getName().equals("Definitions.xml")){
+					System.out.println("IGNORING DEFINITIONS.XML for now");
+					continue;
+				}
+				DocumentPage documentPage = readTemplateFile(xmlFile);
+				documentation.add(documentPage);
+			}
 		}
+		
+		//get images from the original image directory
+		File[] imgFiles = imgSourceDir.listFiles();
+		for(File imgFile: imgFiles) {
+			if(!imgFile.getName().contains(".svn") && imgFile.isFile())//dont' move over svn file
+			{
+				File workingImgFile = getTargetFile(imgFile);
+				FileUtils.copyFile(imgFile, workingImgFile);
+				BufferedImage img = ImageIO.read(imgFile);
+				int imgWidth = img.getWidth();
+				int imgHeight = img.getHeight();
+				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, imgWidth, imgHeight);//TODO: how to set size?
+				documentation.add(tempImg);
+			}
+		}
+		
+		for(DocumentPage documentPage : documentation.getDocumentPages()) {
+			File htmlFile = getTargetFile(documentPage.getTemplateFile());
+			htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+			try {
+				writeHTML(documentation,documentPage,htmlFile);
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("failed to parse document "+documentPage.getTemplateFile().getPath());
+			}
+		}
+	}
+	
+	private File getTargetFile(File sourceFile){
+		return new File(getTargetDirectory(sourceFile.getParentFile()), sourceFile.getName());
+	}
+	
+	private File getTargetDirectory(File sourceDir){
+		return new File(sourceDir.getPath().replace(docSourceDir.getPath(),docTargetDir.getPath()));
 	}
 	
 	private void generateHelpMap() throws Exception
 	{
-		String dir = new File(WorkingParentDir).getParent();
-		File mapFile =  new File(dir, mapFileName);
+		File mapFile =  new File(docTargetDir, mapFileName);
 		
 		try{
 			Element mapElement = new Element(VCellDocTags.map_tag);
 			mapElement.setAttribute(VCellDocTags.version_tag, "1.0");
-			//add toplevelfolder element
-			Element topLevelElement = new Element(VCellDocTags.mapID_tag);
-			topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
-			topLevelElement.setAttribute(VCellDocTags.url_attr, new File(WorkingParentDir, "toplevel.gif").getPath());
-			mapElement.addContent(topLevelElement);
 						
-			//add mapID elements to mapElement
-			for(String dirStr : DocGenerationDirs)//loop through all the folders
-			{
-				File workingDir = new File(WorkingParentDir, dirStr);
-				File htmlRelativeWorkingDir = new File(htmlRelativeParentDir, dirStr);
-				//get all html files
-				File[] htmlFiles = workingDir.listFiles();
-				if(htmlFiles != null && htmlFiles.length > 0)
-				{
-					boolean bFirstHtmlFile = true;
-					for(int i=0; i<htmlFiles.length; i++)
-					{
-						File onefile = htmlFiles[i];
-						if(onefile.getName().contains(".html"))
-						{
-							if(bFirstHtmlFile)
-							{
-								Element chapterMapIDElement = new Element(VCellDocTags.mapID_tag);
-								chapterMapIDElement.setAttribute(VCellDocTags.target_attr, dirStr);
-								chapterMapIDElement.setAttribute(VCellDocTags.url_attr, new File(htmlRelativeWorkingDir,onefile.getName()).getPath());
-								mapElement.addContent(chapterMapIDElement);
-								bFirstHtmlFile = false;
-							}
-							int extIdx = onefile.getName().indexOf(".html");
-							String fileNameNoExt = onefile.getName().substring(0,extIdx);
-							Element mapIDElement = new Element(VCellDocTags.mapID_tag);
-							mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
-							mapIDElement.setAttribute(VCellDocTags.url_attr, new File(htmlRelativeWorkingDir,onefile.getName()).getPath());
-							mapElement.addContent(mapIDElement);
-						}
-						else
-						{
-							continue;
-						}
-					}
-				}
-				
-			}//end of for loop
+			for (DocumentPage documentPage : documentation.getDocumentPages()) {
+				String fileNameNoExt = documentPage.getTemplateFile().getName().replace(".xml","");
+				Element mapIDElement = new Element(VCellDocTags.mapID_tag);
+				mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
+				File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
+				targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
+				mapIDElement.setAttribute(VCellDocTags.url_attr, FileUtils.getRelativePath(docTargetDir, targetHtmlFile, false).getPath());
+				mapElement.addContent(mapIDElement);	
+			}
 			//convert mapdocument to string
 			Document mapDoc = new Document();
-			Comment docComment = new Comment(VCellDocTags.HelpMapHeader); 
-			mapDoc.addContent(docComment);
 			mapDoc.setRootElement(mapElement);
+			
 			String mapString = XmlUtil.xmlToString(mapDoc, false);
-			
 			XmlUtil.writeXMLStringToFile(mapString, mapFile.getPath(), true);
+			
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw e;
@@ -194,104 +199,67 @@ public class DocumentCompiler {
 			
 	}
 	
-	private void generateTOC() throws Exception
+	private void validateTOC() throws Exception
 	{
-		String dir = new File(WorkingParentDir).getParent();
-		File tocFile =  new File(dir, tocFileName);
-		try{
-			Element tocElement = new Element(VCellDocTags.toc_tag);
-			tocElement.setAttribute(VCellDocTags.version_tag, "1.0");
-			//add toplevelfolder element
-			Element topLevelElement = new Element(VCellDocTags.tocitem_tag);
-			topLevelElement.setAttribute(VCellDocTags.image_attr, "toplevelfolder");
-			topLevelElement.setAttribute(VCellDocTags.text_attr, "The Virtual Cell Help");
-			tocElement.addContent(topLevelElement);
-						
-			//add mapID elements to mapElement
-			for(String dirStr : DocGenerationDirs)//loop through all the folders
-			{
-				if(dirStr.equals("PropertiesPanes"))
-				{
-					continue;
-				}
-				File workingDir = new File(WorkingParentDir, dirStr);
-				//chapters are under topLevelElement, chapter has files and childern, clicking on chapter points to the first file.
-				Element chapterElement = new Element(VCellDocTags.tocitem_tag);
-				chapterElement.setAttribute(VCellDocTags.target_attr, dirStr);
-				chapterElement.setAttribute(VCellDocTags.text_attr, dirStr);
-				topLevelElement.addContent(chapterElement);
-				//get all html files
-				File[] htmlFiles = workingDir.listFiles();
-				if(htmlFiles != null && htmlFiles.length > 0)
-				{
-					for(int i=0; i<htmlFiles.length; i++)
-					{
-						File onefile = htmlFiles[i];
-						if(onefile.getName().contains(".html"))
-						{
-							int extIdx = onefile.getName().indexOf(".html");
-							String fileNameNoExt = onefile.getName().substring(0,extIdx);
-							Element fileElement = new Element(VCellDocTags.tocitem_tag);
-							fileElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
-							fileElement.setAttribute(VCellDocTags.text_attr, fileNameNoExt);
-							chapterElement.addContent(fileElement);
-						}
-						else
-						{
-							continue;
-						}
-					}
-				}
-				
-			}//end of for loop
-			//convert toc to string
-			Document tocDoc = new Document();
-			Comment tocComment = new Comment(VCellDocTags.HelpTOCHeader); 
-			tocDoc.addContent(tocComment);
-			tocDoc.setRootElement(tocElement);
-			String tocString = XmlUtil.xmlToString(tocDoc, false);
-			
-			XmlUtil.writeXMLStringToFile(tocString, tocFile.getPath(), true);
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw e;
-		} 
-			
-	}
-	
-	private File[] getXmlFiles(File workingDir)
-	{
-		File[] files = workingDir.listFiles();
-		ArrayList<File> resultFiles = new ArrayList<File>();
-		int len = 0;
-		for(File file : files)
-		{
-			if((file.getName().endsWith(".xml")))
-			{
-				resultFiles.add(file);
-				len ++;
+		File tocSourceFile =  new File(docSourceDir, tocFileName);
+		//
+		// read in existing TOC file and validate it's contents
+		//
+		Document doc = XmlUtil.readXML(tocSourceFile);
+		Element root = doc.getRootElement();
+		if (!root.getName().equals(VCellDocTags.toc_tag)){
+			throw new RuntimeException("expecting "+VCellDocTags.toc_tag+" in file "+tocSourceFile.getPath());
+		}
+//		Namespace ns = Namespace.getNamespace("http://www.copasi.org/static/schema");	// default - blank namespace
+//		List abc = root.getChildren();
+		HashSet<DocumentPage> pagesNotYetReferenced = new HashSet<DocumentPage>(Arrays.asList(documentation.getDocumentPages()));
+		readTOCItem(pagesNotYetReferenced, root);
+		if (pagesNotYetReferenced.size()>0){
+			for (DocumentPage docPage : pagesNotYetReferenced){
+				System.err.println("Document page '"+docPage.getTarget()+"' not referenced in table of contents");
 			}
 		}
-		return resultFiles.toArray(new File[len]);
+		
+		// copy the Table of Contents to the target directory.
+		FileUtils.copyFile(new File(docSourceDir,"TOC.xml"),new File(docTargetDir,"TOC.xml"));			
 	}
 	
-	private DocumentPage readTemplateFile(File file, String parentDir) throws XmlParseException {
+	private void readTOCItem(HashSet<DocumentPage> pagesNotYetReferenced, Element element){
+		if (element.getName().equals(VCellDocTags.tocitem_tag)){
+			String target = element.getAttributeValue(VCellDocTags.target_attr);
+			String text = element.getAttributeValue(VCellDocTags.text_attr);
+			if (target!=null){
+				DocumentPage targetDocPage = documentation.getDocumentPage(new DocLink(target,target));
+				if (targetDocPage==null){
+					throw new RuntimeException("table of contents referencing nonexistant target '"+target+"'");
+				}else{
+					pagesNotYetReferenced.remove(targetDocPage);
+				}
+			}
+		}else if (element.getName().equals(VCellDocTags.toc_tag)){
+			// do nothing
+		}else{
+			throw new RuntimeException("unexpecteded element '"+element.getName()+"' in table of contents");
+		}
+		List<Element> children = element.getChildren(VCellDocTags.tocitem_tag);
+		for (Element tocItemElement : children){
+			readTOCItem(pagesNotYetReferenced, tocItemElement);
+		}
+	}
+	
+	private DocumentPage readTemplateFile(File file) throws XmlParseException {
 		Document doc = XmlUtil.readXML(file);
 		Element root = doc.getRootElement();
 		if (!root.getName().equals(VCellDocTags.VCellDoc_tag)){
 			throw new RuntimeException("expecting ...");
 		}
-//		Namespace ns = Namespace.getNamespace("http://www.copasi.org/static/schema");	// default - blank namespace
-//		List abc = root.getChildren();
 		Element pageElement = root.getChild(VCellDocTags.page_tag);
 		if (pageElement!=null){
-			String filename = file.getName();
 			String title = pageElement.getAttributeValue(VCellDocTags.page_title_attr);
-			String target = pageElement.getAttributeValue(VCellDocTags.target_attr);
 			DocSection appearance = getSection(pageElement,VCellDocTags.appearance_tag);
 			DocSection introduction = getSection(pageElement,VCellDocTags.introduction_tag);
 			DocSection operations = getSection(pageElement,VCellDocTags.operations_tag);
-			DocumentPage documentTemplate = new DocumentPage(filename, parentDir, title, target, introduction, appearance, operations);
+			DocumentPage documentTemplate = new DocumentPage(file, title, introduction, appearance, operations);
 			return documentTemplate;
 		}
 		return null;
@@ -300,8 +268,10 @@ public class DocumentCompiler {
 	// top level section parse method.
 	private DocSection getSection(Element root, String tagName) throws XmlParseException{
 		DocSection docSection = new DocSection();
-		readBlock(docSection,root.getChild(tagName));
-		
+		Element sectionRootElement = root.getChild(tagName);
+		if (sectionRootElement!=null){
+			readBlock(docSection,sectionRootElement);
+		}
 		return docSection;
 	}
 	
@@ -349,9 +319,8 @@ public class DocumentCompiler {
 		}
 	}
 			
-	private void writeHTML(Documentation documentation, DocumentPage documentPage, File file, File directory) throws Exception
+	private void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
 	{
-		File htmlFile =  new File(directory, file.getName());
 		PrintWriter pw = null;
 		try {
 			 pw = new PrintWriter(htmlFile);
@@ -382,7 +351,7 @@ public class DocumentCompiler {
 			 if(introSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,introSection, pw);
+				 printComponent(documentation,introSection, htmlFile.getParentFile(), pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -391,7 +360,7 @@ public class DocumentCompiler {
 			 if(appSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,appSection, pw);
+				 printComponent(documentation,appSection, htmlFile.getParentFile(), pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -400,7 +369,7 @@ public class DocumentCompiler {
 			 if(opSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,opSection, pw);
+				 printComponent(documentation,opSection, htmlFile.getParentFile(), pw);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -416,7 +385,7 @@ public class DocumentCompiler {
 		}
 	}
 	
-	private void printComponent(Documentation documentation, DocTextComponent docComp, PrintWriter pw){
+	private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw) throws IOException {
 		 if (docComp instanceof DocText){
 			 DocText text = (DocText)docComp;
 			 pw.print(text.getText());
@@ -424,49 +393,44 @@ public class DocumentCompiler {
 			 DocLink docLink = (DocLink)docComp;
 			 DocumentPage docPage = documentation.getDocumentPage(docLink);
 			 if (docPage==null){
-				 //temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
-				 //TODO:once everything is ready, we should uncomment this statement.
-//					 throw new RuntimeException("cannot find the page with target "+docLink.getTarget());
+				 throw new RuntimeException("reference to document '"+docLink.getTarget()+"' cannot be resolved");
 			 }
-			 if(docPage != null && documentation.getTargetFilename(docPage) != null)
-			 {
-				 pw.printf("<a href=\""+documentation.getTargetFilename(docPage)+"\">");
-				 pw.printf(docLink.getText());
-				 pw.printf("</a>");
-			 }
+			 File htmlFile = getTargetFile(docPage.getTemplateFile());
+			 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+			 String relativePathToTarget = FileUtils.getRelativePath(directory, htmlFile, false).getPath();
+			 pw.printf("<a href=\""+relativePathToTarget+"\">");
+			 pw.printf(docLink.getText());
+			 pw.printf("</a>");
 		 }else if (docComp instanceof DocImageReference){
 			 DocImageReference imageReference = (DocImageReference)docComp;
 			 DocumentImage docImage = documentation.getDocumentImage(imageReference);
 			 if (docImage==null){
-				//temporarily commented, becase we are in the half way of putting docs together, it is reasonable that some pages/links are not available/ready. just leave the link blank.
-				 //TODO:once everything is ready, we should uncomment this statement.
-//					 throw new RuntimeException("cannot find the image with target "+imageReference.getImageTarget());
+				throw new RuntimeException("reference to image '"+imageReference+"' cannot be resolved");
 			 }
-			 if (docImage != null && documentation.getTargetFilename(docImage) != null){
-				 File imageFile = documentation.getTargetFilename(docImage);
-				 pw.printf("<img src=\""+imageFile.getPath()+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
-			 }
+			 File imageFile = getTargetFile(docImage.getSourceFile());
+			 String relativePathToTarget = FileUtils.getRelativePath(directory, imageFile, false).getPath();
+			 pw.printf("<img src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
 			 pw.printf("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, pw);
+				 printComponent(documentation, comp, directory, pw);
 			 }
 			 pw.printf("</ul>");
 		 }else if (docComp instanceof DocParagraph){
 			 pw.printf("<p>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, pw);
+				 printComponent(documentation, comp, directory, pw);
 			 }
 			 pw.printf("</p>");
 		 }else if (docComp instanceof DocListItem){
 			 pw.printf("<li>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, pw);
+				 printComponent(documentation, comp, directory, pw);
 			 }
 			 pw.printf("</li>");
 		 }else if (docComp instanceof DocSection){
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, pw);
+				 printComponent(documentation, comp, directory, pw);
 			 }
 		 }
 	}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Error List">
+
+	<introduction>
+The Problems Tab within the Properties pane provides errors identified by VCell. 		
+	</introduction>
+
+	<operations>
+	<list>
+	<item> error 1 ... description </item>
+	<item> error 2 ... description </item>
+	<item> error 3 ... description </item>
+	</list>
+	</operations>
+
+</page>
+
+</vcelldoc>

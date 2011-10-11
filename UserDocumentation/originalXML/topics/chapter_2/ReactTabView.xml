@@ -33,7 +33,7 @@ Edit the kinetic type, rate constants, and catalysts by selecting the reaction f
 
 or
 
-		<link target = "PP_Flux"> Flux Properties pane
+		<link target = "PP_MemFlux"> Flux Properties pane
 		</link>
 
 as appropriate.  Delete a reaction by selecting the row or rows and using the "Delete Selected" button at the bottom of the table.  Use the 
