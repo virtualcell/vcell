@@ -201,7 +201,7 @@ public class DocumentCompiler {
 			//add toplevelfolder element
 			Element topLevelElement = new Element(VCellDocTags.mapID_tag);
 			topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
-			topLevelElement.setAttribute(VCellDocTags.url_attr, ".\\topics\\image\\vcell.gif");
+			topLevelElement.setAttribute(VCellDocTags.url_attr, "topics/image/vcell.gif");
 			mapElement.addContent(topLevelElement);	
 			//add doc html files
 			for (DocumentPage documentPage : documentation.getDocumentPages()) {
@@ -210,7 +210,7 @@ public class DocumentCompiler {
 				mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
 				File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
 				targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
-				mapIDElement.setAttribute(VCellDocTags.url_attr, FileUtils.getRelativePath(docTargetDir, targetHtmlFile, false).getPath());
+				mapIDElement.setAttribute(VCellDocTags.url_attr, getHelpRelativePath(docTargetDir, targetHtmlFile));
 				mapElement.addContent(mapIDElement);	
 			}
 			//convert mapdocument to string
@@ -430,7 +430,7 @@ public class DocumentCompiler {
 			 }
 			 File htmlFile = getTargetFile(docPage.getTemplateFile());
 			 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
-			 String relativePathToTarget = FileUtils.getRelativePath(directory, htmlFile, false).getPath();
+			 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
 			 pw.printf("<a href=\""+relativePathToTarget+"\">");
 			 pw.printf(docLink.getText());
 			 pw.printf("</a>");
@@ -441,7 +441,7 @@ public class DocumentCompiler {
 				throw new RuntimeException("reference to image '"+imageReference+"' cannot be resolved");
 			 }
 			 File imageFile = getTargetFile(docImage.getSourceFile());
-			 String relativePathToTarget = FileUtils.getRelativePath(directory, imageFile, false).getPath();
+			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
 			 pw.printf("<img src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
 			 pw.printf("<ul>");
@@ -467,4 +467,31 @@ public class DocumentCompiler {
 			 }
 		 }
 	}
+	
+	public static String getHelpRelativePath(File sourceDir, File targetFile) throws IOException {
+		int counter = 0;
+		while (sourceDir!=null && !targetFile.getPath().startsWith(sourceDir.getPath())){
+			sourceDir = sourceDir.getParentFile();
+			counter++;
+		}
+		if (sourceDir==null){
+				throw new IOException("cannot find relative path between '"+sourceDir.getPath()+"' and '"+targetFile.getPath()); 
+		}
+		String sourcePath = sourceDir.getPath();
+		String targetPath = targetFile.getPath().replace(sourcePath,"");
+		String prefix = "";
+		for (int i=0;i<counter;i++){
+			prefix = prefix + ".." + File.separator;
+//			targetPath = targetPath.substring(targetPath.indexOf(File.separator));
+		}
+		targetPath = prefix+targetPath ;
+		targetPath = targetPath.replace("\\", "/");
+		if(targetPath.startsWith("/"))
+		{
+			targetPath = targetPath.substring(1);
+		}
+		return targetPath;
+	}
+
+	
 }

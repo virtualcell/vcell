@@ -58,7 +58,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libsbmlj.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jh_2_0_05.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmf.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/axis.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jaxrpc.jar"/>
