@@ -1226,8 +1226,8 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu = new javax.swing.JMenu();
 			ivjHelpMenu.setName("HelpMenu");
 			ivjHelpMenu.setText("Help");
-			ivjHelpMenu.add(getJMenuItemOnlineHelp());
 			ivjHelpMenu.add(getNewHelpMenuItem());
+			ivjHelpMenu.add(getJMenuItemOnlineHelp());
 			ivjHelpMenu.add(getJSeparator6());
 			ivjHelpMenu.add(getAbout_BoxMenuItem());
 			ivjHelpMenu.add(getSeparator());
@@ -1384,7 +1384,7 @@ private javax.swing.JMenuItem getNewHelpMenuItem() {
 		try {
 			newHelpMenuItem = new javax.swing.JMenuItem();
 			newHelpMenuItem.setName("newHelpMenuItem");
-			newHelpMenuItem.setText("New Help");
+			newHelpMenuItem.setText("Help");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

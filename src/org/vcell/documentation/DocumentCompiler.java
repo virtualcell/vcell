@@ -40,6 +40,7 @@ public class DocumentCompiler {
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
 	public final static String helpSetFileName = "HelpSet.hs";
+	public final static String helpSearchFolderName = "JavaHelpSearch";
 	
 	private Documentation documentation = new Documentation();
 
@@ -58,19 +59,16 @@ public class DocumentCompiler {
 	//test have two html pages and they point to each other, in addion, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
-			if (args.length==2){
-				docSourceDir = new File(args[0]);
-				if (!docSourceDir.exists() || !docSourceDir.isDirectory()){
-					throw new RuntimeException("document source directory "+docSourceDir.getPath()+" doesn't exist or isn't a directory");
-				}
-				docTargetDir = new File(args[1]);
-				if (!docTargetDir.exists()){
-					docTargetDir.mkdirs();
-				}else if (!docTargetDir.isDirectory()){
-					throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
-				}
-			}else{
-				throw new RuntimeException("expecting xmlSource and resource directories for documentation");
+			docSourceDir = new File("UserDocumentation/originalXML");
+			docTargetDir = new File("resources/vcellDoc");
+
+			if (!docSourceDir.exists() || !docSourceDir.isDirectory()){
+				throw new RuntimeException("document source directory "+docSourceDir.getPath()+" doesn't exist or isn't a directory");
+			}
+			if (!docTargetDir.exists()){
+				docTargetDir.mkdirs();
+			}else if (!docTargetDir.isDirectory()){
+				throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
 			}
 			DocumentCompiler docCompiler = new DocumentCompiler();
 			docCompiler.batchRun();
@@ -83,15 +81,24 @@ public class DocumentCompiler {
 		}
 	}
 	
-	private void generateHelpSearch() 
+	private void generateHelpSearch() throws Exception
 	{
-		Indexer indexer = new Indexer();
-		try {
-			indexer.compile(new String[]{"-db","C:\\Developer\\eclipse\\workspace\\VCell\\resources\\vcellDoc\\JavaHelpSearch","C:\\Developer\\eclipse\\workspace\\VCell\\resources\\vcellDoc\\topics"});
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		File helpSearchDir = new File(docTargetDir, helpSearchFolderName); 
+		File topicsDir = new File(docTargetDir, "topics");
+		if (helpSearchDir.exists()) {
+			if (!helpSearchDir.isDirectory()) {
+				helpSearchDir.delete();
+			} else {
+				for (File file: helpSearchDir.listFiles()) {
+					file.delete();
+				}
+			}
+		} else {
+			helpSearchDir.mkdirs();
 		}
+		Indexer indexer = new Indexer();
+//		indexer.compile(new String[]{"-logfile", "indexer.log", "-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", docTargetDir + File.separator + helpSearchFolderName, docTargetDir + File.separator + "topics"});//javahelpsearch generated under vcell root
+		indexer.compile(new String[]{"-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
 	}
 
 	public void batchRun() throws Exception
@@ -134,8 +141,12 @@ public class DocumentCompiler {
 					htmlFile.delete();
 				}
 			}
+			if (sourceDir.toString().contains(".svn")) {
+				continue;
+			}
 			//get all xml files from the original xml directory.
-			for(File xmlFile : sourceDir.listFiles(xmlFileFilter)) {
+			File[] xmlFiles = sourceDir.listFiles(xmlFileFilter);
+			for(File xmlFile : xmlFiles) {
 				if (xmlFile.getName().equals("Definitions.xml")){
 					System.out.println("IGNORING DEFINITIONS.XML for now");
 					continue;
@@ -353,7 +364,7 @@ public class DocumentCompiler {
 			 pw.println("<" + VCellDocTags.html_head_tag + ">");
 			 //start title
 			 pw.print("<" + VCellDocTags.html_title_tag + ">");
-			 pw.print("VCell Documentaion");                    //html page title, replace when needed
+			 pw.print(documentPage.getTitle());                    //html page title, replace when needed
 			 //end title
 			 pw.print("</" + VCellDocTags.html_title_tag + ">");
 			 pw.println();

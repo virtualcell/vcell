@@ -80,8 +80,15 @@ public class VcellHelpViewer extends JFrame
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (Exception e) { }
 
-		VcellHelpViewer viewer = new VcellHelpViewer();
+		final VcellHelpViewer viewer = new VcellHelpViewer();
 		viewer.setVisible(true);
+		viewer.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				viewer.dispose();
+				System.exit(0);
+			}
+		});
 	}
 
 }
