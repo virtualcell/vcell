@@ -15,23 +15,21 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Text;
 import org.vcell.util.FileUtils;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+
+import com.sun.java.help.search.Indexer;
 
 public class DocumentCompiler {
 
@@ -41,6 +39,7 @@ public class DocumentCompiler {
 	public final static String ImageDir = "topics\\image";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
+	public final static String helpSetFileName = "HelpSet.hs";
 	
 	private Documentation documentation = new Documentation();
 
@@ -77,11 +76,24 @@ public class DocumentCompiler {
 			docCompiler.batchRun();
 			docCompiler.generateHelpMap();
 			docCompiler.validateTOC();
+			docCompiler.copyHelpSet();
+			docCompiler.generateHelpSearch();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
 	}
 	
+	private void generateHelpSearch() 
+	{
+		Indexer indexer = new Indexer();
+		try {
+			indexer.compile(new String[]{"-db","C:\\Developer\\eclipse\\workspace\\VCell\\resources\\vcellDoc\\JavaHelpSearch","C:\\Developer\\eclipse\\workspace\\VCell\\resources\\vcellDoc\\topics"});
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public void batchRun() throws Exception
 	{
 		//generate document images
@@ -175,7 +187,12 @@ public class DocumentCompiler {
 		try{
 			Element mapElement = new Element(VCellDocTags.map_tag);
 			mapElement.setAttribute(VCellDocTags.version_tag, "1.0");
-						
+			//add toplevelfolder element
+			Element topLevelElement = new Element(VCellDocTags.mapID_tag);
+			topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
+			topLevelElement.setAttribute(VCellDocTags.url_attr, ".\\topics\\image\\vcell.gif");
+			mapElement.addContent(topLevelElement);	
+			//add doc html files
 			for (DocumentPage documentPage : documentation.getDocumentPages()) {
 				String fileNameNoExt = documentPage.getTemplateFile().getName().replace(".xml","");
 				Element mapIDElement = new Element(VCellDocTags.mapID_tag);
@@ -221,7 +238,12 @@ public class DocumentCompiler {
 		}
 		
 		// copy the Table of Contents to the target directory.
-		FileUtils.copyFile(new File(docSourceDir,"TOC.xml"),new File(docTargetDir,"TOC.xml"));			
+		FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));			
+	}
+	
+	private void copyHelpSet() throws Exception
+	{
+		FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
 	}
 	
 	private void readTOCItem(HashSet<DocumentPage> pagesNotYetReferenced, Element element){

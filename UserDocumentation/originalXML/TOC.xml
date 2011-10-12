@@ -1,34 +1,36 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
-    <tocitem target="GeneralOverview" text="VCell Overview">
-    </tocitem>
-    <tocitem target="PhysiologyOverview" text="Physiology">
-    	<tocitem target="Membranes" text="Membranes"/>
-    	<tocitem target="PathLink" text="PathLink"/>
-    	<tocitem target="Phys_Struct" text="Phys_Struct"/>
-    	<tocitem target="PhysStructDiagView" text="PhysStructDiagView"/>
-    	<tocitem target="PhysStructTabView" text="PhysStructTabView"/>
-    	<tocitem target="ReactDiagView" text="ReactDiagView"/>
-    	<tocitem target="ReactTabView" text="ReactTabView"/>
-    	<tocitem target="Reactions" text="Reactions"/>
-    	<tocitem target="Species" text="Species"/>
-    	<tocitem target="Volumes" text="Volumes"/>
-     </tocitem>
-    <tocitem target="ApplicationOverview" text="BioModel Applications">
-    	<tocitem target="fieldData" text="field data"/>
-    	<tocitem target="GeometryOverview" text="geometry">
-    	   	<tocitem target="geom_Analytic" text="analytic geometry"/>
-   	 	  	<tocitem target="geom_from_images" text="image-based geometry"/>
-   		   	<tocitem target="geom_structure_mapping" text="goemetry structure mapping"/>
+	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
+    	<tocitem target="GeneralOverview" text="VCell Overview">
     	</tocitem>
-    </tocitem>
-    <tocitem target="SimulationOverview" text="Simulations">
-    </tocitem>
-    <tocitem target="SimulationResultsOverview" text="Simulation Results">
-    </tocitem>
-    <tocitem target="PathwayOverview" text="chapter6">
-   	   	<tocitem target="biopax_source" text="biopax source"/>
-   	   	<tocitem target="pathway_diagram" text="pathway diagram"/>
-   	   	<tocitem target="pathway_objects" text="pathway objects"/>
+    	<tocitem target="PhysiologyOverview" text="Physiology">
+    		<tocitem target="Membranes" text="Membranes"/>
+    		<tocitem target="PathLink" text="PathLink"/>
+    		<tocitem target="Phys_Struct" text="Phys_Struct"/>
+    		<tocitem target="PhysStructDiagView" text="PhysStructDiagView"/>
+    		<tocitem target="PhysStructTabView" text="PhysStructTabView"/>
+    		<tocitem target="ReactDiagView" text="ReactDiagView"/>
+    		<tocitem target="ReactTabView" text="ReactTabView"/>
+    		<tocitem target="Reactions" text="Reactions"/>
+    		<tocitem target="Species" text="Species"/>
+    		<tocitem target="Volumes" text="Volumes"/>
+     	</tocitem>
+    	<tocitem target="ApplicationOverview" text="BioModel Applications">
+    		<tocitem target="fieldData" text="field data"/>
+    		<tocitem target="GeometryOverview" text="geometry">
+    	   		<tocitem target="geom_Analytic" text="analytic geometry"/>
+   	 	  		<tocitem target="geom_from_images" text="image-based geometry"/>
+   		   		<tocitem target="geom_structure_mapping" text="goemetry structure mapping"/>
+    		</tocitem>
+    	</tocitem>
+   		<tocitem target="SimulationOverview" text="Simulations">
+    	</tocitem>
+    	<tocitem target="SimulationResultsOverview" text="Simulation Results">
+    	</tocitem>
+    	<tocitem target="PathwayOverview" text="chapter6">
+   	   		<tocitem target="biopax_source" text="biopax source"/>
+   	   		<tocitem target="pathway_diagram" text="pathway diagram"/>
+   	   		<tocitem target="pathway_objects" text="pathway objects"/>
+    	</tocitem>
     </tocitem>
 </toc>
