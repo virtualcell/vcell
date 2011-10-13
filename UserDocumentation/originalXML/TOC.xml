@@ -32,10 +32,10 @@
     	</tocitem>
     	<tocitem target="SimulationResultsOverview" text="Simulation Results">
     	</tocitem>
-    	<tocitem target="PathwayOverview" text="chapter6">
-   	   		<tocitem target="biopax_source" text="biopax source"/>
-   	   		<tocitem target="pathway_diagram" text="pathway diagram"/>
-   	   		<tocitem target="pathway_objects" text="pathway objects"/>
-    	</tocitem>
+    	<tocitem target="PathwayOverview" text="Biological Pathways">
+   			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
+   	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram View"/>
+   	   		<tocitem target="PathwayObjectsView" text="Pathway Objects View"/>
+   		</tocitem>	
     </tocitem>
 </toc>
