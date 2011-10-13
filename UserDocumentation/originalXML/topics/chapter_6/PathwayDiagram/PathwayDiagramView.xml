@@ -1,27 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-	<link target = "target"> put your link here </link>
-	<imgReference target = "target"/>
-	<def target = "target"> put your link here </def>
-    
-    NOTE: introduction is required. 
-          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
-          Please be noted no space and special chars are allowed in the file name. 
-          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
-          Before you commit, please try it out in browser first.
--->
 <vcelldoc>
-<page title="title">
+<page title="Pathway Diagram View" target="PathwayDiagramView">
 
+	<introduction>
+Displays in a graphical form the entities selected by the user in the Pathway Panel. It 
+can be used to examine their properties, import them within the model and manage their 
+link status with model entities.
+<para></para>
+It is the graph format representation of the 
+		<link target = "PathwayObjectsView"> Pathway Objects View</link>
+.
+	</introduction>
 	
-	<introduction> 	</introduction>
+	<appearance>
+The view represents various entity types as circles and the relationships between them as 
+full or dotted lines. The screenshot below shows two biochemical reactions and their 
+dependent entities.
+<para></para>
+		<imgReference target = "PathwayDiagramView.png">
+		</imgReference>
+<para></para>
+The bottom pane of the window displays a 
+		<link target = "PP_Pathways"> Pathway Object Properties Pane </link> 
+where the properties of a selected entity are being displayed.
+	</appearance>
 	
-	<appearance>  </appearance>
-	
-	<operations>  </operations>
-	
-	<comments>  </comments>
-
+	<operations>
+The user can perform various operations upon these entities, either on individually selected 
+entities or multiple selected entities.
+<para></para>
+More entities can be added from the Pathway Panel.
+<para></para>
+Single / multiple entities can be deleted from the view.
+<para></para>
+Multiple entities can be grouped together under a Group entity.
+<para></para>
+Single / multiple entities can be imported within a model. To do this select one or more 
+entities and press the Physiology Links button, then the option Import into physiology...
+<para></para>
+The Import into physiology Dialog box is opened. Here the user is allowed to edit the 
+default values for the compartment and stoichiometric coefficient. Once that step is finished 
+the imported entities are displayed within the 
+		<link target = "ReactDiagView"> Reaction Diagram View</link>
+.
+<para></para>
+		<imgReference target = "PathwayDiagramLinked2.png">
+		</imgReference>
+<para></para>
+Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
+small 'L' mark within their circle representation, indicating their linked status.
+<para></para>
+		<imgReference target = "PathwayDiagramLinked1.png">
+		</imgReference>
+<para></para>
+	</operations>
 </page>
 
 </vcelldoc>

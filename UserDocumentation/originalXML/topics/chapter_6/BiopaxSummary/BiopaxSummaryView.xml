@@ -1,44 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-	<link target = "target"> put your link here </link>
-	<imgReference target = "target"/>
-	<def target = "target"> put your link here </def>
-    
-    NOTE: introduction is required. 
-          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
-          Please be noted no space and special chars are allowed in the file name. 
-          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
-          Before you commit, please try it out in browser first.
--->
 <vcelldoc>
-<page title="title">
+<page title="Biopax Summary View" target="BiopaxSummaryView">
 
-	
 	<introduction>
-	Some stuff before a para. 
-	<para>Some text. Some more text. <bold>Some bold text.</bold> Some more text. Some text. Some more text. 
-	Some text. Some more text. Some text. Some more text. 
-	Some text. Some more text. Some text. Some more text. Some text. 
-	Some more text. Some text. Some more text. 
-	Some text. Some more text. Some text. Some more text. Some text. Some more text. </para>
-	<para>Some text. Some more text. Some text. Some more text. Some text. Some more text. 
-	Some text. Some more text. Some text. Some more text. Some text. Some more text. </para>
-	<para>Some text. Some more text. 
-	<list><item>Some item text. </item>
-	<item>Some more item text. </item>
-	<item>Some item text. </item>
-	<item>Some more item text. </item></list>
-	Some more stuff outside a list.</para> Some more stuff after a para.
-	
-	
+Displays the entities within the 
+<link target = "PathwayDiagramView"> Pathway Diagram View</link> 
+in text format.
 	</introduction>
 	
-	<appearance>  </appearance>
+	<appearance>
+The view has 2 sections. The Summary View is displayed first, followed by the Detailed View.
+<para></para>
+The Summary View shows the list of entities present in the Pathway Diagram View using 
+the general format of Type, Name, ID.
+<para></para>
+The Detailed View shows the equivalent of the Pathway Object Properties Pane in text format and 
+with each inner sub-entity expanded.
+<para></para>
+		<imgReference target = "BiopaxSummaryView.png">
+		</imgReference>
+<para></para>
+	</appearance>
 	
-	<operations>  </operations>
-	
-	<comments>  </comments>
-
+	<operations>
+All the information in this view is read-only, no user actions can be performed.
+	</operations>
 </page>
 
 </vcelldoc>
