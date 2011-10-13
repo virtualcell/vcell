@@ -11,6 +11,7 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -81,6 +82,10 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public void replace(BioPaxObject keeperObject) {
 		
 	}
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		
+	}
+	
 
 	public String toString(){
 		String suffix = "";

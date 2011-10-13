@@ -139,8 +139,11 @@ public class PathwayReader {
 			Iterator<Element> iter = children.iterator();
 			while(iter.hasNext()){
 				Object child = iter.next();
-				double prog = ((int)(((double)counterObjects*1000)/(double)numChildren))/10.0;
-				BeanUtils.setMessage(clientTaskStatusSupport, "Read Doc "+prog+"% done...");
+				int prog = (int)(counterObjects*100.0/numChildren);
+				if (clientTaskStatusSupport != null) {
+					clientTaskStatusSupport.setMessage("Reading Document...");
+					clientTaskStatusSupport.setProgress(prog);
+				}
 				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 					throw UserCancelException.CANCEL_GENERIC;
 				}

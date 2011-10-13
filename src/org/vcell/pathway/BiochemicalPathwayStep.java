@@ -10,6 +10,10 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class BiochemicalPathwayStep extends PathwayStep {
@@ -35,6 +39,19 @@ public class BiochemicalPathwayStep extends PathwayStep {
 		
 		if(stepConversion == objectProxy) {
 			stepConversion = (Conversion) concreteObject;
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		if(stepConversion instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)stepConversion;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					stepConversion = (Conversion) concreteObject;
+				}
+			}
 		}
 	}
 

@@ -10,6 +10,8 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
@@ -35,6 +37,10 @@ public class Catalysis extends Control {
 	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
 	}
 		
 	public void showChildren(StringBuffer sb, int level){

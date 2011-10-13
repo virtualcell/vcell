@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -90,6 +92,70 @@ public class Pathway extends EntityImpl {
 			PathwayStep thing = pathwayOrder.get(i);
 			if(thing == objectProxy && concreteObject instanceof PathwayStep) {
 				pathwayOrder.set(i, (PathwayStep)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		if(organism instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)organism;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					organism = (BioSource) concreteObject;
+				}
+			}
+		}
+		
+		
+		for (int i=0;i<pathwayComponentInteraction.size();i++){
+			Interaction thing = pathwayComponentInteraction.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof Interaction){
+							pathwayComponentInteraction.set(i, (Interaction)concreteObject);
+						} else {
+							pathwayComponentInteraction.remove(i);
+						}
+					}
+				}
+			}
+		}
+/*		
+ * We do NOT solve references to pathway and pathway steps because of infinite recursion
+ * Ex: Pathway "E-cadherin signalling in the nascent..."  
+ * http://www.pathwaycommons.org/pc/webservice.do?cmd=get_record_by_cpath_id&version=2.0&q=826249&output=biopax
+ * The paths CPATH-826249 and CPATH-826243 cross reference each other
+ * 
+		// TODO: add another loop for pathway step
+		for (int i=0;i<pathwayComponentPathway.size();i++){
+			Pathway thing = pathwayComponentPathway.get(i);
+			if (thing == objectProxy && concreteObject instanceof Pathway){
+				pathwayComponentPathway.set(i, (Pathway)concreteObject);
+			} else if (thing == objectProxy && !(concreteObject instanceof Pathway)){
+				pathwayComponentPathway.remove(i);
+			}
+		}
+		*/
+		for (int i=0; i<pathwayOrder.size(); i++) {
+			PathwayStep thing = pathwayOrder.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof PathwayStep){
+							pathwayOrder.set(i, (PathwayStep)concreteObject);
+						} else {
+							
+						}
+					}
+				}
 			}
 		}
 	}

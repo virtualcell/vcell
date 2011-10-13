@@ -11,6 +11,7 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -69,6 +70,24 @@ public class ConversionImpl extends InteractionImpl implements Conversion {
 			}
 		}
 	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		for (int i=0; i<participantStoichiometry.size(); i++) {
+			Stoichiometry thing = participantStoichiometry.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						participantStoichiometry.set(i, (Stoichiometry)concreteObject);
+					}
+				}
+			}
+		}
+	}
+	
 	public void replace(BioPaxObject keeperObject) {
 		for (int i=0; i<getParticipants().size(); i++) {
 			InteractionParticipant thing = (InteractionParticipant)getParticipants().get(i);
