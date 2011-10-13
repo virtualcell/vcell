@@ -43,6 +43,8 @@ import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -500,6 +502,10 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		int selectedRow = getFnScrollPaneTable().getSelectedRow();
 		if (selectedRow > -1) {
 			AnnotatedFunction function = outputFnsListTableModel.getValueAt(selectedRow);
+			String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Deleting Output Function", "You are going to delete the Output Function '" + function.getName() + "'. Continue?");
+			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+				return;
+			}
 			try {
 				outputFunctionContext.removeOutputFunction(function);
 			} catch (PropertyVetoException e1) {
