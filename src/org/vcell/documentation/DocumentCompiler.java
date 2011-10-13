@@ -32,6 +32,7 @@ import cbit.vcell.xml.XmlParseException;
 import com.sun.java.help.search.Indexer;
 
 public class DocumentCompiler {
+	public final static int maxImgWidth = 700;
 
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
 	public static File docTargetDir;
@@ -166,7 +167,11 @@ public class DocumentCompiler {
 				BufferedImage img = ImageIO.read(imgFile);
 				int imgWidth = img.getWidth();
 				int imgHeight = img.getHeight();
-				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, imgWidth, imgHeight);//TODO: how to set size?
+				double ratio = 1.0;
+				if (imgWidth > maxImgWidth) {
+					ratio = maxImgWidth * 1.0 / imgWidth;
+				}
+				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, (int)(imgWidth*ratio), (int)(imgHeight*ratio));
 				documentation.add(tempImg);
 			}
 		}
@@ -351,14 +356,22 @@ public class DocumentCompiler {
 			}
 		}
 	}
+	
+	private String getStartTag(String tag) {
+		return "<" + VCellDocTags.html_tag + ">";
+	}
 			
+	private String getEndTag(String tag) {
+		return "</" + VCellDocTags.html_tag + ">";
+	}
+	
 	private void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
 	{
 		PrintWriter pw = null;
 		try {
 			 pw = new PrintWriter(htmlFile);
 			 //start html
-			 pw.println("<" + VCellDocTags.html_tag + ">");
+			 pw.println(getStartTag(VCellDocTags.html_tag));
 			 
 			 //start head
 			 pw.println("<" + VCellDocTags.html_head_tag + ">");
@@ -375,7 +388,7 @@ public class DocumentCompiler {
 			 pw.println("<" + VCellDocTags.html_body_tag + ">");
 			 //title
 			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 pw.print(documentPage.getTitle());
+			 pw.print("<" + VCellDocTags.html_header_tag + ">" +  documentPage.getTitle() + "</" + VCellDocTags.html_header_tag + ">");
 			 pw.print("</" + VCellDocTags.html_new_line + ">");
 			 pw.println();
 			 
@@ -408,6 +421,9 @@ public class DocumentCompiler {
 			 }
 			 //end body
 			 pw.println("</" + VCellDocTags.html_body_tag + ">");
+			 
+			 //end html
+			 pw.println(getEndTag(VCellDocTags.html_tag));
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw e;
@@ -431,9 +447,9 @@ public class DocumentCompiler {
 			 File htmlFile = getTargetFile(docPage.getTemplateFile());
 			 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
 			 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
-			 pw.printf("<a href=\""+relativePathToTarget+"\">");
-			 pw.printf(docLink.getText());
-			 pw.printf("</a>");
+			 pw.print("<a href=\""+relativePathToTarget+"\">");
+			 pw.print(docLink.getText());
+			 pw.print("</a>");
 		 }else if (docComp instanceof DocImageReference){
 			 DocImageReference imageReference = (DocImageReference)docComp;
 			 DocumentImage docImage = documentation.getDocumentImage(imageReference);
@@ -442,25 +458,25 @@ public class DocumentCompiler {
 			 }
 			 File imageFile = getTargetFile(docImage.getSourceFile());
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
-			 pw.printf("<img src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth()+ "\" height=\"" +docImage.getDisplayHeight()+"\">");
+			 pw.println("<img align=top src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth() + "\" height=\"" +docImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
-			 pw.printf("<ul>");
+			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
 				 printComponent(documentation, comp, directory, pw);
 			 }
-			 pw.printf("</ul>");
+			 pw.println("</ul>");
 		 }else if (docComp instanceof DocParagraph){
-			 pw.printf("<p>");
+			 pw.print("<p>");
 			 for (DocTextComponent comp : docComp.getComponents()){
 				 printComponent(documentation, comp, directory, pw);
 			 }
-			 pw.printf("</p>");
+			 pw.println("</p>");
 		 }else if (docComp instanceof DocListItem){
-			 pw.printf("<li>");
+			 pw.print("<li>");
 			 for (DocTextComponent comp : docComp.getComponents()){
 				 printComponent(documentation, comp, directory, pw);
 			 }
-			 pw.printf("</li>");
+			 pw.println("</li>");
 		 }else if (docComp instanceof DocSection){
 			 for (DocTextComponent comp : docComp.getComponents()){
 				 printComponent(documentation, comp, directory, pw);
@@ -484,7 +500,7 @@ public class DocumentCompiler {
 			prefix = prefix + ".." + File.separator;
 //			targetPath = targetPath.substring(targetPath.indexOf(File.separator));
 		}
-		targetPath = prefix+targetPath ;
+		targetPath = prefix+(targetPath.charAt(0) == '\\' ? targetPath.substring(1) : targetPath);
 		targetPath = targetPath.replace("\\", "/");
 		if(targetPath.startsWith("/"))
 		{
