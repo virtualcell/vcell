@@ -353,6 +353,10 @@ public class DocumentCompiler {
 					docComponent.add(docParagraph);
 					readBlock(docParagraph, childElement);
 				}
+				else
+				{
+					throw new RuntimeException("Unsupoorted element " + childElement.getName());
+				}
 			}
 		}
 	}
