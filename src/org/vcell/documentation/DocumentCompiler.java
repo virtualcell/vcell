@@ -36,7 +36,7 @@ public class DocumentCompiler {
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
 	public static File docTargetDir;
 	public static File docSourceDir;
-	public final static String ImageDir = "topics\\image";
+	public final static String ImageDir = "topics/image";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
 	public final static String helpSetFileName = "HelpSet.hs";
