@@ -33,6 +33,7 @@ public class VCellDocTags {
 	public final static String html_body_tag = "body";
 	public final static String html_title_tag = "title";
 	public final static String html_new_line = "p";
+	public final static String html_header_tag = "h2";
 	public final static String html_bold_tag = "b";
 	public final static String html_italic_tag = "i";
 	public final static String html_list_tag = "ul";
