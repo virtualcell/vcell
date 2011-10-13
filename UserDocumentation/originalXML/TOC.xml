@@ -22,6 +22,11 @@
    	 	  		<tocitem target="geom_from_images" text="image-based geometry"/>
    		   		<tocitem target="geom_structure_mapping" text="goemetry structure mapping"/>
     		</tocitem>
+    		<tocitem target="simulations_overview" text="Simulations">
+    	   		<tocitem target="simulations" text="Simulations"/>
+   	 	  		<tocitem target="output_functions" text="Output Functions"/>
+   		   		<tocitem target="generated_math" text="Generated Math"/>
+    		</tocitem>
     	</tocitem>
    		<tocitem target="SimulationOverview" text="Simulations">
     	</tocitem>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Output Functions">
+
+	
+	<introduction> 
+	<para>Output functions are user defined observables for simulation results in a biomodel application or in a math model, 
+	and they are saved with the model and available for viewing in all simulations in containing application or math model.</para> 
+	
+	<para>Output functions are defined as vcell expressions. Symbols that can be used in the expression of a output function are:</para>	
+	<list>
+	<item>t</item>
+	<item>x, y, z : spatial models only</item>
+	<item>model variables</item>
+	<item>vcell predefined mathematical functions</item>
+	<item>previously defined output functions</item>
+	</list>
+	<para>After an output function is added, it will be automatically added to all simulation result viewers.</para>
+	
+	<para>
+	In spatial models, output functions are defined in a specific subdomain, either in a volume or on a membrane. This determines the function type of a output function. 
+	In subdomains where a output function is not define, Gray color will be displayed with "Undefined" as the value in results viewer.  	
+	</para>
+	</introduction>
+	
+	<appearance><imgReference target="output_functions.jpg"/></appearance>
+	
+	<operations>
+	<list>	
+	<item>Add Function</item>
+	
+	In an non-spatial application or math model, click "Add Function" button to add a output function.
+	After editing the name and expression, click "OK" to add the function.
+	<imgReference target="output_functions_nonspatial_add.jpg"/>
+	
+	<para>In a spatial application or math model, click "Add Function" button to add a output function.
+	After selecting a subdomain, editing the name and expression, click "OK" to add the function.
+	<imgReference target="output_functions_spatial_add.jpg"/>
+	</para>
+	
+	<item>Delete Function</item>
+	Select a function in the table, click "Delete Function" button to delete a function.	
+	
+	<item>Edit Expression</item>	
+	After a function is added, expression can be changed by double clicking the expression column.
+	<imgReference target="output_functions_edit.jpg"/>
+	</list>
+	
+	<para>Remember to save the model after a function is added or deleted.</para>
+	</operations>
+	<comments></comments>
+
+</page>
+
+</vcelldoc>
