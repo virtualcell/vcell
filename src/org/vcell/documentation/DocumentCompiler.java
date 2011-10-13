@@ -458,7 +458,8 @@ public class DocumentCompiler {
 			 }
 			 File imageFile = getTargetFile(docImage.getSourceFile());
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
-			 pw.println("<img align=top src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth() + "\" height=\"" +docImage.getDisplayHeight()+"\">");
+			 pw.println("<br/><br/>");
+			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth() + "\" height=\"" +docImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
@@ -491,7 +492,7 @@ public class DocumentCompiler {
 			counter++;
 		}
 		if (sourceDir==null){
-				throw new IOException("cannot find relative path between '"+sourceDir.getPath()+"' and '"+targetFile.getPath()); 
+				throw new IOException("sourceDir can not be null"); 
 		}
 		String sourcePath = sourceDir.getPath();
 		String targetPath = targetFile.getPath().replace(sourcePath,"");
