@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class SequenceSite extends SequenceLocation {
@@ -32,6 +35,10 @@ public class SequenceSite extends SequenceLocation {
 	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
 	}
 	
 	public void showChildren(StringBuffer sb, int level){

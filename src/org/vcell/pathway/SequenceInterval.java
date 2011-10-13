@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class SequenceInterval extends SequenceLocation {
@@ -38,6 +41,29 @@ public class SequenceInterval extends SequenceLocation {
 		}
 		if(sequenceIntervalEnd == objectProxy) {
 			sequenceIntervalEnd = (SequenceSite) concreteObject;
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+
+		if(sequenceIntervalBegin instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalBegin;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					sequenceIntervalBegin = (SequenceSite) concreteObject;
+				}
+			}
+		}
+		if(sequenceIntervalEnd instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalEnd;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					sequenceIntervalEnd = (SequenceSite) concreteObject;
+				}
+			}
 		}
 	}
 

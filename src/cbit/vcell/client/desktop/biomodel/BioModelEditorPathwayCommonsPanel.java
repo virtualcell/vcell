@@ -20,12 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -54,18 +49,14 @@ import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.text.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.desktop.BioModelNode;
 
 @SuppressWarnings("serial")
@@ -276,6 +267,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
 //				String ERROR_MSG_TAG = "error_msg";
+				
+//				String xmlText = FileUtils.readFileToString(new File("pathwayTest.xml"));//wei
+//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);//wei
+
 				org.jdom.Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
 				org.jdom.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
@@ -319,7 +314,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				}
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false,true,null);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, true,true,null);
 	}
 
 	public Pathway computeSelectedPathway() {

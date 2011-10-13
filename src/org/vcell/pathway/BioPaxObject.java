@@ -11,6 +11,7 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
@@ -40,6 +41,7 @@ public interface BioPaxObject extends Identifiable, Matchable {
 	
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject);
 	public void replace(BioPaxObject keeperObject);
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects);
 	
 	String getTypeLabel();
 

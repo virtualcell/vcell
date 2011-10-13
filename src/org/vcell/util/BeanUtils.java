@@ -23,6 +23,7 @@ import java.awt.Window;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,6 +38,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.rmi.RemoteException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -897,13 +900,19 @@ public final class BeanUtils {
 					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
 						return;
 					}
+					setMessage(clientTaskStatusSupport,"Starting download...");
 					byte[] data = new byte[64000];
 					int nRead;
 					int accum = 0;
+					DecimalFormat numberFormat = new DecimalFormat("###,###");
+					String totalLength = numberFormat.format(contentLength);
 					while ((nRead = is.read(data, 0, data.length)) != -1) { 
 						bos.write(data, 0, nRead);
 						accum+= nRead;
-						setMessage(clientTaskStatusSupport,"Download "+contentLength+" bytes: "+(int)(((double)accum*100)/(double)contentLength)+"% done... "+url.getHost());
+						if (clientTaskStatusSupport != null) {
+							clientTaskStatusSupport.setMessage("Downloading "+totalLength+" bytes from "+url.getHost());
+							clientTaskStatusSupport.setProgress((int)(accum*100.0/contentLength));
+						}
 						if(bFlag[0] == FLAG_STATE.INTERRUPTED){
 							return;
 						}
@@ -923,6 +932,7 @@ public final class BeanUtils {
 				}
 			}
 		});
+		readBytesThread.setName("DownloadBytes");
 		readBytesThread.start();
 
 		//Monitor content
@@ -967,19 +977,25 @@ public final class BeanUtils {
 		//parse content
 		final byte[] bytes = downloadBytes(url, clientTaskStatusSupport);
 		final ByteArrayInputStream bis  = new ByteArrayInputStream(bytes){
+			private void setStatus() {
+				if (clientTaskStatusSupport != null) {
+					clientTaskStatusSupport.setMessage("Parsing Document");
+					clientTaskStatusSupport.setProgress((int)(pos*100.0/bytes.length));
+				}
+			}
 			@Override
 			public synchronized int read() {
-				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				setStatus();
 				return super.read();
 			}
 			@Override
 			public synchronized int read(byte[] b, int off, int len) {
-				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				setStatus();
 				return super.read(b, off, len);
 			}
 			@Override
 			public int read(byte[] b) throws IOException {
-				setMessage(clientTaskStatusSupport,"Parse Doc "+(int)(((double)pos*100)/(double)bytes.length)+"% done...");
+				setStatus();
 				return super.read(b);
 			}
 			

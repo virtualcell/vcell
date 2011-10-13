@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Dna extends PhysicalEntity {
@@ -32,6 +35,20 @@ public class Dna extends PhysicalEntity {
 		}
 	}
 
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		if(entityReference instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)entityReference;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					entityReference = (EntityReference) concreteObject;
+				}
+			}
+		}
+	}
+	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb,level);
 		printObject(sb,"entityReference",entityReference,level);

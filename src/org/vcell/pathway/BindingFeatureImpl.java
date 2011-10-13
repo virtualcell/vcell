@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class BindingFeatureImpl extends EntityFeatureImpl implements BindingFeature {
@@ -35,6 +38,19 @@ public class BindingFeatureImpl extends EntityFeatureImpl implements BindingFeat
 		
 		if(bindsTo == objectProxy) {
 			bindsTo = (BindingFeature) concreteObject;
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		if(bindsTo instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bindsTo;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					bindsTo = (BindingFeature) concreteObject;
+				}
+			}
 		}
 	}
 	

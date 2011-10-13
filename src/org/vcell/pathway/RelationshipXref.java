@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -34,6 +36,23 @@ public class RelationshipXref extends Xref {
 			RelationshipTypeVocabulary thing = relationshipType.get(i);
 			if(thing == objectProxy) {
 				relationshipType.set(i, (RelationshipTypeVocabulary)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+
+		for (int i=0; i<relationshipType.size(); i++) {
+			RelationshipTypeVocabulary thing = relationshipType.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						relationshipType.set(i, (RelationshipTypeVocabulary)concreteObject);
+					}
+				}
 			}
 		}
 	}

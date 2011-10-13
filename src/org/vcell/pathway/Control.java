@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.persistence.BiopaxProxy;
@@ -81,6 +83,45 @@ public class Control extends InteractionImpl {
 			controlledInteraction = null;
 			controlledPathway = (Pathway)concreteObject;
 		} 
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		// we can have a combination of controllers
+		for (int i=0;i<pathwayControllers.size();i++){
+			Pathway controller = pathwayControllers.get(i);
+			if(controller instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)controller;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof Pathway){
+							pathwayControllers.set(i, (Pathway)concreteObject);
+						} else{
+							pathwayControllers.remove(i);
+						}
+					}
+				}
+			}
+		}
+		
+		// we assume we can only have one "controlled" entity
+		if(controlledInteraction instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)controlledInteraction;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					if(concreteObject instanceof Interaction){
+						controlledInteraction = (Interaction)concreteObject;
+						controlledPathway = null;
+					} else if(concreteObject instanceof Pathway){
+						controlledInteraction = null;
+						controlledPathway = (Pathway)concreteObject;
+					}
+				}
+			}
+		}
 	}
 
 	protected void throwObjectNeitherInteractionNorPathwayException(BioPaxObject concreteObject) {
