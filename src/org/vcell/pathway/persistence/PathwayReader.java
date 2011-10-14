@@ -141,7 +141,7 @@ public class PathwayReader {
 				Object child = iter.next();
 				int prog = (int)(counterObjects*100.0/numChildren);
 				if (clientTaskStatusSupport != null) {
-					clientTaskStatusSupport.setMessage("Reading Document...");
+					clientTaskStatusSupport.setMessage("Parsing Document...");
 					clientTaskStatusSupport.setProgress(prog);
 				}
 				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){

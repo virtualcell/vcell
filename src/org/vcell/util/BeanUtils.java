@@ -979,7 +979,7 @@ public final class BeanUtils {
 		final ByteArrayInputStream bis  = new ByteArrayInputStream(bytes){
 			private void setStatus() {
 				if (clientTaskStatusSupport != null) {
-					clientTaskStatusSupport.setMessage("Parsing Document");
+					clientTaskStatusSupport.setMessage("Reading Document");
 					clientTaskStatusSupport.setProgress((int)(pos*100.0/bytes.length));
 				}
 			}
