@@ -26,11 +26,8 @@
     	   		<tocitem target="simulations" text="Simulations"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
+	    		<tocitem target="simulation_results" text="Simulation Results"/>
     		</tocitem>
-    	</tocitem>
-   		<tocitem target="SimulationOverview" text="Simulations">
-    	</tocitem>
-    	<tocitem target="SimulationResultsOverview" text="Simulation Results">
     	</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
