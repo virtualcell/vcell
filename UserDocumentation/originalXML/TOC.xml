@@ -26,6 +26,7 @@
     	   		<tocitem target="simulations" text="Simulations"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
+	    		<tocitem target="numeric_solvers" text="Numeric Solvers"/>
 	    		<tocitem target="simulation_results" text="Simulation Results"/>
     		</tocitem>
     	</tocitem>
