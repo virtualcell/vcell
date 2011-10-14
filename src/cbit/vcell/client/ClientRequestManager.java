@@ -3226,11 +3226,13 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 	comparePanel.setBaselineVersionDescription(baselineDesc);
 	comparePanel.setModifiedVersionDescription(modifiedDesc);
 	
-	JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Apply Changes", "Close"});
+	JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {/*"Apply Changes", */"Close"});
 	comparePane.setMessage(comparePanel);
 	JDialog compareDialog = comparePane.createDialog(requester.getComponent(), "Compare Models");
 	compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(compareDialog,requester.getComponent());
+	compareDialog.setResizable(true);
+	compareDialog.pack();
+	ZEnforcer.showModalDialogOnTop(compareDialog,JOptionPane.getFrameForComponent(requester.getComponent()));
 	if ("Apply Changes".equals(comparePane.getValue())) {
 		if (!comparePanel.tagsResolved()) {
 			JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
