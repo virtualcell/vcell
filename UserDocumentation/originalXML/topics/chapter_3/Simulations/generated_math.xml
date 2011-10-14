@@ -38,7 +38,7 @@
 	<imgReference target = "generated_math_view_math_description.jpg"/>
 	<item>Refresh Math</item>
 		<para>
-		The math is not constantly updated as you create your model therefore if you wish to view a current description you
+		The math is not constantly updated as you create your model therefore if you wish to view a current math you
 		need to use the "Refresh Math" button.
 		</para>
 		<imgReference target = "generated_math_refresh_math.jpg"/>

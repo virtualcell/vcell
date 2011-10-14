@@ -355,7 +355,8 @@ public class DocumentCompiler {
 				}
 				else
 				{
-					throw new RuntimeException("Unsupported element " + childElement.getName());
+					System.err.println("WARNING, Unsupported element " + childElement.getName());
+//					throw new RuntimeException("Unsupported element " + childElement.getName());
 				}
 			}
 		}
