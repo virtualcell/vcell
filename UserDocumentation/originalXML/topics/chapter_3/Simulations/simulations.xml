@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Simulations">
+
+	
+	<introduction>
+	You can run a simulation once you have defined your physiology and created an Application in a BioModel or have defined your math using VCell Math Description Language in a MathModel.
+	</introduction>
+	
+	<introduction>
+	The Virtual Cell automatically converts the biological description defined in a BioModel into a corresponding mathematical system of ordinary and/or partial differential equations.
+	The Virtual Cell will then solve the equations by applying numerical solvers to perform and analyze simulations. Afterwards Results can be displayed and analyzed on-line 
+	or downloaded to the user’s computer in a variety of formats.
+	
+	There are 4 categories of simulations.
+	<list>
+	<item>deterministic non-spatial</item>
+	The compartmental simulation executes a single point simulation based on the defined physiological model, the geometric assumptions, and structure sizes or surface to volume ratios and
+	volume fractions. The ordinary differential equations (ODE), for single point approximations, representing the reactions kinetics are generated and passed to an interpreted ODE solver.
+	The set of nonlinear ODE equations are typically solved in seconds. It allows an interactive modification 
+	of parameters and a quick determination of the effect over time. In addition, the Virtual Cell software computes the local sensitivity (Sensitivity Analysis) of any species concentration 
+	to any parameter as a function of time evaluated at the nominal solution.	
+	<item>stochastic non-spatial</item>
+	<item>deterministic spatial</item>
+	<item>stochastic spatial</item>
+	</list>
+ 	</introduction>
+	
+	<appearance><imgReference target = "simulations.jpg"/></appearance>
+	
+	<operations>  </operations>
+	
+	<comments> 
+	The appropriate solver for deterministic/stochastic compartmental models or spatial models will automatically be chosen.
+	</comments>
+
+</page>
+
+</vcelldoc>
