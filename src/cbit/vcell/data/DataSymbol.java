@@ -10,12 +10,8 @@
 
 package cbit.vcell.data;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 
 import org.vcell.util.Compare;

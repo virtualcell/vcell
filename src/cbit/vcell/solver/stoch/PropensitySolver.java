@@ -11,14 +11,11 @@
 package cbit.vcell.solver.stoch;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.model.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;

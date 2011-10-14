@@ -12,9 +12,6 @@ package cbit.vcell.solvers;
 import java.util.*;
 import java.io.*;
 
-import javax.management.RuntimeErrorException;
-
-
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;

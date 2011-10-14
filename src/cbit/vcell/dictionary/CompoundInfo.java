@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.dictionary;
-import java.util.Vector;
 /**
  * Class that represents a single compound from a database
  * Creation date: (6/24/2002 10:38:00 AM)

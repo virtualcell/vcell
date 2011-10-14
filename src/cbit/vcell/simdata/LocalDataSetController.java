@@ -11,20 +11,14 @@
 package cbit.vcell.simdata;
 import cbit.rmi.event.*;
 import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.math.*;
-import cbit.plot.*;
-import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
-import java.io.*;
-
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;

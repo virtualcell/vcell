@@ -29,7 +29,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;

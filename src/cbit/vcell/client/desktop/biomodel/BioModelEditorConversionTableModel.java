@@ -27,11 +27,9 @@ import javax.swing.SwingConstants;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
-import org.vcell.pathway.Complex;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.Entity;
-import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.Pathway;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
@@ -43,17 +41,13 @@ import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.AutoCompleteTableModel;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.BioModelEntityObject;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
 

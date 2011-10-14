@@ -11,11 +11,7 @@
 package cbit.vcell.field;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Vector;
-
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableTypeVersion;
 

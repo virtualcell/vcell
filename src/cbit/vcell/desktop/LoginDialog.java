@@ -9,22 +9,12 @@
  */
 
 package cbit.vcell.desktop;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.*;
 import javax.swing.*;
 
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.gui.DialogUtils;
-
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
-import cbit.util.*;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.server.UserRegistrationOP;
 
 /**
  * Insert the type's description here.

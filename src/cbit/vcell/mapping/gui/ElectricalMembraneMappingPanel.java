@@ -13,12 +13,9 @@ import java.awt.Font;
 
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */

@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.bionetgen;
-import java.util.Vector;
 import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.

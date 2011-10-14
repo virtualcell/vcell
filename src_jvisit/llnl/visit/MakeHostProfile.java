@@ -36,11 +36,8 @@
 //
 // ****************************************************************************
 package llnl.visit;
-import llnl.visit.ViewerProxy;
 import llnl.visit.MachineProfile;
 import llnl.visit.LaunchProfile;
-import llnl.visit.HostProfileList;
-import java.util.Vector;
 
 // ****************************************************************************
 // Class: MakeHostProfile

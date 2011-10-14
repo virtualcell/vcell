@@ -29,7 +29,6 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AbstractNameScope;
@@ -40,7 +39,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
-import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for

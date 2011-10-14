@@ -54,7 +54,6 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelopt.AnalysisTask;
-import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.SymbolTableEntryListCellRenderer;

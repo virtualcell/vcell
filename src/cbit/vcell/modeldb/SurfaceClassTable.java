@@ -14,15 +14,12 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
-import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 

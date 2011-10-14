@@ -43,7 +43,6 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;

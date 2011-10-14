@@ -3,9 +3,6 @@ package org.vcell.pathway.sbpax;
 import java.util.ArrayList;
 
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.BioPaxObjectImpl;
-import org.vcell.pathway.DeltaG;
-import org.vcell.pathway.KPrime;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 

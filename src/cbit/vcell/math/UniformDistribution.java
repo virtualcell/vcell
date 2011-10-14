@@ -10,8 +10,6 @@
 
 package cbit.vcell.math;
 
-import java.util.Random;
-
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;

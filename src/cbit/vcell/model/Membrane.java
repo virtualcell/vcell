@@ -9,13 +9,9 @@
  */
 
 package cbit.vcell.model;
-import java.beans.PropertyVetoException;
-import java.util.*;
-
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class Membrane extends Structure {

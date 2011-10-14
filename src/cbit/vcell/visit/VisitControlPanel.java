@@ -32,8 +32,6 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import llnl.visit.Plot;
-
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.gui.DialogUtils;
@@ -43,7 +41,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.visit.VisitSession.VisitSessionException;
-import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class VisitControlPanel extends JPanel {

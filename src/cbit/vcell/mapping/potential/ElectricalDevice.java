@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.mapping.potential;
-import java.beans.PropertyVetoException;
 import java.util.Map;
 
 import org.vcell.util.Matchable;
@@ -20,7 +19,6 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

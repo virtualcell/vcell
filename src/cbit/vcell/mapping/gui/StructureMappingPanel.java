@@ -11,7 +11,6 @@
 package cbit.vcell.mapping.gui;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JTable;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.ScrollTable;

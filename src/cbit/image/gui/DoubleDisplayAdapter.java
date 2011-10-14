@@ -9,8 +9,6 @@
  */
 
 package cbit.image.gui;
-import java.awt.*;
-
 import org.vcell.util.Range;
 /**
  * This type was created in VisualAge.

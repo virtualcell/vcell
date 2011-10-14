@@ -11,7 +11,6 @@
 package cbit.vcell.simdata.gui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -20,9 +19,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -46,7 +43,6 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;

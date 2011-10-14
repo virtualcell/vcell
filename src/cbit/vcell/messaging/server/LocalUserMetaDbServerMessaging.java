@@ -10,20 +10,14 @@
 
 package cbit.vcell.messaging.server;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.image.VCImage;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import java.io.*;
 import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.solver.SolverResultSetInfo;
 import java.rmi.*;
-import java.sql.*;
-
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -32,13 +26,11 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.sql.*;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.biomodel.BioModel;
 
 
 /**

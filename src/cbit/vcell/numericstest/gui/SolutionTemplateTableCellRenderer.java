@@ -10,11 +10,6 @@
 
 package cbit.vcell.numericstest.gui;
 
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import javax.swing.JTable;
-
 /**
  * Insert the type's description here.
  * Creation date: (6/21/2002 1:47:40 PM)

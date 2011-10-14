@@ -12,8 +12,6 @@ package cbit.vcell.psf;
 
 import org.vcell.util.Range;
 
-import sun.security.jca.GetInstance;
-
 public class GaussianKernel2D {
 
 	private int width = 0;

@@ -12,8 +12,6 @@ package cbit.vcell.model;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-
-import cbit.util.*;
 /**
  * This type was created in VisualAge.
  */

@@ -15,8 +15,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.BeanUtils;

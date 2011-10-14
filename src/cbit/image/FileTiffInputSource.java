@@ -17,7 +17,6 @@ package cbit.image;
  */
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class FileTiffInputSource implements TiffInputSource {
 	private RandomAccessFile randomAccessFile = null;

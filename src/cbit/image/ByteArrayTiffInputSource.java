@@ -10,12 +10,6 @@
 
 package cbit.image;
 
-/**
- * Insert the type's description here.
- * Creation date: (1/11/2003 11:26:05 PM)
- * @author: Jim Schaff
- */
-import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 

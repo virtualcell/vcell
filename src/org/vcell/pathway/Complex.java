@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Complex extends PhysicalEntity {

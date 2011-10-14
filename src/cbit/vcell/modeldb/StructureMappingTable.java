@@ -9,9 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.util.StringTokenizer;
-
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;

@@ -11,11 +11,7 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.AlphaComposite;
-import java.util.Hashtable;
-
 import cbit.image.ImageException;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -26,8 +22,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 /**

@@ -11,11 +11,8 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
-import java.io.IOException;
-
 import org.vcell.util.document.KeyValue;
 
-import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.ClientTaskStatusSupport;

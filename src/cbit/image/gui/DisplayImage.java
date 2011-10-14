@@ -10,11 +10,8 @@
 
 package cbit.image.gui;
 
-import java.lang.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.io.*;
-
 import org.vcell.util.Extent;
 
 import cbit.image.*;

@@ -35,12 +35,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.psf.PointSpreadFunctionManagement;
 
 @SuppressWarnings("serial")

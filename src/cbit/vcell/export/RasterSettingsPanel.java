@@ -11,7 +11,6 @@
 package cbit.vcell.export;
 
 import cbit.vcell.export.server.*;
-import cbit.image.*;
 /**
  * This type was created in VisualAge.
  */

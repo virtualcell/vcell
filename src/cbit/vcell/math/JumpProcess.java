@@ -12,7 +12,6 @@ package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
 import java.util.*;
 
-import org.vcell.sybil.util.lists.ListOfOne;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 

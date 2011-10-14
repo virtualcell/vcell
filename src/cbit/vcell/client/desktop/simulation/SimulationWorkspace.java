@@ -17,11 +17,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
-import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;

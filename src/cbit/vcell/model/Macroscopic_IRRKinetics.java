@@ -13,9 +13,6 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
-import org.vcell.util.NumberUtils;
-
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;

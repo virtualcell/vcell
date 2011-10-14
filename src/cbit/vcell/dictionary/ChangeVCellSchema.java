@@ -17,7 +17,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.sql.*;
-import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)

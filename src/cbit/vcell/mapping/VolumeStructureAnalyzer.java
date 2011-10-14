@@ -11,8 +11,6 @@
 package cbit.vcell.mapping;
 
 import cbit.vcell.geometry.*;
-import cbit.vcell.model.*;
-import java.util.*;
 /**
  * This type was created in VisualAge.
  */

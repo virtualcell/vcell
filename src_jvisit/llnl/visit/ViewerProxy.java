@@ -39,7 +39,6 @@
 package llnl.visit;
 
 import java.lang.ArrayIndexOutOfBoundsException;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import java.util.prefs.BackingStoreException;
 

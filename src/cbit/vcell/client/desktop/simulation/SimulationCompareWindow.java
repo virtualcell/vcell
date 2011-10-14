@@ -10,14 +10,9 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.awt.*;
-import java.beans.*;
-
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.document.*;
-import cbit.vcell.server.*;
 public class SimulationCompareWindow {
 	private org.vcell.util.document.VCDataIdentifier vcDataIdentifier = null;
 	private javax.swing.JInternalFrame frame = null;

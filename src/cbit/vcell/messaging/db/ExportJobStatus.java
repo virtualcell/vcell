@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.messaging.db;
-import cbit.util.*;
 import java.io.*;
 
 import org.vcell.util.Matchable;

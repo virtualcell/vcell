@@ -35,7 +35,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ButtonGroupCivilized;
@@ -43,17 +42,13 @@ import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
-import org.vcell.util.gui.DialogUtils.TableListResult;
-
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.ExportSettings;
-import cbit.vcell.export.server.ASCIISpecs;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;

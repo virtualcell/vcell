@@ -25,8 +25,6 @@ import javax.swing.JTextArea;
 import javax.swing.border.LineBorder;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Insert the type's description here.

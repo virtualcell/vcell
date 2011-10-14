@@ -14,8 +14,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 
 import cbit.vcell.parser.Expression;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)

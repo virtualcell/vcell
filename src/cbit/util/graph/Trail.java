@@ -9,7 +9,6 @@
  */
 
 package cbit.util.graph;
-import java.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/11/2002 12:19:18 AM)

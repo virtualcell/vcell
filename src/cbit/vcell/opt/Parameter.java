@@ -13,8 +13,6 @@ package cbit.vcell.opt;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
-
 /**
  * Insert the type's description here.
  * Creation date: (3/3/00 12:13:49 AM)

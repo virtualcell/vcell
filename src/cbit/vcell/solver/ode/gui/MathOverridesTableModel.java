@@ -22,7 +22,6 @@ import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.GradientFunctionDefinition;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

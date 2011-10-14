@@ -11,8 +11,6 @@
 package cbit.vcell.mapping.gui;
 import java.util.Comparator;
 
-import javax.swing.JTable;
-
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;

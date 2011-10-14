@@ -11,7 +11,6 @@
 package cbit.vcell.export.server;
 
 import java.util.*;
-import cbit.vcell.export.server.*;
 import java.io.*;
 /**
  * Insert the type's description here.

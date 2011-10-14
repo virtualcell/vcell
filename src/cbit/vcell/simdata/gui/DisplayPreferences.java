@@ -11,9 +11,6 @@
 package cbit.vcell.simdata.gui;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Comparator;
-
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
 

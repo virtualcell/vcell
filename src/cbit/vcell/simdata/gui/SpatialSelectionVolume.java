@@ -19,8 +19,6 @@ import java.util.Vector;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 
-import sun.awt.geom.Crossings;
-
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:21 PM)

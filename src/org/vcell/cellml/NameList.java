@@ -9,10 +9,7 @@
  */
 
 package org.vcell.cellml;
-import java.io.*;
 import java.util.*;
-import java.lang.*;
-import java.text.*;
 
 public class NameList {
   Hashtable nameList;

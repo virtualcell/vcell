@@ -13,17 +13,10 @@ package cbit.vcell.math;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;

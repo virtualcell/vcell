@@ -1,7 +1,5 @@
 package org.vcell.documentation;
 
-import java.util.ArrayList;
-
 public class DocParagraph extends DocTextComponent {
 
 	@Override

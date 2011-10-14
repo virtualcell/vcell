@@ -16,7 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.table.TableColumn;
 
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.rmi.event.ExportEvent;

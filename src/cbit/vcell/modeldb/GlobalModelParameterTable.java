@@ -22,13 +22,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.dictionary.DBSpeciesTable;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
 

@@ -10,7 +10,6 @@
 
 package cbit.vcell.geometry.gui;
 
-import cbit.gui.ScopedExpression;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 

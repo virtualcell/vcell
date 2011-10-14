@@ -15,8 +15,6 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.DirectColorModel;
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import org.vcell.util.ISize;

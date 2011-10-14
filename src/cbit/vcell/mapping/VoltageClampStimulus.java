@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.mapping;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;

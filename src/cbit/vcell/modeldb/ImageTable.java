@@ -11,7 +11,6 @@
 package cbit.vcell.modeldb;
 import cbit.sql.*;
 import cbit.image.*;
-import cbit.vcell.server.*;
 import java.sql.*;
 
 import org.vcell.util.DataAccessException;

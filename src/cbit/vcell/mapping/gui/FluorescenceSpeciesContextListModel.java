@@ -15,7 +15,6 @@ import java.beans.PropertyChangeListener;
 
 import org.vcell.util.gui.DefaultListModelCivilized;
 
-import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
 

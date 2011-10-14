@@ -10,8 +10,6 @@
 
 package cbit.vcell.simdata.gui;
 
-import java.util.Vector;
-
 import org.vcell.util.Coordinate;
 /**
  * Insert the type's description here.

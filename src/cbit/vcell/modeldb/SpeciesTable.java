@@ -17,7 +17,6 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;
-import cbit.vcell.server.*;
 import cbit.vcell.dictionary.*;
 /**
  * This type was created in VisualAge.

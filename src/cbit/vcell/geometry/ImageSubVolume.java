@@ -10,8 +10,6 @@
 
 package cbit.vcell.geometry;
 import cbit.image.*;
-import java.util.*;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;

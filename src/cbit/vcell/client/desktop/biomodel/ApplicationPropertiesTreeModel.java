@@ -10,8 +10,6 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import javax.swing.JTree;
-
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;

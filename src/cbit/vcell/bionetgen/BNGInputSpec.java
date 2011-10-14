@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.bionetgen;
-import java.io.File;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 12:48:12 PM)

@@ -16,7 +16,6 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.messaging.db.*;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 
 public interface JobManager extends cbit.rmi.event.SimulationJobStatusListener, cbit.vcell.client.SimStatusSender {

@@ -11,8 +11,6 @@
 package cbit.vcell.messaging.admin;
 import org.vcell.util.MessageConstants;
 
-import cbit.vcell.messaging.*;
-
 /**
  * Insert the type's description here.
  * Creation date: (8/8/2003 10:23:15 AM)

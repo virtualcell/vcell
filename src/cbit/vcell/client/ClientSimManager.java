@@ -31,7 +31,6 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ProgressDialogListener;

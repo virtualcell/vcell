@@ -10,27 +10,13 @@
 
 package cbit.vcell.desktop;
 
-import cbit.util.*;
 import java.awt.Font;
-import java.math.BigDecimal;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.model.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
 import javax.swing.*;
-
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.Version;
  
 public class BioModelInfoCellRenderer extends VCellBasicCellRenderer {
 /**

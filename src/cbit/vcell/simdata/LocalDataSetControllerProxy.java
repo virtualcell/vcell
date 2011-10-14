@@ -19,12 +19,8 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.math.*;
 import cbit.plot.*;
-import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
-import java.io.*;
-
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;

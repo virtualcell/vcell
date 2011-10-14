@@ -13,10 +13,6 @@ import cbit.vcell.simdata.gui.*;
 import java.io.*;
 
 import org.vcell.util.BeanUtils;
-
-import cbit.vcell.math.*;
-import cbit.vcell.geometry.*;
-import cbit.util.*;
 /**
  * This type was created in VisualAge.
  */

@@ -24,7 +24,6 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;

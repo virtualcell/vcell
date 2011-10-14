@@ -14,7 +14,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.math.AnnotatedFunction;

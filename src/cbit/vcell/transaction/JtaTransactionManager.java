@@ -11,7 +11,6 @@
 package cbit.vcell.transaction;
 
 import javax.transaction.*;
-import javax.transaction.xa.*;
 import java.util.*;
 
 /**

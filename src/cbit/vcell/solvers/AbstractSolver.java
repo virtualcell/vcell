@@ -16,7 +16,6 @@ import java.io.File;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.VolVariable;

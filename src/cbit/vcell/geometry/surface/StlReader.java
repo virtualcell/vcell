@@ -1,33 +1,18 @@
 package cbit.vcell.geometry.surface;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.nio.charset.Charset;
-import java.nio.charset.spi.CharsetProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.StringTokenizer;
-
 import org.vcell.util.CommentStringTokenizer;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.xml.XmlHelper;
 
 public class StlReader {
 	

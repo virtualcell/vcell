@@ -11,8 +11,6 @@
 package cbit.vcell.geometry;
 
 import org.vcell.util.Coordinate;
-
-import cbit.vcell.parser.*;
 /**
  * This type was created in VisualAge.
  */

@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import java.util.Date;
 
 import org.vcell.util.CacheStatus;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 /**
  * This type was created in VisualAge.

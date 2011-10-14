@@ -14,7 +14,6 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferShort;
 import java.io.File;
 import java.util.BitSet;
 import java.util.Random;

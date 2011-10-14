@@ -15,7 +15,6 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.model.VCMODL;
 /**
  * This type was created in VisualAge.
  */

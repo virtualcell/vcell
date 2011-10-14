@@ -13,7 +13,6 @@ package cbit.vcell.VirtualMicroscopy;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
-import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Kernel;
 import java.io.Serializable;

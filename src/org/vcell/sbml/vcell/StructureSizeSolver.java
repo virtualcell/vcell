@@ -12,10 +12,7 @@ package org.vcell.sbml.vcell;
 import java.util.Enumeration;
 
 import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.FeatureMapping;

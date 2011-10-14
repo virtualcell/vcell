@@ -12,11 +12,6 @@ package cbit.vcell.mapping.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
-
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;

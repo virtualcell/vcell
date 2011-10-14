@@ -15,7 +15,6 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;

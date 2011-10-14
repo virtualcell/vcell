@@ -12,7 +12,6 @@ package cbit.vcell.mapping;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -23,13 +22,11 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
-import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Edge;
-import cbit.vcell.math.ReservedVariable;
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2002 9:12:36 AM)

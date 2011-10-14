@@ -10,13 +10,11 @@
 
 package cbit.vcell.solver.ode;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
@@ -33,7 +31,6 @@ import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.VariableSymbolTable;

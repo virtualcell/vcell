@@ -10,11 +10,6 @@
 
 package cbit.image.gui;
 
-/**
- * This type was created in VisualAge.
- */
-import cbit.image.*;
-
 public class ImageContainerPanelTest {
 /**
  * main entrypoint - starts the part when it is run as an application

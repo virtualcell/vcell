@@ -10,7 +10,6 @@
 
 package cbit.vcell.messaging;
 import javax.jms.*;
-import java.io.*;
 
 /**
  * Insert the type's description here.

@@ -12,7 +12,6 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
-import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;

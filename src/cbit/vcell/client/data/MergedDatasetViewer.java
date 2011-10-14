@@ -11,13 +11,11 @@
 package cbit.vcell.client.data;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**

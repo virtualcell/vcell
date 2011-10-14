@@ -14,7 +14,6 @@ import cbit.vcell.math.*;
 import cbit.plot.*;
 import java.rmi.*;
 
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 

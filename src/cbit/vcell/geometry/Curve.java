@@ -10,9 +10,6 @@
 
 package cbit.vcell.geometry;
 
-import cbit.vcell.parser.*;
-import java.io.Serializable;
-
 import org.vcell.util.Coordinate;
 /**
  * This type was created in VisualAge.

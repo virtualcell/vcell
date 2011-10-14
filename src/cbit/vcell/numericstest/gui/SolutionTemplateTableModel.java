@@ -10,14 +10,7 @@
 
 package cbit.vcell.numericstest.gui;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.parser.Expression;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.numericstest.*;
 /**
  * Insert the type's description here.

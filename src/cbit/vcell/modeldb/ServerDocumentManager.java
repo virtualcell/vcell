@@ -15,8 +15,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -30,13 +28,10 @@ import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
-import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SurfaceClass;
@@ -52,7 +47,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**

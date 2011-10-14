@@ -11,8 +11,6 @@
 package cbit.vcell.geometry;
 
 import org.vcell.util.document.KeyValue;
-
-import cbit.sql.*;
 /**
  * This type was created in VisualAge.
  */

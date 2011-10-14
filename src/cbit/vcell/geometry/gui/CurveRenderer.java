@@ -22,7 +22,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 
 import cbit.image.DisplayAdapterService;
-import cbit.util.*;
 
 public class CurveRenderer implements DrawPaneModel {
 	//

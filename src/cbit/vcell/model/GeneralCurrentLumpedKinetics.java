@@ -18,7 +18,6 @@ import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
