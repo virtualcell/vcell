@@ -13,8 +13,8 @@ package org.vcell.util.graphlayout.energybased;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.sbpax.util.sets.SetOfTwo;
 import org.vcell.sybil.util.lists.ListOfTwo;
-import org.vcell.sybil.util.sets.SetOfTwo;
 import org.vcell.util.graphlayout.ContainedGraph;
 import org.vcell.util.graphlayout.ContainedGraph.Node;
 import org.vcell.util.graphlayout.energybased.EnergySum.EnergyFunction;

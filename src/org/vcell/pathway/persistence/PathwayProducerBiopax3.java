@@ -11,17 +11,11 @@
 package org.vcell.pathway.persistence;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.pathway.BindingFeature;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.BioSource;
@@ -53,7 +47,6 @@ import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
 import org.vcell.pathway.KPrime;
 import org.vcell.pathway.ModificationFeature;
-import org.vcell.pathway.Modulation;
 import org.vcell.pathway.MolecularInteraction;
 import org.vcell.pathway.Pathway;
 import org.vcell.pathway.PathwayModel;
@@ -80,28 +73,23 @@ import org.vcell.pathway.SmallMoleculeReference;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.pathway.TemplateReaction;
 import org.vcell.pathway.TemplateReactionRegulation;
-import org.vcell.pathway.Transport;
 import org.vcell.pathway.TransportWithBiochemicalReaction;
-import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
-import org.vcell.sybil.rdf.NameSpace;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
-import org.vcell.pathway.persistence.BiopaxProxy.StoichiometryProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.UnitOfMeasurementProxy;
 
-import cbit.vcell.xml.XMLTags;
 import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayProducerBiopax3 {
 
 	public Element biopaxElement = null;
 	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
-	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	private static final Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 	private static final Namespace sbx3 = Namespace.getNamespace("sbx3", "http://vcell.org/sbpax3#");
 
 	private HashSet<BioPaxObject> objectsPrinted = new HashSet<BioPaxObject>();

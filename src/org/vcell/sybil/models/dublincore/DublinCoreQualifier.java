@@ -11,11 +11,11 @@
 package org.vcell.sybil.models.dublincore;
 
 import org.openrdf.model.URI;
+import org.sbpax.schemas.ProtegeDC;
 import org.vcell.sybil.models.AnnotationQualifier;
-import org.vcell.sybil.rdf.RDFBox.PropertyWrapper;
-import org.vcell.sybil.rdf.schemas.ProtegeDC;
+import org.vcell.sybil.util.keys.KeyOfOne;
 
-public class DublinCoreQualifier extends PropertyWrapper implements AnnotationQualifier {
+public class DublinCoreQualifier extends KeyOfOne<URI> implements AnnotationQualifier {
 
 	public static DublinCoreQualifier.DateQualifier created = 
 		new DublinCoreQualifier.DateQualifier(ProtegeDC.created, "creation date");
@@ -28,17 +28,19 @@ public class DublinCoreQualifier extends PropertyWrapper implements AnnotationQu
 	
 	private String description = null;
 	
+	public URI getProperty() { return a(); }
+	
 	public DublinCoreQualifier(URI property, String description) {
 		super(property);
 		this.description = description;
 	}
 
 	public String getLocalName(){
-		return property().getLocalName();
+		return getProperty().getLocalName();
 	}
 
 	public String getNameSpace(){
-		return property().getNamespace();
+		return getProperty().getNamespace();
 	}
 	
 	public String getDescription(){

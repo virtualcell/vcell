@@ -38,6 +38,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.jdom.Namespace;
+import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
@@ -46,7 +47,6 @@ import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
-import org.vcell.sybil.util.text.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;

@@ -11,9 +11,8 @@
 package cbit.vcell.biomodel.meta.xml;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
-
 import org.jdom.Element;
 import org.jdom.Text;
 import org.openrdf.model.Resource;
@@ -24,7 +23,7 @@ import cbit.vcell.biomodel.meta.NonRDFAnnotation;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.registry.Registry;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
+import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 
 /**
  * Turns meta data into a JDOM Element
@@ -51,9 +50,9 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		for (Registry.Entry entry : resources) {
 			VCID vcid = identifiableProvider.getVCID(entry.getIdentifiable());
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
-			if (identifiable != null && entry.getNamedThing()!=null){
+			if (identifiable != null && entry.getResource() != null){
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
-				Resource resource = entry.getNamedThing().resource();
+				Resource resource = entry.getResource();
 				if (resource!=null){
 					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.stringValue());				
 				}
@@ -72,12 +71,12 @@ public class XMLMetaDataWriter extends XMLMetaData {
 	 * @return the created NonRDFAnnotationListElement
 	 */
 	private static Element createNonRDFAnnotationElement(VCMetaData metaData, IdentifiableProvider identifiableProvider) {
-		Set<Entry<OpenEntry, NonRDFAnnotation>> allNonRdfAnnotations = metaData.getAllNonRDFAnnotations();
+		Set<Map.Entry<Entry, NonRDFAnnotation>> allNonRdfAnnotations = metaData.getAllNonRDFAnnotations();
 		Element nonRDFAnnotationListElement = new Element(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
-		Iterator<Entry<OpenEntry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
+		Iterator<Map.Entry<Entry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
 		while (iter.hasNext()){
-			Entry<OpenEntry, NonRDFAnnotation> mapEntry = iter.next();
-			OpenEntry openEntry = mapEntry.getKey();
+			Map.Entry<Entry, NonRDFAnnotation> mapEntry = iter.next();
+			Entry openEntry = mapEntry.getKey();
 			NonRDFAnnotation nonRDFAnnotation = mapEntry.getValue();
 			VCID vcid = identifiableProvider.getVCID(openEntry.getIdentifiable());
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);

@@ -25,13 +25,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
-import org.vcell.sybil.rdf.SesameRioUtil;
-import org.vcell.sybil.rdf.impl.HashGraph;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.util.SesameRioUtil;
+import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;
 import org.vcell.sybil.util.http.pathwaycommons.PCRParameter;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsRequest;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsResponse;
-import org.vcell.sybil.util.text.StringUtil;
 import org.xml.sax.SAXException;
 
 public class PCNeighborsRequest extends PathwayCommonsRequest {

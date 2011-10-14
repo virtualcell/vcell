@@ -24,7 +24,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.vcell.sybil.rdf.impl.HashGraph;
+import org.sbpax.impl.HashGraph;
 
 public class RDFChopper {
 	

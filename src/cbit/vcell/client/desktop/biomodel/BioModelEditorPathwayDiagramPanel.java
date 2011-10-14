@@ -111,8 +111,8 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel
 implements PathwayEditor, ActionBuilder.Generator {
 	
 	public static enum ActionID implements ActionBuilder.ID {
-		select, zoomIn, zoomOut, randomLayout, circularLayout, annealedLayout, levelledLayout, 
-		relaxedLayout, glgLayout, reactionsOnlyShown, reactionNetworkShown, componentsShown;
+		SELECT, ZOOM_IN, ZOOM_OUT, RANDOM_LAYOUT, CIRCULAR_LAYOUT, ANNEALED_LAYOUT, LEVELLED_LAYOUT, 
+		RELAXED_LAYOUT, GLG_LAYOUT, SHOOT_AND_CUT_LAYOUT, WEREWOLF_LAYOUT, REACTIONS_ONLY_SHOWN, REACTION_NETWORK_SHOWN, COMPONENTS;
 	}
 	
 	public enum PathwayPanelTabID {
@@ -582,18 +582,18 @@ implements PathwayEditor, ActionBuilder.Generator {
 	}
 	
 	protected static Map<ActionBuilder.ID, ActionBuilder> actionBuilderMap = createActionBuilderMap(
-		new ActionBuilder(ActionID.select, "", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
-		new ActionBuilder(ActionID.zoomIn, "", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
-		new ActionBuilder(ActionID.zoomOut, "", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
-		new ActionBuilder(ActionID.randomLayout, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.circularLayout, "", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
-		new ActionBuilder(ActionID.annealedLayout, "", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
-		new ActionBuilder(ActionID.levelledLayout, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
-		new ActionBuilder(ActionID.relaxedLayout, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
-		new ActionBuilder(ActionID.glgLayout, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.reactionsOnlyShown, "", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
-		new ActionBuilder(ActionID.reactionNetworkShown, "", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
-		new ActionBuilder(ActionID.componentsShown, "", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
+		new ActionBuilder(ActionID.SELECT, "", "Select", "Select parts of the graph", VCellIcons.pathwaySelectIcon),
+		new ActionBuilder(ActionID.ZOOM_IN, "", "Zoom In", "Make graph look bigger", VCellIcons.pathwayZoomInIcon),
+		new ActionBuilder(ActionID.ZOOM_OUT, "", "Zoom Out", "Make graph look smaller", VCellIcons.pathwayZoomOutIcon),
+		new ActionBuilder(ActionID.RANDOM_LAYOUT, "", "Random Layout", "Reconfigure graph randomly", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.CIRCULAR_LAYOUT, "", "Circular Layout", "Reconfigure graph circular", VCellIcons.pathwayCircularIcon),
+		new ActionBuilder(ActionID.ANNEALED_LAYOUT, "", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
+		new ActionBuilder(ActionID.LEVELLED_LAYOUT, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
+		new ActionBuilder(ActionID.RELAXED_LAYOUT, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
+		new ActionBuilder(ActionID.GLG_LAYOUT, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.REACTIONS_ONLY_SHOWN, "", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
+		new ActionBuilder(ActionID.REACTION_NETWORK_SHOWN, "", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
+		new ActionBuilder(ActionID.COMPONENTS, "", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
 		
 	private JPopupMenu getPhysiologyLinksPopupMenu() {
 		if (physiologyLinkPopupMenu == null) {
@@ -1014,7 +1014,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 	public Action generateAction(ActionBuilder.ID id) {
 		if(id instanceof ActionID) {
 			switch((ActionID)id) {
-			case zoomIn: {
+			case ZOOM_IN: {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
@@ -1031,7 +1031,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 					}
 				};
 			}
-			case zoomOut: {
+			case ZOOM_OUT: {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
@@ -1048,22 +1048,22 @@ implements PathwayEditor, ActionBuilder.Generator {
 					}
 				};
 			}
-			case randomLayout: {
+			case RANDOM_LAYOUT: {
 				return new LayoutAction(RandomLayouter.LAYOUT_NAME);
 			}
-			case circularLayout: {
+			case CIRCULAR_LAYOUT: {
 				return new LayoutAction(SimpleElipticalLayouter.LAYOUT_NAME);
 			}
-			case annealedLayout: {
+			case ANNEALED_LAYOUT: {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.ANNEALER);
 			}
-			case levelledLayout: {
+			case LEVELLED_LAYOUT: {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.LEVELLER);
 			}
-			case relaxedLayout: {
+			case RELAXED_LAYOUT: {
 				return new LayoutAction(GraphLayoutManager.OldLayouts.RELAXER);
 			}
-			case glgLayout : {
+			case GLG_LAYOUT : {
 				return new LayoutAction(GenericLogicGraphLayouter.LAYOUT_NAME);
 			}
 			}

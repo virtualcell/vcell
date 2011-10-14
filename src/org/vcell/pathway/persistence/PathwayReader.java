@@ -19,6 +19,8 @@ import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.NameSpace;
 import org.vcell.pathway.BindingFeature;
 import org.vcell.pathway.BindingFeatureImpl;
 import org.vcell.pathway.BioPaxObject;
@@ -99,7 +101,6 @@ import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.persistence.BiopaxProxy.*;
 
-import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 
@@ -111,7 +112,7 @@ public class PathwayReader {
 	
 	private PathwayModel pathwayModel = new PathwayModel();
 	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
-	private Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	private Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 	
 	private int counterID = 0;
 
@@ -1556,7 +1557,7 @@ public class PathwayReader {
 
 	private PhysicalEntity addObjectPhysicalEntity(Element element) {
 		PhysicalEntity physicalEntity = new PhysicalEntity();
-		Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+		Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 		if (element.getAttributes().size()>0){
 			physicalEntity = new PhysicalEntity();
 			addAttributes(physicalEntity,element);

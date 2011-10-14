@@ -17,8 +17,8 @@ import java.util.Map;
 
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
-import org.vcell.sybil.rdf.SesameRioUtil;
-import org.vcell.sybil.rdf.impl.HashGraph;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.util.SesameRioUtil;
 
 /*   UniProtRDFRequest  --- by Oliver Ruebenacker, UCHC --- January 2010
  *   Launch a web request to UniProt to get RDF for an id

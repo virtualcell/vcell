@@ -21,7 +21,7 @@ import org.vcell.util.graphlayout.energybased.EnergySum.Minimizer;
 public class ShootAndCutMinimizer implements Minimizer {
 
 	public static final double cut = 0.4;
-	
+
 	protected Random random = new Random();
 	
 	public void minimize(EnergySum energySum) {

@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.sybil.util.text.StringUtil;
+import org.sbpax.util.StringUtil;
 
 import cbit.gui.graph.GraphModel.NotReadyException;
 import cbit.gui.graph.GraphView;

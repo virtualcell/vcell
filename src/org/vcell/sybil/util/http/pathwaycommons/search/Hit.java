@@ -17,7 +17,7 @@ package org.vcell.sybil.util.http.pathwaycommons.search;
 import java.util.List;
 import java.util.Vector;
 
-import org.vcell.sybil.util.text.StringUtil;
+import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.w3c.dom.Element;
 

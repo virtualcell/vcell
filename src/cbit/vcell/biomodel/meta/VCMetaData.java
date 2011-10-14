@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -30,24 +29,20 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.util.SesameRioUtil;
 import org.vcell.relationship.AnnotationMapping;
 import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
-import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
-import org.vcell.sybil.rdf.NameSpace;
-import org.vcell.sybil.rdf.SesameRioUtil;
-import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.registry.Registry;
-import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
+import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
 
@@ -87,21 +82,19 @@ public class VCMetaData implements Serializable {
 
 	protected IdentifiableProvider identifiableProvider;
 
-	protected SBBox rdfBox = SBBoxFactory.create();
-	protected OpenRegistry registry;
-	private IdentityHashMap<OpenEntry, NonRDFAnnotation> nonRDFAnnotationMap =
-				new IdentityHashMap<OpenEntry, NonRDFAnnotation>();
+	protected Graph graph = new HashGraph();
+	protected Registry registry;
+	private IdentityHashMap<Entry, NonRDFAnnotation> nonRDFAnnotationMap =
+				new IdentityHashMap<Entry, NonRDFAnnotation>();
 	private KeyValue keyValue = null;
 	
 	public VCMetaData(IdentifiableProvider arg_IdentifiableProvider, KeyValue key){
 		this.identifiableProvider = arg_IdentifiableProvider;
 		this.keyValue = key;
-		registry = new OpenRegistry(new VCellThingFactory(rdfBox), identifiableProvider);
+		registry = new Registry(identifiableProvider);
 	}
 
-	public SBBox getSBbox() { return rdfBox; }
-	
-	Graph getRdfData() { return rdfBox.getRdf(); }
+	public Graph getRdfData() { return graph; }
 	
 	public Graph getRdfDataCopy() {
 		Graph rdfModelCopy = new HashGraph();
@@ -111,7 +104,7 @@ public class VCMetaData implements Serializable {
 	
 	public String getBaseURI() { return XMLTags.METADATA_NS; }
 	public String getBaseURIExtended() { return XMLTags.METADATA_NS_EXTENDED; }
-	public OpenRegistry getRegistry() { return registry; }
+	public Registry getRegistry() { return registry; }
 	
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
 	
@@ -123,14 +116,14 @@ public class VCMetaData implements Serializable {
 			return false;
 		}
 		
-		Set<OpenEntry> oeSet = nonRDFAnnotationMap.keySet();
+		Set<Entry> oeSet = nonRDFAnnotationMap.keySet();
 		Set<VCID> vcidSet = new HashSet<VCID>();
-		for (OpenEntry oe : oeSet) {
+		for (Entry oe : oeSet) {
 			VCID vcid = identifiableProvider.getVCID(oe.getIdentifiable());
 			vcidSet.add(vcid);
 		}
-		Set<OpenEntry> otherOeSet =  vcMetaData.nonRDFAnnotationMap.keySet();
-		for (OpenEntry oe : otherOeSet) {
+		Set<Entry> otherOeSet =  vcMetaData.nonRDFAnnotationMap.keySet();
+		for (Entry oe : otherOeSet) {
 			VCID vcid = vcMetaData.identifiableProvider.getVCID(oe.getIdentifiable());
 			vcidSet.add(vcid);
 		}		
@@ -164,13 +157,13 @@ public class VCMetaData implements Serializable {
 	}
 
 	private NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable){
-		OpenEntry entry = registry.getEntry(identifiable);
+		Entry entry = registry.getEntry(identifiable);
 		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 		return nonRDFAnnotation;
 	}
 		
 	private NonRDFAnnotation getOrCreateNonRDFAnnotation(Identifiable identifiable){
-		OpenEntry entry = registry.getEntry(identifiable);
+		Entry entry = registry.getEntry(identifiable);
 		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 		if (nonRDFAnnotation==null){
 			nonRDFAnnotation = new NonRDFAnnotation();
@@ -196,7 +189,7 @@ public class VCMetaData implements Serializable {
 					Map<MiriamRefGroup, MIRIAMQualifier> miriamRefGps = 
 						getMiriamManager().getAllMiriamRefGroups(entryIdentifiable);
 					if (miriamRefGps != null) {
-						for (Entry<MiriamRefGroup, MIRIAMQualifier> groupEntry :  
+						for (Map.Entry<MiriamRefGroup, MIRIAMQualifier> groupEntry :  
 							miriamRefGps.entrySet()) {
 							MiriamRefGroup refGroup = groupEntry.getKey();
 							MIRIAMQualifier qualifier = groupEntry.getValue();
@@ -219,8 +212,8 @@ public class VCMetaData implements Serializable {
 		}
 	}
 	
-	public Set<Entry<OpenEntry, NonRDFAnnotation>> getAllNonRDFAnnotations(){
-		Set<Entry<OpenEntry, NonRDFAnnotation>> entrySet = nonRDFAnnotationMap.entrySet();
+	public Set<Map.Entry<Entry, NonRDFAnnotation>> getAllNonRDFAnnotations(){
+		Set<Map.Entry<Entry, NonRDFAnnotation>> entrySet = nonRDFAnnotationMap.entrySet();
 		return Collections.unmodifiableSet(entrySet);
 	}
 	
@@ -313,7 +306,7 @@ public class VCMetaData implements Serializable {
 	}
 	
 	public String printRdfPretty() throws RDFHandlerException{
-		Map<String, String> nsMap = NameSpace.defaultMap.convertToMap();
+		Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
 		return SesameRioUtil.writeRDFToString(getRdfData(), nsMap, RDFFormat.N3);
 	}
 
@@ -331,7 +324,8 @@ public class VCMetaData implements Serializable {
 			Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
 			if (refGroupMap!=null){
 				String info = annoMapping.annotation2BioPaxObject(bioModel, identifiable);
-//				System.out.println(info);
+				boolean printInfo = false;
+				if(printInfo) { System.out.println(info); }
 			}
 		}
 	}

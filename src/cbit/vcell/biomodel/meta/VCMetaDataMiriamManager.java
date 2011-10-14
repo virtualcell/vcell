@@ -30,21 +30,17 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.sbpax.schemas.MIRIAM;
+import org.sbpax.schemas.ProtegeDC;
 import org.vcell.sybil.models.AnnotationQualifiers;
 import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
-import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.sybil.models.miriam.imp.MIRIAMizerImp;
-import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.schemas.MIRIAM;
-import org.vcell.sybil.rdf.schemas.ProtegeDC;
-
-import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 
@@ -184,7 +180,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		
 		public Set<MiriamResource> getMiriamRefs() {
 			HashSet<MiriamResource> set = new HashSet<MiriamResource>();
-			for (MIRIAMRef miriamRef : sybilRefGroup.refs()){
+			for (MIRIAMRef miriamRef : sybilRefGroup.refs(vcMetaData.getRdfData())){
 				set.add(new VCMetaDataMiriamResource(miriamRef));
 			}
 			return set;
@@ -201,20 +197,20 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 
 	public void addMiriamRefGroup(Identifiable identifiable, MIRIAMQualifier miriamQualifier, Set<MiriamResource> miriamResources) throws URNParseFailureException {
-		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
-		NamedThing namedThing = entry.getNamedThing();
-		if (entry.getNamedThing() == null){
-			String newURI = vcMetaData.getRegistry().generateFreeURI(identifiable);
-			namedThing = entry.setNamedThingFromURI(newURI);
+		Entry entry = vcMetaData.getRegistry().getEntry(identifiable);
+		Resource resource = entry.getResource();
+		if (resource == null){
+			String newURIString = vcMetaData.getRegistry().generateFreeURI(identifiable);
+			resource = entry.setURI(vcMetaData.getRdfData(), newURIString);
 		}
-		MIRIAMizer miriamizer = new MIRIAMizerImp();
-		RefGroup sybilRefGroup = miriamizer.newRefGroup(namedThing, miriamQualifier);
+		MIRIAMizer miriamizer = new MIRIAMizer();
+		RefGroup sybilRefGroup = miriamizer.newRefGroup(vcMetaData.getRdfData(), resource, miriamQualifier);
 		Set<MIRIAMRef> sybilMiriamRefs = new HashSet<MIRIAMRef>();
 		for(MiriamResource miriamResource : miriamResources) {
 			sybilMiriamRefs.add(MIRIAMRef.createFromURN(miriamResource.getMiriamURN()));
 		}
 		for(MIRIAMRef sybilMiriamRef : sybilMiriamRefs) {
-			sybilRefGroup.add(sybilMiriamRef);			
+			sybilRefGroup.add(vcMetaData.getRdfData(), sybilMiriamRef);			
 		}
 		invalidateCache(identifiable);
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
@@ -233,7 +229,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			);
 			Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
 			for (Entry entry : allEntries){
-				if (entry.getNamedThing()!=null){
+				if (entry.getResource() != null){
 					Map<MiriamRefGroup,MIRIAMQualifier> refGroupMap = queryAllMiriamRefGroups(entry.getIdentifiable());
 					if (refGroupMap.size()>0){
 						miriamTreeMap.put(entry.getIdentifiable(), refGroupMap);
@@ -268,12 +264,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 		
 	private Map<MiriamRefGroup,MIRIAMQualifier> queryAllMiriamRefGroups(Identifiable identifiable) {
-		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
-		if (entry.getNamedThing() == null){
+		Entry entry = vcMetaData.getRegistry().getEntry(identifiable);
+		if (entry.getResource() == null){
 			return null;
 		}
-		MIRIAMizer miriamizer = new MIRIAMizerImp();
-		Map<RefGroup, MIRIAMQualifier> allRefGroups = miriamizer.getAllRefGroups(entry.getNamedThing());
+		MIRIAMizer miriamizer = new MIRIAMizer();
+		Map<RefGroup, MIRIAMQualifier> allRefGroups = miriamizer.getAllRefGroups(vcMetaData.getRdfData(), entry.getResource());
 		Map<MiriamRefGroup,MIRIAMQualifier> wrappedRefGroups = new HashMap<MiriamRefGroup,MIRIAMQualifier>();
 		for (RefGroup refGroup : allRefGroups.keySet()){
 			MiriamRefGroup miriamRefGroup = new VCMetaDataMiriamRefGroup(refGroup);
@@ -284,19 +280,19 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 
 	public void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException {
-		OpenEntry openEntry = vcMetaData.getRegistry().getEntry(identifiable);
-		NamedThing namedThing = openEntry.getNamedThing();
-		MIRIAMizer miriamizer = new MIRIAMizerImp();
-		RefGroup sybilRefGroup = miriamizer.newRefGroup(namedThing, miriamQualifier);
+		Entry openEntry = vcMetaData.getRegistry().getEntry(identifiable);
+		Resource resource = openEntry.getResource();
+		MIRIAMizer miriamizer = new MIRIAMizer();
+		RefGroup sybilRefGroup = miriamizer.newRefGroup(vcMetaData.getRdfData(), resource, miriamQualifier);
 		Set<MIRIAMRef> sybilMiriamRefs = new HashSet<MIRIAMRef>();
 		Set<MiriamResource> miriamResources = miriamRefGroup.getMiriamRefs();
 		for(MiriamResource miriamResource : miriamResources) {
 			sybilMiriamRefs.add(MIRIAMRef.createFromURN(miriamResource.getMiriamURN()));
 		}
 		for(MIRIAMRef sybilMiriamRef : sybilMiriamRefs) {
-			sybilRefGroup.add(sybilMiriamRef);			
+			sybilRefGroup.add(vcMetaData.getRdfData(), sybilMiriamRef);			
 		}
-		miriamizer.deleteRefGroup(namedThing, sybilRefGroup);
+		miriamizer.deleteRefGroup(vcMetaData.getRdfData(), resource, sybilRefGroup);
 		invalidateCache(identifiable);
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
@@ -352,14 +348,14 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	}
 
 	public void addDate(Identifiable identifiable, DateQualifier dateQualifier,	DublinCoreDate date) {
-		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
-		if (entry.getNamedThing() == null){
+		Entry entry = vcMetaData.getRegistry().getEntry(identifiable);
+		if (entry.getResource() == null){
 			String newURI = vcMetaData.getRegistry().generateFreeURI(identifiable);
-			entry.setNamedThingFromURI(newURI);
+			entry.setURI(vcMetaData.getRdfData(), newURI);
 		}
 		Graph rdfData = vcMetaData.getRdfData();
 		Literal dateLiteral = rdfData.getValueFactory().createLiteral(date.getDateString());
-		rdfData.add(entry.getNamedThing().resource(), dateQualifier.property(), dateLiteral);
+		rdfData.add(entry.getResource(), dateQualifier.getProperty(), dateLiteral);
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 
@@ -370,14 +366,13 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
 		Graph rdfData = vcMetaData.getRdfData();
 		for (Entry entry : allEntries){
-			NamedThing sbThing = entry.getNamedThing();
-			if (sbThing != null){
+			Resource resource = entry.getResource();
+			if (resource != null){
 				Identifiable identifiable = entry.getIdentifiable();
 				Map<DateQualifier, Set<DublinCoreDate>> qualifierDateMap = new HashMap<DateQualifier, Set<DublinCoreDate>>();
 				for(DublinCoreQualifier.DateQualifier dateQualifier : AnnotationQualifiers.DC_date_all){
 					Set<DublinCoreDate> dateStrings = new HashSet<DublinCoreDate>();
-					Iterator<Statement> stmtIter = 
-						rdfData.match(sbThing.resource(), dateQualifier.property(), null);
+					Iterator<Statement> stmtIter = rdfData.match(resource, dateQualifier.getProperty(), null);
 					while(stmtIter.hasNext()) {
 						Statement statement = stmtIter.next();
 						Value dateObject = statement.getObject();

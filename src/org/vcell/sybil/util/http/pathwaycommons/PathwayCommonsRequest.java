@@ -18,7 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Vector;
 
-import org.vcell.sybil.util.text.StringUtil;
+import org.sbpax.util.StringUtil;
 
 
 public abstract class PathwayCommonsRequest {

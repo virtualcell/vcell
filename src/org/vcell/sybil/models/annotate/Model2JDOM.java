@@ -24,8 +24,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
-import org.vcell.sybil.rdf.NSMap;
-import org.vcell.sybil.rdf.NameSpace;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.NSMap;
+import org.sbpax.schemas.util.NameSpace;
 
 
 /*   DOM2JModel  --- May 2009
@@ -42,9 +43,9 @@ public class Model2JDOM {
 		new HashMap<Resource, String>();
 
 	public static Namespace nsRDF = 
-		Namespace.getNamespace(NameSpace.RDF.prefix, NameSpace.RDF.uri);
+		Namespace.getNamespace(DefaultNameSpaces.RDF.prefix, DefaultNameSpaces.RDF.uri);
 	public static final String TYPELESS_NODE_NAME = "Description";
-	protected NSMap nsMap = new NSMap(NameSpace.defaultMap);
+	protected NSMap nsMap = new NSMap(DefaultNameSpaces.defaultMap);
 	
 	public Model2JDOM() { this(new Element("RDF", nsRDF)); }
 	public Model2JDOM(Element root) { this.root = root; }
