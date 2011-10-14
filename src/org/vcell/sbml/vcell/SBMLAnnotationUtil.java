@@ -29,14 +29,12 @@ import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
-import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.NameSpace;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.util.SesameRioUtil;
 import org.vcell.sybil.rdf.RDFChopper;
-import org.vcell.sybil.rdf.SesameRioUtil;
-import org.vcell.sybil.rdf.impl.HashGraph;
 import org.vcell.sybil.rdf.smelt.NamespaceAssimilator;
 import org.vcell.sybil.rdf.smelt.SameAsCrystalizer;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -58,7 +56,7 @@ public class SBMLAnnotationUtil {
 	protected Graph rdfSmelted;
 	protected String nsSBML;
 	protected XMLTriple tripleAnnotation;
-	protected XMLTriple tripleRDF = new XMLTriple("RDF", NameSpace.RDF.uri, NameSpace.RDF.prefix);
+	protected XMLTriple tripleRDF = new XMLTriple("RDF", DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
 	protected XMLTriple tripleFreeText = 
 		new XMLTriple(XMLTags.FreeTextAnnotationTag, XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
 	protected XMLTriple tripleImportRelated = 
@@ -89,9 +87,9 @@ public class SBMLAnnotationUtil {
 	}
 	
 	public void writeMetaID(Identifiable identifiable, SBase sBase) {
-		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
-		if (namedThing != null) {
-			Resource mappedResource = namespaceAssimilator.map(namedThing.resource());
+		Resource resource = metaData.getRegistry().getEntry(identifiable).getResource();
+		if (resource != null) {
+			Resource mappedResource = namespaceAssimilator.map(resource);
 			if(mappedResource instanceof URI) {
 				String metaID = ((URI) mappedResource).getLocalName();
 				sBase.setMetaId(metaID);				
@@ -107,7 +105,7 @@ public class SBMLAnnotationUtil {
 			}
 			// TODO this does not work - separator missing - fix
 			String uri = nsSBML + metaID;
-			metaData.getRegistry().getEntry(identifiable).setNamedThingFromURI(uri);
+			metaData.getRegistry().getEntry(identifiable).setURI(metaData.getRdfData(), uri);
 		 } 
 	}
 	
@@ -115,10 +113,10 @@ public class SBMLAnnotationUtil {
 			Element vcellImportRelatedElement) {
 		// Deal with RDF annotation 
 		XMLNode rootAnnotation = new XMLNode(tripleAnnotation, new XMLAttributes());
-		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
+		Resource resource = metaData.getRegistry().getEntry(identifiable).getResource();
 		Graph rdfChunk = null;
-		if (namedThing != null) { 
-			rdfChunk = chopper.getChops().get(namedThing.resource());
+		if (resource != null) { 
+			rdfChunk = chopper.getChops().get(resource);
 		}
 		if(identifiable == root && rdfChunk != null) { 
 			rdfChunk.addAll(chopper.getRemains());
@@ -127,7 +125,7 @@ public class SBMLAnnotationUtil {
 		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
 			Element element = XMLRDFWriter.createElement(rdfChunk, nsSBML);
 			XMLNamespaces xmlnss = new XMLNamespaces();
-			xmlnss.add(NameSpace.RDF.uri, NameSpace.RDF.prefix);
+			xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
 			rootRDF = XMLNode.convertStringToXMLNode(XmlUtil.xmlToString(element), xmlnss);
 		}
 		if (rootRDF != null && rootRDF.getNumChildren() > 0) {
@@ -246,7 +244,7 @@ public class SBMLAnnotationUtil {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if(namespace != null) {
-					if(namespace.equals(NameSpace.RDF.uri)) {
+					if(namespace.equals(DefaultNameSpaces.RDF.uri)) {
 						// read in RDF annotation
 						String text = annotationBranch.toXMLString();
 						

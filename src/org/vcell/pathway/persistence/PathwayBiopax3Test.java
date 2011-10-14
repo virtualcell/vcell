@@ -17,15 +17,15 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
+import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.pathway.PathwayModel;
-import org.vcell.sybil.rdf.NameSpace;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XmlParseException;
 
 public class PathwayBiopax3Test {
 
-	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	private static final Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 
 	private PathwayBiopax3Test() {}		//no instances allowed
 	

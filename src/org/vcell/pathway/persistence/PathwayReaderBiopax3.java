@@ -16,6 +16,8 @@ import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.NameSpace;
 import org.vcell.pathway.BindingFeature;
 import org.vcell.pathway.BindingFeatureImpl;
 import org.vcell.pathway.BioPaxObject;
@@ -94,7 +96,6 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
-import org.vcell.sybil.rdf.NameSpace;
 
 import org.vcell.pathway.persistence.BiopaxProxy.*;
 import org.vcell.pathway.sbpax.SBEntity;
@@ -111,7 +112,7 @@ public class PathwayReaderBiopax3 {
 	
 	private PathwayModel pathwayModel = new PathwayModel();
 	private static final Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level3.owl#");
-	private static final Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	private static final Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 	private static final Namespace sbx3 = Namespace.getNamespace("sbx", "http://vcell.org/sbpax3#");
 
 	public final Namespace getNamespaceBp() {

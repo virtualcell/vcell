@@ -17,9 +17,9 @@ package org.vcell.sybil.rdf.compare;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.vcell.sybil.util.comparator.ComparatorScore;
+import org.vcell.sybil.util.comparator.ComparatorByScore;
 
-public class NodeComparatorNS extends ComparatorScore<Value> {
+public class NodeComparatorNS extends ComparatorByScore<Value> {
 	
 	protected String namespace;
 	

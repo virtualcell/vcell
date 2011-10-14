@@ -22,12 +22,12 @@ import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipProducer;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
-import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.Hex;
@@ -477,7 +477,7 @@ private Element getXML(PathwayModel pathwayModel) {
 	Element pathwayElement = new Element(XMLTags.PathwayModelTag);
 	String biopaxVersion = "3.0";
 	// create root element of rdf for BioPAX level 3
-	Namespace rdf = Namespace.getNamespace("rdf",NameSpace.RDF.uri);
+	Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
 	Element rootElement = new Element("RDF", rdf);
 	rootElement.setAttribute("version", biopaxVersion);
 	

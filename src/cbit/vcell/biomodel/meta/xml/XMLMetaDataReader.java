@@ -49,7 +49,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 					// create VCID
 					VCID vcid = VCID.fromString(vcidString);
 					// lookup Identifiable object using VCID ... add to entry.
-					metaData.getRegistry().newEntry(identifiableProvider.getIdentifiableObject(vcid), uri);
+					metaData.getRegistry().newEntry(metaData.getRdfData(), identifiableProvider.getIdentifiableObject(vcid), uri);
 					
 				} catch (VCID.InvalidVCIDException e){
 					e.printStackTrace();

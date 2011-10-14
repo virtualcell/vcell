@@ -25,9 +25,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.http.uniprot.box.UniProtBox;
 import org.vcell.sybil.util.http.uniprot.box.imp.UniProtBoxImp;
-import org.vcell.sybil.util.text.StringUtil;
 
 public class UniProtExtractor {
 

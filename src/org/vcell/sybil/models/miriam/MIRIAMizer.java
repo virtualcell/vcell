@@ -10,33 +10,134 @@
 
 package org.vcell.sybil.models.miriam;
 
-/*   MIRIAMizer  --- by Oliver Ruebenacker, UCHC --- March 2010
+/*   MIRIAMizerImp  --- by Oliver Ruebenacker, UCHC --- March 2010
  *   Handling MIRIAM annotations
  */
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.rdf.RDFBox.RDFThing;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
+import org.vcell.sybil.models.AnnotationQualifiers;
 
-public interface MIRIAMizer {
+public class MIRIAMizer {
+
+	public RefGroup newRefGroup(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
+		Resource bag = graph.getValueFactory().createBNode();
+		graph.add(bag, RDF.TYPE, RDF.BAG);
+		graph.add(resource, qualifier.getProperty(), bag);
+		RefGroup group = new RefGroup(bag);
+		return group;		
+	}
 	
-	public RefGroup newRefGroup(RDFThing thing, MIRIAMQualifier qualifier);
-	public RefGroup newRefGroup(RDFThing thing, MIRIAMQualifier qualifier, MIRIAMRef ref);	
-	public RefGroup newRefGroup(RDFThing thing, MIRIAMQualifier qualifier, Set<MIRIAMRef> refs);
+	public RefGroup newRefGroup(Graph graph, Resource resource, MIRIAMQualifier qualifier, MIRIAMRef ref) {
+		Resource bag = graph.getValueFactory().createBNode();
+		graph.add(bag, RDF.TYPE, RDF.BAG);
+		graph.add(resource, qualifier.getProperty(), bag);
+		RefGroup group = new RefGroup(bag);
+		group.add(graph, ref);
+		return group;		
+	}
 	
-	public Set<RefGroup> getRefGroups(RDFThing thing, MIRIAMQualifier qualifier);
-	public Map<RefGroup, MIRIAMQualifier> getModelRefGroups(RDFThing thing);
-	public Map<RefGroup, MIRIAMQualifier> getBioRefGroups(RDFThing thing);
-	public Map<RefGroup, MIRIAMQualifier> getAllRefGroups(RDFThing thing);
-	public void detachRefGroups(RDFThing thing, MIRIAMQualifier qualifier);
-	public void detachRefGroup(RDFThing thing, RefGroup group);
-	public void detachModelRefGroups(RDFThing thing);
-	public void detachBioRefGroups(RDFThing thing);
-	public void detachAllRefGroups(RDFThing thing);
-	public void deleteRefGroups(RDFThing thing, MIRIAMQualifier qualifier);
-	public void deleteRefGroup(RDFThing thing, RefGroup group);
-	public void deleteModelRefGroups(RDFThing thing);
-	public void deleteBioRefGroups(RDFThing thing);
-	public void deleteAllRefGroups(RDFThing thing);
+	public RefGroup newRefGroup(Graph graph, Resource resource, MIRIAMQualifier qualifier, Set<MIRIAMRef> refs) {
+		Resource bag = graph.getValueFactory().createBNode();
+		graph.add(bag, RDF.TYPE, RDF.BAG);
+		graph.add(resource, qualifier.getProperty(), bag);
+		RefGroup group = new RefGroup(bag);
+		for(MIRIAMRef ref : refs) { group.add(graph, ref);	}
+		return group;		
+	}
+	
+	public Set<RefGroup> getRefGroups(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
+		Set<RefGroup> groups = new HashSet<RefGroup>();
+		Iterator<Statement> iter = graph.match(resource, qualifier.getProperty(), null);
+		while(iter.hasNext()) {
+			Statement statement = iter.next();
+			Value node = statement.getObject();
+			if(node instanceof Resource) {
+				groups.add(new RefGroup((Resource) node));
+			}
+		}
+		return groups;
+	}
+	
+	public Map<RefGroup, MIRIAMQualifier> getModelRefGroups(Graph graph, Resource resource) {
+		Map<RefGroup, MIRIAMQualifier> map = new HashMap<RefGroup, MIRIAMQualifier>();
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMMODEL_all) {
+			Set<RefGroup> groups = getRefGroups(graph, resource, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
+		}
+		return map;
+	}
+
+	public Map<RefGroup, MIRIAMQualifier> getBioRefGroups(Graph graph, Resource resource) {
+		Map<RefGroup, MIRIAMQualifier> map = new HashMap<RefGroup, MIRIAMQualifier>();
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMBIO_all) {
+			Set<RefGroup> groups = getRefGroups(graph, resource, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
+		}
+		return map;
+	}
+
+	public Map<RefGroup, MIRIAMQualifier> getAllRefGroups(Graph graph, Resource resource) {
+		Map<RefGroup, MIRIAMQualifier> map = 
+			new HashMap<RefGroup, MIRIAMQualifier>();
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) {
+			Set<RefGroup> groups = getRefGroups(graph, resource, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
+		}
+		return map;
+	}
+
+	public void detachRefGroup(Graph graph, Resource resource, RefGroup group) {
+		Iterator<Statement> iter = graph.match(resource, null, group.getResource());
+		while(iter.hasNext()) { iter.next(); iter.remove(); }
+	}
+	
+	public void detachRefGroups(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
+		Iterator<Statement> iter = graph.match(resource, qualifier.getProperty(), null);
+		while(iter.hasNext()) { iter.next(); iter.remove(); }
+	}
+
+	public void detachModelRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMMODEL_all) { detachRefGroups(graph, resource, qualifier); }
+	}
+
+	public void detachBioRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMBIO_all) { detachRefGroups(graph, resource, qualifier); }
+	}
+
+	public void detachAllRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) { detachRefGroups(graph, resource, qualifier); }
+	}
+
+	public void deleteRefGroup(Graph graph, Resource resource, RefGroup group) {
+		detachRefGroup(graph, resource, group);
+		group.delete(graph);
+	}
+
+	public void deleteRefGroups(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
+		Set<RefGroup> groups = getRefGroups(graph, resource, qualifier);
+		for(RefGroup group : groups) { deleteRefGroup(graph, resource, group); }
+	}
+
+	public void deleteModelRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMMODEL_all) { deleteRefGroups(graph, resource, qualifier); }		
+	}
+
+	public void deleteBioRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAMBIO_all) { deleteRefGroups(graph, resource, qualifier); }		
+	}
+
+	public void deleteAllRefGroups(Graph graph, Resource resource) {
+		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) { deleteRefGroups(graph, resource, qualifier); }				
+	}
+
 }

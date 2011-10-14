@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
+import org.vcell.util.graphlayout.energybased.WerewolfLayouter;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphView;
@@ -46,18 +47,16 @@ public interface GraphLayouter {
 		}
 		
 	}
-
-
 	
 	public static class DefaultLayouters {
 		public static final List<String> NAMES = 
 			Arrays.asList(RandomLayouter.LAYOUT_NAME, EdgeTugLayouter.LAYOUT_NAME, 
 					ShootAndCutLayouter.LAYOUT_NAME, SimpleElipticalLayouter.LAYOUT_NAME,
-					GenericLogicGraphLayouter.LAYOUT_NAME);		
+					GenericLogicGraphLayouter.LAYOUT_NAME, WerewolfLayouter.LAYOUT_NAME);		
 	}
 	
 	public String getLayoutName();
 	public void layout(Client client);
 	public void layout(ContainedGraph graph);
-	
+
 }

@@ -22,29 +22,28 @@ public class EnergyMinimizingLayouter extends ContainedGraphLayouter {
 
 	public static final String LAYOUT_NAME = "Contained Graph Layouter Energy Minimizing";
 
+	protected boolean useStretchLayouter = true;
 	protected StretchToBoundaryLayouter stretchLayouter = new StretchToBoundaryLayouter();
 
 	protected final Set<EnergyTerm.Factory> termFactories;
 	protected final Minimizer minimizer;
-	
+
 	public EnergyMinimizingLayouter(Set<EnergyTerm.Factory> termFactories, Minimizer minimizer) {
 		this.termFactories = termFactories;
 		this.minimizer = minimizer;
 	}
-	
+
 	public void layout(ContainedGraph graph) {
 		EnergySum energySum = new EnergySum.Default(graph);
 		for(EnergyTerm.Factory termFactory : termFactories) {
 			energySum.generateTerms(termFactory);
 		}
 		minimizer.minimize(energySum);
-		stretchLayouter.layout(graph);
+		if(useStretchLayouter) { stretchLayouter.layout(graph);	}
 	}
 
 	public String getLayoutName() {
 		return LAYOUT_NAME;
 	}
 
-
-	
 }

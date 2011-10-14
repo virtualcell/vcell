@@ -21,8 +21,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import org.openrdf.model.Resource;
 import org.openrdf.rio.RDFHandlerException;
-import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
@@ -137,9 +137,9 @@ public static String printResourceMappings(VCMetaData metaData) {
 	strBuffer.append("\n\n ResourceMappings : \n");
 	Set<Registry.Entry> entrySet = metaData.getRegistry().getAllEntries();
 	for (Registry.Entry entry : entrySet) {
-		NamedThing namedThing = entry.getNamedThing();
-		if (namedThing!=null){
-			strBuffer.append(namedThing.resource().stringValue());
+		Resource resource = entry.getResource();
+		if (resource!=null){
+			strBuffer.append(resource.stringValue());
 			Identifiable identifiable = entry.getIdentifiable();
 			strBuffer.append(" ============= " + metaData.getIdentifiableProvider().getVCID(identifiable).toASCIIString());
 			strBuffer.append("\n");				

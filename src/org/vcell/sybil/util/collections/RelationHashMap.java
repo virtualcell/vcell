@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.util.sets.SetOfNone;
+import org.sbpax.util.sets.SetOfNone;
 
 public class RelationHashMap<A, B> implements RelationMap<A, B> {
 

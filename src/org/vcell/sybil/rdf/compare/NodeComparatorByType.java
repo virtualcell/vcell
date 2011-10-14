@@ -17,9 +17,9 @@ package org.vcell.sybil.rdf.compare;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.vcell.sybil.util.comparator.ComparatorScore;
+import org.vcell.sybil.util.comparator.ComparatorByScore;
 
-public class NodeComparatorByType extends ComparatorScore<Value> {
+public class NodeComparatorByType extends ComparatorByScore<Value> {
 	@Override
 	public int score(Value node) {
 		if(node instanceof URI) { return 2; }
