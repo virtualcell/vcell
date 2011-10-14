@@ -355,7 +355,7 @@ public class DocumentCompiler {
 				}
 				else
 				{
-					throw new RuntimeException("Unsupoorted element " + childElement.getName());
+					throw new RuntimeException("Unsupported element " + childElement.getName());
 				}
 			}
 		}
