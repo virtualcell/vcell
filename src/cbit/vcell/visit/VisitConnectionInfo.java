@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.visit;
-import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 

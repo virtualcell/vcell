@@ -9,13 +9,6 @@
  */
 
 package cbit.xml.merge;
-
-/**
- * Insert the type's description here.
- * Creation date: (7/25/2000 5:46:22 PM)
- * @author: 
- */
-import java.awt.*;
 public class NodeInfo extends javax.swing.tree.DefaultMutableTreeNode {
 	public final static int STATUS_REMOVED = 102;
 	public final static int STATUS_NEW = 101;

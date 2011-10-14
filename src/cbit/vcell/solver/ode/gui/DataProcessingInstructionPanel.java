@@ -11,7 +11,6 @@
 package cbit.vcell.solver.ode.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,8 +24,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.solver.DataProcessingInstructions;

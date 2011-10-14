@@ -59,7 +59,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.VCellNames;
-import cbit.vcell.modelopt.ModelOptimizationMapping;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;

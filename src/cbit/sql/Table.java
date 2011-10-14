@@ -9,7 +9,6 @@
  */
 
 package cbit.sql;
-import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */

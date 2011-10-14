@@ -12,7 +12,6 @@ package cbit.vcell.simdata;
 
 import org.vcell.util.Compare;
 
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 
 /**

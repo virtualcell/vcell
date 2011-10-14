@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.transaction;
-import oracle.jdbc.driver.OracleDriver;
-import javax.transaction.xa.XAException;
 import javax.transaction.*;
 import java.sql.SQLException;
 import oracle.jdbc.xa.client.OracleXADataSource;
@@ -18,8 +16,6 @@ import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
 import org.vcell.util.PropertyLoader;
-
-import java.sql.DriverManager;
 
 /**
  * Insert the type's description here.

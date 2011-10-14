@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.util.Vector;
-
 import org.vcell.util.document.User;
 
 import cbit.sql.Table;

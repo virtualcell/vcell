@@ -11,7 +11,6 @@
 package cbit.vcell.messaging.db;
 
 import java.util.Date;
-import java.io.Serializable;
 
 /**
  * Insert the type's description here.

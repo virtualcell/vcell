@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.client.server;
-import cbit.vcell.client.*;
 public interface ConnectionStatus {
 	// remote server status possibilitites
 	public static final int NOT_CONNECTED = 0;

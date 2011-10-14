@@ -18,8 +18,6 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 
 /**

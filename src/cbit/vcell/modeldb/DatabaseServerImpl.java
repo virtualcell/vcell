@@ -32,7 +32,6 @@ import org.vcell.util.document.VersionableType;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.sql.ConnectionFactory;
-import cbit.sql.InsertHashtable;
 import cbit.sql.KeyFactory;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModelMetaData;

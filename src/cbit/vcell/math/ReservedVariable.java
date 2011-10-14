@@ -10,12 +10,9 @@
 
 package cbit.vcell.math;
 
-import java.util.Map;
-
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReservedVariable extends Variable
 {

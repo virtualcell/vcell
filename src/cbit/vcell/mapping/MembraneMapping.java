@@ -11,9 +11,6 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
-import java.text.NumberFormat;
-
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.TokenMangler;
@@ -22,7 +19,6 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;

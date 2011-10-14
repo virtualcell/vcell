@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 
@@ -24,7 +23,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.*;
 import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.

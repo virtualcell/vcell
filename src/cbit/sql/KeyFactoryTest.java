@@ -13,8 +13,6 @@ package cbit.sql;
 import java.sql.*;
 
 import org.vcell.util.StdoutSessionLog;
-
-import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */

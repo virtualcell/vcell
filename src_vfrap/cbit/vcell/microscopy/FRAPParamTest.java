@@ -21,7 +21,6 @@ import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.gui.ProgressDialogListener;
 
-import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.ClientRequestManager;

@@ -9,10 +9,7 @@
  */
 
 package cbit.vcell.geometry.gui;
-import cbit.vcell.geometry.surface.Triangle;
 import cbit.vcell.render.Vect3d;
-import java.awt.geom.AffineTransform;
-import cbit.vcell.geometry.surface.Node;
 /**
  * Insert the type's description here.
  * Creation date: (11/26/2003 12:40:01 PM)

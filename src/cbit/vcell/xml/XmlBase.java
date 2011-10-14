@@ -11,7 +11,6 @@
 package cbit.vcell.xml;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression.FunctionFilter;
 /**
  * Insert the type's description here.
  * Creation date: (3/22/2001 11:17:04 AM)

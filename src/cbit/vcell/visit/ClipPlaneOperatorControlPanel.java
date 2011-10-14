@@ -31,7 +31,6 @@ import java.util.Vector;
 
 import javax.swing.Box;
 
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.gui.DialogUtils;
 
 import llnl.visit.Plot;

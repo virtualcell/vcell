@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.math.BigDecimal;
 import cbit.sql.*;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
@@ -23,8 +22,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
-
-import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
  */

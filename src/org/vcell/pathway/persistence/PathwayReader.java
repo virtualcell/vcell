@@ -20,7 +20,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
-import org.sbpax.schemas.util.NameSpace;
 import org.vcell.pathway.BindingFeature;
 import org.vcell.pathway.BindingFeatureImpl;
 import org.vcell.pathway.BioPaxObject;
@@ -47,7 +46,6 @@ import org.vcell.pathway.DnaRegionReference;
 import org.vcell.pathway.Entity;
 import org.vcell.pathway.EntityFeature;
 import org.vcell.pathway.EntityFeatureImpl;
-import org.vcell.pathway.EntityImpl;
 import org.vcell.pathway.EntityReference;
 import org.vcell.pathway.EntityReferenceTypeVocabulary;
 import org.vcell.pathway.Evidence;
@@ -101,7 +99,6 @@ import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.persistence.BiopaxProxy.*;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 
 import cbit.util.xml.XmlUtil;

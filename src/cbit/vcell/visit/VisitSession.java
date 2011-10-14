@@ -19,15 +19,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.swing.JFileChooser;
-import javax.swing.event.InternalFrameAdapter;
-
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableStatus;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -36,7 +31,6 @@ import llnl.visit.ViewerMethods;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ClientMethod;
 import llnl.visit.MachineProfile;
-import llnl.visit.HostProfileList;
 import llnl.visit.ClientInformation;
 import llnl.visit.ClientInformationList;
 import llnl.visit.ViewerState;

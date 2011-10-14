@@ -18,7 +18,6 @@ import java.util.zip.DeflaterOutputStream;
 import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 /**
  * This type was created in VisualAge.
  */

@@ -16,7 +16,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.client.desktop.biomodel.ParameterEstimationPanel.ParameterEstimationPanelTabID;
-import cbit.vcell.opt.Parameter;
 
 /**
  * Insert the type's description here.

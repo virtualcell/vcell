@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.dictionary;
-
-import java.util.Vector;
 /**
  * Superclass of all possible species to be added to the VCell
  * Creation date: (6/24/2002 10:44:36 AM)

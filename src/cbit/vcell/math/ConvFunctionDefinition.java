@@ -13,11 +13,9 @@ package cbit.vcell.math;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionDomainException;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.Differentiable;
 import cbit.vcell.parser.SymbolTableFunctionEntry.Evaluable;
-import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
 public class ConvFunctionDefinition extends SimpleSymbolTableFunctionEntry implements Differentiable, Evaluable {
 	

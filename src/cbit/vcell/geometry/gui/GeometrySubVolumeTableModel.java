@@ -15,8 +15,6 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.JTable;
-
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 

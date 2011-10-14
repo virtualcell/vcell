@@ -21,7 +21,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
-import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.UserLoginInfo;

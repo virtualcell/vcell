@@ -9,12 +9,8 @@
  */
 
 package cbit.vcell.model;
-import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.parser.*;
 
 public abstract class ReactionParticipant implements org.vcell.util.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	private KeyValue key = null;

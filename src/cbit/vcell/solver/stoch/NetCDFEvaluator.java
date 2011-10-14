@@ -17,10 +17,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import ucar.ma2.Array;
-import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.InvalidRangeException;
-import ucar.nc2.Variable;
 
 /**
  * To get trajetory or the histogram from results which is in a NetCDF format.

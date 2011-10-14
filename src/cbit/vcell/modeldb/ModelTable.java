@@ -20,7 +20,6 @@ import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;
-import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */

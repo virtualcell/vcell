@@ -10,9 +10,6 @@
 
 package org.vcell.pathway;
 
-import java.util.HashSet;
-import java.util.Set;
-
 
 public class InteractionParticipant {
 

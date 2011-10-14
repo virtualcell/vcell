@@ -12,7 +12,6 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 
-import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.pathway.sbpax.SBEntity;
 
 public interface Entity extends BioPaxObject {

@@ -27,7 +27,6 @@ import javax.swing.border.LineBorder;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SimpleSymbolTable;
 

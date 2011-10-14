@@ -18,7 +18,6 @@ import org.sbml.libsbml.libsbml;
 import org.sbml.libsbml.libsbmlConstants;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**

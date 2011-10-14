@@ -20,7 +20,6 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.MathExecutable;
 /**
  * Insert the type's description here.

@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.parser;
-
-import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2005 4:13:57 PM)

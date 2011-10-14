@@ -18,8 +18,6 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.ElementWeights;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.TimeWeights;
-import cbit.vcell.opt.Weights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 

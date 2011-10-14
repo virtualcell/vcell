@@ -9,8 +9,6 @@
  */
 
 package cbit.function;
-
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (4/2/2002 1:26:52 PM)

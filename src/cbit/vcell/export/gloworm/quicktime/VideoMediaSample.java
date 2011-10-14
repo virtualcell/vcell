@@ -11,8 +11,6 @@
 package cbit.vcell.export.gloworm.quicktime;
 
 
-import java.util.zip.*;
-
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 /**
  * This type was created in VisualAge.

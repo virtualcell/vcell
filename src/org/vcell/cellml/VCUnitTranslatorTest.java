@@ -9,24 +9,14 @@
  */
 
 package org.vcell.cellml;
-import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.util.xml.XmlUtil;
 
-import junit.framework.TestCase;
-import junit.framework.TestFailure;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
 import cbit.vcell.units.VCUnitDefinition;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 /**
  * Insert the type's description here.
  * Creation date: (9/8/2004 3:59:09 PM)

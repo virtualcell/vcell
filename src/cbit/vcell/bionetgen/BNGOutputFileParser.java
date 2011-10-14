@@ -14,8 +14,6 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 import java.io.*;
 
-import org.vcell.util.TokenMangler;
-
 import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.

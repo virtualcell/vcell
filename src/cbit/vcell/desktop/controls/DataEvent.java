@@ -10,8 +10,6 @@
 
 package cbit.vcell.desktop.controls;
 import org.vcell.util.document.VCDataIdentifier;
-
-import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/4/2004 12:13:57 PM)

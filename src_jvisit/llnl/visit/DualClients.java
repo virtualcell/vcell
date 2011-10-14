@@ -36,7 +36,6 @@
 //
 // ****************************************************************************
 package llnl.visit;
-import java.lang.ArrayIndexOutOfBoundsException;
 import java.lang.String;
  
 import java.util.Vector;
@@ -45,7 +44,6 @@ import llnl.visit.AttributeSubject;
 import llnl.visit.ClientMethod;
 import llnl.visit.ClientInformation;
 import llnl.visit.ClientInformationList;
-import llnl.visit.PlotList;
 import llnl.visit.SimpleObserver;
  
  

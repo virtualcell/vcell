@@ -10,8 +10,6 @@
 
 package cbit.image;
 
-import java.io.*;
-
 public class ByteOrder
 {
    public static final ByteOrder PC = new ByteOrder("II");

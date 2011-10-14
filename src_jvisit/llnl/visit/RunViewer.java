@@ -37,7 +37,6 @@
 // ****************************************************************************
 package llnl.visit;
 import llnl.visit.Axes3D;
-import llnl.visit.EventLoop;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ColorAttribute;
 import llnl.visit.AnnotationAttributes;

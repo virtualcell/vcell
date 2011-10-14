@@ -12,8 +12,6 @@ package cbit.vcell.numericstest;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import java.math.BigDecimal;
-
-import org.vcell.util.document.MathModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (10/16/2004 2:14:39 PM)

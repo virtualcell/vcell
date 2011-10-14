@@ -10,8 +10,6 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.*;

@@ -11,8 +11,6 @@
 package cbit.vcell.messaging;
 import javax.jms.JMSException;
 
-import org.vcell.util.PropertyLoader;
-
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2004 2:54:42 PM)

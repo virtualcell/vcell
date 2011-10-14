@@ -11,7 +11,6 @@
 package cbit.vcell.microscopy;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +22,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.media.jai.JAI;
 import javax.media.jai.operator.FileStoreDescriptor;
 
 import org.vcell.util.Extent;

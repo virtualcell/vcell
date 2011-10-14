@@ -41,7 +41,6 @@ import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphContainerLayoutPathways;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
-import cbit.gui.graph.groups.GroupShape;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxComplexShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;

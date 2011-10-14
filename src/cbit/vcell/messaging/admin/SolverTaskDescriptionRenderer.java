@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.messaging.admin;
-import cbit.vcell.solver.SolverTaskDescription;
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2004 2:26:27 PM)

@@ -10,8 +10,6 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.Color;
-
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.

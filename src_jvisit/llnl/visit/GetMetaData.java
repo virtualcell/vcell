@@ -36,7 +36,6 @@
 //
 // ****************************************************************************
 package llnl.visit;
-import java.lang.ArrayIndexOutOfBoundsException;
 import llnl.visit.avtDatabaseMetaData;
 
 // ****************************************************************************

@@ -12,8 +12,6 @@ package cbit.vcell.dictionary;
 
 import java.util.Vector;
 
-import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;

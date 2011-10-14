@@ -9,7 +9,6 @@
  */
 
 package org.vcell.cellml;
-import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 
@@ -20,8 +19,6 @@ import org.vcell.util.document.VCDocument;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 
 public abstract class Translator {

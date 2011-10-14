@@ -26,7 +26,6 @@ import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.vcell.optimization.LocalOptimizationService;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
@@ -47,7 +46,6 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;

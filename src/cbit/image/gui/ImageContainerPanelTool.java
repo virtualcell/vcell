@@ -12,7 +12,6 @@ package cbit.image.gui;
 
 import java.awt.event.*;
 import java.awt.*;
-import cbit.plot.*;
 import cbit.image.*;
 /**
  * This type was created in VisualAge.

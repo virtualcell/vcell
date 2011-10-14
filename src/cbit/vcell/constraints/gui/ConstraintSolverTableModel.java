@@ -9,12 +9,8 @@
  */
 
 package cbit.vcell.constraints.gui;
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.SimpleBounds;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

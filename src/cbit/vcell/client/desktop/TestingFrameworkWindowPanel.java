@@ -53,7 +53,6 @@ import cbit.vcell.client.task.TFRunSims;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFUpdateTestCriteria;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;

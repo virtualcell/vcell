@@ -12,7 +12,6 @@ package cbit.vcell.numericstest;
 
 import java.math.BigDecimal;
 
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
 
 /**

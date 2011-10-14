@@ -13,8 +13,6 @@ package cbit.sql;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import cbit.vcell.server.*;
-import cbit.vcell.simdata.*;
 import java.io.Serializable;
 
 import org.vcell.util.CacheException;

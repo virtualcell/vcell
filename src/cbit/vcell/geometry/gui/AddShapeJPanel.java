@@ -33,7 +33,6 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.model.ReservedSymbol;
 
 public class AddShapeJPanel extends JPanel {

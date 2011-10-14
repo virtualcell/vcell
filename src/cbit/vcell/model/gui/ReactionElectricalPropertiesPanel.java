@@ -13,8 +13,6 @@ package cbit.vcell.model.gui;
 import java.awt.Color;
 import java.awt.Insets;
 
-import javax.swing.JLabel;
-
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 

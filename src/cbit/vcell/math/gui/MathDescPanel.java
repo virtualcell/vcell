@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.math.gui;
-import java.awt.Color;
 import java.util.Enumeration;
 import java.util.Vector;
 

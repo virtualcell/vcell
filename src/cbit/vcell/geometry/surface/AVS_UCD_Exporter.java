@@ -10,15 +10,7 @@
 
 package cbit.vcell.geometry.surface;
 
-import org.vcell.util.Coordinate;
-import org.vcell.util.Origin;
-
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
-import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.CartesianMesh.UCDInfo;
 
 /**
  * Insert the type's description here.

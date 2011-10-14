@@ -16,9 +16,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.mapping.gui.FluorescenceSpeciesContextListModel;
-import cbit.vcell.mapping.gui.SpeciesFluorescenceSpec;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 

@@ -10,8 +10,6 @@
 
 package cbit.vcell.server;
 
-import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.model.*;
 import java.rmi.*;
 
 import org.vcell.util.DataAccessException;

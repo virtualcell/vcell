@@ -13,7 +13,6 @@ package org.vcell.pathway;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class BiochemicalPathwayStep extends PathwayStep {

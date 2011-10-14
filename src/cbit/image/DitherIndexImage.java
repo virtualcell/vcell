@@ -10,9 +10,6 @@
 
 package cbit.image;
 
-import java.awt.image.*;
-import cbit.image.*;
-import java.io.*;
 import java.util.*;
 /**
  * This type was created in VisualAge.

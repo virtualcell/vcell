@@ -10,9 +10,6 @@
 
 package org.vcell.pathway.commons;
 
-//import org.vcell.pathway.Entity;
-import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
-
 public class PathwayEntryObject {
 
 	private String ID;

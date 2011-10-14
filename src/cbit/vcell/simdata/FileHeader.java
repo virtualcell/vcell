@@ -10,7 +10,6 @@
 
 package cbit.vcell.simdata;
 import java.io.*;
-import java.util.*;
 
 class FileHeader implements java.io.Serializable
 {

@@ -13,20 +13,12 @@ import cbit.vcell.solver.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
-import cbit.vcell.server.*;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.image.*;
-import java.util.Vector;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-
-import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.
  */

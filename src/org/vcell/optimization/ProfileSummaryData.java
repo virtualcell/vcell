@@ -12,7 +12,6 @@ package org.vcell.optimization;
 
 
 import cbit.plot.Plot2D;
-import cbit.vcell.opt.Parameter;
 
 /*
  * The class is made for properly display a profile distribution with confidence intervals at the

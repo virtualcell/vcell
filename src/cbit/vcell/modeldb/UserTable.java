@@ -12,7 +12,6 @@ package cbit.vcell.modeldb;
 
 import java.sql.*;
 
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 

@@ -13,7 +13,6 @@ package cbit.vcell.client.server;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 
-import org.apache.axis.utils.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 

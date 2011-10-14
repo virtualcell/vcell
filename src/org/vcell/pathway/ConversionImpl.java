@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import org.vcell.pathway.persistence.BiopaxProxy.InteractionProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class ConversionImpl extends InteractionImpl implements Conversion {

@@ -12,7 +12,6 @@ package cbit.vcell.solver.ode;
 
 import Jama.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.math.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:56:17 PM)

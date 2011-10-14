@@ -11,14 +11,11 @@
 package org.vcell.cellml;
 import ucar.units.RationalNumber;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitException;
-
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
 import ucar.units.Factor;
 import ucar.units.OffsetUnit;
 import ucar.units.ScaledUnit;
-import ucar.units.SI;
 import ucar.units.StandardUnitDB;
 import ucar.units.Unit;
 import ucar.units.UnitException;

@@ -17,8 +17,6 @@ import org.vcell.util.document.User;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;
-import cbit.vcell.server.*;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.*;
 /**
  * This type was created in VisualAge.

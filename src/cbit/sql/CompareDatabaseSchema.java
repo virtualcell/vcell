@@ -10,14 +10,8 @@
 
 package cbit.sql;
 
-import cbit.gui.*;
-import java.awt.*;
-
 import cbit.vcell.modeldb.SQLCreateAllTables;
-import cbit.vcell.server.*;
 import java.sql.*;
-import java.io.*;
-import oracle.jdbc.driver.*;
 import javax.swing.*;
 
 import org.vcell.util.SessionLog;

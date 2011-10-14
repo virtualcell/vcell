@@ -13,7 +13,6 @@ package cbit.vcell.solver;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.server.*;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.

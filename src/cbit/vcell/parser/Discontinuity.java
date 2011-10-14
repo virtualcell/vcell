@@ -12,8 +12,6 @@ package cbit.vcell.parser;
 
 import org.vcell.util.Compare;
 
-import cbit.vcell.math.MathUtilities;
-
 public class Discontinuity {
 	Expression discontinuityExp;
 	Expression rootFindingExp;

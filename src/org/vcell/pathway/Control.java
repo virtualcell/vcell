@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.sbpax.util.StringUtil;
-import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Control extends InteractionImpl {

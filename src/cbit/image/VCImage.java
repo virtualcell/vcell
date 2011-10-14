@@ -12,10 +12,8 @@ package cbit.image;
 import java.io.Serializable;
 import java.util.*;
 
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 
 

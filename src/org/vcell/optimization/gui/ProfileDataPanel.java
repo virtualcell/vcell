@@ -12,12 +12,7 @@ package org.vcell.optimization.gui;
 
 import java.awt.BorderLayout;
 
-import javax.swing.BoxLayout;
-
 import org.vcell.util.gui.BoxPanel;
-
-
-import cbit.plot.PlotPane;
 
 public class ProfileDataPanel extends BoxPanel
 {

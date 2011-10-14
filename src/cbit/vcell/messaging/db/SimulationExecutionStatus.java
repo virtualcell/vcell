@@ -13,7 +13,6 @@ package cbit.vcell.messaging.db;
 import java.util.Date;
 
 import org.vcell.util.Matchable;
-import org.vcell.util.document.KeyValue;
 
 
 /**

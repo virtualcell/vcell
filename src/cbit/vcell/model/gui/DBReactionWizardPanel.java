@@ -15,10 +15,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.Box;

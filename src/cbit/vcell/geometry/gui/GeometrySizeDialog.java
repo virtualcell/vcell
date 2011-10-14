@@ -16,8 +16,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
-
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 

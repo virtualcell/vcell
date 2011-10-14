@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.meta.Identifiable;

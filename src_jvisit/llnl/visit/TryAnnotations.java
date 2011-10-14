@@ -36,8 +36,6 @@
 //
 // ****************************************************************************
 package llnl.visit;
-import java.lang.ArrayIndexOutOfBoundsException;
-import java.util.Vector;
 import llnl.visit.View3DAttributes;
 import llnl.visit.AnnotationAttributes;
 import llnl.visit.AnnotationObject;

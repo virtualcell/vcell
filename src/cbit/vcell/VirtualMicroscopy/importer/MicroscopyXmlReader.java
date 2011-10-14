@@ -9,21 +9,17 @@
  */
 
 package cbit.vcell.VirtualMicroscopy.importer;
-import java.awt.Rectangle;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -31,15 +27,11 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.image.ImageException;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlBase;
 import cbit.vcell.xml.XmlParseException;

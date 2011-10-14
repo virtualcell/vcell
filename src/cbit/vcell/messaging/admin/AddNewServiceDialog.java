@@ -14,7 +14,6 @@ import java.awt.Color;
 
 import javax.swing.*;
 
-import org.vcell.util.MessageConstants;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
 

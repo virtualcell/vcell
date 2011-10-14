@@ -10,7 +10,6 @@
 
 package cbit.vcell.simdata;
 import java.io.*;
-import java.util.*;
 
 class DataBlock implements java.io.Serializable
 {

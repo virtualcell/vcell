@@ -10,7 +10,6 @@
 
 package cbit.vcell.VirtualMicroscopy.importer;
 
-import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Array;

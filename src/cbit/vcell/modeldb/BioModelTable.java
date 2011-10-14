@@ -11,8 +11,6 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.biomodel.*;
-import java.beans.*;
-import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.SQLException;
@@ -21,7 +19,6 @@ import java.sql.Connection;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;

@@ -12,8 +12,6 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
-import org.vcell.util.gui.AsynchProgressPopup;
-
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 /**

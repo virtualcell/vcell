@@ -11,21 +11,16 @@
 package cbit.vcell.publish;
 import java.awt.print.PageFormat;
 import java.io.*;
-import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import java.awt.PrintJob;
-
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
