@@ -123,9 +123,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private static class TrianglePanel {
 		String name;
 		Triangle triangle;		
-		private TrianglePanel(int membraneIndex, int triIndex, Triangle triangle) {
+		private TrianglePanel(int triLocalIndex, int triGlobalIndex, int membraneIndex,  Triangle triangle) {
 			super();
-			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + triIndex + (membraneIndex >= 0 ? "_" + membraneIndex : "");
+			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + triLocalIndex + "_" + triGlobalIndex + (membraneIndex >= 0 ? "_" + membraneIndex : "");
 			this.triangle = triangle;
 		}
 	}
@@ -288,6 +288,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		Origin,
 		Size,
 		VolumeSamples,
+		highResVolumeSamplesFile,
 		CompartmentHighResPixelMap,
 	}
 	
@@ -398,19 +399,21 @@ private void writeHighResVolumeSamples() {
 	PrintWriter pw = null;
 	try {
 		File hrvsFile = new File(baseFileName + SimDataConstants.SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION);
+		printWriter.println("# "+VCellSmoldynKeyword.highResVolumeSamplesFile);
+		printWriter.println(VCellSmoldynKeyword.highResVolumeSamplesFile + " " + hrvsFile);
+		printWriter.println();
+		
 		pw = new PrintWriter(hrvsFile);
 		Origin origin = resampledGeometry.getOrigin();
 		Extent extent = resampledGeometry.getExtent();
 		int numSamples = 10000000;
 		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
 		VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
-		
+			
 		pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
 		pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
 		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
-		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
-			pw.println(subVolume.getName() + " " + subVolume.getHandle());
-		}
+		
 		pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
 		
 		if (vcImage != null) {
@@ -624,7 +627,8 @@ private void writeReactions() throws ExpressionException, MathException {
 			
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
-				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+//				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+				printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
 				writeReactionCommand(reactants, products, subdomain, rateDefinition);
 			} else if (subdomain instanceof MembraneSubDomain){
 				//0th order reaction, product limited to one and it can be on mem or in vol
@@ -1182,12 +1186,13 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		membraneSubdomainTriangleMap = new HashMap<MembraneSubDomain, ArrayList<TrianglePanel> >();
 		// write surfaces
 		printWriter.println("# surfaces");
-		int triangleCount = 0;
+		int triangleGlobalCount = 0;
 		int membraneIndex = -1;
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
 			HashMap<Node, HashSet<String>> nodeTriMap = new HashMap<Node, HashSet<String>>();
 			
+			int triLocalCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
 			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
@@ -1242,30 +1247,38 @@ private void writeSurfacesAndCompartments() throws SolverException {
 								unit01n.unit();
 								if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
 									// v0 to v1 opposes vcell surface normal. it's already flipped.
+									Triangle triangle;
 									if (surface.getInteriorRegionIndex() == interiorRegionID) {
 										// we have to flipped it back
-										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+										triangle = new Triangle(nodes[point1], nodes[point0], null);
 									} else {
-										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
+										triangle = new Triangle(nodes[point0], nodes[point1], null);
 									}
+									triList.add(new TrianglePanel(triLocalCount ++, triangleGlobalCount ++, membraneIndex, triangle));
 								}else if (Math.abs(unit01n.getZ()+1.0) < 1e-6){
 									// v0 to v1 is in direction of vcell surface normal.
+									Triangle triangle;
 									if (surface.getInteriorRegionIndex() == interiorRegionID) {
-										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point0], nodes[point1], null)));
+										triangle = new Triangle(nodes[point0], nodes[point1], null);
 									} else {
-										triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[point1], nodes[point0], null)));
+										triangle = new Triangle(nodes[point1], nodes[point0], null);
 									}
+									triList.add(new TrianglePanel(triLocalCount ++, triangleGlobalCount ++, membraneIndex, triangle));
 								}else {
 									throw new RuntimeException("failed to generate surface");
 								}
 							} else if (dimension == 3) {
+								Triangle triangle1;
+								Triangle triangle2;
 								if (surface.getInteriorRegionIndex() == interiorRegionID) { // interior	
-									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[0], nodes[1], nodes[2])));
-									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[0], nodes[2], nodes[3])));
+									triangle1 = new Triangle(nodes[0], nodes[1], nodes[2]);
+									triangle2 = new Triangle(nodes[0], nodes[2], nodes[3]);
 								}else{
-									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[2], nodes[1], nodes[0])));
-									triList.add(new TrianglePanel(membraneIndex, triangleCount++, new Triangle(nodes[3], nodes[2], nodes[0])));
+									triangle1 = new Triangle(nodes[2], nodes[1], nodes[0]);
+									triangle2 = new Triangle(nodes[3], nodes[2], nodes[0]);
 								}
+								triList.add(new TrianglePanel(triLocalCount ++, triangleGlobalCount ++, membraneIndex, triangle1));
+								triList.add(new TrianglePanel(triLocalCount ++, triangleGlobalCount ++, membraneIndex, triangle2));
 							}
 						}
 					}
