@@ -33,8 +33,11 @@
 	</appearance>
 	
 	<operations>
+	
+	
 	<para>
-	The Field Data Manager display (Fig. 6) provides an overview of current Field Data Objects owned by a VCell user and includes tools for creating, accessing and using the Field Data Objects
+	<imgReference target = "frm_fieldData_Main.gif"/>
+	The Field Data Manager display provides an overview of current Field Data Objects owned by a VCell user and includes tools for creating, accessing and using the Field Data Objects
 	The overview section (bottom part) of the Manager display contains a tree-like view of all the Field Data objects the user has created, 
 	arranged alphabetically by name. Additional information includes the following items:  “Size”, showing the number of elements in the Field Data Object for each spatial dimension (x, y, z);  
 	“Origin”, showing the position (x, y, z) of the upper, left, bottom corner in simulation domain space (by default this is assigned (0,0,0) unless reassigned by the user during Field Data creation);  
@@ -43,7 +46,9 @@
 	Double-clicking the “Variables” item will display an expanded list of the names and type (volume, membrane) of the variables contained within the parent Field Data Object.
 	</para>
 	
+	
 	<para>
+	<imgReference target = "frm_fieldData_top.gif"/>
 	The tools in the control section (top part) of the Manager display allow the user to create, manipulate and use Field Data Objects.  
 	Field Data Objects can be created in one of two ways. 
 	The Objects to be defined by data originated outside the VCell environment (such as microscope image data or numerical data generated with a different program such as MATLAB, 
@@ -60,6 +65,7 @@
 	</para>
 	
 	<para>
+	<imgReference target = "frm_fieldData_copyfunc.gif"/>
 	To incorporate a Field Data Object into a VCell simulation, a function with a specific syntax is generated. In the BioModel workspace, this function is entered in the “Initial Conditions” section of a spatial application. 
 	In the MathModel workspace, this function is simply pasted to the list of functions in the VCML Editor window.  
 	The appropriate function syntax is automatically created, once the user selects a variable name from the “Variables” item of a Field Data name in the Field Data Manager display list and presses the “Copy Func” button.  
@@ -74,6 +80,7 @@
 	</para>
 	
 	<para>
+	<imgReference target = "frm_fieldData_refview.gif"/>
 	Field Data Objects can be deleted only if they are not being used as a Field Data function in any VCell model simulation.  
 	A list of all VCell models using a particular Field Data Object can be obtained by pressing the “Model Refs…” button.  
 	A table showing the VCell model information will appear if the Field Data Object is referenced.  
