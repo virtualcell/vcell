@@ -463,7 +463,7 @@ public class DocumentCompiler {
 			 }
 			 File imageFile = getTargetFile(docImage.getSourceFile());
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
-			 pw.println("<br/><br/>");
+			 pw.println("<br><br>");
 			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth() + "\" height=\"" +docImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
