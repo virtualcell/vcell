@@ -29,7 +29,6 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "fieldDataAll.gif"/>
 	</appearance>
 	
 	<operations>
