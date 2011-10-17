@@ -449,14 +449,21 @@ public class DocumentCompiler {
 			 }
 		 }else if (docComp instanceof DocLink){
 			 DocLink docLink = (DocLink)docComp;
-			 DocumentPage docPage = documentation.getDocumentPage(docLink);
-			 if (docPage==null){
-				 throw new RuntimeException("reference to document '"+docLink.getTarget()+"' cannot be resolved");
+			 if(docLink.isWebTarget())
+			 {
+				 pw.print("<a href=\""+docLink.getTarget()+"\">");
 			 }
-			 File htmlFile = getTargetFile(docPage.getTemplateFile());
-			 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
-			 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
-			 pw.print("<a href=\""+relativePathToTarget+"\">");
+			 else
+			 {
+				 DocumentPage docPage = documentation.getDocumentPage(docLink);
+				 if (docPage==null){
+					 throw new RuntimeException("reference to document '"+docLink.getTarget()+"' cannot be resolved");
+				 }
+				 File htmlFile = getTargetFile(docPage.getTemplateFile());
+				 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+				 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
+				 pw.print("<a href=\""+relativePathToTarget+"\">");
+			 }
 			 pw.print(docLink.getText());
 			 pw.print("</a>");
 		 }else if (docComp instanceof DocImageReference){
