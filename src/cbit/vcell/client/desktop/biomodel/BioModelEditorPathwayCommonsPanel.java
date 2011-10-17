@@ -365,8 +365,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 				System.out.println(url);
 //				URLConnection connection = url.openConnection();
-				byte[] bytes = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
-				Document document = DOMUtil.parse(new ByteArrayInputStream(bytes));	
+				String contentString = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
+				Document document = DOMUtil.parse(contentString);
+				//Document document = DOMUtil.parse(new ByteArrayInputStream(bytes));	
 
 //				org.jdom.Document d = XmlUtil.readXML(connection.getInputStream());
 				
