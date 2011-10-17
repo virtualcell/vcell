@@ -24,7 +24,7 @@
 		<bold> Close </bold> - closes the currently open document,
 	  </item>
 	  <item>	
-		<bold> Save </bold> - saves the current document in the database, overwriting the older version. Note that this menu option is disabled for a new document. For saving a new document, refer to <link target = "SaveAs"> Save As </link>.
+		<bold> Save </bold> - saves the current document in the database, overwriting the older version. Note that this menu option is disabled for a new document. For saving a new document, refer to <link target = "SaveAs">Save As</link>.
 	  </item>
 	  <item>		
 		<bold> Save New Version </bold> - saves document as a new version (with same name but latest time stamp),
@@ -36,7 +36,7 @@
 		<link target = "RevertToSaved">Revert To Saved</link>,
 	  </item>
 	  <item>		
-		<bold>Compare With Saved</bold>bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. Refer to the section on <bold>Manage Database -> </bold> <link target = "Compare With">Compare With</link> for further information. 
+		<bold>Compare With Saved</bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. Refer to the section on <bold>Manage Database -> </bold> <link target = "ManageDBCompareWith">Compare With</link> for further information. 
 	  </item>
 	  <item>
 		<link target = "Permissions">Permissions...</link>,
