@@ -73,6 +73,29 @@ public static final String formatNumber(double number, int numDigits) {
 
 /**
  * Insert the method's description here.
+ * Creation date: (10/11/00 5:03:23 PM)
+ * @return java.lang.String
+ * @param number double
+ */
+public static final String formatNumBytes(long numBytes) {
+	if (numBytes < 1000){ 
+		// < 1KB
+		return Long.toString(numBytes)+" bytes";
+	}else if (numBytes < 1000000){
+		// < 1MB
+		return numBytes/1000 + " KB";
+	}else if (numBytes < 1000000000){
+		// < 1GB
+		return (numBytes/1000)/1000.0 + " MB";
+	}else{
+		// >= 1GB
+		return (numBytes/1000000)/1000.0 + " GB";
+	}
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (2/7/2001 7:10:37 PM)
  * @return cbit.image.Range
  * @param d1 double
