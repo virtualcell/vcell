@@ -32,7 +32,8 @@ import cbit.vcell.xml.XmlParseException;
 import com.sun.java.help.search.Indexer;
 
 public class DocumentCompiler {
-	public final static int maxImgWidth = 700;
+	public final static int maxImgWidth = 600;
+	public final static int maxImgHeight = 600;
 
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
 	public static File docTargetDir;
@@ -167,11 +168,19 @@ public class DocumentCompiler {
 				BufferedImage img = ImageIO.read(imgFile);
 				int imgWidth = img.getWidth();
 				int imgHeight = img.getHeight();
-				double ratio = 1.0;
-				if (imgWidth > maxImgWidth) {
-					ratio = maxImgWidth * 1.0 / imgWidth;
+				String imgChkStr = "";
+				if(imgWidth > maxImgWidth)
+				{
+					imgChkStr = imgChkStr + "Width of Image (" + imgFile.getName() + ") exceeds the maximum allowed image width("+ maxImgWidth + ") in VCell Help.\n";
 				}
-				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, (int)(imgWidth*ratio), (int)(imgHeight*ratio));
+				if(imgHeight > maxImgHeight)
+				{
+					imgChkStr = imgChkStr + "Height of Image (" + imgFile.getName() + ") exceeds the maximum allowed image height("+ maxImgHeight + ") in VCell Help.\n";
+				}
+				if(imgChkStr.length()>0){
+					System.err.println(imgChkStr);
+				}
+				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, imgWidth, imgHeight);
 				documentation.add(tempImg);
 			}
 		}
@@ -243,13 +252,12 @@ public class DocumentCompiler {
 		if (!root.getName().equals(VCellDocTags.toc_tag)){
 			throw new RuntimeException("expecting "+VCellDocTags.toc_tag+" in file "+tocSourceFile.getPath());
 		}
-//		Namespace ns = Namespace.getNamespace("http://www.copasi.org/static/schema");	// default - blank namespace
-//		List abc = root.getChildren();
+
 		HashSet<DocumentPage> pagesNotYetReferenced = new HashSet<DocumentPage>(Arrays.asList(documentation.getDocumentPages()));
 		readTOCItem(pagesNotYetReferenced, root);
 		if (pagesNotYetReferenced.size()>0){
 			for (DocumentPage docPage : pagesNotYetReferenced){
-				System.err.println("Document page '"+docPage.getTarget()+"' not referenced in table of contents");
+				System.out.println("WARNING: Document page '"+docPage.getTarget()+"' not referenced in table of contents");
 			}
 		}
 		
@@ -355,7 +363,7 @@ public class DocumentCompiler {
 				}
 				else
 				{
-					System.err.println("WARNING, Unsupported element " + childElement.getName());
+					System.out.println("WARNING: Unsupported element " + childElement.getName());
 //					throw new RuntimeException("Unsupported element " + childElement.getName());
 				}
 			}
@@ -468,14 +476,14 @@ public class DocumentCompiler {
 			 pw.print("</a>");
 		 }else if (docComp instanceof DocImageReference){
 			 DocImageReference imageReference = (DocImageReference)docComp;
-			 DocumentImage docImage = documentation.getDocumentImage(imageReference);
-			 if (docImage==null){
+			 DocumentImage targetImage = documentation.getDocumentImage(imageReference);
+			 if (targetImage==null){
 				throw new RuntimeException("reference to image '"+imageReference+"' cannot be resolved");
 			 }
-			 File imageFile = getTargetFile(docImage.getSourceFile());
+			 File imageFile = getTargetFile(targetImage.getSourceFile());
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
 			 pw.println("<br><br>");
-			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + docImage.getDisplayWidth() + "\" height=\"" +docImage.getDisplayHeight()+"\">");
+			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
@@ -515,7 +523,6 @@ public class DocumentCompiler {
 		String prefix = "";
 		for (int i=0;i<counter;i++){
 			prefix = prefix + ".." + File.separator;
-//			targetPath = targetPath.substring(targetPath.indexOf(File.separator));
 		}
 		targetPath = prefix+(targetPath.charAt(0) == '\\' ? targetPath.substring(1) : targetPath);
 		targetPath = targetPath.replace("\\", "/");
