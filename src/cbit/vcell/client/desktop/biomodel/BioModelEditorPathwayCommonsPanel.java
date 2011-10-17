@@ -19,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -55,6 +54,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -267,10 +267,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
 //				String ERROR_MSG_TAG = "error_msg";
-				
-//				String xmlText = FileUtils.readFileToString(new File("pathwayTest.xml"));//wei
-//				org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);//wei
-
 				org.jdom.Document jdomDocument = BeanUtils.getJDOMDocument(url, getClientTaskStatusSupport());
 				org.jdom.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
@@ -357,12 +353,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 				System.out.println(url);
-//				URLConnection connection = url.openConnection();
-				byte[] bytes = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
-				Document document = DOMUtil.parse(new ByteArrayInputStream(bytes));	
+				String responseContent = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
+				Document document = DOMUtil.parse(responseContent);	
 
-//				org.jdom.Document d = XmlUtil.readXML(connection.getInputStream());
-				
 				Element errorElement = DOMUtil.firstChildElement(document, "error");
 				if (errorElement != null) { 
 //					String xml = DOMUtil.firstChildContent(document, "error");

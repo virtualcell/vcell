@@ -26,7 +26,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -34,15 +33,15 @@ import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.net.URL;
-import java.net.URLConnection;
 import java.rmi.RemoteException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -59,6 +58,16 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
+
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -852,28 +861,6 @@ public final class BeanUtils {
 		}
 	}
 
-	//public static boolean isEqualOrNullInstance(Matchable[] oldMatchables,Matchable[] newMatchables){
-	//	if(oldMatchables == null && newMatchables == null){
-	//		return true;
-	//	}
-	//	boolean bCheckSucceeded = true;
-	//	if(Compare.isEqualOrNull(oldMatchables, newMatchables)){
-	//		for (int i = 0; i < oldMatchables.length; i++) {
-	//			boolean bFoundInstance = false;
-	//			for (int j = 0; j < newMatchables.length; j++) {
-	//				if(oldMatchables[i] == newMatchables[j]){
-	//					bFoundInstance = true;
-	//					break;
-	//				}
-	//			}
-	//			if(!bFoundInstance){
-	//				bCheckSucceeded = false;
-	//				break;
-	//			}
-	//		}
-	//	}
-	//	return bCheckSucceeded;
-	//}
 	public static void setMessage(ClientTaskStatusSupport clientTaskStatusSupport,String message){
 		//convenience method in case clientTaskStatusSupport is null
 		if(clientTaskStatusSupport != null){
@@ -881,125 +868,169 @@ public final class BeanUtils {
 		}
 	}
 	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
-	public static byte[] downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
+	
+	public static String downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
+		final ChannelFuture[] connectFuture = new ChannelFuture[1];
+		final ChannelFuture[] closeFuture = new ChannelFuture[1];
 		final Exception[] exception = new Exception[1];
 		final FLAG_STATE[] bFlag = new FLAG_STATE[] {FLAG_STATE.START};
-		final ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+		final HttpResponseHandler responseHandler = new HttpResponseHandler(clientTaskStatusSupport,url.getHost());
 		final Thread readBytesThread = new Thread(new Runnable() {
+			ClientBootstrap bootstrap = null;
+
 			public void run() {
-				try{
-					final URLConnection connection = url.openConnection();
-					setMessage(clientTaskStatusSupport,"Contacting outside server: "+url.getHost()+"...");
-					int contentLength = connection.getContentLength();
-					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
-						return;
+				try {
+					bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),Executors.newCachedThreadPool()));
+
+					// Set up the event pipeline factory.
+					bootstrap.setPipelineFactory(new HttpClientPipelineFactory(responseHandler));
+//					int connectionTimeout = 1000 * 60 * 5;
+//					bootstrap.setOption("connectTimeoutMillis", connectionTimeout);
+
+					// Start the connection attempt.
+					int port = url.getPort();
+					if (port <= 0) {
+						port = 80;
 					}
-					InputStream is = connection.getInputStream();
-					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
+
+					String host = url.getHost();
+					connectFuture[0] = bootstrap.connect(new InetSocketAddress(host, port));
+
+					// Wait until the connection attempt succeeds or fails.
+					connectFuture[0].awaitUninterruptibly();
+
+					// Now we are sure the future is completed.
+					// assert future.isDone();
+
+					if (connectFuture[0].isCancelled()) {
+						bFlag[0] = FLAG_STATE.INTERRUPTED;
 						return;
-					}
-					setMessage(clientTaskStatusSupport,"Starting download...");
-					byte[] data = new byte[64000];
-					int nRead;
-					int accum = 0;
-					DecimalFormat numberFormat = new DecimalFormat("###,###");
-					String totalLength = numberFormat.format(contentLength);
-					while ((nRead = is.read(data, 0, data.length)) != -1) { 
-						bos.write(data, 0, nRead);
-						accum+= nRead;
-						if (clientTaskStatusSupport != null) {
-							clientTaskStatusSupport.setMessage("Downloading "+totalLength+" bytes from "+url.getHost());
-							clientTaskStatusSupport.setProgress((int)(accum*100.0/contentLength));
+					} else if (!connectFuture[0].isSuccess()) {
+						connectFuture[0].getCause().printStackTrace();
+						if (connectFuture[0].getCause() instanceof Exception){
+							throw (Exception)connectFuture[0].getCause();
+						}else{
+							throw new RuntimeException(exceptionMessage(connectFuture[0].getCause()));
 						}
-						if(bFlag[0] == FLAG_STATE.INTERRUPTED){
-							return;
-						}
-					} 
-					bos.flush();
-					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
-						return;
+					} else {
+						// Connection established successfully
 					}
+
+					// Prepare the HTTP request.
+					HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url.toURI().toASCIIString());
+					request.setHeader(HttpHeaders.Names.HOST, host);
+					request.setHeader(HttpHeaders.Names.CONNECTION,	HttpHeaders.Values.CLOSE);
+					request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
+
+					Channel channel = connectFuture[0].getChannel();
+					
+					// Send the HTTP request.
+					channel.write(request);
+					
+					// Wait for the server to close the connection.
+					closeFuture[0] = channel.getCloseFuture();
+
+					closeFuture[0].awaitUninterruptibly();
+					
+					if (closeFuture[0].isCancelled()) {
+						bFlag[0] = FLAG_STATE.INTERRUPTED;
+						return;
+					} else if (!closeFuture[0].isSuccess()) {
+						closeFuture[0].getCause().printStackTrace();
+						if (closeFuture[0].getCause() instanceof Exception){
+							throw (Exception)closeFuture[0].getCause();
+						}else{
+							throw new RuntimeException(exceptionMessage(closeFuture[0].getCause()));
+						}
+					} else {
+						// Connection established successfully
+					}
+
 					bFlag[0] = FLAG_STATE.FINISHED;
-				}catch(Exception e){
+
+				} catch (Exception e) {
 					e.printStackTrace();
-					if(bFlag[0] == FLAG_STATE.INTERRUPTED){
-						return;
-					}
 					bFlag[0] = FLAG_STATE.FAILED;
-					exception[0] = new RuntimeException("contacting outside server "+url.toString()+" failed.\n"+e.getMessage(),e);
+					exception[0] = new RuntimeException("contacting outside server " + url.toString() + " failed.\n" + exceptionMessage(e));
+				} finally {
+					if (bootstrap != null) {
+						// Shut down executor threads to exit.
+						bootstrap.releaseExternalResources();
+					}
 				}
 			}
 		});
-		readBytesThread.setName("DownloadBytes");
 		readBytesThread.start();
 
 		//Monitor content
-		long startTime = System.currentTimeMillis();
+		long maximumElapsedTime_ms = 1000*60*2;
+		long startTime_ms = System.currentTimeMillis();
 		while(true){
 			try {
 				Thread.sleep(100);
 			} catch (Exception e) {
-				throw UserCancelException.CANCEL_GENERIC;
+//				throw UserCancelException.CANCEL_GENERIC;
 			}
-			if(clientTaskStatusSupport != null){
-				if(clientTaskStatusSupport.isInterrupted()){
-					bFlag[0] = FLAG_STATE.INTERRUPTED;
-					readBytesThread.stop();//deprecated, but use in case readBytesThread is stuck and does not read flag
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-			}else if((System.currentTimeMillis()-startTime) > 1000*60*5/*5 minutes*/){
+			long elapsedTime_ms = System.currentTimeMillis()-startTime_ms;
+			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				bFlag[0] = FLAG_STATE.INTERRUPTED;
-				readBytesThread.stop();//deprecated, but use in case readBytesThread is stuck and does not read flag
-				throw new RuntimeException("User timeout ended");
+				if (connectFuture[0]!=null){
+					connectFuture[0].cancel();
+				}
+				if (closeFuture[0]!=null){
+					closeFuture[0].cancel();
+				}
+				throw UserCancelException.CANCEL_GENERIC;
+			}else if(elapsedTime_ms > maximumElapsedTime_ms){
+				bFlag[0] = FLAG_STATE.INTERRUPTED;
+				if (connectFuture[0]!=null){
+					connectFuture[0].cancel();
+				}
+				if (closeFuture[0]!=null){
+					closeFuture[0].cancel();
+				}
+				readBytesThread.stop();
+				throw new RuntimeException("Download timed out after "+(maximumElapsedTime_ms/1000)+" seconds");
 			}
 			if(bFlag[0] == FLAG_STATE.FINISHED){//finished normally
 				break;
 			}
 			if(bFlag[0] == FLAG_STATE.FAILED){//finished error
+				if (connectFuture[0]!=null){
+					connectFuture[0].cancel();
+				}
+				if (closeFuture[0]!=null){
+					closeFuture[0].cancel();
+				}
 				if(exception[0] instanceof RuntimeException){
 					throw (RuntimeException)exception[0];
 				}
 				throw new RuntimeException(exception[0]);
 			}
 		}
-		byte[] bytes  = bos.toByteArray();
-		try{
-			bos.close();
-		}catch(Exception e){
-			//shouldn't happen, ignore
-			e.printStackTrace();
-		}
-		return bytes;
+		return responseHandler.getResponseContent().toString();
 	}
+
+	public static String exceptionMessage(Throwable e){
+		if (e.getMessage()!=null){
+			return e.getMessage();
+		}
+		
+		if (e.getCause()!=null){
+			if (e.getCause().getMessage()!=null){
+				return e.getCause().getMessage();
+			}else{
+				return e.getCause().getClass().getName();
+			}
+		}else{
+			return e.getClass().getName();
+		}
+	}
+	
 	public static org.jdom.Document getJDOMDocument(URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		//parse content
-		final byte[] bytes = downloadBytes(url, clientTaskStatusSupport);
-		final ByteArrayInputStream bis  = new ByteArrayInputStream(bytes){
-			private void setStatus() {
-				if (clientTaskStatusSupport != null) {
-					clientTaskStatusSupport.setMessage("Reading Document");
-					clientTaskStatusSupport.setProgress((int)(pos*100.0/bytes.length));
-				}
-			}
-			@Override
-			public synchronized int read() {
-				setStatus();
-				return super.read();
-			}
-			@Override
-			public synchronized int read(byte[] b, int off, int len) {
-				setStatus();
-				return super.read(b, off, len);
-			}
-			@Override
-			public int read(byte[] b) throws IOException {
-				setStatus();
-				return super.read(b);
-			}
-			
-		};
-		org.jdom.Document jdomDocument = null;
-		jdomDocument = XmlUtil.readXML(bis);
+		final String contentString = downloadBytes(url, clientTaskStatusSupport);
+		org.jdom.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 		return jdomDocument;
 	}
 
