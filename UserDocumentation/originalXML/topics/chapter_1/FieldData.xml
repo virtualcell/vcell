@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="File -> Field Data">
+	
+	<introduction> Please refer to documentation for <link target = "fieldData">Field Data</link>.
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "FileFieldData.PNG"/>
+	</appearance>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>

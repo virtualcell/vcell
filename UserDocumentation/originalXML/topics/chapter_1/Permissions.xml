@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="File -> Permissions">
+	
+	<introduction> Please refer to documentation for <link target = "Login">User Login</link>.
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "ChangeUser.PNG"/>
+	</appearance>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>

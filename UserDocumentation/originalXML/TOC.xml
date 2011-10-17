@@ -1,7 +1,41 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
 	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
-    	<tocitem target="GeneralOverview" text="VCell Overview">
+	    <tocitem target="GeneralOverview" text="VCell Overview">
+    		<tocitem target="General" text="General"/>
+    		<tocitem target="TopMenu" text="Top Menu"/>
+    		<tocitem target="File" text="File Menu">
+	    		<tocitem target="New" text="File->New Menu"/>
+    			<tocitem target="Open" text="File->Open Menu"/>
+    			<tocitem target="SaveAs" text="File->Save As Menu"/>
+    			<tocitem target="RevertToSaved" text="File->Revert to Saved Menu"/>
+    			<tocitem target="Permissions" text="File->Permissions Menu"/>
+    			<tocitem target="ModelAnnotation" text="File->Model Annotation Menu"/>
+    			<tocitem target="EditAnnotation" text="File->Edit Annotation Menu"/>
+    			<tocitem target="ManageDatabase" text="File->Manage Database Menu">
+    				<tocitem target="ManageDBFile" text="Manage Database->File Menu"/>
+    				<tocitem target="ManageDBEdit" text="Manage Database->Edit"/>
+    				<tocitem target="ManageDBServer" text="Manage Database->Server"/>
+	    			<tocitem target="ManageDBCompareWith" text="Manage Database->Compare With Menu"/>
+    				<tocitem target="ManageDBView" text="Manage Database->View"/>
+    			</tocitem>
+    			<tocitem target="FieldData" text="File->Field Data Menu"/>
+    			<tocitem target="Import" text="File->Import Menu"/>
+    			<tocitem target="Export" text="File->Export Menu"/>
+    		</tocitem>
+    		<tocitem target="View" text="View Menu"/>
+    		<tocitem target="Server" text="Server Menu">
+    			<tocitem target="Login" text="User Login"/>
+    			<tocitem target="ChangeUser" text="Change User Menu"/>
+    			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
+    			<tocitem target="NewUserRegistration" text="New User Registration"/>
+    		</tocitem>	
+    		<tocitem target="Window" text="Window Menu"/>
+    		<tocitem target="Tools" text="Tools Menu">
+    			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu"/>
+    			<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
+    		</tocitem>
+    		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
     	<tocitem target="PhysiologyOverview" text="Physiology">
     		<tocitem target="Membranes" text="Membranes"/>
@@ -14,7 +48,7 @@
     		<tocitem target="Reactions" text="Reactions"/>
     		<tocitem target="Species" text="Species"/>
     		<tocitem target="Volumes" text="Volumes"/>
-     	</tocitem>
+    	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="fieldData" text="field data"/>
     		<tocitem target="GeometryOverview" text="geometry">
@@ -28,12 +62,12 @@
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numeric_solvers" text="Numeric Solvers"/>
 	    		<tocitem target="simulation_results" text="Simulation Results"/>
-    		</tocitem>
+    	</tocitem>
     	</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
    	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Pathway Objects View"/>
-   		</tocitem>	
-    </tocitem>
+   		</tocitem>
+   	</tocitem>
 </toc>

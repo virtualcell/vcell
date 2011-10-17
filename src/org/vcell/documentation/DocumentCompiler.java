@@ -442,7 +442,11 @@ public class DocumentCompiler {
 	private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw) throws IOException {
 		 if (docComp instanceof DocText){
 			 DocText text = (DocText)docComp;
-			 pw.print(text.getText());
+			 if (text.getBold()) {
+				 pw.print("<b>" + text.getText() + "</b>");
+			 } else {
+				 pw.print(text.getText());
+			 }
 		 }else if (docComp instanceof DocLink){
 			 DocLink docLink = (DocLink)docComp;
 			 DocumentPage docPage = documentation.getDocumentPage(docLink);
