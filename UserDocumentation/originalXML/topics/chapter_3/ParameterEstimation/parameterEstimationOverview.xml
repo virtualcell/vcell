@@ -14,8 +14,7 @@
 	the results will be saved permanently as part of this Virtual Cell model.
 	</para>
 	COPASI parameter estimation has provided the following optmization solvers. Brief descriptions for different
-	solvers are shown below. For more detailed decription, please visit <bold>COPASI website </bold> at
-	(http://www.copasi.org/tiki-view_articles.php).
+	solvers are shown below. For more detailed decription, please visit  <link target = "http://www.copasi.org/tiki-view_articles.php"> COPASI website </link>.
 	<list>
 	<item>Evolutionary Programming</item>
 	<para>
