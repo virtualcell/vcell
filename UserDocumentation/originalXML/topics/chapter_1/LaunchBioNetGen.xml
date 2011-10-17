@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Launch BioNetGen">
+
+	<introduction>
+	<para>
+	A BioNetGen@VCell service is a part of the Virtual Cell modeling and simulation framework. 
+	It provides a mechanism for automatically generating a biochemical reaction network from user-specified rules for biomolecular interactions. 
+	It is callable from the Virtual Cell and runs within the Virtual Cell on a client computer.
+	</para>
+	
+	<para>The first release of BioNetGen@VCell
+		<list>
+			<item> Implements the latest version of BioNetGen 2, in which connectivity of proteins in the complex can be explicitly specified.</item>
+			<item> Creates a Virtual Cell BioModel from the BioNetGen-generated reaction network.</item>
+			<item> Includes different simulation capabilities</item>
+			<item> Provides a capability to pre-equilibrate a network and to restart time courses simulation from any time point with modified parameter values.</item>
+			<item> Provides compatibility with other modeling and simulation tools (SBW etc) via export of the biochemical reaction network in SBML L2 format.</item>
+		</list>
+	</para>
+	<para>
+	The different simulation capabilities include - 
+		<list>
+			<item> Iterative network generation of the reaction network from a given set of seed species according to user-specified reaction rules;</item>
+			<item> Time courses simulation using ODE-based deterministic simulation of a pre-generated network, SSA-based stochastic simulation of a pre-generated network, or on-the-fly network simulation and generation;</item>
+			<item> Visualization of simulation results and different data export options.</item>
+		</list>
+	</para>
+	
+	<para><bold>Rule-based Modeling With BioNetGen</bold></para>
+	<para>
+	BioNetGen is a tool for automatically generating a biochemical reaction network from user-specified rules for biomolecular interactions. 
+	Rules are specified in the BioNetGen language (BNGL), which enables precise and extensible representation of biomolecular interactions on the level of protein domains.
+	BNGL files (specified by the extension .bngl) contain the data required to specify models (parameters, initial chemical species, rules of interactions, observables corresponding to features of the system) and also may contain commands that perform simulations on the model (simulation using ordinary differential equations or stochastic simulation algorithm, simulation time, etc). 
+	A user can explicitly indicate the parts of proteins involved in an interaction, the conditions upon which an interaction depends, the connectivity of proteins in a complex, and other aspects of protein-protein interactions.
+	Detailed information about BNGL and how to write an input file for BioNetGen model is provided on the website http://vcell.org/bionetgen. 
+	New features are added to BioNetGen@VCell all the time, so please return to this website often for the list of the latest features.
+	</para>
+	
+	<para><bold>BioNetGen@VCell, advantages and limitations</bold></para>
+	<para>
+	BioNetGen@VCell is implemented as a stand-alone application invoked by the Virtual Cell. A BioNet-Gen service downloads when the Virtual Cell is called and runs on a client computer. 
+	In the Virtual Cell framework, BioNetGen appears as a menu item. 
+	A click on this item (Plugins>Launch BioNetGen on menu toolbar) opens a pop-up window, which has four tabs: a Rule Editor tab for creating and modifying BioNetGen input files, a Messages tab, an Outputs tab with links to output files, and a Help tab with links to various help topics. 
+	Buttons allow a user to upload a BioNetGen input file, run BioNet-Gen, view and save results.
+	</para>
+	<para>
+	Network generation, time courses simulation and visualization are performed within BioNetGen service.
+	No jobs are sent to the Virtual Cell server and no model is uploaded to the Virtual Cell Database Server unless specifically requested. 
+	BioNetGen is an invaluable tool when one needs to account for effects of combinatorial complexity, which is present whenever a relatively small number of biomolecular interactions have the potential to generate a much larger number of chemical species and reactions. 
+	For example, a receptor that contains N sites at which phosphate can be added or removed can occupy 2N different states. 
+	Considering that each phosphorylation site may bind proteins that can be in different states themselves, the number of different chemical species goes up dramatically.
+	Most tools, like the Virtual Cell, would require manual specification of each and every chemical species and interaction in a biochemical network. 
+	BioNetGen does it automatically, generating a biochemical reaction network that accounts comprehensively for the full spectrum of chemical species and reactions implied by the rules that define the model. 
+	However, at present there are some limitations that restrict the field of BioNetGen usability compared to the Virtual Cell. Geometry is not specified.
+	Models are assumed to be in a single well-mixed compartment unless a user introduces some tricks to specify compartments as attributes of biomolecules. Units are not specified, but they are assumed to be consistent. 
+	The choice of kinetic laws is limited. Thus, you may be tempted to create a biochemical reaction network in BioNetGen and export it to the Virtual Cell for manual enhancement. 
+	If you choose to create a Virtual Cell BioModel, you need to create an SBML output file (using option write_sbml{} in BNGL file). 
+	After the BioModel is created, you can manually add more compartments, map it to the geometry, and provide different kinetics laws.
+	</para>
+	<para>
+	<bold>NB:</bold> Please note that simulation results in the Virtual Cell will be scaled up 10e6 times compared to the simulation results in the BioNetGen@VCell application. 
+	The reason is that units in BioNetGen generated SBML file are not explicitly defined, thus assuming to be SBML default units different from the Virtual Cell units. 
+	Default units in SBML are M (molars). Default units in the Virtual cell are mM (micromolars). 
+	As no units are specified in BioNetGen, the Virtual Cell assumes that units are in M, and multiplies them by 10e6 to convert them into mM. 
+	Respectively, rate constants (that are assumed to be 1/(M s)) are multiplied by 10e-6. Thus, the simulation results in the Virtual Cell are 10e6 times larger compared to the simulation results in BioNetGen. 
+	The issue of units will be resolved in the next release of BioNetGen@VCell.
+	</para>
+	
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "BNG.PNG"/>
+	</appearance>
+	
+	<operations>
+
+	<para><bold>Creating and simulating BioNetGen model</bold></para>
+	<para>
+	If you choose to launch BioNetGen@VCell application, click on BioNetGen item in the top Virtual Cell menu. A pop-up window with several tabs will appear. First, you will see a Rules Editor tab.
+	</para> 
+
+	<para><bold>Rules Editor</bold></para>
+	<para>
+	This tab contains a sample BNGL file in the text field. This file can edited in the text field, or can be replaced with any other .bngl file. At the bottom of the text field you see three buttons.
+	</para> 
+	<imgReference target = "BNGRulesEditor.PNG"/>
+	<list>
+		<item><bold>Open .bngl file</bold> - Use to upload a .bngl file from your computer to the BioNetGen. BNGL file will be displayed in the text field.</item>
+		<item><bold>Run BioNetGen</bold> - Click to run BioNetGen with the displayed in the text field BNGL file. All previous runs of BioNetGen are deleted when the user clicks this button. After the running is completed, the Messages tab will be displayed.</item>
+		<item><bold>Stop BioNetGen</bold> - This button is enabled when BioNetGen is running. Running of BioNetGen will be interrupted and <bold>Messages</bold> tab will be opened with all processing messages generated by BioNetGen so far.
+			<para>If the BNGL file displayed in the text field contains errors, BioNetGen running will be interrupted and error message will be displayed. 
+			The error message starts from Java exception message “Error executing task cbit.util.ExecutableException:” followed by a BioNetGen error message that specifies the cause and location of the error in the input BNGL file, 
+			e.g. “ERROR: Molecule Ra(Y~P) does not match any declared molecule type at line 54 of file
+			</para>
+			<para>C:\Documents and Settings\username\.BioNetGen\vcell_bng_8191\vcell_bng_8191.bngl</para>
+			<para>
+			ABORT: Reaction rule list could not be read because of errors”. This message provides the cause of the error “Molecule Ra(Y~P) does not match any declared molecule type”, the location of the error in
+			the input file “at line 54”, and the location of the input file generated by BioNetGen on the client computer, “C:\Documents and Settings\username\.BioNetGen\vcell_bng_8191\vcell_bng_8191.bngl”. The error can be fixed in the text field of rule editor and BioNetGen can be relaunched.
+			</para>
+		</item>
+	</list>
+
+	<para><bold>Messages</bold></para>
+	<imgReference target = "BNGMessage.PNG"/>
+	<para>
+	This tab is a summary of all messages generated by BioNetGen during running. 
+	In this palette, the user can see how the input BNGL file was processed, which species and reactions were generated at each iteration step, how long the network generation and the time course simulations took, etc. 
+	In particular, the user can see the location of BioNetGen executables and all BioNetGen generated files (on Windows they are located in the folder C:\Documents and Settings\user\.BioNetGen, on Mac they are located in the directory /User/username/.BioNetGen/). 
+	When running of BioNetGen is interrupted by clicking on Stop BioNetGen button, this window provides the very important information on what is the slowest step in network generation/simulation. 
+	The actual results of network generation and/or simulation can be seen not here but in the Output tab.
+	</para> 
+
+	<para><bold>Output</bold></para>
+	<imgReference target = "BNGOutput.PNG"/>
+	<para>
+	The output tab has two fields. In the top text field the user can see the list of all files generated by BioNetGen. When selected, the file is displayed in the bottom text field. 
+	Input BNGL file is included, as well as all BioNetGen outputs. All files have the same prefix vcell_bng_NNNNN, where NNNNN is the random number generated by BioNetGen. 
+	Extension of the file specifies the type of output. It can be .bngl, .net, ,cdat, .xml, and .gdat.	
+	</para>
+	<para>
+	<bold>generate_network{}</bold> command produces vcell_bng_NNNNN.net file that contains a biochemical reaction network of generated reactions, species, and observables.
+	</para> 
+	<para>
+	<bold>simulate_ode{}</bold> and <bold>simulate_ssa{}</bold> commands generate vcell_bng_NNNNN.cdat, vcell_bng_NNNNN_space.gdat, and vcell_bng_NNNNN_tab.gdat files with concentrations of all species and observables respectively (in space-delimited and tab-delimited formats). 
+	If the {suffix=>"file_name"} option is used, the output file will be of the form cell_bng_NNNNN_filename.cdat.
+	</para> 
+	<para>
+	reactions, and observables in SBML level 2 format. This file can be exported into Virtual Cell. There are two buttons on the left panel.
+	</para>
+	<list>
+		<item><bold>Save output as a text file</bold> - Click to save the selected file to your computer.</item>
+		<item><bold>Create a BioModel</bold> - This button is enabled for vcell_bng_NNNNN.xml file only. Clicking on this button imports the .xml (SBML) file as a VCell BioModel and launches a VCell window with this BioModel.
+		</item>
+	</list>
+	
+	<para><bold>Help</bold></para>
+	<imgReference target = "BNGHelp.PNG"/>
+	<para>
+	Short help is available from the “Help” tab, with links to manual, FAQ and samples pages on http://vcell.org/bionetgen website. This website provides extensive information about BioNetGen and running it on the Virtual Cell platform.
+	</para>
+	
+	</operations>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>
