@@ -137,7 +137,7 @@ public Node differentiate(String variable) throws ExpressionException {
  * @param node cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-public boolean equals(Node node) throws ExpressionException {
+public boolean equals(Node node) {
 	//
 	// check to see if the types and children are the same
 	//

@@ -47,7 +47,7 @@ Node differentiate(String independentVariable) throws ExpressionException;
  * @param node cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-public boolean equals(Node node) throws ExpressionException;
+public boolean equals(Node node);
 /**
  * This method was created by a SmartGuide.
  * @return double
@@ -136,7 +136,7 @@ public void setInterval(RealInterval interval, RealInterval intervals[]) throws 
  * @param newNode cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-public void substitute(Node origNode, Node newNode) throws ExpressionException;
+public void substitute(Node origNode, Node newNode);
 
 void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException;
 
