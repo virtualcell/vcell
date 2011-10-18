@@ -41,6 +41,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
 import cbit.image.VCImage;
+import cbit.image.VCPixelClass;
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -413,6 +414,18 @@ private void writeHighResVolumeSamples() {
 		pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
 		pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
 		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
+		VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
+		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
+			
+			for(VCPixelClass vcPixelClass : pixelclasses )
+			{
+				if(vcPixelClass.getPixelClassName().equals(subVolume.getName()))
+				{
+					pw.println(subVolume.getName() + " " + vcPixelClass.getPixel());
+					break;
+				}
+			}
+		}
 		
 		pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
 		
