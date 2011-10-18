@@ -20,7 +20,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "analytic.jpg"/>
+	<imgReference target = "frm_Analytic.gif"/>
 	</appearance>
 	
 	<operations>

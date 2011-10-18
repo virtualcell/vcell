@@ -20,7 +20,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "frm_seg_imported_image.jpg"/>
+	<imgReference target = "frm_seg_imported_image.gif"/>
 	</appearance>
 	
 	<operations>
