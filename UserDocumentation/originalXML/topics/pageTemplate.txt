@@ -23,7 +23,7 @@
           Before you commit, please try it out in browser first.
 		  
 		  Image formatting:
-		  image size must be no larger than 700*1000. Otherwise please create both thumbnail image and original image and use thumbnail syntex.
+		  image size must be no larger than 600*600. Otherwise please create both thumbnail image and original image and use thumbnail syntex.
 		  
 		  
 -->
