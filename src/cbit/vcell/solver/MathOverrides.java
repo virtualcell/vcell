@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.vcell.util.BeanUtils;
@@ -18,6 +19,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -722,7 +724,7 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
  *          this hashtable.
  * @see     #put(Object, Object)
  */
-void updateFromMathDescription () {
+void updateFromMathDescription() {
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
 	// get list of names of constants in this math
@@ -734,15 +736,75 @@ void updateFromMathDescription () {
 		mathDescriptionHash.add(constant.getName());
 	}
 	//
-	//  Now remove any elements in this MathOverrides NOT in the MathDescription...
+	//  for any elements in this MathOverrides but not in the new MathDescription
 	//
-	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
-	while (mathOverrideNamesEnum.hasMoreElements()){
-		String name = mathOverrideNamesEnum.nextElement();
-		if (!mathDescriptionHash.contains(name)){
-			removeConstant(name);
+	//  	1) try to "repair" overridden constants for automatically generated constant names (via math generation)
+	//         which have changed due to changes to Math generation
+	//
+	//      2) if not repaired, remove obsolete override
+	//
+	HashMap<String, String> renamedMap = new HashMap<String, String>();
+	boolean bNameRepaired = true;
+	while (bNameRepaired){
+		bNameRepaired = false;
+		Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
+		while (mathOverrideNamesEnum.hasMoreElements()){
+			String name = mathOverrideNamesEnum.nextElement();
+			if (!mathDescriptionHash.contains(name)){
+				//
+				// test for renamed initial condition constant (changed from _init to _init_uM)
+				//
+				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
+					String name_repaired_to_uM = name.replace(
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
+					if (mathDescriptionHash.contains(name_repaired_to_uM)){
+						Element element = overridesHash.remove(name);
+						element.name = name_repaired_to_uM;
+						overridesHash.put(name_repaired_to_uM, element);
+						renamedMap.put(name, name_repaired_to_uM);
+						bNameRepaired = true;
+						break;
+					}						
+				}
+				//
+				// test for renamed initial condition constant (changed from _init to _init_molecules_per_um2)
+				//
+				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
+					String name_repaired_to_molecule_per_um2 = name.replace(
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
+					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
+						Element element = overridesHash.remove(name);
+						element.name = name_repaired_to_molecule_per_um2;
+						overridesHash.put(name_repaired_to_molecule_per_um2, element);
+						renamedMap.put(name, name_repaired_to_molecule_per_um2);
+						bNameRepaired = true;
+						break;
+					}						
+				}
+				// couldn't repair changed symbol ... must be obsolete, so remove this override.
+				removeConstant(name);
+			}
 		}
 	}
+	
+	//
+	// for repaired constants, go through all entries and rename expressions where they refer to the renamed constant.
+	//
+	for (String origName : renamedMap.keySet()){
+		for (Element element : overridesHash.values()){
+			if (element.actualValue!=null && element.actualValue.hasSymbol(origName)){
+				try {
+					element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(origName), new Expression(renamedMap.get(origName)));
+				} catch (ExpressionException e) {
+					// won't happen ... here because new Expression(origName) throws a parse exception ... but it must be able to parse.
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	//
 	//  revert those expressions that contain unresolved symbols (back to the MathDescription expressions).
 	//

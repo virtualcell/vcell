@@ -135,6 +135,7 @@ public class MathMapping implements ScopedSymbolTable {
 	private static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
 	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2 = "_init_molecules_per_um2";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM = "_init_uM";
 	

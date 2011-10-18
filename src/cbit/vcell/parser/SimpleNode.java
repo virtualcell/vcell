@@ -65,7 +65,7 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
  * @param node cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-public boolean equals(Node node) throws ExpressionException {
+public boolean equals(Node node) {
 	//
 	// check to see if this node is the same
 	//
@@ -267,7 +267,7 @@ private String[] stringArrayMerge(String[] array1, String[] array2) {
  * @param newExp cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-public void substitute(Node origNode, Node newNode) throws ExpressionException {
+public void substitute(Node origNode, Node newNode) {
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		if (jjtGetChild(i).equals(origNode)){

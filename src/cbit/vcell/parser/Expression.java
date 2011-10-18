@@ -360,7 +360,7 @@ SimpleNode getRootNode() {
  * @param newExp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getSubstitutedExpression(Expression origExp, Expression newExp) throws ExpressionException {
+public Expression getSubstitutedExpression(Expression origExp, Expression newExp) {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
 	SimpleNode newNode = (SimpleNode)newExp.rootNode.copyTree();
