@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -76,6 +78,67 @@ public class PathwayStep extends BioPaxObjectImpl implements UtilityClass {
 			Evidence thing = evidence.get(i);
 			if(thing == objectProxy) {
 				evidence.set(i, (Evidence)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		for (int i=0; i<nextStep.size(); i++) {
+			PathwayStep thing = nextStep.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						nextStep.set(i, (PathwayStep)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0;i<stepProcessInteraction.size();i++){
+			Interaction thing = stepProcessInteraction.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof Interaction){
+							stepProcessInteraction.set(i, (Interaction)concreteObject);
+						}else{
+							stepProcessInteraction.remove(i);
+						}
+					}
+				}
+			}
+		}
+		for (int i=0;i<stepProcessPathway.size();i++){
+			Pathway thing = stepProcessPathway.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof Pathway){
+							stepProcessPathway.set(i, (Pathway)concreteObject);
+						}else{
+							stepProcessPathway.remove(i);
+						}
+					}
+				}
+			}
+		}
+		for (int i=0; i<evidence.size(); i++) {
+			Evidence thing = evidence.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						evidence.set(i, (Evidence)concreteObject);
+					}
+				}
 			}
 		}
 	}

@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -42,7 +44,22 @@ public class ControlledVocabulary extends BioPaxObjectImpl implements UtilityCla
 				xRef.set(i, (Xref)concreteObject);
 			}
 		}
-}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		for (int i=0; i<xRef.size(); i++) {
+			Xref thing = xRef.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						xRef.set(i, (Xref)concreteObject);
+					}
+				}
+			}
+		}
+	}
 
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb,level);

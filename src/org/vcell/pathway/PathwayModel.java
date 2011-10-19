@@ -200,8 +200,9 @@ public class PathwayModel {
 	public void reconcileReferences(ClientTaskStatusSupport clientTaskStatusSupport) {
 		try{
 			HashMap<String, BioPaxObject> resourceMap = new HashMap<String, BioPaxObject>();
+			HashSet<BioPaxObject> replacedBPObjects = new HashSet<BioPaxObject>();
 			for (BioPaxObject bpObject : biopaxObjects){
-				if (bpObject.getID() != null){
+				if (bpObject.getID() != null ){
 					resourceMap.put(bpObject.getID(), bpObject);
 				}
 			}
@@ -210,29 +211,40 @@ public class PathwayModel {
 			ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
 			reconcileReferencesPreprocessing();
 			int count = 0;
+			int totalCount = biopaxObjects.size();
 			for (BioPaxObject bpObject : biopaxObjects){
 				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
-				double prog = ((int)(((double)count*1000)/(double)biopaxObjects.size()))/10.0;
+				int prog = (int)(count*100.0/totalCount);
 				count++;
-				BeanUtils.setMessage(clientTaskStatusSupport, "Finish "+prog+"% done..");
-				if (bpObject instanceof RdfObjectProxy){
-					RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
-					if (rdfObjectProxy.getResource() != null){
-						String resource = rdfObjectProxy.getResource().replace("#","");
-						BioPaxObject concreteObject = resourceMap.get(resource);//findFromResourceID(rdfObjectProxy.getResource());
-						if (concreteObject != null){
-							//System.out.println("replacing "+rdfObjectProxy.toString()+" with "+concreteObject.toString());
-							replace(rdfObjectProxy,concreteObject);
-							proxiesToDelete.add(rdfObjectProxy);
-						}else{
-//							System.out.println("unable to resolve reference to "+rdfObjectProxy.toString());
-						}
-					}else{
-//						System.out.println("rdfProxy had no resource set "+rdfObjectProxy.toString());
-					}
+				if (clientTaskStatusSupport != null) {
+					clientTaskStatusSupport.setMessage("Finishing up...");
+					clientTaskStatusSupport.setProgress(prog);
 				}
+				
+				if(bpObject instanceof RdfObjectProxy){
+					proxiesToDelete.add((RdfObjectProxy)bpObject);
+				}else{
+					bpObject.replace(resourceMap, replacedBPObjects);
+				}
+				
+//				if (bpObject instanceof RdfObjectProxy){
+//					RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
+//					if (rdfObjectProxy.getResource() != null){
+//						String resource = rdfObjectProxy.getResource().replace("#","");
+//						BioPaxObject concreteObject = resourceMap.get(resource);//findFromResourceID(rdfObjectProxy.getResource());
+//						if (concreteObject != null){
+//							//System.out.println("replacing "+rdfObjectProxy.toString()+" with "+concreteObject.toString());
+//							replace(rdfObjectProxy,concreteObject);
+//							proxiesToDelete.add(rdfObjectProxy);
+//						}else{
+////							System.out.println("unable to resolve reference to "+rdfObjectProxy.toString());
+//						}
+//					}else{
+////						System.out.println("rdfProxy had no resource set "+rdfObjectProxy.toString());
+//					}
+//				}
 			}
 			biopaxObjects.removeAll(proxiesToDelete);
 			

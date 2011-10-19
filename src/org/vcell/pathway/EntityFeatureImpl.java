@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -73,6 +75,59 @@ public class EntityFeatureImpl extends BioPaxObjectImpl implements EntityFeature
 			Evidence thing = evidence.get(i);
 			if(thing == objectProxy) {
 				evidence.set(i, (Evidence)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		for (int i=0; i<featureLocation.size(); i++) {
+			SequenceLocation thing = featureLocation.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						featureLocation.set(i, (SequenceLocation)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<featureLocationType.size(); i++) {
+			SequenceRegionVocabulary thing = featureLocationType.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						featureLocationType.set(i, (SequenceRegionVocabulary)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<memberFeature.size(); i++) {
+			EntityFeature thing = memberFeature.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						memberFeature.set(i, (EntityFeature)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<evidence.size(); i++) {
+			Evidence thing = evidence.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						evidence.set(i, (Evidence)concreteObject);
+					}
+				}
 			}
 		}
 	}

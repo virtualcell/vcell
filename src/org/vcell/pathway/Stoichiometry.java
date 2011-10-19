@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class Stoichiometry extends BioPaxObjectImpl implements UtilityClass {
@@ -33,6 +36,18 @@ public class Stoichiometry extends BioPaxObjectImpl implements UtilityClass {
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		if(physicalEntity == objectProxy) {
 			physicalEntity = (PhysicalEntity) concreteObject;
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		if(physicalEntity instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)physicalEntity;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					physicalEntity = (PhysicalEntity) concreteObject;
+				}
+			}
 		}
 	}
 

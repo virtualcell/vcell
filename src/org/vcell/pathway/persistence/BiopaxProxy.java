@@ -54,6 +54,7 @@ public class BiopaxProxy {
 	public static interface RdfObjectProxy {
 		public String getResource();
 		public void setResource(String resource);
+		public String getResourceName();
 	}
 	public static class InteractionProxy extends InteractionImpl implements RdfObjectProxy {
 		private String resource;
@@ -62,6 +63,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class SBEntityProxy extends SBEntity implements RdfObjectProxy {
@@ -72,6 +76,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class SBMeasurableProxy extends SBMeasurable implements RdfObjectProxy {
 		private String resource;
@@ -80,6 +87,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class SBStateProxy extends SBState implements RdfObjectProxy {
@@ -90,6 +100,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class UnitOfMeasurementProxy extends UnitOfMeasurement implements RdfObjectProxy {
 		private String resource;
@@ -98,6 +111,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class SBVocabularyProxy extends SBVocabulary implements RdfObjectProxy {
@@ -108,6 +124,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class InteractionOrPathwayProxy extends InteractionImpl implements RdfObjectProxy {
 		private String resource;
@@ -116,6 +135,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class PathwayProxy extends Pathway implements RdfObjectProxy {
@@ -126,6 +148,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class PhysicalEntityProxy extends PhysicalEntity implements RdfObjectProxy {
 		private String resource;
@@ -134,6 +159,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class PathwayStepProxy extends PathwayStep implements RdfObjectProxy {
@@ -144,6 +172,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class ProvenanceProxy extends Provenance implements RdfObjectProxy {
 		private String resource;
@@ -152,6 +183,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class BioSourceProxy extends BioSource implements RdfObjectProxy {
@@ -162,6 +196,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class PhysicalEntityOrPathwayProxy extends EntityImpl implements RdfObjectProxy {
 		private String resource;
@@ -170,6 +207,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class StoichiometryProxy extends Stoichiometry implements RdfObjectProxy {
@@ -180,6 +220,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class XrefProxy extends Xref implements RdfObjectProxy {
 		private String resource;
@@ -188,6 +231,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class SequenceLocationProxy extends SequenceLocation implements RdfObjectProxy {
@@ -198,6 +244,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class SequenceSiteProxy extends SequenceSite implements RdfObjectProxy {
 		private String resource;
@@ -206,6 +255,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class RelationshipTypeVocabularyProxy extends RelationshipTypeVocabulary implements RdfObjectProxy {
@@ -216,6 +268,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class SequenceModificationVocabularyProxy extends SequenceModificationVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -224,6 +279,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class EntityFeatureProxy extends EntityFeatureImpl implements RdfObjectProxy {
@@ -234,6 +292,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class CellularLocationVocabularyProxy extends CellularLocationVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -242,6 +303,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class EntityReferenceProxy extends EntityReference implements RdfObjectProxy {
@@ -252,6 +316,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class GeneProxy extends Gene implements RdfObjectProxy {
 		private String resource;
@@ -260,6 +327,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class ConversionProxy extends ConversionImpl implements RdfObjectProxy {
@@ -270,6 +340,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class ChemicalStructureProxy extends ChemicalStructure implements RdfObjectProxy {
 		private String resource;
@@ -278,6 +351,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class CellVocabularyProxy extends CellVocabulary implements RdfObjectProxy {
@@ -288,6 +364,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class EvidenceProxy extends Evidence implements RdfObjectProxy {
 		private String resource;
@@ -296,6 +375,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class ExperimentalFormProxy extends ExperimentalForm implements RdfObjectProxy {
@@ -306,6 +388,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class DnaRegionReferenceProxy extends DnaRegionReference implements RdfObjectProxy {
 		private String resource;
@@ -314,6 +399,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class RnaRegionReferenceProxy extends RnaRegionReference implements RdfObjectProxy {
@@ -324,6 +412,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class EntityReferenceTypeVocabularyProxy extends EntityReferenceTypeVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -332,6 +423,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class EvidenceCodeVocabularyProxy extends EvidenceCodeVocabulary implements RdfObjectProxy {
@@ -342,6 +436,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class ExperimentalFormVocabularyProxy extends ExperimentalFormVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -350,6 +447,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class InteractionVocabularyProxy extends InteractionVocabulary implements RdfObjectProxy {
@@ -360,6 +460,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class PhenotypeVocabularyProxy extends PhenotypeVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -368,6 +471,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 	public static class SequenceRegionVocabularyProxy extends SequenceRegionVocabulary implements RdfObjectProxy {
@@ -378,6 +484,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class TissueVocabularyProxy extends TissueVocabulary implements RdfObjectProxy {
 		private String resource;
@@ -387,6 +496,9 @@ public class BiopaxProxy {
 		public void setResource(String resource) {
 			this.resource = resource;
 		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
 	}
 	public static class ScoreProxy extends Score implements RdfObjectProxy {
 		private String resource;
@@ -395,6 +507,9 @@ public class BiopaxProxy {
 		}
 		public void setResource(String resource) {
 			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
 		}
 	}
 

@@ -11,6 +11,9 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
@@ -100,6 +103,58 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 			}
 		}
 	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		for (int i=0; i<xRef.size(); i++) {
+			Xref thing = xRef.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						xRef.set(i, (Xref)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<dataSource.size(); i++) {		// Provenance
+			Provenance thing = dataSource.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						dataSource.set(i, (Provenance)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<evidence.size(); i++) {
+			Evidence thing = evidence.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						evidence.set(i, (Evidence)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<sbSubEntity.size(); i++) {
+			SBEntity thing = sbSubEntity.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						sbSubEntity.set(i, (SBEntity)concreteObject);
+					}
+				}
+			}
+		}
+	}
+	
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printStrings(sb, "name",name,level);

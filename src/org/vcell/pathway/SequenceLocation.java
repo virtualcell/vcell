@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class SequenceLocation extends BioPaxObjectImpl implements UtilityClass {
@@ -17,6 +20,10 @@ public class SequenceLocation extends BioPaxObjectImpl implements UtilityClass {
 	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
 	}
 
 }
