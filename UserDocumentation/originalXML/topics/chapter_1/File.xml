@@ -23,8 +23,18 @@
 	  <item>		
 		<bold> Close </bold> - closes the currently open document,
 	  </item>
-	  <item>	
-		<bold> Save </bold> - saves the current document in the database, overwriting the older version. Note that this menu option is disabled for a new document. For saving a new document, refer to <link target = "SaveAs">Save As</link>.
+	  <item>
+	  	<para>
+		<bold> Save </bold> - saves the current document in the database, overwriting the older version. Note that this menu option is disabled for a new document. 
+		For saving a new document, refer to <link target = "SaveAs">Save As</link>. 
+		Also, when the user modifies a public model or a model that has been shared by another user and tries to save the model, the "Save" options is enabled. 
+		Choosing this option brings up a warning dialog that the model does not belong to the current user and it has to be saved as a new model in the current user's account. 
+		Clicking <link target = "SaveAs">Save As</link> brings up the "Save As" dialog. <bold>Cancel</bold> cancels the save operation.    
+	  	</para>
+	  	<imgReference target = "FileSaveWarning.PNG"/>
+	  	<para>
+	  	
+	  	</para>
 	  </item>
 	  <item>		
 		<bold> Save New Version </bold> - saves document as a new version (with same name but latest time stamp),
