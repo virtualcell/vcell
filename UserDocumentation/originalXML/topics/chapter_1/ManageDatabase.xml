@@ -16,6 +16,19 @@
 	</appearance>
 	
 	<operations>
+	<para> 
+	The main Database Manager window has the following menu bar options:
+	</para>
+	<list>
+		<item> <link target="ManageDBFile">File</link> </item>
+		<item> <link target="ManageDBEdit">Edit</link> </item>
+		<item> <bold>Server</bold> : this menu option has the <bold>Reconnect</bold> menu item that allows the user to reconnect to the server. The status bar displays the connecting status. 
+			<imgReference target = "ManageDBServerMenu.PNG"/>
+		</item>
+		<item> <link target="ManageDBCompareWith">Compare With</link> </item>
+		<item> <link target="ManageDBView">View</link> </item>
+		<item> <bold>Search</bold> : this menu option is currently disabled.</item>
+	</list>
 	<para>
 	The Database Manager has a <bold>Search</bold> section that allows the user to search for models by name and/or by date modified. 
 	In the Database Manager window, the models are listed in a tree structure as 'folders'. The number of models stored in the database under each 'folder' is displayed in parenthesis.
@@ -41,11 +54,11 @@
 	The options available are: 
 	</para>
 	<list>
-		<item> <bold>Open</bold> - opens the selected model. Please refer to the section <link target="Open">Open</link>.
+		<item> <bold>Open</bold> - opens the selected model. Please refer to the section <link target="Open">File ->Open</link>.
 		</item>
 		<item> <bold>Delete</bold> - allows user to delete the selected models (only the current user's models). To access the delete function, the user should make sure the document he/she is interested in deleting is closed prior to deleting it. A warning message is displayed asking if user wants to continue with the delete operation.
 		</item>
-		<item> <bold>Permissions...</bold> - allows user to share his/her models with other users. Please refer to the section <link target="Permissions">Permissions</link>. 
+		<item> <bold>Permissions...</bold> - allows user to share his/her models with other users. Please refer to the section <link target="Permissions">File -> Permissions</link>. 
 		</item>
 		<item> <bold>Archive</bold> - this option is designed for use when models are used in publications or need to be saved in a final state. 
 			<para> 
@@ -59,9 +72,9 @@
 		</item>
 		<item> <bold>Publish</bold> - this option is currently disabled.
 		</item>
-		<item> <bold>Compare With</bold> - allows user to compare models. Please refer to the section <link target= "ManageDBCompareWith">File -> Compare With</link>.
+		<item> <bold>Compare With</bold> - allows user to compare models. Please refer to the section <link target= "ManageDBCompareWith">Manage Database -> Compare With</link>.
 		</item>
-		<item> <bold>Export</bold> - Please refer to the section <link target="Export">Export</link>
+		<item> <bold>Export</bold> - Please refer to the section on <link target="Export">File -> Export</link>
 		</item>		
 	</list>
 	

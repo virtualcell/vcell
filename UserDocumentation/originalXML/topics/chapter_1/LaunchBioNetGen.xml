@@ -33,7 +33,7 @@
 	Rules are specified in the BioNetGen language (BNGL), which enables precise and extensible representation of biomolecular interactions on the level of protein domains.
 	BNGL files (specified by the extension .bngl) contain the data required to specify models (parameters, initial chemical species, rules of interactions, observables corresponding to features of the system) and also may contain commands that perform simulations on the model (simulation using ordinary differential equations or stochastic simulation algorithm, simulation time, etc). 
 	A user can explicitly indicate the parts of proteins involved in an interaction, the conditions upon which an interaction depends, the connectivity of proteins in a complex, and other aspects of protein-protein interactions.
-	Detailed information about BNGL and how to write an input file for BioNetGen model is provided on the website http://vcell.org/bionetgen. 
+	Detailed information about BNGL and how to write an input file for BioNetGen model is provided on the website <link target="http://vcell.org/bionetgen">BioNetGen</link>. 
 	New features are added to BioNetGen@VCell all the time, so please return to this website often for the list of the latest features.
 	</para>
 	
@@ -137,7 +137,7 @@
 	<para><bold>Help</bold></para>
 	<imgReference target = "BNGHelp.PNG"/>
 	<para>
-	Short help is available from the “Help” tab, with links to manual, FAQ and samples pages on http://vcell.org/bionetgen website. This website provides extensive information about BioNetGen and running it on the Virtual Cell platform.
+	Short help is available from the “Help” tab, with links to manual, FAQ and samples pages on the <link target="http://vcell.org/bionetgen">BioNetGen</link> website. This website provides extensive information about BioNetGen and running it on the Virtual Cell platform.
 	</para>
 	
 	</operations>

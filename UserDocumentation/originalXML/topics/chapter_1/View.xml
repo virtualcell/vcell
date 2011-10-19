@@ -11,9 +11,17 @@
 	</appearance>
 	
 	<operations> 
+	<para>
 	The choices available to the user under the View menu are <bold>Status</bold> and <bold>Options</bold>. 
-	Choosing the <bold>Status</bold> menu allows user to display/hide the status bar <imgReference target = "StatusBar.PNG"/>.
+	Choosing the <bold>Status</bold> menu allows user to display/hide the status bar.
+	</para>
+	<imgReference target = "StatusBar.PNG"/>.
+	<para>
+	
+	</para>
+	<para>
 	The <bold>Options</bold> menu is currently disabled.
+	</para>
 	</operations>
 	
 	<comments> Options... is disabled - what is its purpose? </comments>
