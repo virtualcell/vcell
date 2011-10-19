@@ -36,17 +36,14 @@
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
-    	<tocitem target="PhysiologyOverview" text="Physiology">
-    		<tocitem target="Membranes" text="Membranes"/>
-    		<tocitem target="PathLink" text="PathLink"/>
-    		<tocitem target="Phys_Struct" text="Phys_Struct"/>
+    	<tocitem target="PhysOverview" text="Physiology">
+     		<tocitem target="PathLink" text="PathLink"/>
     		<tocitem target="PhysStructDiagView" text="PhysStructDiagView"/>
     		<tocitem target="PhysStructTabView" text="PhysStructTabView"/>
     		<tocitem target="ReactDiagView" text="ReactDiagView"/>
     		<tocitem target="ReactTabView" text="ReactTabView"/>
     		<tocitem target="Reactions" text="Reactions"/>
     		<tocitem target="Species" text="Species"/>
-    		<tocitem target="Volumes" text="Volumes"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="fieldData" text="Field Data"/>

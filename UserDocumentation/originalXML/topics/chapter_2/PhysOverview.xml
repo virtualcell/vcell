@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Physiology Overview">
+
+	<introduction> Ps the description of the biological components that comprise a BioModel; separate windows are provided for defining the cellular structures within which 
+			<def target = "def_species"> species </def> 
+exist and undergo 
+         <link target = "Reactions"> reactions </link>.  
+         <def target = "Compartments"> Compartments </def> are made up of 
+         <def target = "Membranes">  membranes </def>
+and      <def target = "Volumes"> volumes </def>.  They can be created, viewed and edited in 
+         <link target = "PhysStructTabView"> tabular </link> or <link target = "PhysStructDiagView"> diagrammatic tabs</link>.  Properties for structures can be found in the 
+<link target = "PP_Structure"> object properties pane </link> in the bottom of the panel	
+	</introduction>
+	
+</page>
+
+</vcelldoc>
