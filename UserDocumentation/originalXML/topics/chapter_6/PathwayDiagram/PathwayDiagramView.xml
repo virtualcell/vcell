@@ -26,33 +26,15 @@ where the properties of a selected entity are being displayed.
 	</appearance>
 	
 	<operations>
-The user can perform various operations upon these entities, either on individually selected 
-entities or multiple selected entities.
-<para></para>
 More entities can be added from the Pathway Panel.
 <para></para>
-Single / multiple entities can be deleted from the view.
-<para></para>
-Multiple entities can be grouped together under a Group entity.
-<para></para>
-Single / multiple entities can be imported within a model. To do this select one or more 
-entities and press the Physiology Links button, then the option Import into physiology...
-<para></para>
-The Import into physiology Dialog box is opened. Here the user is allowed to edit the 
-default values for the compartment and stoichiometric coefficient. Once that step is finished 
-the imported entities are displayed within the 
-		<link target = "ReactDiagView"> Reaction Diagram View</link>
+The user can perform various operations upon these entities, either on individually selected 
+entities or multiple selected entities using the 
+		<link target = "GroupOperationsPanel"> Operations Toolbar</link>
 .
 <para></para>
-		<imgReference target = "PathwayDiagramLinked2.png">
+		<imgReference target = "OperationsToolbar.png">
 		</imgReference>
-<para></para>
-Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
-small 'L' mark within their circle representation, indicating their linked status.
-<para></para>
-		<imgReference target = "PathwayDiagramLinked1.png">
-		</imgReference>
-<para></para>
 	</operations>
 </page>
 

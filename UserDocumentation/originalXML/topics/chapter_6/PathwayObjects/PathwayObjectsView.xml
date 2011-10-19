@@ -39,7 +39,18 @@ reaction selected in the Pathway Object View above.
 	</appearance>
 	
 	
-	<operations>  </operations>
+	<operations>  
+More entities can be added from the Pathway Panel.
+<para></para>
+The user can perform various operations upon these entities, either on individually selected 
+entities or multiple selected entities using the 
+		<link target = "GroupOperationsPanel"> Operations Toolbar</link>
+.
+<para></para>
+		<imgReference target = "OperationsToolbar.png">
+		</imgReference>
+
+	</operations>
 	
 	<comments>  </comments>
 
