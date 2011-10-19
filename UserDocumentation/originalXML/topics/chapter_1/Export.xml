@@ -27,7 +27,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileExport.PNG"/>
+		<imgReference target = "FileExport.gif"/>
 	</appearance>
 	
 	<operations>
@@ -78,7 +78,7 @@
 		
 		<item>
 		<para> <bold>Parameter overrides</bold></para>
-		<imgReference target = "ExportParamOverrides.PNG"/>
+		<imgReference target = "ExportParamOverrides.gif"/>
 		<para>
 		If simulations do not have parameter overrides in the selected application, the selected application is exported to SBML with its default parameter settings.  
 		If a selected application has simulations with overridden parameters (parameters changed through the simulation task panel), the user is provided a list of these simulation names and the corresponding Simulation Summary is displayed. 
