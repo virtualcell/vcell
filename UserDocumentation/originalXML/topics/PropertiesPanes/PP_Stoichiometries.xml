@@ -2,16 +2,24 @@
 <vcelldoc>
 <page title="Stoichiometry Tab" target="PP_Stoichiometries">
 
-  <introduction>
-  
+  <introduction> 
+  On selection of a reactant or product line in the reaction diagram, the stoichiometry properties panel is shown
+  which serves to edit the stoichiometric coefficient, which can be any positive integer and is set to 1 by default.
   </introduction>
-
-  <operations>
-
+	
+  <appearance> 
+    <para>
+    This panel only displays an editable text field that contains the stoichiometric coefficient.
+    </para>
+  </appearance>
+	
+  <operations> 
+	<para>
+	A new stoichiometric coefficient can be entered into the text field. Only positive integers are allowed,
+	all other values will be silently discarded.
+	</para>
   </operations>
 	
-
-
 </page>
 
 </vcelldoc>
