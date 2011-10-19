@@ -49,19 +49,19 @@
     		<tocitem target="Volumes" text="Volumes"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
-    		<tocitem target="fieldData" text="field data"/>
-    		<tocitem target="GeometryOverview" text="geometry">
-    	   		<tocitem target="geom_Analytic" text="analytic geometry"/>
-   	 	  		<tocitem target="geom_from_images" text="image-based geometry"/>
-   		   		<tocitem target="geom_structure_mapping" text="goemetry structure mapping"/>
+    		<tocitem target="fieldData" text="Field Data"/>
+    		<tocitem target="GeometryOverview" text="Geometry">
+    	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
+   	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
+   		   		<tocitem target="geom_structure_mapping" text="Goemetry Structure Mapping"/>
     		</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
-	    		<tocitem target="numeric_solvers" text="Numeric Solvers"/>
+	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
 	    		<tocitem target="simulation_results" text="Simulation Results"/>
-	    		<tocitem target="parameterEstimationOverview" text="parameter estimation"/>
+	    		<tocitem target="parameterEstimationOverview" text="Parameter Estimation"/>
     	</tocitem>
     	</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">

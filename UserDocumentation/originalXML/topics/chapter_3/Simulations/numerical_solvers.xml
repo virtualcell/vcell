@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Numerical Solvers">
+
+	<introduction>
+	The Virtual Cell converts the biological description defined in a BioModel into a corresponding mathematical system of equations (e.g. ordinary and/or partial differential equations), 
+	VCell will then solve the equations by applying numerical solvers to perform and analyze simulations. 
+	</introduction>
+	
+	<operation>
+	In Virtual Cell, numerical solvers can be divided into the following 4 types.  
+	<list>
+	<item>Deterministic Compartmental Solvers</item>
+	The compartmental simulation executes a single point simulation based on the defined physiological model, the geometric assumptions, and structure sizes or surface to volume ratios and
+	volume fractions. The ordinary differential equations (ODE), for single point approximations, representing the reactions kinetics are generated and passed to an interpreted ODE solver.
+	The set of nonlinear ODE equations are typically solved in seconds. It allows an interactive modification 
+	of parameters and a quick determination of the effect over time. In addition, the Virtual Cell software computes the local sensitivity (Sensitivity Analysis) of any species concentration 
+	to any parameter as a function of time evaluated at the nominal solution.
+	<item>Stochastic Compartmental Solvers</item>
+	<item>Deterministic Spatial Solvers</item>
+	<item>Stochatic Spatial Solvers</item>
+	</list>
+	</operation>
+</page>
+
+</vcelldoc>

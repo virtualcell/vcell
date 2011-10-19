@@ -14,7 +14,7 @@
 <page title="Generated Math">
 
 	<introduction>The Virtual Cell automatically converts the biological description defined in a BioModel into a 
-	corresponding mathematical system of ordinary and/or partial differential equations.
+	corresponding mathematical system of equations (e.g. ordinary and/or partial differential equations).
 	Once an application is created in a biomodel, The Virtual Cell automatically generates the Math Description upon saving a model or running a simulation.
 	</introduction>
 	
