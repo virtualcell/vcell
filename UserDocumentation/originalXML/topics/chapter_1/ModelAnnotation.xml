@@ -4,9 +4,10 @@
 	
 	<introduction> 
 	<para>
-	Annotations in a model can be stored at multiple levels: the overall model (MIRIAM), Model Documents (BioModel, MathModel, Geometries), and Application, Simulations, Compartments, Species and Reactions.
-	MIRIAM (Minimal Information Requested In the Annotation of biochemical Models, http://www.ebi.ac.uk/compneur-srv/miriam/) functionality in VCell is part of a collaboration in the general 
-	modeling community to allow biological models to be “annotated” with a common structure and format describing the components of a mathematical model.
+	Annotations in a model can be stored at multiple levels: the overall model (MIRIAM), model documents (BioModel, MathModel, Geometries), and application, simulations, compartments, species and reactions.
+	Minimal Information Requested In the Annotation of biochemical Models, <link target="http://www.ebi.ac.uk/miriam/">MIRIAM</link>) functionality in VCell is part of a collaboration in the general 
+	modeling community to allow biological models to be "annotated" with a common structure and format describing the components of a mathematical model.
+	<bold>File -> Model Annotation</bold> allows the user to edit MIRIAM annotations for model entities.
 	</para>
 	</introduction>
 	
@@ -40,13 +41,31 @@
 	<para>
 	The user can also choose to add annotation to a BioModel entity  (BioModel, reaction, species or compartment/structure) by selecting the entity and 
 	clicking on the <bold>Add Annotation</bold> button in the "View/Add/Delete/Edit MIRIAM Annotation" window.
-	This brings up a <bold>Define new Formal Identifier</bold> dialog.
+	This brings up a <bold>Choose Annotation Type</bold> dialog. The user has 2 options:
 	</para>
-
-	<imgReference target = "AddAnnotation.PNG"/>
+	<imgReference target = "ChooseAnnotation.PNG"/>
+	<list>
+		<item>
+		<para> <bold> Identifier</bold></para>
+		<imgReference target = "AddAnnotDefineId.PNG"/>
+		<para>
+		Choosing the "Identifier" option and clicking <bold>OK</bold> brings up the <bold>Define New Formal Identifier</bold> dialog.
+		This dialog allows the user to choose an "Identity Provider" from a drop-down list (such as UniProt, Gene Ontology), "Immortal ID" (a new ID) and a "Qualifier" from a set of available qualifiers in a drop-down list.
+		</para>
+		</item>
+		
+		<item>
+		<para> <bold> Date</bold></para>
+		<imgReference target = "AddAnnotDefineDate.PNG"/>
+		<para>
+		Choosing the "Date" option in the "Choose Annotaion Type" dialog and clicking <bold>OK</bold> pops up the <bold>Define New Date</bold> dialog.
+		This dialog allows the user to enter a W3C-DTF compliant Date-Time for the selected entity.  
+		</para>
+		</item>
+	</list>
 	
 	<para>
-	This dialog allows the user to choose an "Identity Provider" from a drop-down list (such as UniProt, Gene Ontology), "Immortal ID" (a new ID) and a "Qualifier" from a set of available qualifiers in a drop-down list.
+	For more information, please refer to <link target="http://www.ebi.ac.uk/miriam/">MIRIAM</link>.
 	</para>
 	</operations>
 	<comments>  </comments>

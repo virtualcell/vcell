@@ -15,7 +15,6 @@
     			<tocitem target="ManageDatabase" text="File->Manage Database Menu">
     				<tocitem target="ManageDBFile" text="Manage Database->File Menu"/>
     				<tocitem target="ManageDBEdit" text="Manage Database->Edit"/>
-    				<tocitem target="ManageDBServer" text="Manage Database->Server"/>
 	    			<tocitem target="ManageDBCompareWith" text="Manage Database->Compare With Menu"/>
     				<tocitem target="ManageDBView" text="Manage Database->View"/>
     			</tocitem>

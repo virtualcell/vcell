@@ -6,7 +6,7 @@
 	<para>
 	Annotations allow the user to save text-based notes about a specific BioModel, MathModel, or Geometry. In addition, annotations about Applications, Simulations, Compartments, Species and Reactions can be saved. 
 	The Annotation notes are saved with the model so that the user or anyone viewing a public model can also view the annotations. 
-	Annotations are stored at multiple levels: the overall model (MIRIAM - refer to <link target="ModelAnnotation">Model Annotations...</link>), Model Documents (BioModel, MathModel, Geometries), and Application, Simulations, Compartments, Species and Reactions.
+	Annotations are stored at multiple levels: the overall model (MIRIAM - refer to <link target="ModelAnnotation">Model Annotations</link>), Model Documents (BioModel, MathModel, Geometries), and Application, Simulations, Compartments, Species and Reactions.
 	</para>
 	</introduction>
 	
