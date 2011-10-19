@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Operations Toolbar" target="GroupOperationsPanel">
+
+	<introduction>
+The buttons shown in this toolbar allow the user to perform various useful operations 
+on selected entities within the 
+		<link target = "PathwayDiagramView"> Pathway Diagram View</link>
+and the 
+		<link target = "PathwayObjectsView"> Pathway Objects View</link>
+.
+	</introduction>
+	
+	<appearance>
+This toolbar shows buttons allowing group, delete and link operations on selected 
+entities. There is also present a Search feature which filters entities by string.
+<para></para>
+		<imgReference target = "OperationsToolbar.png">
+		</imgReference>
+<para></para>
+	</appearance>
+	
+	<operations>
+The user can perform various operations upon these entities, either on individually selected 
+entities or multiple selected entities.
+<para></para>
+Multiple entities can be grouped together under a Group entity. The goal of such action would 
+be to reduce clutter and allow the user to focus on the significant parts of the view. Consider 
+the view below:
+<para></para>
+		<imgReference target = "PathwayDiagramLinked1.png">
+		</imgReference>
+<para></para>
+The user may choose to group all the linked items (those marked with a 'L' letter) under a group 
+and all the participants of the other reaction under a second group. The result should look as 
+follows: 
+<para></para>
+		<imgReference target = "PathwayGroupedItems.png">
+		</imgReference>
+<para></para>
+Existing groups can be grouped in even larger groups. Also groups can be broken down into 
+their original subcomponents using the Ungroup option.
+<para></para>
+A particular type of grouping applies to reactions. The Collapse / Expand commands will hide / 
+restore the entities associated with a selected reaction.
+<para></para>
+Single / multiple entities can be deleted from the view using the Delete Selected button. Note 
+that linked entities cannot be deleted as long as the link exists. In the case of selections 
+where some entities can be deleted and some others can not, a warning dialog box will display 
+pertinent information.
+<para></para>
+Single / multiple entities can be imported within a model. To do this select one or more 
+entities and press the Physiology Links button, then the option Import into physiology...
+<para></para>
+The Import into physiology Dialog box is opened. Here the user is allowed to edit the 
+default values for the compartment and stoichiometric coefficient. Once that step is finished 
+the imported entities are displayed within the 
+		<link target = "ReactDiagView"> Reaction Diagram View</link>
+.
+<para></para>
+		<imgReference target = "PathwayDiagramLinked2.png">
+		</imgReference>
+<para></para>
+Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
+small 'L' mark within their circle representation, indicating their linked status.
+<para></para>
+		<imgReference target = "PathwayDiagramLinked1.png">
+		</imgReference>
+<para></para>	</operations>
+</page>
+
+</vcelldoc>
