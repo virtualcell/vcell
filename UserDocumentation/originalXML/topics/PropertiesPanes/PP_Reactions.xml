@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Reactions Properties Pane">
+<page title="Reactions Properties Pane" target="PP_Reactions">
 
-	<introduction>
-reactions property panel.	
-	</introduction>
+  <introduction>
+  The reaction properties panel is used to display and edit properties of a reaction, which are the name, the kinetic law 
+  (i.e. the reaction rate J and the math expressions involved in J),
+  and a free text annotation.
+  </introduction>
 		
+  <appearance>
+  <para>
+  On top, there is an editable field for the name of the reaction. One line below that, there is a non-editable combobox
+  offering a few options for a reaction rate law, and a button to convert the rate law either from particle number to concentration
+  or vice versa.
+  </para>
+  <para>
+  Below these, taking most of the space of the panel, there is a kinetic table of mathematical expressions: the first row contains
+  the reaction rate J, and further rows contain mathematical expressions referred to by J or any of the other math expressions 
+  in the table. Typically, these expressions include species concentrations of reactants and catalysts (and products, if reversible).
+  </para>
+  <para>
+  Columns of the kinetic table are: the name, the description, a check whether it is a global expression (as opposed to local to this
+  reaction), the math expression and the units of measurement.
+  </para>
+  <para>
+  At the bottom, there is a text field for free text annotations.
+  </para>
+  </appearance>
+	
+  <operations>
+  
+  </operations>
 
 </page>
 
