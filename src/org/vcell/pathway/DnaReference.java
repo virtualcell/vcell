@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -66,6 +68,52 @@ public class DnaReference extends EntityReference {
 				rnaSubRegion.set(i, (RnaRegionReference)concreteObject);
 			} else if (thing == objectProxy && !(concreteObject instanceof RnaRegionReference)){
 				rnaSubRegion.remove(i);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		if(organism instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)organism;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					organism = (BioSource) concreteObject;
+				}
+			}
+		}
+		for (int i=0;i<dnaSubRegion.size();i++){
+			DnaRegionReference thing = dnaSubRegion.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof DnaRegionReference){
+							dnaSubRegion.set(i, (DnaRegionReference)concreteObject);
+						} else{
+							dnaSubRegion.remove(i);
+						}
+					}
+				}
+			}
+		}
+		for (int i=0;i<rnaSubRegion.size();i++){
+			RnaRegionReference thing = rnaSubRegion.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						if(concreteObject instanceof RnaRegionReference){
+							rnaSubRegion.set(i, (RnaRegionReference)concreteObject);
+						} else{
+							rnaSubRegion.remove(i);
+						}
+					}
+				}
 			}
 		}
 	}

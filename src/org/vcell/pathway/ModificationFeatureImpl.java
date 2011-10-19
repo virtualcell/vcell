@@ -10,6 +10,9 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class ModificationFeatureImpl extends EntityFeatureImpl implements ModificationFeature {
@@ -29,6 +32,19 @@ public class ModificationFeatureImpl extends EntityFeatureImpl implements Modifi
 		
 		if(modificationType == objectProxy) {
 			modificationType = (SequenceModificationVocabulary) concreteObject;
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		if(modificationType instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)modificationType;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					modificationType = (SequenceModificationVocabulary) concreteObject;
+				}
+			}
 		}
 	}
 	

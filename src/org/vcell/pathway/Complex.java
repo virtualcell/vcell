@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
@@ -50,6 +52,35 @@ public class Complex extends PhysicalEntity {
 			Stoichiometry thing = componentStoichiometry.get(i);
 			if(thing == objectProxy) {
 				componentStoichiometry.set(i, (Stoichiometry)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+
+		for (int i=0; i<component.size(); i++) {
+			PhysicalEntity thing = component.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						component.set(i, (PhysicalEntity)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<componentStoichiometry.size(); i++) {
+			Stoichiometry thing = componentStoichiometry.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						componentStoichiometry.set(i, (Stoichiometry)concreteObject);
+					}
+				}
 			}
 		}
 	}

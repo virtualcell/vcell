@@ -12,6 +12,8 @@ package org.vcell.pathway;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.pathway.InteractionParticipant.Type;
@@ -77,6 +79,35 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 			InteractionParticipant thing = participants.get(i);
 			if(thing.getPhysicalEntity() == objectProxy) {
 				participants.set(i, new InteractionParticipant(this, (PhysicalEntity)concreteObject, thing.getType()));
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		for (int i=0; i<interactionTypes.size(); i++) {
+			InteractionVocabulary thing = interactionTypes.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						interactionTypes.set(i, (InteractionVocabulary)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<participants.size(); i++) {
+			InteractionParticipant thing = participants.get(i);
+			if(thing.getPhysicalEntity() instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing.getPhysicalEntity();
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						participants.set(i, new InteractionParticipant(this, (PhysicalEntity)concreteObject, thing.getType()));
+					}
+				}
 			}
 		}
 	}

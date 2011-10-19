@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -67,6 +69,35 @@ public class BiochemicalReactionImpl extends ConversionImpl implements Biochemic
 			KPrime thing = kEQ.get(i);
 			if(thing == objectProxy) {
 				kEQ.set(i, (KPrime)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		for (int i=0; i<deltaG.size(); i++) {
+			DeltaG thing = deltaG.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						deltaG.set(i, (DeltaG)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<kEQ.size(); i++) {
+			KPrime thing = kEQ.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						kEQ.set(i, (KPrime)concreteObject);
+					}
+				}
 			}
 		}
 	}

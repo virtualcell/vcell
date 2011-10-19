@@ -11,6 +11,8 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
@@ -71,6 +73,56 @@ public class PhysicalEntity extends EntityImpl {
 			EntityFeature thing = notFeature.get(i);
 			if(thing == objectProxy) {
 				notFeature.set(i, (EntityFeature)concreteObject);
+			}
+		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+		
+		if(cellularLocation instanceof RdfObjectProxy) {
+			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)cellularLocation;
+			if (rdfObjectProxy.getResource() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (concreteObject != null){
+					cellularLocation = (CellularLocationVocabulary) concreteObject;
+				}
+			}
+		}
+		for (int i=0; i<feature.size(); i++) {
+			EntityFeature thing = feature.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						feature.set(i, (EntityFeature)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<memberPhysicalEntity.size(); i++) {
+			PhysicalEntity thing = memberPhysicalEntity.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						memberPhysicalEntity.set(i, (PhysicalEntity)concreteObject);
+					}
+				}
+			}
+		}
+		for (int i=0; i<notFeature.size(); i++) {
+			EntityFeature thing = notFeature.get(i);
+			if(thing instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						notFeature.set(i, (EntityFeature)concreteObject);
+					}
+				}
 			}
 		}
 	}
