@@ -32,6 +32,8 @@ import cbit.vcell.xml.XmlParseException;
 import com.sun.java.help.search.Indexer;
 
 public class DocumentCompiler {
+	public final static int MAX_IMG_FILE_SIZE = 50000;
+	public final static int WARN_IMG_FILE_SIZE = 25000;
 	public final static int maxImgWidth = 600;
 	public final static int maxImgHeight = 600;
 
@@ -169,13 +171,16 @@ public class DocumentCompiler {
 				int imgWidth = img.getWidth();
 				int imgHeight = img.getHeight();
 				String imgChkStr = "";
-				if(imgWidth > maxImgWidth)
+				if(imgWidth > maxImgWidth || imgHeight > maxImgHeight)
 				{
-					imgChkStr = imgChkStr + "Width of Image (" + imgFile.getName() + ") exceeds the maximum allowed image width("+ maxImgWidth + ") in VCell Help.\n";
+					imgChkStr = "(" + imgFile.getName() + ") ERROR image dimension ("+imgWidth+","+imgHeight+") exceeds the maximum allowed image dimension("+ maxImgWidth + ","+maxImgHeight+") in VCell Help.";
 				}
-				if(imgHeight > maxImgHeight)
-				{
-					imgChkStr = imgChkStr + "Height of Image (" + imgFile.getName() + ") exceeds the maximum allowed image height("+ maxImgHeight + ") in VCell Help.\n";
+				if(imgFile.length() > MAX_IMG_FILE_SIZE){
+					imgChkStr = (imgChkStr.length() > 0 ?imgChkStr+"\n":"")+
+							"(" + imgFile.getName() + ") ERROR file size ("+imgFile.length()+") greater than maximum allowed file size ("+MAX_IMG_FILE_SIZE+") in VCell Help.";
+				}
+				if(imgFile.length() > WARN_IMG_FILE_SIZE && imgFile.length() <= MAX_IMG_FILE_SIZE){
+					System.out.println("(" + imgFile.getName() + ") WARN file size ("+imgFile.length()+") greater than preferred file size ("+WARN_IMG_FILE_SIZE+") in VCell Help.");
 				}
 				if(imgChkStr.length()>0){
 					System.err.println(imgChkStr);
