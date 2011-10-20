@@ -495,8 +495,9 @@ public class OptTestPanel extends javax.swing.JPanel {
 		try {
 			// user code begin {1}
 			// user code end
-			getParameterEstimationTask().getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
-			getOptimizationController().solve();
+			DialogUtils.showInfoDialog(this, "Parameter fitting is not available in VCell 5.0. Copasi-based parameter fitting is available in VCell 5.1 or later.");
+//			getParameterEstimationTask().getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
+//			getOptimizationController().solve();
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
