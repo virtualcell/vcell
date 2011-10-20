@@ -7,20 +7,68 @@
 	VCell will then solve the equations by applying numerical solvers to perform and analyze simulations. 
 	</introduction>
 	
-	<operation>
-	In Virtual Cell, numerical solvers can be divided into the following 4 types.  
-	<list>
-	<item>Deterministic Compartmental Solvers</item>
+	<operations>
+	In Virtual Cell, numerical solvers can be divided into the following 4 types.
+	<para> 
+	<b>Deterministic Compartmental Solvers</b>
+	</para>
+	<para>
 	The compartmental simulation executes a single point simulation based on the defined physiological model, the geometric assumptions, and structure sizes or surface to volume ratios and
 	volume fractions. The ordinary differential equations (ODE), for single point approximations, representing the reactions kinetics are generated and passed to an interpreted ODE solver.
-	The set of nonlinear ODE equations are typically solved in seconds. It allows an interactive modification 
-	of parameters and a quick determination of the effect over time. In addition, the Virtual Cell software computes the local sensitivity (Sensitivity Analysis) of any species concentration 
-	to any parameter as a function of time evaluated at the nominal solution.
-	<item>Stochastic Compartmental Solvers</item>
-	<item>Deterministic Spatial Solvers</item>
-	<item>Stochatic Spatial Solvers</item>
+	The set of nonlinear ODE equations are typically solved in seconds. It allows an interactive modification of parameters and a quick determination of the effect over time. In addition,
+	the Virtual Cell software computes the local sensitivity (Sensitivity Analysis) of any species concentration to any parameter as a function of time evaluated at the nominal solution.
+	</para>
+	<list>
+	<item>Forward Euler (first order)</item>
+	<item>Runge-Kutta (second or fourth order)</item>
+	<item>Adams-Moulton (fifth order)</item>
+	<item>Runge-Kutta-Fehlberg (fifth order)</item>
+	<item>CVODE (Variable order, Variable Time Step)</item>
+	<item>Combined Stiff Solver (IDA/CVODE)</item>
+	<item>IDA (Variable Order, Variable Time Step, ODE/DAE)</item>
 	</list>
-	</operation>
+	<para>
+	<b>Stochastic Compartmental Solvers</b>
+	</para>
+	<para>
+	Different numerical methods are required to simulate different biological systems. Deterministic simulation is valid as long as the concentrations of simulated populations are high.
+	However, the concentrations of these factors could be very low in living cells. In these latter cases, the biology is more accurately simulated by discrete approaches. As a result,
+	stochastic simulation has been implemented in Virtual Cell to allow users to describe the discrete nature of changes in cell systems.
+	</para>
+	<list>
+	<item>Gibson-Bruck Exact Solver</item>
+	<item>Hybrid (Gibson-Euler-Maruyama)</item>
+	<item>Hybrid (Gibson-Milstein, fixed time step)</item>
+	<item>Hybrid (Gibson-Milstein, adaptive time step)</item>
+	</list>
+	<para>
+	<b>Deterministic Spatial Solvers</b>
+	</para>
+	<para>Virtual Cell uses the finite volume method to deterministically solve spatial problems. The finite volume method is a method of spatial discretization of partial differential equations
+	which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry. The standalone version
+	of the finite volume method is a little slower but gives better error messages.
+	</para>
+	<list>
+	<item>Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step). 
+	This solver is identical to the Finite Volume, Regular Grid solver in 4.6.</item>
+	<item>Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step). This solver is identical to the
+Finite Volume, Regular Grid solver in 4.6.</item>
+	<item>Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step). This solver is identical to the
+Finite Volume, Regular Grid solver in 4.6.</item>
+	</list>
+	<para>
+	<b>Stochastic Spatial Solvers</b>
+	</para>
+	<para>Virtual Cell incorporates the Smoldyn(Smoluchowski Dynamics) to stochastically solve spatial problems. Smoldyn is a Brownian dynamics simulator. It represents space as a 1-, 2-,
+	 or 3-dimensional continuum, as opposed to a lattice, and it steps through time using finite length time steps. Smoldyn represents molecules as individual point-like particles and
+	 membranes as infinitely thin surfaces. Smoldyn simulates molecular diffusion, chemical reactions between individual molecules, and a wide variety of molecule-surface interactions.
+	 So far, Smoldyn has been used primarily for either detailed biophysics research problems, such as on diffusion-influenced reaction dynamics, or for investigating the effects of spatial
+	 organization on simple biological systems, such as the Escherichia coli chemotaxis system.
+	</para>
+	<list>
+	<item>Smoldyn Solver</item>
+	</list>
+	</operations>
 </page>
 
 </vcelldoc>
