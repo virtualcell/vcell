@@ -46,7 +46,7 @@
 	<list>
 		<item>
 		<para><bold>Multiple non-spatial applications</bold></para>
-		<imgReference target = "ExportAppSelect.PNG"/>
+		<imgReference target = "ExportAppSelect.gif"/>
 		<para>
 		When a VCell BioModel has multiple applications, a list of the non-spatial, deterministic applications is presented. Select the application to export to SBML. 
 		If the compartment sizes for the selected application are not already set, the user is asked to provide the size for any one compartment in the BioModel.

@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "ManageDBViewMenu.PNG"/>
+		<imgReference target = "ManageDBViewMenu.gif"/>
 	</appearance>
 	
 	<operations>

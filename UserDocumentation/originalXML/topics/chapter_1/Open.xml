@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileOpen.PNG"/>
+		<imgReference target = "FileOpen.gif"/>
 	</appearance>
 	
 	<operations>
@@ -16,7 +16,7 @@
 	Clicking on any of those options opens a dialog that lists the particular type of document in the VCell database that are available to the user (those created by the user and those shared with the user by other users). 
 	For example, clicking on File->Open->BioModel will open a dialog that lists all bioModels accessible to current user.  
 	</para>
-	<imgReference target = "FileNewMathFromBio.PNG"/>
+	<imgReference target = "FileNewMathFromBio.gif"/>
 	</operations>
 	<comments>  </comments>
 
