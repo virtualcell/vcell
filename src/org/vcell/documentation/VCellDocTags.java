@@ -22,10 +22,11 @@ public class VCellDocTags {
 	public final static String link_tag = "link";
 	public final static String img_ref_tag = "imgReference";
 	public final static String bold_tag = "bold";
-	public final static String italic_tag = "italic";
 	public final static String paragraph_tag = "para";
 	public final static String list_tag = "list";
 	public final static String listItem_tag = "item";
+	public final static String definition_tag = "def";
+	public final static String definition_label_attr = "defLabel";
 	
 	//HTML tags
 	public final static String html_tag = "html";
@@ -38,6 +39,7 @@ public class VCellDocTags {
 	public final static String html_italic_tag = "i";
 	public final static String html_list_tag = "ul";
 	public final static String html_listItem_tag = "li";
+	public final static String html_name_tag = "name";
 	
 	//for writing Map Toc and HelpSet
 	public static final String XMLHeader = "<?xml version='1.0' encoding='ISO-8859-1' ?>";

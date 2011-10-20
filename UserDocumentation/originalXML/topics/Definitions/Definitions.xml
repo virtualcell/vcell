@@ -1,10 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<vcelldef>
-<def target = "def_species"> 
+<vcelldoc>
+<def target = "def_species" defLabel = "Species"> 
 Species are any group of molecules/entities that exist within structures (either membranes or compartments) and can be acted upon by reactions or fluxes.  Species are unique to a particular structural class (e.g. cytosol, nuclear membrane) for all instances of a given class. Older version of VCell append species context to the given name (e..g a species called "Calcium" within "Cytosol" was given the name Calcium_cytoplasm
 </def>
 
-<def target = "def_pathcom">
+<def target = "def_pathcom" defLabel = "Pathway Commons">
 Pathway Commons mirrors the content of ten major pathway databases, providing 3,436 pathways including 565,977 interactions and 116,073 physical entities from 1,295 organisms.
 </def>
-</vcelldef>
+
+<def target = "def_volumes" defLabel = "Volume"> 
+what is volume. what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.
+what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.
+what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.
+what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.what is volume.
+what is volume.what is volume.what is volume.
+</def>
+
+
+
+<def target = "prop_pane" defLabel = "Property Pane"> What is prperty pane.  What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.
+What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.
+What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.
+What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.
+What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.
+What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.What is prperty pane.  
+</def>
+
+<def target = "def_membranes" defLabel = "Membrane"> What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+ What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+  What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+   What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+   What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+    What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane. What is membrane.
+</def>
+
+
+<def target = "def_compartments" defLabel = "Compartments"> What is compartment. What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.What is compartment.
+</def>
+
+<def target = "def_structure" defLabel = "Structure"> What is structure. What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.What is structure.
+</def>
+
+</vcelldoc>
