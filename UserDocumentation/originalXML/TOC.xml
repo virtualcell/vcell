@@ -66,5 +66,8 @@
    	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Pathway Objects View"/>
    		</tocitem>
+   		<tocitem target="SimulationViewerOverview" text="Simulation Results">
+   			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
+   		</tocitem>
    	</tocitem>
 </toc>
