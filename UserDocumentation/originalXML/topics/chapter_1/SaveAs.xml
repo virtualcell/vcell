@@ -8,7 +8,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileSaveAs.PNG"/>
+		<imgReference target = "FileSaveAs.gif"/>
 	</appearance>
 	
 	<operations>

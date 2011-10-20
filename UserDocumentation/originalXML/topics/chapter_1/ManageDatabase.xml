@@ -12,7 +12,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileManageDB.PNG"/>
+		<imgReference target = "FileManageDB.gif"/>
 	</appearance>
 	
 	<operations>
@@ -48,7 +48,7 @@
 	Right clicking any selected model brings up a pop-up menu. 
 	</para> 
 	
-	<imgReference target = "FileManageDBPopup.PNG"/>
+	<imgReference target = "FileManageDBPopup.gif"/>
 	
 	<para>
 	The options available are: 

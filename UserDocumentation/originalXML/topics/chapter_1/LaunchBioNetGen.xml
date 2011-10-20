@@ -84,7 +84,7 @@
 	<para>
 	This tab contains a sample BNGL file in the text field. This file can edited in the text field, or can be replaced with any other .bngl file. At the bottom of the text field you see three buttons.
 	</para> 
-	<imgReference target = "BNGRulesEditor.PNG"/>
+	<imgReference target = "BNGRulesEditor.gif"/>
 	<list>
 		<item><bold>Open .bngl file</bold> - Use to upload a .bngl file from your computer to the BioNetGen. BNGL file will be displayed in the text field.</item>
 		<item><bold>Run BioNetGen</bold> - Click to run BioNetGen with the displayed in the text field BNGL file. All previous runs of BioNetGen are deleted when the user clicks this button. After the running is completed, the Messages tab will be displayed.</item>

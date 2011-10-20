@@ -12,7 +12,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileModelAnnotation.PNG"/>
+		<imgReference target = "FileModelAnnotation.gif"/>
 	</appearance>
 	
 	<operations>

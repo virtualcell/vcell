@@ -22,7 +22,7 @@
 	Clicking <bold>Cancel</bold> will cancel the transform operation. Clicking <bold>OK</bold> will open the "Transform to Stochastic Capable Model" dialog. 
 	This dialog displays a table of all the reactions in the model.
 	</para>
-	<imgReference target = "TransformStochCapableDialog.PNG"/>
+	<imgReference target = "TransformStochCapableDialog.gif"/>
 	<para>
 	For each reaction, the table shows the name, type (reaction or flux), kinetic type, reaction rate expression, forward and reverse rate (if they exist or are transformable).
 	The "Transform" column in the table displays a checkbox (non-editable) for each reaction indicating if the reaction kinetics can be transformed into mass action kinetics for being stochastic capable. 

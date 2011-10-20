@@ -19,7 +19,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileImport.PNG"/>
+		<imgReference target = "FileImport.gif"/>
 	</appearance>
 	
 	<operations>
