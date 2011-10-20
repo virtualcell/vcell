@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
@@ -106,6 +108,7 @@ public class DocumentCompiler {
 		indexer.compile(new String[]{"-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
 	}
 
+	public static TreeSet<String> referencedImageFiles = new TreeSet<String>();
 	public void batchRun() throws Exception
 	{
 		//generate document images
@@ -165,10 +168,15 @@ public class DocumentCompiler {
 		}
 		
 		//get images from the original image directory
+		Vector<File> unreferencedImageFiles = new Vector<File>();
 		File[] imgFiles = imgSourceDir.listFiles();
 		for(File imgFile: imgFiles) {
 			if(!imgFile.getName().contains(".svn") && imgFile.isFile())//dont' move over svn file
 			{
+				String name = imgFile.getName();
+				if(!referencedImageFiles.remove(name)){
+					unreferencedImageFiles.add(imgFile);
+				}
 				File workingImgFile = getTargetFile(imgFile);
 				FileUtils.copyFile(imgFile, workingImgFile);
 				BufferedImage img = ImageIO.read(imgFile);
@@ -192,6 +200,13 @@ public class DocumentCompiler {
 				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, imgWidth, imgHeight);
 				documentation.add(tempImg);
 			}
+		}
+		if(unreferencedImageFiles.size() > 0){
+			System.out.println("-----Unreferenced Image Files");
+			for (int i = 0; i < unreferencedImageFiles.size(); i++) {
+				System.out.println("WARNING: Unreferenced image: "+unreferencedImageFiles.elementAt(i).getName());
+			}
+			System.out.println("-----");
 		}
 		//write document definitions
 		if(documentation.getDocumentDefinitions() != null && documentation.getDocumentDefinitions().length > 0)

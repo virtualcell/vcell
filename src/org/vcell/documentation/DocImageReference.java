@@ -6,6 +6,7 @@ public class DocImageReference extends DocTextComponent {
 	public DocImageReference(String imageTarget) {
 		super();
 		this.imageTarget = imageTarget;
+		DocumentCompiler.referencedImageFiles.add(imageTarget);
 	}
 
 	public String getImageTarget() {
