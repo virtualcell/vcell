@@ -59,7 +59,8 @@
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
 	    		<tocitem target="simulation_results" text="Simulation Results"/>
-	    		<tocitem target="parameterEstimationOverview" text="Parameter Estimation"/>
+	    		<tocitem target="parameterEstimationOverview" text="Parameter Estimation Methods"/>
+	    		<tocitem target="parameterEstimationUsage" text="Parameter Estimation Usage"/>
     	</tocitem>
     	</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
