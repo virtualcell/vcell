@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="General">
+<page title="Overview" target="General">
 	
-	<introduction> Introduction.
+	<introduction> 
+The Virtual Cell Software requires BioModels and
+Geometries to generate the mathematical code
+needed for running simulations. The BioModel consists
+of the model description (Physiology), and the
+Application. 
+<para></para>
+The <link target = "PhysOverview"> Physiology</link> 
+includes what is known
+about the biological system in terms of cellular structures, 
+species and biochemical reactions. 
+<para></para>
+The <link target = "ApplicationOverview"> Application</link> 
+allows the user to define the 
+quantitative conditions needed to define, run and visualize a Virtual
+Experiment, i.e. numerical simulation. Thus, an
+Application includes the Structure Mapping, Initial
+Conditions, Reaction Mapping, Electrical Mapping and
+Simulations. 
+<para></para>
+The Application establishes the relationship between the biological 
+model and the <link target = "GeometryOverview"> Geometry</link>.
+<para></para>
+A single BioModel may have numerous 
+Applications related to it, in which
+geometries and/or parameters have been changed. 
 	</introduction>
 	
-	<appearance> AAAA
-	</appearance>
-	
-	<operations>vvvvvvv
-	</operations>
-	
-	<comments>  </comments>
-
 </page>
 
 </vcelldoc>
