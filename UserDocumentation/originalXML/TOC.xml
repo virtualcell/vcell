@@ -3,6 +3,7 @@
 	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
 	    <tocitem target="GeneralOverview" text="VCell Overview">
     		<tocitem target="General" text="General"/>
+    		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
     		<tocitem target="File" text="File Menu">
 	    		<tocitem target="New" text="File->New Menu"/>
