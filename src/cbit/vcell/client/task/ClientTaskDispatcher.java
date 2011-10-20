@@ -16,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.FocusManager;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -97,6 +98,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	SwingWorker worker = new SwingWorker() {
 		private AsynchProgressPopup pp = null;
 		private Frame frameParent = null;
+		private Component focusOwner = null;
 		public Object construct() {
 			if (bShowProgressPopup) {
 				if (customDialog == null) {
@@ -115,6 +117,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			}
 			try {
 				if (frameParent != null) {
+					focusOwner = FocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 					SwingUtilities.invokeAndWait(new Runnable() {
 						public void run() {
 							ClientMDIManager.blockWindow(frameParent);
@@ -229,6 +232,17 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			if (frameParent != null) {
 				ClientMDIManager.unBlockWindow(frameParent);
 				frameParent.setCursor(Cursor.getDefaultCursor());
+				if (focusOwner != null) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							try {
+								focusOwner.requestFocusInWindow();
+							} catch (Throwable exc) {
+								recordException(exc, hash);
+							}
+						}
+					});
+				}
 			}
 //			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
