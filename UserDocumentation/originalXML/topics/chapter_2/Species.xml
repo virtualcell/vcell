@@ -7,7 +7,7 @@ In BioModels species are used to create variables (molecular species) in <link t
 	</introduction>
 	
 	<appearance>
-The Species Tab diplays a table of the species name and the <def target = "target"> structure </def> that contains it.  The <link target = "PP_Species"> Species Properties pane </link> is shown in the bottom right pane
+The Species Tab diplays a table of the species name and the <def target = "def_structure"> structure </def> that contains it.  The <link target = "PP_Species"> Species Properties pane </link> is shown in the bottom right pane
 	</appearance>
 	
 	<operations>

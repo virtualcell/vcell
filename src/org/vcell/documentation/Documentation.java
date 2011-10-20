@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class Documentation {
 	private ArrayList<DocumentPage> documentPages = new ArrayList<DocumentPage>();
 	private ArrayList<DocumentImage> documentImages = new ArrayList<DocumentImage>();
+	private ArrayList<DocumentDefinition> documentDefinitions = new ArrayList<DocumentDefinition>();
 	
 	public DocumentPage getDocumentPage(DocLink docLink) {
 		for (DocumentPage docPage : documentPages){
@@ -34,6 +35,19 @@ public class Documentation {
 		return null;
 	}
 
+	public DocumentDefinition getDocumentDefinition(DocDefinitionReference docDefReference) {
+		for (DocumentDefinition docDef : documentDefinitions){
+			if (docDef.getTarget().equals(docDefReference.getDefinitionTarget())){
+				return docDef;
+			}
+		}
+		return null;
+	}
+	
+	public DocumentDefinition[] getDocumentDefinitions() {
+		return documentDefinitions.toArray(new DocumentDefinition[documentDefinitions.size()]);
+	} 
+	
 	public void add(DocumentPage documentPage) {
 		if (!documentPages.contains(documentPage)){
 			documentPages.add(documentPage);
@@ -44,6 +58,17 @@ public class Documentation {
 		if (!documentImages.contains(documentImg)){
 			documentImages.add(documentImg);
 		}
+	}
+	
+	public void add(DocumentDefinition documentDef) {
+		if (!documentDefinitions.contains(documentDef)){
+			documentDefinitions.add(documentDef);
+		}
+	}
+	
+	public void add(ArrayList<DocumentDefinition> documentDefs)
+	{
+		documentDefinitions = documentDefs;
 	}
 	
 	public DocumentPage[] getDocumentPages(){

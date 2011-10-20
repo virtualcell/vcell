@@ -8,7 +8,8 @@ public class DocList extends DocTextComponent {
 				|| docComponent instanceof DocLink
 				|| docComponent instanceof DocListItem
 				|| docComponent instanceof DocImageReference
-				|| docComponent instanceof DocParagraph){
+				|| docComponent instanceof DocParagraph
+				|| docComponent instanceof DocDefinitionReference){
 			components.add(docComponent);
 		}else{
 			throw new RuntimeException("not supported");

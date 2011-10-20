@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -152,11 +153,14 @@ public class DocumentCompiler {
 			File[] xmlFiles = sourceDir.listFiles(xmlFileFilter);
 			for(File xmlFile : xmlFiles) {
 				if (xmlFile.getName().equals("Definitions.xml")){
-					System.out.println("IGNORING DEFINITIONS.XML for now");
-					continue;
+					ArrayList<DocumentDefinition> docDefs = readDefinitionFile(xmlFile);
+					documentation.add(docDefs);
 				}
-				DocumentPage documentPage = readTemplateFile(xmlFile);
-				documentation.add(documentPage);
+				else
+				{
+					DocumentPage documentPage = readTemplateFile(xmlFile);
+					documentation.add(documentPage);
+				}
 			}
 		}
 		
@@ -189,7 +193,23 @@ public class DocumentCompiler {
 				documentation.add(tempImg);
 			}
 		}
-		
+		//write document definitions
+		if(documentation.getDocumentDefinitions() != null && documentation.getDocumentDefinitions().length > 0)
+		{
+			DocumentDefinition[] documentDefinitions = documentation.getDocumentDefinitions(); 
+			File xmlFile = getTargetFile(documentDefinitions[0].getSourceFile());
+			File htmlFile = new File(xmlFile.getPath().replace(".xml",".html"));
+			if(documentDefinitions.length > 0)
+			{
+				try {
+					writeDefinitionHTML(documentDefinitions,htmlFile);
+				}catch (Exception e){
+					e.printStackTrace(System.out);
+					throw new RuntimeException("failed to parse document "+documentDefinitions[0].getSourceFile().getPath());
+				}
+			}
+		}
+		//write document pages
 		for(DocumentPage documentPage : documentation.getDocumentPages()) {
 			File htmlFile = getTargetFile(documentPage.getTemplateFile());
 			htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
@@ -298,6 +318,35 @@ public class DocumentCompiler {
 		}
 	}
 	
+	private ArrayList<DocumentDefinition> readDefinitionFile(File file) throws XmlParseException{
+		ArrayList<DocumentDefinition> documentDefs = new ArrayList<DocumentDefinition>();
+		
+		Document doc = XmlUtil.readXML(file);
+		Element root = doc.getRootElement();
+		if (!root.getName().equals(VCellDocTags.VCellDoc_tag)){
+			throw new RuntimeException("expecting ...");
+		}
+		//get all definition elements
+		List<Object> pageElements = root.getContent();
+		
+		if (pageElements!=null){
+			for(Object pageElement : pageElements)
+			{
+				if(pageElement instanceof Element && ((Element)pageElement).getName().equals(VCellDocTags.definition_tag))
+				{
+					String target = ((Element)pageElement).getAttributeValue(VCellDocTags.target_attr);
+					String label = ((Element)pageElement).getAttributeValue(VCellDocTags.definition_label_attr);
+					String text = ((Element)pageElement).getText();
+					DocumentDefinition documentDefinition = new DocumentDefinition(file, target, label, text);
+					documentDefs.add(documentDefinition);
+				}
+			}
+		}
+		
+		return documentDefs;
+	}
+	
+	
 	private DocumentPage readTemplateFile(File file) throws XmlParseException {
 		Document doc = XmlUtil.readXML(file);
 		Element root = doc.getRootElement();
@@ -343,6 +392,10 @@ public class DocumentCompiler {
 				}else if (childElement.getName().equals(VCellDocTags.img_ref_tag)){
 					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
 					docComponent.add(new DocImageReference(linkTarget));
+				}else if (childElement.getName().equals(VCellDocTags.definition_tag)){ //definition link
+					String linkText = childElement.getText();
+					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
+					docComponent.add(new DocDefinitionReference(linkTarget, linkText));	
 				}else if (childElement.getName().equals(VCellDocTags.bold_tag)){
 					List boldChildren = childElement.getContent();
 					for (Object boldChild : boldChildren){
@@ -381,6 +434,49 @@ public class DocumentCompiler {
 			
 	private String getEndTag(String tag) {
 		return "</" + VCellDocTags.html_tag + ">";
+	}
+	
+	private void writeDefinitionHTML(DocumentDefinition[] docDefs, File htmlFile) throws Exception
+	{
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(htmlFile);
+			
+			 //start html
+			 pw.println(getStartTag(VCellDocTags.html_tag));
+			 //start head
+			 pw.println("<" + VCellDocTags.html_head_tag + ">");
+			 pw.println("<h2> Virtual Cell Definitions </h2>");
+			 //start title
+			 pw.print("<" + VCellDocTags.html_title_tag + ">");
+			 //end title
+			 pw.print("</" + VCellDocTags.html_title_tag + ">");
+			 pw.println();
+			 //end head
+			 pw.print("</" + VCellDocTags.html_head_tag + ">");
+			 //start body
+			 pw.println("<" + VCellDocTags.html_body_tag + ">");
+			 for(DocumentDefinition docDef : docDefs)
+			 {
+				 pw.println();
+				 pw.print("<p>");
+				 pw.print("<a name = \"" + docDef.getTarget() + "\"><b>" + docDef.getLabel() + "</b></a> <br>");
+				 pw.println();
+				 pw.print(docDef.getText());
+				 pw.print("</p>");
+			 }
+			 //end body
+			 pw.println("</" + VCellDocTags.html_body_tag + ">");
+			 //end html
+			 pw.println(getEndTag(VCellDocTags.html_tag));
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw e;
+		} finally {
+			if (pw != null) {
+				pw.close();	
+			}
+		}
 	}
 	
 	private void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
@@ -489,6 +585,18 @@ public class DocumentCompiler {
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
 			 pw.println("<br><br>");
 			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
+		 }else if (docComp instanceof DocDefinitionReference){
+			 DocDefinitionReference defReference = (DocDefinitionReference)docComp;
+			 DocumentDefinition targetDef = documentation.getDocumentDefinition(defReference);
+			 if (targetDef==null){
+				throw new RuntimeException("Definition '"+defReference.getDefinitionTarget()+"' does NOT exist.");
+			 }
+			 File defXmlFile = getTargetFile(targetDef.getSourceFile());
+			 File htmlFile = new File(defXmlFile.getPath().replace(".xml",".html"));
+			 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
+			 pw.println("<br><br>");
+			 pw.println("<a href=\""+relativePathToTarget+"#" + targetDef.getTarget()+ "\">");
+			 pw.print(defReference.getText() + "</a>");
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){

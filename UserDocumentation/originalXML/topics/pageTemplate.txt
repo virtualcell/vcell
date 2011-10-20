@@ -8,7 +8,7 @@
 		 
 		<imgReference target = "target"/>
 		
-		<def target = "target"> put your link here </def>
+		<def target = "target" label = "Species"> put your link here </def> NOTE: no recursive definition allowed.
 	    
 	    <bold> </bold>
 	    

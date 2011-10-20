@@ -7,7 +7,8 @@ public class DocListItem extends DocTextComponent {
 		if (docComponent instanceof DocText 
 				|| docComponent instanceof DocLink
 				|| docComponent instanceof DocImageReference
-				|| docComponent instanceof DocParagraph){
+				|| docComponent instanceof DocParagraph
+				|| docComponent instanceof DocDefinitionReference){
 			components.add(docComponent);
 		}
 	}
