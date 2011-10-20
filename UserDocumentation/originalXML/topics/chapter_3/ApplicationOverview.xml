@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Application Overview">
+<page title="Application Overview" target="ApplicationOverview">
 
-	<introduction> V 
+	<introduction>
+Applications allow users to define the quantitative 
+conditions needed to define, run and visualize a
+Virtual Experiment, i.e. numerical simulation. 
+The Application is the component in which the mapping between the model and 
+the geometry can be established, define the Specifications (species, reactions)
+and Protocols (events, electric). When you create an Application, you 
+create either a Deterministic or Stochastic
+model.
+<para></para>
+The Application directory displays the Applications associated with the BioModel. 
+You can expand the tree to display the
+Geometry , Specifications, Protocols, Simulations, Parameter Estimation.
+<para></para>
+		<imgReference target = "ApplicationOverview.png">
+		</imgReference>
 	</introduction>
 	
 </page>
