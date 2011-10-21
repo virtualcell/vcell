@@ -3,19 +3,29 @@
 <page title="Structure Properties Pane" target="PP_Structure">
 
 	<introduction>
-The object properties for any selected structure is shown in the bottom right pane.  Properties that can be edited are clear, properties that cannot be edited are greyed.	
+	<para>
+	The structure properties pane allows editing of the structure name and free text annotations. It is also shows size variable name
+	and voltge variable name (for membranes).
+	</para>
 	</introduction>
 	
 	<appearance>
-Under the Object Properties tab the Structure Name provided by the user and the assigned Size Variable Name are shown for compartments; membrane structures additionally have an assigned Voltage Variable Name.  Annotations are provided in the box.  The <link target = "PP_Problems"> Problems Tab </link> provides errors and warnings identified by VCell.
-		<imgReference target = "PP_Structure_Img01.png">
-		</imgReference>
+	<para>
+	At the top, there is the one-line structure name text field. Below, there is the one-line size variable name text field. 
+	For membranes, there is the one-line voltage variable name text field below that.
+	Below, using most of the panels space, is the multi-line
+	free text annotation text field.
+    </para>
 	</appearance>
 	
 	<operations>
-Select a single object to view that objects properties (multple objects cannot be selected to view properties). Edit Object Properties by clicking within the field.  Fields that cannot be edited are greyed.  
-	</operations>
-	
+	<para>
+	Structure name and free text annotations can be changed by editing the appropriate text fields. 
+	A structure name will be rejected if 
+	already in use by another structure.
+	</para>
+	</operations>	
+
 
 </page>
 
