@@ -61,7 +61,12 @@
 	    		<tocitem target="simulation_results" text="Simulation Results"/>
 	    		<tocitem target="parameterEstimationOverview" text="Parameter Estimation Methods"/>
 	    		<tocitem target="parameterEstimationUsage" text="Parameter Estimation Usage"/>
+     	     <tocitem target = "Results_Overview" text="Results">
+     	     	<tocitem target = "AccessingSimResults" text="Accessing Simulation Results"/>
+     	     	<tocitem target = "SimulationViewerOverview" text="Results Viewer"/>
+     	     </tocitem>
     	</tocitem>
+
     	</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
