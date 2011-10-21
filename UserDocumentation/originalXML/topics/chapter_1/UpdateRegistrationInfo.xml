@@ -6,7 +6,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "UpdateUserReg.PNG"/>
+		<imgReference target = "UpdateUserReg.gif"/>
 	</appearance>
 	
 	<operations>
