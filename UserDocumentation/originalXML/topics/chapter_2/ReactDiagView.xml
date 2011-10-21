@@ -9,6 +9,7 @@
 	
 	<appearance> 
 	<para>
+	<imgReference target = "ReactDiagView.png"/>
 	The compartments are shown as a row of white rectangles before a gray background, connected into one large rectangle. 
 	Species are green balls and reactions are yellow squares placed into the compartments. Lines each connect one 
 	species with one reaction in which it participates: solid lines with arrows denote reactants and products, distinguished by

@@ -11,6 +11,7 @@
 		
   <appearance>
   <para>
+  <imgReference target = "PP_MemFlux.png"/>
   On top, there is an editable field for the name of the reaction (i.e. the flux). The line below shows flux type checkboxes
   to select whether there is a molecular flux, whether there is an electric current, and a charge valence combobox showing
   the electric charge per molecule. 

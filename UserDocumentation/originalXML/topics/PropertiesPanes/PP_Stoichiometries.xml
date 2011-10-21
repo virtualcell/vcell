@@ -9,6 +9,7 @@
 	
   <appearance> 
     <para>
+    <imgReference target = "PP_Stoichiometries.png"/>
     This panel only displays an editable text field that contains the stoichiometric coefficient.
     </para>
   </appearance>

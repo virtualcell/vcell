@@ -15,6 +15,7 @@
 	
 	<appearance>
 	<para>
+	<imgReference target = "PathwayCommonsPanel.png"/>
 	At the top of the Pathway Commons Panel, there is the search text field and the search button. At the bottom, there is
 	the import button and the weblink button. All other space is to display the search result tree. After a keyword search
 	the search result tree shows physical entities obtained in a query, and for each physical entity, a list of pathways that
