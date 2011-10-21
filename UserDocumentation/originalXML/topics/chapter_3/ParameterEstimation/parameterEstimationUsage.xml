@@ -3,8 +3,9 @@
 <page title="How to use parameter estimation in Virtual Cell">
 
 	<introduction>
+	<para>This section describes about how to do COPASI based parameter estimation in the Virtual Cell Beta version.</para>
 	If you have a non-spatial deterministic model and have questions on some model paramters (say kinetic rate constants), you can run a parameter estimation to 
-	get model parameters estimated. To start your parameter estimation, select your non-spatial deterministic application and click on the "Parameter Estimation" tab <imgReference target = "pe_tabButton.gif"/>.
+	get model parameters estimated. To start your parameter estimation, select your non-spatial deterministic application and click on the "Parameter Estimation" tab.
 	</introduction>
 	
 	<operations>
@@ -66,7 +67,7 @@ plot view or table in data view in the Reference Data tab.
 	</item>
 	<para>
 	Firstly, you have to choose a method. Go to “Run Task” tab. Select one of the COPASI methods available in the drop down menu for parameter estimation.
-	You can find the detailed description of methods in the <link target = "parameterEstimationOverview"> overview section</link>, or click on the "Copasi
+	You can find the detailed description of methods in the <link target = "parameterEstimationMethods"> previous section</link>, or click on the "Copasi
 	Methods Help" button to see the embedded help. 
 	</para>
 	<para>
@@ -84,7 +85,7 @@ plot view or table in data view in the Reference Data tab.
 	</para>
 	
 	<item>
-	<b>Change Annotation</b>
+	<bold>Change Annotation</bold>
 	</item>
 	<para>
 	At the bottom of the window, there is a property pane. you can change the name of the parameter estimation task and add an annotation, or check the problems

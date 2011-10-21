@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Simulations Editor">
+
+	
+	<introduction>
+	In the "Simulation" tab, highlight the simulation you want to edit and clicking the "Edit Simulation" button leads to you a simulation editor.
+	The simulation editor has two tabs, which are "Parameters" and "Solvers".
+	</introduction>
+	<appearance><imgReference target="sim_simEditor.gif"/></appearance>
+	
+	<operations>
+	<para><bold>Parameters</bold></para>
+	<para>Displays a summary list of the Parameters, the Default, Changed or Scanned Values used in the simulation. VCell
+is able to run complex simulations in which one or more parameters vary according to a specified list or range of
+possible values. Altering parameter values allows you to quickly and easily modify your model description without
+having to make a complete new BioModel or access the BioModel dialog. Parameter scans enable the user to do
+“brute force” exploration of the parameter space of a model in a single simulation specification without
+having to manually create, edit, and run many individual simulations that would test the different combinations
+of parameter values.</para>
+	<list>
+	<item>Change Value</item>
+	<para>The Simulation Editor window allows the user to override the default value of any parameter by specifying a
+	 different value to be used during the simulation. The value can be a numerical value or mathematical expressions. Identify the Parameter Name and Double click on the New
+	Value/Expression field to type in a new value or expression. Press Enter to accept the value. Note that values that have changed appear in red.
+	</para>
+    <item>Scan</item>
+    <para>To specify a parameter scan, one must check the corresponding checkbox for the parameter
+	(s), and a dialog box will appear where the user can enter a List or Range of values to be scanned.
+	</para>
+	<para><imgReference target="sim_scan.gif"/></para>
+	<para>List- Enter values separated by commas. Each value will be used in a simulation.</para>
+	<para>Range - Enter the values that will be used as the minimum and maximum values between
+which intermediates are calculated as equal interval values.</para>
+	<para>Range Log - When the checkbox ‘log’ is used, the intermediate values between the minimum
+and maximum are calculated as equal ratio values - e.g. for the example shown, the four values would be 0.1, 1.0, 10, and 100. This
+allows scanning over several orders of magnitude in a progressive way.
+	</para>
+	<para>When more than one parameter is checked for scanning, the simulation will
+be performed with all possible combinations of values for all scanned parameters. The figure shows the Simulation Editor window for
+such a simulation, where 2 parameters were specified for scans, one with a list of 3 values, and one over a range of 2 values,
+resulting in a total of 6 different combinations for which the simulation is run.
+	</para>
+	</list>
+	</operations>
+	
+	<comments> 
+	</comments>
+
+</page>
+
+</vcelldoc>

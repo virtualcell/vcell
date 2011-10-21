@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Parameter Estimation Overview">
+<page title="COPASI Optimization Methods Overview">
 
 	<introduction>
-	<para> NOTE: Parameter estimation is not available in Virtual Cell release version. New COPASI based parameter estimation is available in Virtual Cell Beta version.
-	 You may get it from Virtual Cell Web site (http://vcell.org).
+	<para> NOTE: Running parameter estimation is not available in the Virtual Cell release version. If you have old parameter estimation tasks saved,
+	you may still be able to view the results under "Fitting"->"Parameter Estimation". New COPASI based parameter estimation is available in the
+	Virtual Cell Beta version. You may get it from Virtual Cell Web site (http://vcell.org).
 	</para>
 	<para>   
 	COPASI parameter estimation provides tools to optimize parameters in non-spatial deterministic models to
