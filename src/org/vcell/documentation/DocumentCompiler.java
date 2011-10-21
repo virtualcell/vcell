@@ -374,9 +374,9 @@ public class DocumentCompiler {
 		Element pageElement = root.getChild(VCellDocTags.page_tag);
 		if (pageElement!=null){
 			String title = pageElement.getAttributeValue(VCellDocTags.page_title_attr);
-			DocSection appearance = getSection(pageElement,VCellDocTags.appearance_tag);
-			DocSection introduction = getSection(pageElement,VCellDocTags.introduction_tag);
-			DocSection operations = getSection(pageElement,VCellDocTags.operations_tag);
+			DocSection appearance = getSection(pageElement,VCellDocTags.appearance_tag, file);
+			DocSection introduction = getSection(pageElement,VCellDocTags.introduction_tag, file);
+			DocSection operations = getSection(pageElement,VCellDocTags.operations_tag, file);
 			DocumentPage documentTemplate = new DocumentPage(file, title, introduction, appearance, operations);
 			return documentTemplate;
 		}
@@ -384,16 +384,16 @@ public class DocumentCompiler {
 	}
 	
 	// top level section parse method.
-	private DocSection getSection(Element root, String tagName) throws XmlParseException{
+	private DocSection getSection(Element root, String tagName, File xmlFile) throws XmlParseException{
 		DocSection docSection = new DocSection();
 		Element sectionRootElement = root.getChild(tagName);
 		if (sectionRootElement!=null){
-			readBlock(docSection,sectionRootElement);
+			readBlock(docSection,sectionRootElement, xmlFile);
 		}
 		return docSection;
 	}
 	
-	private void readBlock(DocTextComponent docComponent, Element element) {
+	private void readBlock(DocTextComponent docComponent, Element element, File xmlFile) {
 		List children = element.getContent();
 		for (Object child : children){
 			if (child instanceof Text){
@@ -427,19 +427,19 @@ public class DocumentCompiler {
 				}else if (childElement.getName().equals(VCellDocTags.list_tag)){
 					DocList docList = new DocList();
 					docComponent.add(docList);
-					readBlock(docList, childElement);
+					readBlock(docList, childElement, xmlFile);
 				}else if (childElement.getName().equals(VCellDocTags.listItem_tag)){
 					DocListItem docListItem = new DocListItem();
 					docComponent.add(docListItem);
-					readBlock(docListItem, childElement);
+					readBlock(docListItem, childElement, xmlFile);
 				}else if (childElement.getName().equals(VCellDocTags.paragraph_tag)){
 					DocParagraph docParagraph = new DocParagraph();
 					docComponent.add(docParagraph);
-					readBlock(docParagraph, childElement);
+					readBlock(docParagraph, childElement, xmlFile);
 				}
 				else
 				{
-					System.out.println("WARNING: Unsupported element " + childElement.getName());
+					System.err.println("WARNING: Unsupported element " + childElement.getName() + " in the file: " + xmlFile.getAbsolutePath());
 //					throw new RuntimeException("Unsupported element " + childElement.getName());
 				}
 			}
