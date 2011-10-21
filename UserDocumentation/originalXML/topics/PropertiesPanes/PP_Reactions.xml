@@ -11,25 +11,52 @@
   <appearance>
   <para>
   On top, there is an editable field for the name of the reaction. One line below that, there is a non-editable combobox
-  offering a few options for a reaction rate law, and a button to convert the rate law either from particle number to concentration
-  or vice versa.
+  offering a few options for a reaction rate law, and a conversion button to convert the rate law either from molecules per second to 
+  micromolar per second or vice versa.
   </para>
   <para>
-  Below these, taking most of the space of the panel, there is a kinetic table of mathematical expressions: the first row contains
-  the reaction rate J, and further rows contain mathematical expressions referred to by J or any of the other math expressions 
-  in the table. Typically, these expressions include species concentrations of reactants and catalysts (and products, if reversible).
+  Below these, taking most of the space of the panel, there is the kinetic table of math terms used to define the reaction rate J: 
+  the first row contains
+  the reaction rate J itself, and further rows contain named mathematical terms referred to by J (e.g. kinetic parameters)
+  or any of the other math terms 
+  in the table. If needed, the terms include species concentrations, whose name is the species name. 
+  Typically, concentrations of all reactants and catalysts are needed (and products, if reversible).
   </para>
   <para>
-  Columns of the kinetic table are: the name, the description, a check whether it is a global expression (as opposed to local to this
-  reaction), the math expression and the units of measurement.
+  Columns of the kinetic table are: the name, the description, a check whether it is a global expression (i.e. shared across the model,
+  as opposed to local, i.e. used only in this reaction), the math expression and the units of measurement.
   </para>
   <para>
-  At the bottom, there is a text field for free text annotations.
+  At the bottom, there is a text field for free text annotations, which can be hidden or shown by clicking on on the tiny button 
+  left of the "Add Annotation Here" label.
   </para>
   </appearance>
 	
   <operations>
-  
+    <para>
+    The name of the reaction can be changed by editing the text field. A name already given to another reaction will be rejected.
+    </para>
+    <para>
+    The rate law combobox can be used to either select one of a few predefined rate laws 
+    (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or choose to enter a user-defined rate law, 
+    either in micromolar per second or in molecules per second. 
+    </para>
+    <para>
+    If the rate law is in micromolar per second, the conversion button will convert it to molecules per second, and vice versa. 
+    Note that predefined laws are only in micromolar per second, so if they are converted to molecules per second, they
+    will be converted to user-defined, and remain so even if converted back.
+    </para>
+    <para>
+    Expressions and their units can be edited except for predefined rate laws and species concentrations. 
+    Incompatible units will be silently rejected. 
+    If references to new terms are added to expressions of existing ones, new rows will automatically be added for these terms. 
+    Each term can be set to global or local by a checkbox, except for the reaction rate, which is always local, and species
+    concentrations, which are always global. If a term is global, it is identical to any global term of the same name. If a term is
+    local, it is different from any term in a different context.
+    </para>
+    <para>
+    The text field for free text annotations can be edited.
+    </para>
   </operations>
 
 </page>
