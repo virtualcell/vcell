@@ -11,6 +11,7 @@
 	
 	<appearance>
 	<para>
+	<imgReference target = "PP_Structures.png"/>
 	At the top, there is the one-line structure name text field. Below, there is the one-line size variable name text field. 
 	For membranes, there is the one-line voltage variable name text field below that.
 	Below, using most of the panels space, is the multi-line

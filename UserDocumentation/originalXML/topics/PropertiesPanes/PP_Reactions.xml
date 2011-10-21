@@ -9,6 +9,7 @@
 		
   <appearance>
   <para>
+  <imgReference target = "PP_Reactions.png"/>
   On top, there is an editable field for the name of the reaction. One line below that, there is a non-editable combobox
   offering a few options for a reaction rate law, and a conversion button to convert the rate law either from molecules per second to 
   micromolar per second or vice versa.

@@ -12,6 +12,7 @@
 	
 	<appearance>
 	<para>
+	<imgReference target = "PathwayImportTable.png"/>
 	Most of the space is occupied by the pathway import table, which shows entities from an imported pathway
 	to select those entities that should be added to the pathway model. It has three columns: the first contains
 	selection checkboxes, the second an entity name and the third the (BioPAx Level 2) type of entity.

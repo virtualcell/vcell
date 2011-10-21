@@ -10,6 +10,7 @@
 	
 	<appearance>
 	<para>
+	<imgReference target = "PP_Species.png"/>
 	At the top, there is the one-line species name text field. Below, using most of the panels space, is the multi-line
 	free text annotation text field.
     </para>
