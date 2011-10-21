@@ -53,6 +53,14 @@
    	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
    		   		<tocitem target="geom_structure_mapping" text="Goemetry Structure Mapping"/>
     		</tocitem>
+    		<tocitem target="SpecificationsOverview" text="Specifications">
+    	   		<tocitem target="SpeciesSpecifications" text="Species Specifications"/>
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions Specifications"/>
+    		</tocitem>
+    		<tocitem target="ProtocolsOverview" text="Protocols">
+    	   		<tocitem target="Events" text="Events"/>
+   	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
+    		</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
