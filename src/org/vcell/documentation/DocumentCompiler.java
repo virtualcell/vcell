@@ -15,6 +15,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -526,7 +529,7 @@ public class DocumentCompiler {
 			 if(introSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,introSection, htmlFile.getParentFile(), pw);
+				 printComponent(documentation,introSection, htmlFile.getParentFile(), pw, htmlFile);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -535,7 +538,7 @@ public class DocumentCompiler {
 			 if(appSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,appSection, htmlFile.getParentFile(), pw);
+				 printComponent(documentation,appSection, htmlFile.getParentFile(), pw, htmlFile);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -544,7 +547,7 @@ public class DocumentCompiler {
 			 if(opSection.getComponents().size() > 0)
 			 {
 				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,opSection, htmlFile.getParentFile(), pw);
+				 printComponent(documentation,opSection, htmlFile.getParentFile(), pw, htmlFile);
 				 pw.print("</" + VCellDocTags.html_new_line + ">");
 				 pw.println();
 			 }
@@ -555,7 +558,7 @@ public class DocumentCompiler {
 			 pw.println(getEndTag(VCellDocTags.html_tag));
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw e;
+			throw new Exception("Exception in " + htmlFile.getAbsolutePath().replace(".html", ".xml") + ".\n" + e.getMessage());
 		} finally {
 			if (pw != null) {
 				pw.close();	
@@ -563,7 +566,7 @@ public class DocumentCompiler {
 		}
 	}
 	
-	private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw) throws IOException {
+	private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw, File sourceHtmlFile) throws Exception {
 		 if (docComp instanceof DocText){
 			 DocText text = (DocText)docComp;
 			 if (text.getBold()) {
@@ -575,7 +578,13 @@ public class DocumentCompiler {
 			 DocLink docLink = (DocLink)docComp;
 			 if(docLink.isWebTarget())
 			 {
-				 pw.print("<a href=\""+docLink.getTarget()+"\">");
+				 URL url = new URL(docLink.getTarget());
+				 URLConnection conn = url.openConnection();
+				 try{
+					 conn.connect();
+				 }catch(Exception e1){
+					 System.err.println("Error in xml file:" + sourceHtmlFile.getAbsolutePath().replace(".html", ".xml") + ". Server failed to respond: " + docLink.getTarget()+". It might be a bad URL.");
+				 }
 			 }
 			 else
 			 {
@@ -615,24 +624,24 @@ public class DocumentCompiler {
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, directory, pw);
+				 printComponent(documentation, comp, directory, pw, sourceHtmlFile);
 			 }
 			 pw.println("</ul>");
 		 }else if (docComp instanceof DocParagraph){
 			 pw.print("<p>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, directory, pw);
+				 printComponent(documentation, comp, directory, pw, sourceHtmlFile);
 			 }
 			 pw.println("</p>");
 		 }else if (docComp instanceof DocListItem){
 			 pw.print("<li>");
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, directory, pw);
+				 printComponent(documentation, comp, directory, pw, sourceHtmlFile);
 			 }
 			 pw.println("</li>");
 		 }else if (docComp instanceof DocSection){
 			 for (DocTextComponent comp : docComp.getComponents()){
-				 printComponent(documentation, comp, directory, pw);
+				 printComponent(documentation, comp, directory, pw, sourceHtmlFile);
 			 }
 		 }
 	}
