@@ -18,9 +18,9 @@ The <link target = "ApplicationOverview"> Application</link>
 allows the user to define the 
 quantitative conditions needed to define, run and visualize a Virtual
 Experiment, i.e. numerical simulation. Thus, an
-Application includes the Structure Mapping, Initial
-Conditions, Reaction Mapping, Electrical Mapping and
-Simulations. 
+Application includes the Geometry, the Specifications (species, 
+reactions), Protocols (events, electrical mapping), Simulations and 
+Parameter Estimation (if applicable).
 <para></para>
 The Application establishes the relationship between the biological 
 model and the <link target = "GeometryOverview"> Geometry</link>.
