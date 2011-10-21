@@ -3,9 +3,8 @@
 <page title="Reactions Properties Pane" target="PP_Reactions">
 
   <introduction>
-  The reaction properties panel is used to display and edit properties of a reaction, which are the name, the kinetic law 
-  (i.e. the reaction rate J and the math expressions involved in J),
-  and a free text annotation.
+  The reaction properties panel is used to display and edit properties of a reaction, which are the name, the reaction rate J and 
+  the math terms involved in J, and a free text annotation.
   </introduction>
 		
   <appearance>
@@ -18,12 +17,13 @@
   Below these, taking most of the space of the panel, there is the kinetic table of math terms used to define the reaction rate J: 
   the first row contains
   the reaction rate J itself, and further rows contain named mathematical terms referred to by J (e.g. kinetic parameters)
-  or any of the other math terms 
+  or referred to by any of the other math terms 
   in the table. If needed, the terms include species concentrations, whose name is the species name. 
   Typically, concentrations of all reactants and catalysts are needed (and products, if reversible).
   </para>
   <para>
-  Columns of the kinetic table are: the name, the description, a check whether it is a global expression (i.e. shared across the model,
+  Columns of the kinetic table are: the name, the description, a checkbox whether it is a global expression 
+  (i.e. shared across the model,
   as opposed to local, i.e. used only in this reaction), the math expression and the units of measurement.
   </para>
   <para>
@@ -47,11 +47,12 @@
     will be converted to user-defined, and remain so even if converted back.
     </para>
     <para>
-    Expressions and their units can be edited except for predefined rate laws and species concentrations. 
+    Expressions and their units can be edited except for predefined rate laws, species concentrations and universal constants. 
     Incompatible units will be silently rejected. 
     If references to new terms are added to expressions of existing ones, new rows will automatically be added for these terms. 
     Each term can be set to global or local by a checkbox, except for the reaction rate, which is always local, and species
-    concentrations, which are always global. If a term is global, it is identical to any global term of the same name. If a term is
+    concentrations and universal constants, which are always global. 
+    If a term is global, it is identical to any global term of the same name. If a term is
     local, it is different from any term in a different context.
     </para>
     <para>
