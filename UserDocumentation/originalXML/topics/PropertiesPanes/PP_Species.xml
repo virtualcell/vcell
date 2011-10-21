@@ -3,17 +3,24 @@
 <page title="Species Properties Pane" target="PP_Species">
 
 	<introduction>
-The object properties for any selected species is shown in the bottom right pane.  Properties that can be edited are clear, properties that cannot be edited are greyed.	
+	<para>
+	The species properties pane allows editing of the species name and free text annotations.
+	</para>
 	</introduction>
 	
 	<appearance>
-Under the Object Properties tab the Species Name is the name provided by the user with an extension containing the structure association.  Annotations are provided in the box.  The <link target = "PP_Problems"> Problems Tab </link> provides errors and warnings identified by VCell.
+	<para>
+	At the top, there is the one-line species name text field. Below, using most of the panels space, is the multi-line
+	free text annotation text field.
+    </para>
 	</appearance>
 	
 	<operations>
-Select a single species to view that species' properties (multiple species cannot be selected to view properties). Edit Object Properties by clicking within the field.  Fields that cannot be edited are greyed.  
-	</operations>
-	
+	<para>
+	Both text fields can be edited to change species name or the free text annotation. A species name will be rejected if 
+	already in use by another species anywhere in the physiology.
+	</para>
+	</operations>	
 
 </page>
 
