@@ -439,7 +439,7 @@ public class DocumentCompiler {
 				}
 				else
 				{
-					System.err.println("WARNING: Unsupported element " + childElement.getName() + " in the file: " + xmlFile.getAbsolutePath());
+					System.err.println("Error: Unsupported element " + childElement.getName() + " in the file: " + xmlFile.getAbsolutePath());
 //					throw new RuntimeException("Unsupported element " + childElement.getName());
 				}
 			}
