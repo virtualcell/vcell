@@ -188,14 +188,14 @@ public class DocumentCompiler {
 				String imgChkStr = "";
 				if(imgWidth > maxImgWidth || imgHeight > maxImgHeight)
 				{
-					imgChkStr = "(" + imgFile.getName() + ") ERROR image dimension ("+imgWidth+","+imgHeight+") exceeds the maximum allowed image dimension("+ maxImgWidth + ","+maxImgHeight+") in VCell Help.";
+					imgChkStr = "ERROR: (" + imgFile.getName() + ") image dimension ("+imgWidth+","+imgHeight+") exceeds the maximum allowed image dimension("+ maxImgWidth + ","+maxImgHeight+") in VCell Help.";
 				}
 				if(imgFile.length() > MAX_IMG_FILE_SIZE){
 					imgChkStr = (imgChkStr.length() > 0 ?imgChkStr+"\n":"")+
-							"(" + imgFile.getName() + ") ERROR file size ("+imgFile.length()+") greater than maximum allowed file size ("+MAX_IMG_FILE_SIZE+") in VCell Help.";
+							"ERROR: (" + imgFile.getName() + ") ERROR file size ("+imgFile.length()+") greater than maximum allowed file size ("+MAX_IMG_FILE_SIZE+") in VCell Help.";
 				}
 				if(imgFile.length() > WARN_IMG_FILE_SIZE && imgFile.length() <= MAX_IMG_FILE_SIZE){
-					System.out.println("(" + imgFile.getName() + ") WARN file size ("+imgFile.length()+") greater than preferred file size ("+WARN_IMG_FILE_SIZE+") in VCell Help.");
+					System.out.println("WARNING: (" + imgFile.getName() + ") file size ("+imgFile.length()+") greater than preferred file size ("+WARN_IMG_FILE_SIZE+") in VCell Help.");
 				}
 				if(imgChkStr.length()>0){
 					System.err.println(imgChkStr);
