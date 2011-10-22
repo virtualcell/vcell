@@ -46,7 +46,7 @@
 	FLUX instructs the solver to use an explicitly defined constant or function to calculate the flux (uM.um.s-1) of a species at the simulation world boundary.
 	VALUE instructs the solver to use an explicitly defined constant or function to calculate the concentration (uM) of a species at the simulation world boundary.
 	The boundary condition chosen will determine how a species interacts with the simulation world boundary.
-	The actual constant or function is defined for each species in the "Specifications->Species" panel (described elsewhere).
+	The actual constant or function is defined for each species in the (see <link target="SpeciesSpecifications">Specifications->Species</link>) panel.
 	One or more of the structures may be mapped to a spatial geometry domain that does not intersect the edge of the simulation world and this setting will have no effect.
 	</para>
 	</operations>
