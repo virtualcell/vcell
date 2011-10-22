@@ -25,6 +25,14 @@
 	
 	<operations>
 	<para>
+	To create a new image based geometry, navigate to the Geometry Viewer by clicking (Navigation panel)Applications->"application name"->Geometry->(View panel)Geometry->"geometry Definition"->"Add/Replace Geometry"->New...->choose:
+	<list>
+	<item>Image based (import from file, zip or directory) - (Use external image file as pre-segmented or template for compartment definition).</item>
+	<item>From scratch - (Blank canvas for manual "painting" of compartment domains).</item>
+	<item>Image based (legacy from database) - (Re-use old images saved in earlier version of VCell).</item>
+	<item>Copy from (BioModel, MathModel, geometry) - (Re-use previously defined geometries saved in other models).</item>
+	</list>
+	
 	The overall segmentation process generally begins by clicking the "Add ROI..." button (see (B) in figure) to add an ROI name for each subdomain (compartment) in the final geometry.  
 	The user enters an ROI name and a color is assigned that will be used to paint changes onto the editing canvas when user actions occur.  
 	When working with an imported image, the user can crop it to select the appropriate working area (D) and adjust brightness and magnification (C) to clearly display the image before defining ROIs. 
