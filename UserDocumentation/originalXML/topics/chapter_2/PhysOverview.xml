@@ -10,7 +10,7 @@ exist and undergo
          <def target = "def_membranes">  membranes </def>
 and      <def target = "def_volumes"> volumes </def>.  They can be created, viewed and edited in 
          <link target = "PhysStructTabView"> tabular </link> or <link target = "PhysStructDiagView"> diagrammatic tabs</link>.  Properties for structures can be found in the 
-<link target = "PP_Structure"> object properties pane </link> in the bottom of the panel	
+<link target = "PP_Structures"> object properties pane </link> in the bottom of the panel	
 	</introduction>
 	
 </page>
