@@ -41,7 +41,52 @@ be performed with all possible combinations of values for all scanned parameters
 such a simulation, where 2 parameters were specified for scans, one with a list of 3 values, and one over a range of 2 values,
 resulting in a total of 6 different combinations for which the simulation is run.
 	</para>
+	<para>A non-default parameter value can be specified as a free-form mathematical expression involving
+other parameters. This can be used as a powerful way of doing parameter scans. One parameter
+is scanned over a range of values, the non-default value has a mathematical expression
+that includes the scanned parameter. The non-default value will “follow” the scanned parameter
+and thus take many different values.
+	</para>
 	</list>
+	
+	<para><bold>Mesh</bold></para>
+	<para>This tab is only available in spatial models with resolved geometries. Specify Geometry size and Mesh size for spatial models.</para>
+	<list>
+	<item>Geometry Size</item>
+	<para>Display the size of the associated geometry, in microns. Geometry size is defined in the Geometry Editor.</para>
+	<item>Mesh Size</item>
+	<para>Default size corresponds to the experimental image data size and/or any defined analytic geometries. The higher the number
+of elements (points in x and y) used to create a mesh, the finer the spatial resolution and greater amount of time required
+to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested for initial simulations to obtain faster solutions.
+	</para>
+	<para><imgReference target="sim_mesh.gif"/></para>
+	</list>
+	
+	<para><bold>Solver</bold></para>
+	<para>This tab alows user to choose a desired solver, set time bounds, time step and error tolerance, select output options and other miscellaneous settings.
+	All the options/choices in this panel vary according to the selected solver.
+	</para>
+	<list>
+	<item>Integrator</item>
+	<para>An integrator(basically solver) has to be chosen to solve your problem. Please reference the description of the Virtual Cell <link target = "numerical_solvers">
+	numerical solvers</link>.</para>
+	<item>General</item>
+	<para>In the General section, user can specify,</para>
+	<para>1. Time Bounds --- starting time and ending time.</para>
+	<para>2. Time Step --- minimum, maximum and default time step.</para>
+	<para>3. Error Tolerance --- absolute and relative error tolerance.</para>
+	<item>Output Options</item>
+	<para>1. Keep every N time samples and at most M time samples: keep every N simulation results time samples and the total time samples should not exceed M. </para>
+	<para>2. Output interval S secs: output simulation results by every S seconds.</para>
+	<item>Miscellaneous</item>
+	<para>1. Run parameter Scan Serially.</para>
+	<para>2. Stop at Spatial Uniform: stop the somulation when the system reaches spatial uniform based on the error tolerance.</para>
+	<para>3. Data processing script: display particle count in specified regions of interest.</para>
+	<para><imgReference target="sim_soverSetting1.gif"/></para>
+	<item>Addition Setting for Stochastic solvers</item>
+	
+	</list>
+	
 	</operations>
 	
 	<comments> 
