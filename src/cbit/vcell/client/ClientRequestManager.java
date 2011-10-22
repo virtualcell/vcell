@@ -1328,7 +1328,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
 				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
 				if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.iSize)){
-					resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.iSize);
+					resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.iSize,documentCreationInfo.getOption());
 				}
 			}
 		}
@@ -1404,7 +1404,7 @@ private ImageSizeInfo queryImageResize(final Component requester,final ImageSize
 	}
 	return imageResizePanel.getNewImageSizeInfo();
 }
-private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize) throws Exception{
+private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,int imageType) throws Exception{
 	final int ORIG_XYSIZE = fdfos.isize.getX()*fdfos.isize.getY();
 	try {
 		int xsize = newImagesISize.getX();
@@ -1414,7 +1414,7 @@ private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize) 
 			int numChannels = fdfos.shortSpecData[0].length;//this normally contains different variables but is used for channels here
 			//resize each z section to xsize,ysize
 		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
-		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR); 
+		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, (imageType== VCDocument.GEOM_OPTION_DBIMAGE?AffineTransformOp.TYPE_NEAREST_NEIGHBOR:AffineTransformOp.TYPE_BILINEAR)); 
 			short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ()*xsize*ysize];
 			for (int c = 0; c < numChannels; c++) {
 				BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);

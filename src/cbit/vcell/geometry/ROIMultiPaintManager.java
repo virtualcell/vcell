@@ -411,6 +411,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}
 				}
 				overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+				refreshObjects();
 			}else{
 				try {
 					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
