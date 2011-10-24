@@ -143,6 +143,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		for (JComponent comp : advancedOptions) {
 			comp.setVisible(bVisible);
 		}
+		revalidate();
 	}
 	
 	public ArrayList<SearchCriterion> getSearchCriterionList() {
@@ -175,8 +176,10 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedButton.setForeground(Color.blue);
 		advancedButton.setVerticalAlignment(SwingConstants.BOTTOM);
 		
-		JLabel dateLabel = new JLabel("Modified Between ");
-		advancedOptions.add(dateLabel);
+		JLabel dateLabel1 = new JLabel("Modified");
+		JLabel dateLabel2 = new JLabel("Between");
+		advancedOptions.add(dateLabel1);
+		advancedOptions.add(dateLabel2);
 		startDatePanel = new DatePanel();
 		advancedOptions.add(startDatePanel);
 		endDatePanel = new DatePanel();
@@ -199,7 +202,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(2, 4, 0, 4);
+		gbc.insets = new Insets(2, 5, 0, 5);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(nameSearchTextField, gbc);
@@ -208,6 +211,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
 		gbc.insets = new Insets(0, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(advancedButton, gbc);
@@ -216,23 +220,34 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(2, 5, 0, 0);
+		gbc.insets = new Insets(2, 5, 0, 5);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		mainPanel.add(dateLabel, gbc);
+		mainPanel.add(dateLabel1, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(2, 0, 0, 0);
+		gbc.insets = new Insets(2, 0, 0, 5);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(startDatePanel, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(2, 5, 0, 5);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		mainPanel.add(dateLabel2, gbc);
+		
+		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(2, 0, 0, 0);
+		gbc.insets = new Insets(2, 0, 0, 5);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(endDatePanel, gbc);			
 		
 		gridy ++;
