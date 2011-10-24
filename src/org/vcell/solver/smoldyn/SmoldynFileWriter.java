@@ -45,8 +45,10 @@ import cbit.image.VCPixelClass;
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -416,7 +418,6 @@ private void writeHighResVolumeSamples() {
 		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
 		VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
 		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
-			
 			for(VCPixelClass vcPixelClass : pixelclasses )
 			{
 				if(vcPixelClass.getPixel() == subVolume.getHandle())
@@ -1302,6 +1303,10 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			{
 				for(Node node : triPanel.triangle.getNodes())
 				{
+					if(node == null)
+					{
+						continue;
+					}
 					HashSet<String> triNameSet = nodeTriMap.get(node);
 					if(triNameSet == null)
 					{
@@ -1360,6 +1365,10 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				HashSet<String> neighbors = new HashSet<String>();
 				for(Node node : triPanel.triangle.getNodes())
 				{
+					if(node == null)
+					{
+						continue;
+					}
 					neighbors.addAll(nodeTriMap.get(node));
 				}
 				printWriter.print(SmoldynKeyword.neighbors + " " +triPanel.name);
