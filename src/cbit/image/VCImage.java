@@ -691,6 +691,16 @@ public String toString() {
 	return "VCImage@"+Integer.toHexString(hashCode())+"("+((version!=null)?version.toString():getName())+")";
 }
 
+public long countPixelsByValue(byte value) throws ImageException {
+	byte[] pixels = getPixels();
+	long count = 0;
+	for (int i = 0; i < pixels.length; i++) {
+		if (pixels[i]==value){
+			count++;
+		}
+	}
+	return count;
+}
 
 /**
  * Insert the method's description here.

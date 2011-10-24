@@ -112,7 +112,7 @@ public static Vect3d sub(Vect3d v1, Vect3d v2) {
     return new Vect3d(v1.q[0] - v2.q[0], v1.q[1] - v2.q[1], v1.q[2] - v2.q[2]);
 }
 		public String toString(){
-			return getClass().getName() + "@" + Integer.toHexString(hashCode())+" ("+q[0]+", "+q[1]+", "+q[2]+")";
+			return "("+q[0]+", "+q[1]+", "+q[2]+")";
 		}
 /**
  * Insert the method's description here.

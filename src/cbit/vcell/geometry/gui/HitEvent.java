@@ -11,6 +11,7 @@
 package cbit.vcell.geometry.gui;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.render.Vect3d;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 12:08:18 PM)
@@ -19,17 +20,18 @@ import cbit.vcell.geometry.surface.Surface;
 public class HitEvent implements Comparable<HitEvent> {
 	private cbit.vcell.geometry.surface.Surface surface = null;
 	private cbit.vcell.geometry.surface.Polygon polygon = null;
-	private boolean entering;
+	private double unitNormalInRayDirection;
 	private double hitRayZ;
 
 /**
  * HitEvent constructor comment.
  */
-public HitEvent(Surface argSurface, Polygon argPolygon, boolean argEntering, double argRayZ) {
+public HitEvent(Surface argSurface, Polygon argPolygon, double argUnitNormalInRayDirection, double argRayZ) {
 	super();
 	this.surface = argSurface;
 	this.polygon = argPolygon;
-	this.entering = argEntering;
+	this.unitNormalInRayDirection = argUnitNormalInRayDirection;
+//	System.out.println("rayU="+argRayZ+", unitInRayDirection="+argUnitNormalInRayDirection);
 	this.hitRayZ = argRayZ;
 }
 
@@ -63,14 +65,8 @@ public cbit.vcell.geometry.surface.Surface getSurface() {
 	return surface;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/20/2004 12:24:06 PM)
- * @return boolean
- */
-public boolean isEntering() {
-	return entering;
+public double getUnitNormalInRayDirection(){
+	return unitNormalInRayDirection;
 }
 
 public int compareTo(HitEvent o) {
@@ -81,5 +77,11 @@ public int compareTo(HitEvent o) {
 	}else{
 		return 0;
 	}
+}
+
+public String toString(){
+	Vect3d unitNormal = new Vect3d();
+	polygon.getUnitNormal(unitNormal);
+	return "HitEvent(rayZ="+hitRayZ+", unitNormalInRayDirection="+unitNormalInRayDirection+", polygon="+polygon.toString()+", normal="+unitNormal+", surface="+surface.toString()+", interiorMask="+surface.getInteriorMask()+", exteriorMask="+surface.getExteriorMask();
 }
 }

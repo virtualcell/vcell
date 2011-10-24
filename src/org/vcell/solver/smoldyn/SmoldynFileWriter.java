@@ -419,7 +419,7 @@ private void writeHighResVolumeSamples() {
 			
 			for(VCPixelClass vcPixelClass : pixelclasses )
 			{
-				if(vcPixelClass.getPixelClassName().equals(subVolume.getName()))
+				if(vcPixelClass.getPixel() == subVolume.getHandle())
 				{
 					pw.println(subVolume.getName() + " " + vcPixelClass.getPixel());
 					break;

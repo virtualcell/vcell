@@ -12,10 +12,13 @@ package cbit.vcell.geometry.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 
 import cbit.vcell.geometry.surface.VolumeSamples;
+import cbit.vcell.geometry.surface.VolumeSamplesBitSet;
+import cbit.vcell.geometry.surface.VolumeSamplesLong;
 
 /**
  * Insert the type's description here.
@@ -62,43 +65,6 @@ public boolean isEmpty() {
 	return hitEvents.isEmpty();
 }
 
-public void sampleRegionIDs(double[] samplesZ, int[] regionIds){
-	//
-	// if no hits, return -1 only
-	//
-	if (hitEvents.isEmpty()){
-		Arrays.fill(regionIds, -1);
-		return;
-	}
-	//
-	// if at least one hit, then can determine which region it is
-	//
-	int sampleIndex = 0;
-	int hitIndex = 0;
-	while (sampleIndex < samplesZ.length){
-		if (samplesZ[sampleIndex] <= hitEvents.get(hitIndex).getHitRayZ()){
-			if (hitEvents.get(hitIndex).isEntering()){
-				regionIds[sampleIndex] = hitEvents.get(hitIndex).getSurface().getExteriorRegionIndex();
-			}else{
-				regionIds[sampleIndex] = hitEvents.get(hitIndex).getSurface().getInteriorRegionIndex();
-			}
-			// next sample
-			sampleIndex++;
-		}else if (hitIndex < hitEvents.size()-1){
-			// next hit record
-			hitIndex++;
-		}else{
-			// sampling past end of hit records, use the last record
-			if (hitEvents.get(hitIndex).isEntering()){
-				regionIds[sampleIndex] = hitEvents.get(hitIndex).getSurface().getInteriorRegionIndex();
-			}else{
-				regionIds[sampleIndex] = hitEvents.get(hitIndex).getSurface().getExteriorRegionIndex();
-			}
-			sampleIndex++;
-		}
-	}
-}
-
 public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int volumeOffset, int volumeStride){
 	//
 	// if at least one hit, then can determine which region it is
@@ -112,7 +78,7 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 	while (sampleIndex < samplesZ.length){
 		HitEvent currHitEvent = hitEvents.get(hitIndex);
 		if (samplesZ[sampleIndex] <= currHitEvent.getHitRayZ()){
-			if (currHitEvent.isEntering()){
+			if (currHitEvent.getUnitNormalInRayDirection()<0){
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getExteriorMask(),(float)(currHitEvent.getHitRayZ()-samplesZ[sampleIndex]));
 			}else{
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getInteriorMask(),(float)(currHitEvent.getHitRayZ()-samplesZ[sampleIndex]));
@@ -120,7 +86,7 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 			if (hitIndex>0){
 				// if not first hit record, include previous record also
 				HitEvent prevHitEvent = hitEvents.get(hitIndex-1);
-				if (prevHitEvent.isEntering()){
+				if (prevHitEvent.getUnitNormalInRayDirection()<0){
 					volumeSamples.add(volumeIndex, prevHitEvent.getSurface().getInteriorMask(),(float)(samplesZ[sampleIndex] - prevHitEvent.getHitRayZ()));
 				}else{
 					volumeSamples.add(volumeIndex, prevHitEvent.getSurface().getExteriorMask(),(float)(samplesZ[sampleIndex] - prevHitEvent.getHitRayZ()));
@@ -134,7 +100,7 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 			hitIndex++;
 		}else{
 			// sampling past end of hit records, use the last record
-			if (currHitEvent.isEntering()){
+			if (currHitEvent.getUnitNormalInRayDirection()<0){
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getInteriorMask(),(float)(samplesZ[sampleIndex] - currHitEvent.getHitRayZ()));
 			}else{
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getExteriorMask(),(float)(samplesZ[sampleIndex] - currHitEvent.getHitRayZ()));
@@ -146,7 +112,7 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 }
 
 
-public void fillEmpty(VolumeSamples volumeSamples, int numSamples, int volumeOffset, int volumeStride){
+public void fillEmpty(VolumeSamplesLong volumeSamples, int numSamples, int volumeOffset, int volumeStride){
 	//
 	// if at least one hit, then there are no empty samples
 	//
@@ -175,50 +141,29 @@ public void fillEmpty(VolumeSamples volumeSamples, int numSamples, int volumeOff
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (7/20/2004 12:26:45 PM)
- * @param sampleIndexes int[]
- * @param startTime double
- * @param endTime double
- */
-public int sample(double sampleZ) {
+public void fillEmpty(VolumeSamplesBitSet volumeSamples, int numSamples, int volumeOffset, int volumeStride){
 	//
-	// assume already sorted
+	// if at least one hit, then there are no empty samples
 	//
-	if (hitEvents.isEmpty()){
-		return -1;
+	if (hitEvents.size()>0){
+		return;
 	}
-	//
-	// if at least one hit, then can determine which region it is
-	//
-	Iterator<HitEvent> iter = hitEvents.iterator();
-	HitEvent currHitEvent = (HitEvent)iter.next();
-	if (currHitEvent.getHitRayZ()>sampleZ){
-		if (currHitEvent.isEntering()){
-			return currHitEvent.getSurface().getExteriorRegionIndex();
-		}else{
-			return currHitEvent.getSurface().getInteriorRegionIndex();
+	
+	BitSet rowPattern = new BitSet(volumeSamples.getNumXYZ());
+	int volumeIndex = volumeOffset;
+	for (int i=0;i<numSamples;i++){
+		rowPattern.set(volumeIndex);
+		volumeIndex += volumeStride;
+	}
+
+	for (BitSet bitSet : volumeSamples.getIncidentSurfaceBitSets().values()){
+		if (bitSet.intersects(rowPattern)){
+			bitSet.or(rowPattern);
 		}
-	}
-	while (iter.hasNext()){
-		currHitEvent = (HitEvent)iter.next();
-		if (currHitEvent.getHitRayZ()>sampleZ){
-			if (currHitEvent.isEntering()){
-				return currHitEvent.getSurface().getExteriorRegionIndex();
-			}else{
-				return currHitEvent.getSurface().getInteriorRegionIndex();
-			}
-		}
-	}
-	//
-	// sample past end of last hit
-	//
-	if (currHitEvent.isEntering()){ // reverse since on other side of ray
-		return currHitEvent.getSurface().getInteriorRegionIndex();
-	}else{
-		return currHitEvent.getSurface().getExteriorRegionIndex();
 	}
 }
+
+
+
 
 }
