@@ -1233,7 +1233,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	AsynchClientTask importFileImageTask = new AsynchClientTask("Importing Image from File...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
+			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE && hashTable.get(FDFOS) == null){
 				ImageSizeInfo origImageSizeInfo = (ImageSizeInfo)hashTable.get(ORIG_IMAGE_SIZE_INFO);
 				ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
 				File[] dirFiles = (File[])hashTable.get(DIR_FILES);
