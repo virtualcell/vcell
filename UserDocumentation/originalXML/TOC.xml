@@ -75,9 +75,12 @@
         	</tocitem>
         </tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
-   			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
+   	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Panel"/>
+   	   		<tocitem target="PathwayImportTable" text="Pathway Import Table"/>
    	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Pathway Objects View"/>
+   			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
+   			<tocitem target="GroupOperationsPanel" text="Entities Management"/>
    		</tocitem>
    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
    			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
