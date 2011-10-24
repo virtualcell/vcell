@@ -11,15 +11,18 @@
 package org.vcell.documentation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Documentation {
 	private ArrayList<DocumentPage> documentPages = new ArrayList<DocumentPage>();
 	private ArrayList<DocumentImage> documentImages = new ArrayList<DocumentImage>();
 	private ArrayList<DocumentDefinition> documentDefinitions = new ArrayList<DocumentDefinition>();
+	private HashSet<Object> referencedTargets = new HashSet<Object>();
 	
 	public DocumentPage getDocumentPage(DocLink docLink) {
 		for (DocumentPage docPage : documentPages){
 			if (docPage.getTarget().equals(docLink.getTarget())){
+				referencedTargets.add(docPage);
 				return docPage;
 			}
 		}
@@ -29,6 +32,7 @@ public class Documentation {
 	public DocumentImage getDocumentImage(DocImageReference docImageReference) {
 		for (DocumentImage docImage : documentImages){
 			if (docImage.getSourceFile().getName().equals(docImageReference.getImageTarget())){
+				referencedTargets.add(docImage);
 				return docImage;
 			}
 		}
@@ -38,10 +42,23 @@ public class Documentation {
 	public DocumentDefinition getDocumentDefinition(DocDefinitionReference docDefReference) {
 		for (DocumentDefinition docDef : documentDefinitions){
 			if (docDef.getTarget().equals(docDefReference.getDefinitionTarget())){
+				referencedTargets.add(docDef);
 				return docDef;
 			}
 		}
 		return null;
+	}
+	
+	public boolean isReferenced(DocumentPage docPage){
+		return referencedTargets.contains(docPage);
+	}
+	
+	public boolean isReferenced(DocumentImage docImage){
+		return referencedTargets.contains(docImage);
+	}
+	
+	public boolean isReferenced(DocumentDefinition docDefinition){
+		return referencedTargets.contains(docDefinition);
 	}
 	
 	public DocumentDefinition[] getDocumentDefinitions() {
@@ -50,7 +67,15 @@ public class Documentation {
 	
 	public void add(DocumentPage documentPage) {
 		if (!documentPages.contains(documentPage)){
-			documentPages.add(documentPage);
+			DocumentPage existingDocumentPage = getDocumentPage(new DocLink(documentPage.getTarget(),documentPage.getTarget()));
+			if (existingDocumentPage==null){
+				documentPages.add(documentPage);
+			}else{
+				throw new RuntimeException("document pages "
+							+existingDocumentPage.getTemplateFile().getPath()+" and "
+							+documentPage.getTemplateFile().getPath()
+							+" have same target = '"+documentPage.getTarget());
+			}
 		}
 	}
 

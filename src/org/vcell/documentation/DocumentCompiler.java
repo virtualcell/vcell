@@ -50,7 +50,7 @@ public class DocumentCompiler {
 	public final static String tocFileName = "TOC.xml";
 	public final static String helpSetFileName = "HelpSet.hs";
 	public final static String helpSearchFolderName = "JavaHelpSearch";
-	public final static String definitionXMLFileName = "Definitions.xml";
+	public final static String definitionXMLFileName = "DefinitionsOverview.xml";
 	
 	private Documentation documentation = new Documentation();
 
@@ -305,7 +305,9 @@ public class DocumentCompiler {
 		readTOCItem(pagesNotYetReferenced, root);
 		if (pagesNotYetReferenced.size()>0){
 			for (DocumentPage docPage : pagesNotYetReferenced){
-				System.out.println("WARNING: Document page '"+docPage.getTarget()+"' not referenced in table of contents");
+				if (!documentation.isReferenced(docPage)){
+					System.err.println("ERROR: Document page '"+docPage.getTarget()+"' not referenced in either table of contents or from another document");
+				}
 			}
 		}
 		
@@ -322,9 +324,13 @@ public class DocumentCompiler {
 		if (element.getName().equals(VCellDocTags.tocitem_tag)){
 			String target = element.getAttributeValue(VCellDocTags.target_attr);
 			if (target!=null){
+				// first look for a documentPage as the target, else check if it is a Definition page.
 				DocumentPage targetDocPage = documentation.getDocumentPage(new DocLink(target,target));
+				String definitionPageTarget = definitionXMLFileName.replace(".xml","");
 				if (targetDocPage==null){
-					throw new RuntimeException("table of contents referencing nonexistant target '"+target+"'");
+					if (!target.equals(definitionPageTarget)){
+						throw new RuntimeException("table of contents referencing nonexistant target '"+target+"'");
+					}
 				}else{
 					pagesNotYetReferenced.remove(targetDocPage);
 				}

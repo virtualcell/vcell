@@ -38,42 +38,50 @@
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
-     		<tocitem target="PathLink" text="PathLink"/>
     		<tocitem target="PhysStructDiagView" text="PhysStructDiagView"/>
     		<tocitem target="PhysStructTabView" text="PhysStructTabView"/>
     		<tocitem target="ReactDiagView" text="ReactDiagView"/>
     		<tocitem target="ReactTabView" text="ReactTabView"/>
-    		<tocitem target="Reactions" text="Reactions"/>
     		<tocitem target="Species" text="Species"/>
+    		<tocitem target="Reactions" text="Reactions"/>
+     		<tocitem target="PathLink" text="PathLink"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
-    		<tocitem target="fieldData" text="Field Data"/>
     		<tocitem target="GeometryOverview" text="Geometry">
     	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
-   	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
-   		   		<tocitem target="geom_structure_mapping" text="Goemetry Structure Mapping"/>
+   	 	  	    <tocitem target="geom_from_images" text="Image-based Geometry"/>
+   		   	    <tocitem target="geom_structure_mapping" text="Goemetry Structure Mapping"/>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
-    	   		<tocitem target="SpeciesSpecifications" text="Species Specifications"/>
-   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions Specifications"/>
+    	   		<tocitem target="SpeciesSpecifications" text="Species Specifications">
+    			     <tocitem target="fieldData" text="Field Data"/>
+    			</tocitem>
+   	 	  	    <tocitem target="ReactionsSpecifications" text="Reactions Specifications"/>
     		</tocitem>
     		<tocitem target="ProtocolsOverview" text="Protocols">
     	   		<tocitem target="Events" text="Events"/>
-   	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
+   	 	  	    <tocitem target="Electrical" text="Electrical Mapping"/>
     		</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
     	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
-   	 	  		<tocitem target="output_functions" text="Output Functions"/>
-   		   		<tocitem target="generated_math" text="Generated Math"/>
+   	 	  	    <tocitem target="output_functions" text="Output Functions"/>
+   		   	    <tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
-	    		<tocitem target="simulation_results" text="Simulation Results"/>
     	    </tocitem>
     	    <tocitem target="PEOverview" text="Fitting">
     	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
-   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
-        	</tocitem>
+   	 	  	    <tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
+            </tocitem>
+   		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
+   			    <tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
+		    </tocitem>
         </tocitem>
+    	
+    	<tocitem target="ParametersOverview" text="Parameters and Functions">
+		    <tocitem target= "ParametersFunctions" text= "Parameters and Functions"/>
+		    <tocitem target= "PredefinedConstants" text= "Predefined constants and Functions"/>
+	    </tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Panel"/>
    	   		<tocitem target="PathwayImportTable" text="Pathway Import Table"/>
@@ -82,8 +90,17 @@
    			<tocitem target="BiopaxSummaryView" text="Biopax Summary View"/>
    			<tocitem target="GroupOperationsPanel" text="Entities Management"/>
    		</tocitem>
-   		<tocitem target="SimulationViewerOverview" text="Simulation Results">
-   			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
-   		</tocitem>
-   	</tocitem>
+   	    
+    	<tocitem target="DatabaseOverview" text="Database Sources">
+		</tocitem>
+	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
+		</tocitem>
+	    <tocitem target="DefinitionsOverview" text="Glossary">
+		</tocitem>
+	    <tocitem target="ListsOverview" text="Lists">
+		</tocitem>
+	    <tocitem target="ErrorsOverview" text="Error Messages">
+	    </tocitem>
+	    
+	</tocitem>
 </toc>
