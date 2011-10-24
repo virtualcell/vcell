@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ public class DocumentCompiler {
 	public final static String tocFileName = "TOC.xml";
 	public final static String helpSetFileName = "HelpSet.hs";
 	public final static String helpSearchFolderName = "JavaHelpSearch";
+	public final static String definitionXMLFileName = "Definitions.xml";
 	
 	private Documentation documentation = new Documentation();
 
@@ -158,7 +158,7 @@ public class DocumentCompiler {
 			//get all xml files from the original xml directory.
 			File[] xmlFiles = sourceDir.listFiles(xmlFileFilter);
 			for(File xmlFile : xmlFiles) {
-				if (xmlFile.getName().equals("Definitions.xml")){
+				if (xmlFile.getName().equals(definitionXMLFileName)){
 					ArrayList<DocumentDefinition> docDefs = readDefinitionFile(xmlFile);
 					documentation.add(docDefs);
 				}
@@ -270,6 +270,11 @@ public class DocumentCompiler {
 				mapIDElement.setAttribute(VCellDocTags.url_attr, getHelpRelativePath(docTargetDir, targetHtmlFile));
 				mapElement.addContent(mapIDElement);	
 			}
+			//add definitions to map
+			Element definitionElement = new Element(VCellDocTags.mapID_tag);
+			definitionElement.setAttribute(VCellDocTags.target_attr, definitionXMLFileName.replace(".xml",""));
+			definitionElement.setAttribute(VCellDocTags.url_attr, "topics/Definitions/" + definitionXMLFileName.replace(".xml", ".html"));
+			mapElement.addContent(definitionElement);	
 			//convert mapdocument to string
 			Document mapDoc = new Document();
 			mapDoc.setRootElement(mapElement);
@@ -316,7 +321,6 @@ public class DocumentCompiler {
 	private void readTOCItem(HashSet<DocumentPage> pagesNotYetReferenced, Element element){
 		if (element.getName().equals(VCellDocTags.tocitem_tag)){
 			String target = element.getAttributeValue(VCellDocTags.target_attr);
-			String text = element.getAttributeValue(VCellDocTags.text_attr);
 			if (target!=null){
 				DocumentPage targetDocPage = documentation.getDocumentPage(new DocLink(target,target));
 				if (targetDocPage==null){
@@ -330,6 +334,7 @@ public class DocumentCompiler {
 		}else{
 			throw new RuntimeException("unexpecteded element '"+element.getName()+"' in table of contents");
 		}
+		@SuppressWarnings("unchecked")
 		List<Element> children = element.getChildren(VCellDocTags.tocitem_tag);
 		for (Element tocItemElement : children){
 			readTOCItem(pagesNotYetReferenced, tocItemElement);
@@ -345,6 +350,7 @@ public class DocumentCompiler {
 			throw new RuntimeException("expecting ...");
 		}
 		//get all definition elements
+		@SuppressWarnings("unchecked")
 		List<Object> pageElements = root.getContent();
 		
 		if (pageElements!=null){
@@ -394,6 +400,7 @@ public class DocumentCompiler {
 	}
 	
 	private void readBlock(DocTextComponent docComponent, Element element, File xmlFile) {
+		@SuppressWarnings("rawtypes")
 		List children = element.getContent();
 		for (Object child : children){
 			if (child instanceof Text){
@@ -415,6 +422,7 @@ public class DocumentCompiler {
 					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
 					docComponent.add(new DocDefinitionReference(linkTarget, linkText));	
 				}else if (childElement.getName().equals(VCellDocTags.bold_tag)){
+					@SuppressWarnings("rawtypes")
 					List boldChildren = childElement.getContent();
 					for (Object boldChild : boldChildren){
 						if (boldChild instanceof Text){
