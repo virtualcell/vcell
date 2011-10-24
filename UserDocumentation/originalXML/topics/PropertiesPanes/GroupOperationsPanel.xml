@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Operations Toolbar" target="GroupOperationsPanel">
+<page title="Entities Management Toolbar" target="GroupOperationsPanel">
 
 	<introduction>
 The buttons shown in this toolbar allow the user to perform various useful operations 
@@ -14,7 +14,6 @@ and the
 	<appearance>
 This toolbar shows buttons allowing group, delete and link operations on selected 
 entities. There is also present a Search feature which filters entities by string.
-<para></para>
 		<imgReference target = "OperationsToolbar.png">
 		</imgReference>
 <para></para>
@@ -24,36 +23,33 @@ entities. There is also present a Search feature which filters entities by strin
 The user can perform various operations upon these entities, either on individually selected 
 entities or multiple selected entities.
 <para></para>
-Multiple entities can be grouped together under a Group entity. The goal of such action would 
+<bold>Grouping.</bold> Multiple entities can be grouped together under a Group entity. The goal of such action would 
 be to reduce clutter and allow the user to focus on the significant parts of the view. Consider 
 the view below:
-<para></para>
 		<imgReference target = "PathwayDiagramLinked1.png">
 		</imgReference>
 <para></para>
 The user may choose to group all the linked items (those marked with a 'L' letter) under a group 
 and all the participants of the other reaction under a second group. The result should look as 
 follows: 
-<para></para>
 		<imgReference target = "PathwayGroupedItems.png">
 		</imgReference>
-<para></para>
+<para>
 Existing groups can be grouped in even larger groups. Also groups can be broken down into 
 their original subcomponents using the Ungroup option.
-<para></para>
+</para>
 A particular type of grouping applies to reactions. The Collapse / Expand commands will hide / 
 restore the entities associated with a selected reaction.
 <para></para>
-Single / multiple entities can be deleted from the view using the Delete Selected button. Note 
+<bold>Deleting.</bold> Single / multiple entities can be deleted from the view using the Delete Selected button. Note 
 that linked entities cannot be deleted as long as the link exists. In the case of selections 
 where some entities can be deleted and some others can not, a warning dialog box will display 
 pertinent information. In the example below the user tried to delete two reactions one of which 
 is linked.
-<para></para>
 		<imgReference target = "PathwayDeleteObjectDlg.png">
 		</imgReference>
 <para></para>
-Single / multiple entities can be imported within a model. Following this process, equivalent 
+<bold>Linking.</bold> Single / multiple entities can be imported within a model. Following this process, equivalent 
 entities to those pathway entities being imported will be created within the BioModel. A permanent
 link will preserve the relationship between the BioModel and the Pathway entities. 
 To do this select one or more 
@@ -66,20 +62,17 @@ the location property of many pathway entities and manually edit the location fi
 example below, the reactants are located in c1 while the product is located on the membrane. 
 The reaction itself must be treated as a membrane reaction because at least one reaction participant 
 is located on the membrane.
-<para></para>
 		<imgReference target = "PathwayImportDlg.png">
 		</imgReference>
 <para></para>
 Once that step is finished the imported entities are displayed within the 
 		<link target = "ReactDiagView"> Reaction Diagram View</link>
 .
-<para></para>
 		<imgReference target = "PathwayDiagramLinkedComp.png">
 		</imgReference>
 <para></para>
 Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
 small 'L' mark within their circle representation, indicating their linked status.
-<para></para>
 		<imgReference target = "PathwayDiagramLinked1.png">
 		</imgReference>
 <para></para>	</operations>
