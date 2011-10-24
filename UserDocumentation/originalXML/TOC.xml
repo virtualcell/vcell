@@ -68,14 +68,19 @@
    	 	  	    <tocitem target="output_functions" text="Output Functions"/>
    		   	    <tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
+  
+
+ 
+  
     	    </tocitem>
     	    <tocitem target="PEOverview" text="Fitting">
     	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
    	 	  	    <tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
             </tocitem>
    		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
-   			    <tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
-		    </tocitem>
+    			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
+   				<tocitem target="SpatialSimResultsViewer" text="Spatial Simulation Results Viewer"/>		   
+   			</tocitem>
         </tocitem>
     	
     	<tocitem target="ParametersOverview" text="Parameters and Functions">

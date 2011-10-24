@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Spatial Simulation Results Overview">
+
+	
+	<introduction>
+The Simulation Results Viewer has three tabs: View Data, Export Data and Post Processing Results. The following sections describe functions within the View Data tab.
+The image data from spatial simulations are displayed in the results dialog. You can also generate a Spatial Plot, using defined regions, a Time Plot, using points, or a Kymograph, which displays a line scan over time.
+ 	</introduction>
+	
+	<appearance>
+	<imgReference target = "ResultsTimeAndVariables.png"/>
+	</appearance>
+	
+	<operations>
+	<list>
+	<para>Time: The data time point that is displayed. Enter a value in the text field or click once on the selection arrow. Use the up and down arrow keys on your keyboard to select a time point. The image will update when the time point is changed.
+</para>
+<para>
+All Variables: 
+All Variables from the model simulation are displayed in the variable list to the left of the results viewer. A drop down menu allows you to list a single class of variables: Volume, Membrane or User Functions, Region sizes.
+</para>
+
+<para>
+Data Value Range: 
+<imgReference target = "SimResultsDataRange.png"/>
+</para>
+<para>
+Auto Range:
+Select to have the software auto- matically adjust the image display pixel intensities based on the minimum 
+and maximum data values for the selected time point. The intensi- ties are automatically converted to and 
+displayed as concentrations.
+</para>
+
+<para>Min/Max:
+Deselect Auto Range and type in the value(s) for the
+minimum and/or maximum; press enter to accept the values and to update the image display.
+</para>
+
+<para>Color:
+View the image data either in Grayscale or in a Blue-Red color map where colors are mapped according 
+to concentration. At times some values will be displayed in colors other than the selected color map 
+because they do not fall within the specified range.
+</para>
+<para>
+Color Value:
+</para>
+<para>BM:
+Below minimum color</para>
+<para>
+AM:
+Above minimum color</para>
+<para>
+NN:
+Not a number color</para>
+<para>
+IL:
+Illegal value color</para>
+<para>
+NR:
+No range color </para>
+</list>
+
+<list>
+<para>
+Drawing Tools:
+<imgReference target = "SimResultsDrawingTools.png"/>
+</para>
+<para>
+Selection, Creating Regions of Interest (ROI):
+Choose from selection arrow, point, line, spline or add an additional control point. The line and points are gray when deselected; control nodes and points are white when selected. Use the line or spline tools to create a ROI by clicking to drop nodes and create an enclosed region. For data associated with ROI, see Statistics.
+</para>
+<para>
+Line tool -- Enables show spatial plot button which displays values of the selected variable along the line created with two successive clicks of the line tool.
+￼</para>
+<para>Spline/Curve tool -- Creates a region of inter- est along the line and enables show spatial plot button. which displays values of the selected variable parametrically by distance along a spline curve defined by two or more successive clicks of the curve tool.
+</para><para>
+Deleting Points, Lines, or Curves</para>
+<para>
+Use the selection tool to select the item and then use either Backspace or the Delete key to delete it.
+</para><para>Image Zoom:
+Use the image zoom feature to ease in
+the selection of lines and/or points. Select the Magnification icon and press your left mouse button while you move the mouse across the image to
+increase and decrease the image zoom. Alternatively you
+can press the alt key and drag the mouse across the im-
+age to zoom up or down.</para>
+<para>Pan Tool:
+Use the pan tool, while the image is zoomed up, to move across the image. With the Hand icon depressed, hold down the left mouse button and drag the mouse across the image to move it.
+</para>
+<para>Slice
+View 3-D data sets by using the Plus (+1/10) and Minus (-1/10) but-
+tons to step through the series.</para>
+<para>
+Axis
+The Axis is provided as an additional means of viewing your 3-D im-
+age data.</para>
+<para>
+<imgReference target = "SimResultsAxisTools.png"/>
+</para>
+</list>
+
+
+    </operations>
+	
+	<comments>To be broken up into more pages 
+	</comments>
+
+</page>
+
+</vcelldoc>
