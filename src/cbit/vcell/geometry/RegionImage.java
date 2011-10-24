@@ -14,6 +14,7 @@ import cbit.util.graph.Graph;
 import cbit.util.graph.Tree;
 import cbit.util.graph.Node;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
+import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.geometry.surface.OrigSurface;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Quadrilateral;
@@ -341,13 +342,18 @@ public class RegionImage implements Serializable {
 	};
 
 public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,double filterCutoffFrequency) throws cbit.image.ImageException {
-	this(vcImage,dimension,extent,origin,filterCutoffFrequency,null);}
+	this(vcImage,dimension,extent,origin,filterCutoffFrequency,null);
+}
+
 public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,double filterCutoffFrequency,ClientTaskStatusSupport clientTaskStatusSupport) throws cbit.image.ImageException {
 	this.numX = vcImage.getNumX();
 	this.numY = vcImage.getNumY();
 	this.numZ = vcImage.getNumZ();
 	this.numXY = numX*numY;
 	this.filterCutoffFrequency = filterCutoffFrequency;
+	if (GeometryViewer.debug_filterCutoffFrequencyOverride!=null){
+		this.filterCutoffFrequency = GeometryViewer.debug_filterCutoffFrequencyOverride;
+	}
 	
 //	long startTime = System.currentTimeMillis();
 	calculateRegions_New(vcImage,dimension,extent,origin,clientTaskStatusSupport);
@@ -873,8 +879,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 				dimension, extent, origin);
 	}
 	
-	if (surfaceCollection != null){
-//		correctQuadVertexOrdering();
+	if (surfaceCollection != null && GeometryViewer.debug_bCheckPolygonQuality){
+		verifyQuadVertexOrdering(GeometryViewer.debug_maxQuadAngle);
 	}
 	//System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
@@ -886,12 +892,18 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	}
 	//System.out.println("----------smooth surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
+	if (surfaceCollection != null && GeometryViewer.debug_bCheckPolygonQuality){
+		verifyQuadVertexOrdering(GeometryViewer.debug_maxQuadAngle);
+	}
 
 //	System.out.println("Total Num Regions = "+regionsV.size());
 //	System.out.println("Total Size = "+totalSize);
 }
 
-private void correctQuadVertexOrdering() {
+public void verifyQuadVertexOrdering(double maxAngleDegrees) {
+	if (maxAngleDegrees>180 || maxAngleDegrees<0){
+		throw new IllegalArgumentException("maxAngleDegrees must be between 0 and 180");
+	}
 	for (int s=0;s<surfaceCollection.getSurfaceCount();s++){
 		Surface surface = surfaceCollection.getSurfaces(s);
 		for (int p=0;p<surface.getPolygonCount();p++){
@@ -900,22 +912,30 @@ private void correctQuadVertexOrdering() {
 			// average the polygon vertices to get the center of the quad
 			// this is also halfway between the coordinates of the inside and outside volume elements.
 			cbit.vcell.geometry.surface.Node[] nodes = quad.getNodes();
-			double centerx = (nodes[0].getX() + nodes[1].getX() + nodes[2].getX() + nodes[3].getX())/4.0;
-			double centery = (nodes[0].getY() + nodes[1].getY() + nodes[2].getY() + nodes[3].getY())/4.0;
-			double centerz = (nodes[0].getZ() + nodes[1].getZ() + nodes[2].getZ() + nodes[3].getZ())/4.0;
 			// have normal go in direction from low region index to high region index
-			int lowVolIndex = quad.getVolIndexNeighbor1();
-			int hiVolIndex = quad.getVolIndexNeighbor2();
-			if (getRegionInfoFromOffset(lowVolIndex).getRegionIndex() > getRegionInfoFromOffset(hiVolIndex).getRegionIndex()){
-				int temp = lowVolIndex;
-				lowVolIndex = hiVolIndex;
-				hiVolIndex = temp;
+			int lowVolumeIndex = quad.getVolIndexNeighbor1();
+			int hiVolumeIndex = quad.getVolIndexNeighbor2();
+			int lowRegionIndex = getRegionInfoFromOffset(quad.getVolIndexNeighbor1()).getRegionIndex();
+			int hiRegionIndex = getRegionInfoFromOffset(quad.getVolIndexNeighbor2()).getRegionIndex();
+			if (lowRegionIndex > hiRegionIndex){
+				int temp = lowVolumeIndex;
+				lowVolumeIndex = hiVolumeIndex;
+				hiVolumeIndex = temp;
+				temp = lowRegionIndex;
+				lowRegionIndex = hiRegionIndex;
+				hiRegionIndex = temp;
+			}
+			if (surface.getInteriorRegionIndex() != lowRegionIndex || surface.getExteriorRegionIndex() != hiRegionIndex){
+				StringBuffer buffer = new StringBuffer();
+				buffer.append("Surface interiorRegionIndex="+surface.getInteriorRegionIndex()+" and exteriorRegionIndex="+surface.getExteriorRegionIndex());
+				buffer.append("Polygon lowRegionIndex="+lowRegionIndex+", hiRegionIndex="+hiRegionIndex);
+				throw new RuntimeException("surface and polygon indices don't agree\n"+buffer.toString());
 			}
 			Vect3d v0 = new Vect3d(nodes[0].getX(),nodes[0].getY(),nodes[0].getZ());
 			Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),nodes[1].getZ());
 			Vect3d v2 = new Vect3d(nodes[2].getX(),nodes[2].getY(),nodes[2].getZ());
 			Vect3d v3 = new Vect3d(nodes[3].getX(),nodes[3].getY(),nodes[3].getZ());
-			int volNormalDiff = hiVolIndex - lowVolIndex;
+			int volumeIndexNormalDiff = hiVolumeIndex - lowVolumeIndex;
 			Vect3d v01 = Vect3d.sub(v1, v0);
 			Vect3d v02 = Vect3d.sub(v2, v0);
 			Vect3d unit012 = v01.cross(v02);
@@ -924,41 +944,61 @@ private void correctQuadVertexOrdering() {
 			Vect3d unit023 = v02.cross(v03);
 			unit023.unit();
 			Vect3d gridNormal = null;
-			if (volNormalDiff==1){
+			if (volumeIndexNormalDiff==1){
 				// y-z plane, normal is [1 0 0]
 				gridNormal = new Vect3d(1,0,0);
-			}else if (volNormalDiff==-1){
+			}else if (volumeIndexNormalDiff==-1){
 				// y-z plane, normal is [-1 0 0]
 				gridNormal = new Vect3d(-1,0,0);
-			}else if (volNormalDiff==getNumX()){
+			}else if (volumeIndexNormalDiff==getNumX()){
 				// y-z plane, normal is [0 1 0]
 				gridNormal = new Vect3d(0,1,0);
-			}else if (volNormalDiff==-getNumX()){
+			}else if (volumeIndexNormalDiff==-getNumX()){
 				// y-z plane, normal is [0 -1 0]
 				gridNormal = new Vect3d(0,-1,0);
-			}else if (volNormalDiff==getNumX()*getNumY()){
+			}else if (volumeIndexNormalDiff==getNumX()*getNumY()){
 				// y-z plane, normal is [0 0 1]
 				gridNormal = new Vect3d(0,0,1);
-			}else if (volNormalDiff==-getNumX()*getNumY()){
+			}else if (volumeIndexNormalDiff==-getNumX()*getNumY()){
 				// y-z plane, normal is [0 0 -1]
 				gridNormal = new Vect3d(0,0,-1);
 			}
-			if (Math.abs(unit012.dot(unit023)-1.0)>1e-8){
-				System.out.println("");
-				System.out.println("two triangles contradicted themselves");
-				System.out.println("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]");
-				System.out.println("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]");
-				System.out.println("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]");
-				System.out.println("");
-			}else if (Math.abs(unit012.dot(gridNormal)-1.0)>1e-8){
-				System.out.println("");
-				System.out.println("triangles contradict grid normal");
-				System.out.println("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]");
-				System.out.println("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]");
-				System.out.println("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]");
-				System.out.println("");
+			if (this.filterCutoffFrequency<NO_SMOOTHING){
+				// after smoothing ... should point in general direction (<90 degrees).
+				if (unit012.dot(unit023)<Math.cos(maxAngleDegrees/180.0*Math.PI)){
+					StringBuffer buffer = new StringBuffer();
+					buffer.append("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]\n");
+					buffer.append("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]\n");
+					buffer.append("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]\n");
+					throw new RuntimeException("quad("+p+") on surface("+s+"): two triangles from same quad (norm1.dot(norm2)="+unit012.dot(unit023)+") are > "+maxAngleDegrees+" degrees or inner product < "+Math.cos(maxAngleDegrees/180.0*Math.PI)+":\n"+buffer.toString());
+				}else if (unit012.dot(gridNormal)<Math.cos(maxAngleDegrees/180.0*Math.PI)){
+					StringBuffer buffer = new StringBuffer();
+					buffer.append("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]\n");
+					buffer.append("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]\n");
+					buffer.append("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]\n");
+					throw new RuntimeException("quad("+p+") on surface("+s+"): quad normal compared with grid normal (norm.dot(gridNormal)="+unit012.dot(unit023)+") is > "+maxAngleDegrees+" degrees or inner product < "+Math.cos(maxAngleDegrees/180.0*Math.PI)+" from orginal staircase:\n"+buffer.toString());
+				}else{
+					//System.out.println("normals ok");
+				}
 			}else{
-				//System.out.println("normals ok");
+				// no smoothing ... both triangle normals must light up exactly
+				if (Math.abs(unit012.dot(unit023)-1.0)>1e-8){
+					StringBuffer buffer = new StringBuffer();
+					buffer.append("two triangles contradicted themselves\n");
+					buffer.append("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]\n");
+					buffer.append("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]\n");
+					buffer.append("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]\n");
+					throw new RuntimeException("two triangles from same quad have normals that are in opposite directions:\n"+buffer.toString());
+				}else if (Math.abs(unit012.dot(gridNormal)-1.0)>1e-8){
+					StringBuffer buffer = new StringBuffer();
+					buffer.append("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]\n");
+					buffer.append("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]\n");
+					buffer.append("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]\n");
+					throw new RuntimeException("triangles contradict grid normal:\n"+buffer.toString());
+				}else{
+					//System.out.println("normals ok");
+				}
+
 			}
 		}
 	}	

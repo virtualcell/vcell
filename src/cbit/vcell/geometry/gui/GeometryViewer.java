@@ -15,6 +15,8 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -25,10 +27,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.vcell.util.ISize;
+import org.vcell.util.State;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ZEnforcer;
@@ -37,8 +42,11 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
+import cbit.image.PixelClassLimitException;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
+import cbit.image.VCPixelClass;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -49,8 +57,17 @@ import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.surface.RayCaster;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
@@ -69,6 +86,7 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	private ResolvedLocationTablePanel resolvedLocationTablePanel = null;
 	
 	private JButton ivjJButtonReplace = null;
+	private JButton resampleButton = null;
     protected transient ActionListener actionListener = null;
 	private GeometryOwner geometryOwner = null;
 	private JMenuItem newGeometryMenuItem = null;
@@ -78,6 +96,11 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	public static final String REPLACE_GEOMETRY_SPATIAL_LABEL = "Replace Geometry";
 	public static final String REPLACE_GEOMETRY_NONSPATIAL_LABEL = "Add Geometry";
 	private boolean bShowReplaceButton = true;
+	
+	public static boolean debug_bShowResampleButton = false;
+	public static boolean debug_bCheckPolygonQuality = false;
+	public static double debug_maxQuadAngle = 180;
+	public static Double debug_filterCutoffFrequencyOverride = null;
 
 /**
  * Constructor
@@ -104,6 +127,13 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		refireActionPerformed(e);
 	} else if (e.getSource() == getJButtonReplace()) {
 		getPopupMenu().show(getJButtonReplace(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
+	} else if (e.getSource() == getResampleButton()) {
+		try {
+			resample();
+		} catch (Exception e2) {
+			e2.printStackTrace();
+			DialogUtils.showErrorDialog(GeometryViewer.this, e2.getMessage(), e2);
+		}
 	}else if (e.getSource() == getJButtonExport()) {
 		exportGeometry();
 //		getPopupMenuExport().show(getJButtonExport(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
@@ -112,6 +142,79 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 //		exportGeometry(e.getActionCommand());
 //	}
 }
+
+private void resample(){
+	AsynchClientTask precomputeCurrentGeometryTask = new AsynchClientTask("computing surfaces for existing geometry",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (getGeometry().getGeometrySurfaceDescription().getRegionImage()==null){
+				getGeometry().precomputeAll(true,true);
+			}
+		}
+	};
+	AsynchClientTask sampleSizeTask = new AsynchClientTask("specify sample size",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			VCImage currSampledImage = getGeometry().getGeometrySpec().getSampledImage().getCurrentValue();
+			int currNumSamples = currSampledImage.getNumXYZ();
+			
+			ISize currSize = new ISize(currSampledImage.getNumX(),currSampledImage.getNumY(),currSampledImage.getNumZ());
+			ISize sampleSize_times_ten = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), currNumSamples*10);
+			ISize sampleSize_div_ten = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), currNumSamples/10);
+			ISize sampleSize_1e2 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e2);
+			ISize sampleSize_1e3 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e3);
+			ISize sampleSize_1e4 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e4);
+			ISize sampleSize_1e5 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e5);
+			ISize sampleSize_1e6 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e6);
+			ISize sampleSize_1e7 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e7);
+			ISize sampleSize_1e8 = GeometrySpec.calulateResetSamplingSize(3, getGeometry().getExtent(), (int)1e8);
+			
+			String[] columnNames = new String[] { "description","num samples", "(X,Y,Z)" };
+			Object[][] rowData = new Object[][] { 
+					new Object[] { "same size",				new Integer(currSize.getXYZ()),				currSize },
+					new Object[] { "10 times smaller",		new Integer(sampleSize_div_ten.getXYZ()),	sampleSize_div_ten },
+					new Object[] { "10 times bigger",		new Integer(sampleSize_times_ten.getXYZ()),	sampleSize_times_ten },
+					new Object[] { "        100 samples",	new Integer(sampleSize_1e2.getXYZ()),		sampleSize_1e2 },
+					new Object[] { "      1,000 samples",	new Integer(sampleSize_1e3.getXYZ()),		sampleSize_1e3 },
+					new Object[] { "     10,000 samples",	new Integer(sampleSize_1e4.getXYZ()),		sampleSize_1e4 },
+					new Object[] { "    100,000 samples",	new Integer(sampleSize_1e5.getXYZ()),		sampleSize_1e5 },
+					new Object[] { "  1,000,000 samples",	new Integer(sampleSize_1e6.getXYZ()),		sampleSize_1e6 },
+					new Object[] { " 10,000,000 samples",	new Integer(sampleSize_1e7.getXYZ()),		sampleSize_1e7 },
+					new Object[] { "100,000,000 samples",	new Integer(sampleSize_1e8.getXYZ()),		sampleSize_1e8 },
+			};
+			
+			int[] selectedRows = DialogUtils.showComponentOKCancelTableList(GeometryViewer.this, "sample size", columnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
+			ISize sampleSize = (ISize)rowData[selectedRows[0]][2];
+			hashTable.put("sampleSize", sampleSize);
+		}
+	};
+	AsynchClientTask resampleTask = new AsynchClientTask("resample geometry",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			ISize sampleSize = (ISize)hashTable.get("sampleSize");
+			Geometry newGeometry = RayCaster.resampleGeometry(getGeometry(), sampleSize);
+			hashTable.put("newGeometry", newGeometry);
+		}
+	};
+	AsynchClientTask setGeometryTask = new AsynchClientTask("loading geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry newGeometry = (Geometry)hashTable.get("newGeometry");
+			if (getGeometryOwner() instanceof SimulationContext){
+				((SimulationContext)getGeometryOwner()).setGeometry(newGeometry);
+			}else if (getGeometryOwner() instanceof MathModel){
+				((MathModel)getGeometryOwner()).getMathDescription().setGeometry(newGeometry);
+			}else{
+				throw new RuntimeException("unexpected geometry owner, could not set resampled geometry");
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{ precomputeCurrentGeometryTask, sampleSizeTask, resampleTask, setGeometryTask },false);
+}
+
 
 private void exportGeometry(/*String exportType*/){
 	AsynchClientTask computeSurface = new AsynchClientTask("computing Surface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -347,6 +450,7 @@ private void initConnections() throws java.lang.Exception {
 	getJButtonChangeDomain().addActionListener(this);
 	getImagePlaneManagerPanel1().setCurveRenderer(getCurveRendererGeometry1());
 	tabbedPane.addChangeListener(this);
+	getResampleButton().addActionListener(this);
 	getJButtonReplace().addActionListener(this);
 	getJButtonExport().addActionListener(this);
 }
@@ -406,6 +510,14 @@ private void initialize() {
 		gbcr.insets = new java.awt.Insets(2, 0, 0, 2);
 		topHeader.add(getJButtonReplace(), gbcr);
 		getJButtonReplace().setVisible(bShowReplaceButton);
+
+		java.awt.GridBagConstraints gbcr2 = new java.awt.GridBagConstraints();
+		gbcr2.gridx = 5; gbcr2.gridy = 0;
+		gbcr2.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbcr2.insets = new java.awt.Insets(2, 0, 0, 2);
+		if (debug_bShowResampleButton){
+			topHeader.add(getResampleButton(), gbcr2);
+		}
 
 		java.awt.GridBagConstraints constraintsGeometrySubVolumePanel = new java.awt.GridBagConstraints();
 		constraintsGeometrySubVolumePanel.weightx = 1.0;
@@ -604,6 +716,17 @@ private javax.swing.JButton getJButtonReplace() {
 		}
 	}
 	return ivjJButtonReplace;
+}
+
+private javax.swing.JButton getResampleButton() {
+	if (resampleButton == null) {
+		try {
+			resampleButton = new javax.swing.JButton("resample");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return resampleButton;
 }
 
 private JButton ivjJButtonExport;

@@ -95,4 +95,8 @@ public int getPixel() {
 public String getPixelClassName() {
 	return pixelClassName;
 }
+
+public String toString(){
+	return "VCPixelClass('"+pixelClassName+"',pixel="+pixel+", key="+key+")";
+}
 }
