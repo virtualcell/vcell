@@ -632,9 +632,8 @@ public class DocumentCompiler {
 			 File defXmlFile = getTargetFile(targetDef.getSourceFile());
 			 File htmlFile = new File(defXmlFile.getPath().replace(".xml",".html"));
 			 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
-			 pw.println("<br><br>");
 			 pw.println("<a href=\""+relativePathToTarget+"#" + targetDef.getTarget()+ "\">");
-			 pw.print(defReference.getText() + "</a>");
+			 pw.print("<i>" + defReference.getText() + "</i></a>");
 		 }else if (docComp instanceof DocList){
 			 pw.print("<ul>");
 			 for (DocTextComponent comp : docComp.getComponents()){
