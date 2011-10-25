@@ -80,6 +80,8 @@
    		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
     			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
    				<tocitem target="SpatialSimResultsViewer" text="Spatial Simulation Results Viewer"/>		   
+    			<tocitem target="SimCompartmentResults" text="Compartment Simulation Results Viewer"/>
+
    			</tocitem>
         </tocitem>
     	
