@@ -14,7 +14,7 @@
 	<operations>
 	<para>
 	<bold>Protocols</bold> can be accessed by clicking the <bold>Protocols</bold> item under any <bold>Application</bold> in the 'Navigation' panel tree structure. 
-	This selects the <bold>Protocols</bold> tab for the application in the 'View' panel on the right. This 'Protocols' tab has the following 2 sub-tabs.
+	This selects the <bold>Protocols</bold> tab for the application in the 'View' panel on the right. The 'Protocols' tab has the following 2 sub-tabs.
 	</para>  
 	<list>
 		<item> <link target="Events">Events</link> </item>

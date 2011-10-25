@@ -42,9 +42,10 @@
 	</appearance>
 	
 	<operations>
+	<para> <bold>Viewing/Editing Events</bold></para>
 	<para>
 	In the Virtual Cell, an event can be specified in the <bold>Protocols</bold> section of an application. 
-	This can be accessed by selecting the 'Protocols' item under the application node in the Navigation panel.
+	This can be accessed by selecting the 'Protocols' item under the application node in the Navigation panel tree structure.
 	This displays the application in the <bold>View</bold> panel on the right, with the <bold>Protocols</bold> tab selected. 
 	Selecting the <bold>Events</bold> tab in the 'Protocols' tab displays the events in the application. 
 	If events exist in the application, the summary of the events (name, trigger and delay expressions, variables that have event assignments) are listed in a table in the 'View' panel. 
@@ -61,7 +62,7 @@
 	Clicking an individual event in the summary table displays the selected event in the lower <bold>Properties Panel</bold>. 
 	The <bold>Trigger</bold> expression and <bold>Delay</bold> expression are displayed in editable text fields. 
 	The trigger expression cannot be blank and there must be at least one <bold>Event assignment</bold> for an event to be valid. 
-	The checkbox <bold>use Values at Trigger Time</bold> is a flag that indicates the time at which the event assignments of the event have to be evaluated. 
+	The checkbox <bold>Use Values at Trigger Time</bold> is a flag that indicates the time at which the event assignments of the event have to be evaluated. 
 	If the checkbox is checked, the event assignments are computed at the instant the event is triggered/fired, not after the delay duration (if delay is defined). 
 	If the checkbox is not checked, the assignment expressions are evaluated after the delay duration, i.e., at the instant the event is executed. 
 	Note that if no delay expression is specified, the checkbox has to be checked. 
