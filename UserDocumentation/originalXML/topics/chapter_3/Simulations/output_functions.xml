@@ -15,7 +15,7 @@
 
 	
 	<introduction> 
-	<para>Output functions are user defined observables for simulation results in a biomodel application or in a math model, 
+	<para>Output functions are user defined functions for simulation results in a biomodel application or in a math model, 
 	and they are saved with the model and available for viewing in all simulations in the containing application or math model.</para> 
 	
 	<para>Output functions are defined as vcell expressions. Symbols that can be used in the expression of a output function are:</para>	
