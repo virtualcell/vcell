@@ -7,7 +7,7 @@
 	<para>
 	<bold>Electrical Mapping</bold> in the Virtual Cell allows the user to model cell electrophysiology. 
 	Electrical Mapping specifies the Membrane Potential Options and Electrical Stimulus that can be applied to flux reactions.
-	Electrical Mapping is available in both spatial and compartmental models. In compartmental models one cannot specify clamp or electrode position.
+	Electrical Mapping is available in both spatial and compartmental models. In compartmental models one cannot specify electrode clamp.
 	</para>
 	</introduction>
 	
@@ -16,8 +16,9 @@
 	</appearance>
 	
 	<operations>
+	<para> <bold>Viewing/Editing Electrical Mapping</bold></para>
 	<para>
-	Electrical mapping can be accessed by choosing the 'Protocols' item in any application in the 'Navigation' panel tree. This opens the 'Protocols' tab in the 'View' panel on the right.
+	Electrical mapping can be accessed by choosing the 'Protocols' item in any application in the 'Navigation' panel tree structure. This opens the 'Protocols' tab in the 'View' panel on the right.
 	In this tab, choosing the <bold>Electrical</bold> tab allows the user to view/edit electrical mapping parameters for the application. 
 	</para>
 	
