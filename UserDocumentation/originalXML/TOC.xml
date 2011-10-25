@@ -77,7 +77,7 @@
     			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
    				<tocitem target="SpatialSimResultsViewer" text="Spatial Simulation Results Viewer"/>		   
     			<tocitem target="SimCompartmentResults" text="Compartment Simulation Results Viewer"/>
-
+				<tocitem target="ExportingSimResults" text="Exporting Simulation Results"/>
    			</tocitem>
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
