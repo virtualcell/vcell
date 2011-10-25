@@ -1385,17 +1385,17 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		}
 		
 		// write compartment
-		printWriter.println("# bounding wall compartment");
-		printWriter.println(SmoldynKeyword.start_compartment + " " + VCellSmoldynKeyword.bounding_wall_compartment);
-		printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
-		if (dimension > 1) {
-			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
-			if (dimension > 2) {
-				printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-			}
-		}
-		printWriter.println(SmoldynKeyword.end_compartment);
-		printWriter.println();
+//		printWriter.println("# bounding wall compartment");
+//		printWriter.println(SmoldynKeyword.start_compartment + " " + VCellSmoldynKeyword.bounding_wall_compartment);
+//		printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+//		if (dimension > 1) {
+//			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+//			if (dimension > 2) {
+//				printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+//			}
+//		}
+//		printWriter.println(SmoldynKeyword.end_compartment);
+//		printWriter.println();
 	}
 	
 	MeshSpecification meshSpecification = simulation.getMeshSpecification();
