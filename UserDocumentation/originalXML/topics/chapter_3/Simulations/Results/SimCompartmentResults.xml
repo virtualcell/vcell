@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vcelldoc>
+<page title="Compartment Simulation Results Viewer">
+
+	
+	<introduction>
+	
+Simulation displays results as a graph (Plot) or a table of the values (Values). Use the toggle buttons to switch between Plot and Values views. The default view is Plot of a single variable from the model on the Y axis against time on the X axis. Results from Stochastic multi-trial simulations are displayed as a histogram.
+
+		</introduction>
+		
+	<appearance>  
+		<imgReference target = "SimResultsNonSpatialODE.png"/>
+	</appearance>
+
+	
+	<operations>  </operations>
+	
+</page>
+
+</vcelldoc>
