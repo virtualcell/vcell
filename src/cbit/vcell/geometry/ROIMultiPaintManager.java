@@ -1159,7 +1159,82 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			pickImgROI((SelectImgInfo)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CONVERTDOMAIN_PROPERTY)){
 			convertDomain((Integer)evt.getNewValue(),(RegionInfo[])evt.getOldValue());
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SEPARATE_PROPERTY)){
+			updateUndo(UNDO_INIT.ALLZ);
+			separateDomains();
+			updateUndoAfter(true);
 		}
+	}
+	
+	private class NeighborLocation{
+		public int zslice;
+		public int xyIndex;
+		public NeighborLocation(int zslice, int xyIndex) {
+			this.zslice = zslice;
+			this.xyIndex = xyIndex;
+		}
+	}
+	enum NEIGHBORS {ZM,ZP,YM,YP,XM,XP};
+	private void separateDomains(){
+//		ROI highlight = overlayEditorPanelJAI.getHighliteInfo();
+//		if(highlight == null){
+//			DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Must select domain region(s) before separating.");
+//			return;
+//		}
+		int width = roiComposite[0].getWidth();
+		for (int z = 0; z < roiComposite.length; z++) {
+			byte[] sliceData = ((DataBufferByte)roiComposite[z].getRaster().getDataBuffer()).getData();
+//			short[] selectedPixels = highlight.getRoiImages()[z].getPixels();
+			for (int y = 0; y < roiComposite[0].getHeight(); y++) {
+				for (int x = 0; x < roiComposite[0].getWidth(); x++) {
+					byte currentByte = sliceData[y*width+x];
+					if(currentByte != 0/* && selectedPixels[y*width+x] != 0*/){
+						for(NEIGHBORS neighbors : NEIGHBORS.values()){
+							NeighborLocation neighborLocation = getNeighborIndex(x,y,z,neighbors);
+							if(neighborLocation != null){
+								byte neighborByte = ((DataBufferByte)roiComposite[neighborLocation.zslice].getRaster().getDataBuffer()).getData()[neighborLocation.xyIndex];
+								if(neighborByte != 0 && neighborByte != currentByte){
+//									((DataBufferByte)roiComposite[neighborLocation.zslice].getRaster().getDataBuffer()).getData()[neighborLocation.xyIndex] = 0;
+									((DataBufferByte)roiComposite[z].getRaster().getDataBuffer()).getData()[y*width+x] = 0;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	private NeighborLocation getNeighborIndex(int x,int y, int z,NEIGHBORS neighbor){
+		int width = roiComposite[0].getWidth();
+		int height = roiComposite[0].getHeight();
+		NeighborLocation neighborLocation = null;
+		if(neighbor == NEIGHBORS.ZM){
+			if(z > 0){
+				neighborLocation = new NeighborLocation(z-1, y*width+x);
+			}
+		}else if(neighbor == NEIGHBORS.ZP){
+			if(z<roiComposite.length-1){
+				neighborLocation = new NeighborLocation(z+1, y*width+x);
+			}
+		}else if(neighbor == NEIGHBORS.YM){
+			if(y > 0){
+				neighborLocation = new NeighborLocation(z, (y-1)*width+x);
+			}
+		}else if(neighbor == NEIGHBORS.YP){
+			if(y < height-1){
+				neighborLocation = new NeighborLocation(z, (y+1)*width+x);
+			}
+		}else if(neighbor == NEIGHBORS.XM){
+			if(x > 0){
+				neighborLocation = new NeighborLocation(z, y*width+x-1);
+			}
+		}else if(neighbor == NEIGHBORS.XP){
+			if(x < width-1){
+				neighborLocation = new NeighborLocation(z, y*width+x+1);
+			}
+		}
+		return neighborLocation;
 	}
 	private void convertDomain(int convertToContrastIndex,RegionInfo[] selectedRegionInfos){
 		if(selectedRegionInfos == null || selectedRegionInfos.length == 0){

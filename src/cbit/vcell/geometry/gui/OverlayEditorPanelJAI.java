@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -385,6 +386,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_FINDROI_PROPERTY = "FRAP_DATA_FINDROI_PROPERTY";
 	public static final String FRAP_DATA_SELECTIMGROI_PROPERTY = "FRAP_DATA_SELECTIMGROI_PROPERTY";
 	public static final String FRAP_DATA_CONVERTDOMAIN_PROPERTY = "FRAP_DATA_CONVERTDOMAIN_PROPERTY";
+	public static final String FRAP_DATA_SEPARATE_PROPERTY = "FRAP_DATA_SEPARATE_PROPERTY";
 
 	//scale factors
 	public static final double DEFAULT_SCALE_FACTOR = 1.0;
@@ -1365,6 +1367,18 @@ public class OverlayEditorPanelJAI extends JPanel{
 		this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
 		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo" );
 		//comp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Redo" );//redo, to be impl
+		
+		this.getActionMap().put("Cibele_sep",
+			    new AbstractAction("Cibele_sep") {
+			        public void actionPerformed(ActionEvent evt) {
+			            OverlayEditorPanelJAI.this.firePropertyChange(FRAP_DATA_SEPARATE_PROPERTY, null, null);
+			        }
+			   }
+		);
+		this.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
+		this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
+		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
+
 	}
 	public void resolvedSelectionChange(ROIMultiPaintManager.SELECT_FUNC selectFunc,int index){
 		if(selectFunc == ROIMultiPaintManager.SELECT_FUNC.ADD){
