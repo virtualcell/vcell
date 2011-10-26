@@ -647,6 +647,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (deleteList.size() == 0) {
 				return;
 			}
+			for (Object object : deleteList) {
+				if(object instanceof Membrane){
+					DialogUtils.showWarningDialog(this, "Cannot delete Membranes explicitly, to delete a membrane select its enclosed compartment.");
+					return;
+				}
+			}
 			StringBuilder deleteListText = new StringBuilder();
 			for (Object object : deleteList) {
 				if (object instanceof SpeciesContext) {
@@ -657,6 +663,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
+			
 			String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;
