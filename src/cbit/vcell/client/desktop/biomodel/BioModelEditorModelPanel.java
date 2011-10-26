@@ -641,6 +641,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (deleteList.size() == 0) {
 				return;
 			}
+			for (Object object : deleteList) {
+				if(object instanceof Membrane){
+					DialogUtils.showWarningDialog(this, "Cannot delete Membranes explicitly, to delete a membrane select its enclosed compartment.");
+					return;
+				}
+			}
 			StringBuilder deleteListText = new StringBuilder();
 			for (Object object : deleteList) {
 				if (object instanceof SpeciesContext) {
