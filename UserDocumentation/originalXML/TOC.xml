@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
 	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
-	    <tocitem target="GeneralOverview" text="VCell Overview">
-    		<tocitem target="General" text="General"/>
+	    <tocitem target="GeneralOverview" text="Introduction">
+    		<tocitem target="General" text="Overview"/>
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
     		<tocitem target="File" text="File Menu">
