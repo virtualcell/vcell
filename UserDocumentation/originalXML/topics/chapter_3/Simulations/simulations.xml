@@ -77,6 +77,7 @@
 	<item>Edit</item>
 	Opens the <link target = "simulationEditor">Simulation Editor</link> with additional runtime features required to complete a simulation: Parameters, Mesh, and Advanced tabs.
 	<item>Delete</item>
+	Deletes a selected simulation. 
 	</list>
 	
 	<para>On the Right:</para>
@@ -92,6 +93,7 @@
 	more useful when the simulation has parameter scans, where it will show the status of all the sub
 	simulations.
 	<item>Quick Run</item>
+	Allows user to run completely on local.
 	</list>
 	
 	</operations>
