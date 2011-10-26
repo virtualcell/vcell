@@ -359,6 +359,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	if (bUseMessaging) {
 		writeJms(simulation);
 	}
+	writeSimulationSettings();
 	writeSpecies();	
 	writeDiffusions();
 	writeGraphicsOpenGL();
@@ -367,18 +368,17 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeMolecules();	
 	writeSimulationTimes();
 	writeRuntimeCommands();
-	writeSimulationSettings();
 	printWriter.println(SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 }
 
 private void writeSimulationSettings() {
 	printWriter.println("# simulation settings");
+	printWriter.println(SmoldynKeyword.rand_seed + " " + randomSeed);
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
 	printWriter.println(SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
 	printWriter.println(SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
 	
-	printWriter.println(SmoldynKeyword.rand_seed + " " + randomSeed);
 	printWriter.println();
 }
 
