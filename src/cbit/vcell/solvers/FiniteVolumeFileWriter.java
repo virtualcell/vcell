@@ -47,6 +47,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRandomVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -83,12 +84,9 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFileWriter;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -141,6 +139,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SIMULATION_PARAM_END,
 		
 		VOLUME_PARTICLE,
+		MEMBRANE_PARTICLE,
 		
 		SMOLDYN_BEGIN,
 		SMOLDYN_INPUT_FILE,
@@ -1176,6 +1175,8 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			}
 		} else if (vars[i] instanceof VolumeParticleVariable) {
 			printWriter.println(FVInputFileKeyword.VOLUME_PARTICLE + " " + varName + " " + domainName);
+		} else if (vars[i] instanceof MembraneParticleVariable) {
+			printWriter.println(FVInputFileKeyword.MEMBRANE_PARTICLE + " " + varName + " " + domainName);
 		} else if (vars[i] instanceof VolumeRegionVariable) {
 			printWriter.println("VOLUME_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof MemVariable) {
