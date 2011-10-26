@@ -351,6 +351,9 @@ private void init() throws SolverException {
 	Variable[] variables = simulationSymbolTable.getVariables();
 	for (Variable variable : variables) {
 		if (variable instanceof ParticleVariable) {
+			if (variable.getDomain() == null) {
+				throw new SolverException("Particle Variables are required to be defined in a subdomain using syntax Subdomain::Variable.");
+			}
 			particleVariableList.add((ParticleVariable)variable);
 		}
 	}	
@@ -387,7 +390,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSpecies();	
 	writeDiffusions();
 	writeGraphicsOpenGL();
-	writeHighResVolumeSamples();
+//	writeHighResVolumeSamples();
 	writeSurfacesAndCompartments();	
 	writeReactions();
 	writeMolecules();	
@@ -534,9 +537,8 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			printWriter.println();
 			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.numMembraneElements + " " + cartesianMesh.getNumMembraneElements());
 			for (ParticleVariable pv : particleVariableList) {
-				String domainName = pv.getDomain().getName();
-				String type = simulation.getMathDescription().getCompartmentSubDomain(domainName) == null ? VCellSmoldynKeyword.membrane.name() : VCellSmoldynKeyword.volume.name();
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.variable + " " + pv.getName() + " " + type + " " + domainName);
+				String type = pv instanceof MembraneParticleVariable ? VCellSmoldynKeyword.membrane.name() : VCellSmoldynKeyword.volume.name();
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.variable + " " + pv.getName() + " " + type + " " + pv.getDomain().getName());
 			}
 			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " end");
 		} else {

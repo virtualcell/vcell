@@ -292,27 +292,8 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	//
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
-		SolverDescription[] solverDescriptions = new SolverDescription[0];
-		if (getSolverTaskDescription().getSimulation().isSpatial()) 
-		{
-			if (getSolverTaskDescription().getSimulation().getMathDescription().isSpatialStoch()) {
-				solverDescriptions = SolverDescription.getSpatialStochasticSolverDescriptions();
-			} else {
-				if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // PDE with FastSystem
-					solverDescriptions = SolverDescription.getPDEWithFastSystemSolverDescriptions();
-				} else {
-					solverDescriptions = SolverDescription.getPDESolverDescriptions();
-				}
-			}
-		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch()) {
-			solverDescriptions = SolverDescription.getStochasticNonSpatialSolverDescriptions();
-		} else {
-			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // ODE with FastSystem
-				solverDescriptions = SolverDescription.getODEWithFastSystemSolverDescriptions();
-			} else {
-				solverDescriptions = SolverDescription.getODESolverDescriptions();
-			}
-		}
+		MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
+		SolverDescription[] solverDescriptions = SolverDescription.getSupportingSolverDescriptions(mathDescription);		
 		for (int i = 0; i < solverDescriptions.length; i++) {
 			fieldSolverComboBoxModel.addElement(solverDescriptions[i].getDisplayLabel());
 		}
