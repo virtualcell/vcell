@@ -3,94 +3,88 @@
 <page title="Reactions Diagram View" target="ReactDiagView">
 
 	<introduction> 
-	The reaction diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each placed into their
+	The reaction diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
 	compartments, and connected by lines showing which species participates in which reaction.
 	</introduction>
 	
 	<appearance> 
-	<para>
-	<imgReference target = "ReactDiagView.png"/>
-	The compartments are shown as a row of white rectangles before a gray background, connected into one large rectangle. 
+	<imgReference target = "ReactDiagView.png"/> 
+	<para> 
+	Compartments are depicted as connected rectangles, with membrane compartments separating adjacent volume compartments. 
 	Species are green balls and reactions are yellow squares placed into the compartments. Lines each connect one 
-	species with one reaction in which it participates: solid lines with arrows denote reactants and products, distinguished by
-	the direction of the arrow. Dashed lines denote catalysts. Stoichiometric coefficients, if different from one, are displayed
-	next to the appropriate lines.
+	species with one reaction: solid lines with arrows denote reactants and products; dashed lines denote catalysts. 
+	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines.
 	</para>
 	<para>
-	The toolbar on top of the graph shows the following groups of buttons (from left to right): first the select mode button, then
-	a group of graph element buttons (species, reactant/product, catalyst), then the group of zoom buttons (in, out) and then a
-	group of automatic layout buttons (random, circular, anneal, level, relax, generic logic).
+	A toolbar above the graph provides buttons for editing, adjusting zoom, and changing the layout of the elements.
 	</para>
 	<para>
-	The toolbar at the bottom of the graph contains (left to right): a search text field, a delete button and a pathway links button.
+	A toolbar at the bottom of graph provides a means to search a text field, delete items, or search for pathways using the <link target= "PathwayOverview"> Pathway Links </link>.
 	</para>
 	</appearance>
 	
 	<operations> 
 	<para>
-	The mode buttons switch between different modes, each with a different set of available mouse operations:
+	The tool bar above the graph provides tools for creating and editing species, reactions, and fluxes; selecting the tool alters the
+	function of the mouse as described below.
 	  <list>
 	    <item>
-	    In <bold>selection mode</bold>, graph nodes and edges can be selected and de-selected. Select a single element 
-	    by mouse click. Mouse drag selects all graph nodes within a rectangular area spanned by the drag. Mouse clicks while 
-	    holding the shift key add elements to the selection. Mouse clicks while holding the control key toggles selection of elements.
+	    The arrow enables <bold>selection mode</bold>. Species (graph nodes) and connecting lines (edges) can be selected 
+	    by mouse click, or drag the mouse to select multiple components. Add elements to the selection using the shift key
+	    with the left mouse button, toggle the selection using the control key.
 	    </item>
 	    <item>
-	    In <bold>species creation mode</bold>, new species can be created by mouse click. Preliminary names for species are generated
-	    automatically, but can be changed immediately in the species property panel.
+	    The green ball <bold> enables adding new species </bold> by clicking within a compartment. Preliminary names for species are generated
+	    automatically, but can be changed immediately in the <link target= "PP_Species"> species property panel </link>.
 	    </item>
 	    <item>
-	    In <bold>reactant/product creation mode</bold>, a mouse drag can be used to assign 
-	    reactant or product roles by connecting either existing species or reactions or by creating new ones. The direction of the drag
-	    determines whether reactant or product role is assigned (e.g. dragging from species to reaction creates a reactant role, 
-	    while the reverse direction creates a product role). The action is subject to constraints (e.g. a reaction in a feature 
-	    can not have participants on a membrane) and does nothing if constraints would be violated.
-	    Dragging across a membrane creates a flux if it is from species to 
-	    empty space, 
-	    or the reverse, or form empty space to empty space, or between two species known to be of the same type (this feature
-	    may disappear). Otherwise, dragging from species to species or reaction to reaction
-	    creates an intermediary reaction or species, respectively; and dragging between a species or reaction and empty space creates
-	    a reaction or species respectively.
+	    The solid line with arrow enables one to <bold>create reactants/products</bold> of a reaction or membrane flux.  
+	    Drag the mouse drag to assign reactant or product roles by connecting species or reactions. The direction of 
+	    the drag determines whether a reactant or product role is assigned (e.g. dragging from species to reaction 
+	    creates a reactant role, dragging from reaction to species creates a product role). No relationship is created 
+	    if VCell constraints would be violated, e.g. two reactants cannot be in different volume compartments. 
+	    <bold> Create a reaction</bold> by dragging from species to species (or open space) <bold>Create an intermediary 
+	    species </bold> by dragging from reaction to reaction (or open space). <bold>Create a membrane flux</bold> by 
+	    dragging from a species across a membrane to empty space from empty space to empty space (a species will be 
+	    created in both volume compartments), or between the equivalent species in separate volume compartments.
 	    </item>
 	    <item>
-	    In <bold>catalyst creation mode</bold>, a mouse drag can be used to assign a catalyst role by connecting a species 
-	    and a reaction. The direction is irrelevant. Connecting a species with empty space creates a new reaction and vice versa.
+	    The dotted line <bold>creates a catalyst</bold>, by dragging from a species to a reaction or vice versa. Connecting a species with
+	    empty space creates a new reaction and connecting a reaction to empty space creates a new species.
 	    </item>
 	    <item>
 	    The <bold>zoom in</bold> and <bold>zoom out</bold> buttons vary the magnification of the diagram.
 	    </item>
 	    <item>
-	    The <bold>layout buttons</bold> perform automatic layout which means each node will be assigned a new position. 
-	    The left-most places each node randomly, the next places nodes in an ellipse within each compartment. The fourth
-	    tries to arrange nodes in a way that most lines point downwards. The others are more complex, but generally tend to make lines
-	    shorter and more similar to each other in lengths and nodes more evenly places across the compartments.
+	    The <bold>layout buttons</bold> automatically arrange the components (graph elements) by different algorithms. 
+	    These include (from left to right) random, within an ellipse within each compartment, so that most lines point downward, to make lines
+	    shorter and more similar to each other in lengths, and to place nodes more evenly across each compartment.
 	    </item>
       </list>
 	</para>
 	<para>
-	The <bold>search text field</bold> allows to type a search string and cause those elements to be selected which have attributes
-	that match the search string.
+	The <bold>search text field</bold> allows the user to select multiple components that have a similar name.
 	</para>
 	<para>
-	The <bold>delete button</bold> deletes selected elements, if possible. Delete can fail if other objects depends on
-	objects to be deleted (e.g. you can not delete a species if it participated in a reaction, unless you delete the reaction first).
+	The <bold>delete button</bold> deletes selected elements. Delete will fail if a species is connected to a reaction or flux; you must first
+	delete the reaction or disconnect the species from the reaction.
 	</para>
 	<para>
-	The <bold>pathway links button</bold> allows to follow links form model elements (species, reactions) to pathway elements or to 
-	edit these links.
+	The <link target="PathwayOverview"> pathway links button</link> allows the user to follow links from model elements (species, reactions or fluxes) to pathway elements, or to 
+	edit pathway links.
     </para>
-  </operations>
-	
-  <properties>
-    <para>
+   <para>
     Depending on the type of object selected, the bottom pane of the window displays a 
     <link target = "PP_Reactions">reaction</link>, 
     <link target = "PP_MemFlux">structure</link>, 
     <link target = "PP_Stoichiometries">stoichiometry</link>, 
     <link target = "PP_Species">species</link> or
-    <link target = "PP_Structure">structure</link> properties pane 
+    <link target = "PP_Structures">structure</link> properties pane 
     </para>
-  </properties>
+
+  </operations>
+
+ 
 
 </page>
 
