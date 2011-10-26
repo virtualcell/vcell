@@ -9,7 +9,7 @@ co-exist within a cell and they are quite elaborate because of the many
 participants involved.
 <para></para>
 We are providing a way of bringing the wealth of information contained in major 
-pathway databases into your model - as a way of speed up the process of building 
+pathway databases into your model - as a way to speed up the process of building 
 a biomodel and, more important, as a way of annotating vCell entities.
 <para>
 The process begins with a 
@@ -19,7 +19,7 @@ in the Pathway Commons Database - which will result in a list of pathways.
 <para>
 The chosen pathway can be  
 <link target = "PathwayImportTable"> imported in a table </link> which will display 
-physical entities and interactions (entities).
+the entities (interactions and physical entities) it consists of.
 </para>
 <para>
 Furthermore the user can choose the entities of interest and add them to a 
