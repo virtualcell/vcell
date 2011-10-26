@@ -53,14 +53,28 @@ public class ImageDatasetReader {
 			return getTimes(getImageReader(fileName));
 		}
 	}
-	public static ClientRequestManager.ImageSizeInfo getImageSizeInfo(String fileName) throws Exception{
+	public static ClientRequestManager.ImageSizeInfo getImageSizeInfo(String fileName,Integer forceZSize) throws Exception{
 		ClientRequestManager.ImageSizeInfo imageSizeInfo = null;
 		if(fileName.toUpperCase().endsWith(".ZIP")){
+			if(forceZSize != null){
+				throw new RuntimeException("ZIP file unexpected forceZSize");
+			}
 			ImageDataset[] imageDatasets  =  readZipFile(fileName, false, false,null);
-			imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName, imageDatasets[0].getISize(), imageDatasets.length,new double[] {0.0},0);
+			ZipFile zipFile = null;
+			try{
+				zipFile = new ZipFile(new File(fileName),ZipFile.OPEN_READ);
+				ISize iSize = new ISize(imageDatasets[0].getISize().getX(), imageDatasets[0].getISize().getY(), zipFile.size());
+				imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName,iSize, imageDatasets.length,new double[] {0.0},0);				
+			}finally{
+				if(zipFile != null){
+					try{zipFile.close();}catch(Exception e){e.printStackTrace();/*ignore and continue*/}
+				}
+			}
 		}else{
 			ImageReader imageReader = getImageReader(fileName);
-			imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName, getDomainInfo(imageReader).getiSize(),imageReader.getSizeC(),getTimes(imageReader),0);
+			DomainInfo domainInfo = getDomainInfo(imageReader);
+			ISize iSize = (forceZSize == null?domainInfo.getiSize():new ISize(domainInfo.getiSize().getX(), domainInfo.getiSize().getY(), forceZSize));
+			imageSizeInfo = new ClientRequestManager.ImageSizeInfo(fileName, iSize,imageReader.getSizeC(),getTimes(imageReader),0);
 		}
 		return imageSizeInfo;
 	}
