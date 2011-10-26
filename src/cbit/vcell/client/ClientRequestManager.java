@@ -1119,7 +1119,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
 							if(dirFiles.length > 1){
-								origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(dirFiles[0].getAbsolutePath());
+								origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
 								final String importZ = "Import Z-Sections";
 								final String cancelOption = "Cancel";
 								String result = DialogUtils.showWarningDialog(guiParent, 
@@ -1131,7 +1131,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(DIR_FILES, dirFiles);
 						}else{
-							origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(imageFile.getAbsolutePath());
+							origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(imageFile.getAbsolutePath(),null);
 							hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 						}
 						hashTable.put(ORIG_IMAGE_SIZE_INFO, origImageSizeInfo);
