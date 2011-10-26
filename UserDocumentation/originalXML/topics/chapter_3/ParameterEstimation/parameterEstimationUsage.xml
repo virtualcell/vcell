@@ -18,10 +18,8 @@
 	On top of the "Parameter Esimation" tab, click “New…” button. A window will pop up to prompt you to enter a name for the new task. After
 you click “OK”, the newly created task will show up in the drop down menu named "Select a Task". 
 	</para>
-	<para>
-	<imgReference target = "pe_new.gif"/>
-	</para>
-	
+	<para><imgReference target = "pe_new.gif"/></para>
+	<para></para>
 	<item>
 	<bold>Add parameter to be estimated</bold>
 	</item>
@@ -29,9 +27,8 @@ you click “OK”, the newly created task will show up in the drop down menu na
 	Click on the "Parameters" tab under "Parameter Estimation". You can add parameters you want to be estimated by clicking the "add parameters" button.
 	A "Select Parameters" window will pop up. You then can select one or more parameters (use "control" or "shift" + mouse click) in the window. 
 	</para>
-	<para>
-	<imgReference target = "pe_addParameter.gif"/>.
-	</para>
+	<para><imgReference target = "pe_addParameter.gif"/></para>
+	<para></para>
 	<para>
 	Click on the "OK" button. The selected parameters will show up in a table. In this table, you can change initial guess, lower
 	and upper bounds of the parameters just by double clicking the corresponding table cells. 
@@ -39,7 +36,7 @@ you click “OK”, the newly created task will show up in the drop down menu na
 	<para>
 	<imgReference target = "pe_parameterTable.gif"/>
 	</para>
-	
+	<para></para>
 	<item>
 	<bold>Set up Reference Data</bold>
 	</item>
@@ -61,7 +58,7 @@ plot view or table in data view in the Reference Data tab.
 	<para>
 	<imgReference target = "pe_mapData.gif"/>
 	</para>
-	
+	<para></para>
 	<item>
 	<bold>Run Parameter Estimation</bold>
 	</item>
@@ -83,13 +80,20 @@ plot view or table in data view in the Reference Data tab.
 	<para>
 	<imgReference target = "pe_results.gif"/>
 	</para>
-	
+	<para></para>
 	<item>
 	<bold>Change Annotation</bold>
 	</item>
 	<para>
 	At the bottom of the window, there is a property pane. you can change the name of the parameter estimation task and add an annotation, or check the problems
 	in the model.
+	</para>
+	<para></para>
+	<item>
+	<bold>Copy and delete a parameter estimation task</bold>
+	</item>
+	<para>
+	You can copy or delete a parameter estimation task by clicking “Copy…” or “Delete” button.
 	</para>
 	</list>
 	

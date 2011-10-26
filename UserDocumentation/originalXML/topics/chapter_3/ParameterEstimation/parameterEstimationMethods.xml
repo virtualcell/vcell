@@ -33,7 +33,7 @@
 	are ranked by their number of wins, and the population is again reduced to the original number of individuals
 	by eliminating those which have worse fitness (solutions).
 	</para>
-	
+	<para></para>
 	<item>Evolution Strategy (SRES)</item>
 	<para>
 	Evolutionary Strategies with Stochastic Ranking (SRES) [Runarsson00] is similar to . However, a parent
@@ -41,7 +41,7 @@
 	another parent and additional mutations. The algorithm assures that each parameter value will be within its
 	boundaries. But constraints to the solutions may be violated.
 	</para>
-	
+	<para></para>
 	<item>Genetic Algorithm</item>
 	<para>
 	The genetic algorithm (GA) [Baeck97 Baeck93 Michalewicz94 Mitchell95] is a computational technique that mimics
@@ -56,26 +56,26 @@
 	worse solutions than itself). All the individuals are ranked by their number of wins, and the population is again
 	reduced to the original number of individuals by eliminating those which have worse fitness (solutions).
 	</para>
-	
+	<para></para>
 	<item>Genetic Algorithm SR</item>
 	<para>
 	The genetic algorithm with stochastic ranking is very similar to the before described with tournament selection.
 	With two exception which are the mutations are not forced to be within the boundaries and the selection is done
 	through a bubble sort with a random factor
 	</para>
-	
+	<para></para>
 	<item>Hooke and Jeeves</item>
 	<para>
 	The method of Hooke and Jeeves is a direct search algorithm that searches for the minimum of a nonlinear function
 	without requiring (or attempting to calculate) derivatives of the function. Instead it is based on a heuristic
 	that suggests a descent direction using the values of the function calculated in a number of previous iterations.
 	</para>
-	
+	<para></para>
 	<item>Levenberg - Marquardt</item>
 	<para>
 	Levenberg-Marquardt is a gradient descent method. It is a hybrid between the steepest descent and the Newton methods.
 	</para>
-	
+	<para></para>
 	<item>Nelder - Mead</item>
 	<para>
 	This method also known as the simplex method is due to Nelder and Mead [Nelder65]. A simplex is a polytope of N+1 vertices
@@ -85,7 +85,7 @@
 	along this line. On the other hand,if this new point isn't much better than the previous value then we are stepping
 	across a valley, so we shrink the simplex towards the best point.
 	</para>
-	
+	<para></para>
 	<item>Particle Swarm</item>
 	<para>
 	The particle swarm optimization method suggested by Kennedy and Eberhart [Kennedy95] is inspired by a flock of birds
@@ -94,7 +94,7 @@
 	and the position of its best neighbor (a random subset of particles of the swarm) a new velocity is calculated. With
 	this information the position is updated.
 	</para>
-	
+	<para></para>
 	<item>Random Search</item>
 	<para>
 	Random search is an optimization method that attempts to find the optimum by testing the objective function's
@@ -105,7 +105,7 @@
 	to find the global optimum of the objective function. In general one is interested in processing a very large
 	number of iterations.
 	</para>
-	
+	<para></para>
 	<item>Simulated Annealing</item>
 	<para>
 	Simulated annealing is an optimization algorithm first proposed by Kirkpatrick et al. [Kirkpatrick83] and was
@@ -121,14 +121,14 @@
 	After a fixed number of iterations, the stopping criterion is checked; if it is not time to stop, then the
 	system's temperature is reduced and the algorithm continues.
 	</para>
-	
+	<para></para>
 	<item>Steepest Descent</item>
 	<para>
 	Steepest descent is an optimization method that follows the direction of steepest descent on the hyper-surface
 	of the objective function to find a local minimum. The direction of steepest descent is defined by the negative
 	of the gradient of the objective function.
 	</para>
-	
+	<para></para>
 	<item>Praxis</item>
 	<para>
 	Praxis is a direct search method (for a review see [Swann72]) that searches for the minimum of a nonlinear
@@ -138,7 +138,7 @@
 	coincide with the principal axes, in fact if the objective function is quadratic then these will be conjugate
 	directions, assuring a fast convergence rate.
 	</para>
-	
+	<para></para>
 	<item>Truncated Newton</item>
 	<para>
 	 The Truncated Newton method is a sophisticated variant of the Newton optimization method. The Newton optimization
