@@ -79,6 +79,9 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static SolverFeature[] SpatialStochasticFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic
 	};
+	public static SolverFeature[] SpatialHybridFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Deterministic
+	};
 	
 	private static final int NUM_SOLVERS = 16;
 	private static final int TYPE_FORWARD_EULER = 0;
@@ -845,42 +848,6 @@ public String getFullDescription() {
 	return FULL_DESCRIPTIONS[type];
 }
 
-/**
- * getODESolverDescriptions method comment.
- */
-public static SolverDescription[] getODESolverDescriptions() {
-	return getSolverDescriptions(OdeFeatureSet);
-}
-
-public static SolverDescription[] getODEWithFastSystemSolverDescriptions() {
-	return getSolverDescriptions(OdeFastSystemFeatureSet);
-}
-
-public static SolverDescription[] getPDEWithFastSystemSolverDescriptions() {
-	return getSolverDescriptions(PdeFastSystemFeatureSet);
-}
-
-/**
- * getPDESolverDescriptions method comment.
- */
-public static SolverDescription[] getPDESolverDescriptions() {
-	return getSolverDescriptions(PdeFeatureSet);
-}
-
-public static SolverDescription[] getSpatialStochasticSolverDescriptions() {
-	return getSolverDescriptions(SpatialStochasticFeatureSet);
-}
-
-
-/**
- * Get stochasic solver(s)' description(s)
- * Creation date: (9/27/2006 9:37:49 AM)
- * @return java.lang.String[]
- */
-public static SolverDescription[] getStochasticNonSpatialSolverDescriptions() {
-	return getSolverDescriptions(NonSpatialStochasticFeatureSet);
-}
-
 public static SolverDescription[] getSolverDescriptions(SolverFeature[] desiredSolverFeatures){
 	ArrayList<SolverDescription> solvers = new ArrayList<SolverDescription>();
 	for (SolverDescription sd : AllSolverDescriptions){
@@ -982,6 +949,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_SerialParameterScans);
 		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
 		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
+		featureSet.add(SolverFeature.Feature_Stochastic);
 		break;
 		
 	case TYPE_SUNDIALS_PDE:
@@ -1010,8 +978,10 @@ public Set<SolverFeature> getSupportedFeatures() {
 
 public static SolverDescription getDefaultSolverDescription(Simulation simulation) {
 	MathDescription mathDescription = simulation.getMathDescription();
-	if (simulation.isSpatial())		{		
-		if (mathDescription.isSpatialStoch()) {
+	if (simulation.isSpatial())	{
+		if (mathDescription.isSpatialHybrid()) {
+			return SolverDescription.FiniteVolumeStandalone;
+		} else if (mathDescription.isSpatialStoch()) {
 			return SolverDescription.Smoldyn;
 		} else if (mathDescription.hasFastSystems()) {
 			return SolverDescription.FiniteVolumeStandalone;
@@ -1024,6 +994,30 @@ public static SolverDescription getDefaultSolverDescription(Simulation simulatio
 		}
 		else {
 			return SolverDescription.CombinedSundials;
+		}
+	}
+}
+
+public static SolverDescription[] getSupportingSolverDescriptions(MathDescription mathDescription) {
+	if (mathDescription.isSpatial()) {
+		if (mathDescription.isSpatialHybrid()) {
+			return SolverDescription.getSolverDescriptions(SolverDescription.SpatialHybridFeatureSet);
+		} else if (mathDescription.isSpatialStoch()) {
+			return SolverDescription.getSolverDescriptions(SolverDescription.SpatialStochasticFeatureSet);
+		} else {
+			if (mathDescription.hasFastSystems()) { // PDE with FastSystem
+				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFastSystemFeatureSet);
+			} else {
+				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSet);
+			}
+		}
+	} else if (mathDescription.isNonSpatialStoch()) {
+		return SolverDescription.getSolverDescriptions(SolverDescription.NonSpatialStochasticFeatureSet);
+	} else {
+		if (mathDescription.hasFastSystems()) { // ODE with FastSystem
+			return SolverDescription.getSolverDescriptions(SolverDescription.OdeFastSystemFeatureSet);
+		} else {
+			return SolverDescription.getSolverDescriptions(SolverDescription.OdeFeatureSet);
 		}
 	}
 }

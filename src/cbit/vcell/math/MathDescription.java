@@ -1943,6 +1943,27 @@ public boolean isNonSpatialStoch() {
 	return false;	
 }
 
+public boolean isSpatialHybrid() {
+	if (getGeometry().getDimension() == 0) {
+		return false;
+	}
+	boolean bHasParticleVariable = false;
+	boolean bHasPdeVariable = false;	
+	Enumeration<Variable> enum1 = getVariables();
+	while (enum1.hasMoreElements()) {
+		Variable var = enum1.nextElement();
+		if (var instanceof ParticleVariable) {
+			bHasParticleVariable = true;
+		} else if (var instanceof VolVariable || var instanceof MemVariable) {
+			bHasPdeVariable = true;
+		} else if (var instanceof InsideVariable || var instanceof OutsideVariable) {			
+		} else if (!(var instanceof Constant) && !(var instanceof Function)) {
+			return false;
+		} 
+	}
+	return bHasParticleVariable && bHasPdeVariable;		
+}
+
 public boolean isSpatialStoch() {
 	if (getGeometry().getDimension() == 0) {
 		return false;

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
@@ -59,6 +60,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
@@ -81,9 +83,12 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -134,6 +139,12 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		KEEP_AT_MOST,
 		CHECK_SPATIALLY_UNIFORM,
 		SIMULATION_PARAM_END,
+		
+		VOLUME_PARTICLE,
+		
+		SMOLDYN_BEGIN,
+		SMOLDYN_INPUT_FILE,
+		SMOLDYN_END,
 		
 		MODEL_BEGIN,
 		FEATURE,
@@ -245,6 +256,9 @@ public void write(String[] parameterNames) throws Exception {
 	writeModelDescription();	
 	writeMeshFile();	
 	writeVariables();
+	if (mathDesc.isSpatialHybrid()) {
+		writeSmoldyn();
+	}
 	writeParameters(parameterNames);
 	writeSerialParameterScans();	
 	writeFieldData();	
@@ -255,6 +269,27 @@ public void write(String[] parameterNames) throws Exception {
 	if (originalVars != null) {
 		mathDesc.setAllVariables(originalVars);
 	}
+}
+
+private void writeSmoldyn() throws Exception {
+	String baseName =  new File(userDirectory, simulationJob.getSimulationJobID()).getPath();
+	String inputFilename = baseName + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
+	PrintWriter pw = null;
+	try {
+		pw = new PrintWriter(inputFilename);
+		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simulationJob, bUseMessaging);
+		stFileWriter.write();
+	} finally {
+		if (pw != null) {
+			pw.close();	
+		}
+	}
+
+	printWriter.println("# Smoldyn Input");
+	printWriter.println(FVInputFileKeyword.SMOLDYN_BEGIN);
+	printWriter.println(FVInputFileKeyword.SMOLDYN_INPUT_FILE + " " + inputFilename);
+	printWriter.println(FVInputFileKeyword.SMOLDYN_END);
+	printWriter.println();
 }
 
 /**
@@ -1139,6 +1174,8 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			} else {
 				printWriter.println(" false " + domainName);
 			}
+		} else if (vars[i] instanceof VolumeParticleVariable) {
+			printWriter.println(FVInputFileKeyword.VOLUME_PARTICLE + " " + varName + " " + domainName);
 		} else if (vars[i] instanceof VolumeRegionVariable) {
 			printWriter.println("VOLUME_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof MemVariable) {
