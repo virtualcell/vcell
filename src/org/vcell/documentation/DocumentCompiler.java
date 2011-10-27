@@ -599,6 +599,7 @@ public class DocumentCompiler {
 				 }catch(Exception e1){
 					 System.err.println("Error in xml file:" + sourceHtmlFile.getAbsolutePath().replace(".html", ".xml") + ". Server failed to respond: " + docLink.getTarget()+". It might be a bad URL.");
 				 }
+				 pw.print("<a href=\""+docLink.getTarget()+"\">");
 			 }
 			 else
 			 {
