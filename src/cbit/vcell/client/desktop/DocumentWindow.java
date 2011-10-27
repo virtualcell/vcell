@@ -40,6 +40,7 @@ import javax.swing.UIManager;
 
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionFlag;
@@ -1366,7 +1367,7 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 		try {
 			ivjJMenuItemOnlineHelp = new javax.swing.JMenuItem();
 			ivjJMenuItemOnlineHelp.setName("JMenuItemOnlineHelp");
-			ivjJMenuItemOnlineHelp.setText("Online Help");
+			ivjJMenuItemOnlineHelp.setText("Online Resources");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2448,8 +2449,9 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 	
-	PopupGenerator.browserLauncher(this, ClientServerManager.ONLINEHELP_URL_STRING,
-		"Please visit "+ClientServerManager.ONLINEHELP_URL_STRING+" for Online Help",
+	String onlineResourcesURL = System.getProperty(PropertyLoader.onlineResourcesURL);
+	PopupGenerator.browserLauncher(this, onlineResourcesURL,
+		"Please visit "+"http://vcell.org"+" for Online Help",
 		getTopLevelWindowManager().isApplet());
 }
 

@@ -21,6 +21,8 @@ import javax.help.JHelp;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
+import org.vcell.util.gui.VCellIcons;
+
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 
 /**
@@ -42,7 +44,7 @@ public class VcellHelpViewer extends JFrame
 	
 	public VcellHelpViewer() {
 		super("Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")");
-//		setIconImage(new ImageIcon("//vcell.gif").getImage());
+		setIconImage(VCellIcons.getJFrameImageIcon());
 
 		URL resourceURL = VcellHelpViewer.class.getResource("/vcellDoc/HelpSet.hs");
 

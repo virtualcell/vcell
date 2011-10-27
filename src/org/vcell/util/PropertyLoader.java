@@ -169,6 +169,8 @@ public class PropertyLoader {
 	public final static String COPASIExecutable = "vcell.COPASI.executable";
 	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";
 
+	public final static String onlineResourcesURL = "vcell.onlineResourcesURL";
+
 	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
