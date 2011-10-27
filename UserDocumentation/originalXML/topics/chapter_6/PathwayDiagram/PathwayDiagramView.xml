@@ -44,6 +44,12 @@ be created within the Physiology.
 </para>
 		<imgReference target = "OperationsToolbar.png">
 		</imgReference>
+<para>
+As an added capability, the items in the diagram can be filtered in real time by typing a string 
+inside the Search field. All the matching entities will show up in the diagram as selected 
+(marked in red).
+</para>
+	<imgReference target = "PathwayDiagramSearch.png"/>
 	</operations>
 </page>
 

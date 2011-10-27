@@ -34,6 +34,16 @@ As a last step, the user can choose which entities will be made part of the biom
 through a 
 <link target = "GroupOperationsPanel">  linking process</link>. 
 </para>
+<para></para>
+<para>
+While working on other topics, click at any time on the Pathway tree item or on its 
+children in the 
+<link target = "GeneralNavAndWinSetup"> Navigation Panel</link>  
+to return to displaying pathway entities.
+</para>
+		<imgReference target = "PathwayNavigationPanel.png">
+		</imgReference>
+
 	</introduction>
 	
 </page>
