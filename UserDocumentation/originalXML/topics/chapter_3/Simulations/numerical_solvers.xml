@@ -70,14 +70,14 @@
 	<para>
 	<bold>Stochastic Spatial Solvers</bold>
 	</para>
+	<list>
+	<item>Smoldyn Solver</item>
 	<para>Virtual Cell incorporates the Smoldyn(Smoluchowski Dynamics) to stochastically solve spatial problems. Smoldyn is a Brownian dynamics simulator. It represents space as a 1-, 2-,
 	 or 3-dimensional continuum, as opposed to a lattice, and it steps through time using finite length time steps. Smoldyn represents molecules as individual point-like particles and
 	 membranes as infinitely thin surfaces. Smoldyn simulates molecular diffusion, chemical reactions between individual molecules, and a wide variety of molecule-surface interactions.
 	 So far, Smoldyn has been used primarily for either detailed biophysics research problems, such as on diffusion-influenced reaction dynamics, or for investigating the effects of spatial
 	 organization on simple biological systems, such as the Escherichia coli chemotaxis system.
 	</para>
-	<list>
-	<item>Smoldyn Solver</item>
 	</list>
 	</operations>
 </page>

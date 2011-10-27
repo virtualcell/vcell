@@ -11,7 +11,7 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Simulations">
+<page title="Simulations Overview">
 
 	
 	<introduction>
@@ -19,7 +19,7 @@
 	<link target="generated_math">view generated math</link> once an application is created in a BioModel.
  	</introduction>
 	
-	<appearance><imgReference target="simulations_overview.jpg"/></appearance>
+	<appearance><imgReference target="sim_overview.gif"/></appearance>
 	
 	<operations>
 	There are three sub-tabs under "Simulations" tab:

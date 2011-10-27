@@ -25,7 +25,7 @@
 	For more details about numerics solvers used in these simulations, refer to <link target="numerical_solvers">Numerical Solvers</link>.
  	</introduction>
 	
-	<appearance><imgReference target="simulations.jpg"/></appearance>
+	<appearance><imgReference target="sim_simulationTab.gif"/></appearance>
 	
 	<operations>
 	On the Simulation panel, you create, edit and run your simulations as well as view the results. 
