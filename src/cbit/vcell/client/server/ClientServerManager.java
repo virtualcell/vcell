@@ -43,7 +43,6 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 
 	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
-	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
 		private String serverHost = null;
