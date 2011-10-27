@@ -444,6 +444,7 @@ private void writeHighResVolumeSamples() {
 			pw.println(Hex.toString(compressedPixels));
 		}		
 	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
 		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
 	} finally {
 		if (pw != null) {
