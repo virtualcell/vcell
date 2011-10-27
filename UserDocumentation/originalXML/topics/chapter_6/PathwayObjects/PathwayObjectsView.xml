@@ -13,39 +13,47 @@ It is the table format representation of the
 	<appearance>  
 The table view shows the pathway entities, their type and also shows which of these 
 entities (if any) are linked to corresponding entities within the physiology.
-<para></para>
+<para>
 		<imgReference target = "PathwayObjectsView.png">
 		</imgReference>
-<para></para>
+</para>
+<para>
 It can be noticed that the selected reaction and its dependents are already 
 linked to their respective physiology equivalents.
-<para></para>
+</para>
+<para>
 At the bottom of this view there are the Group, Delete and Physiology Link buttons 
 with the same functionality as in the
 		<link target = "PathwayDiagramView"> Pathway Diagram View
 		</link>
 .
-<para></para>
+</para>
+<para>
 The bottom pane of the window displays a 
 		<link target = "PP_Pathways"> Pathway Object Properties Pane 
 		</link>
 . In the sample image presented below you can see the properties of the biochemical 
 reaction selected in the Pathway Object View above.
-<para></para>
+</para>
 		<imgReference target = "PP_Pathways.png">
 		</imgReference>
-<para></para>
 	</appearance>
 	
 	
 	<operations>  
-More entities can be added from the Pathway Panel.
-<para></para>
+<para>
+More entities can be added from the 
+		<link target = "PathwayImportTable"> Pathway Import Table</link>
+.
+</para>
+<para>
 The user can perform various operations upon these entities, either on individually selected 
 entities or multiple selected entities using the 
 		<link target = "GroupOperationsPanel"> Operations Toolbar</link>
-.
-<para></para>
+. Of particular interest is the process of importing pathway entities into the BioModel. 
+Following this process, equivalent entities to those pathway entities being imported will 
+be created within the Physiology.
+</para>
 		<imgReference target = "OperationsToolbar.png">
 		</imgReference>
 

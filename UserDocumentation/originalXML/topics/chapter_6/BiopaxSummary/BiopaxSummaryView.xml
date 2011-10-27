@@ -9,21 +9,28 @@ in text format.
 	</introduction>
 	
 	<appearance>
+<para>
 The view has 2 sections. The Summary View is displayed first, followed by the Detailed View.
-<para></para>
+</para>
+<para>
 The Summary View shows the list of entities present in the Pathway Diagram View using 
 the general format of Type, Name, ID.
-<para></para>
-The Detailed View shows the equivalent of the Pathway Object Properties Pane in text format and 
-with each inner sub-entity expanded.
-<para></para>
+</para>
+<para>
+The Detailed View shows, for each and every entity, the equivalent of the 
+<link target = "PP_Pathways"> Pathway Object Properties Pane</link> 
+in text format and with each inner sub-entity expanded.
+</para>
+<para>
 		<imgReference target = "BiopaxSummaryView.png">
 		</imgReference>
-<para></para>
+</para>
 	</appearance>
 	
 	<operations>
+<para>
 All the information in this view is read-only, no user actions can be performed.
+</para>
 	</operations>
 </page>
 
