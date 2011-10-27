@@ -349,6 +349,9 @@ System.out.println("+++++++++++++++++++++++++++++++++++++ unique mask : "+Long.t
 				}
 			}
 		}
+		if (geometry.getGeometrySpec().getNumSubVolumes()==1 && mask==0){
+			return geometry.getGeometrySpec().getSubVolumes()[0];
+		}
 		return null;
 	}
 	
