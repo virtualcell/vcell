@@ -10,7 +10,7 @@
 	</para>
 	<para>
 	<bold>Note:</bold> If you plan on importing the model back into the Virtual Cell, make sure to export a copy as VCML.
-	SBML is an XML that should only be used if you need to import the models into another program that requires this format.
+	SBML is an XML format that should only be used if you need to import the models into another program that requires this format.
 	</para>
 	
 	<para><bold>Export Formats Available</bold></para>
@@ -81,7 +81,7 @@
 		<imgReference target = "ExportParamOverrides.gif"/>
 		<para>
 		If simulations do not have parameter overrides in the selected application, the selected application is exported to SBML with its default parameter settings.  
-		If a selected application has simulations with overridden parameters (parameters changed through the simulation task panel), the user is provided a list of these simulation names and the corresponding Simulation Summary is displayed. 
+		If a selected application has simulations with overridden parameters (parameters changed through the simulation task panel), the user is provided a list of these simulation names and the corresponding "Simulation Summary" is displayed. 
 		The user can select one of these simulations and press <bold>OK</bold>. The selected simulation (with parameter overrides) is exported to SBML. 
 		If the overridden parameter is a parameter scan, each scan value is exported into a different SBML file. The names of the exported parameter scans will be of the form: <bold>exportFileName_Indx.xml</bold>. 
 	 	The 'exportFileName' is the user-provided name for the exported file. 'Indx' is the number of the parameter scan.

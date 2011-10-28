@@ -42,7 +42,7 @@
 	</appearance>
 	
 	<operations>
-	<para> <bold>Viewing/Editing Events</bold></para>
+	<para> <bold>Viewing Events</bold></para>
 	<para>
 	In the Virtual Cell, an event can be specified in the <bold>Protocols</bold> section of an application. 
 	This can be accessed by selecting the 'Protocols' item under the application node in the Navigation panel tree structure.
@@ -52,12 +52,14 @@
 	In this table, the <bold>Name</bold> column is editable, all other columns in the events summary table cannot be edited or sorted. 
 	</para>  
 
+	<para> <bold>Adding/Deleting Events</bold></para>
 	<para>
 	Events can be added by clicking on the <bold>(add new here)</bold> row of the summary table. This creates a new default event. 
 	Alternately, clicking the <bold>Add New</bold> button adds a new default event to the table.
 	To delete an existing event, select the event to be deleted and click the <bold>Delete Selected</bold> button.  
 	</para>
 	
+	<para> <bold>Editing Events</bold></para>
 	<para>
 	Clicking an individual event in the summary table displays the selected event in the lower <bold>Properties Panel</bold>. 
 	The <bold>Trigger</bold> expression and <bold>Delay</bold> expression are displayed in editable text fields. 

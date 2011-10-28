@@ -20,7 +20,7 @@
 		<item> <bold>Open Latest Edition</bold> : This opens the latest edition/version of the selected model.</item>
 		<item> <bold>Open Selected Edition</bold> : This opens the selected edition/version of the model.</item>
 		<item> <bold>Export</bold> : exports the selected model/edition in the chosen format. See also <link target = "Export">File -> Export</link>.</item> 
-		<item> <bold>Exit</bold> ; exits the Virtual Cell.</item>
+		<item> <bold>Exit</bold> : exits the Virtual Cell.</item>
 	</list>
 	</operations>
 	
