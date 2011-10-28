@@ -5,7 +5,7 @@
 	<introduction> 
 	<para>
 	Annotations in a model can be stored at multiple levels: the overall model (MIRIAM), model documents (BioModel, MathModel, Geometries), and application, simulations, compartments, species and reactions.
-	Minimal Information Requested In the Annotation of biochemical Models, <link target="http://www.ebi.ac.uk/miriam/">MIRIAM</link>) functionality in VCell is part of a collaboration in the general 
+	Minimal Information Requested In the Annotation of biochemical Models, <link target="http://www.ebi.ac.uk/miriam/main/">MIRIAM</link>) functionality in VCell is part of a collaboration in the general 
 	modeling community to allow biological models to be "annotated" with a common structure and format describing the components of a mathematical model. 
 	A common descriptive format for model elements (molecules, reactions, compartments, etc…) makes understanding models and sharing information easier amongst users. 
 	MIRIAM annotation also allows software applications to make more intelligent decisions when importing models created in different environments.
@@ -69,7 +69,7 @@
 	</list>
 	
 	<para>
-	For more information, please refer to <link target="http://www.ebi.ac.uk/miriam/">MIRIAM</link>.
+	For more information, please refer to <link target="http://www.ebi.ac.uk/miriam/main/">MIRIAM</link>.
 	</para>
 	</operations>
 	<comments>  </comments>
