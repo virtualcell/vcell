@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Application Overview" target="ApplicationOverview">
+<page title="Applications Overview" target="ApplicationOverview">
 
 	<introduction>
-Applications allow users to define the quantitative 
-conditions needed to define, run and visualize a
-Virtual Experiment, i.e. numerical simulation. 
-The Application is the component in which the mapping between the model and 
-the geometry can be established, define the Specifications (species, reactions)
-and Protocols (events, electric). When you create an Application, you 
-create it either as Deterministic or Stochastic.
-<para></para>
-The Application directory displays the Applications associated with the BioModel. 
-You can expand the tree to display the
-Geometry , Specifications, Protocols, Simulations, Parameter Estimation.
-<para></para>
+	Applications allow users to define the quantitative conditions needed to define, 
+	run and visualize a Virtual Experiment, i.e. a numerical simulation of the BioModel 
+	with specific initial conditions, within a given geometry, and with a selected type 
+	of simulation method. In the Application the mapping between the model and the geometry 
+	is established, Specifications for species and reactions are defined, and specific Protocols
+	(events, electric stimulation) can be included. An Application is
+	created as either <def target="def_Deterministic">Deterministic</def> or 
+	<def target="def_Stochastic">Stochastic</def>. For each application, multiple simulations 
+	can be created that can be either spatial or nonspatial and include different initial conditions.
+	</introduction>
+
+	<appearance>  
+	The Application directory displays the Applications associated with the BioModel. The main window 
+	displays the selected application and provides buttons to create new applications or to 
+	delete or copy applications. Properties for a selected object (e.g. species, reaction, simulation) 
+	are displayed in the Properties Pane below the main window.
+	</appearance>
+
+	<operations>  
+	<para><bold>Create</bold> a new application by clicking on "Applications" in the left menu.  Right 
+	click brings a menu to create either a deterministic or stochastic application.  Or, use the 
+	<bold> Add New</bold> button in the main window.</para>
+	<para>Click on an application to view the application expand the tree and to display the different
+	components of the application.
+	<list> 
+	<item><link target="GeometryOverview">Geometry</link></item>
+	<item><link target="SpecificationsOverview"> Specifications,</link></item> 
+	<item><link target="ProtocolsOverview"> Protocols</link></item> 
+	<item><link target="simulations_overview">Simulations</link></item>
+	<item><link target="PEOverview"> Parameter Estimation</link></item> 
+	</list>
+	</para>
 		<imgReference target = "ApplicationOverview.png">
 		</imgReference>
-	</introduction>
+	</operations>
 	
 </page>
 
