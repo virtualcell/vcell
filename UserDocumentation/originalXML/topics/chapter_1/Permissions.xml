@@ -20,9 +20,9 @@
 	</para>
 	<para>
 	There are 3 options to share models : <bold>Public</bold>, <bold>Private</bold> or <bold>Grant Access to Specific Users</bold>. 
-	By default, a user's' model is <bold>Private</bold> which means that only the user has permission to view the model. 
+	By default, a user's model is <bold>Private</bold> which means that only the user has permission to view the model. 
 	To make a model public to everyone using the Virtual Cell, select <bold>Public</bold>. 
-	Other users can save a copy of current user's' model as their own, and then have complete access to their own copy. 
+	Other users can save a copy of current user's model as their own, and then have complete access to their own copy. 
 	No modifications can be made to the user's original copy.
 	</para>
 	<para>

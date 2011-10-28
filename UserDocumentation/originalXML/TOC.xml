@@ -89,7 +89,6 @@
    	   		<tocitem target="PredefinedConstAndMathFns" text="Predefined Constants and Math Functions"/>
    		</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
-   	   		<tocitem target="PathwayCommonsPanel" text="Exploring the Pathway Commons"/>
    	   		<tocitem target="PathwayImportTable" text="The Imported Pathways View"/>
    	   		<tocitem target="PathwayDiagramView" text="Entities Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Entities Table View"/>
@@ -99,7 +98,7 @@
     	<tocitem target="DatabaseOverview" text="Database Sources">
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>
    	   		<tocitem target="BioModelsNet" text="BioModels.net Database"/>
-   	   		<tocitem target="PathwayCommons" text="Pathway Commons Database"/>
+   	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_Structures" text="Physiology Structures Properties Pane"/>

@@ -27,7 +27,7 @@
 	  	<para>
 		<bold> Save </bold> - saves the current document in the database, overwriting the older version. Note that this menu option is disabled for a new document. 
 		For saving a new document, refer to <link target = "SaveAs">Save As</link>. 
-		Also, when the user modifies a public model or a model that has been shared by another user and tries to save the model, the "Save" options is enabled. 
+		Also, when the user modifies a public model or a model that has been shared by another user and tries to save the model, the "Save" option is enabled. 
 		Choosing this option brings up a warning dialog that the model does not belong to the current user and it has to be saved as a new model in the current user's account. 
 		Clicking <link target = "SaveAs">Save As</link> brings up the "Save As" dialog. <bold>Cancel</bold> cancels the save operation.    
 	  	</para>
@@ -45,8 +45,11 @@
 	  <item>		
 		<link target = "RevertToSaved">Revert To Saved</link>,
 	  </item>
-	  <item>		
-		<bold>Compare With Saved</bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. Refer to the section on <bold>Manage Database -> </bold> <link target = "ManageDBCompareWith">Compare With</link> for further information. 
+	  <item>
+	    <para>
+		<bold>Compare With Saved</bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. 
+		Refer to the section on <link target = "ManageDBCompareWith">Manage Database -> Compare With</link> for further information. 
+	    </para>		
 	  </item>
 	  <item>
 		<link target = "Permissions">Permissions...</link>,

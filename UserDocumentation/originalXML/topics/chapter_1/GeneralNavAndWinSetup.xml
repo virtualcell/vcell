@@ -36,11 +36,11 @@
 		<para><bold>View panel (Panel B)</bold></para>
 		<para>
 		The top right panel in the figure above is the 'View' panel. This panel has the following 5 tabs that allow the user to create a physiological model before he/she can run simulations. 
-		<bold>Structure Diagram</bold> is used to view/add cellular structures or <def target="def_species" label="Compartments">compartments</def> to the model. 
-		<bold>Reaction Diagram</bold> is used to view the reaction network and add <def target="def_species" label="species">species</def> or reactions and fluxes to the model. 
+		<bold>Structure Diagram</bold> is used to view/add cellular structures or compartments to the model. 
+		<bold>Reaction Diagram</bold> is used to view the reaction network and add species or reactions and fluxes to the model. 
 		<bold>Reactions</bold> lists the reactions in the model in a tabular form. The user can also add/delete reactions here. 
-		<bold>Structures</bold> lists the <def target="def_species" label="Compartments">compartments</def> in the model as a table. Compartments can also be added or deleted in this table.
-		<bold>Species</bold> lists the <def target="def_species" label="species">species</def> of the model in a table.
+		<bold>Structures</bold> lists the compartments in the model as a table. Compartments can also be added or deleted in this table.
+		<bold>Species</bold> lists the species of the model in a table.
 		</para>
 		</item>
 
@@ -61,7 +61,8 @@
 		The <bold>VCell Database</bold> tab shows the models stored in the VCell database. This selection shows another set of 3 tabs (<bold>BioModels</bold>, <bold>MathModels</bold>, <bold>Geometries</bold>), 
 		which display models of the different VCell document types stored in the VCell database. Refer to the section on <link target="ManageDatabase">Manage Database</link> for further information.
 		The <bold>Biomodels.net</bold> tab shows models from the <link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels database</link>, which is a database of annotated published models in SBML that can be imported into the Virtual Cell.
-		The <bold>Pathway Commons</bold> tab shows the list of pathways that can be mined from the "Pathway Commons" database. Refer to section <bold>Pathway</bold>
+		The <bold>Pathway Commons</bold> tab shows the list of pathways that can be mined from the <bold>Pathway Commons</bold> database. 
+		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.
 		</para>
 		</item>
 	</list>
