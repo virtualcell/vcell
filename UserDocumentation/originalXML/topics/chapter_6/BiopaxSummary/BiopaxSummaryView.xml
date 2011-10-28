@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Biopax Summary View" target="BiopaxSummaryView">
+<page title="Entities Detailed View" target="BiopaxSummaryView">
 
 	<introduction>
 Displays the entities within the 
-<link target = "PathwayDiagramView"> Pathway Diagram View</link> 
+<link target = "PathwayDiagramView"> Entities Diagram View</link> 
 in text format.
 	</introduction>
 	
@@ -18,7 +18,7 @@ the general format of Type, Name, ID.
 </para>
 <para>
 The Detailed View shows, for each and every entity, the equivalent of the 
-<link target = "PP_Pathways"> Pathway Object Properties Pane</link> 
+<link target = "PP_Pathways"> Entity Properties Pane</link> 
 in text format and with each inner sub-entity expanded.
 </para>
 <para>

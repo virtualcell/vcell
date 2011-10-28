@@ -89,7 +89,8 @@
    	   		<tocitem target="PredefinedConstAndMathFns" text="Predefined Constants and Math Functions"/>
    		</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
-   	   		<tocitem target="PathwayImportTable" text="The Imported Pathways View"/>
+   	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
+   	   		<tocitem target="PathwayImportTable" text="The Imported Pathway View"/>
    	   		<tocitem target="PathwayDiagramView" text="Entities Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Entities Table View"/>
    			<tocitem target="BiopaxSummaryView" text="Entities Detailed View"/>

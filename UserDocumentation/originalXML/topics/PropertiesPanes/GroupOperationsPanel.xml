@@ -5,9 +5,9 @@
 	<introduction>
 The buttons shown in this toolbar allow the user to perform various useful operations 
 on selected entities within the 
-		<link target = "PathwayDiagramView"> Pathway Diagram View</link>
+		<link target = "PathwayDiagramView"> Entities Diagram View</link>
 and the 
-		<link target = "PathwayObjectsView"> Pathway Objects View</link>
+		<link target = "PathwayObjectsView"> Entities Table View</link>
 .
 	</introduction>
 	

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Pathway Diagram View" target="PathwayDiagramView">
+<page title="Entities Diagram View" target="PathwayDiagramView">
 
 	<introduction>
 <para>
@@ -10,7 +10,7 @@ link status with model entities.
 </para>
 <para>
 It is the graph format representation of the 
-		<link target = "PathwayObjectsView"> Pathway Objects View</link>.
+		<link target = "PathwayObjectsView"> Entities Table View</link>.
 </para>
 	</introduction>
 	
@@ -24,7 +24,7 @@ dependent entities.
 </para>
 <para>
 The bottom pane of the window displays a 
-		<link target = "PP_Pathways"> Pathway Object Properties Pane </link> 
+		<link target = "PP_Pathways"> Entity Properties Pane </link> 
 where the properties of a selected entity are being displayed.
 </para>
 	</appearance>
@@ -32,12 +32,12 @@ where the properties of a selected entity are being displayed.
 	<operations>
 <para>
 More entities can be added from the 
-		<link target = "PathwayImportTable"> Pathway Import Table</link>.
+		<link target = "PathwayImportTable"> Imported Pathway View</link>.
 </para>
 <para>
 The user can perform various operations upon these entities, either on individually selected 
 entities or multiple selected entities using the 
-		<link target = "GroupOperationsPanel"> Operations Toolbar</link>
+		<link target = "GroupOperationsPanel"> Entities Management Toolbar</link>
 . Of particular interest is the process of importing pathway entities into the BioModel. 
 Following this process, equivalent entities to those pathway entities being imported will 
 be created within the Physiology.
