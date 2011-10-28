@@ -110,11 +110,10 @@
 	    	<tocitem target="PP_Pathways" text="Pathway Properties Pane"/>
 	    	<tocitem target="PP_Problems" text="Problems Properties Pane"/>
 		</tocitem>
-	    <tocitem target="DefinitionsOverview" text="Glossary">
+	    <tocitem target="AppendixOverview" text="Appendix">
+	    	<tocitem target="Definitions" text="Definitions"/>
+	    	<tocitem target="Errors" text="Errors"/>
+	    	<tocitem target="Warnings" text="Warnings"/>
 		</tocitem>
-	    <tocitem target="ListsOverview" text="Lists">
-		</tocitem>
-	    <tocitem target="ErrorsOverview" text="Error Messages">
-	    </tocitem>
    	</tocitem>
 </toc>
