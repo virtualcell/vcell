@@ -545,8 +545,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			SolverDescription solverDescription = getSolverDescription();
 			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
-				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
-					double outputTime = timeBounds.getEndingTime()/20;
+				if (!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+					// not only uniform output is supported.
+					double outputTime;
+					if (getOutputTimeSpec() instanceof DefaultOutputTimeSpec) {
+						DefaultOutputTimeSpec dot = (DefaultOutputTimeSpec)getOutputTimeSpec();
+						outputTime = dot.getKeepEvery() * getTimeStep().getDefaultTimeStep();
+					} else {
+						outputTime = timeBounds.getEndingTime()/20;
+					}
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
 				
