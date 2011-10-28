@@ -30,7 +30,9 @@
 	these entities a list of pathways in which they participate.
 	</para>
 	<para>
-	Each pathway listed in the search results can be selected and then downloaded by pressing the <bold>Import Pathway</bold> button, which will obtain 
+	Each pathway listed in the search results can be selected and then 
+	<link target = "PathwayImportTable"> downloaded</link> 
+	by pressing the <bold>Import Pathway</bold> button, which will obtain 
 	the pathway in BioPAX Level 2 from Pathway Commons. 
 	</para>
 	<para>

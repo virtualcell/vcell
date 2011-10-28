@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <vcelldoc>
-<page title="Pathway Objects View">
+<page title="Entities Table View">
 	
 	<introduction> 	
 A table of pathway entities can be used to examine their properties and their link status. 
 It is the table format representation of the 
-		<link target = "PathwayDiagramView"> Pathway Diagram View</link>
-.
+		<link target = "PathwayDiagramView"> Entities Diagram View</link>.
 	</introduction>
 	
 	<appearance>  
@@ -22,17 +21,9 @@ It can be noticed that the selected reaction and its dependents are already
 linked to their respective physiology equivalents.
 </para>
 <para>
-At the bottom of this view there are the Group, Delete and Physiology Link buttons 
-with the same functionality as in the
-		<link target = "PathwayDiagramView"> Pathway Diagram View
-		</link>
-.
-</para>
-<para>
 The bottom pane of the window displays a 
-		<link target = "PP_Pathways"> Pathway Object Properties Pane 
-		</link>
-. In the sample image presented below you can see the properties of the biochemical 
+		<link target = "PP_Pathways"> Entity Properties Pane</link>. 
+In the sample image presented below you can see the properties of the biochemical 
 reaction selected in the Pathway Object View above.
 </para>
 		<imgReference target = "PP_Pathways.png">
@@ -43,13 +34,12 @@ reaction selected in the Pathway Object View above.
 	<operations>  
 <para>
 More entities can be added from the 
-		<link target = "PathwayImportTable"> Pathway Import Table</link>
-.
+		<link target = "PathwayImportTable"> Imported Pathway View</link>.
 </para>
 <para>
 The user can perform various operations upon these entities, either on individually selected 
 entities or multiple selected entities using the 
-		<link target = "GroupOperationsPanel"> Operations Toolbar</link>.
+		<link target = "GroupOperationsPanel"> Entities Management Toolbar</link>.
 </para>
 <para>
 Of particular interest is the process of importing pathway entities into the BioModel. 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Pathway Import Table" target="PathwayImportTable">
+<page title="The Imported Pathway View" target="PathwayImportTable">
 
 	<introduction>
 	The pathway import table shows, for an imported pathway, the interactions (i.e. biochemical reaction,
