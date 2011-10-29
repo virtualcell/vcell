@@ -45,12 +45,13 @@ public class DocumentCompiler {
 	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
 	public static File docTargetDir;
 	public static File docSourceDir;
-	public final static String ImageDir = "topics/image";
+	public final static String imageFilePath = "topics/image/";
 	public final static String mapFileName = "Map.jhm";
 	public final static String tocFileName = "TOC.xml";
 	public final static String helpSetFileName = "HelpSet.hs";
 	public final static String helpSearchFolderName = "JavaHelpSearch";
-	public final static String definitionXMLFileName = "DefinitionsOverview.xml";
+	public final static String definitionFilePath = "topics/Appendix/";
+	public final static String definitionXMLFileName = "Definitions.xml";
 	
 	private Documentation documentation = new Documentation();
 
@@ -115,12 +116,12 @@ public class DocumentCompiler {
 	public void batchRun() throws Exception
 	{
 		//generate document images
-		File imgSourceDir = new File(docSourceDir, ImageDir);
+		File imgSourceDir = new File(docSourceDir, imageFilePath);
 		if (!imgSourceDir.exists() || !imgSourceDir.isDirectory()){
 			throw new RuntimeException("cannot find source image directory "+imgSourceDir.getPath());
 		}
 
-		File workingImgDir= new File(docTargetDir, ImageDir);
+		File workingImgDir= new File(docTargetDir, imageFilePath);
 		if(!workingImgDir.exists()){
 			workingImgDir.mkdirs();	
 		}
@@ -273,7 +274,7 @@ public class DocumentCompiler {
 			//add definitions to map
 			Element definitionElement = new Element(VCellDocTags.mapID_tag);
 			definitionElement.setAttribute(VCellDocTags.target_attr, definitionXMLFileName.replace(".xml",""));
-			definitionElement.setAttribute(VCellDocTags.url_attr, "topics/Definitions/" + definitionXMLFileName.replace(".xml", ".html"));
+			definitionElement.setAttribute(VCellDocTags.url_attr, definitionFilePath /*+ File.separator*/ + definitionXMLFileName.replace(".xml", ".html"));
 			mapElement.addContent(definitionElement);	
 			//convert mapdocument to string
 			Document mapDoc = new Document();
@@ -605,12 +606,25 @@ public class DocumentCompiler {
 			 {
 				 DocumentPage docPage = documentation.getDocumentPage(docLink);
 				 if (docPage==null){
-					 throw new RuntimeException("reference to document '"+docLink.getTarget()+"' cannot be resolved");
+					 if(docLink.getTarget().equals(definitionXMLFileName.replace(".xml", "")))
+					 {
+						 File workingDefinitionDir= new File(docTargetDir, definitionFilePath);
+						 File htmlFile = new File(workingDefinitionDir, definitionXMLFileName);
+						 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+						 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
+						 pw.print("<a href=\""+relativePathToTarget+"\">");
+					 }
+					 else
+					 {
+						 throw new RuntimeException("reference to document '"+docLink.getTarget()+"' cannot be resolved");
+					 }
 				 }
-				 File htmlFile = getTargetFile(docPage.getTemplateFile());
-				 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
-				 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
-				 pw.print("<a href=\""+relativePathToTarget+"\">");
+				 else{
+					 File htmlFile = getTargetFile(docPage.getTemplateFile());
+					 htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+					 String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
+					 pw.print("<a href=\""+relativePathToTarget+"\">");
+				 }
 			 }
 			 pw.print(docLink.getText());
 			 pw.print("</a>");
