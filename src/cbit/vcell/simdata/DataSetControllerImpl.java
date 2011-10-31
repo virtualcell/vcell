@@ -622,13 +622,17 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 	}
 }
 
-private double interpolateVolDataValToMemb(CartesianMesh mesh, Domain domain, int membraneIndex, SimDataHolder simDataHolder, boolean IsRegion){
+private boolean isDomainInside(CartesianMesh mesh, Domain domain, int membraneIndex) {
 	boolean bInside = true;
 	int volIndexNear = mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex();
 	if (!mesh.getCompartmentSubdomainNamefromVolIndex(volIndexNear).equals(domain.getName())) {
 		bInside = false;
 	}
-	return interpolateVolDataValToMemb(mesh, membraneIndex, simDataHolder, bInside, IsRegion);
+	return bInside;
+}
+
+private double interpolateVolDataValToMemb(CartesianMesh mesh, Domain domain, int membraneIndex, SimDataHolder simDataHolder, boolean IsRegion){
+	return interpolateVolDataValToMemb(mesh, membraneIndex, simDataHolder, isDomainInside(mesh, domain, membraneIndex), IsRegion);
 }
 
 private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,SimDataHolder simDataHolder,boolean isInside,boolean IsRegion){
@@ -638,6 +642,10 @@ private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,
 		return simDataHolder.getData()[volIndexNearFar.volIndexNear];
 	}
 	return VolumeIndexNearFar.interpolate(simDataHolder.getData()[volIndexNearFar.volIndexNear], simDataHolder.getData()[volIndexNearFar.volIndexFar]);	
+}
+
+private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh, Domain domain, int membraneIndex, boolean IsRegion){
+	return interpolateFindNearFarIndex(mesh, membraneIndex, isDomainInside(mesh, domain, membraneIndex), IsRegion);
 }
 
 private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh,int membraneIndex,boolean isInside,boolean isRegion){
@@ -1602,18 +1610,30 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 			coords[i] = mesh.getCoordinateFromMembraneIndex(dataIndexes[i]);
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
-				if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){		
-					int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
-					varNames[j]=dsi.getName();
-					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-					varIndexes[i][j] = volInsideIndex;
-					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
-					int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
-					varNames[j]=dsi.getName();
-					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-					varIndexes[i][j] = volOutsideIndex;
-					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
+				if (dsi.getVariableType().equals(VariableType.VOLUME)){
+					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){		
+						int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
+						varNames[j]=dsi.getName();
+						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+						varIndexes[i][j] = volInsideIndex;
+						inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
+					}else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
+						int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
+						varNames[j]=dsi.getName();
+						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+						varIndexes[i][j] = volOutsideIndex;
+						outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
+					} else {	
+						varNames[j]=dsi.getName();
+						simFileVarNames[j] = dsi.getName();
+						if(isDomainInside(mesh, dsi.getDomain(), dataIndexes[i])){
+							inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
+							varIndexes[i][j] = inside_near_far_indexes[i][j].volIndexNear;
+						}else{
+							outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
+							varIndexes[i][j] = outside_near_far_indexes[i][j].volIndexNear;
+						}
+					}
 				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
 					int insideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
 					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
