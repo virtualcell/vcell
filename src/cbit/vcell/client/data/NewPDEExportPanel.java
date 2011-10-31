@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,6 +20,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -57,6 +59,7 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
@@ -64,6 +67,8 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
+import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -718,14 +723,16 @@ private void updateChoiceROI() {
 				getDefaultListModelCivilizedSelections().addElement(getSpatialSelectionsMembrane()[i]);
 			}
 		}
-//		Object[][] rowData = new Object[getSpatialSelections().length][1];
-//		for (int i = 0; i < rowData.length; i++) {
-//			rowData[i][0] = (getSpatialSelections()[i] instanceof SpatialSelectionVolume
-//					?((SpatialSelectionVolume)getSpatialSelections()[i]).getCurveSelectionInfo().getCurve().getDescription()
-//					:((SpatialSelectionMembrane)getSpatialSelections()[i]).getSelectionSource().getDescription());
+		
+//		if(getJRadioButtonSelection().isSelected() && getDefaultListModelCivilizedSelections().getSize() == 0){
+//			if(getJRadioButtonSlice().isEnabled()){
+//				getJRadioButtonSlice().setSelected(true);
+//			}else if(getJRadioButtonFull().isEnabled()){
+//				getJRadioButtonFull().setSelected(true);
+//			}
 //		}
-//		DialogUtils.showComponentOKCancelTableList(this, "Select 1 or more UserDefined ROI for Export",
-//				new String[] {"User Defined ROI ID"}, rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//		getJRadioButtonSelection().setEnabled(getDefaultListModelCivilizedSelections().getSize() != 0);
+
 
 		// user code begin {2}
 		// user code end
@@ -839,9 +846,9 @@ private void connPtoP3SetSource() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP3Aligning = true;
-			if ((getpdeDataContext1() != null)) {
-				this.setPdeDataContext(getpdeDataContext1());
-			}
+//			if ((getpdeDataContext1() != null)) {
+//				this.setPdeDataContext(getpdeDataContext1());
+//			}
 			// user code begin {2}
 			// user code end
 			ivjConnPtoP3Aligning = false;
@@ -1035,7 +1042,8 @@ private ExportSpecs getExportSpecs() {
 		timeSpecs,
 		geometrySpecs,
 		getExportSettings1().getFormatSpecificSpecs(),
-		dataInfoProvider.getSimulationModelInfo().getSimulationName()
+		dataInfoProvider.getSimulationModelInfo().getSimulationName(),
+		dataInfoProvider.getSimulationModelInfo().getContextName()
 	);
 }
 
@@ -1043,10 +1051,30 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 	
 	ExportSpecs.SimulationSelector simulationSelector =
 		new ExportSpecs.SimulationSelector(){
-			private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
+			private ExportSpecs.SimNameSimDataID[] multiSimNameSimDataIDs;
+//			private ExportSpecs.ExportParamScanInfo exportParamScanInfo;
+			private int[] selectedParamScanIndexes;
 			private Simulation[] simulations;
 			public SimNameSimDataID[] getSelectedSimDataInfo() {
-				return simNameSimDataIDs;
+//				if(currentSimNameSimDataID != null){
+//					boolean bFoundCurrentSimNameAndSimID = false;
+//					for (int i = 0; i < multiSimNameSimDataIDs.length; i++) {
+//						if(multiSimNameSimDataIDs[i].getSimulationName().equals(dataInfoProvider.getSimulationModelInfo().getSimulationName())){
+//							bFoundCurrentSimNameAndSimID = true;
+//							break;
+//						}
+//					}
+//					if(!bFoundCurrentSimNameAndSimID){
+//						ExportSpecs.SimNameSimDataID[] temp = new ExportSpecs.SimNameSimDataID[multiSimNameSimDataIDs.length+1];
+//						System.arraycopy(multiSimNameSimDataIDs, 0, temp, 0, multiSimNameSimDataIDs.length);
+//						temp[multiSimNameSimDataIDs.length] = currentSimNameSimDataID;
+//						multiSimNameSimDataIDs = temp;
+//					}
+//				}
+				if(multiSimNameSimDataIDs == null){
+					return new ExportSpecs.SimNameSimDataID[] {currentSimNameSimDataID};
+				}
+				return multiSimNameSimDataIDs;
 			}
 			public void selectSimulations() {
 				getNumAvailableSimulations();
@@ -1061,24 +1089,62 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 		
 				try{
 					int[] choices = DialogUtils.showComponentOKCancelTableList(
-							NewPDEExportPanel.this, "Choose Sims to export together (non parameter scan)",
+							NewPDEExportPanel.this, "Choose Sims to export together",
 							new String[] {"Simulation","Mesh x,y,z","NumTimePoints","EndTime","Output Descr."},
 							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if (choices != null) {
-						simNameSimDataIDs = new ExportSpecs.SimNameSimDataID[choices.length];
+						multiSimNameSimDataIDs = new ExportSpecs.SimNameSimDataID[choices.length];
 						for (int i = 0; i < choices.length; i++) {
-							VCSimulationIdentifier vcSimId =
-								simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-							simNameSimDataIDs[i] =
+							multiSimNameSimDataIDs[i] =
 								new ExportSpecs.SimNameSimDataID(
 									simulations[choices[i]].getName(),
-									new VCSimulationDataIdentifier(vcSimId, 0/*simulations[choices[i]].getScanCount()*/)
+									simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
+									SimResultsViewer.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
 								);
 						}
 					}
 				}catch (UserCancelException uce){
 					//ignore
 				}
+			}
+			public void selectParamScanInfo(){
+				String[][] rowData = new String[currentSimNameSimDataID.getExportParamScanInfo().getParamScanJobIndexes().length][currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames().length];
+				for (int i = 0; i < rowData.length; i++) {
+					for (int j = 0; j < rowData[i].length; j++) {
+						rowData[i][j] = currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantValues()[i][j];
+					}
+				}
+				try{
+					int[] choices = DialogUtils.showComponentOKCancelTableList(
+							NewPDEExportPanel.this, "Choose ParameterScans to export together",
+							currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames(),
+							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+					if(choices != null && choices.length > 0){
+						selectedParamScanIndexes = new int[choices.length];
+//						String[][] selectedParamScanValues = new String[choices.length][currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames().length];
+						for (int i = 0; i < choices.length; i++) {
+							selectedParamScanIndexes[i] = choices[i];
+//							for (int j = 0; j < currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames().length; j++) {
+//								selectedParamScanValues[i][j] = currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantValues()[choices[i]][j];
+//							}
+						}
+//						exportParamScanInfo =
+//								new ExportSpecs.ExportParamScanInfo(selectedParamScanIndexes, selectedParamScanIndexes[0], currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames(), selectedParamScanValues);
+					}else{
+						selectedParamScanIndexes = null;
+					}
+				}catch(UserCancelException uce){
+					//ignore
+				}
+			}
+			public int[] getselectedParamScanIndexes(){
+				return selectedParamScanIndexes;
+			}
+			public int getNumAvailableParamScans(){
+				if(currentSimNameSimDataID == null || currentSimNameSimDataID.getExportParamScanInfo() == null){
+					return 0;
+				}
+				return currentSimNameSimDataID.getExportParamScanInfo().getParamScanJobIndexes().length;
 			}
 			public int getNumAvailableSimulations() {
 				if(simulations==null){
@@ -1318,6 +1384,26 @@ private javax.swing.JList getJListSelections() {
 			ivjJListSelections.setName("JListSelections");
 			ivjJListSelections.setBounds(0, 0, 160, 120);
 			ivjJListSelections.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			ivjJListSelections.setCellRenderer(new DefaultListCellRenderer(){
+				@Override
+				public Component getListCellRendererComponent(JList list,
+						Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					// TODO Auto-generated method stub
+//					System.out.println(value.getClass().getName()+"   "+value);
+					String curveDescr = "";
+					if(value instanceof SpatialSelectionMembrane){
+						curveDescr = ((SpatialSelectionMembrane)value).getSelectionSource().getDescription()+" ("+((SpatialSelectionMembrane)value).getSelectionSource().getBeginningCoordinate()+")";
+					}else if(value instanceof SpatialSelectionVolume){
+						curveDescr = ((SpatialSelectionVolume)value).getCurveSelectionInfo().getCurve().getDescription()+" ("+((SpatialSelectionVolume)value).getCurveSelectionInfo().getCurve().getBeginningCoordinate()+")";
+					}else{
+						curveDescr = value.toString();
+					}
+
+					return super.getListCellRendererComponent(list, curveDescr, index, isSelected,
+							cellHasFocus);
+				}
+			});
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2137,7 +2223,12 @@ public void setNormalAxis(int normalAxis) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(PDEDataContext pdeDataContext) {
+private ExportSpecs.SimNameSimDataID currentSimNameSimDataID;
+public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameSimDataID currentSimNameSimDataID) {
+	//currentSimNameSimDataID 2 states
+	//1.  with ExportSpecs.ExportParamScanInfo
+	//2.  without ExportSpecs.ExportParamScanInfo
+	this.currentSimNameSimDataID = currentSimNameSimDataID;
 	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
@@ -2520,7 +2611,9 @@ private void updateInterface() {
 //		&&
 //		(getJListSelections().getSelectedIndex() != -1);
 //	//
+	
 	getJListSelections().setEnabled(getJRadioButtonSelection().isSelected());
+
 	
 	getBothVarRadioButton().setEnabled(true);
 	getVolVarRadioButton().setEnabled(true);
@@ -2548,6 +2641,8 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		getMembVarRadioButton().setEnabled(false);
 	}
+	
+
 }
 
 

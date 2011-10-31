@@ -14,11 +14,14 @@ import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.ParticleData;
 import cbit.vcell.simdata.SimDataBlock;
@@ -161,100 +164,116 @@ private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID
  * This method was created in VisualAge.
  */
 private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
-		VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
-		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String simulationName) 
+		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
+		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName) 
 						throws RemoteException, DataAccessException {
 						
 	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
-	if(simNameSimDataIDs == null){
-		simNameSimDataIDs = new ExportSpecs.SimNameSimDataID[] {new ExportSpecs.SimNameSimDataID(simulationName, orig_vcdID)};
-	}
 	Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
+	double progressCounter = 0;
 	final int SIM_COUNT = simNameSimDataIDs.length;
-	for (int v = 0; v < SIM_COUNT; v++) {
-	VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier();
-	
-	
-	double progress = 0.0;
-	
-	String simID = vcdID.getID();							
-	ExportOutput[] output = new ExportOutput[] {new ExportOutput(false, null, null, null, null)};
-	String dataType = ".csv";
-	String dataID = "_";
-	StringBuffer data = new StringBuffer();
-	SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
-	data.append("Simulation Name: "+simNameSimDataIDs[v].getSimulationName()+"   "+simulationDescription.getHeader(dataType));
+	final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null?asciiSpecs.getExportMultipleParamScans().length:1);
+	final int TIME_COUNT = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
+
+	double TOTAL_EXPORTS_OPS = 0;
 	switch (geometrySpecs.getModeID()) {
-		case GEOMETRY_SELECTIONS: {
-			// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
-			SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
-			cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
-			for (int i = 0; i < spatialSelections.length; i ++) {
-				spatialSelections[i].setMesh(mesh);
-			}
-			int required = variableSpecs.getVariableNames().length * geometrySpecs.getCurves().length;
-			if (geometrySpecs.getPointIndexes().length > 0) {
-				required += variableSpecs.getVariableNames().length;
-			}
-			output = new ExportOutput[required];
-			String dataIDroot = dataID;
-			int pointOffset = 0;
-			if (geometrySpecs.getPointIndexes().length > 0) {
-				pointOffset = variableSpecs.getVariableNames().length;
-				dataID += "Points_Time_";
-				for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
-					progress = (double)i / required;
-					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getPointIndexes(), timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
-					output[i] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
-				}
-			}
-			for (int s = 0; s < geometrySpecs.getCurves().length; s++) {
-				int done = geometrySpecs.getPointIndexes().length > 0 ? variableSpecs.getVariableNames().length : 0;
-				dataID = dataIDroot;
-				dataID += "Curve_" + s + "_Time_";
-				for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
-					progress = (double)(done + i + s * variableSpecs.getVariableNames().length) / required;
-					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
-					output[s * variableSpecs.getVariableNames().length + i+pointOffset] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
-				}
-			}
-			exportOutputV.add(output);
+		case GEOMETRY_SELECTIONS:
+			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*(geometrySpecs.getCurves().length+(geometrySpecs.getPointCount() > 0?1:0));
 			break;
-		}
-		case GEOMETRY_SLICE: {
-			dataID += "Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + geometrySpecs.getSliceNumber() + "_";
-			output = new ExportOutput[variableSpecs.getVariableNames().length * (timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1)];
-			int required = output.length;
-			for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
-				//String[] data2 = new String[timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1];
-				int data2Length = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
-				for (int i=0;i<data2Length;i++) {
-					progress = (double)(v+((i + j * data2Length) / (double)required))/(double)SIM_COUNT;
-					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-					String data2 = getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
-					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(data2);
-					StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
-						inset.reverse();
-						inset.append("000");
-						inset.setLength(4);
-						inset.reverse();
-					String dataID1 = dataID + variableSpecs.getVariableNames()[j] + "_"+inset.toString();
-					output[j * data2Length + i] = new ExportOutput(true, dataType, simID, dataID1, data1.toString().getBytes());
+		case GEOMETRY_SLICE:
+			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*TIME_COUNT;
+			break;
+	}
+	for (int v = 0; v < SIM_COUNT; v++) {
+		//3 states for parameter scan
+		//1. simNameSimDataIDs[v].getExportParamScanInfo() == null, not a parameter scan
+		//2. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() == null, parameter scan use simNameSimDataIDs[v].getDefaultVCDataIdentifier()
+		//3. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() != null, parameter scan use simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes() loop through
+		for (int ps = 0; ps < PARAMSCAN_COUNT; ps++) {
+			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
+			VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
+			if(asciiSpecs.getExportMultipleParamScans() != null){
+				simJobIndex = simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes()[asciiSpecs.getExportMultipleParamScans()[ps]];
+				vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
+			}
+			String paramScanInfo = "";
+			if(simNameSimDataIDs[v].getExportParamScanInfo() != null){
+				for (int i = 0; i < simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantNames().length; i++) {
+					String psName = simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantNames()[i];
+					paramScanInfo = paramScanInfo+
+					" '"+psName+"'="+simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantValues()[simJobIndex][i];					
 				}
 			}
-			exportOutputV.add(output);
-			break;
-		}
-		default: {
-			throw new DataAccessException("Undexpected geometry modeID");
+			String simID = vcdID.getID();							
+			String dataType = ".csv";
+			StringBuffer data = new StringBuffer();
+			SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
+			data.append("\""+"Model: '"+contextName+"'\"\n\"Simulation: '"+simNameSimDataIDs[v].getSimulationName()+"' ("+paramScanInfo+")\"\n"+simulationDescription.getHeader(dataType));
+			switch (geometrySpecs.getModeID()) {
+				case GEOMETRY_SELECTIONS: {
+					// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
+					SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
+					cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+					for (int i = 0; i < spatialSelections.length; i ++) {
+						spatialSelections[i].setMesh(mesh);
+					}
+					Vector<ExportOutput> outputV = new Vector<ExportOutput>();
+					if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
+						String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
+						StringBuffer data1 = new StringBuffer(data.toString());
+						for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
+							data1.append(getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns())+"\n");
+							progressCounter++;
+							exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+						}
+						outputV.add(new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, data1.toString().getBytes()));
+					}
+					if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
+						String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
+						StringBuffer data1 = new StringBuffer(data.toString());
+						for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
+							for (int s = 0; s < geometrySpecs.getCurves().length; s++) {
+								if(!GeometrySpecs.isSinglePoint(geometrySpecs.getCurves()[s])){
+									data1.append(getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns())+"\n");
+									progressCounter++;
+									exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								}
+							}
+						}
+						outputV.add(new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, data1.toString().getBytes()));
+					}
+					exportOutputV.add(outputV.toArray(new ExportOutput[0]));
+					break;
+				}
+				case GEOMETRY_SLICE: {
+					String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + geometrySpecs.getSliceNumber() + "_";
+					ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
+					for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
+						for (int i=0;i<TIME_COUNT;i++) {
+							String data2 = getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
+							StringBuffer data1 = new StringBuffer(data.toString());
+							data1.append(data2);
+							StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
+								inset.reverse();
+								inset.append("000");
+								inset.setLength(4);
+								inset.reverse();
+							String dataID1 = dataID + variableSpecs.getVariableNames()[j] + "_"+inset.toString();
+							output[j * TIME_COUNT + i] = new ExportOutput(true, dataType, simID, dataID1, data1.toString().getBytes());
+							progressCounter++;
+							exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+						}
+					}
+					exportOutputV.add(output);
+					break;
+				}
+				default: {
+					throw new DataAccessException("Undexpected geometry modeID");
+				}
+			}
 		}
 	}
-	}
+	
 	if(exportOutputV.size() == 1){
 		return exportOutputV.elementAt(0);
 	}
@@ -295,8 +314,13 @@ private String getCurveTimeSeries(OutputContext outputContext,User user, DataSer
 		crossingMembraneIndexes = ssh.getMembraneIndexesInOut();
 	}else if(curve instanceof SpatialSelectionMembrane){
 		SpatialSelection.SSHelper ssh = ((SpatialSelectionMembrane)curve).getIndexSamples();
-		pointIndexes = ssh.getSampledIndexes();
-		distances = ssh.getWorldCoordinateLengths();
+		if(((SpatialSelectionMembrane)curve).getSelectionSource() instanceof SinglePoint){
+			pointIndexes = new int[] {ssh.getSampledIndexes()[0]};
+			distances = new double[] {0};
+		}else{
+			pointIndexes = ssh.getSampledIndexes();
+			distances = ssh.getWorldCoordinateLengths();
+		}
 	}
 
 	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
@@ -317,7 +341,7 @@ private String getCurveTimeSeries(OutputContext outputContext,User user, DataSer
 	// put data in csv format
 	//
 	StringBuffer buffer = new StringBuffer();
-	buffer.append("Time Series for variable " + variableName + "\n" + "over the time " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n" + "of " + curve + "\n\n");
+	buffer.append("\"variable ('" + variableName + "') times (" + allTimes[beginIndex] + " " + allTimes[endIndex] + ") "+getSpatialSelectionDescription(curve)+"\"\n");
 	if (switchRowsColumns) {
 		buffer.append(",Distances\n");
 		buffer.append("Times,");
@@ -351,7 +375,25 @@ private String getCurveTimeSeries(OutputContext outputContext,User user, DataSer
 	return buffer.toString();
 }
 
-
+private String getSpatialSelectionName(SpatialSelection spatialSelection){
+	if(spatialSelection instanceof SpatialSelectionMembrane){
+		return ((SpatialSelectionMembrane)spatialSelection).getSelectionSource().getDescription();
+	}else if(spatialSelection instanceof SpatialSelectionVolume){
+		return spatialSelection.getCurveSelectionInfo().getCurve().getDescription();
+	}
+	return null;
+}
+private String getSpatialSelectionCoordinate(SpatialSelection spatialSelection){
+	if(spatialSelection instanceof SpatialSelectionMembrane){
+		return ((SpatialSelectionMembrane)spatialSelection).getSelectionSource().getBeginningCoordinate().toString();
+	}else if(spatialSelection instanceof SpatialSelectionVolume){
+		return spatialSelection.getCurveSelectionInfo().getCurve().getBeginningCoordinate().toString();
+	}
+	return null;
+}
+private String getSpatialSelectionDescription(SpatialSelection spatialSelection){
+	return "(roi=('" + getSpatialSelectionName(spatialSelection) + "') coord=("+getSpatialSelectionCoordinate(spatialSelection)+"))";
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/17/00 6:02:37 PM)
@@ -449,11 +491,11 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getPointsTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getPointsTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, GeometrySpecs geometrySpecs, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
 	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
 		new org.vcell.util.document.TimeSeriesJobSpec(
-				new String[]{variableName},new int[][]{pointIndexes},null,allTimes[beginIndex],1,allTimes[endIndex],
+				new String[]{variableName},new int[][]{geometrySpecs.getPointIndexes()},null,allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
 	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(outputContext,user, vcdID, timeSeriesJobSpec);
 
@@ -468,9 +510,11 @@ private String getPointsTimeSeries(OutputContext outputContext,User user, DataSe
 	//
 	// put data in csv format
 	//
+	SpatialSelection[] pointSpatialSelections = geometrySpecs.getPointSpatialSelections();
 	StringBuffer buffer = new StringBuffer();
-	buffer.append(
-		"Time Series for variable " + variableName + " over the range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n\n");
+//	buffer.append(
+//		"\"Time Series for variable '" + variableName + "'\" over the range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n");
+	buffer.append("\"variable ('" + variableName + "') times (" + allTimes[beginIndex] + " " + allTimes[endIndex] + ") "/*+getSpatialSelectionDescription(curve)*/+"\"\n");
 	if (switchRowsColumns) {
 		buffer.append(",Coordinates\n");
 		buffer.append("Time,");
@@ -478,8 +522,8 @@ private String getPointsTimeSeries(OutputContext outputContext,User user, DataSe
 			buffer.append("," + allTimes[i]);
 		}
 		buffer.append("\n");	
-		for (int k=0;k<pointIndexes.length;k++) {
-			buffer.append("," + "Index_"+pointIndexes[k]);
+		for (int k=0;k<pointSpatialSelections.length;k++) {
+			buffer.append("," + getSpatialSelectionDescription(pointSpatialSelections[k]));
 			for (int i=beginIndex;i<=endIndex;i++) {
 				buffer.append("," + variableValues[k+1][i - beginIndex]);
 			}
@@ -488,13 +532,13 @@ private String getPointsTimeSeries(OutputContext outputContext,User user, DataSe
 	} else {
 		buffer.append(",Time\n");
 		buffer.append("Coordinates,");
-		for (int k=0;k<pointIndexes.length;k++) {
-			buffer.append("," + "Index_"+pointIndexes[k]);
+		for (int k=0;k<pointSpatialSelections.length;k++) {
+			buffer.append("," + getSpatialSelectionDescription(pointSpatialSelections[k]));
 		}
 		buffer.append("\n");	
 		for (int i=beginIndex;i<=endIndex;i++) {
 			buffer.append("," + allTimes[i]);
-			for (int k=0;k<pointIndexes.length;k++) {
+			for (int k=0;k<pointSpatialSelections.length;k++) {
 				buffer.append("," + variableValues[k+1][i - beginIndex]);
 			}
 			buffer.append("\n");
@@ -631,7 +675,7 @@ public ExportOutput[] makeASCIIData(OutputContext outputContext,JobRequest jobRe
 				exportSpecs.getTimeSpecs(),
 				exportSpecs.getGeometrySpecs(),
 				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs(),
-				exportSpecs.getSimulationName()
+				exportSpecs.getContextName()
 			);
 		case ODE_VARIABLE_DATA:
 			return exportODEData(

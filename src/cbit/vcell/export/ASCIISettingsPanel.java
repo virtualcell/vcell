@@ -240,7 +240,7 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  */
 public ASCIISpecs getAsciiSpecs() {
 	return new ASCIISpecs(FORMAT_CSV, getExportDataType(), getSwitchRowsColumns(),
-			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()));
+			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()));
 }
 /**
  * Return the ButtonGroup1 property value.
@@ -503,7 +503,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MovieSettingsPanel");
-		setPreferredSize(new Dimension(213, 216));
+		setPreferredSize(new Dimension(213, 281));
 		setLayout(new java.awt.GridBagLayout());
 		setSize(188, 206);
 
@@ -551,9 +551,20 @@ private void initialize() {
 		gbc_simSelectorButton.gridx = 0;
 		gbc_simSelectorButton.gridy = 6;
 		add(getSimSelectorButton(), gbc_simSelectorButton);
+		GridBagConstraints gbc_chckbxExportMultiParamScan = new GridBagConstraints();
+		gbc_chckbxExportMultiParamScan.anchor = GridBagConstraints.WEST;
+		gbc_chckbxExportMultiParamScan.insets = new Insets(0, 5, 5, 0);
+		gbc_chckbxExportMultiParamScan.gridx = 0;
+		gbc_chckbxExportMultiParamScan.gridy = 7;
+		add(getChckbxExportMultiParamScan(), gbc_chckbxExportMultiParamScan);
+		GridBagConstraints gbc_paramScanSelectorButton = new GridBagConstraints();
+		gbc_paramScanSelectorButton.insets = new Insets(0, 0, 5, 0);
+		gbc_paramScanSelectorButton.gridx = 0;
+		gbc_paramScanSelectorButton.gridy = 8;
+		add(getParamScanSelectorButton(), gbc_paramScanSelectorButton);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 7;
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 9;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -681,16 +692,24 @@ private void updateExportDataType() {
 	private ExportSpecs.SimulationSelector simulationSelector;
 	private JButton simSelectorButton;
 	private JCheckBox chckbxExportMultipleSimulations;
+	private JCheckBox chckbxExportMultiParamScan;
+	private JButton paramScanSelectorButton;
 	public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
 		this.simulationSelector = simulationSelector;
 		getChckbxExportMultipleSimulations().setEnabled(simulationSelector != null && simulationSelector.getNumAvailableSimulations()>1);
 		getChckbxExportMultipleSimulations().setSelected(false);
 		getSimSelectorButton().setEnabled(false);
+		
+		getChckbxExportMultiParamScan().setEnabled(simulationSelector != null && simulationSelector.getNumAvailableParamScans()>1);
+		getChckbxExportMultiParamScan().setSelected(false);
+		getParamScanSelectorButton().setEnabled(false);
+
 	}
 	
 	private JButton getSimSelectorButton() {
 		if (simSelectorButton == null) {
 			simSelectorButton = new JButton("Select Simulations...");
+			simSelectorButton.setEnabled(false);
 			simSelectorButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(simulationSelector != null){
@@ -713,5 +732,29 @@ private void updateExportDataType() {
 			});
 		}
 		return chckbxExportMultipleSimulations;
+	}
+	private JCheckBox getChckbxExportMultiParamScan() {
+		if (chckbxExportMultiParamScan == null) {
+			chckbxExportMultiParamScan = new JCheckBox("Export parameter scans together");
+			chckbxExportMultiParamScan.setEnabled(false);
+			chckbxExportMultiParamScan.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					getParamScanSelectorButton().setEnabled(getChckbxExportMultiParamScan().isSelected());
+				}
+			});
+		}
+		return chckbxExportMultiParamScan;
+	}
+	private JButton getParamScanSelectorButton() {
+		if (paramScanSelectorButton == null) {
+			paramScanSelectorButton = new JButton("Select Param Scans...");
+			paramScanSelectorButton.setEnabled(false);
+			paramScanSelectorButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					simulationSelector.selectParamScanInfo();
+				}
+			});
+		}
+		return paramScanSelectorButton;
 	}
 }
