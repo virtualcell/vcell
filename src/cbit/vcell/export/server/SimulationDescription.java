@@ -101,11 +101,11 @@ public String getHeader(String format) {
 	String header = null;
 	String line1 = null;
 	String line2 = null;
-	String line3 = null;
+	String line3 = "";
 	String line4 = null;
 	String line5 = null;
 	if (format.equals(".csv")) {
-		line1 = "SimDataID,," + name + ",," + dataType + "\n";
+		line1 = "("+name +" ("+ dataType + "))\n";
 		if(bMultiTrialData)
 		{
 			line2 = "Trial range,," + times[0] + "," + times[times.length - 1] + "\n";
@@ -113,15 +113,15 @@ public String getHeader(String format) {
 		}
 		else
 		{
-			line2 = "Time range,," + times[0] + "," + times[times.length - 1] + "\n";
-			line3 = "Saved timepoints,," + timeNumber + "\n";
+			line2 = "\"Sim time range (" + times[0] + " " + times[times.length - 1] + ") (saved timepoints "+timeNumber+")\"\n";
+//			line3 = "Saved timepoints,," + timeNumber + "\n";
 		}
-		line4 = "Number of variables,," + variableNumber + "\n";
+		line4 = "\"Number of variables (" + variableNumber + ")\"\n";
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 0; i < variables.length; i++) {
-			buffer.append(variables[i] + ",");
+			buffer.append(",\""+variables[i]+"\"");
 		}
-		line5 = "Variable names,," + buffer.toString() + "\n";
+		line5 = "\"Variable names\"" + buffer.toString() + "\n";
 	}
 	header = line1 + line2 + line3 + line4 + line5 + "\n";
 	return header;

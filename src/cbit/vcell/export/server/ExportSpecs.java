@@ -11,8 +11,12 @@
 package cbit.vcell.export.server;
 import java.io.Serializable;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * This type was created in VisualAge.
  */
@@ -24,21 +28,87 @@ public class ExportSpecs implements Serializable {
 	private GeometrySpecs geometrySpecs;
 	private FormatSpecificSpecs formatSpecificSpecs;
 	private String simulatioName;
+	private String contextName;
 
 	public interface SimulationSelector{
 		public void selectSimulations();
+		public void selectParamScanInfo();
 		public ExportSpecs.SimNameSimDataID[] getSelectedSimDataInfo();
+		public int[] getselectedParamScanIndexes();
 		public int getNumAvailableSimulations();
+		public int getNumAvailableParamScans();
+	}
+	public static class ExportParamScanInfo implements Matchable,Serializable{
+		private int[] paramScanJobIndexes;//these are the param scan job indexes we are possibly interested in
+		private int defaultParamScanJobIndex;//this is the "selected" param scan simdata job index at the time this object was created, 0 if no param scan
+		private String[] paramScanConstantNames;
+		private String[][] paramScanConstantValues;
+		
+		
+		public ExportParamScanInfo(int[] paramScanJobIndexes,int defaultParamScanJobIndex, String[] paramScanConstantNames,String[][] paramScanConstantValues) {
+			this.paramScanJobIndexes = paramScanJobIndexes;
+			this.defaultParamScanJobIndex = defaultParamScanJobIndex;
+			this.paramScanConstantNames = paramScanConstantNames;
+			this.paramScanConstantValues = paramScanConstantValues;
+		}
+		public boolean compareEqual(Matchable obj) {
+			if (obj instanceof ExportParamScanInfo) {
+				ExportParamScanInfo exportParamScanInfo = (ExportParamScanInfo)obj;
+				if (defaultParamScanJobIndex == exportParamScanInfo.defaultParamScanJobIndex &&
+					Compare.isEqualOrNull(paramScanJobIndexes, exportParamScanInfo.paramScanJobIndexes)){
+					
+					for (int i = 0;paramScanConstantNames!=null &&  i<paramScanConstantNames.length; i++) {
+						if(!paramScanConstantNames[i].equals(exportParamScanInfo.paramScanConstantNames[i])){
+							return false;
+						}
+					}
+					for (int i = 0;paramScanConstantValues!=null &&  i<paramScanConstantValues.length; i++) {
+						if(!paramScanConstantValues[i].equals(exportParamScanInfo.paramScanConstantValues[i])){
+							return false;
+						}
+					}
+					
+					return true;
+				}
+			}
+			return false;
+			
+		}
+		public int[] getParamScanJobIndexes() {
+			return paramScanJobIndexes;
+		}
+		public int getDefaultParamScanJobIndex() {
+			return defaultParamScanJobIndex;
+		}
+		public String[] getParamScanConstantNames() {
+			return paramScanConstantNames;
+		}
+		public String[][] getParamScanConstantValues() {
+			return paramScanConstantValues;
+		}
 	}
 	public static class SimNameSimDataID implements Matchable,Serializable{
 		private String simulationName;
-		private VCDataIdentifier vcDataIdentifier;
-		public SimNameSimDataID(String simulationName,VCDataIdentifier vcDataIdentifier) {
+		private VCSimulationIdentifier vcSimulationIdentifier;
+		private ExportParamScanInfo exportParamScanInfo;
+		public SimNameSimDataID(String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo) {
 			this.simulationName = simulationName;
-			this.vcDataIdentifier = vcDataIdentifier;
+			this.vcSimulationIdentifier = vcSimulationIdentifier;
+			this.exportParamScanInfo = exportParamScanInfo;
 		}
-		public VCDataIdentifier getVCDataIdentifier(){
-			return vcDataIdentifier;
+		public VCDataIdentifier getVCDataIdentifier(int paramScanJobIndex){
+			if(exportParamScanInfo == null && paramScanJobIndex > 0){
+				throw new IllegalArgumentException("Error SimNameSimDataID.getVCDataIdentifier: jobIndex > 0 unexpected with no parameter scan");
+			}else if(exportParamScanInfo != null && paramScanJobIndex >= exportParamScanInfo.getParamScanJobIndexes().length){
+				throw new IllegalArgumentException("Error SimNameSimDataID.getVCDataIdentifier: jobIndex > parameter scan count");
+			}
+			return new VCSimulationDataIdentifier(vcSimulationIdentifier, paramScanJobIndex);
+		}
+		public int getDefaultJobIndex(){
+			return (exportParamScanInfo==null?0:exportParamScanInfo.defaultParamScanJobIndex);
+		}
+		public ExportParamScanInfo getExportParamScanInfo(){
+			return exportParamScanInfo;
 		}
 		public String getSimulationName(){
 			return simulationName;
@@ -48,14 +118,13 @@ public class ExportSpecs implements Serializable {
 				SimNameSimDataID simNameSimDataID = (SimNameSimDataID)obj;
 				if (
 					simulationName.equals(simNameSimDataID.getSimulationName()) &&
-					vcDataIdentifier.equals(simNameSimDataID.getVCDataIdentifier())){
-					
+					vcSimulationIdentifier.equals(simNameSimDataID.vcSimulationIdentifier) &&
+					Compare.isEqualOrNull(exportParamScanInfo, simNameSimDataID.getExportParamScanInfo())){
 					return true;
 				}
 			}
 			return false;
 		}
-
 	}
 /**
  * This method was created in VisualAge.
@@ -63,7 +132,7 @@ public class ExportSpecs implements Serializable {
 public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, int format,
 		VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 		GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-		String simulationName) {
+		String simulationName,String contextName) {
 	this.vcDataIdentifier = vcdID;
 	this.format = format;
 	this.variableSpecs = variableSpecs;
@@ -71,8 +140,12 @@ public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, int format,
 	this.geometrySpecs = geometrySpecs;
 	this.formatSpecificSpecs = formatSpecificSpecs;
 	this.simulatioName = simulationName;
+	this.contextName = contextName;
 }
 
+public String getContextName(){
+	return contextName;
+}
 public String getSimulationName(){
 	return simulatioName;
 }
@@ -91,8 +164,9 @@ public boolean equals(Object object) {
 			(variableSpecs == null && exportSpecs.getVariableSpecs() == null) || variableSpecs.equals(exportSpecs.getVariableSpecs()) &&
 			(timeSpecs == null && exportSpecs.getTimeSpecs() == null) || timeSpecs.equals(exportSpecs.getTimeSpecs()) &&
 			(geometrySpecs == null && exportSpecs.getGeometrySpecs() == null) || geometrySpecs.equals(exportSpecs.getGeometrySpecs()) &&
-			(formatSpecificSpecs == null && exportSpecs.getFormatSpecificSpecs() == null) || formatSpecificSpecs.equals(exportSpecs.getFormatSpecificSpecs())
-		) {
+			((formatSpecificSpecs == null && exportSpecs.getFormatSpecificSpecs() == null) || ((formatSpecificSpecs != null && exportSpecs.getFormatSpecificSpecs() != null) && formatSpecificSpecs.equals(exportSpecs.getFormatSpecificSpecs()))) &&
+			Compare.isEqualOrNull(simulatioName , exportSpecs.simulatioName) &&
+			Compare.isEqualOrNull(contextName , exportSpecs.contextName)){
 			return true;
 		}
 	}

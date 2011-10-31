@@ -21,14 +21,16 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	private int dataType;
 	private boolean switchRowsColumns;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
+	private int[] exportMultipleParamScans;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(int format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs) {
+public ASCIISpecs(int format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
 	this.format = format;
 	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
 	this.simNameSimDataIDs = simNameSimDataIDs;
+	this.exportMultipleParamScans = exportMultipleParamScans;
 }
 /**
  * Insert the method's description here.
@@ -43,12 +45,16 @@ public boolean equals(java.lang.Object object) {
 			format == asciiSpecs.getFormat() &&
 			dataType == asciiSpecs.getDataType() &&
 			switchRowsColumns == asciiSpecs.getSwitchRowsColumns() &&
-			Compare.isEqualOrNull(simNameSimDataIDs, asciiSpecs.getSimNameSimDataIDs())
+			Compare.isEqualOrNull(simNameSimDataIDs, asciiSpecs.getSimNameSimDataIDs()) &&
+			Compare.isEqualOrNull(exportMultipleParamScans, asciiSpecs.getExportMultipleParamScans())
 		) {
 			return true;
 		}
 	}
 	return false;
+}
+public int[] getExportMultipleParamScans(){
+	return exportMultipleParamScans;
 }
 public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
 	return simNameSimDataIDs;

@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.export.server;
+import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.simdata.gui.*;
 import java.io.*;
 
@@ -94,14 +95,14 @@ public int getAxis() {
 public SpatialSelection[] getCurves() {
 	int count = 0;
 	for (int i=0;getSelections()!=null && i<getSelections().length;i++) {
-		if (! getSelections()[i].isPoint()) {
+		if (! isSinglePoint(getSelections()[i])) {
 			count++;
 		}
 	}
 	SpatialSelection[] curves = new SpatialSelection[count];
 	count = 0;
 	for (int i = 0;getSelections()!=null && i < getSelections().length; i++){
-		if (! getSelections()[i].isPoint()) {
+		if (! isSinglePoint(getSelections()[i])) {
 			curves[count] = getSelections()[i];
 			count++;
 		}
@@ -130,16 +131,11 @@ public int[] getPointIndexes() {
 			throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
 		}
 		case ExportConstants.GEOMETRY_SELECTIONS: {
-			int count = 0;
-			for (int i=0;i<getSelections().length;i++) {
-				if (getSelections()[i].isPoint()) {
-					count++;
-				}
-			}
+			int count = getPointCount();
 			int[] points = new int[count];
 			count = 0;
 			for (int i = 0; i < getSelections().length; i++){
-				if (getSelections()[i].isPoint()) {
+				if (isSinglePoint(getSelections()[i])) {
 					points[count] = getSelections()[i].getIndex(0);
 					count++;
 				}
@@ -151,7 +147,58 @@ public int[] getPointIndexes() {
 		}
 	}
 }
-
+public int getPointCount(){
+	switch (getModeID()){
+		case ExportConstants.GEOMETRY_SLICE: {
+			throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
+		}
+		case ExportConstants.GEOMETRY_SELECTIONS: {
+			int count = 0;
+			for (int i=0;i<getSelections().length;i++) {
+				if (isSinglePoint(getSelections()[i])) {
+					count++;
+				}
+			}
+			return count;
+		}
+		default: {
+			throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = "+getModeID());	
+		}
+	}	
+}
+public SpatialSelection[] getPointSpatialSelections(){
+	switch (getModeID()){
+	case ExportConstants.GEOMETRY_SLICE: {
+		throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
+	}
+	case ExportConstants.GEOMETRY_SELECTIONS: {
+		int count = 0;
+		for (int i=0;i<getSelections().length;i++) {
+			if (isSinglePoint(getSelections()[i])) {
+				count++;
+			}
+		}
+		SpatialSelection[] pointSpatialSelections = new SpatialSelection[count];
+		count = 0;
+		for (int i = 0; i < getSelections().length; i++){
+			if (isSinglePoint(getSelections()[i])) {
+				pointSpatialSelections[count] = getSelections()[i];
+				count++;
+			}
+		}
+		return pointSpatialSelections;
+	}
+	default: {
+		throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = "+getModeID());	
+	}
+}
+	
+}
+public static boolean isSinglePoint(SpatialSelection spatialSelection){
+	return
+			spatialSelection.isPoint() ||
+			(spatialSelection instanceof SpatialSelectionMembrane && ((SpatialSelectionMembrane)spatialSelection).getSelectionSource() instanceof SinglePoint);
+}
 
 /**
  * This method was created in VisualAge.

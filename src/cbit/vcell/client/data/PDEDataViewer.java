@@ -114,6 +114,7 @@ import cbit.vcell.export.gloworm.quicktime.MediaMovie;
 import cbit.vcell.export.gloworm.quicktime.MediaTrack;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
@@ -339,7 +340,8 @@ public class PDEDataViewer extends DataViewer {
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) { 
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
 					getPDEPlotControlPanel1().setPdeDataContext(getPdeDataContext());
-					getPDEExportPanel1().setPdeDataContext(getPdeDataContext());
+					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
+							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
 					PDEDataContext oldValue = (PDEDataContext) evt.getOldValue();
 					if (oldValue != null) {
 						oldValue.removePropertyChangeListener(ivjEventHandler);
@@ -2140,12 +2142,15 @@ public static void main(java.lang.String[] args) {
  */
 public void setPdeDataContext(PDEDataContext pdeDataContext) {	
 	meshRegionSurfaces = null;
-	
+
 	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
 }
 
+public void setSimNameSimDataID(ExportSpecs.SimNameSimDataID simNameSimDataID){
+	getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),simNameSimDataID);
+}
 /**
  * Sets the simulation property (cbit.vcell.solver.Simulation) value.
  * @param simulation The new value for the property.
