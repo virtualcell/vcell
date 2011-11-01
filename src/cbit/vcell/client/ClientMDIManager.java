@@ -326,7 +326,7 @@ void createRecyclableWindows() {
 		// set bngService for bngOutputPanel - thro' clientServerManager or separate manager for bionetgen?
 		bngWindow.setBngWindowManager(windowManager);
 		bngOutputPanel.setBngWindowManager(windowManager);
-		blockWindow(BIONETGEN_WINDOW_ID);
+//		blockWindow(BIONETGEN_WINDOW_ID);
 		
 		// listen for event when user clicks window close button
 		bngWindow.addWindowListener(windowListener);
@@ -598,12 +598,12 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
 		unBlockWindow(DATABASE_WINDOW_ID);
 		unBlockWindow(TESTING_FRAMEWORK_WINDOW_ID);
-		unBlockWindow(BIONETGEN_WINDOW_ID);
+//		unBlockWindow(BIONETGEN_WINDOW_ID);
 		unBlockWindow(FIELDDATA_WINDOW_ID);
 	} else {
 		blockWindow(DATABASE_WINDOW_ID);
 		blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
-		blockWindow(BIONETGEN_WINDOW_ID);
+//		blockWindow(BIONETGEN_WINDOW_ID);
 		blockWindow(FIELDDATA_WINDOW_ID);
 	}
 	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
