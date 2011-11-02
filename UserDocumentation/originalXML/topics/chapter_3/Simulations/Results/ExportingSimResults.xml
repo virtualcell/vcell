@@ -8,7 +8,11 @@
 	
 		</introduction>
 		
-	<appearance>  </appearance>
+	<appearance> 
+	
+	
+	
+	 </appearance>
 	
 	
 	<operations> 
@@ -25,9 +29,16 @@ ported. To select more than one variable, select one variable and then
 hold down the Shift key to select additional variables. To select the entire list of variables, select the first variable in the list and then hold down the Shift key and select the last variable in the list.
 </para>
 <para>
+<imgReference target = "SimResultsExportTypeDropdown.png"/>
+</para>
+
+<para>
 Export Format: 
-Compartmental data is limited to exort as Comma delimited ASCII files (.csv files). Comma delimited ASCII files are used for organizing data in a spread-
+Compartmental data is limited to export as Comma delimited ASCII files (.csv files). Comma delimited ASCII files are used for organizing data in a spread-
 sheet format.
+</para>
+<para>
+<imgReference target = "SimResultsDefineExportVariables.png"/>
 </para>
 <para>
 Select Data Type to Export:  
@@ -62,6 +73,7 @@ You can export data for a single variable, combination of variables, or all
 the variables. Only data pertaining to
 your selected variables will be exported. To select more than one variable, select one variable and then hold down the Shift key to select additional variables. To select the entire list of variables, select the first variable in the list and then hold down the Shift key and select the last variable in the list.
 </para>
+
 <para>
 Define Export Data Range: 
 User ROI is only available for *csv files and requires an ROI to have been defined in the View Data tab. Current Slice from “View Data” refers to the 2D geometry visible in View Data. This 2D geometry is either the entire geometry for the model or a slice within a 3D stack, thus it is referred to as Slice. For 3D stacks, the XY slice number is provided. In 2D Geometries the slice number is 0.
