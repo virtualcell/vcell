@@ -127,7 +127,7 @@ You can switch the orientation of the rows and columns. Some spreadsheet pro- gr
 <para>
 Quick Time Movies: 
 Remember to select Range under the Time Interval for exporting a Quick Time movie. Preview the files you wish to export with the Auto Scale NOT selected. In the View Data tab, choose settings for min and max that are suitable for all the
-￼￼￼time points for the selected variable(s). Auto Scale typically will not export a color range that is visible because the movie cannot readjust the display values for each frame.
+time points for the selected variable(s). Auto Scale typically will not export a color range that is visible because the movie cannot readjust the display values for each frame.
 If AutoScale is selected you will be given the following warning:
 The following export choices have no user defined color/scale settings.--- variable_name User defined color/scale is set in the 'View data' tab by unchecking the 'Auto (current time)' check- box. Default min-max color/scale range will be used.
 To set your own max and min values return to the View Data Tab, uncheck “Auto (current time)” and enter your preferred values. A dialogue window will appear in which you specify Movie Settings.

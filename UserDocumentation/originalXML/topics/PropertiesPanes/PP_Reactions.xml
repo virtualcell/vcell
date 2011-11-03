@@ -3,61 +3,47 @@
 <page title="Reactions Properties Pane" target="PP_Reactions">
 
   <introduction>
-  The reaction properties panel is used to display and edit properties of a reaction, which are the name, the reaction rate J and 
-  the math terms involved in J, and a free text annotation.
+  The reaction properties panel is used to display and edit properties of a reaction
   </introduction>
 		
   <appearance>
-  <para>
   <imgReference target = "PP_Reactions.png"/>
-  On top, there is an editable field for the name of the reaction. One line below that, there is a non-editable combobox
-  offering a few options for a reaction rate law, and a conversion button to convert the rate law either from molecules per second to 
-  micromolar per second or vice versa.
-  </para>
   <para>
-  Below these, taking most of the space of the panel, there is the kinetic table of math terms used to define the reaction rate J: 
-  the first row contains
-  the reaction rate J itself, and further rows contain named mathematical terms referred to by J (e.g. kinetic parameters)
-  or referred to by any of the other math terms 
-  in the table. If needed, the terms include species concentrations, whose name is the species name. 
-  Typically, concentrations of all reactants and catalysts are needed (and products, if reversible).
-  </para>
-  <para>
-  Columns of the kinetic table are: the name, the description, a checkbox whether it is a global expression 
-  (i.e. shared across the model,
-  as opposed to local, i.e. used only in this reaction), the math expression and the units of measurement.
-  </para>
-  <para>
-  At the bottom, there is a text field for free text annotations, which can be hidden or shown by clicking on on the tiny button 
-  left of the "Add Annotation Here" label.
+  The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
+  second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
+  (J)that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Concentrations 
+  of all species referred to in the kinetic terms (e.g.reactants, catalysts, products)are required. Items in brown cannot be edited.
   </para>
   </appearance>
 	
   <operations>
     <para>
-    The name of the reaction can be changed by editing the text field. A name already given to another reaction will be rejected.
+    <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
     </para>
     <para>
-    The rate law combobox can be used to either select one of a few predefined rate laws 
-    (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or choose to enter a user-defined rate law, 
-    either in micromolar per second or in molecules per second. 
+    <bold>Select a rate law</bold> using the combobox to select one of a few predefined rate laws 
+    (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or to enter a user-defined 
+    rate law, either in micromolar per second or in molecules per second. 
     </para>
     <para>
-    If the rate law is in micromolar per second, the conversion button will convert it to molecules per second, and vice versa. 
-    Note that predefined laws are only in micromolar per second, so if they are converted to molecules per second, they
-    will be converted to user-defined, and remain so even if converted back.
+    <bold>Convert the rate law</bold> from micromolar per second to molecules per second, or vice versa, using the 
+    <bold>Convert to</bold> button. Note that predefined laws are only in micromolar per second, so if they are converted 
+    to molecules per second, the user-defined kinetic law will automatically be selected, and remain so even if converted back.
     </para>
     <para>
-    Expressions and their units can be edited except for predefined rate laws, species concentrations and universal constants. 
-    Incompatible units will be silently rejected. 
-    If references to new terms are added to expressions of existing ones, new rows will automatically be added for these terms. 
-    Each term can be set to global or local by a checkbox, except for the reaction rate, which is always local, and species
-    concentrations and universal constants, which are always global. 
-    If a term is global, it is identical to any global term of the same name. If a term is
-    local, it is different from any term in a different context.
-    </para>
-    <para>
-    The text field for free text annotations can be edited.
+    <bold> Edit Expressions and their units</bold> in the Expression column.  
+    <list>
+    <item>Predefined rate laws, species concentrations and universal constants cannot be edited.</item> 
+    <item>Incompatible units will be silently rejected.</item> 
+    <item>If references to new terms are added, new rows will automatically be added for these terms.  An expression for each new
+    term must be added in the expression column</item> 
+    <item>Terms can be set to <def target = "def_Global">global</def> or <def target = "def_Local">local</def> using a 
+    checkbox, except for the reaction rate, which is always local.  Species concentrations and universal constants 
+    are always global.</item> 
+	</list>
+	
+    <bold> Add Annotations</bold> in the Annotation text field, which can be shown or hiddenby selecting the plus or minus 
+    sign next to the <bold>Add Annotation Here</bold>.text.  Annotations apply to the entire reaction.
     </para>
   </operations>
 

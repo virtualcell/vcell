@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Parameters Properties Pane" target="PP_Parameters">
+<page title="Parameter Properties Pane" target="PP_Parameters">
 
 	
 	<introduction> 
 	<para>
-	The parameter properties pane allows editing of the parameter attributes such as name, expression, units and free text annotations.
+	The parameter properties pane allows editing of parameter attributes including name, expression, units and 
+	annotations.  Fields in brown cannot be edited.
 	<bold>Note:</bold>
 	</para>
 	<list>
@@ -17,15 +18,12 @@
 	
 	<appearance>
 	<imgReference target = "PP_Parameters.GIF"/>
-	<para>
-	Each of the parameter attributes are displayed in a text field in the properties pane. Depending on the type of parameter, the corresponding text fields are enabled or disabled. 
-    </para>
 	</appearance>
 	
 	<operations>
 	<para>
-	Clicking inside an editable text field allows the user to change the value of the appropriate attribute for the parameter. 
-	If the user tries to change the name of a parameter by typing a name that already exists, an error dialog is shown, preventing the user from using the name. 
+	<bold>Edit</bold> the Parameter Name in the field. If a name already exists, an error dialog is shown, 
+	and the name is rejected.
 	</para>
 	<imgReference target = "ParamNameError.GIF"/>
 	</operations>
