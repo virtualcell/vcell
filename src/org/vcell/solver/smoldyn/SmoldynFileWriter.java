@@ -391,7 +391,10 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSpecies();	
 	writeDiffusions();
 	writeGraphicsOpenGL();
-	writeHighResVolumeSamples();
+	if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isUseHighResolutionSample())
+	{
+		writeHighResVolumeSamples();
+	}
 	writeSurfacesAndCompartments();	
 	writeReactions();
 	writeMolecules();	
