@@ -42,6 +42,7 @@ import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
@@ -247,7 +248,7 @@ private void initialize() throws DataAccessException {
 				}
 			});
 		} else {
-			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), 0)));
+			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), getSelectedParamScanJobIndex())));
 		}
 		
 		setParamChoicesPanel(panel);
@@ -315,12 +316,7 @@ private void setSimulation(Simulation newSimulation) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/18/2005 12:44:06 AM)
- */
-private void updateScanParamChoices(){
-	
+private int getSelectedParamScanJobIndex(){
 	// figure out what job data we are looking for
 	final String[] scanConstantNames = getSimulation().getMathOverrides().getScannedConstantNames();
 	java.util.Arrays.sort(scanConstantNames);
@@ -336,7 +332,15 @@ private void updateScanParamChoices(){
 	} catch (RuntimeException exc) {
 		exc.printStackTrace();
 	}
+	return selectedJobIndex;
+}
+/**
+ * Insert the method's description here.
+ * Creation date: (10/18/2005 12:44:06 AM)
+ */
+private void updateScanParamChoices(){
 	
+	int selectedJobIndex = getSelectedParamScanJobIndex();
 	// update viewer
 	if (selectedJobIndex == -1) {
 		if (isODEData) {
@@ -390,43 +394,24 @@ private void updateScanParamChoices(){
 	}
 }
 
-private static void incr(int[] indices,int[] bounds,int incrColumn){
-	indices[incrColumn]++;
-	if(indices[incrColumn] == (bounds[incrColumn]+1)){
-		if(incrColumn == 0){
-			return;
-		}
-		indices[incrColumn] = 0;
-		incr(indices,bounds,incrColumn-1);
-	}
-}
 public static ExportSpecs.ExportParamScanInfo getParamScanInfo(Simulation simulation,int selectedParamScanJobIndex){
 	int scanCount = simulation.getScanCount();
 	if(scanCount == 1){//no parameter scan
 		return null;
 	}
-	//Find parameter scan constant names and values, match with parameter scan job indexes
-	final String[] scanConstantNames = simulation.getMathOverrides().getScannedConstantNames();
-	final String[][] scanConstValues = new String[simulation.getScanCount()][scanConstantNames.length];
-	int[] indices = new int[scanConstantNames.length];
-	int[] bounds = new int[scanConstantNames.length];
-	for (int i = 0; i < bounds.length; i++) {
-		bounds[i] = simulation.getMathOverrides().getConstantArraySpec(scanConstantNames[i]).getNumValues() - 1;
-	}
+	String[] scanConstantNames = simulation.getMathOverrides().getScannedConstantNames();
+	Arrays.sort(scanConstantNames);
 	int[] paramScanJobIndexes = new int[scanCount];
+	String[][] scanConstValues = new String[scanCount][scanConstantNames.length];
 	for (int i = 0; i < scanCount; i++) {
 		paramScanJobIndexes[i] = i;
-		int jobIndex = BeanUtils.coordinateToIndex(indices, bounds);
-//		System.out.print(jobIndex);
 		for (int j = 0; j < scanConstantNames.length; j++) {
-			scanConstValues[jobIndex][j] = simulation.getMathOverrides().getConstantArraySpec(scanConstantNames[j]).getConstants()[indices[j]].getExpression().infix();
-//			System.out.print(" "+scanConstValues[jobIndex][j]);
+			String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], i).infix();
+//			System.out.println("ScanIndex="+i+" ScanConstName='"+scanConstantNames[j]+"' paramScanValue="+paramScanValue);
+			scanConstValues[i][j] = paramScanValue;
 		}
-//		System.out.println();
-		incr(indices,bounds,indices.length-1);
 	}
 	return new ExportSpecs.ExportParamScanInfo(paramScanJobIndexes, selectedParamScanJobIndex, scanConstantNames, scanConstValues);
-
 }
 
 }
