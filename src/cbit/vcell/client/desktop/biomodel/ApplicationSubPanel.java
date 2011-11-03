@@ -16,6 +16,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.vcell.util.gui.JTabbedPaneEnhanced;
+
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.mapping.SimulationContext;
@@ -26,8 +28,6 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 	protected BioModelWindowManager bioModelWindowManager;
 	protected SimulationContext simulationContext;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private int selectedIndex = -1;
-	private String selectedTabTitle = null;
 	
 	private class InternalEventHandler implements ChangeListener {
 		public void stateChanged(ChangeEvent e) {
@@ -37,21 +37,7 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	protected void tabbedPaneSelectionChanged() {
-		int oldSelectedIndex = selectedIndex;
-		selectedIndex = tabbedPane.getSelectedIndex();
-		if (selectedIndex < 0) {
-			return;
-		}
-		if (oldSelectedIndex == selectedIndex) {
-			return;
-		}
-		if (oldSelectedIndex >= 0) {		
-			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
-		}
-		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
-		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
-		
+	protected void tabbedPaneSelectionChanged() {		
 		ActiveView activeView = getActiveView();
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -64,7 +50,7 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 	}
 
 	protected void initialize(){		
-		tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);	

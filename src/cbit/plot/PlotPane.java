@@ -26,10 +26,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
 
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
-import org.vcell.util.gui.EmptyBorderBean;
 import org.vcell.util.gui.EnhancedJLabel;
 import org.vcell.util.gui.JToolBarToggleButton;
 /**
@@ -698,12 +698,9 @@ private EnhancedJLabel getJLabelLeft() {
 private javax.swing.JLabel getJLabelLegendTitle() {
 	if (ivjJLabelLegendTitle == null) {
 		try {
-			EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new EmptyBorderBean();
-			ivjLocalBorder.setInsets(new java.awt.Insets(10, 4, 10, 4));
 			ivjJLabelLegendTitle = new javax.swing.JLabel();
 			ivjJLabelLegendTitle.setName("JLabelLegendTitle");
-			ivjJLabelLegendTitle.setBorder(ivjLocalBorder);
+			ivjJLabelLegendTitle.setBorder(new EmptyBorder(10, 4, 10, 4));
 			ivjJLabelLegendTitle.setText("Plot Legend:");
 			ivjJLabelLegendTitle.setForeground(java.awt.Color.black);
 			// user code begin {1}
@@ -1059,7 +1056,7 @@ private javax.swing.JScrollPane getPlotLegendsScrollPane() {
 			ivjPlotLegendsScrollPane = new javax.swing.JScrollPane();
 			ivjPlotLegendsScrollPane.setName("PlotLegendsScrollPane");
 			ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			ivjPlotLegendsScrollPane.setBorder(new EmptyBorderBean());
+			ivjPlotLegendsScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
 			getPlotLegendsScrollPane().setViewportView(getJPanelPlotLegends());
 			// user code begin {1}
 			// user code end
@@ -1311,8 +1308,8 @@ private void updateLegend() {
 	for (int i = 0; i < plotIndices.length - legends.length / 2; i++){
 		JLabel line = new JLabel();
 		JLabel text = new JLabel();
-		line.setBorder(new EmptyBorderBean(6,0,0,0));
-		text.setBorder(new EmptyBorderBean(0,8,6,0));
+		line.setBorder(new EmptyBorder(6,0,0,0));
+		text.setBorder(new EmptyBorder(0,8,6,0));
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);
