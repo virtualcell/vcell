@@ -46,6 +46,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.JTabbedPaneEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
@@ -71,6 +72,8 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 @SuppressWarnings("serial")
 public abstract class DocumentEditor extends JPanel {
+	public static final String TAB_TITLE_PROBLEMS = "Problems";
+	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	
 	protected enum DocumentEditorTabID {
@@ -372,9 +375,9 @@ private void initialize() {
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
-		leftBottomTabbedPane  = new JTabbedPane();
+		leftBottomTabbedPane  = new JTabbedPaneEnhanced();
 		leftBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		leftBottomTabbedPane.addTab("VCell Database", databaseWindowPanel);
+		leftBottomTabbedPane.addTab("VCell DB", databaseWindowPanel);
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
 		leftSplitPane.setTopComponent(treePanel);
@@ -405,12 +408,12 @@ private void initialize() {
 		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
 		
 		issuePanel = new IssuePanel();		
-		rightBottomTabbedPane = new JTabbedPane();
+		rightBottomTabbedPane = new JTabbedPaneEnhanced();
 		rightBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		rightBottomEmptyPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		issuePanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		rightBottomTabbedPane.addTab("Object Properties", rightBottomEmptyPanel);		
-		rightBottomTabbedPane.addTab("Problems", issuePanel);		
+		rightBottomTabbedPane.addTab(TAB_TITLE_OBJECT_PROPERTIES, rightBottomEmptyPanel);		
+		rightBottomTabbedPane.addTab(TAB_TITLE_PROBLEMS, issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		

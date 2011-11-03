@@ -81,6 +81,7 @@ import org.vcell.util.gui.ActionBuilder;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ViewPortStabilizer;
@@ -747,7 +748,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		bottomPanel.add(searchTextField, gbc);
 		
-		tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPaneEnhanced();
 		pathwayPanelTabs[PathwayPanelTabID.pathway_diagram.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_diagram, graphTabPanel, VCellIcons.diagramIcon);
 		pathwayPanelTabs[PathwayPanelTabID.pathway_objects.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_objects, pathwayModelTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		pathwayPanelTabs[PathwayPanelTabID.biopax_summary.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_summary, sourceTabPanel, VCellIcons.textNotesIcon);
@@ -1292,13 +1293,6 @@ implements PathwayEditor, ActionBuilder.Generator {
 		refreshButtons();
 
 		int selectedIndex = tabbedPane.getSelectedIndex();
-		PathwayPanelTabID[] tabIdValues = PathwayPanelTabID.values();
-		tabbedPane.setTitleAt(selectedIndex, "<html><b>"+ tabIdValues[selectedIndex].name + "</b></html>");
-		for (int i = 0; i < tabbedPane.getTabCount(); i ++) {
-			if (i != selectedIndex) {
-				tabbedPane.setTitleAt(i, tabIdValues[i].name);
-			}
-		}
 		ActiveView activeView = null;
 		if (selectedIndex == PathwayPanelTabID.pathway_diagram.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram);

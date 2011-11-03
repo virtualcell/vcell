@@ -21,6 +21,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.JTabbedPaneEnhanced;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
@@ -464,10 +465,10 @@ private GeometryTreePanel getGeometryTreePanel1() {
  * @return javax.swing.JTabbedPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTabbedPane getJTabbedPane1() {
+private JTabbedPane getJTabbedPane1() {
 	if (ivjJTabbedPane1 == null) {
 		try {
-			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
+			ivjJTabbedPane1 = new JTabbedPaneEnhanced();
 			ivjJTabbedPane1.insertTab("BioModels", null, getBioModelDbTreePanel1(), null, 0);
 			ivjJTabbedPane1.insertTab("MathModels", null, getMathModelDbTreePanel1(), null, 1);
 			ivjJTabbedPane1.insertTab("Geometries", null, getGeometryTreePanel1(), null, 2);

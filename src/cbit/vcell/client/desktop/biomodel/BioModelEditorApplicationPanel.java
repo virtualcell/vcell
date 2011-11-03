@@ -24,6 +24,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.BioModelWindowManager;
@@ -43,8 +44,6 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	private ApplicationSimulationsPanel applicationSimulationsPanel;
 	private ParameterEstimationPanel parameterEstimationPanel;
 	private JTabbedPane tabbedPane = null;
-	private int selectedIndex = -1;
-	private String selectedTabTitle = null;
 	private SimulationContext simulationContext;
 	private BioModelWindowManager bioModelWindowManager;
 
@@ -110,7 +109,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationSpecificationsPanel = new ApplicationSpecificationsPanel();
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
 		parameterEstimationPanel = new ParameterEstimationPanel();
-		tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
 		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSpecificationsPanel, VCellIcons.settingsIcon);
@@ -130,17 +129,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	}	
 
 	public void tabbedPaneSelectionChanged() {
-		int oldSelectedIndex = selectedIndex;
-		selectedIndex = tabbedPane.getSelectedIndex();
-		if (oldSelectedIndex == selectedIndex) {
-			return;
-		}
-		if (oldSelectedIndex >= 0 && oldSelectedIndex < tabbedPane.getTabCount()) {
-			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
-		}
-		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
-		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
-		
+		int selectedIndex = tabbedPane.getSelectedIndex();
 		ActiveView activeView = null;
 		if (selectedIndex == ApplicationPanelTabID.geometry.ordinal()) {
 			activeView = applicationGeometryPanel.getActiveView();
@@ -205,7 +194,6 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			parameterEstimationPanel.setSimulationContext(simulationContext);
 		} else {
 			if (indexOfFittingPanel >= 0) {
-//				tabbedPane.putClientProperty("__index_to_remove__", indexOfComponent);
 				Component selectedComponent = tabbedPane.getSelectedComponent();
 				tabbedPane.remove(tab.component);
 				if (selectedComponent == tab.component) {

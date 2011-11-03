@@ -559,7 +559,11 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 	} else if (bShowInDatabaseProperties) {
 		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
-			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
+			Component c = rightBottomTabbedPane.getComponentAt(destComponentIndex);
+			if (c == bioModelMetaDataPanel
+				|| c == mathModelMetaDataPanel
+				|| c == geometryMetaDataPanel
+				|| c == getBioModelsNetPropertiesPanel()) {
 				break;
 			}
 		}
@@ -569,8 +573,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
 		bottomComponent.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		// a bug in BasicTabbedPanelUI (See line 3337)
-		rightBottomTabbedPane.putClientProperty("__index_to_remove__", destComponentIndex);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
 		rightSplitPane.repaint();
 	}
