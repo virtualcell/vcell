@@ -202,6 +202,8 @@ public class ReactionCartoon extends ModelCartoon {
 			unwantedShapes.remove(containerShape);
 			// add all species context shapes within the structures
 			for(Structure structure : getStructureSuite().getStructures()) {
+				structure.removePropertyChangeListener(this);
+				structure.addPropertyChangeListener(this);
 				ReactionContainerShape reactionContainerShape = 
 					(ReactionContainerShape) getShapeFromModelObject(structure);
 				for(SpeciesContext structSpeciesContext : getModel().getSpeciesContexts(structure)) {
