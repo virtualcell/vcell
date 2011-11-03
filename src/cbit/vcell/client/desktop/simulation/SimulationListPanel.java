@@ -713,6 +713,7 @@ private void runSimulations() {
 				}
 				try {
 					sim.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+					sim.setIsDirty(true);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}
