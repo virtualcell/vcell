@@ -27,14 +27,14 @@ public VariableSymbolTable() {
  * @param var cbit.vcell.math.Variable
  */
 public void addVar(SymbolTableEntry var) {
-	if (!varList.contains(var)){
+	if (getEntry(var.getName())==null){
 		varList.addElement(var);
 	}
 }
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifierString) {
 	for (int i=0;i<varList.size();i++){
 		SymbolTableEntry var = varList.elementAt(i);
 		if (var.getName().equals(identifierString)){

@@ -23,6 +23,8 @@ public class SimContextStat2Table extends cbit.sql.Table {
 	public final Field status				= new Field("status",				"varchar2(255)","");
 	public final Field curatorEquiv			= new Field("curatorEquiv",			"integer",		"");
 	public final Field comments				= new Field("comments",				"varchar2(255)","");
+	public final Field equiv_4_8			= new Field("equiv_4_8",			"number",		"");
+	public final Field status_4_8			= new Field("status_4_8",			"varchar2(255)","");
 
 	private final Field fields[] = {simContextRef, hasData, equiv, status, curatorEquiv, comments };
 	

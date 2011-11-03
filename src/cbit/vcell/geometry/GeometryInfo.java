@@ -14,6 +14,7 @@ package cbit.vcell.geometry;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableType;
 
@@ -27,16 +28,18 @@ public class GeometryInfo implements org.vcell.util.document.VCDocumentInfo {
 	private  Extent extent = null;
 	private  KeyValue imageRef = null;
 	private  Version version = null;
+	private  VCellSoftwareVersion softwareVersion = null;
 
 /**
  * This method was created in VisualAge.
  */
-public GeometryInfo(Version versionNew,int dimensionNew,Extent extentNew,Origin originNew,KeyValue imageRefNew) {
+public GeometryInfo(Version versionNew,int dimensionNew,Extent extentNew,Origin originNew,KeyValue imageRefNew,VCellSoftwareVersion softwareVersion) {
 	this.dimension = dimensionNew;
 	this.extent = extentNew;
 	this.origin = originNew;
 	this.imageRef = imageRefNew;
 	this.version = versionNew;
+	this.softwareVersion = softwareVersion;
 }
 
 
@@ -117,11 +120,16 @@ public int hashCode() {
  * @return java.lang.String
  */
 public String toString() {
-	return "GeometryInfo(dim="+dimension+", origin="+origin+", extent="+extent+", imageRef="+imageRef+", version="+version+")";
+	return "GeometryInfo(dim="+dimension+", origin="+origin+", extent="+extent+", imageRef="+imageRef+", version="+version+", softwareVersion="+softwareVersion+")";
 }
 
 
 public VersionableType getVersionType() {	
 	return VersionableType.Geometry;
+}
+
+
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

@@ -25,7 +25,7 @@ public class DiffusionReactionStep extends SimpleReaction {
  * @param structure cbit.vcell.model.Structure
  * @throws ExpressionException 
  */
-DiffusionReactionStep(String name, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
+public DiffusionReactionStep(String name, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
 	super(structure,name);
 	try {
 		setKinetics(new GeneralKinetics(this));

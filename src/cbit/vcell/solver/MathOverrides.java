@@ -188,11 +188,19 @@ public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof MathOverrides)){
 		return false;
 	}
-	//
-	// use the superclass definition of equals(), it compares contents not references.
-	//
 	boolean returnValue = Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
 	return returnValue;
+}
+
+
+public boolean compareEquivalent(MathOverrides oldMathOverrides) {
+	// first see if they are equal
+	if (compareEqual(oldMathOverrides)){
+		return true;
+	}
+	// if not, see if they are equivalent (calls updateFromMathDescription() which corrects obsolete overridden names).
+	MathOverrides updatedMathOverrides = new MathOverrides(getSimulation(), oldMathOverrides);
+	return compareEqual(updatedMathOverrides);
 }
 
 
@@ -783,7 +791,7 @@ void updateFromMathDescription() {
 						break;
 					}						
 				}
-				// couldn't repair changed symbol ... must be obsolete, so remove this override.
+				// whether we could repair or not, remove the old name
 				removeConstant(name);
 			}
 		}
@@ -796,7 +804,7 @@ void updateFromMathDescription() {
 		for (Element element : overridesHash.values()){
 			if (element.actualValue!=null && element.actualValue.hasSymbol(origName)){
 				try {
-					element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(origName), new Expression(renamedMap.get(origName)));
+					element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(origName), new Expression(mathDescription.getVariable(renamedMap.get(origName)),null));
 				} catch (ExpressionException e) {
 					// won't happen ... here because new Expression(origName) throws a parse exception ... but it must be able to parse.
 					e.printStackTrace();
@@ -809,6 +817,7 @@ void updateFromMathDescription() {
 	//  revert those expressions that contain unresolved symbols (back to the MathDescription expressions).
 	//
 	revertUnboundExpressions(mathDescription);
+	refreshDependencies();
 }
 
 
