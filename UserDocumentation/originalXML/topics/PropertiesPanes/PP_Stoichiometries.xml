@@ -3,22 +3,17 @@
 <page title="Stoichiometry Tab" target="PP_Stoichiometries">
 
   <introduction> 
-  On selection of a reactant or product line in the reaction diagram, the stoichiometry properties panel is shown
-  which serves to edit the stoichiometric coefficient, which can be any positive integer and is set to 1 by default.
+  On selection of a reactant or product line in the reaction diagram, the stoichiometry properties panel appears and can be.
+  used to edit the stoichiometric coefficient.  The default setting is 1.
   </introduction>
 	
   <appearance> 
-    <para>
     <imgReference target = "PP_Stoichiometries.png"/>
-    This panel only displays an editable text field that contains the stoichiometric coefficient.
-    </para>
   </appearance>
 	
   <operations> 
-	<para>
-	A new stoichiometric coefficient can be entered into the text field. Only positive integers are allowed,
-	all other values will be silently discarded.
-	</para>
+	<bold>Edit</bold> the stoichiometric coefficient in the text field. Only positive integers are allowed; all other 
+	values are silently discarded.
   </operations>
 	
 </page>

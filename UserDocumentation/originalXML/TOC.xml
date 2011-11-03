@@ -78,10 +78,11 @@
    	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
         	</tocitem>
    		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
-    			<tocitem target="AccessingSimResults" text="Accessing Simulation Results"/>
-   				<tocitem target="SpatialSimResultsViewer" text="Spatial Simulation Results Viewer"/>		   
-    			<tocitem target="SimCompartmentResults" text="Compartment Simulation Results Viewer"/>
-				<tocitem target="ExportingSimResults" text="Exporting Simulation Results"/>
+    	   		<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results">		
+					<tocitem target="ExportingSimResults" text="Exporting Simulation Results"/>
+				</tocitem>
+    	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
+				</tocitem>
    			</tocitem>
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
@@ -103,7 +104,7 @@
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_Structures" text="Physiology Structures Properties Pane"/>
-	    	<tocitem target="Species" text="Species Properties Pane"/>
+	    	<tocitem target="PP_Species" text="Species Properties Pane"/>
 	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
 	    	<tocitem target="PP_Stoichiometries" text="Stoichiometries Properties Pane"/>

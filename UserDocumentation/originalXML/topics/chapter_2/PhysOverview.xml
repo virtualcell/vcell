@@ -3,11 +3,11 @@
 <page title="Physiology Overview">
 
 	<introduction> <para>The Physiology contains the description of the biological components that comprise
-	a BioModel; separate windows are provided for defining the cellular structures within which
+	a BioModel; separate windows are provided for defining the cellular <def target = "def_structure">Structures</def> within which
 	<def target = "def_species"> species </def> exist and undergo <link target = "Reactions"> reactions</link>.
 	</para>  
-	<para><def target = "def_compartments">Compartments</def> are made up of <def target = "def_membranes"> membranes</def> 
-	and <def target = "def_volumes"> volumes</def>.  They can be created, viewed and edited in 
+	<para><def target = "def_compartments">Compartments</def> are made up of <def target = "def_membranes"> membrane</def> 
+	and <def target = "def_volumes"> volume</def> structures.  They can be created, viewed and edited in 
 	<link target = "PhysStructTabView"> tabular</link> or <link target = "PhysStructDiagView"> diagrammatic tabs</link>.</para>  
 	<para> <bold>Properties</bold> for structures can be found in the <link target = "PP_Structures"> object properties pane</link>
 	in the bottom window.</para>	

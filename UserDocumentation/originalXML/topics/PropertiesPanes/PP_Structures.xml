@@ -3,28 +3,23 @@
 <page title="Structure Properties Pane" target="PP_Structure">
 
 	<introduction>
-	<para>
-	The structure properties pane allows editing of the structure name and free text annotations. It is also shows size variable name
-	and voltge variable name (for membranes).
-	</para>
+	The structure properties pane allows editing of the structure name and free text annotations. It is also 
+	shows size variable name and voltge variable name (for membranes).
 	</introduction>
 	
 	<appearance>
+	<imgReference target = "PP_Structure_Img01.png"/>
 	<para>
-	<imgReference target = "PP_Structures.png"/>
-	At the top, there is the one-line structure name text field. Below, there is the one-line size variable name text field. 
-	For membranes, there is the one-line voltage variable name text field below that.
-	Below, using most of the panels space, is the multi-line
-	free text annotation text field.
-    </para>
+	Text fields display Structure Name, Size Variable Name [units in bracket]}, Voltage Variable Name 
+	[units in bracket]when a membrane structure is selected, and a free text field to add or edit annotation.
+	</para>
 	</appearance>
 	
 	<operations>
 	<para>
-	Structure name and free text annotations can be changed by editing the appropriate text fields. 
-	A structure name will be rejected if 
-	already in use by another structure.
-	</para>
+	<bold>Edit</bold> the structure name by editing the appropriate text field. A structure name will be rejected 
+	if already in use by another structure.</para>
+	<para><bold>Add</bold> or <bold>Edit</bold> a free text annotation for the structure </para>
 	</operations>	
 
 
