@@ -24,8 +24,8 @@ import java.util.Vector;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Matchable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.document.SimulationOwner;
@@ -506,6 +506,20 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return newVarType;
 	}
 	
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+		AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
+			public boolean accept(SymbolTableEntry ste) {
+				MathDescription math = getSimulationOwner().getMathDescription();
+				Variable var = math.getVariable(ste.getName());
+				return (!(var instanceof InsideVariable || var instanceof OutsideVariable));
+			}
+			public boolean acceptFunction(String funcName) {
+				return true;
+			}
+		};
+		return stef;
+	}
+
 	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(final Domain functionDomain) {
 		AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
 			public boolean accept(SymbolTableEntry ste) {
