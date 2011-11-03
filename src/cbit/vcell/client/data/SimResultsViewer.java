@@ -246,11 +246,12 @@ private void initialize() throws DataAccessException {
 					mainViewer.showTimePlotMultipleScans(dataManager);
 				}
 			});
+		} else {
+			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), 0)));
 		}
 		
 		setParamChoicesPanel(panel);
 		
-		pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), 0)));
 	}
 
 	// put things together
