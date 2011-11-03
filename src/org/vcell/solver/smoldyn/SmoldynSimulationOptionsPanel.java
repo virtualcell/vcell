@@ -37,6 +37,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 
 	private JCheckBox randomSeedCheckBox;
+	private JCheckBox highResCheckBox;
 	private JTextField randomSeedTextField;
 	private JTextField accuracyTextField = null;
 	private JTextField gaussianTableSizeTextField;
@@ -84,6 +85,9 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 					setNewRandomSeed();
 				}
 			}
+			else if (source == highResCheckBox) {
+				setUseHighResolutionSample();
+			}
 		}
 
 		public void focusGained(FocusEvent e) {
@@ -115,6 +119,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 	}
 	private void initialize() {
 		randomSeedCheckBox = new JCheckBox("random seed");
+		highResCheckBox = new JCheckBox("fast mesh sampling");
 		randomSeedTextField = new JTextField();
 		JLabel accuracyLabel = new JLabel("accuracy");
 		accuracyTextField = new JTextField();		
@@ -203,6 +208,15 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		getContentPanel().add(randomSeedTextField, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridwidth = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0, 10, 0, 0);
+		getContentPanel().add(highResCheckBox, gbc);
 	}
 	
 	private void initConnections() {
@@ -210,6 +224,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		randomSeedTextField.addFocusListener(ivjEventHandler);
 		accuracyTextField.addFocusListener(ivjEventHandler);		
 		gaussianTableSizeTextField.addFocusListener(ivjEventHandler);
+		highResCheckBox.addActionListener(ivjEventHandler);
 		
 		randomSeedHelpButton.addActionListener(ivjEventHandler);
 		accuracyHelpButton.addActionListener(ivjEventHandler);
@@ -251,6 +266,8 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			randomSeedCheckBox.setSelected(true);
 			randomSeedTextField.setText(randomSeed.toString());
 		}
+		
+		highResCheckBox.setSelected(smoldynSimulationOptions.isUseHighResolutionSample());
 		
 		gaussianTableSizeTextField.setText("" + smoldynSimulationOptions.getGaussianTableSize());
 		accuracyTextField.setText("" + smoldynSimulationOptions.getAccuracy());
@@ -300,6 +317,12 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			}
 		}
 		solverTaskDescription.getSmoldynSimulationOptions().setRandomSeed(randomSeed);		
+	}
+	private void setUseHighResolutionSample(){
+		if(!isVisible()){
+			return;
+		}
+		solverTaskDescription.getSmoldynSimulationOptions().setUseHighResolutionSample(highResCheckBox.isSelected());		
 	}
 
 }
