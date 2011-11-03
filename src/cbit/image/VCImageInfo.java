@@ -12,6 +12,7 @@ package cbit.image;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -24,17 +25,19 @@ public class VCImageInfo implements VersionInfo {
 	private Extent extent = null;
 	private Version version = null;
 	private GIFImage browseData = null;
+	private VCellSoftwareVersion softwareVersion = null;
 /**
  * This method was created in VisualAge.
  * @param version cbit.sql.Version
  * @param size ISize
  * @param extent Extent
  */
-public VCImageInfo(Version aVersion, ISize aISize, Extent aExtent,GIFImage argBrowseData) {
+public VCImageInfo(Version aVersion, ISize aISize, Extent aExtent,GIFImage argBrowseData,VCellSoftwareVersion softwareVersion) {
 	this.version = aVersion;
 	this.size = aISize;
 	this.extent = aExtent;
 	this.browseData = argBrowseData;
+	this.softwareVersion = softwareVersion;
 }
 /**
  * Insert the method's description here.
@@ -107,5 +110,8 @@ public String toString() {
 }
 public VersionableType getVersionType() {
 	return VersionableType.VCImage;
+}
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

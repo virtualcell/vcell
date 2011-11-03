@@ -38,7 +38,10 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.vcell_4_8.MathMapping_4_8;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.MathCompareResults;
+import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelMetaData;
@@ -819,7 +822,7 @@ long l2 = 0;
 	// for each image (anywhere in document):
 	//    save if necessary (only once) and store saved instance in hashTable
 	//
-	Hashtable memoryToDatabaseHash = new Hashtable();
+	Hashtable<Versionable,Versionable> memoryToDatabaseHash = new Hashtable<Versionable,Versionable>();
 	for (int i = 0;scArray!=null && i < scArray.length; i++){
 		VCImage memoryImage = scArray[i].getGeometry().getGeometrySpec().getImage();
 		if (memoryImage!=null){
@@ -993,7 +996,7 @@ roundtripTimer += l2 - l1;
 	//   substitute saved geometry's into SimulationContext and 
 	//   save SimulationContext if necessary (only once) and store saved instance in hashtable.
 	//
-	Hashtable mathEquivalencyHash = new Hashtable();
+	Hashtable<MathDescription,MathCompareResults> mathEquivalencyHash = new Hashtable<MathDescription,MathCompareResults>();
 	for (int i = 0;scArray!=null && i < scArray.length; i++){
 		MathDescription memoryMathDescription = scArray[i].getMathDescription();
 		if (!memoryToDatabaseHash.containsKey(memoryMathDescription)){
@@ -1041,14 +1044,24 @@ roundtripTimer += l2 - l1;
 				bMustSaveMathDescription = true;
 			}
 			if (bMustSaveMathDescription){
-				String mathEquivalency = null;
+				MathCompareResults mathCompareResults = null;
 				if (databaseMathDescription!=null){
-					StringBuffer reasonBuffer = new StringBuffer();
 					try {
-						mathEquivalency = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription,reasonBuffer);
+						mathCompareResults = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription);
+						if (mathCompareResults!=null && !mathCompareResults.isEquivalent() &&
+							(mathCompareResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES) ||
+							 mathCompareResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION))){
+
+							//
+							// if there is a different number of variables or cannot find variables by name (even considering change of state variables)
+							// then try the VCell 4.8 generated math.
+							//
+							MathDescription mathDesc_4_8 = new MathMapping_4_8(scArray[i]).getMathDescription();
+							mathCompareResults = MathDescription.testEquivalency(mathDesc_4_8, databaseMathDescription);
+						}
 					}catch (Exception e){
 						e.printStackTrace(System.out);
-						mathEquivalency = MathDescription.MATH_DIFFERENT;
+						mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
 						System.out.println("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
 						try {
 							System.out.println("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
@@ -1058,7 +1071,7 @@ roundtripTimer += l2 - l1;
 						}
 					}
 				}else{
-					mathEquivalency = MathDescription.MATH_DIFFERENT;
+					mathCompareResults = new MathCompareResults(Decision.MathDifferent_NOT_SAVED);
 				}
 				//
 				// MathDescription hasn't been saved, has been renamed, or has been forced 'dirty'
@@ -1077,10 +1090,10 @@ l1 = System.currentTimeMillis();
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
-				mathEquivalencyHash.put(updatedMathDescription,mathEquivalency);
+				mathEquivalencyHash.put(updatedMathDescription,mathCompareResults);
 				bSomethingChanged = true;
 			}else{
-				mathEquivalencyHash.put(memoryMathDescription,MathDescription.MATH_SAME);
+				mathEquivalencyHash.put(memoryMathDescription,new MathCompareResults(Decision.MathEquivalent_SAME));
 			}
 		}
 	}
@@ -1313,8 +1326,8 @@ roundtripTimer += l2 - l1;
 					//
 					// check for math equivalency first
 					//
-					String mathEquivalency = (String)mathEquivalencyHash.get(memorySimulation.getMathDescription());
-					bMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation,databaseSimulation,mathEquivalency);
+					MathCompareResults mathCompareResults = mathEquivalencyHash.get(memorySimulation.getMathDescription());
+					bMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation,databaseSimulation,mathCompareResults);
 					//
 					// don't set equivalent if no data exists.
 					//
@@ -1597,7 +1610,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 	// if this mathModel has an image:
 	//   save if necessary (only once) and store saved instance in hashTable
 	//
-	Hashtable memoryToDatabaseHash = new Hashtable();
+	Hashtable<Versionable,Versionable> memoryToDatabaseHash = new Hashtable<Versionable,Versionable>();
 	{
 		VCImage memoryImage = mathModel.getMathDescription().getGeometry().getGeometrySpec().getImage();
 		if (memoryImage!=null){
@@ -1729,7 +1742,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 	//   substitute saved geometry into MathDescription
 	//   save MathDescription if necessary (only once) and store saved instance in hashtable.
 	//
-	String mathEquivalency = null;
+	MathCompareResults mathCompareResults = null;
 	{
 		MathDescription memoryMathDescription = mathModel.getMathDescription();
 		memoryToDatabaseHash.put(memoryMathDescription,memoryMathDescription); // defaults to unchanged
@@ -1775,12 +1788,11 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			// insert it with a any name (doens't have to be unique ... mathDescription is not a top-level versionable).
 			//
 			if (databaseMathDescription!=null){
-				StringBuffer reasonBuffer = new StringBuffer();
 				try {
-					mathEquivalency = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription,reasonBuffer);
+					mathCompareResults = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription);
 				}catch (Exception e){
 					e.printStackTrace(System.out);
-					mathEquivalency = MathDescription.MATH_DIFFERENT;
+					mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
 					System.out.println("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
 					try {
 						System.out.println("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
@@ -1790,7 +1802,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 					}
 				}
 			}else{
-				mathEquivalency = MathDescription.MATH_DIFFERENT;
+				mathCompareResults = new MathCompareResults(Decision.MathDifferent_NOT_SAVED);
 			}
 			KeyValue updatedGeometryKey = memoryMathDescription.getGeometry().getKey();
 			KeyValue updatedMathDescriptionKey = null;
@@ -1803,7 +1815,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 			bSomethingChanged = true;
 		}else{
-			mathEquivalency = MathDescription.MATH_SAME;
+			mathCompareResults = new MathCompareResults(Decision.MathEquivalent_SAME);
 		}
 	}
 	//
@@ -1879,7 +1891,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 					}
 					// check for math equivalency
 					try {
-						bSimMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation, databaseSimulation, mathEquivalency);
+						bSimMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation, databaseSimulation, mathCompareResults);
 					}catch (Exception e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException(e.getMessage());
@@ -1999,7 +2011,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 	// if this simulation has an image:
 	//   save if necessary (only once) and store saved instance in hashTable
 	//
-	Hashtable memoryToDatabaseHash = new Hashtable();
+	Hashtable<Versionable,Versionable> memoryToDatabaseHash = new Hashtable<Versionable,Versionable>();
 	{
 		VCImage memoryImage = simulation.getMathDescription().getGeometry().getGeometrySpec().getImage();
 		if (memoryImage!=null){
@@ -2131,7 +2143,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 	//   substitute saved geometry into MathDescription
 	//   save MathDescription if necessary (only once) and store saved instance in hashtable.
 	//
-	String mathEquivalency = null;
+	MathCompareResults mathCompareResults = null;
 	{
 		MathDescription memoryMathDescription = simulation.getMathDescription();
 		memoryToDatabaseHash.put(memoryMathDescription,memoryMathDescription); // defaults to unchanged
@@ -2165,9 +2177,8 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
 				}
 				if (databaseMathDescription!=null){
-					StringBuffer reasonBuffer = new StringBuffer();
-					mathEquivalency = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription,reasonBuffer);
-					if (!mathEquivalency.equals(MathDescription.MATH_SAME)){
+					mathCompareResults = MathDescription.testEquivalency(memoryMathDescription,databaseMathDescription);
+					if (!mathCompareResults.decision.equals(Decision.MathEquivalent_SAME)){
 						bMustSaveMathDescription = true;
 					}
 				}
@@ -2238,7 +2249,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 		KeyValue updatedSimulationKey = null;
 		boolean bMathEquivalent = false;
 		if (origSimulation != null){
-			bMathEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation,origSimulation,mathEquivalency);
+			bMathEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation,origSimulation,mathCompareResults);
 		}
 		if (memorySimulation.getKey()!=null && memorySimulation.getVersion().getName().equals(memorySimulation.getName())){
 			// name not changed, update simulation (but pass in database Simulation to check for parent-equivalence)

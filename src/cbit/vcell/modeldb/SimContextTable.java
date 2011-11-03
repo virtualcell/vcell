@@ -20,6 +20,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -86,8 +87,9 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
-	return new SimulationContextInfo(mathRef,geomRef,modelRef,version);
+	return new SimulationContextInfo(mathRef,geomRef,modelRef,version,VCellSoftwareVersion.fromString(softwareVersion));
 }
 
 /**
@@ -97,12 +99,14 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 public String getInfoSQL(User user,String extraConditions,String special) {
 	UserTable userTable = UserTable.table;
 	SimContextTable vTable = SimContextTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
 	
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
-	Table[] t = {vTable,userTable};
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
+	Table[] t = {vTable,userTable,swvTable};
 
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName()+" ";  // links in the userTable
+	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+	           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

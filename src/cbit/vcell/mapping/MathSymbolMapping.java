@@ -32,7 +32,7 @@ public class MathSymbolMapping {
 /**
  * MathSymbolMapping constructor comment.
  */
-MathSymbolMapping() {
+public MathSymbolMapping() {
 	super();
 }
 
@@ -84,7 +84,7 @@ public Variable getVariable(SymbolTableEntry biologicalSymbol) {
  * @param ste cbit.vcell.parser.SymbolTableEntry
  * @param var cbit.vcell.math.Variable
  */
-void put(SymbolTableEntry biologicalSymbol, String varName) {
+public void put(SymbolTableEntry biologicalSymbol, String varName) {
 	if(varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 		return;
 	}
@@ -109,7 +109,7 @@ void put(SymbolTableEntry biologicalSymbol, String varName) {
  * Creation date: (5/3/2006 4:03:51 PM)
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-void reconcileVarNames(MathDescription mathDesc) {
+public void reconcileVarNames(MathDescription mathDesc) {
 
 	//
 	// clear secondary hashmaps in case called multiple times.

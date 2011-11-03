@@ -33,11 +33,11 @@ public InsideVariable(String name, String volVariableName) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj,boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof InsideVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj,bIgnoreMissingDomain)){
 		return false;
 	}
 	InsideVariable v = (InsideVariable)obj;

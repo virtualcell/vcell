@@ -639,14 +639,14 @@ public Structure getStructure() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException;
+public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException;
 
 
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-abstract Expression getStructureSizeCorrection(SimulationContext simulationContext) throws ExpressionException;
+public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext) throws ExpressionException;
 
 
 /**

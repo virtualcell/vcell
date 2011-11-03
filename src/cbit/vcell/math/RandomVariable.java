@@ -65,11 +65,11 @@ public abstract class RandomVariable extends Variable {
 		}	
 	}
 
-	public boolean compareEqual(Matchable obj) {
+	public boolean compareEqual(Matchable obj,boolean bIgnoreMissingDomain) {
 		if (!(obj instanceof RandomVariable)){
 			return false;
 		}
-		if (!compareEqual0(obj)){
+		if (!compareEqual0(obj,bIgnoreMissingDomain)){
 			return false;
 		}
 		RandomVariable v = (RandomVariable)obj;
@@ -77,19 +77,6 @@ public abstract class RandomVariable extends Variable {
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (8/4/2006 10:45:41 AM)
-	 * @return boolean
-	 * @param obj java.lang.Object
-	 */
-	public boolean equals(Object obj) {	
-		if (obj instanceof RandomVariable){
-			return compareEqual0((RandomVariable)obj);
-		}
-		return false;
 	}
 	
 	protected abstract String getVCMLTag();

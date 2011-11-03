@@ -537,7 +537,8 @@ protected void setComponentProperties(JLabel component, BioModelInfo bioModelInf
 	component.setIcon(fieldBioModelIcon);
 	
 	Version version = bioModelInfo.getVersion();
-	component.setToolTipText("BioModel version");
+	component.setToolTipText("BioModel version (saved with software version "+bioModelInfo.getSoftwareVersion()+")");
+	
 	String access = (version.getGroupAccess().getDescription());
 	component.setText(access+" "+version.getDate().toString());
 }

@@ -14,6 +14,7 @@ import java.io.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -26,19 +27,21 @@ public class SimulationInfo implements Serializable,VersionInfo {
 	private KeyValue mathRef = null;
 	private SimulationVersion simulationVersion = null;
 	private String simulationID = null;
+	private VCellSoftwareVersion softwareVersion = null;
 
 /**
  * This method was created in VisualAge.
  * @param argGeomRef KeyValue
  * @param argVersion cbit.sql.Version
  */
-public SimulationInfo(KeyValue argMathRef, SimulationVersion argSimulationVersion) {
+public SimulationInfo(KeyValue argMathRef, SimulationVersion argSimulationVersion, VCellSoftwareVersion softwareVersion) {
 	super();
 	if (argSimulationVersion==null){
 		throw new IllegalArgumentException("version cannot be null");
 	}
 	this.mathRef = argMathRef;
 	this.simulationVersion = argSimulationVersion;
+	this.softwareVersion = softwareVersion;
 }
 
 
@@ -158,5 +161,10 @@ public String toString() {
 
 public VersionableType getVersionType() {
 	return VersionableType.Simulation;
+}
+
+
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

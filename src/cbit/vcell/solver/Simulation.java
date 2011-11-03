@@ -26,6 +26,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
@@ -537,7 +538,7 @@ public SimulationInfo getSimulationInfo() {
 	if (getVersion() != null) {
 		return new SimulationInfo(
 			getMathDescription().getKey(),
-			getSimulationVersion()); 
+			getSimulationVersion(),null); 
 	} else {
 		return null;
 	}
@@ -826,15 +827,15 @@ private void setWarning(java.lang.String warning) {
  * @param memoryMathDescription cbit.vcell.math.MathDescription
  * @param databaseMathDescription cbit.vcell.math.MathDescription
  */
-public static boolean testEquivalency(Simulation memorySimulation, Simulation databaseSimulation, String mathEquivalency) {
+public static boolean testEquivalency(Simulation memorySimulation, Simulation databaseSimulation, MathCompareResults mathCompareResults) {
 
 	if (memorySimulation == databaseSimulation){
 		return true;
 	}
 	
-	if (mathEquivalency.equals(MathDescription.MATH_DIFFERENT)){
+	if (!mathCompareResults.isEquivalent()){
 		return false;
-	}else if (mathEquivalency.equals(MathDescription.MATH_SAME) || mathEquivalency.equals(MathDescription.MATH_EQUIVALENT)){
+	}else{
 		if (!memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())){
 			return false;
 		}
@@ -850,12 +851,10 @@ public static boolean testEquivalency(Simulation memorySimulation, Simulation da
 		//
 		// if (!memorySimulation.getMathOverrides().compareEqualIgnoreDefaults(databaseSimulation.getMathOverrides())){
 		// now only non-defaults are stored in overrides...
-		if (!memorySimulation.getMathOverrides().compareEqual(databaseSimulation.getMathOverrides())){
+		if (!memorySimulation.getMathOverrides().compareEquivalent(databaseSimulation.getMathOverrides())){
 			return false;
 		}
 		return true;
-	}else{
-		throw new IllegalArgumentException("unknown equivalency choice '"+mathEquivalency+"'");
 	}
 }
 

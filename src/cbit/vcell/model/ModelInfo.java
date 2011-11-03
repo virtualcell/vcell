@@ -12,6 +12,7 @@ package cbit.vcell.model;
 
 import java.io.*;
 
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -22,13 +23,15 @@ import org.vcell.util.document.VersionableType;
  */
 public class ModelInfo implements Serializable,VersionInfo {
 	private Version version = null;
+	private VCellSoftwareVersion softwareVersion = null;
 /**
  * This method was created in VisualAge.
  * @param argVersion cbit.sql.Version
  */
-public ModelInfo(Version argVersion) {
+public ModelInfo(Version argVersion,VCellSoftwareVersion softwareVersion) {
 	super();
 	this.version = argVersion;
+	this.softwareVersion = softwareVersion;
 }
 /**
  * Insert the method's description here.
@@ -69,5 +72,8 @@ public String toString() {
 }
 public VersionableType getVersionType() {
 	return VersionableType.Model;
+}
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }
