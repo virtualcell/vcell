@@ -58,6 +58,7 @@ public interface SimDataConstants {
 	
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
+	public static final String SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION = ".hrvs";
 
 	public static final String SUBDOMAINS_FILE_SUFFIX = ".subdomains";
 
