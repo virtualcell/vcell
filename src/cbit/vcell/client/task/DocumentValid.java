@@ -14,13 +14,14 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.ParticleMathMapping;
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -76,7 +77,20 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		for (int i = 0; i < issueList.size(); i++){
 			Issue issue = issueList.elementAt(i);
 			if (issue.getSeverity() == Issue.SEVERITY_ERROR){
-				throw new Exception("Error: "+issue.getMessage());
+				String errMsg = "Error: ";
+				Object issueSource = issue.getSource();
+				if (issueSource instanceof OutputFunctionIssueSource) {
+					SimulationOwner simulationOwner = ((OutputFunctionIssueSource)issueSource).getOutputFunctionContext().getSimulationOwner();
+					String funcName = ((OutputFunctionIssueSource)issueSource).getAnnotatedFunction().getDisplayName();
+					if (simulationOwner instanceof SimulationContext) {
+						String opErrMsg = "Output Function '" + funcName + "' in application '" + simulationOwner.getName() + "' "; 
+						if (issue.getCategory().equals(IssueCategory.OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING)) { 
+							opErrMsg += "refers to an unknown variable. Either the model changed or this version of VCell generates variable names differently.\n\n";
+						}
+						errMsg += opErrMsg;
+					} 
+				}
+				throw new Exception(errMsg + issue.getMessage());
 			}
 		}
 	}
