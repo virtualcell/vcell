@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.KeySequenceListener;
 
 @SuppressWarnings("serial")
@@ -52,19 +53,14 @@ public class DocumentWindowAboutBox extends JDialog {
 	private JLabel buildNumber = null;
 
 	public static void parseVCellVersion() {
-		String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
-		if (build != null){
-			try {
-				java.util.StringTokenizer stk = new java.util.StringTokenizer(build, "_");
-				EDITION = stk.nextToken();
-				if (!stk.nextToken().equalsIgnoreCase("Version")) throw new RuntimeException("Expecting 'Version'");
-				VERSION_NO = stk.nextToken();
-				if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
-				BUILD_NO = stk.nextToken();
-			} catch (Exception exc) {
-				System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
-				exc.printStackTrace(System.out);
-			}
+		try {
+			VCellSoftwareVersion vcellSoftwareVersion = VCellSoftwareVersion.fromSystemProperty();
+			EDITION = vcellSoftwareVersion.getSite().name().toUpperCase();
+			VERSION_NO = vcellSoftwareVersion.getVersionNumber();
+			BUILD_NO = vcellSoftwareVersion.getBuildNumber();
+		} catch (Exception exc) {
+			System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
+			exc.printStackTrace(System.out);
 		}
 	}
 	

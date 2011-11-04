@@ -34,6 +34,8 @@ import javax.swing.event.EventListenerList;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
+import com.ibm.icu.util.StringTokenizer;
+
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.messaging.admin.DatePanel;
 
@@ -42,22 +44,25 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	public static interface SearchCriterion {
 		boolean meetCriterion(VCDocumentInfo docInfo);
 	}	
-	static class SearchByName implements SearchCriterion {
-		private String namePattern = null;
+	static class SearchByString implements SearchCriterion {
+		private String stringPattern = null;
 		
-		public SearchByName(String np) {
-			namePattern = np;
+		public SearchByString(String np) {
+			stringPattern = np;
 		}
 
 		public boolean meetCriterion(VCDocumentInfo docInfo) {
-			if (namePattern == null || namePattern.trim().length() == 0) { // no constraints
+			if (stringPattern == null || stringPattern.trim().length() == 0) { // no constraints
 				return true;
 			}
-			String lowerCaseNamePattern = namePattern.toLowerCase();
+			String lowerCaseNamePattern = stringPattern.toLowerCase();
 			if (docInfo.getVersion().getOwner().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
 				return true;
 			}
 			if (docInfo.getVersion().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
+				return true;
+			}
+			if (docInfo.getSoftwareVersion().getDescription().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
 				return true;
 			}
 			return false;
@@ -152,8 +157,11 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 			searchCriterionList = new ArrayList<SearchCriterion>();
 			String namePattern = nameSearchTextField.getText();
 			if (namePattern != null && namePattern.trim().length() >= 0) {
-				SearchByName nameCriterion = new SearchByName(namePattern);
-				searchCriterionList.add(nameCriterion);
+				StringTokenizer tokens = new StringTokenizer(namePattern," ");
+				while (tokens.hasMoreTokens()){
+					SearchByString nameCriterion = new SearchByString(tokens.nextToken());
+					searchCriterionList.add(nameCriterion);
+				}
 			}
 			
 			if (startDatePanel.isVisible()) {
