@@ -564,7 +564,7 @@ public class HistogramPanel extends JPanel {
 					boolean bInSelection = false;
 					for (int pixValIndex = index0; pixValIndex < (index1==index0?index0+1:index1+(bMaxEnd?1:0)); pixValIndex++) {
 						int pixelVal = histoPixelVals[pixValIndex];
-						bInSelection|= pixelListSelectionModel.isSelectedIndex(pixelVal);
+						bInSelection|= (subsetTreeMap.get(pixelVal) != 0 && pixelListSelectionModel.isSelectedIndex(pixelVal));
 						pixCount+= subsetTreeMap.get(pixelVal);					
 					}
 					if(bInSelection){
