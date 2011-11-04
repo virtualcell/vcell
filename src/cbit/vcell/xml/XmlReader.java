@@ -4672,6 +4672,10 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 				throw new XmlParseException(e.getMessage());
 			}
 		}
+		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_high_res, vcNamespace);
+		if (temp != null) {
+			sso.setUseHighResolutionSample(new Boolean(temp));
+		}
 	}	
 	return sso;
 }

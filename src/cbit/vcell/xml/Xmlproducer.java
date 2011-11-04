@@ -3648,6 +3648,10 @@ private Element getXML(SmoldynSimulationOptions sso) {
 			ssoElement.addContent(element);			
 		}
 		
+		element = new Element(XMLTags.SmoldynSimulationOptions_high_res);
+		element.setText(sso.isUseHighResolutionSample() + "");
+		ssoElement.addContent(element);
+		
 		element = new Element(XMLTags.SmoldynSimulationOptions_gaussianTableSize);
 		element.setText(sso.getGaussianTableSize() + "");
 		ssoElement.addContent(element);			

@@ -9,17 +9,15 @@
  */
 
 package cbit.vcell.geometry.gui;
-import java.awt.Rectangle;
-import cbit.vcell.geometry.surface.Polygon;
-import cbit.vcell.render.Trackball;
-import cbit.vcell.geometry.surface.SurfaceCollection;
-import cbit.vcell.render.Vect3d;
 import java.awt.geom.AffineTransform;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 
-import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.render.Trackball;
+import cbit.vcell.render.Vect3d;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 11:31:33 AM)
@@ -550,106 +548,4 @@ private void renderSurfacesSorted(
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/26/2003 12:40:37 PM)
- * @param g2d java.awt.Graphics
- */
-protected cbit.image.VCImage sampleVolume(SurfaceCollection surfaceCollection,int numX, int numY, int numZ) throws cbit.image.ImageException {
-	double ox = fieldOrigin.getX();
-	double oy = fieldOrigin.getY();
-	//
-	// set up affine transformation so that we can see something
-	//
-	int numRays = numX*numY;
-	HitList hitLists[] = new HitList[numX*numY];
-	for (int j = 0; j < numY; j++){
-		for (int i = 0; i < numX; i++){
-			//hitLists[i + numX*j] = new HitList(i*fieldExtent.getX()/(numX-1), j*fieldExtent.getY()/(numY-1));
-			hitLists[i + numX*j] = new HitList(0.001+0.998*(i*fieldExtent.getX()/(numX-1)), 0.001+0.998*(j*fieldExtent.getY()/(numY-1)));
-		}
-	}
-
-	//
-	// for each surface, project each triangle onto "screen" and create a "polygon" object
-	//    1) use polygon.getBoundingBox() to trim possible rays
-	//    2) use polygon.inside() to determine which rays hit (considers exact boundary)
-	//
-	// calculate normal for triangle
-	//    1) determines if rays will be entering or exiting
-	//
-	// then intersect ray with equation for plane
-	//    1) determine hitTime
-	//
-	cbit.vcell.geometry.surface.Triangle triangles[] = new cbit.vcell.geometry.surface.Triangle[2];
-	Vect3d unitNormals[] = { new Vect3d(), new Vect3d() };
-	for (int j = 0; j < surfaceCollection.getSurfaceCount(); j++){
-		Surface surface = surfaceCollection.getSurfaces(j);
-		for (int k = 0; k < surface.getPolygonCount(); k++){
-			Polygon polygon = surface.getPolygons(k);
-			//
-			// convert to quads to triangles if necessary
-			//
-			int numTriangles;
-			if (polygon.getNodeCount()==3){
-				numTriangles = 1;
-				triangles[0] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(1), polygon.getNodes(2));
-				triangles[0].getUnitNormal(unitNormals[0]);
-			}else if (polygon.getNodeCount()==4){
-				numTriangles = 2;
-				triangles[0] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(1), polygon.getNodes(2));
-				triangles[0].getUnitNormal(unitNormals[0]);
-				triangles[1] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(2), polygon.getNodes(3));
-				triangles[1].getUnitNormal(unitNormals[1]);
-			}else{
-				throw new RuntimeException("polygons with "+polygon.getNodeCount()+" edges are supported");
-			}
-			for (int triIndex = 0; triIndex < numTriangles; triIndex++){
-				cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
-				java.awt.geom.GeneralPath generalPath = new java.awt.geom.GeneralPath();
-				generalPath.moveTo((float)(triangle.getNodes(0).getX()+ox), (float)(triangle.getNodes(0).getY()+oy));
-				generalPath.lineTo((float)(triangle.getNodes(1).getX()+ox), (float)(triangle.getNodes(1).getY()+oy));
-				generalPath.lineTo((float)(triangle.getNodes(2).getX()+ox), (float)(triangle.getNodes(2).getY()+oy));
-				generalPath.lineTo((float)(triangle.getNodes(0).getX()+ox), (float)(triangle.getNodes(0).getY()+oy));
-				java.awt.geom.Rectangle2D boundingBox = generalPath.getBounds2D();
-		System.out.println("boundingBox = (["+boundingBox.getMinX()+","+boundingBox.getMaxX()+"],["+boundingBox.getMinY()+","+boundingBox.getMaxY()+"])");
-				for (int rayIndex = 0; rayIndex < numRays; rayIndex++){
-					HitList hitList = hitLists[rayIndex];
-					double rayX = hitList.getStartX();
-					double rayY = hitList.getStartY();
-					if (boundingBox.contains(rayX,rayY) && generalPath.contains(rayX,rayY)){
-						//
-						// if hit projection, then hit 3d polygon also (watch out for finite resolution geometry stuff!!!) 
-						//
-		System.out.println("hit  sampling ("+rayX+","+rayY+") boundingBox = (["+boundingBox.getMinX()+","+boundingBox.getMaxX()+"],["+boundingBox.getMinY()+","+boundingBox.getMaxY()+"])");
-						double node0X = triangle.getNodes(0).getX();
-						double node0Y = triangle.getNodes(0).getY();
-						double node0Z = triangle.getNodes(0).getZ();
-						double rayZ = (- unitNormals[triIndex].getX()*(rayX-node0X) - unitNormals[triIndex].getY()*(rayY-node0Y) + unitNormals[triIndex].getZ()*node0Z)/unitNormals[triIndex].getZ();
-						boolean entering = (unitNormals[triIndex].getZ()>0);
-						hitList.addHitEvent(new HitEvent(surface,polygon,entering,rayZ));
-					}
-				}
-			}
-		}
-	}
-	//
-	// create image
-	//
-	byte pixels[] = new byte[numX*numY*numZ];
-	for (int j = 0; j < numY; j++){
-		for (int i = 0; i < numX; i++){
-			HitList hitList = hitLists[i+(numX*j)];
-if (hitList.getNumHits()==0){
-	System.out.println("missed ray ("+hitList.getStartX()+","+hitList.getStartY()+")");
-}
-			for (int k = 0; k < numZ; k++){
-				int pixelIndex = i + (numX*j) + (numX*numY*k);
-				int regionIndex = hitList.sample(fieldOrigin.getZ()+(k*fieldExtent.getZ()/numZ));
-				pixels[pixelIndex] = (byte)regionIndex;
-			}
-		}
-	}
-	return new cbit.image.VCImageUncompressed(null,pixels,fieldExtent,numX,numY,numZ);
-}
 }
