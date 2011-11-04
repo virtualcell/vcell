@@ -11,8 +11,6 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.biomodel.*;
-import java.beans.*;
-import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.SQLException;
@@ -21,9 +19,9 @@ import java.sql.Connection;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
@@ -126,10 +124,11 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-	
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
+	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
 	
-	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary);
+	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary, vcSoftwareVersion);
 }
 /**
  * This method was created in VisualAge.
@@ -139,10 +138,12 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	
 	UserTable userTable = UserTable.table;
 	BioModelTable vTable = BioModelTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
-	Table[] t = {vTable,userTable};
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName();  // links in the userTable
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
+	Table[] t = {vTable,userTable,swvTable};
+	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+			           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

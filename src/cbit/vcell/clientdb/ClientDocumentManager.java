@@ -39,6 +39,7 @@ import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -2391,7 +2392,7 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 		try {
 			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
 			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
-			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData);
+			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData,VCellSoftwareVersion.fromSystemProperty());
 			imgInfoHash.put(savedKey,savedVCImageInfo);
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
@@ -2433,7 +2434,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
@@ -2515,7 +2516,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 		
@@ -2534,7 +2535,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
  * Creation date: (10/28/00 12:08:30 AM)
  * @deprecated  for testing purposes only
  */
-public Simulation save(Simulation simulation, boolean bForceIndependent) throws DataAccessException {
+private Simulation save(Simulation simulation, boolean bForceIndependent) throws DataAccessException {
 	
 	try {
 		String simulationXML = null;
@@ -2591,7 +2592,7 @@ public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataA
 		try {
 			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
 			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
-			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData);
+			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData,VCellSoftwareVersion.fromSystemProperty());
 			imgInfoHash.put(savedKey,savedVCImageInfo);
 			
 			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
@@ -2634,7 +2635,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
@@ -2721,7 +2722,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
@@ -3162,10 +3163,10 @@ private void updateGeometryRelatedHashes(Geometry savedGeometry){
 	if(imageRef != null && imgInfoHash.get(imageRef) == null){
 		VCImage savedVCImage = savedGeometry.getGeometrySpec().getImage();
 		ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-		VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null);
+		VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null,VCellSoftwareVersion.fromSystemProperty());
 		imgInfoHash.put(savedVCImage.getVersion().getVersionKey(),savedVCImageInfo);
 	}
-	GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
+	GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef,VCellSoftwareVersion.fromSystemProperty());
 	geoInfoHash.put(savedGeometry.getVersion().getVersionKey(),savedGeometryInfo);
 	
 	fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedGeometry.getVersion().getVersionKey())));

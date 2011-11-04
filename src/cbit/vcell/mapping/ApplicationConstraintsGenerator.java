@@ -161,7 +161,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		}
 		MathDescription mathDesc = simContext.getMathDescription();
 
-		java.util.Enumeration enumVars = mathDesc.getVariables();
+		java.util.Enumeration<Variable> enumVars = mathDesc.getVariables();
 		while (enumVars.hasMoreElements()){
 			Variable var = (Variable)enumVars.nextElement();
 			if (var.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && var instanceof Function){
@@ -283,7 +283,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 			throw new RuntimeException("spatial simulations not yet supported");
 		}
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
-		java.util.Enumeration enumEquations = subDomain.getEquations();
+		java.util.Enumeration<Equation> enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()){
 			Equation equation = (Equation)enumEquations.nextElement();
 			Expression rateConstraintExp = new Expression(equation.getRateExpression().infix()+"==0");
@@ -359,7 +359,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		//
 		// add K_fluxs
 		//
-		java.util.Enumeration enumVars = mathDesc.getVariables();
+		java.util.Enumeration<Variable> enumVars = mathDesc.getVariables();
 		while (enumVars.hasMoreElements()){
 			Variable var = (Variable)enumVars.nextElement();
 			if (var.getName().startsWith("Kflux_") && var instanceof Function){

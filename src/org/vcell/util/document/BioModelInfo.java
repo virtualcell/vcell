@@ -24,20 +24,23 @@ public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private KeyValue modelKey = null;
 	private BioModelChildSummary bioModelChildSummary = null;
 	private BigString bioModelChildSummaryString = null;
+	private VCellSoftwareVersion softwareVersion = null;
 /**
  * BioModelInfo constructor comment.
  */
-public BioModelInfo(Version argVersion, KeyValue argModelKey, BioModelChildSummary argBioModelChildSummary) {
+public BioModelInfo(Version argVersion, KeyValue argModelKey, BioModelChildSummary argBioModelChildSummary, VCellSoftwareVersion softwareVersion) {
 	this.version = argVersion;
 	this.modelKey = argModelKey;
 	this.bioModelChildSummary = argBioModelChildSummary;
+	this.softwareVersion = softwareVersion;
 }
-public BioModelInfo(Version argVersion, KeyValue argModelKey, String argBioModelChildSummaryString) {
+public BioModelInfo(Version argVersion, KeyValue argModelKey, String argBioModelChildSummaryString, VCellSoftwareVersion softwareVersion) {
 	this.version = argVersion;
 	this.modelKey = argModelKey;
 	if (argBioModelChildSummaryString != null) {
 		this.bioModelChildSummaryString = new BigString(argBioModelChildSummaryString);
 	}
+	this.softwareVersion = softwareVersion;
 }
 /**
  * Insert the method's description here.
@@ -95,9 +98,12 @@ public int hashCode() {
  * @return java.lang.String
  */
 public String toString() {
-	return "BioModelInfo(modelKey="+modelKey+",Version="+version+")";
+	return "BioModelInfo(modelKey="+modelKey+",Version="+version+",softwareVersion="+softwareVersion+")";
 }
 public VersionableType getVersionType() {	
 	return VersionableType.BioModelMetaData;
+}
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

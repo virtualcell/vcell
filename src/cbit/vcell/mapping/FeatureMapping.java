@@ -144,7 +144,7 @@ public Expression getResidualVolumeFraction(SimulationContext simulationContext)
  * TotalConservationCorrection is the term that takes local units (micro-molar) to either volume normalized micro-molar or area normalized molecules/sq-um
  * @return cbit.vcell.parser.Expression
  */
-Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException {
+public Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException {
 	if (getGeometryClass() instanceof CompartmentSubVolume){
 		if (simulationContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
 			//

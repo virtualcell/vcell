@@ -29,12 +29,12 @@ public ParticleVariable(String name, Domain domain) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) 
+public boolean compareEqual(org.vcell.util.Matchable obj, boolean bIgnoreMissingDomain) 
 {
 	if (!(obj instanceof ParticleVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	

@@ -113,12 +113,19 @@ public static Domain getDomainFromCombinedIdentifier(String combinedIdentifier){
 		return null;
 	}
 }
+
+public final boolean compareEqual(Matchable object){
+	return compareEqual(object,false);	
+}
+
+public abstract boolean compareEqual(Matchable object, boolean bIgnoreMissingDomains);
+
 /**
  * This method was created in VisualAge.
  * @return boolean
  * @param object java.lang.Object
  */
-protected boolean compareEqual0(Matchable object) {
+protected boolean compareEqual0(Matchable object, boolean bIgnoreMissingDomains) {
 	Variable var = null;
 	if (object == null){
 		return false;
@@ -139,8 +146,16 @@ protected boolean compareEqual0(Matchable object) {
 	//
 	// compare domains
 	//
-	if (!Compare.isEqualOrNull(getDomain(),var.getDomain())){
-		return false;
+	if (!bIgnoreMissingDomains){
+		if (!Compare.isEqualOrNull(getDomain(),var.getDomain())){
+			return false;
+		}
+	}else{
+		if (getDomain()!=null && var.getDomain()!=null){
+			if (!Compare.isEqual(getDomain(),var.getDomain())){
+				return false;
+			}
+		}
 	}
 
 	return true;

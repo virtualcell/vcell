@@ -17,6 +17,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
@@ -102,8 +104,10 @@ public VersionInfo getInfo(ResultSet rset,Connection con, SessionLog log) throws
 	if (!rset.wasNull()){
 		imgRef = new KeyValue(bigDecimal);
 	}
+	
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 
-	GeometryInfo geomInfo = new GeometryInfo(version,dim,extent,origin,imgRef);
+	GeometryInfo geomInfo = new GeometryInfo(version,dim,extent,origin,imgRef,VCellSoftwareVersion.fromString(softwareVersion));
 
 	
 	return geomInfo;
@@ -130,11 +134,13 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	UserTable userTable = UserTable.table;
 	GeometryTable gTable = this;
 	ExtentTable eTable = ExtentTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	Field[] f = {userTable.userid,new cbit.sql.StarField(gTable),eTable.extentX,eTable.extentY,eTable.extentZ};
-	Table[] t = {gTable,userTable,eTable};
+	Field[] f = {userTable.userid,new cbit.sql.StarField(gTable),eTable.extentX,eTable.extentY,eTable.extentZ,swvTable.softwareVersion};
+	Table[] t = {gTable,userTable,eTable,swvTable};
 	String condition = eTable.id.getQualifiedColName() + " = " + gTable.extentRef.getQualifiedColName() +             // links in the extent table
-					   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName();  // links in the userTable
+					   " AND " + userTable.id.getQualifiedColName() + " = " + gTable.ownerRef.getQualifiedColName() +  // links in the userTable
+			           " AND " + gTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

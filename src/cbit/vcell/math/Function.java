@@ -53,11 +53,11 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof Function)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	Function v = (Function)obj;
@@ -66,20 +66,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	}
 	
 	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/4/2006 10:45:41 AM)
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean equals(Object obj) {	
-	if (obj instanceof Function){
-		return compareEqual0((Function)obj);
-	}
-	return false;
 }
 
 
