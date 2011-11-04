@@ -13,6 +13,9 @@ package cbit.image;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
+
+import javax.swing.ToolTipManager;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -1288,7 +1291,17 @@ public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
 	SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
+	//
+	//Sometimes if a change of data timepoint,variable,paramscan takes a long time and the user moves the mouse
+	//into the data display before the new data has fully updated the wrong value will be displayed
+	updateInfo(lastValidMouseEvent);//make sure the data value text display is always updated if the mouse is in the data display
+	if(lastValidMouseEvent != null){//make sure the tooltip is updated if the mouse is in the data display
+		ToolTipManager.sharedInstance().mouseMoved(lastValidMouseEvent);
+	}
+	//
 	getImagePaneScroller1().repaint();
+	
+
 }
 /**
  * Insert the method's description here.
@@ -1341,7 +1354,11 @@ private void sourceDataInfo_set() {
 /**
  * Comment
  */
-private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
+private MouseEvent lastValidMouseEvent;
+private void updateInfo(MouseEvent mouseEvent) {
+	if(mouseEvent == null){
+		return;
+	}
 	String infoS = null;
 	//if(mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_RELEASED || mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED){
 		//if(getInfoJlabel().getText() != null && getInfoJlabel().getText().length() > 0 ){
@@ -1357,6 +1374,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 			infoS = getCurveEditorTool().getToolDescription(getCurveEditorTool().getTool());
 			setToolCursor();
 		}else if(mouseEvent.getID() != java.awt.event.MouseEvent.MOUSE_ENTERED){
+			lastValidMouseEvent = mouseEvent;
 			if (getimagePaneView1().isPointOnImage(mouseEvent.getPoint())) {
 				java.awt.geom.Point2D unitP = getimagePaneView1().getImagePointUnitized(mouseEvent.getPoint());
 				wc = getImagePlaneManager().getWorldCoordinateFromUnitized2D(unitP.getX(), unitP.getY());
@@ -1407,7 +1425,11 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 			}
 			if(bNeedsMembraneCursor){getimagePaneView1().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));}
 			else{setToolCursor();}
+		}else{
+			lastValidMouseEvent = null;
 		}
+	}else{
+		lastValidMouseEvent = null;
 	}
 	
 	//if(mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_DRAGGED || 
