@@ -48,7 +48,9 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -79,10 +81,6 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	
 	private ArrayList<Event> eventList = new ArrayList<Event>();
 
-	public final static String MATH_DIFFERENT = "different";
-	public final static String MATH_EQUIVALENT = "equivalent";
-	public final static String MATH_SAME = "same";
-	
 	private boolean bRegionSizeFunctionsUsed = false;
 
 /**
@@ -308,28 +306,11 @@ public boolean compareEqual(Matchable object) {
  * @return boolean
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reasonForDecision,boolean bSilent) {
-	final String NATIVE_MATHS_ARE_SAME =			" MathsEquivalent:Native ";
-	final String MATHS_ARE_NUMERICALLY_EQUIVALENT =	" MathsEquivalent:Numerically ";
-	final String DIFFERENT_NUMBER_OF_VARIABLES =	" MathsDifferent:DifferentNumberOfVariables ";
-	final String VARIABLES_DONT_MATCH =				" MathsDifferent:VariablesDontMatch ";
-	final String DIFFERENT_NUMBER_OF_EXPRESSIONS =	" MathsDifferent:DifferentNumberOfExpressions ";
-	final String EQUATION_ADDED =					" MathsDifferent:EquationAdded ";
-	final String EQUATION_REMOVED =					" MathsDifferent:EquationRemoved ";
-	final String EXPRESSION_IS_DIFFERENT =			" MathsDifferent:ExpressionIsDifferent ";
-	final String FASTRATE_EXPRESSION_IS_DIFFERENT =	" MathsDifferent:FastRateExpressionIsDifferent ";
-	final String FASTINVARIANT_EXPRESSION_IS_DIFFERENT = " MathsDifferent:FastInvariantExpressionIsDifferent ";
-	final String UNKNOWN_DIFFERENCE_IN_EQUATION =	" MathsDifferent:UnknownDifferenceInEquation ";
-	final String DIFFERENT_NUMBER_OF_SUBDOMAINS =	" MathsDifferent:DifferentNumberOfSubdomains ";
-	final String FAILURE_DIV_BY_ZERO =			 	" MathsDifferent:FailedDivideByZero ";
-	final String FAILURE_UNKNOWN = 					" MathsDifferent:FailedUnknown ";
-	final String UNKNOWN_DIFFERENCE_IN_MATH =		" MathsDifferent:Unknown ";
-	final String DIFFERENT_BOUNDARY_CONDITION_TYPE = " MathsDifferent:DifferentBoundaryConditionType ";
+private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMathDesc) {
 	try {
 		MathDescription oldMathDesc = this;
 	    if (oldMathDesc.compareEqual(newMathDesc)){
-		    reasonForDecision.append(NATIVE_MATHS_ARE_SAME);
-		    return true;
+		    return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
 		}else{
 		    //if (!bSilent) System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
 			Variable oldVars[] = (Variable[])BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
@@ -338,15 +319,43 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 				//
 				// number of state variables are not equal (canonical maths only have state variables)
 				//
-				reasonForDecision.append(DIFFERENT_NUMBER_OF_VARIABLES);
-				return false;
+				return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 			}
 			if (!Compare.isEqual(oldVars,newVars)){
 				//
-				// variable names are not equivalent (nothing much we can do)
+				// variables are not strictly equal - must try to ignore domains and try again 
 				//
-				reasonForDecision.append(VARIABLES_DONT_MATCH);
-				return false;
+				boolean bIgnoreMissingDomains = true;
+				for (Variable oldVar : oldVars){
+					boolean bFound = false;
+					for (Variable newVar : newVars){
+						if (oldVar.compareEqual(newVar, bIgnoreMissingDomains)){
+							bFound = true;
+							break;
+						}
+					}
+					if (!bFound){
+						//
+						// variable names are not equivalent (nothing much we can do) ... what about change of variables???
+						//
+						return new MathCompareResults(Decision.MathDifferent_VARIABLES_DONT_MATCH,"variable '"+oldVar.getQualifiedName()+"' not matched");
+					}
+				}
+				for (Variable newVar : newVars){
+					boolean bFound = false;
+					for (Variable oldVar : oldVars){
+						if (newVar.compareEqual(oldVar, bIgnoreMissingDomains)){
+							bFound = true;
+							break;
+						}
+					}
+					if (!bFound){
+						//
+						// variable names are not equivalent (nothing much we can do) ... what about change of variables???
+						//
+						return new MathCompareResults(Decision.MathDifferent_VARIABLES_DONT_MATCH,"variable '"+newVar.getQualifiedName()+"' not matched");
+					}
+				}
 			}
 			//
 			// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
@@ -354,8 +363,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 			SubDomain subDomainsOld[] = (SubDomain[])BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class);
 			SubDomain subDomainsNew[] = (SubDomain[])BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class);
 			if (subDomainsOld.length != subDomainsNew.length){
-				reasonForDecision.append(DIFFERENT_NUMBER_OF_SUBDOMAINS);
-				return false;
+				return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_SUBDOMAINS);
 			}
 			for (int i = 0; i < subDomainsOld.length; i++){
 				// compare boundary type
@@ -370,8 +378,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionZm(), csdNew.getBoundaryConditionZm())
 								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionZp(), csdNew.getBoundaryConditionZp())
 							) {
-							reasonForDecision.append(DIFFERENT_BOUNDARY_CONDITION_TYPE);
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_BC_TYPE);
 						}					
 					} else if (subDomainsOld[i] instanceof MembraneSubDomain && subDomainsNew[i] instanceof MembraneSubDomain) {
 						MembraneSubDomain msdOld = (MembraneSubDomain)subDomainsOld[i];
@@ -383,8 +390,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionZm(), msdNew.getBoundaryConditionZm())
 								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionZp(), msdNew.getBoundaryConditionZp())
 							) {
-							reasonForDecision.append(DIFFERENT_BOUNDARY_CONDITION_TYPE);
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_BC_TYPE);
 						}					
 					}
 				}
@@ -405,51 +411,73 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 							//
 							// only one MathDescription had Equation for this Variable.
 							//
-							reasonForDecision.append(EQUATION_ADDED);
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED,
+									"only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'");
 						}
 						if (newEqu==null){
 							//
 							// only one MathDescription had Equation for this Variable.
 							//
-							reasonForDecision.append(EQUATION_REMOVED);
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED,
+									"only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'");
+
 						}
-						Expression oldExps[] = (Expression[])BeanUtils.getArray(oldEqu.getExpressions(oldMathDesc),Expression.class);
-						Expression newExps[] = (Expression[])BeanUtils.getArray(newEqu.getExpressions(newMathDesc),Expression.class);
-						if (oldExps.length != newExps.length){
-							reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
-							return false;
+						ArrayList<Expression> oldExps = new ArrayList<Expression>();
+						ArrayList<Expression> newExps = new ArrayList<Expression>();
+						boolean bOdePdeMismatch = false;
+						if (oldEqu instanceof PdeEquation && newEqu instanceof OdeEquation && oldEqu.getExpressions(newMathDesc).size()==3 && ((PdeEquation)oldEqu).getDiffusionExpression().isZero()){
+							oldExps.add(oldEqu.getRateExpression());
+							oldExps.add(oldEqu.getInitialExpression());
+							newExps.add(newEqu.getRateExpression());
+							newExps.add(newEqu.getInitialExpression());
+							bOdePdeMismatch = true;
+						}else if (oldEqu instanceof OdeEquation && newEqu instanceof PdeEquation && newEqu.getExpressions(newMathDesc).size()==3 && ((PdeEquation)newEqu).getDiffusionExpression().isZero()){
+							oldExps.add(oldEqu.getRateExpression());
+							oldExps.add(oldEqu.getInitialExpression());
+							newExps.add(newEqu.getRateExpression());
+							newExps.add(newEqu.getInitialExpression());
+							bOdePdeMismatch = true;
+						}else{
+							oldExps.addAll(oldEqu.getExpressions(oldMathDesc));
+							newExps.addAll(newEqu.getExpressions(newMathDesc));
 						}
-						for (int k = 0; k < oldExps.length; k++){
-							if (!oldExps[k].compareEqual(newExps[k])){
+						if (oldExps.size() != newExps.size()){
+							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"equations have different number of expressions");
+						}
+						for (int k = 0; k < oldExps.size(); k++){
+							if (!oldExps.get(k).compareEqual(newExps.get(k))){
 								bFoundDifference = true;
-								if (!ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+								if (!ExpressionUtils.functionallyEquivalent(oldExps.get(k),newExps.get(k))){
 									//
 									// difference couldn't be reconciled
 									//
-									if (!bSilent) System.out.println("expressions are different Old: '"+oldExps[k]+"'\n"+
-													   "expressions are different New: '"+newExps[k]+"'");
-									reasonForDecision.append(EXPRESSION_IS_DIFFERENT);
-									return false;
+									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
+											"expressions are different Old: '"+oldExps.get(k)+"'\n"+"expressions are different New: '"+newExps.get(k)+"'");
 								}else{
 									//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 													   //"expressions are equivalent New: '"+newExps[k]+"'");
 								}
 							}
 						}
+						if (!oldEqu.getVariable().compareEqual(newEqu.getVariable())){
+							bFoundDifference = true;
+							boolean bIgnoreMissingDomains = true;
+							if (!oldEqu.getVariable().compareEqual(newEqu.getVariable(),bIgnoreMissingDomains)){
+								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VARIABLE_IN_EQUATION,
+										"var1='"+oldEqu.getVariable().getQualifiedName()+"', var2='"+newEqu.getVariable().getQualifiedName()+"'");
+							}
+						}
 						//
 						// equation was not strictly "equal" but passed all tests, replace with old equation and move on
 						//
-						if (bFoundDifference){
+						if (bFoundDifference || bOdePdeMismatch){
 							subDomainsNew[i].replaceEquation(oldEqu);
 						}else{
 							//
 							// couldn't find the smoking gun, just plain bad
 							//
-							if (!bSilent) System.out.println("couldn't find problem with equation for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
-							reasonForDecision.append(UNKNOWN_DIFFERENCE_IN_EQUATION);
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
+									"couldn't find problem with equation for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
 						}
 					}
 					}
@@ -458,7 +486,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						ParticleProperties oldPP = subDomainsOld[i].getParticleProperties(oldVars[j]);
 						ParticleProperties newPP = subDomainsNew[i].getParticleProperties(oldVars[j]);
 						if (!Compare.isEqualOrNull(oldPP, newPP)){
-							return false;
+							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_PROPERTIES);
 						}
 					}
 					//
@@ -476,21 +504,18 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								//
 								// only one MathDescription had Equation for this Variable.
 								//
-								reasonForDecision.append(EQUATION_ADDED);
-								return false;
+								return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED);
 							}
 							if (newJumpCondition==null){
 								//
 								// only one MathDescription had Equation for this Variable.
 								//
-								reasonForDecision.append(EQUATION_REMOVED);
-								return false;
+								return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED);
 							}
 							Expression oldExps[] = (Expression[])BeanUtils.getArray(oldJumpCondition.getExpressions(oldMathDesc),Expression.class);
 							Expression newExps[] = (Expression[])BeanUtils.getArray(newJumpCondition.getExpressions(newMathDesc),Expression.class);
 							if (oldExps.length != newExps.length){
-								reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
-								return false;
+								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"jump condition has different number of expressions");
 							}
 							for (int k = 0; k < oldExps.length; k++){
 								if (!oldExps[k].compareEqual(newExps[k])){
@@ -499,10 +524,9 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 										//
 										// difference couldn't be reconciled
 										//
-										if (!bSilent) System.out.println("expressions are different Old: '"+oldExps[k]+"'\n"+
-														   "expressions are different New: '"+newExps[k]+"'");
-										reasonForDecision.append(EXPRESSION_IS_DIFFERENT);
-										return false;
+										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION,
+												"expressions are different Old: '"+oldExps[k]+"'\n"+
+											   "expressions are different New: '"+newExps[k]+"'");
 									}else{
 										//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 														   //"expressions are equivalent New: '"+newExps[k]+"'");
@@ -518,9 +542,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								//
 								// couldn't find the smoking gun, just plain bad
 								//
-								if (!bSilent) System.out.println("couldn't find problem with jumpCondition for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
-								reasonForDecision.append(UNKNOWN_DIFFERENCE_IN_EQUATION);
-								return false;
+								return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
+										"couldn't find problem with jumpCondition for "+oldVars[j].getName()+" in compartment "+subDomainsOld[i].getName());
 							}
 						}
 					}
@@ -539,23 +562,20 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						//
 						// only one MathDescription had Equation for this Variable.
 						//
-						reasonForDecision.append(EQUATION_ADDED);
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_EQUATION_ADDED);
 					}
 					if (newFastSystem==null){
 						//
 						// only one MathDescription had Equation for this Variable.
 						//
-						reasonForDecision.append(EQUATION_REMOVED);
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_EQUATION_REMOVED);
 					}
 					Enumeration<Expression> oldFastInvExpEnum = oldFastSystem.getFastInvariantExpressions();
 					Enumeration<Expression> newFastInvExpEnum = newFastSystem.getFastInvariantExpressions();
 					Expression[] oldFastInvariantExps = (Expression[])BeanUtils.getArray(oldFastInvExpEnum, Expression.class);
 					Expression[] newFastInvariantExps = (Expression[])BeanUtils.getArray(newFastInvExpEnum, Expression.class);
 					if (oldFastInvariantExps.length != newFastInvariantExps.length){
-						reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"fast invariants have different number of expressions");
 					}
 					for (int k = 0; k < oldFastInvariantExps.length; k++){
 						if (!oldFastInvariantExps[k].compareEqual(newFastInvariantExps[k])){
@@ -589,13 +609,12 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								Expression scaled_newFastInvariantExp = Expression.mult(new Expression(estimatedRatio),newFastInvariantExps[k]);
 								System.out.println("MathDescription.compareEquivalent(): comparing "+oldFastInvariantExps[k].infix()+" with "+scaled_newFastInvariantExp.infix());
 								if (!ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k], scaled_newFastInvariantExp)){
-									if (!bSilent) System.out.println("fast invariant expressions are different Old: '"+oldFastInvariantExps[k]+"'\n"+
-													   "fast invariant expressions are different New: '"+newFastInvariantExps[k]+"'");
-									reasonForDecision.append(FASTINVARIANT_EXPRESSION_IS_DIFFERENT);
-									return false;
+									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION,
+											"fast invariant expressions are different Old: '"+oldFastInvariantExps[k]+"'\n"+
+											 "fast invariant expressions are different New: '"+newFastInvariantExps[k]+"'");
 								}
-								if (!bSilent) System.out.println("fast invariant expressions are proportional Old: '"+oldFastInvariantExps[k]+"'\n"+
-								   "fast invariant expressions are proportional New: '"+newFastInvariantExps[k]+"'");
+								//if (!bSilent) System.out.println("fast invariant expressions are proportional Old: '"+oldFastInvariantExps[k]+"'\n"+
+								//   "fast invariant expressions are proportional New: '"+newFastInvariantExps[k]+"'");
 							}else{
 								//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 												   //"expressions are equivalent New: '"+newExps[k]+"'");
@@ -607,8 +626,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 					Expression[] oldFastRateExps = (Expression[])BeanUtils.getArray(oldFastRateExpEnum, Expression.class);
 					Expression[] newFastRateExps = (Expression[])BeanUtils.getArray(newFastRateExpEnum, Expression.class);
 					if (oldFastRateExps.length != newFastRateExps.length){
-						reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"fast rates have different number of expressions");
 					}
 					for (int k = 0; k < oldFastRateExps.length; k++){
 						if (!oldFastRateExps[k].compareEqual(newFastRateExps[k])){
@@ -617,10 +635,9 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								//
 								// difference couldn't be reconciled
 								//
-								if (!bSilent) System.out.println("fast rate expressions are different Old: '"+oldFastRateExps[k]+"'\n"+
-												   "fast rate expressions are different New: '"+newFastRateExps[k]+"'");
-								reasonForDecision.append(FASTRATE_EXPRESSION_IS_DIFFERENT);
-								return false;
+								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_FASTRATE_EXPRESSION,
+										"fast rate expressions are different Old: '"+oldFastRateExps[k]+"'\n"+
+										"fast rate expressions are different New: '"+newFastRateExps[k]+"'");
 							}else{
 								//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
 												   //"expressions are equivalent New: '"+newExps[k]+"'");
@@ -636,16 +653,15 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						//
 						// couldn't find the smoking gun, just plain bad
 						//
-						if (!bSilent) System.out.println("couldn't find problem with FastSystem for compartment "+subDomainsOld[i].getName());
-						reasonForDecision.append(UNKNOWN_DIFFERENCE_IN_EQUATION);
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION,
+								"couldn't find problem with FastSystem for compartment "+subDomainsOld[i].getName());
 					}
 				}
 				
 				List<ParticleJumpProcess> oldPjpList = subDomainsOld[i].getParticleJumpProcesses();
 				List<ParticleJumpProcess> newPjpList = subDomainsNew[i].getParticleJumpProcesses();
 				if (oldPjpList.size() != newPjpList.size()) {
-					return false;
+					return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS);
 				}
 				for (ParticleJumpProcess oldPjp : oldPjpList) {
 					boolean bEqual = false;
@@ -658,7 +674,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						}
 					}
 					if (!bEqual) {
-						return false;
+						return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS);
 					}
 				}
 			}
@@ -666,21 +682,11 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 			//
 			// after repairing aspects of MathDescription, now see if same
 			//
-			if (oldMathDesc.compareInvariantAttributes(newMathDesc)){
-				reasonForDecision.append(MATHS_ARE_NUMERICALLY_EQUIVALENT);
-				return true;
-			}else{
-			    //if (!bSilent) System.out.println("------UNKNOWN DIFFERENCE IN MATH----------------------");
-				//if (!bSilent) System.out.println("------old flattened MathDescription:\n"+oldMathDesc.getVCML_database());
-				//if (!bSilent) System.out.println("------new flattened MathDescription:\n"+newMathDesc.getVCML_database());
-				reasonForDecision.append(UNKNOWN_DIFFERENCE_IN_MATH);
-				return false;
-			}
+			return oldMathDesc.compareInvariantAttributes(newMathDesc,true);
 		}
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		reasonForDecision.append(FAILURE_UNKNOWN);
-		return false;
+		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN);
 	}
 }
 
@@ -690,7 +696,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
  * @return boolean
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public boolean compareInvariantAttributes(MathDescription newMathDesc) {
+private MathCompareResults compareInvariantAttributes(MathDescription newMathDesc, boolean bAlreadyFlattened){
 	//
 	// making cannonical math descriptions is expensive, so the idea is to quickly identify those differences that are invariant of any cannonical form.
 	//
@@ -700,15 +706,13 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	// compare subdomain names and types only SubDomain.compareEqual() would recursively compare all of the equations.
 	//
 	if (subDomainList.size()!=newMathDesc.subDomainList.size()){
-		System.out.println("DIFFERENT INVARIANTS: number of SubDomains different");
-		return false;
+		return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_SUBDOMAINS);
 	}
 	for (int i = 0; i < subDomainList.size(); i++){
 		SubDomain subDomain = subDomainList.elementAt(i);
 		SubDomain otherSubDomain = newMathDesc.getSubDomain(subDomain.getName());
 		if (otherSubDomain==null || !otherSubDomain.getClass().equals(subDomain.getClass())){
-			System.out.println("DIFFERENT INVARIANTS: SubDomains different");
-			return false;
+			return new MathCompareResults(Decision.MathDifferent_SUBDOMAINS_DONT_MATCH);
 		}		
 	}
 	
@@ -718,8 +722,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	HashSet<String> thisStateVarHash = getStateVariableNames();
 	HashSet<String> otherStateVarHash = newMathDesc.getStateVariableNames();
 	if (thisStateVarHash.size() != otherStateVarHash.size()){
-		System.out.println("DIFFERENT INVARIANTS: number of StateVars different");
-		return false;
+		return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 	}
 	//
 	// disregard vars present in both sets (for efficiency).
@@ -742,8 +745,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 			String varName = iter.next();
 			Variable var = newMathDesc.getVariable(varName);
 			if (var==null || !(var instanceof Function)){
-				System.out.println("DIFFERENT INVARIANTS: StateVar not found as Function");
-				return false;
+				return new MathCompareResults(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 			}
 		}
 		//
@@ -754,8 +756,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 			String varName = iter.next();
 			Variable var = getVariable(varName);
 			if (var==null || !(var instanceof Function)){
-				System.out.println("DIFFERENT INVARIANTS: StateVar not found as Function");
-				return false;
+				return new MathCompareResults(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION);
 			}
 		}
 	}
@@ -766,11 +767,14 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	if (!Compare.isEqualOrNull(
 			(geometry != null?geometry.getGeometrySpec():null),
 			(newMathDesc.geometry != null?newMathDesc.geometry.getGeometrySpec():null))) {
-		System.out.println("DIFFERENT INVARIANTS: GeometrySpec different");
-		return false;
+		return new MathCompareResults(Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
 	}
 
-	return true;
+	if (bAlreadyFlattened){
+		return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
+	}else{
+		return new MathCompareResults(Decision.MathEquivalent_NATIVE);
+	}
 }
 
 
@@ -3172,20 +3176,17 @@ void substituteInPlace(Function functionsToSubstitute[]) throws MathException, E
  * @param memoryMathDescription cbit.vcell.math.MathDescription
  * @param databaseMathDescription cbit.vcell.math.MathDescription
  */
-public static String testEquivalency(MathDescription mathDescription1, MathDescription mathDescription2, StringBuffer reason) {
+public static MathCompareResults testEquivalency(MathDescription mathDescription1, MathDescription mathDescription2) {
 
 	try {
-		String equivalency = null;
-
-		if (!mathDescription2.compareInvariantAttributes(mathDescription1)){
+		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
+		if (!invariantResults.isEquivalent()){
 			//
 			// can't be equivalent or equal
 			//
-			equivalency = MATH_DIFFERENT;
-			reason.append("Different invariants");
+			return invariantResults;
 		}else if (mathDescription2.compareEqual(mathDescription1)){
-			equivalency = MATH_SAME;
-			reason.append("Same");
+			return new MathCompareResults(Decision.MathEquivalent_NATIVE);
 		}else{
 			//
 			// must test for equivalence
@@ -3210,15 +3211,8 @@ public static String testEquivalency(MathDescription mathDescription1, MathDescr
 			canonicalMath1.makeCanonical();
 			canonicalMath2.makeCanonical();
 			// now compare
-			if (canonicalMath2.compareEquivalent(canonicalMath1,reason,true)){
-				// found to be equivalent
-				equivalency = MATH_EQUIVALENT;
-			}else{
-				// found to be different
-				equivalency = MATH_DIFFERENT;
-			}
+			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
-		return equivalency;
 	}catch (MathException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());

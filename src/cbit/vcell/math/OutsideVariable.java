@@ -35,11 +35,11 @@ public OutsideVariable(String name, String volVariableName) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof OutsideVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	OutsideVariable v = (OutsideVariable)obj;

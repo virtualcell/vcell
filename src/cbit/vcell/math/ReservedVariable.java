@@ -38,11 +38,11 @@ private ReservedVariable(String name, int defaultIndex){
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof ReservedVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	

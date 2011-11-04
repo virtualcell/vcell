@@ -23,5 +23,6 @@ public interface VersionInfo extends Immutable, Serializable {
  */
 Version getVersion();
 VersionableType getVersionType();
+VCellSoftwareVersion getSoftwareVersion();
 
 }

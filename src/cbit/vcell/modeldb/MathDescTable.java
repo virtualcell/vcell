@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.math.BigDecimal;
 import cbit.sql.*;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
@@ -21,10 +20,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
-
-import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
  */
@@ -60,8 +58,9 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
-	return new cbit.vcell.math.MathInfo(geomRef,version);
+	return new cbit.vcell.math.MathInfo(geomRef,version,VCellSoftwareVersion.fromString(softwareVersion));
 }
 
 
@@ -73,14 +72,16 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	
 	UserTable userTable = UserTable.table;
 	MathDescTable vTable = MathDescTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
-	Field[] f = new Field[] {vTable.id,userTable.userid};
+	Field[] f = new Field[] {vTable.id,userTable.userid,swvTable.softwareVersion};
 	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
 	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.geometryRef);
 	
-	Table[] t = {vTable,userTable};
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName();  // links in the userTable
+	Table[] t = {vTable,userTable,swvTable};
+	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+	           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

@@ -28,11 +28,11 @@ public MembraneRegionVariable(String name, Domain domain) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof MembraneRegionVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	

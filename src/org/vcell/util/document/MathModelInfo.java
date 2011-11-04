@@ -24,21 +24,24 @@ public class MathModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private KeyValue mathKey = null;
 	private MathModelChildSummary mathModelChildSummary = null;
 	private BigString mathModelChildSummaryString = null;
+	private VCellSoftwareVersion softwareVersion = null;
 /**
  * BioModelInfo constructor comment.
  */
-public MathModelInfo(Version argVersion, KeyValue argMathKey, MathModelChildSummary argMathModelChildSummary) {
+public MathModelInfo(Version argVersion, KeyValue argMathKey, MathModelChildSummary argMathModelChildSummary,VCellSoftwareVersion softwareVersion) {
 	this.version = argVersion;
 	this.mathKey = argMathKey;
 	this.mathModelChildSummary = argMathModelChildSummary;
+	this.softwareVersion = softwareVersion;
 }
 
-public MathModelInfo(Version argVersion, KeyValue argMathKey, String argMathModelChildSummaryString) {
+public MathModelInfo(Version argVersion, KeyValue argMathKey, String argMathModelChildSummaryString, VCellSoftwareVersion softwareVersion) {
 	this.version = argVersion;
 	this.mathKey = argMathKey;
 	if (argMathModelChildSummaryString != null) {
 		this.mathModelChildSummaryString = new BigString(argMathModelChildSummaryString);
 	}
+	this.softwareVersion = softwareVersion;
 }
 /**
  * Insert the method's description here.
@@ -96,9 +99,13 @@ public int hashCode() {
  * @return java.lang.String
  */
 public String toString() {
-	return "MathModelInfo(mathKey="+mathKey+",Version="+version+")";
+	return "MathModelInfo(mathKey="+mathKey+",Version="+version+", softwareVersion="+softwareVersion+")";
 }
 public VersionableType getVersionType() {	
 	return VersionableType.MathModelMetaData;
+}
+
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

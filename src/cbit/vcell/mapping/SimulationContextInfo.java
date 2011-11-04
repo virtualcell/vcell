@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -22,15 +23,17 @@ public class SimulationContextInfo implements java.io.Serializable,VersionInfo {
 	private KeyValue geomRef = null;
 	private KeyValue modelRef = null;
 	private Version version = null;
+	private VCellSoftwareVersion softwareVersion = null;
 
 /**
  * SimulationContextInfo constructor comment.
  */
-public SimulationContextInfo(KeyValue argMathRef,KeyValue argGeomRef,KeyValue argModelRef,Version argVersion) {
+public SimulationContextInfo(KeyValue argMathRef,KeyValue argGeomRef,KeyValue argModelRef,Version argVersion,VCellSoftwareVersion softwareVersion) {
 	this.mathRef = argMathRef;
 	this.geomRef = argGeomRef;
 	this.modelRef = argModelRef;
 	this.version = argVersion;
+	this.softwareVersion = softwareVersion;
 }
 
 
@@ -109,5 +112,10 @@ public String toString() {
 
 public VersionableType getVersionType() {
 	return VersionableType.SimulationContext;
+}
+
+
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

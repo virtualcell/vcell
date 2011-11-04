@@ -14,6 +14,7 @@ import java.io.*;
 
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -25,15 +26,17 @@ import org.vcell.util.document.VersionableType;
 public class MathInfo implements Serializable,VersionInfo {
 	private KeyValue geomRef = null;
 	private Version version = null;
+	private VCellSoftwareVersion softwareVersion = null; 
 /**
  * This method was created in VisualAge.
  * @param argGeomRef KeyValue
  * @param argVersion cbit.sql.Version
  */
-public MathInfo(KeyValue argGeomRef,Version argVersion) {
+public MathInfo(KeyValue argGeomRef,Version argVersion,VCellSoftwareVersion softwareVersion) {
 	super();
 	this.geomRef = argGeomRef;
 	this.version = argVersion;
+	this.softwareVersion = softwareVersion;
 }
 /**
  * Insert the method's description here.
@@ -89,5 +92,8 @@ public String toString() {
 }
 public VersionableType getVersionType() {
 	return VersionableType.MathDescription;
+}
+public VCellSoftwareVersion getSoftwareVersion() {
+	return softwareVersion;
 }
 }

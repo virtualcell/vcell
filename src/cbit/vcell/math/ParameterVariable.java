@@ -32,11 +32,11 @@ public ParameterVariable(String name) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof ParameterVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 

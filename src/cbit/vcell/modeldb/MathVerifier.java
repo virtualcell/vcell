@@ -9,11 +9,13 @@
  */
 
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
@@ -23,6 +25,7 @@ import javax.swing.JFrame;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
@@ -33,6 +36,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
@@ -44,9 +49,13 @@ import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.vcell_4_8.MathMapping_4_8;
+import cbit.vcell.math.MathCompareResults;
+import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -55,6 +64,7 @@ import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (2/2/01 2:57:33 PM)
@@ -532,7 +542,8 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 		Simulation appSimsFromDB[] = simContextFromDB.getSimulations();
 		SimulationContext simContextNewMath = simContextsNewMath[k];
 		Simulation appSimsNewMath[] = simContextNewMath.getSimulations();
-		String mathEquivalency = null;
+		MathCompareResults mathCompareResults_latest = null;
+		MathCompareResults mathCompareResults_4_8 = null;
 		try {
 			MathDescription origMathDesc = simContextFromDB.getMathDescription();
 			//
@@ -577,13 +588,20 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 				}
 				issueString = buffer.toString();
 			}
-			simContextNewMath.setMathDescription(newMathDesc);
 
-			StringBuffer reasonForDecision = new StringBuffer();
-			boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
-			mathEquivalency = MathDescription.testEquivalency(origMathDesc,newMathDesc,reasonForDecision);
-			StringBuffer buffer = new StringBuffer();
-			buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
+			MathCompareResults testIfSameResult = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc);
+			mathCompareResults_latest = MathDescription.testEquivalency(origMathDesc,newMathDesc);
+			System.out.println(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathCompareResults_latest.isEquivalent()+">>: "+mathCompareResults_latest.toDatabaseStatus());
+			MathDescription mathDesc_4_8 = null;
+			try {
+				mathDesc_4_8 = new MathMapping_4_8(simContextNewMath).getMathDescription();
+				mathCompareResults_4_8 = MathDescription.testEquivalency(origMathDesc, mathDesc_4_8);
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
+			}
+
+			simContextNewMath.setMathDescription(newMathDesc);
 			//
 			// update Database Status for SimContext
 			//
@@ -596,9 +614,11 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 					//KeyValue mathKey = origMathDesc.getKey();
 					String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 										  " SET "  +SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "+
-										            SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT)?(0):(1))+", "+
-										            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
-										            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
+										  			SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathCompareResults_latest.isEquivalent()?(1):(0))+", "+
+										  			SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_latest.toDatabaseStatus(),255)+"', "+
+										  			SimContextStat2Table.table.equiv_4_8.getUnqualifiedColName()+" = "+(mathCompareResults_4_8.isEquivalent()?(1):(0))+", "+
+										  			SimContextStat2Table.table.status_4_8.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_4_8.toDatabaseStatus(),255)+"'"+
+										            // ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
 										  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
 					int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 					if (numRowsChanged!=1){
@@ -650,10 +670,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 		//
 		for (int l = 0; l < appSimsFromDB.length; l++){
 			try {
-				boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathEquivalency);
+				boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults_latest);
 				userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
 							  "Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+
-							  "mathEquivalency="+mathEquivalency+", simEquivalency="+bSimEquivalent);
+							  "mathEquivalency="+mathCompareResults_latest.isEquivalent()+", simEquivalency="+bSimEquivalent);
 				//
 				// update Database Status for Simulation
 				//
@@ -665,7 +685,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 						stmt = con.createStatement();
 						String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
 											  " SET "  +SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent)?(1):(0))+ ", "+
-											            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
+											            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults_latest.decision.description)+"'" +
 											  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
 						int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 						if (numRowsChanged!=1){
@@ -721,6 +741,158 @@ private Comparator<KeyValue> keyValueCpmparator =
 		return Integer.parseInt(o1.toString()) - Integer.parseInt(o2.toString());
 	}
 };
+
+public static class MathGenerationResults{
+	public final BioModel bioModelFromDB;
+	public final SimulationContext simContextFromDB;
+	public final MathDescription mathDesc_original;
+	public final MathDescription mathDesc_latest;
+	public final MathCompareResults mathCompareResults_latest;
+	public final MathDescription mathDesc_4_8;
+	public final MathCompareResults mathCompareResults_4_8;
+	
+	public MathGenerationResults(BioModel bioModelFromDB, SimulationContext simContextFromDB, MathDescription math_orig, MathDescription math_latest, MathCompareResults mathCompareResults_latest, MathDescription math_4_8, MathCompareResults mathCompareResults_4_8){
+		this.bioModelFromDB = bioModelFromDB;
+		this.simContextFromDB = simContextFromDB;
+		this.mathDesc_original = math_orig;
+		this.mathDesc_latest = math_latest;
+		this.mathCompareResults_latest = mathCompareResults_latest;
+		this.mathDesc_4_8 = math_4_8;
+		this.mathCompareResults_4_8 = mathCompareResults_4_8;
+	}
+}
+
+public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, ObjectNotFoundException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
+
+	User adminUser = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+    SessionLog userLog = new org.vcell.util.StdoutSessionLog(adminUser.toString());
+
+    userLog.print("Testing SimContext with key '" + simContextKey + "'");
+    // get biomodel refs
+    java.sql.Connection con = null;
+    java.sql.Statement stmt = null;
+    con = conFactory.getConnection(new Object());
+    cbit.vcell.modeldb.BioModelSimContextLinkTable bmscTable = cbit.vcell.modeldb.BioModelSimContextLinkTable.table;
+    cbit.vcell.modeldb.BioModelTable bmTable = cbit.vcell.modeldb.BioModelTable.table;
+    cbit.vcell.modeldb.UserTable userTable = cbit.vcell.modeldb.UserTable.table;
+    String sql = "SELECT "+bmscTable.bioModelRef.getQualifiedColName()+","+bmTable.ownerRef.getQualifiedColName()+","+userTable.userid.getQualifiedColName()+
+    			 " FROM "+bmscTable.getTableName()+","+bmTable.getTableName()+","+userTable.getTableName()+
+    			 " WHERE "+bmscTable.simContextRef.getQualifiedColName()+" = "+simContextKey +
+    			 " AND "+bmTable.id.getQualifiedColName()+" = "+bmscTable.bioModelRef.getQualifiedColName() +
+    			 " AND "+bmTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName();
+    ArrayList<KeyValue> bioModelKeys = new ArrayList<KeyValue>();
+    stmt = con.createStatement();
+    User owner = null;
+    try {
+        ResultSet rset = stmt.executeQuery(sql);
+        while (rset.next()) {
+            KeyValue key = new KeyValue(rset.getBigDecimal(bmscTable.bioModelRef.getUnqualifiedColName()));
+            bioModelKeys.add(key);
+            KeyValue ownerRef = new KeyValue(rset.getBigDecimal(bmTable.ownerRef.getUnqualifiedColName()));
+            String userid = rset.getString(userTable.userid.getUnqualifiedColName());
+            owner = new User(userid,ownerRef);
+        }
+    } finally {
+		if (stmt != null) {
+			stmt.close();
+		}
+		con.close();
+    }
+
+    // use the first biomodel...
+    if (bioModelKeys.size()==0){
+    	throw new RuntimeException("zombie simContext ... no biomodels");
+    }
+    BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(owner, bioModelKeys.get(0));
+    //
+    // read in the BioModel from the database
+    //
+    BigString bioModelXML = dbServerImpl.getBioModelXML(owner, bioModelInfo.getVersion().getVersionKey());
+    BioModel bioModelFromDB = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+    BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+    bioModelFromDB.refreshDependencies();
+    bioModelNewMath.refreshDependencies();
+
+    //
+    // get all Simulations for this model
+    //
+    Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
+    SolverResultSetInfo rsetInfos[] = new SolverResultSetInfo[modelSimsFromDB.length];
+    for (int k = 0; k < modelSimsFromDB.length; k++) {
+        try {
+            rsetInfos[k] = dbServerImpl.getResultSetInfo(owner, modelSimsFromDB[k].getVersion().getVersionKey(),0);
+        } catch (Throwable e) {
+            userLog.exception(e);
+            userLog.alert("failure reading ResultSetInfo for Simulation("+modelSimsFromDB[k]+") of BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"'  "+bioModelFromDB.getVersion().getDate());
+        }
+    }
+
+    //
+    // ---> only for the SimContext we started with...
+    // recompute mathDescription, and verify it is equivalent
+    // then check each associated simulation to ensure math overrides are applied in an equivalent manner also.
+    //
+    SimulationContext simContextsFromDB[] = bioModelFromDB.getSimulationContexts();
+    SimulationContext simContextsNewMath[] = bioModelNewMath.getSimulationContexts();
+    SimulationContext simContextFromDB = null;
+    SimulationContext simContextNewMath = null;
+    for (int k = 0; k < simContextsFromDB.length; k++) {
+        // find it...
+        if (simContextsFromDB[k].getKey().equals(simContextKey)) {
+            simContextFromDB = simContextsFromDB[k];
+			simContextNewMath = simContextsNewMath[k];
+            break;
+        }
+    }
+    
+    if (simContextFromDB == null) {
+        throw new RuntimeException("BioModel referred to by this SimContext does not contain this SimContext");
+    } else {
+        MathDescription origMathDesc = simContextFromDB.getMathDescription();
+        //
+        // find out if any simulation belonging to this Application has data
+        //
+        //
+        // make sure geometry is up to date on "simContextNewMath"
+        //
+        try {
+            if (simContextNewMath.getGeometry().getDimension() > 0 && simContextNewMath.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                simContextNewMath.getGeometry().getGeometrySurfaceDescription().updateAll();
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        //
+        // updated mathDescription loaded into copy of bioModel, then test for equivalence.
+        //
+        cbit.vcell.mapping.MathMapping mathMapping = simContextNewMath.createNewMathMapping();
+        MathDescription mathDesc_latest = mathMapping.getMathDescription();
+        MathMapping_4_8 mathMapping_4_8 = new MathMapping_4_8(simContextNewMath);
+        MathDescription mathDesc_4_8 = mathMapping_4_8.getMathDescription();
+        String issueString = null;
+        org.vcell.util.Issue issues[] = mathMapping.getIssues();
+        if (issues != null && issues.length > 0) {
+            StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):\n");
+            for (int l = 0; l < issues.length; l++) {
+                buffer.append(" <<" + issues[l].toString() + ">>\n");
+            }
+            issueString = buffer.toString();
+        }
+        simContextNewMath.setMathDescription(mathDesc_latest);
+
+        MathCompareResults mathCompareResults_latest = MathDescription.testEquivalency(origMathDesc, mathDesc_latest);
+        MathCompareResults mathCompareResults_4_8 = null;
+        try {
+        	mathCompareResults_4_8 = MathDescription.testEquivalency(origMathDesc, mathDesc_4_8);
+        }catch(Exception e){
+        	e.printStackTrace(System.out);
+        	mathCompareResults_4_8 = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, e.getMessage());
+        }
+        return new MathGenerationResults(bioModelFromDB, simContextFromDB, origMathDesc, mathDesc_latest, mathCompareResults_latest, mathDesc_4_8, mathCompareResults_4_8);
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
@@ -758,21 +930,32 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 			//
 			// if certain Bio or Math models are requested, then filter all else out
 			//
+			VCDocumentInfo documentInfo = userBioAndMathModelInfoV.elementAt(j);
+			KeyValue versionKey = documentInfo.getVersion().getVersionKey();
 			if (sortedBioAndMathModelKeys != null){
-				int srch =
-					Arrays.binarySearch(sortedBioAndMathModelKeys, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(),keyValueCpmparator);
-				if(srch < 0){
+				int srch = Arrays.binarySearch(sortedBioAndMathModelKeys, versionKey,keyValueCpmparator);
+				if (srch < 0){
 					continue;
 				}
 			}
 
+			if (!(documentInfo instanceof BioModelInfo)){
+				continue;
+			}
+//			BioModelInfo bioModelInfo = (BioModelInfo)documentInfo;
+//			VCellSoftwareVersion softwareVersion = bioModelInfo.getSoftwareVersion();
+//			if (softwareVersion.getVersionString().equals("4.8") && (softwareVersion.getSite().equals(VCellSite.BETA) || softwareVersion.getSite().equals(VCellSite.RELEASE))){
+//				// process this one.
+//			}else{
+//				continue;
+//			}
 			//
 			// filter out any bioModelKeys present in the "SkipList"
 			//
-			if (skipHash.contains(userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey())){
+			if (skipHash.contains(versionKey)){
 				System.out.println("skipping "+
-					(userBioAndMathModelInfoV.elementAt(j) instanceof BioModelInfo?"BioModel":"MathModel")+
-					" with key '"+userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey()+"'");
+					(documentInfo instanceof BioModelInfo?"BioModel":"MathModel")+
+					" with key '"+versionKey+"'");
 				continue;
 			}
 
@@ -784,160 +967,44 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 				BigString vcDocumentXMLFromDBCache = null;
 				try{
 					long startTime = System.currentTimeMillis();
-					if(userBioAndMathModelInfoV.elementAt(j) instanceof BioModelInfo){
+					if(documentInfo instanceof BioModelInfo){
 						vcDocumentXMLFromDBCache =
 							new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
-								new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), false));
+								new QueryHashtable(), user, versionKey, false));
 						vcDocumentFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
 					}else{
 						vcDocumentXMLFromDBCache =
 							new BigString(dbServerImpl.getServerDocumentManager().getMathModelXML(
-								new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), false));						
+								new QueryHashtable(), user, versionKey, false));						
 						vcDocumentFromDBCache = XmlHelper.XMLToMathModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
 					}
 					if(bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
 						updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
-							userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), null);
+							userLog, versionKey, null);
 					}
 				}catch(Exception e){
 					log.exception(e);
 					if (bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable_LoadTest(0,userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), e);
+						updateLoadModelsStatTable_LoadTest(0,userLog, versionKey, e);
 					}
 				}
-				if(testFlag.equals(MathVerifier.MV_LOAD_XML) && vcDocumentXMLFromDBCache != null){
-//					try{
-//						String vcDocumentXMLFromDBCacheRoundtrip = null;
-
-						//Compare self same
-						Exception bSameCachedAndNotCachedXMLExc = null;
-						Exception bSameCachedAndNotCachedObjExc = null;
-						Exception bSameSelfXMLCachedRoundtripExc = null;
-						Boolean bSameCachedAndNotCachedXML = null;
-						Boolean bSameCachedAndNotCachedObj = null;
-						Boolean bSameSelfCachedRoundtrip = null;
-//						Boolean bSameSelfObjCachedRoundTrip = null;
-						long startTime = 0;
-//						Long compareXMLTime = null;
-//						Long compareObjTime = null;
-//						Long loadOriginalXMLTime = null;
-						Long loadUnresolvedTime = null;
-
-						if(userBioAndMathModelInfoV.elementAt(j) instanceof BioModelInfo){
-							try {
-								String xmlRndTrip0 = XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
-								BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
-								String xmlRndTrip1 = XmlHelper.bioModelToXML((BioModel)bioModelRndTrip0);
-								BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
-								if(Compare.logger != null){
-									Compare.loggingEnabled = true;
-									VCMLComparator.DEBUG_MODE = true;
-								}
-								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
-								System.out.println("----------XML same="+bSameSelfCachedRoundtrip);
-								boolean objectSame = bioModelRndTrip0.compareEqual(bioModelRndTrip1);
-								System.out.println("----------Objects same="+objectSame);
-								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
-							} catch (Exception e) {
-								bSameSelfCachedRoundtrip = null;
-								log.exception(e);
-								bSameSelfXMLCachedRoundtripExc = e;
-							}finally{
-								Compare.loggingEnabled = false;
-								VCMLComparator.DEBUG_MODE = false;
-							}
-							
-							String fromDBBioModelUnresolvedXML = null;
-							try {
-								startTime = System.currentTimeMillis();
-								fromDBBioModelUnresolvedXML =
-									dbServerImpl.getServerDocumentManager().getBioModelUnresolved(
-										new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());	
-								BioModel vcDocumentFromDBNotCached = XmlHelper.XMLToBioModel(new XMLSource(fromDBBioModelUnresolvedXML));
-								loadUnresolvedTime = System.currentTimeMillis()-startTime;
-								bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
-							} catch (Exception e) {
-								log.exception(e);
-								bSameCachedAndNotCachedObjExc = e;
-							}
-							
-							if(fromDBBioModelUnresolvedXML != null){
-								try {
-									String vcDocumentXMLFromDBCacheRegenerate =
-										XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
-									bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBBioModelUnresolvedXML, true);
-								} catch (Exception e) {
-									log.exception(e);
-									bSameCachedAndNotCachedXMLExc = e;
-								}
-							}
-						}else{
-							try {
-								String xmlRndTrip0 = XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
-								MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
-								String xmlRndTrip1 = XmlHelper.mathModelToXML((MathModel)mathModelRndTrip0);
-								MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
-								if(Compare.logger != null){
-									Compare.loggingEnabled = true;
-									VCMLComparator.DEBUG_MODE = true;
-								}
-								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
-								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
-							} catch (Exception e) {
-								bSameSelfCachedRoundtrip = null;
-								log.exception(e);
-								bSameSelfXMLCachedRoundtripExc = e;
-							}finally{
-								Compare.loggingEnabled = false;
-								VCMLComparator.DEBUG_MODE = false;
-							}
-
-							String fromDBMathModelUnresolvedXML = null;
-							try {
-								startTime = System.currentTimeMillis();
-								MathModel vcDocumentFromDBNotCached =
-									dbServerImpl.getServerDocumentManager().getMathModelUnresolved(
-										new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());
-								loadUnresolvedTime = System.currentTimeMillis()-startTime;
-								fromDBMathModelUnresolvedXML = XmlHelper.mathModelToXML(vcDocumentFromDBNotCached);
-								bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
-							} catch (Exception e) {
-								log.exception(e);
-								bSameCachedAndNotCachedObjExc = e;
-							}
-
-							if(fromDBMathModelUnresolvedXML != null){
-								try {
-									String vcDocumentXMLFromDBCacheRegenerate =
-										XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
-									bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBMathModelUnresolvedXML, true);
-								} catch (Exception e) {
-									log.exception(e);
-									bSameCachedAndNotCachedXMLExc = e;
-								}
-							}
-						}
-
-						if(bUpdateDatabase){
-							updateLoadModelsStatTable_CompareTest(userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(),
-								null/*loadOriginalXMLTime*/, loadUnresolvedTime,
-								bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
-								bSameCachedAndNotCachedXMLExc, bSameCachedAndNotCachedObjExc, bSameSelfXMLCachedRoundtripExc);
-						}else{
-							System.out.println("loadOriginalXMLTime="+null/*loadOriginalXMLTime*/+" loadUnresolvedTime="+loadUnresolvedTime);
-							System.out.println("bSameCachedAndNotCachedXML="+bSameCachedAndNotCachedXML+
-									" bSameCachedAndNotCachedObj="+bSameCachedAndNotCachedObj+
-									" bSameSelfXMLCachedRoundtrip="+bSameSelfCachedRoundtrip);
-							System.out.println("bSameCachedAndNotCachedXMLExc="+bSameCachedAndNotCachedXMLExc+
-									"\nbSameCachedAndNotCachedObjExc="+bSameCachedAndNotCachedObjExc+
-									"\nbSameSelfXMLCachedRoundtripExc="+bSameSelfXMLCachedRoundtripExc);
-							System.out.println();
-						}
-				}
 				
-				
-				if(vcDocumentFromDBCache instanceof BioModel && testFlag.equals(MathVerifier.MV_DEFAULT)){
-					checkMathForBioModel(vcDocumentXMLFromDBCache, (BioModel)vcDocumentFromDBCache, user, userLog, bUpdateDatabase);
+				if (testFlag.equals(MathVerifier.MV_LOAD_XML)){
+					//
+					// OPERATION = LOADTEST
+					//
+					if (vcDocumentXMLFromDBCache != null){
+						testDocumentLoad(bUpdateDatabase, user, userLog, documentInfo, vcDocumentFromDBCache);
+					}
+					
+				}else if (testFlag.equals(MathVerifier.MV_DEFAULT)){
+					//
+					// OPERATION = DEFAULT (check math generation)
+					//
+					if (vcDocumentFromDBCache instanceof BioModel){
+						BioModel bioModel = (BioModel)vcDocumentFromDBCache;
+						checkMathForBioModel(vcDocumentXMLFromDBCache, bioModel, user, userLog, bUpdateDatabase);
+					}
 				}
 				
 			}catch (Throwable e){
@@ -945,6 +1012,137 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 	            // can't update anything in database, since we don't know what simcontexts are involved
 			}
 		}	
+	}
+}
+
+private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog userLog, VCDocumentInfo documentInfo, VCDocument vcDocumentFromDBCache) {
+	KeyValue versionKey = documentInfo.getVersion().getVersionKey();
+	//	try{
+	//		String vcDocumentXMLFromDBCacheRoundtrip = null;
+	
+	//Compare self same
+	Exception bSameCachedAndNotCachedXMLExc = null;
+	Exception bSameCachedAndNotCachedObjExc = null;
+	Exception bSameSelfXMLCachedRoundtripExc = null;
+	Boolean bSameCachedAndNotCachedXML = null;
+	Boolean bSameCachedAndNotCachedObj = null;
+	Boolean bSameSelfCachedRoundtrip = null;
+	//	Boolean bSameSelfObjCachedRoundTrip = null;
+	long startTime = 0;
+	// Long compareXMLTime = null;
+	// Long compareObjTime = null;
+	// Long loadOriginalXMLTime = null;
+	Long loadUnresolvedTime = null;
+	
+	if(documentInfo instanceof BioModelInfo){
+		try {
+			String xmlRndTrip0 = XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
+			BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
+			String xmlRndTrip1 = XmlHelper.bioModelToXML((BioModel)bioModelRndTrip0);
+			BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
+			if(Compare.logger != null){
+				Compare.loggingEnabled = true;
+				VCMLComparator.DEBUG_MODE = true;
+			}
+			bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
+			System.out.println("----------XML same="+bSameSelfCachedRoundtrip);
+			boolean objectSame = bioModelRndTrip0.compareEqual(bioModelRndTrip1);
+			System.out.println("----------Objects same="+objectSame);
+			bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
+		} catch (Exception e) {
+			bSameSelfCachedRoundtrip = null;
+			log.exception(e);
+			bSameSelfXMLCachedRoundtripExc = e;
+		}finally{
+			Compare.loggingEnabled = false;
+			VCMLComparator.DEBUG_MODE = false;
+		}
+		
+		String fromDBBioModelUnresolvedXML = null;
+		try {
+			startTime = System.currentTimeMillis();
+			fromDBBioModelUnresolvedXML =
+				dbServerImpl.getServerDocumentManager().getBioModelUnresolved(
+					new QueryHashtable(), user, versionKey);	
+			BioModel vcDocumentFromDBNotCached = XmlHelper.XMLToBioModel(new XMLSource(fromDBBioModelUnresolvedXML));
+			loadUnresolvedTime = System.currentTimeMillis()-startTime;
+			bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
+		} catch (Exception e) {
+			log.exception(e);
+			bSameCachedAndNotCachedObjExc = e;
+		}
+		
+		if(fromDBBioModelUnresolvedXML != null){
+			try {
+				String vcDocumentXMLFromDBCacheRegenerate =
+					XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
+				bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBBioModelUnresolvedXML, true);
+			} catch (Exception e) {
+				log.exception(e);
+				bSameCachedAndNotCachedXMLExc = e;
+			}
+		}
+	}else{
+		try {
+			String xmlRndTrip0 = XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
+			MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
+			String xmlRndTrip1 = XmlHelper.mathModelToXML((MathModel)mathModelRndTrip0);
+			MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
+			if(Compare.logger != null){
+				Compare.loggingEnabled = true;
+				VCMLComparator.DEBUG_MODE = true;
+			}
+			bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
+			bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
+		} catch (Exception e) {
+			bSameSelfCachedRoundtrip = null;
+			log.exception(e);
+			bSameSelfXMLCachedRoundtripExc = e;
+		}finally{
+			Compare.loggingEnabled = false;
+			VCMLComparator.DEBUG_MODE = false;
+		}
+
+		String fromDBMathModelUnresolvedXML = null;
+		try {
+			startTime = System.currentTimeMillis();
+			MathModel vcDocumentFromDBNotCached =
+				dbServerImpl.getServerDocumentManager().getMathModelUnresolved(
+					new QueryHashtable(), user, versionKey);
+			loadUnresolvedTime = System.currentTimeMillis()-startTime;
+			fromDBMathModelUnresolvedXML = XmlHelper.mathModelToXML(vcDocumentFromDBNotCached);
+			bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
+		} catch (Exception e) {
+			log.exception(e);
+			bSameCachedAndNotCachedObjExc = e;
+		}
+
+		if(fromDBMathModelUnresolvedXML != null){
+			try {
+				String vcDocumentXMLFromDBCacheRegenerate =
+					XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
+				bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBMathModelUnresolvedXML, true);
+			} catch (Exception e) {
+				log.exception(e);
+				bSameCachedAndNotCachedXMLExc = e;
+			}
+		}
+	}
+
+	if(bUpdateDatabase){
+		updateLoadModelsStatTable_CompareTest(userLog, versionKey,
+			null/*loadOriginalXMLTime*/, loadUnresolvedTime,
+			bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
+			bSameCachedAndNotCachedXMLExc, bSameCachedAndNotCachedObjExc, bSameSelfXMLCachedRoundtripExc);
+	}else{
+		System.out.println("loadOriginalXMLTime="+null/*loadOriginalXMLTime*/+" loadUnresolvedTime="+loadUnresolvedTime);
+		System.out.println("bSameCachedAndNotCachedXML="+bSameCachedAndNotCachedXML+
+				" bSameCachedAndNotCachedObj="+bSameCachedAndNotCachedObj+
+				" bSameSelfXMLCachedRoundtrip="+bSameSelfCachedRoundtrip);
+		System.out.println("bSameCachedAndNotCachedXMLExc="+bSameCachedAndNotCachedXMLExc+
+				"\nbSameCachedAndNotCachedObjExc="+bSameCachedAndNotCachedObjExc+
+				"\nbSameSelfXMLCachedRoundtripExc="+bSameSelfXMLCachedRoundtripExc);
+		System.out.println();
 	}
 }
 
@@ -1007,7 +1205,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 				Simulation appSimsFromDB[] = simContextFromDB.getSimulations();
 				SimulationContext simContextNewMath = simContextsNewMath[k];
 				Simulation appSimsNewMath[] = simContextNewMath.getSimulations();
-				String mathEquivalency = null;
+				MathCompareResults mathCompareResults = null;
 				try {
 					MathDescription origMathDesc = simContextFromDB.getMathDescription();
 					//
@@ -1054,11 +1252,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					}
 					simContextNewMath.setMathDescription(newMathDesc);
 
-					StringBuffer reasonForDecision = new StringBuffer();
-					boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc,new StringBuffer());
-					mathEquivalency = MathDescription.testEquivalency(origMathDesc,newMathDesc,reasonForDecision);
+					MathCompareResults testIfSameResults = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc,newMathDesc);
+					mathCompareResults = MathDescription.testEquivalency(origMathDesc,newMathDesc);
 					StringBuffer buffer = new StringBuffer();
-					buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
+					buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathCompareResults.isEquivalent()+">>: "+mathCompareResults.toDatabaseStatus());
 					//
 					// update Database Status for SimContext
 					//
@@ -1071,8 +1268,8 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 							//KeyValue mathKey = origMathDesc.getKey();
 							String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 												  " SET "  +SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "+
-												            SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT)?(0):(1))+", "+
-												            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
+												            SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathCompareResults.isEquivalent()?(1):(0))+", "+
+												            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus())+"'"+
 												            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
 												  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
 							int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
@@ -1126,10 +1323,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 				//
 				for (int l = 0; l < appSimsFromDB.length; l++){
 					try {
-						boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathEquivalency);
+						boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l], appSimsFromDB[l], mathCompareResults);
 						userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+
 									  "Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+
-									  "mathEquivalency="+mathEquivalency+", simEquivalency="+bSimEquivalent);
+									  "mathEquivalency="+mathCompareResults.isEquivalent()+", simEquivalency="+bSimEquivalent);
 						//
 						// update Database Status for Simulation
 						//
@@ -1141,7 +1338,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 								stmt = con.createStatement();
 								String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
 													  " SET "  +SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent)?(1):(0))+ ", "+
-													            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
+													            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults.decision.description)+"'" +
 													  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
 								int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 								if (numRowsChanged!=1){
@@ -1289,7 +1486,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
             } else {
                 Simulation appSimsFromDB[] = simContextFromDB.getSimulations();
                 Simulation appSimsNewMath[] = simContextNewMath.getSimulations();
-                String mathEquivalency = null;
+                MathCompareResults mathCompareResults = null;
                 try {
                     MathDescription origMathDesc = simContextFromDB.getMathDescription();
                     //
@@ -1336,11 +1533,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     }
                     simContextNewMath.setMathDescription(newMathDesc);
 
-                    StringBuffer reasonForDecision = new StringBuffer();
-                    boolean bEquivalent = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc, newMathDesc, new StringBuffer());
-                    mathEquivalency = MathDescription.testEquivalency(origMathDesc, newMathDesc, reasonForDecision);
+                    MathCompareResults testIfSameResults = cbit.vcell.math.MathUtilities.testIfSame(origMathDesc, newMathDesc);
+                    mathCompareResults = MathDescription.testEquivalency(origMathDesc, newMathDesc);
                     StringBuffer buffer = new StringBuffer();
-                    buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathEquivalency+">>: "+reasonForDecision);
+                    buffer.append(">>>BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"':"+bioModelFromDB.getVersion().getDate()+", Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"' <<EQUIV="+mathCompareResults.isEquivalent()+">>: "+mathCompareResults.toDatabaseStatus());
                     //
                     // update Database Status for SimContext
                     //
@@ -1353,8 +1549,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                             //KeyValue mathKey = origMathDesc.getKey();
                             String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 				                             	  " SET "+SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "
-    			                       				     +SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT) ? (0) : (1))+", "
-       				                       			     +SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"
+    			                       				     +SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathCompareResults.isEquivalent() ? (1) : (0))+", "
+       				                       			     +SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus())+"'"
            				                     		     +((issueString != null) ? (", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString, 255)+"'") : (""))+
            				                     	  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
@@ -1408,8 +1604,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                 //
                 for (int l = 0; l < appSimsFromDB.length; l++) {
                     try {
-                        boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l],appSimsFromDB[l],mathEquivalency);
-                        userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+"Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+"mathEquivalency="+mathEquivalency+", simEquivalency="+bSimEquivalent);
+                        boolean bSimEquivalent = Simulation.testEquivalency(appSimsNewMath[l],appSimsFromDB[l],mathCompareResults);
+                        userLog.print("Application("+simContextFromDB.getKey()+") '"+simContextFromDB.getName()+"', "+"Simulation("+modelSimsFromDB[l].getKey()+") '"+modelSimsFromDB[l].getName()+"':"+modelSimsFromDB[l].getVersion().getDate()+"mathEquivalency="+mathCompareResults.isEquivalent()+", simEquivalency="+bSimEquivalent);
                         //
                         // update Database Status for Simulation
                         //
@@ -1420,7 +1616,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                 con = conFactory.getConnection(new Object());
                                 stmt = con.createStatement();
                                 String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
-                                					  " SET "+SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent) ? (1) : (0))+", "+SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'"+
+                                					  " SET "+SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent) ? (1) : (0))+", "+SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathCompareResults.toDatabaseStatus())+"'"+
                                 					  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {

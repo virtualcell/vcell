@@ -32,6 +32,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ProgressDialogListener;
@@ -491,7 +492,7 @@ private class TempSimulation extends Simulation {
 
 	@Override
 	public SimulationInfo getSimulationInfo() {
-		return new SimulationInfo(null, tempSimVersion);
+		return new SimulationInfo(null, tempSimVersion, VCellSoftwareVersion.fromSystemProperty());
 	}
 	
 	

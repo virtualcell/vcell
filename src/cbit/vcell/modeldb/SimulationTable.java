@@ -24,6 +24,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
@@ -80,8 +81,9 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	SimulationVersion simulationVersion = (SimulationVersion)version;
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
-	return new SimulationInfo(mathRef,simulationVersion);
+	return new SimulationInfo(mathRef,simulationVersion,VCellSoftwareVersion.fromString(softwareVersion));
 }
 /**
  * This method was created in VisualAge.
@@ -91,15 +93,17 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	
 	UserTable userTable = UserTable.table;
 	SimulationTable vTable = SimulationTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
-	Field[] f = new Field[] {vTable.id,userTable.userid};
+	Field[] f = new Field[] {vTable.id,userTable.userid,swvTable.softwareVersion};
 	f = (Field[])BeanUtils.addElements(f,vTable.versionFields);
 	f = (Field[])BeanUtils.addElement(f,vTable.mathRef);
 
-	Table[] t = {vTable,userTable};
+	Table[] t = {vTable,userTable,swvTable};
 
-	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName();  // links in the userTable
+	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
+	           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

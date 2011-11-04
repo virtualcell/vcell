@@ -88,7 +88,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
 	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
-
+	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
@@ -522,7 +522,7 @@ public void refreshMathDescription() {
 	}
 }
 
-
+	
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -2069,7 +2069,7 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
  * @param speciesContext cbit.vcell.model.SpeciesContext
  * @return boolean
  */
-protected boolean isPDERequired(SpeciesContext speciesContext) {
+public boolean isPDERequired(SpeciesContext speciesContext) {
 	//
 	// compartmental models never need diffusion
 	//
@@ -2087,7 +2087,7 @@ protected boolean isPDERequired(SpeciesContext speciesContext) {
 	return false;
 }
 
-protected boolean hasEventAssignment(SpeciesContext speciesContext) {
+public boolean hasEventAssignment(SpeciesContext speciesContext) {
 	//
 	// spatial and stochastic models don't have events yet.
 	//

@@ -18,6 +18,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
@@ -109,7 +111,9 @@ public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log) throws
 	double extentZ = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
 	org.vcell.util.Extent extent = new org.vcell.util.Extent(extentX,extentY,extentZ);
 
-	return new VCImageInfo(version,size,extent,gifImage);
+	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
+	
+	return new VCImageInfo(version,size,extent,gifImage,VCellSoftwareVersion.fromString(softwareVersion));
 }
 
 
@@ -122,13 +126,15 @@ public String getInfoSQL(User user,String extraConditions,String special,boolean
 	ImageTable iTable = this;
 	ExtentTable eTable = ExtentTable.table;
 	BrowseImageDataTable bTable = BrowseImageDataTable.table;
+	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	
 	String sql;
-	Field[] f = {userTable.userid,new cbit.sql.StarField(iTable),eTable.extentX,eTable.extentY,eTable.extentZ,bTable.data};
-	Table[] t = {iTable,userTable,eTable,bTable};	
+	Field[] f = {userTable.userid,new cbit.sql.StarField(iTable),eTable.extentX,eTable.extentY,eTable.extentZ,bTable.data,swvTable.softwareVersion};
+	Table[] t = {iTable,userTable,eTable,bTable,swvTable};	
 	String condition = iTable.extentRef.getQualifiedColName() + " = " + eTable.id.getQualifiedColName() +
 			" AND " + bTable.imageRef.getQualifiedColName() + " = " + iTable.id.getQualifiedColName() +
-			" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName();
+			" AND " + userTable.id.getQualifiedColName() + " = " + iTable.ownerRef.getQualifiedColName() +  // links in the userTable
+			" AND " + iTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 	if (extraConditions != null && extraConditions.trim().length()>0){
 		condition += " AND "+extraConditions;
 	}

@@ -26,7 +26,10 @@ import javax.swing.JSplitPane;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
@@ -335,9 +338,8 @@ public class MathDebuggerPanel extends JPanel {
 		MathModel mathModel1 = getMathModel1();
 		MathModel mathModel2 = getMathModel2();
 		if (mathModel1!=null && mathModel2!=null){
-			StringBuffer reason = new StringBuffer();
-			String equivalence = MathDescription.testEquivalency(mathModel1.getMathDescription(), mathModel2.getMathDescription(), reason);
-			getStatusEditorPane().setText("equiv = "+equivalence+"\n"+"reason = "+reason.toString());
+			MathCompareResults mathCompareResults = MathDescription.testEquivalency(mathModel1.getMathDescription(), mathModel2.getMathDescription());
+			getStatusEditorPane().setText("equiv = "+mathCompareResults.isEquivalent()+"\n"+"reason = "+mathCompareResults.toDatabaseStatus());
 		}else{
 			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed : at least one math description is null.");
 		}
@@ -543,5 +545,46 @@ public class MathDebuggerPanel extends JPanel {
 		
 		compareTree();
 	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			MathDebuggerPanel aMathDebuggerPanel;
+			aMathDebuggerPanel = new MathDebuggerPanel();
+			frame.setContentPane(aMathDebuggerPanel);
+			frame.setTitle("Math Descriptions Comparator");
+			frame.setSize(aMathDebuggerPanel.getSize());
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+
+			MathModel mathModel1 = new MathModel(null);
+			mathModel1.setName("math1");
+			Geometry geometry1 = new Geometry("geo",0);
+			MathDescription mathDesc1 = mathModel1.getMathDescription();
+			mathDesc1.setGeometry(geometry1);
+			mathDesc1.addSubDomain(new CompartmentSubDomain("Compartment",CompartmentSubDomain.NON_SPATIAL_PRIORITY));
+
+			MathModel mathModel2 = new MathModel(null);
+			mathModel2.setName("math2");
+			Geometry geometry2 = new Geometry("geo",0);
+			MathDescription mathDesc2 = mathModel2.getMathDescription();
+			mathDesc2.setGeometry(geometry2);
+			mathDesc2.addSubDomain(new CompartmentSubDomain("Compartment",CompartmentSubDomain.NON_SPATIAL_PRIORITY));
+
+			aMathDebuggerPanel.setMathModel1(mathModel1);
+			aMathDebuggerPanel.setMathModel2(mathModel2);
+			
+			frame.setSize(1500,800);
+			frame.setVisible(true);
+
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
+	}
+
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

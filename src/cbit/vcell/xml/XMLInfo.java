@@ -12,11 +12,9 @@ package cbit.vcell.xml;
 
 import java.io.File;
 
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableType;
-import org.xml.sax.XMLFilter;
-
-import cbit.vcell.client.data.NewClientPDEDataContext;
 
 /**
  * Insert the type's description here.
@@ -55,5 +53,9 @@ public VersionableType getVersionType() {
 }
 public String getDefaultName(){
 	return defaultName;
+}
+
+public VCellSoftwareVersion getSoftwareVersion() {
+	return null;
 }
 }

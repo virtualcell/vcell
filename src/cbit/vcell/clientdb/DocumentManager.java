@@ -51,10 +51,8 @@ import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)
@@ -509,14 +507,6 @@ public Geometry save(Geometry geometry) throws DataAccessException;
  * Creation date: (10/28/00 12:07:09 AM)
  */
 public MathModel save(MathModel bioModel, String independentSims[]) throws DataAccessException;
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:07:09 AM)
- * @deprecated for testing purposes only.
- */
-public Simulation save(Simulation simulation, boolean bForceIndependent) throws DataAccessException;
 
 
 /**

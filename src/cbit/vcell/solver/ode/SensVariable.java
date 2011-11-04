@@ -40,11 +40,11 @@ public SensVariable(VolVariable volVariable, Constant parameter) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof SensVariable)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	SensVariable v = (SensVariable)obj;

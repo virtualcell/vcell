@@ -45,11 +45,11 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(Matchable obj) {
+public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	if (!(obj instanceof PseudoConstant)){
 		return false;
 	}
-	if (!compareEqual0(obj)){
+	if (!compareEqual0(obj, bIgnoreMissingDomain)){
 		return false;
 	}
 	PseudoConstant v = (PseudoConstant)obj;
