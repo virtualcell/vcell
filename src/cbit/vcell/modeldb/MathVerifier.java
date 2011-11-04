@@ -941,15 +941,14 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 
 			if (!(documentInfo instanceof BioModelInfo)){
 				continue;
-			}else{
-				BioModelInfo bioModelInfo = (BioModelInfo)documentInfo;
-				VCellSoftwareVersion softwareVersion = bioModelInfo.getSoftwareVersion();
-				if (softwareVersion.getVersionString().equals("4.8") && (softwareVersion.getSite().equals(VCellSite.BETA) || softwareVersion.getSite().equals(VCellSite.RELEASE))){
-					// process this one.
-				}else{
-					continue;
-				}
 			}
+//			BioModelInfo bioModelInfo = (BioModelInfo)documentInfo;
+//			VCellSoftwareVersion softwareVersion = bioModelInfo.getSoftwareVersion();
+//			if (softwareVersion.getVersionString().equals("4.8") && (softwareVersion.getSite().equals(VCellSite.BETA) || softwareVersion.getSite().equals(VCellSite.RELEASE))){
+//				// process this one.
+//			}else{
+//				continue;
+//			}
 			//
 			// filter out any bioModelKeys present in the "SkipList"
 			//
