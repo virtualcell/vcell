@@ -69,7 +69,7 @@ public class ResourceUtil {
 	public enum SolverExecutable {
 		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
 		SundialsOde("SundialsSolverStandalone" + EXE_SUFFIX),
-		Gibson("Stochastic" + EXE_SUFFIX),
+		Gibson("VCellStoch" + EXE_SUFFIX),
 		Hybrid_EM("Hybrid_EM" + EXE_SUFFIX),
 		Hybrid_Mil("Hybrid_MIL" + EXE_SUFFIX),
 		Hybrid_Mil_Adaptive("Hybrid_MIL_Adaptive" + EXE_SUFFIX),
