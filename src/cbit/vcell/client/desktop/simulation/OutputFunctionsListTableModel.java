@@ -65,7 +65,7 @@ public class OutputFunctionsListTableModel extends VCellSortTableModel<Annotated
 	public final static int COLUMN_OUTPUTFN_VARIABLETYPE = 2;
 	
 	private OutputFunctionContext outputFunctionContext = null;
-	private static String[] columnNames = new String[] {"Name", "Expression", "Subdomain"};
+	private static String[] columnNames = new String[] {"Name", "Expression", "Defined In"};
 
 /**
  * SimulationListTableModel constructor comment.

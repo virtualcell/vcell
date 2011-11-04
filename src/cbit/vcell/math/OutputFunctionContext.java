@@ -506,6 +506,20 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return newVarType;
 	}
 	
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+		AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
+			public boolean accept(SymbolTableEntry ste) {
+				MathDescription math = getSimulationOwner().getMathDescription();
+				Variable var = math.getVariable(ste.getName());
+				return (!(var instanceof InsideVariable || var instanceof OutsideVariable));
+			}
+			public boolean acceptFunction(String funcName) {
+				return true;
+			}
+		};
+		return stef;
+	}
+
 	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(final Domain functionDomain) {
 		AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
 			public boolean accept(SymbolTableEntry ste) {
