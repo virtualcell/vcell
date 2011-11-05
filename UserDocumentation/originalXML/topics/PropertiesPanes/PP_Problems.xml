@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Problems Tab" target="PP_Problems">
+
+	<introduction>
+The Problems Tab within the Properties pane provides errors and warnings identified by VCell. 		
+	</introduction>
+
+	<operations>
+See the <link target = "ErrorList"> Errors List </link> or <link target = "WarningsList"> Warnings List </link> for explanations. 			
+	</operations>
+	
+
+
+</page>
+
+</vcelldoc>
