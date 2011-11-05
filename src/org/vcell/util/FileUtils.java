@@ -144,5 +144,43 @@ public static String readFileToString(File file) throws IOException {
 
 	return stringBuffer.toString();
 }
+public static File getRelativePath(File sourceDir, File targetFile, boolean bAllowAbsolutePaths) throws IOException {
+//	System.out.println("sourceDir = "+sourceDir.getPath());
+//	System.out.println("targetFile = "+targetFile.getPath());
+	int counter = 0;
+	while (sourceDir!=null && !targetFile.getPath().startsWith(sourceDir.getPath())){
+		sourceDir = sourceDir.getParentFile();
+		counter++;
+	}
+	if (sourceDir==null){
+		if (bAllowAbsolutePaths){
+			return targetFile;
+		}else{
+			throw new IOException("cannot find relative path between '"+sourceDir.getPath()+"' and '"+targetFile.getPath()); 
+		}
+	}
+	String sourcePath = sourceDir.getPath();
+	String targetPath = targetFile.getPath().replace(sourcePath,"");
+	String prefix = "."+File.separator;
+	for (int i=0;i<counter;i++){
+		prefix = prefix + ".."+File.separator;
+//		targetPath = targetPath.substring(targetPath.indexOf(File.separator));
+	}
+	return new File(prefix + targetPath);
+}
+
+public static File[] getAllDirectories(File rootDir) {
+	ArrayList<File> allDirectories = new ArrayList<File>();
+	for (File file : rootDir.listFiles()){
+		if (file.exists() && file.isDirectory()){
+			allDirectories.add(file);
+			allDirectories.addAll(Arrays.asList(getAllDirectories(file)));
+		}
+	}
+	return allDirectories.toArray(new File[allDirectories.size()]);
+}
+
+
+
 
 }
