@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Manage Database -> View">
+	
+	<introduction>
+	The <bold>Manage Database -> View</bold> menu option allows the user to change view selections in Database Manager. 
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "ManageDBViewMenu.gif"/>
+	</appearance>
+	
+	<operations>
+	<para>
+	The <bold>Manage Database -> View</bold> menu sequence has the following options:	
+	</para>
+
+	<list>
+		<item> <bold>Status Bar</bold> : allows the user to display/hide the status bar at the bottom of the document window.</item>
+		<item> <bold>Latest Version Only</bold> : displays only the latest version of all the models that are accessible to the user (user's own and those shared with the user or those that are public models.).</item>
+	</list>
+	</operations>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>

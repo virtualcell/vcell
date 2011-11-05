@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Manage Database -> Edit">
+	
+	<introduction>
+	The <bold>Manage Database -> Edit</bold> menu option allows the user to perform edit operations from the Database Manager. 
+	<bold>NOTE:</bold> this menu sequence requires that a model or one of its editions/versions (viewed by expanding the tree) be selected. 
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "ManageDBEditMenu.gif"/>
+	</appearance>
+	
+	<operations>
+	<para>
+	The <bold>Manage Database -> Edit</bold> menu sequence has the following options:	
+	</para>
+
+	<list>
+		<item> <bold>Permissions</bold> : allows the user to change share permission for the selected document. See also <link target = "Permissions">File -> Permissions</link>.</item>
+		<item> <bold>Publish</bold> : this menu item is currently disabled.</item>
+	</list>
+	</operations>
+	
+	<comments>  </comments>
+
+</page>
+
+
+</vcelldoc>
