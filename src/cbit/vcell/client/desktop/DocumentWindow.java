@@ -38,7 +38,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionFlag;
@@ -126,12 +128,14 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
+	private JMenuItem newHelpMenuItem = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjSybilMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
+	private VcellHelpViewer helpFrame = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -195,6 +199,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC37(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp()) 
 				connEtoC25(e);
+			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem()) 
+				invokeNewHelp(e);
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getSybilMenuItem()) 
@@ -211,6 +217,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			}
 			
 		};
+		
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem()) 
 				connEtoC2(e);
@@ -225,6 +232,15 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DocumentWindow() {
 	super();
 	initialize();
+}
+
+public VcellHelpViewer getHelpFrame()
+{
+	if(helpFrame == null)
+	{
+		helpFrame = new VcellHelpViewer();
+	}
+	return helpFrame;
 }
 
 /**
@@ -442,6 +458,11 @@ private void connEtoC19(java.awt.event.ActionEvent arg1) {
 	}
 }
 
+
+private void invokeNewHelp(ActionEvent e) {
+	// TODO Auto-generated method stub
+	getHelpFrame().setVisible(true);
+}
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
  * @param arg1 java.awt.event.ItemEvent
@@ -566,11 +587,9 @@ private void connEtoC24(java.awt.event.ActionEvent arg1) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC25(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
+		
 		this.invokeOnlineHelp();
-		// user code begin {2}
-		// user code end
+		
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -1210,6 +1229,7 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu = new javax.swing.JMenu();
 			ivjHelpMenu.setName("HelpMenu");
 			ivjHelpMenu.setText("Help");
+			ivjHelpMenu.add(getNewHelpMenuItem());
 			ivjHelpMenu.add(getJMenuItemOnlineHelp());
 			ivjHelpMenu.add(getJSeparator6());
 			ivjHelpMenu.add(getAbout_BoxMenuItem());
@@ -1350,7 +1370,7 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 		try {
 			ivjJMenuItemOnlineHelp = new javax.swing.JMenuItem();
 			ivjJMenuItemOnlineHelp.setName("JMenuItemOnlineHelp");
-			ivjJMenuItemOnlineHelp.setText("Online Help");
+			ivjJMenuItemOnlineHelp.setText("Online Resources");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1360,6 +1380,23 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 		}
 	}
 	return ivjJMenuItemOnlineHelp;
+}
+
+private javax.swing.JMenuItem getNewHelpMenuItem() {
+	if (newHelpMenuItem == null) {
+		try {
+			newHelpMenuItem = new javax.swing.JMenuItem();
+			newHelpMenuItem.setName("newHelpMenuItem");
+			newHelpMenuItem.setText("Help");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return newHelpMenuItem;
 }
 
 /**
@@ -2387,6 +2424,7 @@ private void initConnections() throws java.lang.Exception {
 	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
+	getNewHelpMenuItem().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getSybilMenuItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
@@ -2420,8 +2458,9 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 	
-	PopupGenerator.browserLauncher(this, ClientServerManager.ONLINEHELP_URL_STRING,
-		"Please visit "+ClientServerManager.ONLINEHELP_URL_STRING+" for Online Help",
+	String onlineResourcesURL = System.getProperty(PropertyLoader.onlineResourcesURL);
+	PopupGenerator.browserLauncher(this, onlineResourcesURL,
+		"Please visit "+"http://vcell.org"+" for Online Help",
 		getTopLevelWindowManager().isApplet());
 }
 
