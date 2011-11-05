@@ -6,6 +6,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry exported="true" kind="lib" path="lib/arq-2.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
