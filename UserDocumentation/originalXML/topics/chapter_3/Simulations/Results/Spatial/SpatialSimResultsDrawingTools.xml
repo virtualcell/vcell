@@ -72,31 +72,10 @@ Time Plot: This will become active when you use the point tool to define a point
 Toggle Plot/Values Display:Once plots are generated the results can be displayed as graphs or a table of data values. Views and functions in plots and tables are controlled in the same way as simulation results from Compart- mental models.
 </para>
 <para>
-Kymograph: The kymograph tab, which displays line scans over time,
+Kymograph: The <link target = "SimResultsKymograph"> kymograph tab </link>, which displays line scans over time,
 will become active on the results panel once a line is
-drawn over the image data. The kymograph dialog displays the data in a visual image format where the distance of the line is plotted against time as well as in a multiple graph format. Two graphs dis- play the concentration of the selected variable plotted over distance and over time. These plots will update according to the position of the crosshair, which is created with the mouse, in the image data panel. In addition, each graph has a mouse menu feature for additional plot settings, see above.
+drawn over the image data. 
 </para>
-<list>
-<item>
-Variable - Select data variable.
-</item>
-<item>
-Zoom In/Out - Select either button to change
-zoom display of image data.
-</item>
-<item>
-Copy all - Use this function to paste data into a
-program other than the Virtual Cell.
-</item>
-<item>
-Image Data Mouse Menu - Use the right mouse
-button, over the image data to access the following options: Copy All, Copy Time Series,
-Copy Line Scan, Scale Image to All Data, Scale
-Image to Line Scan, and Scale Image to Time
-Series. The copy functions are for pasting data
-into a program other than the Virtual Cell. The scale functions are for changing the scale of the image data display.
-</item>
-</list>
 <para>
 Export Data: Export feature for data. See Export [LINK GOES HERE] for more information.
 </para>
