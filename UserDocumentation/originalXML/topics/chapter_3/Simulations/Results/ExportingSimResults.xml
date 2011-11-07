@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <vcelldoc>
-<page title="Simulation Viewer Overview">
+<page title="Exporting Simulation Results">
 
 	
 	<introduction> Results from simulations are automatically stored on the remote database server. Simulation results may be exported immediately after the simulation or at your leisure by using the Export option located on the bottom of the Results dialog.
@@ -117,8 +117,7 @@ When you start export for a *csv file, a pop up window will appear in which you 
 </para>
 <para>
 Select Data Type to Export: 
-Choose between Variable values and Particle data. Please note the latter is not
-yet implemented.
+Choose between Variable values and Particle data.
 </para>
 <para>
 Additional Formatting: 
@@ -131,6 +130,8 @@ time points for the selected variable(s). Auto Scale typically will not export a
 If AutoScale is selected you will be given the following warning:
 The following export choices have no user defined color/scale settings.--- variable_name User defined color/scale is set in the 'View data' tab by unchecking the 'Auto (current time)' check- box. Default min-max color/scale range will be used.
 To set your own max and min values return to the View Data Tab, uncheck “Auto (current time)” and enter your preferred values. A dialogue window will appear in which you specify Movie Settings.
+</para>
+<para> When QuickTime is selected for particle data, the server will create a movie using the VisIt visualization package.
 </para>
 <para>
 Select data format: 
