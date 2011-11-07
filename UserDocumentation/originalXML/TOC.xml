@@ -86,6 +86,7 @@
 				</tocitem>
     	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
+					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
 				</tocitem>
 				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
 				</tocitem>
