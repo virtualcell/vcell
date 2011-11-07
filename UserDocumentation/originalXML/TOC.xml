@@ -83,7 +83,8 @@
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
 				</tocitem>
-    	   			<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
+    	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
+					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
 				</tocitem>
 				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
 				</tocitem>
