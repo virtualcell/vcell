@@ -393,7 +393,15 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeGraphicsOpenGL();
 	if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isUseHighResolutionSample())
 	{
-		writeHighResVolumeSamples();
+		try{
+			writeHighResVolumeSamples();
+		}catch(Exception ex)
+		{
+			ex.printStackTrace(System.out);
+			throw new SolverException(ex.getMessage() + "\n" + 
+		                              "Problem may be solved by disable \'fast mesh sampling\'. It may take much longer time to complete the simulation." + "\n" +
+					                  "Select \'Edit Simulation\' -> \'Solver\' -> \'Advanced Solver Options\' -> uncheck \'fast mesh sampling\'.");
+		}
 	}
 	writeSurfacesAndCompartments();	
 	writeReactions();
