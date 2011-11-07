@@ -11,84 +11,13 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Spatial Simulation Results Overview">
+<page title="Spatial Simulation Results Drawing Tools">
 
-	
-	<introduction>
-	<imgReference target = "SimResSpatialSliceView.png"/>
-	In the Simulation Results Viewer there are three options selected by tabs
-	<list>
-	<item> <link target = "SimResSpatialSliceView">View Data</link> </item>
-	<item> <link target = "ExportingSimResults">Export Results</link> </item>
-<!--
-	<item> <link target = "PostProcessingData">Post Processing Data</link> </item>
--->
-    	</list>
+<introduction>
+Drawing and selection tools are available for spatial simulation results to create regions of interest>
+</introduction>
 
-	<para>
-The image data from spatial simulations are displayed in the results dialog. You can also generate a Spatial Plot, using defined regions, a Time Plot, using points, or a Kymograph, which displays a line scan over time.
-     </para>
-<para>
-	<imgReference target = "SpatialSimResultsPaneTabs.png"/>
-	</para>
-The Simulation Results Viewer has three tabs: View Data, Export Data and Post Processing Results. The following sections describe functions within the View Data tab.
-
-The image data from spatial simulations are displayed in the results dialog. You can also generate a Spatial Plot, using defined regions, a Time Plot, using points, or a Kymograph, which displays a line scan over time.
- 	</introduction>
-	
-	<appearance>
-	<imgReference target = "ResultsTimeAndVariables.png"/>
-	</appearance>
-	
-	<operations>
-	<list>
-	<para>Time: The data time point that is displayed. Enter a value in the text field or click once on the selection arrow. Use the up and down arrow keys on your keyboard to select a time point. The image will update when the time point is changed.
-</para>
-<para>
-All Variables: 
-All Variables from the model simulation are displayed in the variable list to the left of the results viewer. A drop down menu allows you to list a single class of variables: Volume, Membrane or User Functions, Region sizes.
-</para>
-
-<para>
-Data Value Range: 
-<imgReference target = "SimResultsDataRange.png"/>
-</para>
-<para>
-Auto Range:
-Select to have the software automatically adjust the image display pixel intensities based on the minimum 
-and maximum data values for the selected time point. The intensities are automatically converted to and 
-displayed as concentrations.
-</para>
-
-<para>Min/Max:
-Deselect Auto Range and type in the value(s) for the
-minimum and/or maximum; press enter to accept the values and to update the image display.
-</para>
-
-<para>Color:
-View the image data either in Grayscale or in a Blue-Red color map where colors are mapped according 
-to concentration. At times some values will be displayed in colors other than the selected color map 
-because they do not fall within the specified range.
-</para>
-<para>
-Color Value:
-</para>
-<para>BM:
-Below minimum color</para>
-<para>
-AM:
-Above minimum color</para>
-<para>
-NN:
-Not a number color</para>
-<para>
-IL:
-Illegal value color</para>
-<para>
-NR:
-No range color </para>
-</list>
-
+<operations>
 <list>
 
 
@@ -129,13 +58,7 @@ The Axis is provided as an additional means of viewing your 3-D image data.</par
 <para>
 Statistics
 </para>
-<para>
-Statistics: the minimum, weighted mean and maximum can be calculated for variables in a Region of Interest (ROI). Volume and Membrane variable statistics are calculated when any given data vari- able is selected in the results viewer variable list and the �Statistics� button is pressed. A dialog will be displayed with selectors for setting a time range (Begin Time, End Time) and a list of available ROIs. ROI source shows if the ROI has been pre-defined by Geometry or User Defined (e.g. by using the point or spline tools to create the ROI). The ROI Source Name is either taken from the Geometry or generated automatically as the user creates the ROI (e.g. vp1, vp2... for volume points in order of creation). The ROI description provides additional information on the ROI type (e.g. Point Volume, Ar- eas Enclosed Volume).
-</para>
-<para>
-Snapshot ROI:To plot statistics for an ROI, select the range of times and one or more ROI sources (ctrl-click) that
-you wish to examine and press OK.
-</para>
+
 <para>
 Spatial plot of variables:Spatial plots button becomes active once you use the line or spline tools to define a region. Select the region and then press Spatial plot which displays values of the selected variable parametrically by dis- tance along a line or spline curve defined by two or more successive clicks of either tool. The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
     </para>
@@ -149,103 +72,19 @@ Time Plot: This will become active when you use the point tool to define a point
 Toggle Plot/Values Display:Once plots are generated the results can be displayed as graphs or a table of data values. Views and functions in plots and tables are controlled in the same way as simulation results from Compart- mental models.
 </para>
 <para>
-Kymograph: The kymograph tab, which displays line scans over time,
+Kymograph: The <link target = "SimResultsKymograph"> kymograph tab </link>, which displays line scans over time,
 will become active on the results panel once a line is
-drawn over the image data. The kymograph dialog displays the data in a visual image format where the distance of the line is plotted against time as well as in a multiple graph format. Two graphs dis- play the concentration of the selected variable plotted over distance and over time. These plots will update according to the position of the crosshair, which is created with the mouse, in the image data panel. In addition, each graph has a mouse menu feature for additional plot settings, see above.
-</para>
-<list>
-<item>
-Variable - Select data variable.
-</item>
-<item>
-Zoom In/Out - Select either button to change
-zoom display of image data.
-</item>
-<item>
-Copy all - Use this function to paste data into a
-program other than the Virtual Cell.
-</item>
-<item>
-Image Data Mouse Menu - Use the right mouse
-button, over the image data to access the following options: Copy All, Copy Time Series,
-Copy Line Scan, Scale Image to All Data, Scale
-Image to Line Scan, and Scale Image to Time
-Series. The copy functions are for pasting data
-into a program other than the Virtual Cell. The scale functions are for changing the scale of the image data display.
-</item>
-</list>
-<para>
-Export Data: Export feature for data. See Export [LINK GOES HERE] for more information.
+drawn over the image data. 
 </para>
 <para>
-3D Membrane Surface Viewer: The 3D Membrane Surface Viewer allows users to view, manipulate and pick values interactively from the membrane data of 3D spatial simulation results. The 3D Membrane Surface Viewer allows views of the data from any viewpoint around an X,Y,Z coordinate system. The view can be changed easily using the mouse (See Changing views below).
+Export Data: Export feature for data. See <link target = "ExportingSimResults"> Export</link> for more information.
 </para>
 <para>
-Membrane Surfaces Viewer: The Membrane Surface Viewer is accessed via the Simulation Results Viewer when a Membrane vari- able is selected from the list of variable names. The "Show Membrane Surfaces" button is then active at the bottom of the Simulation Results Viewer. The Membrane Surface Viewer is initialized with the color scaling and data values for the current membrane variable name and time point chosen in the Simulation Results Viewer.
-</para>
-<para>
-Synchronize Display Parameters: When the Membrane Surface Viewer has been activated the "Show Membrane Surfaces" button text on the Simulation Results Viewer will change to "Update Membrane Surfaces". This button may be pressed at any time to synchronize the display parameters of the Membrane Surface Viewer to the current display parameters of the Simulation Results Viewer. The parameters include variable, time and color scaling. When the Membrane Surface Viewer is closed (click on X in upper right corner) the window will disappear but the current view and pick info settings will not be lost.
-</para>
-<para>
-Changing views
-</para>
-<list>
 
-<item>
-ROTATE: 
-The view may be rotated arbitrarily using a "trackball" interface by dragging the mouse with the left mouse button (leftMB) pressed. The view rotates as if the mouse were attached to a sphere containing the surfaces. The amount of possible rotation depends on where the mouse is when the leftMB is first pressed and the direction of drag.
-</item>
-<item>
-MOVE: 
-The view may also be moved side to side and up or down by dragging the mouse with the right
-mouse button (rightMB) pressed.
-</item>
-<item>
-ZOOM: 
-The view can also be zoomed closer or farther away by dragging the mouse with the left and
-right mouse buttons (leftMB-rightMB) pressed.
-</item>
-<item>
-Retrieve INFO: 
-To retrieve Info for the simulation data value at a particular membrane location, hold the control key on the keyboard down while clicking the leftMB. The data value will appear in red along with the centroid coordinate of the membrane patch under the mouse pick.
-</item>
-<item>
-HOME: 
-A preset "HOME" view (button in the window upper left) is provided to allow users to reset their
-view to a default perspective.
-</item>
-</list>
-<para>
-Bounding Box
-The bounding box (checkbox in the window upper left) can be turned on and off to show where
-membranes surfaces are located with respect to the entire simulation data volume.
+
+<link target = "SimResultsSpatialSurfaceView"> 3D Membrane Surface Viewer: </link> The 3D Membrane Surface Viewer allows users to view, manipulate and pick values interactively from the membrane data of 3D spatial simulation results. The 3D Membrane Surface Viewer allows views of the data from any viewpoint around an X,Y,Z coordinate system. The view can be changed easily using the mouse (See Changing views below).
 </para>
 
-<para>
-Surface Table
-All membrane surfaces are listed in the viewer's table.
-</para>
-
-<list>
-<item>
-Name: Name of the membrane.
-</item>
-<item>
-Size: Membrane surface area given in square microns.
-</item>
-<item>
-Visible: Checkbox in "visible" column allows the user to turn on and of the viewing of surfaces. Making a particular surface invisible allows for viewing interior surfaces that would otherwise be ob- scured.
-</item>
-<item>
-Wireframe: 
-Checkbox in "wireframe" column allows the user to produce an outline of each simulation mesh
-volume element. The resulting outline is only a gross approximation of the actual computa- tional surface used to generate the simulation data.
-</item>
-<item>
-Transparent: 
-Listbox in "transparent" column allows users to select any other value than "none" so that the surface will be displayed allowing any underlying surfaces to also be visible. The larger the number selected, the more any underlying surfaces will show through on the display.
-</item>
-</list>
     </operations>
 	
 	<comments>To be broken up into more pages 
