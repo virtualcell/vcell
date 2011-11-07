@@ -81,7 +81,7 @@
    		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
     	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results"/>
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
-					<tocitem target="ExportingSimResults" text="Exporting Simulation Results"/>
+					<tocitem target="SimResultsKymograph" text="Kymographs"/>
 				</tocitem>
     	   			<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 				</tocitem>
