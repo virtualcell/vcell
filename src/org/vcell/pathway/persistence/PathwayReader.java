@@ -1259,6 +1259,7 @@ public class PathwayReader {
 			Element physicalEntityParticipantElement = childElement.getChild("physicalEntityParticipant",bp);
 			if (physicalEntityParticipantElement!=null){
 				boolean found = false;
+				PhysicalEntity thePhysicalEntity = null;
 				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
 				// always create a proxy, the real PhysicalEntity (if present) is not ready to be inserted as is because it is incomplete
 				// the reason is that PhysicalEntity object is a "species" in v2 but becomes a "species context" in v3
@@ -1274,7 +1275,7 @@ public class PathwayReader {
 						conversion.addRight(physicalEntityProxy);
 					}
 					if (physicalEntityPropertyElement.getChildren().size() > 0) {
-						addObjectPhysicalEntity(physicalEntityPropertyElement);
+						thePhysicalEntity = addObjectPhysicalEntity(physicalEntityPropertyElement);
 					}
 				}
 				Element cellularLocationElement = physicalEntityParticipantElement.getChild("CELLULAR-LOCATION",bp);

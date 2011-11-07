@@ -69,15 +69,17 @@ public class LicenseWriter {
 					reader.close();
 					return;
 				} else if(line.contains("Copyright") && !line.contains(oldUConn)) {
-					System.out.println(file.getPath()
-							+ "   possible foreign license."
-							);
+// TODO: uncomment this!
+//					System.out.println(file.getPath()
+//							+ "   possible foreign license."
+//							);
 					summaryFilesWithForeignLicense++;
 					reader.close();
 					return;
 				}
 			}
 //			System.out.print("no license.");
+			System.out.println(file.getPath() + "   no license." );
 			summaryFilesWithNoLicense++;
 			reader.close();
 		} catch(Exception ex) {
@@ -443,8 +445,11 @@ public class LicenseWriter {
 			command = "evaluate";
 //			command = "cleanup";
 //			command = "write";
-			licenseFileName = "/home/CAM/eboyce/Desktop/license.txt";
-    		String vCellSourceDirectory = "/eboyce-local/workspace/VCell";
+			licenseFileName = "C:/dan/projects/VCell_trunk/src/cbit/vcell/tools/license.txt";
+//			String vCellSourceDirectory = "C:/dan/projects/VCell_5.0_branch";
+			String vCellSourceDirectory = "C:/dan/projects/VCell_trunk";
+//			licenseFileName = "/home/CAM/eboyce/Desktop/license.txt";
+//    		String vCellSourceDirectory = "/eboyce-local/workspace/VCell";
 //			String numericsSourceDirectory = "/h";
 			rootDirectory = vCellSourceDirectory;
 			}
