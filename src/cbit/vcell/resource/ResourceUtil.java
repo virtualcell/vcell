@@ -24,7 +24,10 @@ public class ResourceUtil {
 	public final static boolean bWindows = system_osname.contains("Windows");
 	public final static boolean bMac = system_osname.contains("Mac");
 	public final static boolean bLinux = system_osname.contains("Linux");
-	public final static String osname;
+	private final static String system_osarch = System.getProperty("os.arch");
+	private final static boolean b64bit = system_osarch.endsWith("64");
+	private final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
+	private final static String osname;
 	static {
 		if (bWindows) {
 			osname = "windows";
@@ -36,7 +39,8 @@ public class ResourceUtil {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
 	}
-	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
+	public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
+	public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
 	private static File userHome = null;
@@ -47,9 +51,9 @@ public class ResourceUtil {
 	private final static String DLL_GLUT;
 	static {
 		if (bWindows) {
-			DLL_GLUT = "glut32.dll";
+			DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
 		} else {
-			DLL_GLUT = "libglut.so";
+			DLL_GLUT = null;
 		}
 	}
 	private final static String EXE_SMOLDYN = "smoldyn" + EXE_SUFFIX;
@@ -179,22 +183,23 @@ public class ResourceUtil {
 	
 	public static void loadNativeSolverLibrary () {
 		try {
-	        System.loadLibrary("NativeSolvers");
+			if (!bWindows && !bMac && !bLinux) {
+				throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X at this time.");
+			}
+	        System.loadLibrary("NativeSolvers" + NATIVELIB_SUFFIX);
 	    } catch (Throwable ex1) {
-    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex1.getMessage());
+    		throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary(): " + ex1.getMessage());
 		}
 	}
 	
 	public static void loadlibSbmlLibray () {
 		try {
-//			System.loadLibrary("expat");
-//			System.loadLibrary("sbml");
-//			System.loadLibrary("sbml-requiredElements");
-//			System.loadLibrary("sbml-spatial");
-//			System.loadLibrary("libsbml");
-			System.loadLibrary("sbmlj");
+			if (!bWindows && !bMac && !bLinux) {
+				throw new RuntimeException("libSBML is supported on Windows, Linux and Mac OS X at this time.");
+			}
+			System.loadLibrary("sbmlj" + NATIVELIB_SUFFIX);
 		} catch (Throwable ex1){
-			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
+			throw new RuntimeException("ResourceUtil::loadlibSbmlLibray(): " + ex1.getMessage());
 		}
 	}
 	
