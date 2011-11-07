@@ -30,8 +30,8 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 	private ArrayList<Xref> xRef = new ArrayList<Xref>();
 	private ArrayList<Provenance> dataSource = new ArrayList<Provenance>();
 	private ArrayList<Evidence> evidence = new ArrayList<Evidence>();
-	
 	private ArrayList<SBEntity> sbSubEntity = new ArrayList<SBEntity>();
+	
 	public ArrayList<SBEntity> getSBSubEntity() {
 		return sbSubEntity;
 	}

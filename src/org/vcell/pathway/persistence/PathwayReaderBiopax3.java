@@ -1666,69 +1666,84 @@ public class PathwayReaderBiopax3 {
 			} else {
 				for (Object child : childElement.getChildren()){
 					if (child instanceof Element){
+						
 						if(((Element)child).getName().equals("Pathway")) {
 							Pathway thingie = addObjectPathway((Element)child);
 							control.setControlledPathway(thingie);
 							return true;
-						} else if(((Element)child).getName().equals("Interaction")) {
-							Interaction thingie = addObjectInteraction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Control")) {
-							Control thingie = addObjectControl((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Modulation")) {
-							Modulation thingie = addObjectModulation((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Catalysis")) {
-							Catalysis thingie = addObjectCatalysis((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("TemplateReactionRegulation")) {
-							TemplateReactionRegulation thingie = addObjectTemplateReactionRegulation((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Conversion")) {
-							Conversion thingie = addObjectConversion((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("BiochemicalReaction")) {
-							BiochemicalReaction thingie = addObjectBiochemicalReaction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("TransportWithBiochemicalReaction")) {
-							TransportWithBiochemicalReaction thingie = addObjectTransportWithBiochemicalReaction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("ComplexAssembly")) {
-							ComplexAssembly thingie = addObjectComplexAssembly((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Degradation")) {
-							Degradation thingie = addObjectDegradation((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("Transport")) {
-							Transport thingie = addObjectTransport((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("GeneticInteraction")) {
-							GeneticInteraction thingie = addObjectGeneticInteraction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("MolecularInteraction")) {
-							MolecularInteraction thingie = addObjectMolecularInteraction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
-						} else if(((Element)child).getName().equals("TemplateReaction")) {
-							TemplateReaction thingie = addObjectTemplateReaction((Element)child);
-							control.setControlledInteraction(thingie);
-							return true;
 						} else {
-							return false;
+							Interaction thingie = (Interaction)addObjectBioPaxObjectSubclass(((Element)child));
+							if (thingie == null) {
+								return false;
+							} else {
+								control.setControlledInteraction(thingie);
+								return true;
+							}
 						}
+						
+//						if(((Element)child).getName().equals("Pathway")) {
+//							Pathway thingie = addObjectPathway((Element)child);
+//							control.setControlledPathway(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Interaction")) {
+//							Interaction thingie = addObjectInteraction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Control")) {
+//							Control thingie = addObjectControl((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Modulation")) {
+//							Modulation thingie = addObjectModulation((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Catalysis")) {
+//							Catalysis thingie = addObjectCatalysis((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("TemplateReactionRegulation")) {
+//							TemplateReactionRegulation thingie = addObjectTemplateReactionRegulation((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Conversion")) {
+//							Conversion thingie = addObjectConversion((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("BiochemicalReaction")) {
+//							BiochemicalReaction thingie = addObjectBiochemicalReaction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("TransportWithBiochemicalReaction")) {
+//							TransportWithBiochemicalReaction thingie = addObjectTransportWithBiochemicalReaction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("ComplexAssembly")) {
+//							ComplexAssembly thingie = addObjectComplexAssembly((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Degradation")) {
+//							Degradation thingie = addObjectDegradation((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("Transport")) {
+//							Transport thingie = addObjectTransport((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("GeneticInteraction")) {
+//							GeneticInteraction thingie = addObjectGeneticInteraction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("MolecularInteraction")) {
+//							MolecularInteraction thingie = addObjectMolecularInteraction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else if(((Element)child).getName().equals("TemplateReaction")) {
+//							TemplateReaction thingie = addObjectTemplateReaction((Element)child);
+//							control.setControlledInteraction(thingie);
+//							return true;
+//						} else {
+//							return false;
+//						}
 					}
 				}
 			}
