@@ -30,6 +30,7 @@ import javax.swing.border.Border;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 
 
@@ -249,7 +250,8 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 
 	private void refresh() {
 		if (solverTaskDescription != null) {
-			if (!solverTaskDescription.getSolverDescription().isSpatialStochasticSolver()) {
+			MathDescription mathDescription = solverTaskDescription.getSimulation().getMathDescription();
+			if (!mathDescription.isSpatialStoch()) {
 				setVisible(false);
 				return;
 			}
