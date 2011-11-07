@@ -31,41 +31,18 @@ Phase Plane plots are generated and displayed by selecting two dependent variabl
 You can toggle between plot and data values by pressing the Values icon. From the Data ta- ble view, you can copy the values and paste directly into a tab delimited spreadsheet. Use ctrl C to copy individual cells and ctrl K to copy all the data values. Right-click a cell to bring up the copy menu: Copy for the individual cell, Copy All for all data values.
 </para>
 <para>
-Plot Settings: 
-The graph is interactive. Move your cursor over the graph, a crosshair will appear and the corresponding X and Y coordinate values will be displayed in the bottom left corner of the dialog. Right click your mouse in the plot area to access Plot Settings.
+
+
+
+<link target = "SimResultsNonSpatialPlotSettings"> Click here for information on Plot Settings  </link>
+
 </para>
-<para>
-Axis Scale: 
-Select either auto scale mode or deselect for manual scale model.
-When in manual mode you must supply min and max graph values.
-</para>
-<para>
-Auto Scale: 
-Computer will calculate best values for displaying graph.
-￼￼￼</para>
-<para>
-Stretch: In auto mode, use to stretch graph for better viewing.
-</para>
-<para>
-Plots: 
-Plot display options.
-</para>
-<para>
-Draw nodes: 
-Select to draw a node at each data point.
-</para>
-<para>
-Show crosshair: 
-Enable the crosshair to be displayed when you move your mouse over the graph.
-</para>
-<para>
-Snap to nodes: 
-Select to have crosshair snap to nodes, deselect to move crosshair freely across the graph.
-</para>
+
 <para>
 Histogram of Stochastic Simulations: 
-For Stochastic Applications, when multiple trials of a stochastic simulation is run (See Chapter 7, regarding stochastic integrators), the results of the final run are displayed as a histogram instead of a plot. The X-axis of the histograms is auto-ranged to the possible values for the variable plotted on the Y-axis. The Y-axis is the calculated distribution of the variable over the range of possible values based on the results of the simulation trials. The calculated val-
-ues for the distributions can be viewed by using the toggle button.
+For Stochastic Applications, when multiple trials of a stochastic simulation is run 
+(See Chapter 7, regarding stochastic integrators), the results of the final run are displayed as a histogram instead of a plot. The X-axis of the histograms is auto-ranged to the possible values for the variable plotted on the Y-axis. The Y-axis is the calculated distribution of the variable over the range of 
+possible values based on the results of the simulation trials. The calculated values for the distributions can be viewed by using the toggle button.
 </para>
 <para>
 Log Sensitivity: 
