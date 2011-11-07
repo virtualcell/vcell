@@ -90,6 +90,8 @@
 				</tocitem>
 				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
 				</tocitem>
+				<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies">
+				</tocitem>
    			</tocitem>
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">

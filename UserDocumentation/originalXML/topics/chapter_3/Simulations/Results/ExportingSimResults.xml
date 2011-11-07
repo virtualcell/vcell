@@ -115,6 +115,9 @@ Comma Delimited ASCII Files:
 Comma delimited ASCII files are used for organizing data in a spreadsheet for- mat.Comma Delimited File is the only format that supports data export from Re- gions of Interest (ROIs). You can obtain statistics for these ROIs by using the Sta- tistics function/button on the View Data. See Section 8.2.
 When you start export for a *csv file, a pop up window will appear in which you can opt to switch the orientation of the rows and columns.
 </para>
+
+<imgReference target = "SimResultsQuicktimeExport.png"/>
+
 <para>
 Select Data Type to Export: 
 Choose between Variable values and Particle data.
@@ -124,43 +127,7 @@ Additional Formatting:
 You can switch the orientation of the rows and columns. Some spreadsheet pro- grams limit the number of columns to 256 columns. If your data should exceed this, you may opt to switch the rows and columns so the program will still read the data.
 </para>
 <para>
-Quick Time Movies: 
-Remember to select Range under the Time Interval for exporting a Quick Time movie. Preview the files you wish to export with the Auto Scale NOT selected. In the View Data tab, choose settings for min and max that are suitable for all the
-time points for the selected variable(s). Auto Scale typically will not export a color range that is visible because the movie cannot readjust the display values for each frame.
-If AutoScale is selected you will be given the following warning:
-The following export choices have no user defined color/scale settings.--- variable_name User defined color/scale is set in the 'View data' tab by unchecking the 'Auto (current time)' check- box. Default min-max color/scale range will be used.
-To set your own max and min values return to the View Data Tab, uncheck “Auto (current time)” and enter your preferred values. A dialogue window will appear in which you specify Movie Settings.
-</para>
-<para> When QuickTime is selected for particle data, the server will create a movie using the VisIt visualization package.
-</para>
-<para>
-Select data format: 
-Choose between uncompressed 32 bit RGB files or Compressed
-</para>
-<para>
-Movie duration: 
-Enter a time, in seconds, and then press Set.
-</para>
-<para>
-Select composition mode: 
-If you have multiple variables, you may select from two options.
-</para>
-<para>
-One movie for each variable:
-Each variable is displayed in its own movie.
-</para>
-<para>
-Overlay variables (single movie): 
-Export a single movie displaying each variable. The variables are still seen
-separately but contained in one Quick Time display.
-</para>
-<para>
-Hide Membrane Outline Display option for membrane.
-</para>
-<para>
-Extend images by mirroring: 
-You can extend the image size for symmetric data sets by selecting the
-mirroring option.
+<link target = "ExportingQuicktimeMovies"> Quick Time Movies</link>
 </para>
 <para>
 GIF Image Files: 
