@@ -12,9 +12,9 @@ package org.vcell.solver.smoldyn;
 
 
 import java.awt.Color;
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -40,15 +40,15 @@ import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
+import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -57,7 +57,6 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.RayCaster;
-import cbit.vcell.geometry.surface.StlExporter;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -381,7 +380,7 @@ private void init() throws SolverException {
 
 
 @Override
-public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException {	
+public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException, ImageException, PropertyVetoException, GeometryException {	
 	init();
 	
 	if (bUseMessaging) {
@@ -403,7 +402,8 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 					                  "Select \'Edit Simulation\' -> \'Solver\' -> \'Advanced Solver Options\' -> uncheck \'fast mesh sampling\'.");
 		}
 	}
-	writeSurfacesAndCompartments();	
+	writeSurfaces();
+	writeCompartments();	
 	writeReactions();
 	writeMolecules();	
 	writeSimulationTimes();
@@ -1157,32 +1157,13 @@ private class SelectPoint {
 	}
 }
 
-private void writeSurfacesAndCompartments() throws SolverException {
-	boolean DEBUG = false;
-	
-	PrintWriter tmppw = null;  
-	try {
-		if (DEBUG) tmppw = new PrintWriter("surfacepoints.m");
-	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-	}
-	
+private void writeSurfaces() throws SolverException, ImageException, PropertyVetoException, GeometryException, ExpressionException {
+
 	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
-	
-	if (DEBUG) {
-		try {
-			File file = new File("surface.stl");
-			StlExporter.writeBinaryStl(geometrySurfaceDescription, file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
+		
 	SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
 	GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
-	SubVolume[] subVolumes = geometrySpec.getSubVolumes();
+	SubVolume[] surfaceGeometrySubVolumes = geometrySpec.getSubVolumes();
 	
 	GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
 	ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
@@ -1199,9 +1180,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	printWriter.println("# geometry");
 	printWriter.println(SmoldynKeyword.dim + " " + dimension);
 	if (bHasNoSurface) {
-		printWriter.println(SmoldynKeyword.max_compartment + " " + subVolumes.length);
+		printWriter.println(SmoldynKeyword.max_compartment + " " + surfaceGeometrySubVolumes.length);
 	} else {
-		printWriter.println(SmoldynKeyword.max_compartment + " " + (subVolumes.length + 1));
+		printWriter.println(SmoldynKeyword.max_compartment + " " + (surfaceGeometrySubVolumes.length + 1));
 		printWriter.println(SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
 	}
 	printWriter.println();
@@ -1354,7 +1335,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.back + " " + SmoldynKeyword.edge);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
 			
-			if (DEBUG) tmppw.println("verts" + sci + "=[");
 			for (TrianglePanel trianglePanel : triList) {
 				Triangle triangle = trianglePanel.triangle;
 				printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
@@ -1364,21 +1344,17 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					break;
 				case 2:
 					printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
-					if (DEBUG) tmppw.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
 	
 					printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
-					if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
 					break;
 				case 3:
 					for (Node node : triangle.getNodes()) {
 						printWriter.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
-						if (DEBUG) tmppw.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
 					}
 					break;
 				}
 			
 				printWriter.println(" " + trianglePanel.name);
-				if (DEBUG) tmppw.println();
 			}
 
 			for(TrianglePanel triPanel : triList)
@@ -1402,7 +1378,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			}
 			printWriter.println(SmoldynKeyword.end_surface);
 			printWriter.println();
-			if (DEBUG) tmppw.println("];");
 		}
 		
 		// write compartment
@@ -1419,6 +1394,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 //		printWriter.println();
 	}
 	
+}
+
+private void writeCompartments() throws ImageException, PropertyVetoException, GeometryException, ExpressionException {
 	MeshSpecification meshSpecification = simulation.getMeshSpecification();
 	ISize sampleSize = meshSpecification.getSamplingSize();
 	int numX = sampleSize.getX();
@@ -1428,13 +1406,14 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	double dx = meshSpecification.getDx();
 	double dy = meshSpecification.getDy();
 	double dz = meshSpecification.getDz();
-	Origin origin = geometrySpec.getOrigin();
+	Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
 
 	printWriter.println("# compartments");
-	int pointsCount = 0;
-	for (SubVolume subVolume : subVolumes) {		
+	resampledGeometry.precomputeAll();
+	Geometry interiorPointGeometry = RayCaster.resampleGeometry(resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
+	for (SubVolume subVolume : interiorPointGeometry.getGeometrySpec().getSubVolumes()) {		
 		printWriter.println(SmoldynKeyword.start_compartment + " " + subVolume.getName());		
-		for (SurfaceClass sc : surfaceClasses) {
+		for (SurfaceClass sc : interiorPointGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
 			if (sc.getAdjacentSubvolumes().contains(subVolume)) {
 				printWriter.println(SmoldynKeyword.surface + " " + sc.getName());
 			}
@@ -1453,14 +1432,15 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			}
 		}
 		
-		if (DEBUG) {
-			tmppw.println("points" + pointsCount + "=[");
-			pointsCount ++;
-		}
+//		if (DEBUG) {
+//			tmppw.println("points" + pointsCount + "=[");
+//			pointsCount ++;
+//		}
 		
 		// gather all the points in all the regions
-		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(subVolume);
-		RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();
+		SubVolume interiorPointSubVolume = interiorPointGeometry.getGeometrySpec().getSubVolume(subVolume.getName());
+		GeometricRegion[] geometricRegions = interiorPointGeometry.getGeometrySurfaceDescription().getGeometricRegions(interiorPointSubVolume);
+		RegionInfo[] regionInfos = interiorPointGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfos();
 		for (GeometricRegion geometricRegion : geometricRegions) {			
 			VolumeGeometricRegion volumeGeometricRegion = (VolumeGeometricRegion)geometricRegion;
 			
@@ -1537,28 +1517,22 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					int midi = (thisPoint.starti + thisPoint.endi) / 2;
 					double coordX = origin.getX() + dx * midi;
 					printWriter.print(SmoldynKeyword.point + " " + coordX);
-					if (DEBUG) tmppw.print(coordX);
 					if (dimension > 1) {
 						double coordY = origin.getY() + dy * thisPoint.j;
 						printWriter.print(" " + coordY);
-						if (DEBUG) tmppw.print(" " + coordY);										
 						if (dimension > 2) {
 							double coordZ = origin.getZ() + dz * thisPoint.k;
 							printWriter.print(" " + coordZ);
-							if (DEBUG) tmppw.print(" " + coordZ);
 						}
 					}
 					printWriter.println();
-					if (DEBUG) tmppw.println();					
 				}
 			}
 		} // end for (GeometricRegion
-		if (DEBUG) tmppw.println("];");
 		
 		printWriter.println(SmoldynKeyword.end_compartment);
 		printWriter.println();
 	} // end for (SubVolume
-	if (DEBUG) tmppw.close();
 }
 
 private void writeWallSurfaces() throws SolverException {
