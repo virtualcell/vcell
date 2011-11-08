@@ -866,10 +866,18 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 public State<VCImage> getSampledImage() {
+	if (sampledImage==null){
+		sampledImage = new State<VCImage>(null);
+		sampledImage.setDirty();
+	}
 	return sampledImage;
 }
 
 public State<BufferedImage> getThumbnailImage() {
+	if (thumbnailImage==null){
+		thumbnailImage = new State<BufferedImage>(null);
+		thumbnailImage.setDirty();
+	}
 	return thumbnailImage;
 }
 /**
@@ -878,12 +886,12 @@ public State<BufferedImage> getThumbnailImage() {
  */
 void updateSampledImage() throws GeometryException, ImageException, ExpressionException {
 
-	if (sampledImage.isDirty()){
+	if (getSampledImage().isDirty()){
 		ISize sampleSize = getDefaultSampledImageSize();
-		sampledImage.setValue(createSampledImage(sampleSize));
-		thumbnailImage.setValue(createThumbnailImage());
+		getSampledImage().setValue(createSampledImage(sampleSize));
+		getThumbnailImage().setValue(createThumbnailImage());
 		try {
-			verifyCompleteSampling(sampledImage.getCurrentValue());
+			verifyCompleteSampling(getSampledImage().getCurrentValue());
 			setWarningMessage("");
 			setValid(true);
 		}catch (ImageException e){
@@ -894,8 +902,8 @@ void updateSampledImage() throws GeometryException, ImageException, ExpressionEx
 }
 
 void fireAll() {
-	firePropertyChange(PROPERTY_NAME_SAMPLED_IMAGE, sampledImage.getOldValue(), sampledImage.getCurrentValue());
-	firePropertyChange(PROPERTY_NAME_THUMBNAIL_IMAGE, thumbnailImage.getOldValue(), thumbnailImage.getCurrentValue());
+	firePropertyChange(PROPERTY_NAME_SAMPLED_IMAGE, getSampledImage().getOldValue(), getSampledImage().getCurrentValue());
+	firePropertyChange(PROPERTY_NAME_THUMBNAIL_IMAGE, getThumbnailImage().getOldValue(), getThumbnailImage().getCurrentValue());
 }
 
 private static final int SAMPLED_GEOM_SIZE_MAX = 150;
@@ -923,7 +931,7 @@ private BufferedImage createThumbnailImage() throws GeometryException {
 			Graphics2D brightG2D = brightImage.createGraphics();
 			brightG2D.setColor(java.awt.Color.white);
 			brightG2D.fillRect(0,0,REAL_SAMPLE_X,REAL_SAMPLE_Y);
-			VCImage currSampledImage = sampledImage.getCurrentValue();
+			VCImage currSampledImage = getSampledImage().getCurrentValue();
 			java.awt.image.IndexColorModel handleColorMap = GeometrySpec.getHandleColorMap();
 			byte[] reds = new byte[256];
 			handleColorMap.getReds(reds);
@@ -1166,24 +1174,24 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		SubVolume oldSubVolumes[] = (SubVolume[])event.getOldValue();
 		SubVolume newSubVolumes[] = (SubVolume[])event.getNewValue();
 		if (!Compare.isEqualStrict(oldSubVolumes,newSubVolumes)){  // ignore if just a change of instances
-			sampledImage.setDirty();
-			thumbnailImage.setDirty();
+			getSampledImage().setDirty();
+			getThumbnailImage().setDirty();
 		}
 	}
 	if (event.getSource() == this && (event.getPropertyName().equals("extent") || event.getPropertyName().equals("origin"))){
 		Matchable oldExtentOrOrigin = (Matchable)event.getOldValue();
 		Matchable newExtentOrOrigin = (Matchable)event.getNewValue();
 		if (!Compare.isEqual(oldExtentOrOrigin,newExtentOrOrigin)){
-			sampledImage.setDirty();
-			thumbnailImage.setDirty();
+			getSampledImage().setDirty();
+			getThumbnailImage().setDirty();
 		}
 	}
 	if (event.getSource() instanceof AnalyticSubVolume && event.getPropertyName().equals("expression")) {
 		Expression oldExpression = (Expression)event.getOldValue();
 		Expression newExpression = (Expression)event.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
-			sampledImage.setDirty();
-			thumbnailImage.setDirty();
+			getSampledImage().setDirty();
+			getThumbnailImage().setDirty();
 		}
 	}
 }
