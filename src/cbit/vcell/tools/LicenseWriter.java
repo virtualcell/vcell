@@ -446,8 +446,8 @@ public class LicenseWriter {
 //			command = "cleanup";
 //			command = "write";
 			licenseFileName = "C:/dan/projects/VCell_trunk/src/cbit/vcell/tools/license.txt";
-//			String vCellSourceDirectory = "C:/dan/projects/VCell_5.0_branch";
-			String vCellSourceDirectory = "C:/dan/projects/VCell_trunk";
+			String vCellSourceDirectory = "C:/dan/projects/VCell_5.0_branch";
+//			String vCellSourceDirectory = "C:/dan/projects/VCell_trunk";
 //			licenseFileName = "/home/CAM/eboyce/Desktop/license.txt";
 //    		String vCellSourceDirectory = "/eboyce-local/workspace/VCell";
 //			String numericsSourceDirectory = "/h";
