@@ -44,7 +44,7 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JPanel ivjConsoleOutputPage = null;
 	private javax.swing.JTextArea ivjConsoleTextArea = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JScrollPane ivjConsoleScrollPane = null;
 	private javax.swing.JPanel ivjRuleInputPage = null;
 	private BNGInput ivjbngInput = null;
@@ -88,7 +88,7 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjOutputLabel = null;
 	private MultiPurposeTextPanel ivjBNGLInputPanel = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == BNGOutputPanel.this.getRunBNGButton()) 
 				connEtoC6(e);
@@ -1917,7 +1917,7 @@ private javax.swing.JPanel getRulesEditorButtonsPanel1() {
 			ivjRulesEditorButtonsPanel1.setLayout(new java.awt.FlowLayout());
 			getRulesEditorButtonsPanel1().add(getOpenFileButton(), getOpenFileButton().getName());
 			getRulesEditorButtonsPanel1().add(getRunBNGButton(), getRunBNGButton().getName());
-			getRulesEditorButtonsPanel1().add(getStopBNGButton(), getStopBNGButton().getName());
+//			getRulesEditorButtonsPanel1().add(getStopBNGButton(), getStopBNGButton().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
