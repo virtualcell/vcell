@@ -53,6 +53,7 @@ import org.vcell.pathway.ExperimentalFormVocabulary;
 import org.vcell.pathway.FragmentFeature;
 import org.vcell.pathway.Gene;
 import org.vcell.pathway.GeneticInteraction;
+import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionImpl;
 import org.vcell.pathway.InteractionVocabulary;
@@ -272,6 +273,8 @@ public class PathwayReaderBiopax3 {
 					pathwayModel.add(addObjectScore(childElement));
 				}else if (childElement.getName().equals("SequenceLocation")){
 					pathwayModel.add(addObjectSequenceLocation(childElement));
+				}else if (childElement.getName().equals("GroupObject")){
+					pathwayModel.add(addObjectGroupObject(childElement));
 					
 				}else if (childElement.getName().equals("SBMeasurable")){
 					pathwayModel.add(addObjectSBMeasurable(childElement));
@@ -421,7 +424,9 @@ public class PathwayReaderBiopax3 {
 			return addObjectScore(childElement);
 		}else if (childElement.getName().equals("SequenceLocation")){
 			return addObjectSequenceLocation(childElement);
-			
+		}else if (childElement.getName().equals("GroupObject")){
+			return addObjectGroupObject(childElement);
+		
 		}else if (childElement.getName().equals("SBMeasurable")){
 			return addObjectSBMeasurable(childElement);
 		}else if (childElement.getName().equals("UnitOfMeasurement")){
@@ -1368,6 +1373,28 @@ public class PathwayReaderBiopax3 {
 			return true;
 		}else if(childElement.getName().equals("componentStoichiometry")) {
 			complex.getComponentStoichiometry().add(addObjectStoichiometry(childElement));
+			return true;
+		}else{
+			return false; // no match
+		}
+	}
+	
+	private boolean addContentGroupObject(GroupObject gObject, Element element, Element childElement){
+		if (addContentEntity(gObject, element, childElement)){
+			return true;
+		}
+		/**
+		 * HashSet<BioPaxObject> groupedObjects
+		 * Type type
+		 */
+		if (childElement.getName().equals("groupedObject")){
+			BioPaxObjectProxy proxyE = new BioPaxObjectProxy();
+			addAttributes(proxyE, childElement);
+			pathwayModel.add(proxyE);
+			gObject.getGroupedObjects().add(proxyE);
+			return true;
+		}else if(childElement.getName().equals("type")) {
+			gObject.setType(childElement.getTextTrim());
 			return true;
 		}else{
 			return false; // no match
@@ -2357,6 +2384,21 @@ public class PathwayReaderBiopax3 {
 		}
 		pathwayModel.add(complex);
 		return complex;
+	}
+	
+	private GroupObject addObjectGroupObject(Element element) {
+		GroupObject gObject = new GroupObject();
+		addAttributes(gObject, element);
+		for (Object child : element.getChildren()){
+			if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (!addContentGroupObject(gObject, element, childElement)){
+					showUnexpected(childElement);
+				}
+			}
+		}
+		pathwayModel.add(gObject);
+		return gObject;
 	}
 	
 	private Dna addObjectDna(Element element) {

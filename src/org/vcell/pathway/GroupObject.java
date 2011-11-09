@@ -10,12 +10,15 @@
 
 package org.vcell.pathway;
 
+import java.util.HashMap;
 import java.util.HashSet;
+
+import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class GroupObject extends EntityImpl {
 	public static enum Type { GROUPEDCOMPLEX, GROUPEDINTERACTION, GROUPEDBIOPAXOBJECTS;
 	}
-	private HashSet<BioPaxObject> groupedObjects;
+	private HashSet<BioPaxObject> groupedObjects = new HashSet<BioPaxObject>();
 	private Type type;
 	
 
@@ -26,10 +29,45 @@ public class GroupObject extends EntityImpl {
 		this.groupedObjects = groupedObjects;
 	}
 	
+	public HashSet<BioPaxObject> computeGroupedBioPaxObjects(){
+		HashSet<BioPaxObject> gObjects = new HashSet<BioPaxObject>();
+		for(BioPaxObject bpo : groupedObjects){
+			if(bpo instanceof GroupObject){
+				gObjects.addAll(((GroupObject)bpo).computeGroupedBioPaxObjects());
+			}else{
+				gObjects.add(bpo);
+			}
+		}
+		return gObjects;
+	}
+	
 	public Type getType(){
 		return type;
 	}
 	public void setType(Type newType){
 		type = newType;
+	}
+	public void setType(String typeStr){
+		type = Type.valueOf(typeStr);
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
+
+		HashSet<BioPaxObject> gObjects = new HashSet<BioPaxObject>();
+		for(BioPaxObject bpo : groupedObjects){
+			if(bpo instanceof RdfObjectProxy) {
+				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpo;
+				if (rdfObjectProxy.getResource() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+					if (concreteObject != null){
+						gObjects.add(concreteObject);
+					}
+				}
+			}else{
+				gObjects.add(bpo);
+			}
+		}
+		setGroupedeObjects(gObjects);
 	}
 }
