@@ -164,6 +164,18 @@ public class BiopaxProxy {
 			return resource.replace("#","");
 		}
 	}
+	public static class BioPaxObjectProxy extends EntityImpl implements RdfObjectProxy {
+		private String resource;
+		public String getResource() {
+			return resource;
+		}
+		public void setResource(String resource) {
+			this.resource = resource;
+		}
+		public String getResourceName(){
+			return resource.replace("#","");
+		}
+	}
 	public static class PathwayStepProxy extends PathwayStep implements RdfObjectProxy {
 		private String resource;
 		public String getResource() {

@@ -327,7 +327,17 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if(bioModel.getModel().getMembranes().size() > 0)
 			hasMembrane = true;
 		
+		HashSet<BioPaxObject> selected = new HashSet<BioPaxObject>();
+		// convert group Object to regular biopaxObjects
 		for(BioPaxObject bpo : getSelectedBioPaxObjects()){
+			if(bpo instanceof GroupObject){
+				selected.addAll(((GroupObject)bpo).computeGroupedBioPaxObjects());
+			}else{
+				selected.add(bpo);
+			}
+		}
+		
+		for(BioPaxObject bpo : selected){
 			  if(bpo instanceof Conversion){
 				  if(bpo instanceof Transport && !hasMembrane){
 					  warningCount2 ++;
@@ -428,11 +438,22 @@ implements PathwayEditor, ActionBuilder.Generator {
 		deleteSelectedBioPaxObjects(this, bioModel, graphCartoonTool.getGraphModel());
 	}
 	public static void deleteSelectedBioPaxObjects(Component guiRequester, BioModel bioModel, GraphModel graphModel) {
-		List<BioPaxObject> allSelectedBioPaxObjects = getSelectedBioPaxObjects(graphModel); // all objects required by user
+		List<BioPaxObject> selected = getSelectedBioPaxObjects(graphModel); // all objects required by user
 		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
 		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the all objects that will be deleted from the pathway model
+		HashSet<GroupObject> undeletedGroupObjects = new HashSet<GroupObject>(); // used for recover group objects
 		StringBuilder warning = new StringBuilder("You can NOT delete the following pathway objects:\n\n");
 		StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
+		List<BioPaxObject> allSelectedBioPaxObjects = new ArrayList<BioPaxObject> ();
+		for (BioPaxObject bpObject : selected){
+			if(bpObject instanceof GroupObject){ // all elements of the groupObject will be deleted
+				allSelectedBioPaxObjects.add(bpObject);
+				// check all elements
+				allSelectedBioPaxObjects.addAll(getAllGroupedObjects((GroupObject)bpObject));
+			}else{
+				allSelectedBioPaxObjects.add(bpObject);
+			}
+		}
 		for (BioPaxObject bpObject : allSelectedBioPaxObjects) {
 			if(canDelete(bioModel, allSelectedBioPaxObjects, bpObject)){
 				selectedBioPaxObjects.add(bpObject);
@@ -469,9 +490,19 @@ implements PathwayEditor, ActionBuilder.Generator {
 				}
 			}else{
 				warning.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
+				if(bpObject instanceof GroupObject){
+					undeletedGroupObjects.add((GroupObject)bpObject);
+				}
 			}
 		}
+		
 		warning.append("\nThey are either required by other reactions or linked with other physiological objects.\n\n");
+		
+//		for(GroupObject gObject : undeletedGroupObjects){
+//			for (BioPaxObject bpo : gObject.getGroupedObjects()){
+//				completeSelectedBioPaxObjects.remove(bpo);
+//			}
+//		}
 		
 		StringBuilder finalWarningMessage = new StringBuilder();
 		if(allSelectedBioPaxObjects.size() > selectedBioPaxObjects.size()){
@@ -525,11 +556,19 @@ implements PathwayEditor, ActionBuilder.Generator {
 		// CANNOT delete an GroupObject if its elements are required by other objects
 		if(bpObject instanceof GroupObject){
 			for(BioPaxObject bpo : ((GroupObject)bpObject).getGroupedObjects()){
-				if(!canDelete(bioModel, selectedBioPaxObjects, bpo)){
-					return false;
-				}
+				return canDelete(bioModel, selectedBioPaxObjects, bpo);
 			}
 		}
+		// CANNOT delete a Object if it is in a un-deleting groupObject
+		BioPaxObject ancestor = bioModel.getPathwayModel().findTopLevelGroupAncestor(bpObject);
+		if(ancestor != bpObject ){
+			if(selectedBioPaxObjects.contains(ancestor)){
+//				return canDelete(bioModel, selectedBioPaxObjects, ancestor);
+			}else{
+				return false;
+			}
+		}
+		
 		for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
 			if(bp instanceof Conversion){ // CANNOT delete any participants before deleting the reaction
 				if(!selectedBioPaxObjects.contains(bp)) {

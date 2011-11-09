@@ -42,6 +42,7 @@ import org.vcell.pathway.Evidence;
 import org.vcell.pathway.ExperimentalForm;
 import org.vcell.pathway.Gene;
 import org.vcell.pathway.GeneticInteraction;
+import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
@@ -270,6 +271,8 @@ public class PathwayProducerBiopax3 {
 				biopaxElement.addContent(addObjectKPrime(bpObject, className));
 			}else if (className.equals("Score")){
 				biopaxElement.addContent(addObjectScore(bpObject, className));
+			}else if (className.equals("GroupObject")){
+				biopaxElement.addContent(addObjectGroupObject(bpObject, className));
 			}else{
 				showUnexpected(bpObject);
 			}
@@ -524,6 +527,13 @@ public class PathwayProducerBiopax3 {
 		return element;
 	}
 
+	private Element addObjectGroupObject(BioPaxObject bpObject, String className) {
+		Element element = new Element(className, bp);
+		element = addAttributes(bpObject, element);
+		element = addContentGroupObject(bpObject, element);
+		return element;
+	}
+	
 	private Element addObjectTemplateReactionRegulation(BioPaxObject bpObject, String className) {
 		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
@@ -1370,6 +1380,31 @@ public class PathwayProducerBiopax3 {
 		return element;
 	}
 
+	private Element addContentGroupObject(BioPaxObject bpObject, Element element) {
+		element = addContentEntity(bpObject, element);
+		
+		GroupObject ob = (GroupObject)bpObject;
+		Element tmpElement = null;
+		
+		if(ob.getGroupedObjects() != null && ob.getGroupedObjects().size() > 0) {
+			HashSet<BioPaxObject> list = ob.getGroupedObjects();
+			for(BioPaxObject item : list) {
+				tmpElement = new Element("groupedObject", bp);
+				tmpElement.setAttribute("resource", getResource(item), rdf);
+				mustPrintObject(item);
+				element.addContent(tmpElement);
+			}
+		}
+		if(ob.getType() != null) {
+			tmpElement = new Element("type", bp);
+			tmpElement.setAttribute("resource",ob.getType().toString(), rdf);
+			tmpElement.setText(ob.getType().toString());
+			element.addContent(tmpElement);
+		}
+		return element;
+	}	
+	
+	
 	//	evidence 	Evidence 	multiple 
 	private Element addContentTemplateReactionRegulation(BioPaxObject bpObject, Element element) {
 		element = addContentControl(bpObject, element);
