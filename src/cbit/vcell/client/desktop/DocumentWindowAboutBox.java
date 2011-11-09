@@ -11,17 +11,22 @@
 package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -29,23 +34,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.KeySequenceListener;
+import org.vcell.util.gui.VCellIcons;
 
 @SuppressWarnings("serial")
 public class DocumentWindowAboutBox extends JDialog {
 
+	private static final String COPASI_WEB_URL = "http://www.copasi.org";
+	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
 	private JPanel buttonPane = null;
 	private JLabel copyright = null;
-	EventHandler eventHandler = new EventHandler();
+	private EventHandler eventHandler = new EventHandler();
 	private JLabel iconLabel = null;
 	private JPanel iconPane = null;
 	private JPanel dialogContentPane = null;
 	private JButton okButton = null;
 	private JPanel textPane = null;
-	private JLabel userName = null;
 	private JLabel version = null;
 	private static String VERSION_NO = "";
 	private static String BUILD_NO = "";
@@ -76,7 +83,7 @@ public class DocumentWindowAboutBox extends JDialog {
 		return EDITION;
 	}
 	
-	class EventHandler implements ActionListener {
+	private class EventHandler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == DocumentWindowAboutBox.this.getOkButton())
 				try {
@@ -121,7 +128,13 @@ public class DocumentWindowAboutBox extends JDialog {
 			try {
 				appName = new JLabel();
 				appName.setName("AppName");
-				appName.setText("Virtual Cell");
+				appName.setText("<html><u>Virtual Cell</u></html>");
+				appName.setForeground(Color.blue);
+				appName.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, VCELL_WEB_URL, "Failed to open VCell web page (" + VCELL_WEB_URL + ")", false);
+					}
+				});
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -161,7 +174,7 @@ public class DocumentWindowAboutBox extends JDialog {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2011");
+				copyright.setText("(c) Copyright 1998-2011 UCHC");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -232,11 +245,15 @@ public class DocumentWindowAboutBox extends JDialog {
 				textPane = new JPanel();
 				textPane.setName("TextPane");
 				textPane.setLayout(getTextPaneGridLayout());
+				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
 				getTextPane().add(getAppName(), getAppName().getName());
 				getTextPane().add(getVersion(), getVersion().getName());
 				getTextPane().add(getBuildNumber(), getBuildNumber().getName());
 				getTextPane().add(getCopyright(), getCopyright().getName());
-				getTextPane().add(getUserName(), getUserName().getName());
+				//getTextPane().add(getUserName(), getUserName().getName());
+				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
+				getTextPane().add(getCOPASIAttribution(),getCOPASIAttribution().getName());
+				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -248,30 +265,31 @@ public class DocumentWindowAboutBox extends JDialog {
 		GridLayout textPaneGridLayout = null;
 		try {
 			/* Create part */
-			textPaneGridLayout = new GridLayout(5, 1);
+			textPaneGridLayout = new GridLayout(0, 1);
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		};
 		return textPaneGridLayout;
 	}
-
-	private JLabel getUserName() {
-		if (userName == null) {
+	
+	private JLabel getCOPASIAttribution() {
+		JLabel copasiText = new JLabel();
 			try {
-				userName = new JLabel();
-				userName.setName("UserName");
-				userName.setText("UCHC / NRCAM");
-				// user code begin {1}
-				// user code end
+				
+				copasiText.setName("COPASI");
+				copasiText.setText("<html>Featuring <font color=blue><u>COPASI</u></font> parameter estimation technology&nbsp;&nbsp;</html>");
+				copasiText.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, COPASI_WEB_URL, "Failed to open COPASI webpage ("+COPASI_WEB_URL+")", false);
+					}
+				});
 			} catch (Throwable throwable) {
-				// user code begin {2}
-				// user code end
 				handleException(throwable);
 			}
-		}
-		return userName;
+		
+		return copasiText;
 	}
-
+	
 	public JLabel getVersion() {
 		if (version == null) {
 			try {
@@ -293,12 +311,13 @@ public class DocumentWindowAboutBox extends JDialog {
 	private void initialize() {
 		try {
 			setName("DocumentWindowAboutBox");
+			setIconImage(VCellIcons.getJFrameImageIcon());
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			setResizable(false);
-			setSize(330, 160);
 			setTitle("DocumentWindowAboutBox");
 			setContentPane(getJDialogContentPane());
 			getOkButton().addActionListener(eventHandler);
+			pack();
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
