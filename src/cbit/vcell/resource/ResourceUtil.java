@@ -32,7 +32,7 @@ public class ResourceUtil {
 	public final static boolean bLinux = system_osname.contains("Linux");
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
-	private final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
+	public final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
 	private final static String osname;
 	static {
 		if (bWindows) {

@@ -9,25 +9,30 @@
  */
 
 package cbit.vcell.client;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.DisplayBNGOutput;
-import cbit.vcell.client.task.RunBioNetGen;
-import java.util.Hashtable;
-import cbit.vcell.client.task.AsynchClientTask;
-import java.io.PrintWriter;
+import java.io.BufferedReader;
 import java.io.File;
-import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.client.bionetgen.BNGOutputPanel;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.EventObject;
+import java.util.Hashtable;
+
 import javax.swing.JFileChooser;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.VCFileChooser;
 
+import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.client.server.UserPreferences;
-import java.io.FileInputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.DisplayBNGOutput;
+import cbit.vcell.client.task.RunBioNetGen;
+import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.xml.XMLInfo;
 
 /**
  * Insert the type's description here.
@@ -35,7 +40,7 @@ import java.io.InputStreamReader;
  * @author: Anuradha Lakshminarayana
  */
 public class BNGWindowManager extends TopLevelWindowManager {
-	private cbit.vcell.client.bionetgen.BNGOutputPanel fieldBngOutputPanel = null;
+	private BNGOutputPanel fieldBngOutputPanel = null;
 
 /**
  * BNGWindowManager constructor comment.
@@ -51,7 +56,7 @@ public BNGWindowManager(BNGOutputPanel argBngOutputPanel, RequestManager request
  * Gets the bngOutputPanel property (cbit.vcell.client.bionetgen.BNGOutputPanel) value.
  * @return The bngOutputPanel property value.
  */
-public cbit.vcell.client.bionetgen.BNGOutputPanel getBngOutputPanel() {
+public BNGOutputPanel getBngOutputPanel() {
 	return fieldBngOutputPanel;
 }
 
@@ -80,7 +85,7 @@ public String getManagerID() {
  * Comment
  */
 public void importSbml(String bngSbmlStr) {
-	cbit.vcell.xml.XMLInfo xmlInfo = new cbit.vcell.xml.XMLInfo(bngSbmlStr);
+	XMLInfo xmlInfo = new XMLInfo(bngSbmlStr);
 
 	if (xmlInfo != null) {
 		getRequestManager().openDocument(xmlInfo, this, true);
@@ -115,7 +120,16 @@ public void runBioNetGen(BNGInput bngInput) {
 	tasksArray[1] = new DisplayBNGOutput();
 
 	// Dispatch the tasks using the ClientTaskDispatcher.
-	ClientTaskDispatcher.dispatch(getBngOutputPanel(), hash, tasksArray, false, true, null);
+	ClientTaskDispatcher.dispatch(getBngOutputPanel(), hash, tasksArray, false, true, new ProgressDialogListener() {
+		
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			try {
+				BNGUtils.stopBNG();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	});
 }
 
 
