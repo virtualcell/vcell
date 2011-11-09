@@ -1614,7 +1614,7 @@ private JButton ivjButtonVisit;
 private JButton getJButtonVisit(){
 	if (ivjButtonVisit == null) {
 		ivjButtonVisit = new javax.swing.JButton();
-		ivjButtonVisit.setVisible(true);
+		ivjButtonVisit.setVisible(false);
 		ivjButtonVisit.setName("JButtonVisit");
 		ivjButtonVisit.setText("Open in VisIt");
 		ivjButtonVisit.addActionListener(ivjEventHandler);
@@ -1629,10 +1629,11 @@ private JButton ivjButtonLocalVisit;
 private JButton getJButtonLocalVisit(){
 	if (ivjButtonLocalVisit == null) {
 		ivjButtonLocalVisit = new javax.swing.JButton();
-		ivjButtonLocalVisit.setVisible(true);
+		ivjButtonLocalVisit.setVisible(false);
 		ivjButtonLocalVisit.setName("JButtonLocalVisit");
 		ivjButtonLocalVisit.setText("Open in Local VisIt");
 		ivjButtonLocalVisit.addActionListener(ivjEventHandler);
+		ivjButtonLocalVisit.setEnabled(false);
 
 	}
 	return ivjButtonLocalVisit;
