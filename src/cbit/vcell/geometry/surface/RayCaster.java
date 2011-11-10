@@ -24,7 +24,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
-import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
@@ -32,7 +31,6 @@ import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.HitEvent;
 import cbit.vcell.geometry.gui.HitList;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
 
@@ -151,7 +149,7 @@ public class RayCaster {
 //		}
 		
 		int count = 0;
-		while (volumeSamples.hasZeros() && count < 100){
+		while (volumeSamples.hasZeros() && count < 100 && surfaceCollection.getSurfaceCount() > 0){
 			//
 			// go through "empty" hitlists and set zero elements to nonzero (until no more zero left)
 			//
