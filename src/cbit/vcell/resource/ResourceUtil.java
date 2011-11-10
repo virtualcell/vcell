@@ -55,17 +55,8 @@ public class ResourceUtil {
 	private static File localSimDir = null;
 	private static File localRootDir = null;
 	
-	private final static String DLL_GLUT;
-	static {
-		if (bWindows) {
-			DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
-		} else {
-			DLL_GLUT = null;
-		}
-	}
 	private static File solversDirectory = null;
 	
-	private final static String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
 	public enum SolverExecutable {
 		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
 		SundialsOde("SundialsSolverStandalone" + EXE_SUFFIX),
@@ -89,9 +80,13 @@ public class ResourceUtil {
 				ResourceUtil.writeFileFromResource(res, exe);
 			}
 			if (this == Smoldyn) {
-				File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
-				if (bWindows && (bFirstTime || !file_glut_dll.exists())) {
-					ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+				if (bWindows) {
+					String DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
+					String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
+					File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
+					if (bWindows && (bFirstTime || !file_glut_dll.exists())) {
+						ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+					}
 				}
 			}
 			bFirstTime = false;			
