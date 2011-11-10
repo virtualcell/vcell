@@ -150,7 +150,7 @@ public class RayCaster {
 //		}
 		
 		int count = 0;
-		while (volumeSamples.hasZeros() && count < 100){
+		while (volumeSamples.hasZeros() && count < 100 && surfaceCollection.getSurfaceCount() > 0){
 			//
 			// go through "empty" hitlists and set zero elements to nonzero (until no more zero left)
 			//
