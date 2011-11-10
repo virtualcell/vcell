@@ -211,9 +211,11 @@ public class ResourceUtil {
 		if (bFirstTimeSmoldyn || !smoldynExecutable.exists()) {
 			ResourceUtil.writeFileFromResource(RES_EXE_SMOLDYN, smoldynExecutable);
 		}
-		File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
-		if (!bMac && (bFirstTimeSmoldyn || !file_glut_dll.exists())) {
-			ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+		if (bWindows) {
+			File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
+			if (bFirstTimeSmoldyn || !file_glut_dll.exists()) {
+				ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+			}
 		}
 		bFirstTimeSmoldyn = false;
 		return smoldynExecutable;
