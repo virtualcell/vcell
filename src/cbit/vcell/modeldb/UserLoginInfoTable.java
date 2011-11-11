@@ -24,7 +24,7 @@ public class UserLoginInfoTable extends Table {
 
     private static final String[] userLoginInfoTableUniqueConstraint =
 		new String[] {
-		"ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,clientVers,serverVers)"};
+		"ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,clientVers,serverVers,javavers)"};
 
     private static final int MAX_FIELD_LENGTH = 32;
     
@@ -36,8 +36,9 @@ public class UserLoginInfoTable extends Table {
 	public final Field osvers		= new Field("osvers",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 	public final Field clientVers	= new Field("clientVers",	"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 	public final Field serverVers	= new Field("serverVers",	"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
+	public final Field javavers		= new Field("javavers",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 
-	private final Field fields[] = {userRef,loginCount,lastLogin,osarch,osname,osvers,clientVers,serverVers};
+	private final Field fields[] = {userRef,loginCount,lastLogin,osarch,osname,osvers,clientVers,serverVers,javavers};
 	
 	public static final UserLoginInfoTable table = new UserLoginInfoTable();
 
@@ -60,7 +61,8 @@ public static String getSQLValueList(KeyValue userRef,int logincount,UserLoginIn
 	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_name(), MAX_FIELD_LENGTH)+"'"+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_version(), MAX_FIELD_LENGTH)+"'"+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionClient(userLoginInfo), MAX_FIELD_LENGTH)+"'"+",");
-	buffer.append("'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'"+",");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getJava_version(), MAX_FIELD_LENGTH)+"'");
 	buffer.append(")");
 	return buffer.toString();
 }
@@ -85,7 +87,10 @@ public static String getSQLWhereCondition(KeyValue userRef,UserLoginInfo userLog
 	" AND "+
 	UserLoginInfoTable.table.clientVers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionClient(userLoginInfo), MAX_FIELD_LENGTH)+"'"+
 	" AND "+
-	UserLoginInfoTable.table.serverVers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'";
+	UserLoginInfoTable.table.serverVers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'"+
+	" AND "+
+	UserLoginInfoTable.table.javavers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(userLoginInfo.getJava_version(), MAX_FIELD_LENGTH)+"'";
+
 
 }
 private static String getVCellSoftwareVersionServer(){
