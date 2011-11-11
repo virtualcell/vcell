@@ -10,49 +10,32 @@
 
 package cbit.vcell.client.desktop;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.WindowConstants;
 
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.KeySequenceListener;
-import org.vcell.util.gui.VCellIcons;
 
 @SuppressWarnings("serial")
-public class DocumentWindowAboutBox extends JDialog {
+public class DocumentWindowAboutBox extends JPanel {
 
 	private static final String COPASI_WEB_URL = "http://www.copasi.org";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
-	private JPanel buttonPane = null;
 	private JLabel copyright = null;
-	private EventHandler eventHandler = new EventHandler();
 	private JLabel iconLabel = null;
-	private JPanel iconPane = null;
-	private JPanel dialogContentPane = null;
-	private JButton okButton = null;
-	private JPanel textPane = null;
 	private JLabel version = null;
 	private static String VERSION_NO = "";
 	private static String BUILD_NO = "";
@@ -83,17 +66,6 @@ public class DocumentWindowAboutBox extends JDialog {
 		return EDITION;
 	}
 	
-	private class EventHandler implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == DocumentWindowAboutBox.this.getOkButton())
-				try {
-					DocumentWindowAboutBox.this.dispose();
-				} catch (Throwable throwable) {
-					handleException(throwable);
-				}
-		};
-	};
-
 	public static class HierarchyPrinter extends KeySequenceListener {
 		
 		public String getSequence() { return "hierarchy"; }
@@ -155,20 +127,6 @@ public class DocumentWindowAboutBox extends JDialog {
 		return buildNumber;
 	}
 
-	private JPanel getButtonPane() {
-		if (buttonPane == null) {
-			try {
-				buttonPane = new JPanel();
-				buttonPane.setName("ButtonPane");
-				buttonPane.setLayout(new FlowLayout());
-				getButtonPane().add(getOkButton(), getOkButton().getName());
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return buttonPane;
-	}
-
 	private JLabel getCopyright() {
 		if (copyright == null) {
 			try {
@@ -187,6 +145,7 @@ public class DocumentWindowAboutBox extends JDialog {
 			try {
 				iconLabel = new JLabel();
 				iconLabel.setName("IconLabel");
+//				iconLabel.seth
 				iconLabel.setIcon(new ImageIcon(getClass().getResource("/images/ccam_sm_colorgr.gif")));
 				iconLabel.setText("");
 			} catch (Throwable throwable) {
@@ -194,82 +153,6 @@ public class DocumentWindowAboutBox extends JDialog {
 			}
 		}
 		return iconLabel;
-	}
-
-	private JPanel getIconPane() {
-		if (iconPane == null) {
-			try {
-				iconPane = new JPanel();
-				iconPane.setName("IconPane");
-				iconPane.setLayout(new FlowLayout());
-				getIconPane().add(getIconLabel(), getIconLabel().getName());
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return iconPane;
-	}
-
-	private JPanel getJDialogContentPane() {
-		if (dialogContentPane == null) {
-			try {
-				dialogContentPane = new JPanel();
-				dialogContentPane.setName("JDialogContentPane");
-				dialogContentPane.setLayout(new BorderLayout());
-				getJDialogContentPane().add(getButtonPane(), "South");
-				getJDialogContentPane().add(getTextPane(), "Center");
-				getJDialogContentPane().add(getIconPane(), "West");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return dialogContentPane;
-	}
-
-	private JButton getOkButton() {
-		if (okButton == null) {
-			try {
-				okButton = new JButton();
-				okButton.setName("OkButton");
-				okButton.setText("OK");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return okButton;
-	}
-
-	private JPanel getTextPane() {
-		if (textPane == null) {
-			try {
-				textPane = new JPanel();
-				textPane.setName("TextPane");
-				textPane.setLayout(getTextPaneGridLayout());
-				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
-				getTextPane().add(getAppName(), getAppName().getName());
-				getTextPane().add(getVersion(), getVersion().getName());
-				getTextPane().add(getBuildNumber(), getBuildNumber().getName());
-				getTextPane().add(getCopyright(), getCopyright().getName());
-				//getTextPane().add(getUserName(), getUserName().getName());
-				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
-				getTextPane().add(getCOPASIAttribution(),getCOPASIAttribution().getName());
-				getTextPane().add(Box.createRigidArea(new Dimension(5,10)));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return textPane;
-	}
-
-	private GridLayout getTextPaneGridLayout() {
-		GridLayout textPaneGridLayout = null;
-		try {
-			/* Create part */
-			textPaneGridLayout = new GridLayout(0, 1);
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		};
-		return textPaneGridLayout;
 	}
 	
 	private JLabel getCOPASIAttribution() {
@@ -310,36 +193,68 @@ public class DocumentWindowAboutBox extends JDialog {
 
 	private void initialize() {
 		try {
-			setName("DocumentWindowAboutBox");
-			setIconImage(VCellIcons.getJFrameImageIcon());
-			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			setResizable(false);
-			setTitle("DocumentWindowAboutBox");
-			setContentPane(getJDialogContentPane());
-			getOkButton().addActionListener(eventHandler);
-			pack();
+			setLayout(new GridBagLayout());
+			
+			int gridy = 0;
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.gridheight = GridBagConstraints.REMAINDER;
+			gbc.insets = new Insets(0,0,4,4);
+			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+			add(getIconLabel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc.insets = new Insets(2,4,0,4);
+			add(getAppName(), gbc);
+	
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(0,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getVersion(), gbc);
+
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(0,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getBuildNumber(), gbc);
+			
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(0,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getCopyright(), gbc);
+
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getCOPASIAttribution(), gbc);
+			
 		} catch (Throwable throwable) {
 			handleException(throwable);
-		}
-	}
-
-	public static void main(String[] args) {
-		try {
-			DocumentWindowAboutBox aDocumentWindowAboutBox;
-			aDocumentWindowAboutBox = new DocumentWindowAboutBox();
-			aDocumentWindowAboutBox.setModal(true);
-			aDocumentWindowAboutBox.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			aDocumentWindowAboutBox.setVisible(true);
-			Insets insets = aDocumentWindowAboutBox.getInsets();
-			aDocumentWindowAboutBox.setSize(aDocumentWindowAboutBox.getWidth() + insets.left + insets.right, aDocumentWindowAboutBox.getHeight() + insets.top + insets.bottom);
-			aDocumentWindowAboutBox.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of JDialog");
-			exception.printStackTrace(System.out);
 		}
 	}
 }
