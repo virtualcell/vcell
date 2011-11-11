@@ -22,6 +22,7 @@ public class UserLoginInfo implements Serializable {
 	private String os_name;//os.name Operating system name 
 	private String os_arch;// os.arch Operating system architecture 
 	private String os_version;// os.version Operating system version
+	private String java_version;//java.version JRE version number
 	private String vcellSoftwareVersion;//VCell client logging in from
 	private User user;
 	// clientId to indentify machine so that
@@ -34,6 +35,7 @@ public class UserLoginInfo implements Serializable {
 		os_name = System.getProperty("os.name");
 		os_arch = System.getProperty("os.arch");
 		os_version = System.getProperty("os.version");
+		java_version = System.getProperty("java.version");
 		vcellSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	}
 	public String getOs_name() {
@@ -44,6 +46,9 @@ public class UserLoginInfo implements Serializable {
 	}
 	public String getOs_version() {
 		return os_version;
+	}
+	public String getJava_version(){
+		return java_version;
 	}
 	public String getUserName() {
 		return userName;
