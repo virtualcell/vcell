@@ -1588,6 +1588,20 @@ private FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throw
 private Function getFunction(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
+
+	
+/** ---------------------------------------------------------------
+ * ATTENTATION: this is a quick fix for a specific user to load his model
+ * with a function name as "ATP/ADP".  This syntax is not allowed. 
+-----------------------------------------------------------------------*/
+if(name.equals("ATP/ADP"))
+{
+	name = "ATP_ADP_renamed";
+	System.err.print("Applying species function name change ATP/ADP to ATP_ADP for a specific user (key=2288008)");
+	Thread.currentThread().dumpStack();
+}
+	
+	
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
 	if (domainStr!=null){

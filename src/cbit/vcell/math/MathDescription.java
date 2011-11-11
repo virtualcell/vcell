@@ -2902,6 +2902,18 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
 				String name = Variable.getNameFromCombinedIdentifier(token);
+				
+/** ---------------------------------------------------------------
+ * ATTENTATION: this is a quick fix for a specific user to load his model
+ * with a function name as "ATP/ADP".  This syntax is not allowed. 
+-----------------------------------------------------------------------*/
+if(name.equals("ATP/ADP"))
+{
+	name = "ATP_ADP_renamed";
+	System.err.print("Applying species function name change ATP/ADP to ATP_ADP for a specific user (key=2288008)");
+	Thread.currentThread().dumpStack();
+}
+				
 				Function function = new Function(name,exp,domain);
 				varHash.addVariable(function);
 				continue;

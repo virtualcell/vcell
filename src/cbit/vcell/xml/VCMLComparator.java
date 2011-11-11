@@ -372,7 +372,7 @@ public class VCMLComparator {
 	private static boolean compareXML(String xmlStr1, String xmlStr2, boolean testAll, boolean bSkipVCMetaData) throws XmlParseException {
 		VCMLComparator.ERROR_RECORDED = false;
 		if (xmlStr1.equals(xmlStr2)) {
-			ps.println("The xml strings are identical.");
+//			ps.println("The xml strings are identical.");
 			return true;
 		}
 		Element sRoot = XmlUtil.stringToXML(xmlStr1, null).getRootElement();
