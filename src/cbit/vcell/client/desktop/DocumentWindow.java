@@ -17,7 +17,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -58,7 +57,6 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -2602,24 +2600,19 @@ public void setWorkArea(Component c) {
 private void showAboutBox() {
 	/* Create the AboutBox dialog */
 	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox();
-	Dimension dialogSize = aDocumentWindowAboutBox.getPreferredSize();
-	Dimension frameSize = getSize();
-	Point loc = getLocation();
-	aDocumentWindowAboutBox.setLocation((frameSize.width - dialogSize.width) / 2 + loc.x, (frameSize.height - dialogSize.height) / 2 + loc.y);
-	aDocumentWindowAboutBox.setModal(true);
 	String version = "";
 	String build = "";
 	try {
 		version = "Version " + DocumentWindowAboutBox.getVERSION_NO();
-		build = DocumentWindowAboutBox.getEDITION() + " edition , build no. " + DocumentWindowAboutBox.getBUILD_NO();
+		build = DocumentWindowAboutBox.getEDITION() + " edition, build no. " + DocumentWindowAboutBox.getBUILD_NO();
 	} catch (Exception exc) {
 		System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
 		exc.printStackTrace(System.out);
 	}
 	aDocumentWindowAboutBox.getVersion().setText(version);
 	aDocumentWindowAboutBox.getBuildNumber().setText(build);
-	aDocumentWindowAboutBox.setTitle("About the Virtual Cell");
-	ZEnforcer.showModalDialogOnTop(aDocumentWindowAboutBox,this);
+	aDocumentWindowAboutBox.setPreferredSize(new Dimension(350,100));
+	DialogUtils.showComponentCloseDialog(this, aDocumentWindowAboutBox, "About the Virtual Cell");
 }
 
 
