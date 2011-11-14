@@ -22,12 +22,13 @@ import org.vcell.util.FileUtils;
  * @author: Fei Gao
  */
 public class BNGUtils {
-	private final static String EXE_SUFFIX = ResourceUtil.bWindows ? ".exe" : "";
+	private final static String EXE_SUFFIX = ResourceUtil.bWindows ? ".exe" : (ResourceUtil.bMacPpc ? "_ppc" : "");
 	private final static String EXE_BNG = "BNG2" + EXE_SUFFIX;
 	private final static String RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
 	private final static String DLL_CYGWIN = "cygwin1.dll";
 	private final static String RES_DLL_CYGWIN = ResourceUtil.RES_PACKAGE + "/" + DLL_CYGWIN;
-	private final static String EXE_RUN_NETWORK = "run_network" + EXE_SUFFIX;
+	// run_network is called from within BNG2.exe, so the extension is not controlled from here
+	private final static String EXE_RUN_NETWORK = "run_network" + (ResourceUtil.bWindows ? ".exe" : "");
 	private final static String RES_EXE_RUN_NETWORK = ResourceUtil.RES_PACKAGE + "/" + EXE_RUN_NETWORK;
 
 	private final static String suffix_input = ".bngl";

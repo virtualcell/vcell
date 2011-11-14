@@ -26,7 +26,7 @@ public class ResourceUtil {
 	public final static boolean bLinux = system_osname.contains("Linux");
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
-	private final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
+	public final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
 	private final static String osname;
 	static {
 		if (bWindows) {
@@ -117,7 +117,12 @@ public class ResourceUtil {
 			}
 			if (!bWindows) {
 				System.out.println("Make " + file + " executable");
-				Runtime.getRuntime().exec("chmod 755 " + file);
+				Process p = Runtime.getRuntime().exec("chmod 755 " + file);
+				try {
+					p.waitFor();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		} finally {
 			try {

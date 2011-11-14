@@ -22,7 +22,7 @@ import cbit.vcell.server.bionetgen.BNGOutput;
  */
 public class DisplayBNGOutput extends AsynchClientTask {
 	public DisplayBNGOutput() {
-		super("Displaying BioNetGen output", TASKTYPE_SWING_NONBLOCKING);
+		super("Displaying BioNetGen output", TASKTYPE_SWING_NONBLOCKING, false, false);
 	}
 
 /**
