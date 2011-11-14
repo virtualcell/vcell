@@ -64,8 +64,8 @@ public class GlobalAttributes extends AttributeSubject
     {
         super(GlobalAttributes_numAdditionalAtts);
 
-        sources = new Vector();
-        windows = new Vector();
+        sources = new Vector<String>();
+        windows = new Vector<Integer>();
         activeWindow = 1;
         iconifiedFlag = false;
         autoUpdateFlag = false;
@@ -93,8 +93,8 @@ public class GlobalAttributes extends AttributeSubject
     {
         super(GlobalAttributes_numAdditionalAtts + nMoreFields);
 
-        sources = new Vector();
-        windows = new Vector();
+        sources = new Vector<String>();
+        windows = new Vector<Integer>();
         activeWindow = 1;
         iconifiedFlag = false;
         autoUpdateFlag = false;
@@ -224,7 +224,7 @@ public class GlobalAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetWindows(Vector windows_)
+    public void SetWindows(Vector<Integer> windows_)
     {
         windows = windows_;
         Select(1);
@@ -357,8 +357,8 @@ public class GlobalAttributes extends AttributeSubject
     }
 
     // Property getting methods
-    public Vector  GetSources() { return sources; }
-    public Vector  GetWindows() { return windows; }
+    public Vector<String>  GetSources() { return sources; }
+    public Vector<Integer>  GetWindows() { return windows; }
     public int     GetActiveWindow() { return activeWindow; }
     public boolean GetIconifiedFlag() { return iconifiedFlag; }
     public boolean GetAutoUpdateFlag() { return autoUpdateFlag; }
@@ -539,8 +539,8 @@ public class GlobalAttributes extends AttributeSubject
 
 
     // Attributes
-    private Vector  sources; // vector of String objects
-    private Vector  windows; // vector of Integer objects
+    private Vector<String>  sources; // vector of String objects
+    private Vector<Integer>  windows; // vector of Integer objects
     private int     activeWindow;
     private boolean iconifiedFlag;
     private boolean autoUpdateFlag;

@@ -271,7 +271,7 @@ public class VisitSession {
 	}
 	
 	public void openDatabase(User user, String simLogName) throws VisitSessionException {
-		String s = getVisitConnectionInfo().getIPAddress()+":"+getVisitConnectionInfo().getDatabaseOpenPath(user,simLogName);
+		String s = getVisitConnectionInfo().getIPAddress()+":"+getVisitConnectionInfo().getDatabaseOpenPath(user,simLogName,"/");
 		System.out.println("About to open " + s);
 		boolean bOpened = getViewerMethods().OpenDatabase(s);
 		if (bOpened){
