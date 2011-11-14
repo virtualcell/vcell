@@ -164,7 +164,12 @@ public class ResourceUtil {
 			}
 			if (!bWindows) {
 				System.out.println("Make " + file + " executable");
-				Runtime.getRuntime().exec("chmod 755 " + file);
+				Process p = Runtime.getRuntime().exec("chmod 755 " + file);
+				try {
+					p.waitFor();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		} finally {
 			try {
