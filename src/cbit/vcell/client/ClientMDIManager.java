@@ -220,34 +220,26 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	// assumes caller checked for having this document already open
 
 	// make the window
-	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	AsynchClientTask task1  = new AsynchClientTask("Creating New Document Window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DocumentWindow documentWindow = createDocumentWindow();
-			documentWindow.setWorkArea(windowManager.getComponent());
-			
-			// keep track of things
-			String windowID = windowManager.getManagerID();
-			getWindowsHash().put(windowID, documentWindow);
-			getManagersHash().put(windowID, windowManager);
-			// wire manager to events
-			getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
-			getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
-			getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
-			// get the window ready
-			setCanonicalTitle(windowID);
-			documentWindow.setWindowManager(windowManager);
-			documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
-			setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
-			getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
-			// done
-			documentWindow.setVisible(true);
-		}
-	};
-	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1};
-	ClientTaskDispatcher.dispatch(null, hash, taskArray);
+	DocumentWindow documentWindow = createDocumentWindow();
+	documentWindow.setWorkArea(windowManager.getComponent());
+	
+	// keep track of things
+	String windowID = windowManager.getManagerID();
+	getWindowsHash().put(windowID, documentWindow);
+	getManagersHash().put(windowID, windowManager);
+	// wire manager to events
+	getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
+	getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
+	getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
+	// get the window ready
+	setCanonicalTitle(windowID);
+	documentWindow.setWindowManager(windowManager);
+	documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
+	setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
+	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
+	// done
+	documentWindow.setVisible(true);
 }
-
 
 /**
  * Insert the method's description here.

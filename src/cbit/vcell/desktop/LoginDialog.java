@@ -12,6 +12,7 @@ package cbit.vcell.desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 import org.vcell.util.document.User;
@@ -47,6 +48,8 @@ public class LoginDialog extends JDialog {
 	private java.lang.String fieldPassword = new String();
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JButton ivjJButtonRegister = null;
+	private boolean isCanceled = false;
+
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.WindowListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -105,6 +108,7 @@ private void connEtoC1(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
+		isCanceled = true;
 		fireActionPerformed(arg1);
 //		this.jButtonRegister_ActionPerformed(arg1);
 		// user code begin {2}
@@ -145,7 +149,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.dispose();
+		dispose0();
 		fireActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
@@ -166,7 +170,7 @@ private void connEtoM2(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.dispose();
+		dispose0();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -176,6 +180,10 @@ private void connEtoM2(java.awt.event.ActionEvent arg1) {
 	}
 }
 
+private void dispose0(){
+	isCanceled = true;
+	this.dispose();	
+}
 
 /**
  * connEtoM3:  (JTextFieldUser.action.actionPerformed(java.awt.event.ActionEvent) --> JButtonOK.doClick(I)V)
@@ -606,6 +614,18 @@ private void initialize() {
 		setContentPane(getJDialogContentPane());
 		initConnections();
 		setLoggedInUser(null);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				super.windowClosed(e);
+				if(!isCanceled){
+					connEtoM1(new ActionEvent(getJButtonCancel(), 0, USERACTION_CANCEL));
+				}
+			}
+		});
+
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -619,32 +639,6 @@ private void initialize() {
 private void jButtonOK_ActionPerformed(ActionEvent e) {
 	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
-
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		LoginDialog aLoginDialog;
-		aLoginDialog = new LoginDialog(new java.awt.Frame());
-		aLoginDialog.setModal(true);
-		aLoginDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		aLoginDialog.show();
-		java.awt.Insets insets = aLoginDialog.getInsets();
-		aLoginDialog.setSize(aLoginDialog.getWidth() + insets.left + insets.right, aLoginDialog.getHeight() + insets.top + insets.bottom);
-		aLoginDialog.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JDialog");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 public void removeActionListener(java.awt.event.ActionListener newListener) {
 	aActionListener = java.awt.AWTEventMulticaster.remove(aActionListener, newListener);
