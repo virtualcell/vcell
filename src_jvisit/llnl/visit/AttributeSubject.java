@@ -247,6 +247,7 @@ public abstract class AttributeSubject extends java.lang.Object
         // Read the number of attributes to read. If the number is
         // greater than zero, read the attributes.
         int n = (int)buf.ReadByte();
+//System.out.println("AttributeSubject.Read(buffer) reading "+n+" attributes");
         for(int i = 0; i < n; ++i)
         {
             int id = (int)buf.ReadByte();

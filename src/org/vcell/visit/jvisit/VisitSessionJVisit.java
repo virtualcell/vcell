@@ -26,10 +26,10 @@ public abstract class VisitSessionJVisit implements VisitSession {
 	ViewerProxy getViewerProxy(){
 		if (viewerProxy == null){
 			viewerProxy = new ViewerProxy();
-//			viewerProxy.AddArgument("-debug");
-//			viewerProxy.AddArgument("5");
-//	        viewerProxy.AddArgument("-dv");
-//			viewerProxy.SetVerbose(true);
+			viewerProxy.AddArgument("-debug");
+			viewerProxy.AddArgument("5");
+	        viewerProxy.AddArgument("-dv");
+			viewerProxy.SetVerbose(true);
 			viewerProxy.SetSynchronous(true);
 	     	System.out.println("Setting visitPath="+visitBinDir.getAbsolutePath());
 	     	viewerProxy.SetBinPath(visitBinDir.getAbsolutePath());

@@ -266,8 +266,8 @@ public class ViewCurveAttributes extends AttributeSubject
         str = str + doubleArrayToString("domainCoords", domainCoords, indent) + "\n";
         str = str + doubleArrayToString("rangeCoords", rangeCoords, indent) + "\n";
         str = str + doubleArrayToString("viewportCoords", viewportCoords, indent) + "\n";
-        str = str + intToString("domainScale", domainScale, indent);
-        str = str + intToString("rangeScale", rangeScale, indent);
+        str = str + intToString("domainScale", domainScale, indent) + "\n";
+        str = str + intToString("rangeScale", rangeScale, indent) + "\n";
         return str;
     }
 

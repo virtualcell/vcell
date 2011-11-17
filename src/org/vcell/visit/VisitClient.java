@@ -19,6 +19,9 @@ public class VisitClient {
 //			File logFile = "\\\\cfs02.vcell.uchc.edu\\raid\\vcell\\users\\schaff\\";
 			File logFile = new File("C:\\Users\\schaff\\.vcell\\simdata\\user\\SimID_536601443_0_.log");
 			if (!logFile.exists()){
+				logFile = new File("C:\\Users\\schaff.CAM\\.vcell\\simdata\\user\\SimID_33957567_0_.log");
+			}
+			if (!logFile.exists()){
 				throw new RuntimeException("file "+logFile+" not found");
 			}
 			VisitDatabaseSpec visitDatabaseSpec = new LocalVisitDatabaseSpec(logFile);
