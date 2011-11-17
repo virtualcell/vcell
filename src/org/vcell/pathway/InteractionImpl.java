@@ -105,7 +105,8 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 				if (rdfObjectProxy.getResource() != null){
 					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
 					if (concreteObject != null){
-						participants.set(i, new InteractionParticipant(this, (PhysicalEntity)concreteObject, thing.getType()));
+						PhysicalEntity physicalEntity = (PhysicalEntity)concreteObject;
+						participants.set(i, new InteractionParticipant(this, physicalEntity, thing.getType()));
 					}
 				}
 			}
@@ -120,5 +121,7 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 		}
 	}
 	
-
+//	public String getTypeLabel(){
+//		return "Interaction";
+//	}
 }

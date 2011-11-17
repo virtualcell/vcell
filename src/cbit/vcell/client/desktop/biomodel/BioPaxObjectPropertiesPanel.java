@@ -237,15 +237,17 @@ protected void refreshInterface() {
 			// physicalEntity::memberPhysicalEntity (***ignored***)
 			// physicalEntity::notFeature (***ignored***)
 			
-			// physicalEntity::cellular location
-			CellularLocationVocabulary cellularLocation = physicalEntity.getCellularLocation();
-			if (cellularLocation!=null){
-				propertyList.add(new BioPaxObjectProperty("Cellular Location", cellularLocation.getTerm().get(0),cellularLocation));
-			}else if (name != null && name.size()>1){
-				String location  = name.get(1);
-				if (location.contains("[") && location.contains("]")){
-					location = location.substring(location.indexOf("[")+1, location.indexOf("]"));
-					propertyList.add(new BioPaxObjectProperty("Cellular Location", location, null));
+			if(!(physicalEntity instanceof SmallMolecule)){
+				// physicalEntity::cellular location
+				CellularLocationVocabulary cellularLocation = physicalEntity.getCellularLocation();
+				if (cellularLocation!=null){
+					propertyList.add(new BioPaxObjectProperty("Cellular Location", cellularLocation.getTerm().get(0),cellularLocation));
+				}else if (name != null && name.size()>1){
+					String location  = name.get(1);
+					if (location.contains("[") && location.contains("]")){
+						location = location.substring(location.indexOf("[")+1, location.indexOf("]"));
+						propertyList.add(new BioPaxObjectProperty("Cellular Location", location, null));
+					}
 				}
 			}
 			
@@ -291,7 +293,11 @@ protected void refreshInterface() {
 			for (InteractionParticipant interactionParticipant : interaction.getParticipants()){
 				PhysicalEntity physicalEntity = interactionParticipant.getPhysicalEntity();
 				String physicalEntityName = physicalEntity.getName().size()>0 ? physicalEntity.getName().get(0) : physicalEntity.getID();
-				propertyList.add(new BioPaxObjectProperty(interactionParticipant.getLevel3PropertyName(), physicalEntityName, physicalEntity));
+				String cellularLocation = "";
+				if(physicalEntity.getCellularLocation() != null){
+					cellularLocation = physicalEntity.getCellularLocation().getTerm().size()>0 ? " ["+physicalEntity.getCellularLocation().getTerm().get(0)+"]" : ""; 
+				}
+				propertyList.add(new BioPaxObjectProperty(interactionParticipant.getLevel3PropertyName(), physicalEntityName+cellularLocation, physicalEntity));
 			}
 			
 			// get the catalysts for interactions
@@ -378,10 +384,16 @@ private Set<String> getCatalysisSet(Interaction interaction){
 			if(catalysis.getControlledInteraction() == interaction){
 				if(catalysis.getPhysicalControllers() != null){
 					for(PhysicalEntity ep : catalysis.getPhysicalControllers()){ 
+						String type = catalysis.getControlType();
+						if(type == null) {
+							type = "";
+						}else{
+							type = " (" + type + ")";
+						}
 						if(ep.getName().size() > 0)
-							catalystList.add(ep.getName().get(0));
+							catalystList.add(ep.getName().get(0)+type);
 						else
-							catalystList.add(ep.getID());
+							catalystList.add(ep.getID()+type);
 					}
 				}
 			}
@@ -401,10 +413,16 @@ private Set<String> getControlSet(Interaction interaction){
 			if(control.getControlledInteraction() == interaction){
 				if(control.getPhysicalControllers() != null){
 					for(PhysicalEntity ep : control.getPhysicalControllers()){ 
+						String type = control.getControlType();
+						if(type == null) {
+							type = "";
+						}else{
+							type = " (" + type + ")";
+						}
 						if(ep.getName().size() > 0)
-							controlList.add(ep.getName().get(0));
+							controlList.add(ep.getName().get(0)+type);
 						else{
-							controlList.add(ep.getID());
+							controlList.add(ep.getID()+type);
 						}
 					}
 				}

@@ -19,7 +19,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
+import org.vcell.pathway.Interaction;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
@@ -138,6 +140,13 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 			}else{
 				return physicalEntity.getID();
 			}
+		}else if (bpObject instanceof Interaction){
+			Interaction interaction =(Interaction)bpObject;
+			if (interaction.getName().size()>0){
+				return interaction.getName().get(0);
+			}else{
+				return interaction.getID();
+			}
 		}else{
 			return bpObject.getID();
 		}
@@ -160,7 +169,7 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 		
 		List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
 		for (BioPaxObject bpObject1 : pathwayModel.getBiopaxObjects()){
-			if (bpObject1 instanceof PhysicalEntity || bpObject1 instanceof Conversion){
+			if (bpObject1 instanceof PhysicalEntity || (bpObject1 instanceof Interaction && !(bpObject1 instanceof Control))){
 				allPathwayObjectList.add(new PhysiologyRelationshipTableRow(bpObject1));
 			}
 		}

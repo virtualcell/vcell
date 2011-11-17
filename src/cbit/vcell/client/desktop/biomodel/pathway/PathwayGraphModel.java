@@ -26,6 +26,7 @@ import org.vcell.pathway.GroupNeighbor;
 import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
+import org.vcell.pathway.MolecularInteraction;
 import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
@@ -47,7 +48,9 @@ import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxConversionShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxDnaShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxGroupNeighborShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxGroupShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxInteractionParticipantShape;
+import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxMolecularInteractionShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxObjectShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxPhysicalEntityShape;
 import cbit.vcell.client.desktop.biomodel.pathway.shapes.BioPaxProteinShape;
@@ -115,7 +118,9 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			BioPaxShape bpObjectShape = (BioPaxShape) getShapeFromModelObject(bpObject);
 			if(bpObjectShape == null) {
 				if(bpObject instanceof Conversion) {
-					bpObjectShape = new BioPaxConversionShape((Conversion) bpObject, this);				
+					bpObjectShape = new BioPaxConversionShape((Conversion) bpObject, this);	
+				} else if(bpObject instanceof MolecularInteraction) {
+					bpObjectShape = new BioPaxMolecularInteractionShape((MolecularInteraction) bpObject, this);
 				} else if(bpObject instanceof Protein) {
 					bpObjectShape = new BioPaxProteinShape((Protein) bpObject, this);
 				} else if(bpObject instanceof Complex) {
@@ -147,7 +152,9 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 		}
 		for (BioPaxObject bpObject : bioPaxObjects) {
 			if (bpObject instanceof Conversion) {
-				refreshConversion((Conversion) bpObject);
+				refreshInteraction((Conversion) bpObject);
+			} else if (bpObject instanceof MolecularInteraction) {
+				refreshInteraction((MolecularInteraction) bpObject);
 			} else if (bpObject instanceof Control) {
 				refreshControl((Control) bpObject);
 			} else if (bpObject instanceof GroupObject){
@@ -175,13 +182,13 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 			Shape shapeG = getShapeFromModelObject(groupObject);
 			if(shapeG instanceof BioPaxGroupShape) {
 				BioPaxGroupShape groupShape = (BioPaxGroupShape) shapeG;
-				if(bioPaxShape instanceof BioPaxConversionShape){
-					BioPaxConversionShape conversionShape = (BioPaxConversionShape)bioPaxShape;
-					GroupNeighbor groupNeighbor = new GroupNeighbor(groupObject, conversionShape.getConversion(), participant.getType());
+				if(bioPaxShape instanceof BioPaxInteractionShape){
+					BioPaxInteractionShape interactionShape = (BioPaxInteractionShape)bioPaxShape;
+					GroupNeighbor groupNeighbor = new GroupNeighbor(groupObject, interactionShape.getInteraction(), participant.getType());
 					BioPaxGroupNeighborShape neighborShape = 
 						(BioPaxGroupNeighborShape) getShapeFromModelObject(groupNeighbor);
 					if(neighborShape == null) {
-						neighborShape = new BioPaxGroupNeighborShape(groupNeighbor,conversionShape, groupShape, this);
+						neighborShape = new BioPaxGroupNeighborShape(groupNeighbor,interactionShape, groupShape, this);
 						pathwayContainerShape.addChildShape(neighborShape);
 						addShape(neighborShape);
 					}
@@ -248,29 +255,26 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 		refreshAll();
 	}
 	
-	private void refreshConversion(Conversion conversion){
-			BioPaxConversionShape conversionShape = 
-				(BioPaxConversionShape) getShapeFromModelObject(conversion);
-			BioPaxObject ancestorObject = pathwayModel.findTopLevelGroupAncestor(conversion);
-			if(ancestorObject == conversion){ // conversion was not grouped
-				for(InteractionParticipant participant : conversion.getParticipants()) {
-					refreshParticipant(conversionShape, participant);
-				}
-			}else{
-				if(ancestorObject instanceof GroupObject){// conversion has been grouped
-					GroupObject groupObject = (GroupObject) ancestorObject;
-					for(InteractionParticipant participant : conversion.getParticipants()) {
-						refreshGroupConversion(groupObject, participant);
-					}
+	private void refreshInteraction(Interaction interaction){
+		BioPaxInteractionShape interactionShape = 
+			(BioPaxInteractionShape) getShapeFromModelObject(interaction);
+		BioPaxObject ancestorObject = pathwayModel.findTopLevelGroupAncestor(interaction);
+		if(ancestorObject == interaction){ // conversion was not grouped
+			for(InteractionParticipant participant : interaction.getParticipants()) {
+				refreshParticipant(interactionShape, participant);
+			}
+		}else{
+			if(ancestorObject instanceof GroupObject){// conversion has been grouped
+				GroupObject groupObject = (GroupObject) ancestorObject;
+				for(InteractionParticipant participant : interaction.getParticipants()) {
+					refreshGroupInteraction(groupObject, participant);
 				}
 			}
-			
+		}
 	}
 	
-	private void refreshParticipant(BioPaxConversionShape conversionShape, InteractionParticipant participant){
-		BioPaxInteractionParticipantShape edgeShape = 
-			(BioPaxInteractionParticipantShape) 
-			getShapeFromModelObject(participant);
+	private void refreshParticipant(BioPaxInteractionShape interactionShape, InteractionParticipant participant){
+		BioPaxInteractionParticipantShape edgeShape = (BioPaxInteractionParticipantShape) getShapeFromModelObject(participant);
 		PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 		BioPaxObject ancestorObject = pathwayModel.findTopLevelGroupAncestor(physicalEntity);
 		if(edgeShape == null) {
@@ -280,7 +284,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 					(BioPaxPhysicalEntityShape) shape;
 				edgeShape = 
 					new BioPaxInteractionParticipantShape(participant, 
-							conversionShape, physicalEntityShape, this);
+							interactionShape, physicalEntityShape, this);
 				pathwayContainerShape.addChildShape(edgeShape);
 				addShape(edgeShape);
 			}	
@@ -290,11 +294,11 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 				removeEdgeShape(edgeShape);
 			}
 		}
-		unwantedShapes.remove(refreshGroup(pathwayContainerShape, ancestorObject, conversionShape, participant));
+		unwantedShapes.remove(refreshGroup(pathwayContainerShape, ancestorObject, interactionShape, participant));
 		unwantedShapes.remove(edgeShape);
 	}
 	
-	private void refreshGroupConversion(GroupObject groupObject, InteractionParticipant participant){
+	private void refreshGroupInteraction(GroupObject groupObject, InteractionParticipant participant){
 		BioPaxGroupShape groupShape = (BioPaxGroupShape)getShapeFromModelObject(groupObject);
 		PhysicalEntity physicalEntity = participant.getPhysicalEntity();
 		GroupNeighbor groupNeighbor = new GroupNeighbor(groupObject, physicalEntity, participant.getType());
@@ -336,7 +340,7 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 					if(ancestorObject instanceof GroupObject){// conversion has been grouped
 						GroupObject groupObject = (GroupObject) ancestorObject;
 						for(InteractionParticipant participant : physicalControllers) {
-							refreshGroupConversion(groupObject, participant);
+							refreshGroupInteraction(groupObject, participant);
 						}
 					}
 				}
@@ -349,7 +353,10 @@ public class PathwayGraphModel extends GraphModel implements PathwayListener, Re
 		for(BioPaxObject bpObject : groupObject.getGroupedObjects()){
 			if(bpObject instanceof Conversion){ //  Conversions inside groupObject
 				Conversion conversion = (Conversion) bpObject;
-				refreshConversion(conversion);
+				refreshInteraction(conversion);
+			}else if(bpObject instanceof MolecularInteraction){ // molecularInteraction inside  groupObject
+				MolecularInteraction molecularInteraction = (MolecularInteraction) bpObject;
+				refreshInteraction(molecularInteraction);
 			}else if(bpObject instanceof GroupObject){ // groupObject inside another groupObject
 				refreshGroupObject((GroupObject) bpObject);
 			}
