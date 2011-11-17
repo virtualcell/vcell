@@ -37,18 +37,10 @@ public class TransFilter {
 	private String [] atts;
 	private boolean mangle;
 	private String mangleType;
-	private Hashtable hash;
-	private ArrayList ignoredAtts;
-	private ArrayList ignoredElements;
+	private Hashtable<String, String> hash;
+	private ArrayList<String> ignoredAtts;
+	private ArrayList<String> ignoredElements;
 	//a temporary variable for reaction names longer than 30 characters. 
-	private int cnt;
-
-//I don't know if it will be needed. 
-	private TransFilter(String [] elements) {
-
-		this(elements, null, null);
-	}
-
 
 	public TransFilter(String [] elements, String [] atts) {
 
@@ -72,9 +64,9 @@ public class TransFilter {
 			Arrays.sort(atts);
 			this.atts = atts;
 		} 
-		hash = new Hashtable();
-		ignoredAtts = new ArrayList();
-		ignoredElements = new ArrayList();
+		hash = new Hashtable<String, String>();
+		ignoredAtts = new ArrayList<String>();
+		ignoredElements = new ArrayList<String>();
 	}
 
 
@@ -89,11 +81,13 @@ public class TransFilter {
 /**
  @deprecated - need to revisit CellML
 **/
+@Deprecated
 private void filterTree(Element e) {
 
-	ArrayList alist = new ArrayList(e.getAttributes());
+	@SuppressWarnings("unchecked")
+	ArrayList<Attribute> alist = new ArrayList<Attribute>(e.getAttributes());
 	for (int i = 0; i < alist.size(); i++) {
-		Attribute att = (Attribute)alist.get(i);
+		Attribute att = alist.get(i);
 		if (!matchesAttribute(att)) {
 			if (!ignoredAtts.contains(e.getName() + "." + att.getName())) {
 				ignoredAtts.add(e.getName() + "." + att.getName());
@@ -107,9 +101,10 @@ private void filterTree(Element e) {
 		}
 	}
 	//skip contents of math/annotation elements in CELLML.
-	ArrayList elist = new ArrayList(e.getChildren());		
+	@SuppressWarnings("unchecked")
+	ArrayList<Element> elist = new ArrayList<Element>(e.getChildren());		
 	for (int j = 0; j < elist.size(); j++) { 
-		Element child = (Element)elist.get(j);
+		Element child = elist.get(j);
 		//also works for the CellML mathML.
 		/*if (child.getName().equals(CELLMLTags.MATH) || child.getName().equals(CELLMLTags.ANNOTATION) ||
 			child.getName().equals(SBMLTags.NOTES) || child.getName().equals(XMLTags.AnnotationTag))             */
@@ -131,13 +126,13 @@ private void filterTree(Element e) {
 
 	protected String [] getIgnoredAtts() {
 
-		return (String [])ignoredAtts.toArray(new String[ignoredAtts.size()]);
+		return ignoredAtts.toArray(new String[ignoredAtts.size()]);
 	}
 
 
 	protected String [] getIgnoredElements() {
 
-		return (String [])ignoredElements.toArray(new String[ignoredElements.size()]);		
+		return ignoredElements.toArray(new String[ignoredElements.size()]);		
 	}
 
 
@@ -150,7 +145,6 @@ private void filterTree(Element e) {
                 temp = temp.deleteCharAt(i);
         }
         try {
-            Float f = new Float(temp.toString());
             // a hack for formats like 1f or 2D
             int len = temp.length();
             if (Character.isLetter(temp.charAt(len - 1)))
@@ -218,15 +212,15 @@ private void filterTree(Element e) {
 	private void mangleCELLVC(Element e) {
 
     	JDOMTreeWalker walker;
-    	Element temp, math;
+    	Element temp;
     	String key, value;
-    	Iterator i = hash.keySet().iterator();
+    	Iterator<String> i = hash.keySet().iterator();
     	while (i.hasNext()) {
-	    	key = (String)i.next();
-	    	value = (String)hash.get(key);
+	    	key = i.next();
+	    	value = hash.get(key);
     		walker = new JDOMTreeWalker(e, new ElementFilter(MathMLTags.IDENTIFIER, Namespace.getNamespace(Translator.MATHML_NS)));
     		while (walker.hasNext()) {
-				temp = (Element)walker.next();
+				temp = walker.next();
 	      		//System.out.println(key + " " + value + " " + temp.getName() + " " + temp.getTextTrim());
       			if (temp.getTextTrim().equals(key))     
 					temp.setText(value);

@@ -164,6 +164,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case BIOPAX_SUMMARY_NODE:
 	    			icon = VCellIcons.textNotesIcon;
 	    			break;
+	    		case BIOPAX_TREE_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			break;
 	    		}
 	    	}
 		}

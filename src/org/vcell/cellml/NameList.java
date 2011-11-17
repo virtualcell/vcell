@@ -12,19 +12,18 @@ package org.vcell.cellml;
 import java.util.*;
 
 public class NameList {
-  Hashtable nameList;
+  Hashtable<String, String> nameList;
 
   public NameList() {
-    nameList = new Hashtable();
+    nameList = new Hashtable<String, String>();
   }
 
   public String mangleString(String expression) {
     String mangled = expression;
-    for (Enumeration e = nameList.keys() ; e.hasMoreElements() ;) {
+    for (Enumeration<String> e = nameList.keys() ; e.hasMoreElements() ;) {
       String key = e.nextElement().toString();
       int dummy = key.lastIndexOf(".dummy");
       String name = key.substring(0,dummy);
-      int start = 0;
       int index = mangled.indexOf(name);
       while(index > 0) {
         StringBuffer buf = new StringBuffer(mangled);

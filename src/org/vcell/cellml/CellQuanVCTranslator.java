@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
@@ -134,40 +135,44 @@ public class CellQuanVCTranslator extends Translator {
 	    String csdName = sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace);
 	    CompartmentSubDomain csd = new CompartmentSubDomain(csdName, CompartmentSubDomain.NON_SPATIAL_PRIORITY);
 
-		Iterator compElementIter = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace).iterator();
+		Iterator<?> compElementIter = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace).iterator();
 		// JDOMTreeWalker walker = new JDOMTreeWalker(sRoot, new ElementFilter(CELLMLTags.COMPONENT));
 	    Element comp, math;
 	    String compName, varName, mangledName;
 	    while (compElementIter.hasNext()) {
 			comp = (Element)compElementIter.next();
 			compName = comp.getAttributeValue(CELLMLTags.name, sAttNamespace);
-			Iterator mathIter = comp.getChildren(CELLMLTags.MATH, mathns).iterator();
+			@SuppressWarnings("unchecked")
+			Iterator<Element> mathIter = comp.getChildren(CELLMLTags.MATH, mathns).iterator();
 			while (mathIter.hasNext()) {
-				math = (Element)mathIter.next();
-				Element apply, apply2, apply3, diff, ci;
+				math = mathIter.next();
+				Element apply, apply2, apply3, ci;
 				//allow multiple 'apply' children.
-				Iterator applyIter = math.getChildren(MathMLTags.APPLY, mathns).iterator();
+				@SuppressWarnings("unchecked")
+				Iterator<Element> applyIter = math.getChildren(MathMLTags.APPLY, mathns).iterator();
 				while (applyIter.hasNext()) { 
-					apply = (Element)applyIter.next();
-					ArrayList list = new ArrayList(apply.getChildren());
+					apply = applyIter.next();
+					@SuppressWarnings("unchecked")
+					ArrayList<Element> list = new ArrayList<Element>(apply.getChildren());
 					if (list.size() < 3)
 						continue;
-					if (!((Element)list.get(0)).getName().equals(MathMLTags.EQUAL))
+					if (!(list.get(0)).getName().equals(MathMLTags.EQUAL))
 						continue; 
-					apply2 = (Element)list.get(1);
+					apply2 = list.get(1);
 					if (!apply2.getName().equals(MathMLTags.APPLY))
 						continue;
-					ArrayList list2 = new ArrayList(apply2.getChildren());
+					@SuppressWarnings("unchecked")
+					ArrayList<Element> list2 = new ArrayList<Element>(apply2.getChildren());
 					if (list2.size() < 3)
 						continue;
-					if (!((Element)list2.get(0)).getName().equals(MathMLTags.DIFFERENTIAL))
+					if (!(list2.get(0)).getName().equals(MathMLTags.DIFFERENTIAL))
 						continue;
-					ci = (Element)list2.get(2);    //skip the time variable
+					ci = list2.get(2);    //skip the time variable
 					varName = ci.getTextTrim();
-					apply3 = (Element)list.get(2);       //can be a constant
+					apply3 = list.get(2);       //can be a constant
 					
 					mangledName = nm.getMangledName(compName, varName);
-					Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)apply3.detach());
+					Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent(apply3.detach());
 					fixMathMLBug(trimmedMath);
 					Expression rateExp = null;
 					try {
@@ -196,6 +201,7 @@ public class CellQuanVCTranslator extends Translator {
 		Element parent = temp.getParent();
 		Element sibling = parent.getChild(MathMLTags.APPLY, mathns);   
 		if (sibling == null) {                          //check if its value is assigned to another variable (i.e. A = B)
+			@SuppressWarnings("unchecked")
 			ArrayList<Element> list = new ArrayList<Element>(parent.getChildren(MathMLTags.IDENTIFIER, mathns));
 			if (list.size() == 2) {
 				expStr = (list.get(1)).getTextTrim();
@@ -218,7 +224,7 @@ public class CellQuanVCTranslator extends Translator {
 			}
 		}
 		if (sibling != null) { 
-			Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)sibling.detach());
+			Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent(sibling.detach());
 			fixMathMLBug(trimmedMath); 
 			try {
 				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
@@ -284,9 +290,10 @@ public class CellQuanVCTranslator extends Translator {
 		String stoich = null, roleAtt = null;
 		//can only imply the delta function if the stoichiometry attribute is present also
 		//not sure if there can be more than one, if not, could just pass in the 'role' element itself.
-		Iterator i = varRef.getChildren(CELLMLTags.ROLE, sNamespace).iterator();
+		@SuppressWarnings("unchecked")
+		Iterator<Element> i = varRef.getChildren(CELLMLTags.ROLE, sNamespace).iterator();
 		while (i.hasNext()) {
-			role = (Element)i.next();
+			role = i.next();
 			stoich = role.getAttributeValue(CELLMLTags.stoichiometry, sAttNamespace);
 			roleAtt = role.getAttributeValue(CELLMLTags.role, sAttNamespace);
 			if (stoich != null)
@@ -345,9 +352,10 @@ public class CellQuanVCTranslator extends Translator {
 	    	mapComp = temp.getChild(CELLMLTags.MAP_COMP, sNamespace);
 	    	comp1 = mapComp.getAttributeValue(CELLMLTags.comp1, sAttNamespace);
 	    	comp2 = mapComp.getAttributeValue(CELLMLTags.comp2, sAttNamespace);
-	    	Iterator i = temp.getChildren(CELLMLTags.MAP_VAR, sNamespace).iterator();
+	    	@SuppressWarnings("unchecked")
+			Iterator<Element> i = temp.getChildren(CELLMLTags.MAP_VAR, sNamespace).iterator();
 	    	while (i.hasNext()) {
-				mapVar = (Element)i.next();
+				mapVar = i.next();
 				var1 = mapVar.getAttributeValue(CELLMLTags.var1, sAttNamespace);
 				var2 = mapVar.getAttributeValue(CELLMLTags.var2, sAttNamespace);
 				flag = isVisible(comp1, var1);
@@ -385,18 +393,20 @@ public class CellQuanVCTranslator extends Translator {
     //temporary method. 
 	private void fixMathMLBug(Element math) {
 		
-		ArrayList l = new ArrayList();
-		Iterator walker = new JDOMTreeWalker(math, new ContentFilter(ContentFilter.ELEMENT));
+		ArrayList<Element> l = new ArrayList<Element>();
+		@SuppressWarnings("unchecked")
+		Iterator<Element> walker = new JDOMTreeWalker(math, new ContentFilter(ContentFilter.ELEMENT));
 		while (walker.hasNext())
 			l.add(walker.next());
       	Element temp;
       	for (int i = 0; i < l.size(); i++) {     
-	      	temp = (Element)l.get(i);
+	      	temp = l.get(i);
 	      	if (temp.getName().equals(MathMLTags.CONSTANT)) {
-		    	ArrayList atts = new ArrayList(temp.getAttributes());
+		    	@SuppressWarnings("unchecked")
+				ArrayList<Attribute> atts = new ArrayList<Attribute>(temp.getAttributes());
 				org.jdom.Attribute att;
 				for (int j = 0; j < atts.size(); j++) {
-					att = (org.jdom.Attribute)atts.get(j);
+					att = atts.get(j);
 					temp.removeAttribute(att.getName(), mathns);
 				}
 				temp.removeNamespaceDeclaration(mathns);
@@ -436,37 +446,41 @@ public class CellQuanVCTranslator extends Translator {
 	private Element getMathElementIdentifier(Element comp, String varName, String elementName) {
  
 //		JDOMTreeWalker i = new JDOMTreeWalker(comp, new ElementFilter(CELLMLTags.MATH, Namespace.getNamespace(MATHML_NS)));
-		List mathElementList = comp.getChildren(CELLMLTags.MATH, mathns);
-		Iterator mathElementIterator = mathElementList.iterator();
+		@SuppressWarnings("unchecked")
+		List<Element> mathElementList = comp.getChildren(CELLMLTags.MATH, mathns);
+		Iterator<Element> mathElementIterator = mathElementList.iterator();
 		
 		Element math, apply, eq, apply2, diff, target = null;
 		while (mathElementIterator.hasNext()) {
-			math = (Element)mathElementIterator.next();
+			math = mathElementIterator.next();
 			//this first 'apply' loop because some components define all the vars under one 'math' element.
-			Iterator m = math.getChildren(MathMLTags.APPLY, mathns).iterator();
+			@SuppressWarnings("unchecked")
+			Iterator<Element> m = math.getChildren(MathMLTags.APPLY, mathns).iterator();
 			while (m.hasNext()) {
-				apply = (Element)m.next();
-				Iterator j = apply.getChildren().iterator();        //this element can also have an ID. 
-				eq = (Element)j.next();                             //element ordering
+				apply = m.next();
+				@SuppressWarnings("unchecked")
+				Iterator<Element> j = apply.getChildren().iterator();        //this element can also have an ID. 
+				eq = j.next();                             //element ordering
 				if (eq == null || !eq.getName().equals(MathMLTags.EQUAL))
 					continue;
 				while (j.hasNext()) {
 					if (elementName.equals(MathMLTags.IDENTIFIER)) {             //one extra iteration
-						target = (Element)j.next();
+						target = j.next();
 						//System.out.println("target:" + target.getName() + " " + target.getTextTrim() + " " + varName);
 						if (!(target.getName().equals(MathMLTags.IDENTIFIER) && target.getTextTrim().equals(varName)))    //do the first 'ci' only
 							target = null;
 						break;
 					} else if (elementName.equals(MathMLTags.DIFFERENTIAL)) {
-						apply2 = (Element)j.next();
+						apply2 = j.next();
 						if (!apply2.getName().equals(MathMLTags.APPLY))
 							continue;
-						Iterator k = apply2.getChildren().iterator();
-						diff = (Element)k.next();
+						@SuppressWarnings("unchecked")
+						Iterator<Element> k = apply2.getChildren().iterator();
+						diff = k.next();
 						if (!diff.getName().equals(MathMLTags.DIFFERENTIAL))
 							continue;
 						while (k.hasNext()) {
-							target = (Element)k.next();
+							target = k.next();
 							if (target.getName().equals(MathMLTags.IDENTIFIER) && target.getTextTrim().equals(varName))
 								break;
 							else
@@ -595,19 +609,21 @@ public class CellQuanVCTranslator extends Translator {
 	}
 
     protected void processVariables() { 
-		List compElementList = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace);
-		Iterator compElementIterator = compElementList.iterator();
+		@SuppressWarnings("unchecked")
+		List<Element> compElementList = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace);
+		Iterator<Element> compElementIterator = compElementList.iterator();
 	    
 	    Element comp, var, varRef, temp;
 	    String compName, varName, publicIn, privateIn, mangledName; 
 	    while (compElementIterator.hasNext()) {
-			comp = (Element)compElementIterator.next();
+			comp = compElementIterator.next();
 			compName = comp.getAttributeValue(CELLMLTags.name, sAttNamespace);
-			List varElementList = comp.getChildren(CELLMLTags.VARIABLE, sNamespace);
-			Iterator varElementIterator = varElementList.iterator();
+			@SuppressWarnings("unchecked")
+			List<Element> varElementList = comp.getChildren(CELLMLTags.VARIABLE, sNamespace);
+			Iterator<Element> varElementIterator = varElementList.iterator();
 			// clear const and volVars vectors for each component
 			while (varElementIterator.hasNext()) {
-				var = (Element)varElementIterator.next();
+				var = varElementIterator.next();
 				publicIn = var.getAttributeValue(CELLMLTags.public_interface, sAttNamespace);
 				privateIn = var.getAttributeValue(CELLMLTags.private_interface, sAttNamespace);
 				if ( (publicIn != null && publicIn.equals(CELLMLTags.inInterface)) ||
@@ -660,6 +676,7 @@ public class CellQuanVCTranslator extends Translator {
 		}
     }
     
+	@Override
 	protected VCDocument translate() {
 		return (addMathModel());	
 	}

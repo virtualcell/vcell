@@ -9,6 +9,11 @@
  */
 
 package cbit.vcell.geometry.surface;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:09:39 PM)
@@ -23,6 +28,7 @@ package cbit.vcell.geometry.surface;
 //   for performance, these methods can be disabled at will.
 //
 //
+@SuppressWarnings("serial")
 public class FastSurface implements Surface, java.io.Serializable {
 	private int fieldInteriorRegionIndex = 0;
 	private int fieldExteriorRegionIndex = 0;
@@ -34,8 +40,8 @@ public class FastSurface implements Surface, java.io.Serializable {
 	private long exteriorMask = 0;
 
 	public static boolean bVerify = true;
-	private java.util.HashMap nodePolygonInstanceMap = new java.util.HashMap();
-	private java.util.ArrayList polygonList = new java.util.ArrayList();
+	private HashMap<Node, String> nodePolygonInstanceMap = new HashMap<Node, String>();
+	private ArrayList<FastPolygon> polygonList = new ArrayList<FastPolygon>();
 	
 	public long getInteriorMask() {
 		return interiorMask;
@@ -339,14 +345,14 @@ public int getExteriorRegionIndex() {
  * @return cbit.vcell.geometry.surface.Node[]
  */
 public Node[] getfindAllNodes() {
-	java.util.HashSet nodeSet = new java.util.HashSet();
+	HashSet<Node> nodeSet = new HashSet<Node>();
 	for (int i = 0; i < polygonList.size(); i++){
 		FastPolygon poly = (FastPolygon)polygonList.get(i);
 		for (int j = 0; j < poly.nodes.length; j++){
 			nodeSet.add(poly.nodes[j]);
 		}
 	}
-	return (Node[])nodeSet.toArray(new Node[0]);
+	return nodeSet.toArray(new Node[0]);
 }
 
 

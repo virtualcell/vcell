@@ -25,7 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 import org.sbpax.util.SesameRioUtil;
 import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;
@@ -58,7 +58,7 @@ public class PCNeighborsRequest extends PathwayCommonsRequest {
 				response = new PCErrorResponse(this, PCErrorResponse.errorElement(text));
 			} else {
 				try { 
-					Graph graph = new HashGraph();
+					Graph graph = new IndexedGraph();
 					Map<String, String> nsMap = new HashMap<String, String>();
 					SesameRioUtil.readRDFFromString(text, graph, nsMap, RDFFormat.RDFXML, uriBase);
 					response = new PCTextModelResponse(this, text, graph); 

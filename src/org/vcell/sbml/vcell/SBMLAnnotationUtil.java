@@ -29,7 +29,7 @@ import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.sybil.rdf.RDFChopper;
@@ -250,7 +250,7 @@ public class SBMLAnnotationUtil {
 						
 						// TODO this is a hack to be replaced by proper URI management.
 						text = text.replace("about=\"#","about=\"");
-						Graph rdfNew = new HashGraph();
+						Graph rdfNew = new IndexedGraph();
 						Map<String, String> nsMap = new HashMap<String, String>();
 						try {
 							SesameRioUtil.readRDFFromString(text, rdfNew, nsMap, RDFFormat.RDFXML, nsSBML);

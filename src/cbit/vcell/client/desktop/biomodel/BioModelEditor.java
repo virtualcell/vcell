@@ -633,7 +633,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE) {
+				|| folderClass == DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE) {
 			newTopPanel = bioModelEditorPathwayDiagramPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();

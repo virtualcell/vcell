@@ -24,7 +24,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.MultiHashMap;
 import org.sbpax.util.MultiMap;
@@ -39,7 +39,7 @@ public class ModelComparer {
 	protected Graph model1, model2, diff1, diff2;
 
 	public static Graph createDiff(Graph model1, Graph model2) {
-		HashGraph graph = new HashGraph();
+		Graph graph = new IndexedGraph();
 		graph.addAll(model1);
 		graph.removeAll(model2);
 		return graph;
@@ -88,7 +88,7 @@ public class ModelComparer {
 			for(Resource bNode : bNodesUnion) { bNodesMap.put(bNode, bNodesUnion); }
 		}
 		for(Set<Resource> bNodes : bNodesMap.values()) {
-			Graph model = new HashGraph();
+			Graph model = new IndexedGraph();
 			for(Resource bNode : bNodes) {
 				for(Statement statement : triples.get(bNode)) {
 					model.add(statement);

@@ -24,6 +24,14 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.sbpax.util.StatementComparator;
 
+/* 
+ *   A simple implementation of Sesame's RDF Graph without support for contexts.
+ *   This is not a list like Sesame's default implementation, but a set.
+ *   This makes is faster to query the presence of a statement and prevents
+ *   a statement from being contained multiple times.
+ *   The disadvantage is that the order in which statements were added is not preserved.
+ */
+
 @SuppressWarnings("serial")
 public class HashGraph implements Graph {
 	

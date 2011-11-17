@@ -10,6 +10,11 @@
 
 package org.vcell.sybil.util.text;
 
+import java.util.Collection;
+
+import org.sbpax.util.EnglishPluralizer;
+import org.sbpax.util.StringUtil;
+
 /*   NumberText  --- by Oliver Ruebenacker, UCHC --- January 2009
  *   Turns integers into text
  */
@@ -47,7 +52,7 @@ public class NumberText {
 	}
 	
 	static public String soMany(int i, String singular) {
-		return soMany(i, singular, singular + "s");
+		return soMany(i, singular, EnglishPluralizer.pluralize(singular));
 	}
 	
 	static public String soMany(int i, String singular, String plural) {
@@ -55,6 +60,21 @@ public class NumberText {
 		case 0: return "no " + plural;
 		case 1: return "one " + singular;
 		default: return numberText(i) + " " + plural;
+		}
+	}
+	
+	static public String soManyThings(Collection<?> things, String singular) {
+		return soManyThings(things, singular, EnglishPluralizer.pluralize(singular));
+	}
+		
+	static public String soManyThings(Collection<?> things, 
+				String singular, String plural) {
+		int size = things.size();
+		String thingsText = StringUtil.concat(things, ", ");
+		switch (size) {
+		case 0: return "no " + plural;
+		case 1: return singular + ": " + thingsText;
+		default: return numberText(size) + " " + plural + ": " + thingsText;
 		}
 	}
 	

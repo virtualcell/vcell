@@ -52,15 +52,13 @@ public class VCMLComparator {
 	}
 
 
-	private static Hashtable map;
+	private static Hashtable<String, String> map;
 
-	public static class VCMLElementSorter implements Comparator {
+	public static class VCMLElementSorter implements Comparator<Element> {
 	
-		public int compare(Object o1, Object o2) {
+		public int compare(Element e1, Element e2) {
 
 			int result;
-			Element e1 = (Element)o1;
-			Element e2 = (Element)o2;
 
 			//sort by their element name
 			String eName1 = e1.getName();
@@ -105,7 +103,7 @@ public class VCMLComparator {
 	//can also be loaded from a property file. Fills a hashtable of all the VCML elements whose 'primary key' is not 'Name'
 	//but some other attribute.
 	static { 
-		map = new Hashtable();
+		map = new Hashtable<String, String>();
 		map.put(XMLTags.ReactantTag, XMLTags.SpeciesContextRefAttrTag);
 		map.put(XMLTags.ProductTag, XMLTags.SpeciesContextRefAttrTag);
 		map.put(XMLTags.CatalystTag, XMLTags.SpeciesContextRefAttrTag);
@@ -142,8 +140,10 @@ public class VCMLComparator {
 	
 	private static boolean compareAtts(Element source,Element target) {
 
-	    ArrayList list1 = new ArrayList(source.getAttributes());
-	    ArrayList list2 = new ArrayList(target.getAttributes());
+	    @SuppressWarnings("unchecked")
+		ArrayList<Attribute> list1 = new ArrayList<Attribute>(source.getAttributes());
+	    @SuppressWarnings("unchecked")
+		ArrayList<Attribute> list2 = new ArrayList<Attribute>(target.getAttributes());
 
 	    //not sure of Attribute.equals(). For now, only name and value are compared.
 	    /*class AttComparator implements Comparator {
@@ -259,6 +259,7 @@ public class VCMLComparator {
 	}
 
 	private static void printAttributeList(String originator,Element element){
+		@SuppressWarnings("unchecked")
 		List<Attribute> attributeList = element.getAttributes();
 		System.err.print("--"+originator+" Attributes("+(attributeList == null?0:attributeList.size())+") = ");
 		if(attributeList != null && attributeList.size() != 0){
@@ -326,8 +327,10 @@ public class VCMLComparator {
 	    	source.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	target.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
 	    }
-	    ArrayList children1 = new ArrayList(source.getChildren());
-	    ArrayList children2 = new ArrayList(target.getChildren());
+	    @SuppressWarnings("unchecked")
+		ArrayList<Element> children1 = new ArrayList<Element>(source.getChildren());
+	    @SuppressWarnings("unchecked")
+		ArrayList<Element> children2 = new ArrayList<Element>(target.getChildren());
 	    if (children1.size() != children2.size()) {
 	        String pkName = (String) map.get(source.getName());
 	        //sometimes will fail, but better than nothing

@@ -211,20 +211,12 @@ AsynchClientTask[] newDocument(TopLevelWindowManager requester, VCDocument.Docum
 
 AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo,AsynchClientTask[] finalTasks,String okButtonText);
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 2:38:26 AM)
- * @param documentInfo cbit.vcell.document.VCDocumentInfo
- */
+
 void openDocument(int documentType, DocumentWindowManager requester);
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 2:38:26 AM)
- * @param documentInfo cbit.vcell.document.VCDocumentInfo
- */
 void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, boolean inNewWindow);
+
+void openPathway(DocumentWindowManager requester);
 
 
 	public void processComparisonResult(TMLPanel comparePanel, TopLevelWindowManager requester);

@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry.gui;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
@@ -133,7 +135,7 @@ public PolygonInfo[] createProjectedScreenPolygons(SurfaceCollection surfaceColl
 	int xPoints[] = new int[4];
 	int yPoints[] = new int[4];
 
-	java.util.ArrayList polygonInfoList = new java.util.ArrayList(1000);
+	ArrayList<PolygonInfo> polygonInfoList = new ArrayList<PolygonInfo>(1000);
 	Vect3d centroid = new Vect3d();
 	Vect3d centroidProj = new Vect3d();
 	Vect3d unitNormal = new Vect3d();
@@ -180,7 +182,7 @@ public PolygonInfo[] createProjectedScreenPolygons(SurfaceCollection surfaceColl
 		}
 	}
 	
-	java.util.Collections.sort(polygonInfoList);
+	Collections.sort(polygonInfoList);
 	PolygonInfo[] polygonInfoArr = new PolygonInfo[polygonInfoList.size()];
 	polygonInfoList.toArray(polygonInfoArr);
 	return polygonInfoArr;
@@ -237,15 +239,6 @@ public org.vcell.util.Origin getOrigin() {
 public cbit.vcell.render.Trackball getTrackball() {
 	return fieldTrackball;
 }
-
-
-private AffineTransform getTransform(int width, int height, double xMin, double xMax, double yMin, double yMax) {
-	AffineTransform transform = AffineTransform.getTranslateInstance(0,0);
-	transform.concatenate(AffineTransform.getScaleInstance(width / (xMax - xMin),  height / (yMin - yMax)));
-	transform.concatenate(AffineTransform.getTranslateInstance(-xMin, -yMax));
-	return transform;
-}
-
 
 /**
  * Insert the method's description here.

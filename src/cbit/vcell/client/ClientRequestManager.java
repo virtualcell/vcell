@@ -2433,11 +2433,7 @@ private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
 	}
 	throw new RuntimeException("Unknown VCDocument type "+doc);
 }
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:53:05 PM)
- * @param documentInfo cbit.vcell.document.VCDocumentInfo
- */
+
 public void openDocument(int documentType, DocumentWindowManager requester) {
 	/* trying to open from database; called by DocumentWindow */
 	// get an info first
@@ -2456,12 +2452,7 @@ public void openDocument(int documentType, DocumentWindowManager requester) {
 	}
 }
 
-	
-	/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:53:05 PM)
- * @param documentInfo cbit.vcell.document.VCDocumentInfo
- */
+
 public void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, boolean inNewWindow) {
 	// called directly from DatabaseWindow or after invoking an open dialog (see openDocument(int, Component))
 	// need to check whether we opened this before and we still have it open
@@ -2514,6 +2505,18 @@ public void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requ
 		}
 	}
 	openAfterChecking(documentInfo, requester, inNewWindow);
+}
+
+public void openPathway(DocumentWindowManager windowManager) {
+	if(windowManager instanceof BioModelWindowManager) {
+		BioModelWindowManager bioModelWindowManager = (BioModelWindowManager) windowManager;
+		bioModelWindowManager.importPathway();
+	} else {
+		DialogUtils.showErrorDialog(windowManager.getComponent(), 
+				"<html>Pathways can only be imported into a BioModel. " + 
+				"To import a pathway, switch to a BioModel window or open a new" +
+				"one by opening a biomodel. This option should not even be available otherwise.</html>");
+	}
 }
 
 

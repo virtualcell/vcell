@@ -25,7 +25,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 import org.sbpax.util.SesameRioUtil;
 import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.http.pathwaycommons.PCExceptionResponse;
@@ -50,7 +50,7 @@ public class PCIDRequest extends PathwayCommonsRequest {
 			URL url = url();
 			URLConnection connection = url.openConnection();
 			String text = StringUtil.textFromInputStream(connection.getInputStream());
-			Graph graph = new HashGraph();
+			Graph graph = new IndexedGraph();
 			Map<String, String> nsMap = new HashMap<String, String>();
 			SesameRioUtil.readRDFFromString(text, graph, nsMap, RDFFormat.RDFXML, uriBase);
 			try { return new PCTextModelResponse(this, text, graph); } 

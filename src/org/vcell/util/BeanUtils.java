@@ -23,8 +23,11 @@ import java.awt.Window;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
@@ -868,6 +871,19 @@ public final class BeanUtils {
 		}
 	}
 	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
+	
+	public static String readBytesFromFile(File file, ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+		StringBuffer stringBuffer = new StringBuffer();
+		String line = new String();
+		while((line = bufferedReader.readLine()) != null) { 				
+			stringBuffer.append(line + "\n"); 
+			if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted()){
+				break;
+			}
+		}
+		return stringBuffer.toString();
+	}
 	
 	public static String downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		final ChannelFuture[] connectFuture = new ChannelFuture[1];

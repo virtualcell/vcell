@@ -38,7 +38,7 @@ public class Registry implements Serializable {
 
 	public class Entry implements Serializable {
 		private final Identifiable identifiable;
-		private Resource namedThing = null;
+		private Resource resource = null;
 		
 		public Entry(Identifiable identifiable) {
 			this.identifiable = identifiable;
@@ -46,14 +46,14 @@ public class Registry implements Serializable {
 		
 		public Registry getRegistry() { return Registry.this; }
 		public Identifiable getIdentifiable() { return identifiable; }
-		public Resource getResource() { return namedThing; }
+		public Resource getResource() { return resource; }
 		
 		private void setResource(Resource resource) {
-			if (this.namedThing!=null){
+			if (this.resource!=null){
 				resourceToEntry.remove(resource);
 				uriToEntry.remove(resource.stringValue());
 			}
-			this.namedThing = resource;
+			this.resource = resource;
 			if (resource!=null){
 				resourceToEntry.put(resource, this);
 				uriToEntry.put(resource.stringValue(), this);
