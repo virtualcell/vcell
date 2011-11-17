@@ -17,7 +17,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.BioPAX3;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
@@ -25,7 +25,7 @@ import org.sbpax.util.SesameRioUtil;
 public class TestJPAX {
 	
 	public static void main(String[] args) {
-		Graph graph = new HashGraph();
+		Graph graph = new IndexedGraph();
 		String ns = DefaultNameSpaces.EX.uri;
 		URI r1 = graph.getValueFactory().createURI(ns + "r1");
 		URI pe1 = graph.getValueFactory().createURI(ns + "pe1");
