@@ -24,8 +24,11 @@ public class LocalVisitSessionJVisit extends VisitSessionJVisit {
         int viewerPort = 5600;
         if(viewer.Create(viewerPort)){
             System.out.println("ViewerProxy opened the viewer.");
+            synchronize();
             // Show the windows
             viewer.GetViewerMethods().ShowAllWindows();
+            synchronize();
+            viewer.GetEventLoop().StartProcessing();
 
         } else {
             System.out.println("ViewerProxy could not open the viewer.");

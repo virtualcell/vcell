@@ -195,7 +195,7 @@ public class CommunicationBuffer
         }
     }
 
-    public void WriteByteVector(Vector vec)
+    public void WriteByteVector(Vector<Byte> vec)
     {
         WriteInt(vec.size());
         for(int i = 0; i < vec.size(); ++i)
@@ -220,7 +220,7 @@ public class CommunicationBuffer
             WriteInt(array[i]);
     }
 
-    public void WriteIntVector(Vector vec)
+    public void WriteIntVector(Vector<Integer> vec)
     {
         WriteInt(vec.size());
         for(int i = 0; i < vec.size(); ++i)
@@ -244,7 +244,7 @@ public class CommunicationBuffer
             WriteFloat(array[i]);
     }
 
-    public void WriteFloatVector(Vector vec)
+    public void WriteFloatVector(Vector<Float> vec)
     {
         WriteInt(vec.size());
         for(int i = 0; i < vec.size(); ++i)
@@ -261,7 +261,7 @@ public class CommunicationBuffer
             WriteDouble(array[i]);
     }
 
-    public void WriteDoubleVector(Vector vec)
+    public void WriteDoubleVector(Vector<Double> vec)
     {
         WriteInt(vec.size());
         for(int i = 0; i < vec.size(); ++i)
@@ -279,7 +279,7 @@ public class CommunicationBuffer
         AddByte((byte)0);
     }
 
-    public void WriteStringVector(Vector vec)
+    public void WriteStringVector(Vector<String> vec)
     {
         WriteInt(vec.size());
         for(int i = 0; i < vec.size(); ++i)
@@ -311,10 +311,10 @@ public class CommunicationBuffer
         return retval;
     }
 
-    public Vector ReadByteVector()
+    public Vector<Byte> ReadByteVector()
     {
         int len = ReadInt();
-        Vector retval = new Vector();
+        Vector<Byte> retval = new Vector<Byte>();
         for(int i = 0; i < len; ++i)
         {
             retval.addElement(new Byte(ReadByte()));
@@ -363,10 +363,10 @@ public class CommunicationBuffer
         return retval;
     }
 
-    public Vector ReadIntVector()
+    public Vector<Integer> ReadIntVector()
     {
         int len = ReadInt();
-        Vector retval = new Vector();
+        Vector<Integer> retval = new Vector<Integer>();
         for(int i = 0; i < len; ++i)
             retval.addElement(new Integer(ReadInt()));
         return retval;
@@ -402,10 +402,10 @@ public class CommunicationBuffer
         return retval;
     }
 
-    public Vector ReadFloatVector()
+    public Vector<Float> ReadFloatVector()
     {
         int len = ReadInt();
-        Vector retval = new Vector();
+        Vector<Float> retval = new Vector<Float>();
         for(int i = 0; i < len; ++i)
             retval.addElement(new Float(ReadFloat()));
         return retval;
@@ -439,10 +439,10 @@ public class CommunicationBuffer
         return retval;
     }
 
-    public Vector ReadDoubleVector()
+    public Vector<Double> ReadDoubleVector()
     {
         int len = ReadInt();
-        Vector retval = new Vector();
+        Vector<Double> retval = new Vector<Double>();
         for(int i = 0; i < len; ++i)
             retval.addElement(new Double(ReadDouble()));
         return retval;
@@ -465,10 +465,10 @@ public class CommunicationBuffer
         return retval;
     }
 
-    public Vector ReadStringVector()
+    public Vector<String> ReadStringVector()
     {
         int len = ReadInt();
-        Vector retval = new Vector();
+        Vector<String> retval = new Vector<String>();
         for(int i = 0; i < len; ++i)
             retval.addElement(ReadString());
         return retval;
