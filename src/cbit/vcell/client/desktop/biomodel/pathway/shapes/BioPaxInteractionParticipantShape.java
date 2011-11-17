@@ -35,17 +35,17 @@ public class BioPaxInteractionParticipantShape extends EdgeShape implements Edge
 			BasicStroke.JOIN_ROUND, 1f, new float[]{2f, 2f}, 0f);
 	
 	protected final InteractionParticipant participant;
-	protected final BioPaxConversionShape conversionShape;
+	protected final BioPaxInteractionShape interactionShape;
 	protected final BioPaxPhysicalEntityShape physicalEntityShape;
 	
 	public BioPaxInteractionParticipantShape(
 			InteractionParticipant participant, 
-			BioPaxConversionShape conversionShape,
+			BioPaxInteractionShape interactionShape,
 			BioPaxPhysicalEntityShape physicalEntityShape, 
 			PathwayGraphModel graphModel) {
-		super(conversionShape, physicalEntityShape, graphModel);
+		super(interactionShape, physicalEntityShape, graphModel);
 		this.participant = participant;
-		this.conversionShape = conversionShape;
+		this.interactionShape = interactionShape;
 		this.physicalEntityShape = physicalEntityShape;
 	}
 
@@ -64,7 +64,7 @@ public class BioPaxInteractionParticipantShape extends EdgeShape implements Edge
 	@Override
 	public void paintSelf(Graphics2D g2d, int xAbs, int yAbs) {
 		// TODO Auto-generated method stub
-		Point startPos = conversionShape.getSpaceManager().getAbsCenter();
+		Point startPos = interactionShape.getSpaceManager().getAbsCenter();
 		Point endPos = physicalEntityShape.getSpaceManager().getAbsCenter();
 		if(participant.getType().equals(Type.CONTROLLER) || participant.getType().equals(Type.COFACTOR)) {
 			Stroke previousStroke = g2d.getStroke();

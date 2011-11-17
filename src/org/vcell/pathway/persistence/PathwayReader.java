@@ -170,7 +170,7 @@ public class PathwayReader {
 						addObjectInteraction(childElement);
 					// we deal with physicalInteraction as if it's a v3 interaction
 					}else if (childElement.getName().equals("physicalInteraction")){
-						addObjectInteraction(childElement);
+						addObjectMolecularInteraction(childElement);
 					}else if (childElement.getName().equals("transport")){
 						addObjectTransport(childElement);
 					}else if (childElement.getName().equals("transportWithBiochemicalReaction")){
@@ -381,6 +381,27 @@ public class PathwayReader {
 		 * ArrayList<String> term
 		 * ArrayList<Xref> xRef
 		 */
+		if(childElement.getName().equals("openControlledVocabulary")){
+			for (Object child : childElement.getChildren()){
+				if (child instanceof Element){
+					Element childElement1 = (Element)child;
+					if (childElement1.getName().equals("XREF")){
+						controlledVocabulary.getxRef().add(addObjectXref(childElement1));
+						return true;
+					}else if (childElement1.getName().equals("TERM")){
+						String prefix = element.getParent().getName();
+						if(prefix.equals("")){
+							controlledVocabulary.getTerm().add(childElement1.getTextTrim());
+						}else{
+							controlledVocabulary.getTerm().add(prefix + " :: "+childElement1.getTextTrim());
+						}
+						return true;
+					}else{
+						return false; // no match
+					}
+				}
+			}
+		}
 		if (childElement.getName().equals("XREF")){
 			controlledVocabulary.getxRef().add(addObjectXref(childElement));
 			return true;
@@ -1137,8 +1158,10 @@ public class PathwayReader {
 			}
 			return false;
 		} else if(childElement.getName().equals("INTERACTION-TYPE")){
-			showIgnored(childElement, "Can't convert openControlledVocabulary (v2) to InteractionVocabulary (v3).", interaction);
-			return false;
+			interaction.getInteractionTypes().add(addObjectInteractionVocabulary(childElement));
+			return true;
+//			showIgnored(childElement, "Can't convert openControlledVocabulary (v2) to InteractionVocabulary (v3).", interaction);
+//			return false;
 		} else {
 			return false;
 		}
@@ -1288,7 +1311,7 @@ public class PathwayReader {
 						if(controlledVocabularyElement.getChildren().size() == 0) {
 							physicalEntityProxy.setCellularLocation(cellularLocationVocabularyProxy);
 						} else {
-							addObjectCellularLocationVocabulary(controlledVocabularyElement);
+							physicalEntityProxy.setCellularLocation(addObjectCellularLocationVocabulary(controlledVocabularyElement));
 						}
 //						System.out.println(" -          " + controlledVocabularyElement.getName());
 						// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
@@ -1317,10 +1340,14 @@ public class PathwayReader {
 			}
 			Element sequenceParticipantElement = childElement.getChild("sequenceParticipant",bp);
 			if (sequenceParticipantElement!=null){
+				boolean found = false;
+				PhysicalEntity thePhysicalEntity = null;
 				Element physicalEntityPropertyElement = sequenceParticipantElement.getChild("PHYSICAL-ENTITY",bp);
+				PhysicalEntityProxy physicalEntityProxy = null;
 				if (physicalEntityPropertyElement!=null){
+					found = true;
 					if (physicalEntityPropertyElement.getChildren().size()==0){
-						PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+						physicalEntityProxy = new PhysicalEntityProxy();
 						addAttributes(physicalEntityProxy, physicalEntityPropertyElement);
 						pathwayModel.add(physicalEntityProxy);
 						if (childElement.getName().equals("LEFT")){
@@ -1328,9 +1355,28 @@ public class PathwayReader {
 						}else{
 							conversion.addRight(physicalEntityProxy);
 						}
-						return true;
+//						return true;
+					}else {
+						thePhysicalEntity = addObjectPhysicalEntity(physicalEntityPropertyElement);
+					}
+					Element cellularLocationElement = sequenceParticipantElement.getChild("CELLULAR-LOCATION",bp);
+					if(cellularLocationElement != null && found == true) {
+						Element controlledVocabularyElement = cellularLocationElement.getChild("openControlledVocabulary", bp);
+						if(controlledVocabularyElement != null) {
+							CellularLocationVocabularyProxy cellularLocationVocabularyProxy = new CellularLocationVocabularyProxy();
+							addAttributes(cellularLocationVocabularyProxy, controlledVocabularyElement);
+							pathwayModel.add(cellularLocationVocabularyProxy);
+							if(controlledVocabularyElement.getChildren().size() == 0) {
+								physicalEntityProxy.setCellularLocation(cellularLocationVocabularyProxy);
+							} else {
+								physicalEntityProxy.setCellularLocation(addObjectCellularLocationVocabulary(controlledVocabularyElement));
+							}
+	//						System.out.println(" -          " + controlledVocabularyElement.getName());
+							// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
+						}
 					}
 				}
+				return found;
 			}
 			if (childElement.getChildren().size()==0){
 //				PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
