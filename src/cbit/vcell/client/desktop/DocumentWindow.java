@@ -81,10 +81,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjExitMenuItem = null;
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
-	private JSeparator ivjJSeparator2 = null;
-	private JSeparator ivjJSeparator3 = null;
-	private JSeparator ivjJSeparator4 = null;
-	private JSeparator ivjJSeparator5 = null;
 	private JMenuItem ivjLocalMenuItem = null;
 	private JMenuItem ivjManage_DatabaseMenuItem = null;
 	private JMenuItem ivjMinimize_AllMenuItem = null;
@@ -110,13 +106,12 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JProgressBar ivjJProgressBarMemory = null;
 	private DocumentWindowManager fieldWindowManager = null;
 	private JMenuItem ivjJMenuItemExport = null;
-	private JMenuItem ivjJMenuItemImport = null;
-	private JSeparator ivjJSeparator7 = null;
+	private JMenuItem menuItemImport = null;
+	private JMenuItem menuItemImportPathway = null;
 	private JMenuItem ivjJMenuItemServer = null;
 	private JProgressBar ivjJProgressBarConnection = null;
 	private JMenuItem ivjJMenuItemCompare = null;
 	private JMenuItem ivjJMenuItemRevert = null;
-	private JSeparator ivjJSeparator8 = null;
 	private JMenuItem ivjJMenuItemOptions = null;
 	private JMenuItem ivjGeometryMenu = null;
 	private JMenuItem ivjMathFromBioMenuItem = null;
@@ -154,8 +149,14 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC13(e);
 			if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem()) 
 				connEtoC14(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemImport()) 
-				connEtoC15(e);
+			try {
+				if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
+					DocumentWindow.this.importXMLDocument();
+				if (e.getSource() == DocumentWindow.this.getJMenuItemImportPathway())
+					DocumentWindow.this.importPathway();
+			} catch (Throwable throwable) {
+				DocumentWindow.this.handleException(throwable);
+			}
 			if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem()) 
 				connEtoC16(e);
 			if (e.getSource() == DocumentWindow.this.getChange_UserMenuItem()) 
@@ -353,25 +354,6 @@ private void connEtoC14(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.saveDocumentAsNew();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC15:  (JMenuItemImport.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC15(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.importXMLDocument();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1148,11 +1130,11 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getNewMenuItem());
 			ivjFileMenu.add(getOpenMenuItem());
 			ivjFileMenu.add(getCloseMenuItem());
-			ivjFileMenu.add(getJSeparator2());
+			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getSaveMenuItem());
 			ivjFileMenu.add(getSave_VersionMenuItem());
 			ivjFileMenu.add(getSave_AsMenuItem());
-			ivjFileMenu.add(getJSeparator8());
+			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemRevert());
 			ivjFileMenu.add(getJMenuItemCompare());
 			ivjFileMenu.add(new JSeparator());
@@ -1163,10 +1145,12 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getManage_DatabaseMenuItem());
 			ivjFileMenu.add(getJMenuItemFieldData());
 			ivjFileMenu.add(getTestingFrameworkMenuItem());
-			ivjFileMenu.add(getJSeparator7());
+			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemImport());
 			ivjFileMenu.add(getJMenuItemExport());
-			ivjFileMenu.add(getJSeparator3());
+			ivjFileMenu.add(new JSeparator());
+			ivjFileMenu.add(getJMenuItemImportPathway());			
+			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getExitMenuItem());
 			// user code begin {1}
 			// user code end
@@ -1310,26 +1294,30 @@ private javax.swing.JMenuItem getJMenuItemFieldData() {
 }
 
 
-/**
- * Return the JMenuItemImport property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getJMenuItemImport() {
-	if (ivjJMenuItemImport == null) {
+private JMenuItem getJMenuItemImport() {
+	if (menuItemImport == null) {
 		try {
-			ivjJMenuItemImport = new javax.swing.JMenuItem();
-			ivjJMenuItemImport.setName("JMenuItemImport");
-			ivjJMenuItemImport.setText("Import...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+			menuItemImport = new JMenuItem();
+			menuItemImport.setName("JMenuItemImport");
+			menuItemImport.setText("Import...");
+		} catch (Throwable throwable) {
+			handleException(throwable);
 		}
 	}
-	return ivjJMenuItemImport;
+	return menuItemImport;
+}
+
+private JMenuItem getJMenuItemImportPathway() {
+	if (menuItemImportPathway == null) {
+		try {
+			menuItemImportPathway = new JMenuItem();
+			menuItemImportPathway.setName("JMenuItemImportPathway");
+			menuItemImportPathway.setText("Import Pathway");
+		} catch (Throwable throwable) {
+			handleException(throwable);
+		}
+	}
+	return menuItemImportPathway;
 }
 
 /**
@@ -1574,94 +1562,6 @@ private javax.swing.JProgressBar getJProgressBarMemory() {
 }
 
 /**
- * Return the JSeparator2 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator2() {
-	if (ivjJSeparator2 == null) {
-		try {
-			ivjJSeparator2 = new javax.swing.JSeparator();
-			ivjJSeparator2.setName("JSeparator2");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator2;
-}
-
-
-/**
- * Return the JSeparator3 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator3() {
-	if (ivjJSeparator3 == null) {
-		try {
-			ivjJSeparator3 = new javax.swing.JSeparator();
-			ivjJSeparator3.setName("JSeparator3");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator3;
-}
-
-
-/**
- * Return the JSeparator4 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator4() {
-	if (ivjJSeparator4 == null) {
-		try {
-			ivjJSeparator4 = new javax.swing.JSeparator();
-			ivjJSeparator4.setName("JSeparator4");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator4;
-}
-
-
-/**
- * Return the JSeparator5 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator5() {
-	if (ivjJSeparator5 == null) {
-		try {
-			ivjJSeparator5 = new javax.swing.JSeparator();
-			ivjJSeparator5.setName("JSeparator5");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator5;
-}
-
-
-/**
  * Return the JSeparator6 property value.
  * @return javax.swing.JSeparator
  */
@@ -1681,51 +1581,6 @@ private javax.swing.JSeparator getJSeparator6() {
 	}
 	return ivjJSeparator6;
 }
-
-
-/**
- * Return the JSeparator7 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator7() {
-	if (ivjJSeparator7 == null) {
-		try {
-			ivjJSeparator7 = new javax.swing.JSeparator();
-			ivjJSeparator7.setName("JSeparator7");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator7;
-}
-
-
-/**
- * Return the JSeparator8 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator8() {
-	if (ivjJSeparator8 == null) {
-		try {
-			ivjJSeparator8 = new javax.swing.JSeparator();
-			ivjJSeparator8.setName("JSeparator8");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator8;
-}
-
 
 /**
  * Return the LocalMenuItem property value.
@@ -2105,7 +1960,7 @@ private javax.swing.JMenu getServerMenu() {
 			ivjServerMenu.add(getChange_UserMenuItem());
 			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
-			ivjServerMenu.add(getJSeparator4());
+			ivjServerMenu.add(new JSeparator());
 			ivjServerMenu.add(getJMenuItemServer());
 			ivjServerMenu.add(getLocalMenuItem());
 			// user code begin {1}
@@ -2340,7 +2195,7 @@ private javax.swing.JMenu getWindowMenu() {
 			ivjWindowMenu.add(getTile_HorizontallyMenuItem());
 			ivjWindowMenu.add(getTile_VerticallyMenuItem());
 			ivjWindowMenu.add(getCascadeMenuItem());
-			ivjWindowMenu.add(getJSeparator5());
+			ivjWindowMenu.add(new JSeparator());
 			ivjWindowMenu.add(getMinimize_AllMenuItem());
 			// user code begin {1}
 			// user code end
@@ -2364,12 +2219,12 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-
-/**
- * Comment
- */
 private void importXMLDocument() {
 	getWindowManager().openDocument(VCDocument.XML_DOC);
+}
+
+private void importPathway() {
+	getWindowManager().importPathway();
 }
 
 
@@ -2391,6 +2246,7 @@ private void initConnections() throws java.lang.Exception {
 	getSaveMenuItem().addActionListener(ivjEventHandler);
 	getSave_AsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemImport().addActionListener(ivjEventHandler);
+	getJMenuItemImportPathway().addActionListener(ivjEventHandler);
 	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
 	getChange_UserMenuItem().addActionListener(ivjEventHandler);
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
@@ -2782,6 +2638,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 					getWindowManager().getVCDocument() != null &&
 					getWindowManager().getVCDocument() instanceof BioModel
 			);
+			getJMenuItemImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
 		}

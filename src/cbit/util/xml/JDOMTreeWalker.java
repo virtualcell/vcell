@@ -46,11 +46,11 @@ given an element, it will ignore the root element. This can be easily fixed in t
  * @author pernorrman@telia.com
  */
 
-public class JDOMTreeWalker implements Iterator {
+public class JDOMTreeWalker implements Iterator<Element> {
     
 	private Stack _stack = new Stack();
 
-	private Object _next;
+	private Element _next;
 
 	private Filter _filter;
 
@@ -62,10 +62,11 @@ public class JDOMTreeWalker implements Iterator {
      * on that list. When the list is exhausted, we pop up and resume iteration
      * from where we left.
      */
-	private class Stack extends LinkedList {
-		Iterator iter;
+	@SuppressWarnings("serial")
+	private class Stack extends LinkedList<Iterator<Element>> {
+		Iterator<Element> iter;
 
-		public void push(List list) {
+		public void push(List<Element> list) {
 			add(0, iter = list.iterator());
 		}
 
@@ -73,21 +74,22 @@ public class JDOMTreeWalker implements Iterator {
 			if (size() > 0) {
 				this.remove(0);
 			}
-			iter = size() > 0 ? (Iterator) get(0) : null;
+			iter = size() > 0 ? (Iterator<Element>) get(0) : null;
 		}
 
-		public Object getNext() {
+		public Element getNext() {
 			if (iter == null) {
 				return null;
 			}
 
 			while (true) {
 				while (iter.hasNext()) {
-					Object node = iter.next();
+					Element node = iter.next();
 					if (node instanceof Element) {
-						List list = ((Element) node).getContent();
+						@SuppressWarnings("unchecked")
+						List<Element> list = ((Element) node).getContent();
 						if (list.size() > 0) {
-							push(((Element)node).getContent());
+							push(list);
 						}
 					}
 					if (_filter == null || _filter.matches(node)) {
@@ -117,7 +119,9 @@ public class JDOMTreeWalker implements Iterator {
 	 */
 	public JDOMTreeWalker(Document document, Filter filter) {
 		this._filter = filter;
-		_stack.push(document.getContent());
+		@SuppressWarnings("unchecked")
+		List<Element> list = document.getContent();
+		_stack.push(list);
 		_next = _stack.getNext();
 	}
 
@@ -139,7 +143,9 @@ public class JDOMTreeWalker implements Iterator {
 		//if (filter instanceof ElementFilter)
 			//filterTree(element, filter);
 		this._filter = filter;
-		_stack.push(element.getContent());
+		@SuppressWarnings("unchecked")
+		List<Element> list = element.getContent();
+		_stack.push(list);
 		_next = _stack.getNext();
 		
 	}
@@ -147,7 +153,8 @@ public class JDOMTreeWalker implements Iterator {
 
 	private void filterTree(Element root, Filter filter) {
 
-		ArrayList list = new ArrayList(root.getContent(filter));
+		@SuppressWarnings("unchecked")
+		ArrayList<Element> list = new ArrayList<Element>(root.getContent(filter));
 		for (int i = 0; i < list.size(); i++) {
 			Element temp = (Element)list.get(i);
 			filterTree(temp, filter);
@@ -155,9 +162,9 @@ public class JDOMTreeWalker implements Iterator {
 	}
 
 
-	public ArrayList getAllMatchingElements(String attName, String attValue) {
+	public ArrayList<Element> getAllMatchingElements(String attName, String attValue) {
 
-		ArrayList list = new ArrayList();
+		ArrayList<Element> list = new ArrayList<Element>();
 		Element temp;
 		while (hasNext()) {
 			temp = (Element)next();
@@ -169,9 +176,9 @@ public class JDOMTreeWalker implements Iterator {
 	}
 
 
-	public ArrayList getAllMatchingElements(String attName, org.jdom.Namespace ns, String attValue) {
+	public ArrayList<Element> getAllMatchingElements(String attName, org.jdom.Namespace ns, String attValue) {
 
-		ArrayList list = new ArrayList();
+		ArrayList<Element> list = new ArrayList<Element>();
 		Element temp;
 		while (hasNext()) {
 			temp = (Element)next();
@@ -221,12 +228,12 @@ public class JDOMTreeWalker implements Iterator {
 	}
 
 
-	public Object next() {
+	public Element next() {
 		if (_next == null) {
 			throw new NoSuchElementException();
 		}
 
-		Object object = _next;
+		Element object = _next;
 		_next = _stack.getNext();
 
 		return object;

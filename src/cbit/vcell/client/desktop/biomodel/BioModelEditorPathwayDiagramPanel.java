@@ -46,6 +46,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -72,6 +73,7 @@ import org.vcell.pathway.Protein;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.group.PathwayGrouping;
+import org.vcell.pathway.tree.BioPAXTreeMaker;
 import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
@@ -119,7 +121,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 	public enum PathwayPanelTabID {
 		pathway_diagram("Pathway Diagram"),
 		pathway_objects("Pathway Objects"),
-		biopax_summary("BioPAX Summary");
+		biopax_summary("BioPAX Summary"),
+		biopax_tree("BioPAX Tree");
 		
 		private String name = null;
 		PathwayPanelTabID(String name) {
@@ -157,12 +160,14 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private GraphPane graphPane;
 	private PathwayGraphTool graphCartoonTool;
 	private JTextArea sourceTextArea = null;
+	private JTree biopaxTree = new JTree(BioPAXTreeMaker.makeEmptyTree());
 	private JSortTable pathwayModelTable = null;
 	private PathwayModelTableModel pathwayModelTableModel = null;
 	private JTextField searchTextField;
 	private JTabbedPane tabbedPane;
 	private JPanel graphTabPanel;
 	private JPanel sourceTabPanel;
+	private JPanel treeTabPanel = new JPanel(new BorderLayout());
 	private PathwayGraphModel pathwayGraphModel;
 	protected JScrollPane graphScrollPane;
 	protected ViewPortStabilizer viewPortStabilizer;
@@ -733,6 +738,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 		sourceTabPanel = new JPanel(new BorderLayout());
 		sourceTabPanel.add(new JScrollPane(sourceTextArea), BorderLayout.CENTER);
 		
+		treeTabPanel.add(new JScrollPane(biopaxTree), BorderLayout.CENTER);
+		
 		pathwayModelTable = new JSortTable();
 		pathwayModelTable.getSelectionModel().addListSelectionListener(eventHandler);
 		pathwayModelTableModel = new PathwayModelTableModel(pathwayModelTable);
@@ -791,6 +798,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		pathwayPanelTabs[PathwayPanelTabID.pathway_diagram.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_diagram, graphTabPanel, VCellIcons.diagramIcon);
 		pathwayPanelTabs[PathwayPanelTabID.pathway_objects.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_objects, pathwayModelTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		pathwayPanelTabs[PathwayPanelTabID.biopax_summary.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_summary, sourceTabPanel, VCellIcons.textNotesIcon);
+		pathwayPanelTabs[PathwayPanelTabID.biopax_tree.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_tree, treeTabPanel, VCellIcons.tableIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addChangeListener(eventHandler);
 		
@@ -984,11 +992,13 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private void refreshInterface() {
 		if (bioModel == null) {
 			sourceTextArea.setText("");
+			biopaxTree.setModel(BioPAXTreeMaker.makeEmptyTree());
 		} else {
 			try {
 				PathwayModel pathwayModel = bioModel.getPathwayModel();			
 				sourceTextArea.setText("======Summary View========\n\n"+pathwayModel.show(false)
 						+"\n"+"======Detailed View========\n\n"+pathwayModel.show(true)+"\n");
+				biopaxTree.setModel(BioPAXTreeMaker.makeTree(pathwayModel));
 				pathwayModel.populateDiagramObjects();
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -1339,6 +1349,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, ActiveViewID.pathway_objects);
 		} else if (selectedIndex == PathwayPanelTabID.biopax_summary.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, ActiveViewID.biopax_summary);
+		} else if (selectedIndex == PathwayPanelTabID.biopax_tree.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE, ActiveViewID.biopax_tree);
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -1362,6 +1374,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 			break;
 		case BIOPAX_SUMMARY_NODE:
 			tabbedPane.setSelectedIndex(PathwayPanelTabID.biopax_summary.ordinal());
+			break;
+		case BIOPAX_TREE_NODE:
+			tabbedPane.setSelectedIndex(PathwayPanelTabID.biopax_tree.ordinal());
 			break;
 		}
 	}

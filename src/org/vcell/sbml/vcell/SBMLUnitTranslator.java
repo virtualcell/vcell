@@ -11,6 +11,7 @@
 package org.vcell.sbml.vcell;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
@@ -37,7 +38,7 @@ public class SBMLUnitTranslator {
 	public static final String LENGTH = "length";
 	public static final String TIME = "time";
 	
-	private static java.util.TreeMap SbmlDefaultUnits = new java.util.TreeMap();  
+	private static TreeMap<String, VCUnitDefinition> SbmlDefaultUnits = new TreeMap<String, VCUnitDefinition>();  
 	static {            
 		SbmlDefaultUnits.put("substance", VCUnitDefinition.getInstance("mole"));
 		SbmlDefaultUnits.put("volume", VCUnitDefinition.UNIT_L);
@@ -46,7 +47,7 @@ public class SBMLUnitTranslator {
 		SbmlDefaultUnits.put("time", VCUnitDefinition.UNIT_s);
 	}
 
-	private static ArrayList SbmlBaseUnits = new ArrayList();
+	private static ArrayList<String> SbmlBaseUnits = new ArrayList<String>();
     static {
 		SbmlBaseUnits.add("ampere");
 		SbmlBaseUnits.add("becquerel");
@@ -204,7 +205,6 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 		int unitExponent = unit.getExponent();
 		int unitScale = unit.getScale();
 		double unitMultiplier = unit.getMultiplier();
-		double unitOffset = unit.getOffset();
 		String vcScaleStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
 
 		VCUnitDefinition vcUnit = null;

@@ -41,7 +41,8 @@ public class VCUnitTranslator {
 	public static class TransCellMLUnits {
 
 		private String owner;                   				//model or compartment.
-		private TreeMap unitDefs = new TreeMap();            	//cellml_unit_name mapped to a VCUnitDefinition.
+		private TreeMap<String, VCUnitDefinition> unitDefs = new TreeMap<String, VCUnitDefinition>();            	
+		//cellml_unit_name mapped to a VCUnitDefinition.
 
 		public TransCellMLUnits(String owner) {
 
@@ -64,7 +65,8 @@ public class VCUnitTranslator {
 		}
 	}
 	
-	private static TreeMap cellmlUnits = new TreeMap();        //cellml_compartment/model_name mapped to inner_class
+	private static TreeMap<String, TransCellMLUnits> cellmlUnits = new TreeMap<String, TransCellMLUnits>();        
+	//cellml_compartment/model_name mapped to inner_class
 	private static Namespace tAttNamespace = Namespace.getNamespace("");           //temp
 
 //no instances allowed
@@ -75,7 +77,8 @@ private VCUnitTranslator() { super(); }
 	//part of the recursive retrieval of CellML units.
 	public static VCUnitDefinition CellMLToVCUnit(Element source, Namespace sNamespace, Namespace sAttNamespace) {
  
-		ArrayList list = new ArrayList(source.getChildren(CELLMLTags.UNIT, sNamespace));
+		@SuppressWarnings("unchecked")
+		ArrayList<Element> list = new ArrayList<Element>(source.getChildren(CELLMLTags.UNIT, sNamespace));
 		if (list.size() == 0) {
 			throw new RuntimeException("No units found for CellML unit definition: " + 
 										source.getAttributeValue(CELLMLTags.name, sAttNamespace) + " >>> 1");	
@@ -118,7 +121,7 @@ private VCUnitTranslator() { super(); }
 //first call: (1.0, 0, unit, new ArrayList(), transType)
 //Problem: units override each other's mult/multiplier before getting to the level of derived unit. 
 //To avoid that, add a dimensionless unit for cases where 
-	protected static ArrayList expandUcarCellML(double mult, double offset, Unit unit, ArrayList transUnits) {
+	protected static ArrayList<Element> expandUcarCellML(double mult, double offset, Unit unit, ArrayList<Element> transUnits) {
 	
 		if (unit instanceof UnitImpl) {
 			UnitImpl unitImpl = (UnitImpl)unit;
@@ -307,7 +310,8 @@ private VCUnitTranslator() { super(); }
 				} else {                              
 					//recursive block. assumes model level units are added before component level ones,
 					//so no need to recurse through those as well.
-					ArrayList siblings = new ArrayList(owner.getChildren(CELLMLTags.UNITS, sNamespace));
+					@SuppressWarnings("unchecked")
+					ArrayList<Element> siblings = new ArrayList<Element>(owner.getChildren(CELLMLTags.UNITS, sNamespace));
 					Element cellUnitDef = null;
 					for (int i = 0; i < siblings.size(); i++) {
 						cellUnitDef = (Element)siblings.get(i);
@@ -361,7 +365,7 @@ private VCUnitTranslator() { super(); }
 //returns a cellml 'Units' element
 	public static Element VCUnitToCellML(String unitSymbol, Namespace tNamespace, Namespace tAttNamespace) {
 
-		ArrayList transUnits;
+		ArrayList<Element> transUnits;
 		if (unitSymbol == null || unitSymbol.length() == 0) {
 			throw new IllegalArgumentException("Invalid value for the VC unit: " + unitSymbol);
 		}
@@ -374,11 +378,11 @@ private VCUnitTranslator() { super(); }
 		Element unitDef = new Element(CELLMLTags.UNITS, tNamespace);
 	    if (VC_unitDef.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
 		    unitDef.setAttribute(CELLMLTags.name, CELLMLTags.noDimUnit);
-			transUnits = new ArrayList();
+			transUnits = new ArrayList<Element>();
 			transUnits.add(getCellMLTransUnit(new RationalNumber(1), 1.0, 0, CELLMLTags.noDimUnit));
 		} else {
 			unitDef.setAttribute(CELLMLTags.name, unitSymbol);
-	    	transUnits = expandUcarCellML(1.0, 0, unit, new ArrayList());
+	    	transUnits = expandUcarCellML(1.0, 0, unit, new ArrayList<Element>());
 		}
 		for (int i = 0; i < transUnits.size(); i++) {   
 			Element basicUnit = (Element)transUnits.get(i); 

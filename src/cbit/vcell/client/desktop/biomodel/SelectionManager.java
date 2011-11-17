@@ -39,6 +39,7 @@ public class SelectionManager {
 		pathway_diagram,
 		pathway_objects,
 		biopax_summary,
+		biopax_tree,
 		
 		geometry_definition,
 		structure_mapping,

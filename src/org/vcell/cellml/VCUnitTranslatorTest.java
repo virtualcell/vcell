@@ -32,9 +32,9 @@ public VCUnitTranslatorTest() {
 
 
 	//utility method.
-	private ArrayList loadUnits() {
+	private ArrayList<VCUnitDefinition> loadUnits() {
 
-		ArrayList VCStandardUnits = new ArrayList();	
+		ArrayList<VCUnitDefinition> VCStandardUnits = new ArrayList<VCUnitDefinition>();	
 		java.lang.reflect.Field [] fields = VCUnitDefinition.class.getFields();
 		for (int i = 0; i < fields.length; i++) {
 			try {
@@ -54,7 +54,7 @@ public VCUnitTranslatorTest() {
 
 	public void testVCUnitTranslator_VCCell() {
 
-		ArrayList VCStandardUnits = loadUnits();
+		ArrayList<VCUnitDefinition> VCStandardUnits = loadUnits();
 		Namespace tNamespace = Namespace.getNamespace(CELLMLTags.CELLML_NS);
 		Namespace tAttNamespace = Namespace.getNamespace("");
 		for (int i = 0; i < VCStandardUnits.size(); i++) {	

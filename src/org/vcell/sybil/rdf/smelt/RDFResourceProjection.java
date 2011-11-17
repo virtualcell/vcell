@@ -23,7 +23,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 
 public class RDFResourceProjection implements RDFSmelter {
 
@@ -62,7 +62,7 @@ public class RDFResourceProjection implements RDFSmelter {
 	}
 
 	public Graph project(Graph model) {
-		Graph modelMapped = new HashGraph();
+		Graph modelMapped = new IndexedGraph();
 		for(Statement statement : model) {
 			modelMapped.add(project(statement, model.getValueFactory()));
 		}

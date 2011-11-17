@@ -34,6 +34,9 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.importer.DataImporter;
+import org.vcell.util.importer.PathwayImportPanel;
+import org.vcell.util.importer.PathwayImporter;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -75,6 +78,10 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 			public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 				closeMIRIAMWindow();
 			}};
+			
+	private PathwayImporter pathwayImporter = new PathwayImporter();
+	private PathwayImportPanel pathwayImportPanel = null;
+	
 
 /**
  * Insert the method's description here.
@@ -93,6 +100,7 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	setBioModel(bioModel);
 	setBioModelEditor(new BioModelEditor());
 	createBioModelFrame();
+	pathwayImportPanel = new PathwayImportPanel(pathwayImporter, getBioModelEditor().getSelectionManager());	
 }
 	/**
 	 * Invoked when an action occurs.
@@ -392,7 +400,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/14/2004 3:41:06 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public VCDocument getVCDocument() {
+public BioModel getVCDocument() {
 	return getBioModel();
 }
 
@@ -838,6 +846,16 @@ public boolean hasBlankDocument() {
 @Override
 public void updateConnectionStatus(ConnectionStatus connStatus) {
 	bioModelEditor.updateConnectionStatus(connStatus);	
+}
+
+public DataImporter getPathwayImporter() { return pathwayImporter; }
+
+public void importPathway() {
+	System.out.println("Once implemented, this will open a pathway!");
+	pathwayImportPanel.showDialog(getComponent());
+//	DialogUtils.showComponentCloseDialog(JOptionPane.getFrameForComponent(getComponent()), 
+//			new JLabel("<html>Once implemented, this will open a pathway.</hmtl>"), "Opening a Pathway");
+
 }
 
 }

@@ -674,4 +674,5 @@ public void updateConnectionStatus(ConnectionStatus newValue) {
 		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
 	}
 }
+public SelectionManager getSelectionManager() { return selectionManager; }
 }

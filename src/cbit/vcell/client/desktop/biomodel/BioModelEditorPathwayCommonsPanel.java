@@ -36,11 +36,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.jdom.Namespace;
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
-import org.vcell.pathway.persistence.PathwayReader;
-import org.vcell.pathway.persistence.PathwayReaderBiopax3;
+import org.vcell.pathway.persistence.PathwayIOUtil;
 import org.vcell.sybil.util.http.pathwaycommons.search.DataSource;
 import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
@@ -54,7 +52,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -76,7 +73,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		private PathwayModel pathwayModel;
 		private String topLevelPathwayName;
 		
-		private PathwayData(String pathwayName, PathwayModel pathwayModel) {
+		public PathwayData(String pathwayName, PathwayModel pathwayModel) {
 			super();
 			this.topLevelPathwayName = pathwayName;
 			this.pathwayModel = pathwayModel;
@@ -282,21 +279,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 //						PathwayReader pathwayReader = new PathwayReader();
 //						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
 				
-				PathwayModel pathwayModel = null;
-				Namespace namespace = jdomDocument.getRootElement().getNamespace("bp");
-				if((namespace != null) && (namespace.getURI() != null) && (namespace.getURI().contains("level3"))) {
-					PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
-					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement());
-				} else {		// if it's not level3 we assume it to be level2
-				// TODO: once biopax version3 becomes dominant change the code to use that as the default
-					PathwayReader pathwayReader = new PathwayReader();
-					pathwayModel = pathwayReader.parse(jdomDocument.getRootElement(),getClientTaskStatusSupport());
-				}
-				
-				pathwayModel.reconcileReferences(getClientTaskStatusSupport());
+				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, getClientTaskStatusSupport());
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
-				pathwayModel.refreshParentMap();
 			}
 		};
 		

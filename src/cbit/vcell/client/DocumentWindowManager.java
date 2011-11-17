@@ -9,12 +9,12 @@
  */
 
 package cbit.vcell.client;
-import java.awt.Component;
 import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
@@ -243,7 +243,7 @@ public void exportMessage(ExportEvent exportEvent) {
  * Creation date: (5/27/2004 1:46:17 PM)
  * @return javax.swing.JPanel
  */
-public Component getComponent() {
+public JComponent getComponent() {
 	return jPanel;
 }
 
@@ -306,13 +306,12 @@ public abstract VCDocument getVCDocument();
  */
 abstract SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 9:58:46 PM)
- */
 public void openDocument(int documentType) {
 	getRequestManager().openDocument(documentType, this);
+}
+
+public void importPathway() {
+	getRequestManager().openPathway(this);
 }
 
 

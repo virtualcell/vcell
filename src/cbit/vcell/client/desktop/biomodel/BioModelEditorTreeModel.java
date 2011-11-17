@@ -95,6 +95,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, true),			
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE, true),			
 		};	
 	private BioModelNode pathwayDiagramNode = new BioModelNode(pathwayChildFolderNodes[0], false); 
 	private BioModelNode pathwayObjectsNode = new BioModelNode(pathwayChildFolderNodes[1], false); 

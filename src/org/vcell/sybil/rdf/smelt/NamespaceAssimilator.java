@@ -24,7 +24,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.OWL;
-import org.sbpax.impl.HashGraph;
+import org.sbpax.impl.IndexedGraph;
 
 public class NamespaceAssimilator implements RDFSmelter {
 	
@@ -38,7 +38,7 @@ public class NamespaceAssimilator implements RDFSmelter {
 	}
 	
 	public Graph smelt(Graph rdf) {
-		Graph rdfNew = new HashGraph();
+		Graph rdfNew = new IndexedGraph();
 		for(Statement statement : rdf) {
 			Resource subjectNew = smelt(rdf, statement.getSubject());
 			URI predicateNew = smelt(rdf, statement.getPredicate());

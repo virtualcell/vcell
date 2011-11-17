@@ -19,8 +19,8 @@ import java.util.TreeMap;
  */
 public class CELLMLTags {
 
-	private static ArrayList CellUnits = new ArrayList();
-	private static TreeMap prefixConverter = new TreeMap();
+	private static ArrayList<String> CellUnits = new ArrayList<String>();
+	private static TreeMap<String, String> prefixConverter = new TreeMap<String, String>();
 
 	// CellML namespace : was in cbit.vcell.vcml.Translator in project VCell; moving it here to remove dependency of VCell Util on VCell project
 	public static final String CELLML_NS = "http://www.cellml.org/cellml/1.0#";

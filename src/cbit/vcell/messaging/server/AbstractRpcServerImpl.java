@@ -59,7 +59,7 @@ public synchronized final Object rpc(RpcRequest request) throws DataAccessExcept
 		if (methods[i].getName().equals(methodName)){
 			method = methods[i];
 			
-			Class[] paramTypes = method.getParameterTypes();
+			Class<?>[] paramTypes = method.getParameterTypes();
 			if (paramTypes.length != arguments.length) {
 				method = null;
 				continue;
@@ -73,8 +73,8 @@ public synchronized final Object rpc(RpcRequest request) throws DataAccessExcept
 				}
 				
 				if (paramTypes[j].isPrimitive()) {	// if not, check if it's primitive type
-					Class c = arguments[j].getClass(); 
-					Class argType = null;
+					Class<?> c = arguments[j].getClass(); 
+					Class<?> argType = null;
 
 					//unwrap primitive type
 					if (c.equals(Boolean.class)) {

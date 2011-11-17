@@ -30,11 +30,10 @@ import org.vcell.util.UserCancelException;
  */
 public class TranslationLogger extends VCLogger {
 	  
-	private static String OPTIONS [] = {"Continue", "Cancel"};
 	private static String OK_OPTION = "OK";
 	private static String CANCEL_OPTION = "Cancel";
 	private java.awt.Component requester;
-	protected ArrayList messages = new ArrayList();
+	protected ArrayList<String> messages = new ArrayList<String>();
 
 	public TranslationLogger(TopLevelWindowManager topLevelWindow) {
 		
@@ -70,7 +69,7 @@ public class TranslationLogger extends VCLogger {
 		}
 		UserMessage userMessage = new UserMessage(messageBuf.toString(), new String [] {TranslationLogger.OK_OPTION}, 
 			                                      TranslationLogger.OK_OPTION);
-		String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
+		PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
 	}
 
 	public void sendMessage(int messageLevel, int messageType) throws UserCancelException {
@@ -88,10 +87,10 @@ public class TranslationLogger extends VCLogger {
 		if (messageLevel == TranslationLogger.LOW_PRIORITY || messageLevel == TranslationLogger.MEDIUM_PRIORITY) {
 			messages.add(message);
 			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.OK_OPTION}, TranslationLogger.OK_OPTION);
-			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);
+			PopupGenerator.showWarningDialog(requester, null, userMessage, null);
 		} else if (messageLevel == TranslationLogger.HIGH_PRIORITY) {      
 			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.CANCEL_OPTION}, TranslationLogger.CANCEL_OPTION);
-			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);
+			PopupGenerator.showWarningDialog(requester, null, userMessage, null);
 			processException(messageType);                                        //regardless of the 'value'
 		}
 	}
