@@ -39,6 +39,7 @@
 package llnl.visit;
 
 import java.io.IOException;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 // ****************************************************************************
@@ -206,33 +207,58 @@ class Xfer implements SimpleObserver, Runnable
     {
 
     	boolean retval = false;
-    	VisitMessage message = inputInbox.poll();
-    	while (message!=null){
-    		int opcode = message.getOpCode();
+    	VisitMessage visitMessage = inputInbox.poll();
+    	while (visitMessage!=null){
+    		int opcode = visitMessage.getOpCode();
     		
             if(opcode < 200 && subjects[opcode] != null)
             {
-                 PrintMessage("Xfer::Process: "+message);
+                 PrintMessage("Xfer::Process: "+visitMessage);
 
                  // Read the object into its local copy.
-                 subjects[opcode].Read(message.getMessageData());
+                 subjects[opcode].Read(visitMessage.getMessageData());
 
                  // Indicate that we want Xfer to ignore update messages if
                  // it gets them while processing the Notify.
                  SetUpdate(false);
+if (verbose){
+	//
+	// force AttributeSubject to print the message
+	// a) print full subject recursively, each level of embedded attribute with repeated indent.
+	// b) restore embedded attributes to real indent (print them intact if first-level attribute is included in message)
+	// c) insert delimiter for first level attribute indents ... so tokenizer can enumerate first-level attributes (may be complex attributes)
+	// d) print only those first-level attributes that were "selected" (included in message)
+	//
+	StringBuffer msg = new StringBuffer();
+	String indentPattern = "^|^";
+	String indent        = "    ";
+	String tokenDelimiter = "%";
+	String messageStr = subjects[opcode].toString(indentPattern);
+	messageStr = messageStr.replace(indentPattern+indentPattern+indentPattern+indentPattern, indent+indent+indent+indent);
+	messageStr = messageStr.replace(indentPattern+indentPattern+indentPattern, indent+indent+indent);
+	messageStr = messageStr.replace(indentPattern+indentPattern, indent+indent);
+	messageStr = messageStr.replace(indentPattern, tokenDelimiter+indent);
+	StringTokenizer tokens = new StringTokenizer(messageStr,tokenDelimiter);
+	for (int i=0;i<subjects[opcode].GetNumAdditionalAttributes() && tokens.hasMoreTokens();i++){
+		if (subjects[opcode].IsSelected(i)){
+			msg.append(tokens.nextToken());
+		}
+	}
+	System.out.println(msg.toString());
+}
                  subjects[opcode].Notify();
-                 inputRead.add(message);
+                 inputRead.add(visitMessage);
             }
             else
             {
                 // Dispose of the message.
                 PrintMessage("Xfer::Process: opcode="+opcode+
                              " disposed of "+length+ " bytes");
-                inputJunk.add(message);
+                inputJunk.add(visitMessage);
             }
             retval = true;
             
-            message = inputInbox.poll();
+            visitMessage = inputInbox.poll();
         }
 
         return retval;
