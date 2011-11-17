@@ -39,6 +39,7 @@
 package llnl.visit;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 // ****************************************************************************
 // Class: Xfer
@@ -77,7 +78,7 @@ import java.io.IOException;
 
 class Xfer implements SimpleObserver, Runnable
 {
-    public Xfer()
+	public Xfer()
     {
         subjects = new AttributeSubject[200];
         for(int i = 0; i < 200; ++i)
@@ -93,7 +94,9 @@ class Xfer implements SimpleObserver, Runnable
         length = -1;
         opcode = 0;
         processing = false;
+        communicating = false;
         verbose = false;
+        
     }
 
     public void Add(AttributeSubject subject)
@@ -154,28 +157,38 @@ class Xfer implements SimpleObserver, Runnable
     public synchronized void Update(AttributeSubject subject)
     {
         // Write the message
-        subject.Write(message);
+    	VisitMessage visitMessage = new VisitMessage(subject,message.remoteInfo);
+    	messageOutbox.add(visitMessage);
+    	PrintMessage("Xfer::Update: "+visitMessage);
+    	SendMessages();
+    }
+    
+    private void SendMessages() {
+    	VisitMessage queuedMessage = messageOutbox.peek();
+    	while (queuedMessage!=null && viewerInit){
+	        // Write the message header
+	        header.WriteInt(queuedMessage.getOpCode());
+	        header.WriteInt(queuedMessage.getDataLength());
 
-        // Write the message header
-        header.WriteInt(subject.GetAttributeId());
-        header.WriteInt(message.length);
-
-        // Write to the socket.
-        if(viewerInit)
-        {
+	        // Write to the socket.
             try
             {
                 int hlen = viewer.DirectWrite(header.GetBytes());
-                int mlen = viewer.DirectWrite(message.GetBytes());
-                PrintMessage("Sent " + (hlen+mlen) + " bytes to viewer.");
+                int mlen = viewer.DirectWrite(queuedMessage.getMessageData().GetBytes());
+                PrintMessage("Sent " + (hlen+mlen) + " bytes to viewer: "+queuedMessage);
+             	messageOutbox.remove(queuedMessage);
+            	messageSent.add(queuedMessage);
             }
             catch(IOException e)
             {
+            	System.err.println("error writing attributeSubject "+subjects[queuedMessage.getOpCode()]+", "+e.getMessage());
+            	e.printStackTrace(System.err);
             }
-        }
-
-        header.Flush();
-        message.Flush();
+	
+	        header.Flush();
+	        message.Flush();
+	        queuedMessage = messageOutbox.peek();
+    	}
     }
 
     public void SetUpdate(boolean val) { doUpdate = val; }
@@ -183,21 +196,49 @@ class Xfer implements SimpleObserver, Runnable
 
     public void SendInterruption()
     {
-        header.WriteInt(-1);
-        header.WriteInt(0);
-        try
-        {
-            int hlen = viewer.DirectWrite(header.GetBytes());
-            PrintMessage("Sent " + hlen + " bytes to viewer.");
-        }
-        catch(IOException e)
-        {
-        }
-
-        header.Flush();
+    	VisitMessage visitMessage = new VisitMessage(-1,0,message);
+    	PrintMessage("Xfer::SendInterruption: "+visitMessage);
+    	messageOutbox.add(visitMessage);
+    	SendMessages();
     }
 
     public synchronized boolean Process() throws LostConnectionException
+    {
+
+    	boolean retval = false;
+    	VisitMessage message = inputInbox.poll();
+    	while (message!=null){
+    		int opcode = message.getOpCode();
+    		
+            if(opcode < 200 && subjects[opcode] != null)
+            {
+                 PrintMessage("Xfer::Process: "+message);
+
+                 // Read the object into its local copy.
+                 subjects[opcode].Read(message.getMessageData());
+
+                 // Indicate that we want Xfer to ignore update messages if
+                 // it gets them while processing the Notify.
+                 SetUpdate(false);
+                 subjects[opcode].Notify();
+                 inputRead.add(message);
+            }
+            else
+            {
+                // Dispose of the message.
+                PrintMessage("Xfer::Process: opcode="+opcode+
+                             " disposed of "+length+ " bytes");
+                inputJunk.add(message);
+            }
+            retval = true;
+            
+            message = inputInbox.poll();
+        }
+
+        return retval;
+    }
+
+    boolean ReadMessages(boolean bProcessImmediately) throws LostConnectionException
     {
         boolean retval = false;
 
@@ -212,51 +253,48 @@ class Xfer implements SimpleObserver, Runnable
             }
             catch(IOException e)
             {
+            	e.printStackTrace();
             }
         }
 
         // While there are complete messages, read and process them.
         while(ReadHeader())
         {
-//            if(opcode < nSubjects)
-            if(opcode < 200 && subjects[opcode] != null)
-            {
-                 PrintMessage("Xfer::Process: "+
-                              "class="+subjects[opcode].GetClassName()+
-                              " opcode="+opcode+
-                              " length="+length+ " bytes");
-
-                 // Read the object into its local copy.
-                 subjects[opcode].Read(input);
-
-                 // Indicate that we want Xfer to ignore update messages if
-                 // it gets them while processing the Notify.
-                 SetUpdate(false);
-                 subjects[opcode].Notify();
-            }
-            else
-            {
-                // Dispose of the message.
-                PrintMessage("Xfer::Process: opcode="+opcode+
-                             " disposed of "+length+ " bytes");
-                input.Shift(length);
-            }
-
+        	VisitMessage receivedVisitMessage = new VisitMessage(opcode,length,input);
+        	inputInbox.add(receivedVisitMessage);
+        	PrintMessage("Xfer::ReadMessages: "+receivedVisitMessage);
+ 
+			if (bProcessImmediately){
+				Process();
+			}
+        	
             retval = true;
         }
 
         return retval;
     }
-
+    
     public void StartProcessing()
     {
         if(!processing)
         {
             processing = true;
-            new Thread(this).start();
-        }
-    }
+            Thread messageProcessingThread = new Thread(this,"Xfer Process Thread");
+            messageProcessingThread.start();
+            
+            Runnable socketRunnable = new Runnable(){
+                public void run(){
+                	socketCommunicationLoop();
+                }
+            };
 
+            communicating = true;
+            Thread socketCommunicationThread = new Thread(socketRunnable,"Socket communication");
+            socketCommunicationThread.setPriority(socketCommunicationThread.getPriority()+1);
+            socketCommunicationThread.start();
+         }
+    }
+    
     public void StopProcessing()
     {
         processing = false;
@@ -275,8 +313,7 @@ class Xfer implements SimpleObserver, Runnable
         // reading the header. Also try if there is a stored header. That
         // means that we've tried to read for this operation before. Maybe
         // the message is all there this time.
-        int sizeof_int = 4;
-        if((input.Size() >= (2 * sizeof_int)) || haveStoredHeader)
+        if((input.Size() >= messageHeaderSize) || haveStoredHeader)
         {
             if(!haveStoredHeader)
             {
@@ -293,11 +330,13 @@ class Xfer implements SimpleObserver, Runnable
        return retval;
     }
 
-    // This is a thread callback function that reads back from the viewer
-    // and fills the input buffer. If we read any input from the viewer,
-    // we process it too.
+    //
+    // This is a thread callback function that processes queued messages from the
+    // viewer (stored in inputInbox queue)
+    //
     public void run()
     {
+		PrintMessage("Starting Process Thread");
         int idlecount = 0;
         Yielder y = new Yielder(2000);
         while(processing && viewerInit)
@@ -318,12 +357,125 @@ class Xfer implements SimpleObserver, Runnable
                 processing = false;
             }
         }
+        PrintMessage("Ended Process Thread");
+    }
+    
+    //
+    // This is a thread callback function that reads back from the viewer
+    // and fills the inputInbox queue.
+    //
+    private void socketCommunicationLoop(){
+    	
+       	PrintMessage("Socket communication thread started");
+       	while (communicating){
+       		//
+       		// read all pending messages
+       		//
+       		if (viewerInit){
+	       		try {
+		    		ReadMessages(false);
+	       		} catch (LostConnectionException e){
+	       			e.printStackTrace();
+	       		} catch (Exception e){
+	       			e.printStackTrace(System.out);
+	       		}
+	       		
+//	       		try {
+//	       			SendMessages();
+//	       		} catch (Exception e){
+//	       			e.printStackTrace();
+//	       		}
+       		}
+       		
+    		try {
+    			Thread.sleep(100);
+    		}catch (InterruptedException e){	
+    		}
+    	}
+       	PrintMessage("Socket communication thread stopped");
     }
 
+
+    public class VisitMessage {
+    	private long timestamp;
+    	private int opCode;
+    	private CommunicationBuffer messageData;
+    	
+    	//
+    	// incoming messages
+    	//
+    	public VisitMessage(int opCode, int length, CommunicationBuffer inputBuffer){
+    		this.opCode = opCode;
+    		
+    		// grab data from the CommunicationBuffer
+    		if (inputBuffer.length < length){
+    			throw new RuntimeException("failed to create VisitMessage ... CommunicationBuffer doesn't have correct length");
+    		}
+    		messageData = new CommunicationBuffer();
+    		if (messageData.nAlloc < length){
+    			messageData.nAlloc = length;
+    			messageData.buf = new byte[length];
+    		}
+    		System.arraycopy(inputBuffer.GetBytes(),0,messageData.buf,0,length);
+    		inputBuffer.Shift(length);
+    		messageData.length = length;
+    		messageData.remoteInfo = inputBuffer.remoteInfo;
+    		
+    		this.timestamp = System.currentTimeMillis();
+    	}
+    	
+    	//
+    	// outgoing messages
+    	//
+    	public VisitMessage(AttributeSubject subject, CommunicationHeader communicationHeader){
+    	    this.opCode = subject.GetAttributeId();
+    		messageData = new CommunicationBuffer();
+    		messageData.remoteInfo = communicationHeader;
+    		subject.Write(messageData);
+    		
+    		this.timestamp = System.currentTimeMillis();
+    	}
+    	
+    	public CommunicationBuffer getMessageData(){
+    		return messageData;
+    	}
+    	
+    	public int getOpCode(){
+    		return opCode;
+    	}
+    	
+    	public int getDataLength(){
+    		return messageData.length;
+    	}
+    	
+    	public long getTimestamp(){
+    		return timestamp;
+    	}
+    	
+    	public String toString(){
+    		String className = "?";
+    		if (opCode>=0 && opCode<subjects.length && subjects[opCode]!=null){
+    			className = subjects[opCode].GetClassName();
+    		}
+    		return "VisitMessage(opcode="+opCode+", length="+getDataLength()+", class="+className+")";
+    	}
+    }
+
+    final static int sizeof_int = 4;
+    final static int messageHeaderSize = 2*sizeof_int;
+    
     private boolean             doUpdate;
     private CommunicationBuffer header;
+    
     private CommunicationBuffer message;
+    private ConcurrentLinkedQueue<VisitMessage> messageOutbox = new ConcurrentLinkedQueue<VisitMessage>();
+    private ConcurrentLinkedQueue<VisitMessage> messageSent = new ConcurrentLinkedQueue<VisitMessage>();
+
     private CommunicationBuffer input;
+    private ConcurrentLinkedQueue<VisitMessage> inputInbox = new ConcurrentLinkedQueue<VisitMessage>();
+    private ConcurrentLinkedQueue<VisitMessage> inputRead = new ConcurrentLinkedQueue<VisitMessage>();
+    private ConcurrentLinkedQueue<VisitMessage> inputJunk = new ConcurrentLinkedQueue<VisitMessage>();
+
     private AttributeSubject[]  subjects;
     private int                 nSubjects;
     private RemoteProcess       viewer;
@@ -332,5 +484,6 @@ class Xfer implements SimpleObserver, Runnable
     private int                 length;
     private int                 opcode;
     private boolean             processing;
+    private boolean             communicating;
     private boolean             verbose;
 }

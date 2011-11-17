@@ -131,7 +131,7 @@ public class EventLoop extends java.lang.Object implements SimpleObserver
      */
     public synchronized boolean Process() throws LostConnectionException
     {
-        return multithread ? false : xfer.Process();
+        return multithread ? false : xfer.ReadMessages(true);
     }
 
     /**

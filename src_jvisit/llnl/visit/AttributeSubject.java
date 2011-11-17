@@ -77,7 +77,7 @@ public abstract class AttributeSubject extends java.lang.Object
     {
         super();
 
-        observers = new Vector();
+        observers = new Vector<SimpleObserver>();
         selected = new boolean[nAtts];
         UnSelectAll();
         attributeId = 0;
@@ -318,7 +318,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return s;
     }
 
-    protected String intVectorToString(String name, Vector val, String indent)
+    protected String intVectorToString(String name, Vector<Integer> val, String indent)
     {
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
@@ -351,7 +351,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return s;
     }
 
-    protected String floatVectorToString(String name, Vector val, String indent)
+    protected String floatVectorToString(String name, Vector<Float> val, String indent)
     {
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
@@ -384,7 +384,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return s;
     }
 
-    protected String doubleVectorToString(String name, Vector val, String indent)
+    protected String doubleVectorToString(String name, Vector<Double> val, String indent)
     {
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
@@ -417,7 +417,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return s;
     }
 
-    protected String ucharVectorToString(String name, Vector val, String indent)
+    protected String ucharVectorToString(String name, Vector<Byte> val, String indent)
     {
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
@@ -437,7 +437,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return indent + name + " = \"" + val + "\"";
     }
 
-    protected String stringVectorToString(String name, Vector val, String indent)
+    protected String stringVectorToString(String name, Vector<String> val, String indent)
     {
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
@@ -460,7 +460,7 @@ public abstract class AttributeSubject extends java.lang.Object
         return toString(new String());
     }
 
-    private Vector    observers;
+    private Vector<SimpleObserver>    observers;
     private boolean[] selected;
     private int       attributeId;
 }
