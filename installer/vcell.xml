@@ -1,0 +1,155 @@
+<project>
+    <shortName>vcell</shortName>
+    <fullName>VCell</fullName>
+    <version>5.1</version>
+    <componentList>
+        <component>
+            <name>default</name>
+            <description>Default Component</description>
+            <canBeEdited>1</canBeEdited>
+            <selected>1</selected>
+            <show>1</show>
+            <folderList>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfiles</name>
+                    <platforms>all</platforms>
+                    <shortcutList>
+                        <shortcut>
+                            <comment>Uninstall</comment>
+                            <exec>${installdir}/${uninstallerName}</exec>
+                            <icon></icon>
+                            <name>Uninstall ${product_fullname}</name>
+                            <path>${installdir}</path>
+                            <platforms>all</platforms>
+                            <runAsAdmin>0</runAsAdmin>
+                            <runInTerminal>0</runInTerminal>
+                            <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
+                            <windowsExecArgs></windowsExecArgs>
+                            <windowsIcon></windowsIcon>
+                            <windowsPath>${installdir}</windowsPath>
+                        </shortcut>
+                    </shortcutList>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfileslinux</name>
+                    <platforms>linux</platforms>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfileswindows</name>
+                    <platforms>windows</platforms>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfilesosx</name>
+                    <platforms>osx</platforms>
+                </folder>
+            </folderList>
+            <startMenuShortcutList>
+                <startMenuShortcut>
+                    <comment>Uninstall ${product_fullname}</comment>
+                    <name>Uninstall ${product_fullname}</name>
+                    <runAsAdmin>0</runAsAdmin>
+                    <runInTerminal>0</runInTerminal>
+                    <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
+                    <windowsExecArgs></windowsExecArgs>
+                    <windowsIcon></windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+            </startMenuShortcutList>
+        </component>
+        <include>
+            <file>JREs/jre1.6.0_29-windows/java.xml</file>
+        </include>
+    </componentList>
+    <preInstallationActionList>
+        <autodetectJava>
+            <abortOnError>0</abortOnError>
+            <explanation>Detecting Java</explanation>
+            <promptUser>0</promptUser>
+            <selectionOrder>newest</selectionOrder>
+            <showMessageOnError>0</showMessageOnError>
+            <validVersionList>
+                <validVersion>
+                    <maxVersion></maxVersion>
+                    <minVersion>1.6</minVersion>
+                    <requireJDK>0</requireJDK>
+                    <vendor></vendor>
+                </validVersion>
+            </validVersionList>
+        </autodetectJava>
+        <actionGroup>
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                        <showProgressDialog>
+                            <title>Downloading files</title>
+                            <actionList>
+                                <httpGet>
+                                    <filename>${installdir}/java.tar.gz</filename>
+                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-linux.tar.gz</url>
+                                </httpGet>
+                            </actionList>
+                        </showProgressDialog>
+                        <runProgram>
+                            <program>tar</program>
+                            <programArguments>xzf ${installdir}/java.tar.gz -C ${installdir}</programArguments>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="linux"/>
+                    </ruleList>
+                </actionGroup>
+                <actionGroup>
+                    <actionList>
+                        <showProgressDialog>
+                            <title>Downloading files</title>
+                            <actionList>
+                                <httpGet>
+                                    <filename>${installdir}/java.exe</filename>
+                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-windows.exe</url>
+                                </httpGet>
+                            </actionList>
+                        </showProgressDialog>
+                        <runProgram>
+                            <program>${installdir}/java.exe</program>
+                            <programArguments>/s INSTALLDIR="${installdir.dos}\JRE" REBOOT=Suppress</programArguments>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="windows"/>
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+            <ruleList>
+                <isFalse value="${java_autodetected}"/>
+            </ruleList>
+        </actionGroup>
+    </preInstallationActionList>
+    <enableRollback>1</enableRollback>
+    <enableTimestamp>1</enableTimestamp>
+    <saveRelativePaths>1</saveRelativePaths>
+    <vendor>University of Connecticut Health Center</vendor>
+    <parameterList>
+        <directoryParameter>
+            <name>installdir</name>
+            <description>Installer.Parameter.installdir.description</description>
+            <explanation>Installer.Parameter.installdir.explanation</explanation>
+            <value></value>
+            <default>${platform_install_prefix}/${product_shortname}-${product_version}</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <cliOptionName>prefix</cliOptionName>
+            <mustBeWritable>yes</mustBeWritable>
+            <mustExist>0</mustExist>
+            <width>40</width>
+        </directoryParameter>
+    </parameterList>
+</project>
+
