@@ -2,7 +2,6 @@
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
     <version>5</version>
-    <installerFilename>${product_shortname}-${product_version}-${platform_name}-installer-with-Java.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
     <logoImage>vcell.gif</logoImage>
@@ -79,10 +78,68 @@
         </include>
     </componentList>
     <preInstallationActionList>
-        <setInstallerVariable>
-            <name>javaws_executable</name>
-            <value>${installdir}\java\bin\javaws.exe</value>
-        </setInstallerVariable>
+        <autodetectJava>
+            <abortOnError>0</abortOnError>
+            <explanation>Detecting Java</explanation>
+            <promptUser>0</promptUser>
+            <selectionOrder>newest</selectionOrder>
+            <showMessageOnError>0</showMessageOnError>
+            <validVersionList>
+                <validVersion>
+                    <maxVersion></maxVersion>
+                    <minVersion>1.6</minVersion>
+                    <requireJDK>0</requireJDK>
+                    <vendor></vendor>
+                </validVersion>
+            </validVersionList>
+        </autodetectJava>
+        <actionGroup>
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                        <showProgressDialog>
+                            <title>Downloading files</title>
+                            <actionList>
+                                <httpGet>
+                                    <filename>${installdir}/java.tar.gz</filename>
+                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-linux.tar.gz</url>
+                                </httpGet>
+                            </actionList>
+                        </showProgressDialog>
+                        <runProgram>
+                            <program>tar</program>
+                            <programArguments>xzf ${installdir}/java.tar.gz -C ${installdir}</programArguments>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="linux"/>
+                    </ruleList>
+                </actionGroup>
+                <actionGroup>
+                    <actionList>
+                        <showProgressDialog>
+                            <title>Downloading files</title>
+                            <actionList>
+                                <httpGet>
+                                    <filename>${installdir}/java.exe</filename>
+                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-windows.exe</url>
+                                </httpGet>
+                            </actionList>
+                        </showProgressDialog>
+                        <runProgram>
+                            <program>${installdir}/java.exe</program>
+                            <programArguments>/s INSTALLDIR="${installdir.dos}\JRE" REBOOT=Suppress</programArguments>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="windows"/>
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+            <ruleList>
+                <isFalse value="${java_autodetected}"/>
+            </ruleList>
+        </actionGroup>
     </preInstallationActionList>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
