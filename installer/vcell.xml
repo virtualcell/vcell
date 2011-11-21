@@ -1,7 +1,11 @@
 <project>
-    <shortName>vcell</shortName>
+    <shortName>VCell</shortName>
     <fullName>VCell</fullName>
-    <version>5.1</version>
+    <version>5</version>
+    <licenseFile>../license.txt</licenseFile>
+    <leftImage>uchc-vcell.gif</leftImage>
+    <logoImage>vcell.gif</logoImage>
+    <splashImage>uchc-vcell.gif</splashImage>
     <componentList>
         <component>
             <name>default</name>
@@ -19,15 +23,15 @@
                         <shortcut>
                             <comment>Uninstall</comment>
                             <exec>${installdir}/${uninstallerName}</exec>
-                            <icon></icon>
-                            <name>Uninstall ${product_fullname}</name>
+                            <icon>${installdir}/vcell5.ico</icon>
+                            <name>Uninstall ${product_fullname} ${product_version}</name>
                             <path>${installdir}</path>
                             <platforms>all</platforms>
                             <runAsAdmin>0</runAsAdmin>
                             <runInTerminal>0</runInTerminal>
                             <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
                             <windowsExecArgs></windowsExecArgs>
-                            <windowsIcon></windowsIcon>
+                            <windowsIcon>${installdir}/vcell5.ico</windowsIcon>
                             <windowsPath>${installdir}</windowsPath>
                         </shortcut>
                     </shortcutList>
@@ -43,6 +47,11 @@
                     <destination>${installdir}</destination>
                     <name>programfileswindows</name>
                     <platforms>windows</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>vcell5.ico</origin>
+                        </distributionFile>
+                    </distributionFileList>
                 </folder>
                 <folder>
                     <description>Program Files</description>
@@ -53,13 +62,13 @@
             </folderList>
             <startMenuShortcutList>
                 <startMenuShortcut>
-                    <comment>Uninstall ${product_fullname}</comment>
-                    <name>Uninstall ${product_fullname}</name>
+                    <comment>Uninstall ${product_fullname} ${product_version}</comment>
+                    <name>Uninstall ${product_fullname} ${product_version}</name>
                     <runAsAdmin>0</runAsAdmin>
                     <runInTerminal>0</runInTerminal>
                     <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
                     <windowsExecArgs></windowsExecArgs>
-                    <windowsIcon></windowsIcon>
+                    <windowsIcon>${installdir}/vcell5.ico</windowsIcon>
                     <windowsPath>${installdir}/</windowsPath>
                 </startMenuShortcut>
             </startMenuShortcutList>
@@ -135,7 +144,15 @@
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
     <saveRelativePaths>1</saveRelativePaths>
+    <startMenuGroupName>${product_fullname} ${product_version}</startMenuGroupName>
     <vendor>University of Connecticut Health Center</vendor>
+    <finalPageActionList>
+        <runProgram>
+            <program>${javaws_executable}</program>
+            <programArguments>http://vcell.org/webstart/Rel/vcell.jnlp</programArguments>
+            <progressText>Launch ${product_fullname} ${product_version} now.</progressText>
+        </runProgram>
+    </finalPageActionList>
     <parameterList>
         <directoryParameter>
             <name>installdir</name>
@@ -151,5 +168,10 @@
             <width>40</width>
         </directoryParameter>
     </parameterList>
+    <platformOptionsList>
+        <platformOptions>
+            <platform>windows</platform>
+        </platformOptions>
+    </platformOptionsList>
 </project>
 
