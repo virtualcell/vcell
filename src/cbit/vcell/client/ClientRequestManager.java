@@ -74,6 +74,7 @@ import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ExtensionFilter;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
@@ -1093,7 +1094,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					//
 					// before trying images, try surface
 					//
-					if (imageFile.getAbsolutePath().endsWith(".stl")){
+					if (ExtensionFilter.isMatchingExtension(imageFile, ".stl")){
 						Geometry geometry = RayCaster.createGeometryFromSTL(imageFile, 1000000);
 						fdfos = new FieldDataFileOperationSpec();
 						fdfos.origin = geometry.getOrigin();

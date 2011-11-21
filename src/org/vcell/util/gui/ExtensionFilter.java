@@ -9,6 +9,9 @@
  */
 
 package org.vcell.util.gui;
+
+import java.io.File;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2000 11:43:11 AM)
@@ -45,13 +48,16 @@ public boolean accept(java.io.File file) {
 		return true;
 	}
 	for (int i = 0; i < extensions.length; i++) {
-		if (file.getName().toLowerCase().endsWith(extensions[i])){
+		if (ExtensionFilter.isMatchingExtension(file, extensions[i])){
 			return true;
 		}
 	}
 	return false;
 }
 
+public static final boolean isMatchingExtension(File file,String extension){
+	return file.getName().toLowerCase().endsWith(extension);
+}
 
 /**
  * This method tests if two given extension filters are equal by comparing the description.
