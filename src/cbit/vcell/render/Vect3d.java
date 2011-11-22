@@ -78,6 +78,9 @@ public double getZ() {
 		public double length() {
 			return Math.sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
 		}
+public double lengthSquared() {
+	return q[0]*q[0] + q[1]*q[1] + q[2]*q[2];
+}
 		public void scale(double s) {
 			q[0] *= s;
 			q[1] *= s;
@@ -112,7 +115,7 @@ public static Vect3d sub(Vect3d v1, Vect3d v2) {
     return new Vect3d(v1.q[0] - v2.q[0], v1.q[1] - v2.q[1], v1.q[2] - v2.q[2]);
 }
 		public String toString(){
-			return "("+q[0]+", "+q[1]+", "+q[2]+")";
+			return getClass().getName() + "@" + Integer.toHexString(hashCode())+" ("+q[0]+", "+q[1]+", "+q[2]+")";
 		}
 /**
  * Insert the method's description here.
