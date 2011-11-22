@@ -15,8 +15,6 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -33,7 +31,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.vcell.util.ISize;
-import org.vcell.util.State;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ZEnforcer;
@@ -42,11 +39,8 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
-import cbit.image.PixelClassLimitException;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
-import cbit.image.VCImageUncompressed;
-import cbit.image.VCPixelClass;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -58,16 +52,20 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive;
+import cbit.vcell.geometry.CSGRotation;
+import cbit.vcell.geometry.CSGScale;
+import cbit.vcell.geometry.CSGSetOperator;
+import cbit.vcell.geometry.CSGSetOperator.OperatorType;
+import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.render.Vect3d;
 /**
  * This type was created in VisualAge.
  */
@@ -573,6 +571,37 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
+		
+		// translated rotated cube
+		CSGPrimitive cube = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_CUBE);
+		CSGRotation rotatedCube = new CSGRotation(new Vect3d(1,2,3),Math.PI/4.0);
+		rotatedCube.setChild(cube);
+	
+		// translated sphere
+		CSGTranslation translatedSphere = new CSGTranslation(new Vect3d(0.5,0.5,0.5));
+		CSGPrimitive sphere = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_SPHERE);
+		translatedSphere.setChild(sphere);
+		
+		// union
+		CSGSetOperator csgSetOperator = new CSGSetOperator(OperatorType.DIFFERENCE);
+		csgSetOperator.addChild(rotatedCube);
+		csgSetOperator.addChild(translatedSphere);
+		
+		// scaled union
+		CSGScale csgScale = new CSGScale(new Vect3d(3,3,3));
+		csgScale.setChild(csgSetOperator);
+		
+		CSGTranslation csgTranslatedUnion = new CSGTranslation(new Vect3d(5,5,5));
+		csgTranslatedUnion.setChild(csgScale);
+		
+		Geometry geometry = new Geometry("csg",3);
+		CSGObject csgObject = new CSGObject(null, "obj1", 1);
+		csgObject.setRoot(csgTranslatedUnion);
+		
+		geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("background",new Expression(1.0)));
+		geometry.getGeometrySpec().addSubVolume(csgObject, true);
+		aGeometryViewer.setGeometry(geometry);
+		frame.setSize(600,600);
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");

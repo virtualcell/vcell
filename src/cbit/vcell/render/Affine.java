@@ -50,7 +50,7 @@ public Affine(Affine a)
 	}
 }
 /* c = a + b            */
-void add(Affine b)
+public void add(Affine b)
 {        
  for (int col=0;col<4;col++) {
    for (int row=0;row<4;row++) {
@@ -59,7 +59,7 @@ void add(Affine b)
  }
 }
 /* c = a / b            */
-void div(double b)
+public void div(double b)
 {        
  for (int i=0;i<4;i++)
    for (int j=0;j<4;j++)
@@ -82,14 +82,31 @@ public void identity()
   m[3][3]=1.0;
 }
 /* c = a * b            */
-void mult(double b)
+public Vect3d mult(Vect3d v)
+{
+
+	double[] vin = new double[4];
+	vin[0] = v.getX();
+	vin[1] = v.getY();
+	vin[2] = v.getZ();
+	vin[3] = 1.0;
+	double[] vout = new double[4];
+	for (int i=0;i<4;i++){
+		for (int j=0;j<4;j++){
+			vout[i] += vin[j] * m[j][i];
+		}
+	}
+	return new Vect3d(vout[0]/vout[3],vout[1]/vout[3],vout[2]/vout[3]);
+}
+/* c = a * b            */
+public void mult(double b)
 {        
  for (int i=0;i<4;i++)
    for (int j=0;j<4;j++)
       m[i][j] *= b;
 }
 /* c *= b               */
-void mult(Affine b)
+public void mult(Affine b)
 {
  Affine c= new Affine(this);
        
@@ -103,7 +120,7 @@ void mult(Affine b)
  }
 }
 /* c *= b               */
-static Affine mult(Affine a, Affine b)
+public static Affine mult(Affine a, Affine b)
 {
  Affine c = new Affine(a);
        
@@ -319,7 +336,7 @@ void setOrtho(double left,double right,
   m[2][3] = 0.0;      
   m[3][3] = 1.0;
 }
-void setRotate(Vect3d axis, double angle)
+public void setRotate(Vect3d axis, double angle)
 {
 Matrix3d mat = new Matrix3d();
 Vect3d vect = new Vect3d();
@@ -335,21 +352,21 @@ public void setRow(Vect3d v1, Vect3d v2, Vect3d v3, Vect3d v4)
   m[0][2]=v3.q[0];       m[1][2]=v3.q[1];       m[2][2]=v3.q[2];       m[3][2]=0;
   m[0][3]=v4.q[0];       m[1][3]=v4.q[1];       m[2][3]=v4.q[2];       m[3][3]=1;
 }
-void setScale(Vect3d s)
+public void setScale(Vect3d s)
 {
   identity(); 
   m[0][0] = s.q[0];      
   m[1][1] = s.q[1];      
   m[2][2] = s.q[2];      
 }
-void setTranslate(Vect3d v)
+public void setTranslate(Vect3d v)
 {
   identity(); 
   m[3][0] = v.q[0];      
   m[3][1] = v.q[1];      
   m[3][2] = v.q[2];      
 }
-void show()
+public void show()
 {
 System.out.println("A = "+m[0][0]+"  "+m[1][0]+"  "+m[2][0]+"  "+m[3][0]);
 System.out.println("    "+m[0][1]+"  "+m[1][1]+"  "+m[2][1]+"  "+m[3][1]);
@@ -357,7 +374,7 @@ System.out.println("    "+m[0][2]+"  "+m[1][2]+"  "+m[2][2]+"  "+m[3][2]);
 System.out.println("    "+m[0][3]+"  "+m[1][3]+"  "+m[2][3]+"  "+m[3][3]);
 }
 /* c = a - b            */
-void sub(Affine b)
+public void sub(Affine b)
 {        
  for (int col=0;col<4;col++){
    for (int row=0;row<4;row++){
@@ -373,7 +390,7 @@ public String toString()
 		   "    "+m[0][2]+"  "+m[1][2]+"  "+m[2][2]+"  "+m[3][2]+"\n"+
 		   "    "+m[0][3]+"  "+m[1][3]+"  "+m[2][3]+"  "+m[3][3];
 }
-void transpose()
+public void transpose()
 {
 double temp;
   temp=m[0][1]; m[0][1]=m[1][0]; m[1][0]=temp;

@@ -60,6 +60,21 @@ public int getNodeCount() {
 	return(fieldNodes.length);
 }
 
+public Surface getSurface(SurfaceGeometricRegion surfaceGeometricRegion){
+	GeometricRegion[] adjacentGeometricRegions = surfaceGeometricRegion.getAdjacentGeometricRegions();
+	VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)adjacentGeometricRegions[0];
+	VolumeGeometricRegion volumeRegion2 = (VolumeGeometricRegion)adjacentGeometricRegions[1];
+	
+	for (Surface surface : fieldSurfaces){
+		if (surface.getExteriorRegionIndex()==volumeRegion1.getRegionID() && surface.getInteriorRegionIndex()==volumeRegion2.getRegionID()){
+			return surface;
+		}
+		if (surface.getExteriorRegionIndex()==volumeRegion2.getRegionID() && surface.getInteriorRegionIndex()==volumeRegion1.getRegionID()){
+			return surface;
+		}
+	}
+	return null;
+}
 
 /**
  * BoundaryCollection constructor comment.

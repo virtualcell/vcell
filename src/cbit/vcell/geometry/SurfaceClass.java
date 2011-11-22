@@ -94,11 +94,14 @@ public class SurfaceClass implements GeometryClass {
 	public boolean compareEqual(Matchable obj) {
 		if (obj instanceof SurfaceClass){
 			SurfaceClass sc = (SurfaceClass)obj;
-			if(Compare.isEqualOrNull(sc.subvolumes.toArray(new SubVolume[0]), subvolumes.toArray(new SubVolume[0]))){
-				return true;
+			if(!Compare.isEqualOrNull(sc.subvolumes.toArray(new SubVolume[0]), subvolumes.toArray(new SubVolume[0]))){
+				return false;
+			}
+			if(!Compare.isEqualOrNull(name,sc.name)){
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	public String getName() {

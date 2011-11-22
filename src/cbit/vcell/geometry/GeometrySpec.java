@@ -138,6 +138,8 @@ public GeometrySpec(GeometrySpec geometrySpec){
 				((ImageSubVolume)newSubvolumes[i]).setPixelClass(newVCPixelClass);
 			}else if(geometrySpec.fieldSubVolumes[i] instanceof AnalyticSubVolume){
 				newSubvolumes[i] = new AnalyticSubVolume((AnalyticSubVolume)(geometrySpec.fieldSubVolumes[i]));
+			}else if(geometrySpec.fieldSubVolumes[i] instanceof CSGObject){
+				newSubvolumes[i] = new CSGObject((CSGObject)(geometrySpec.fieldSubVolumes[i]));
 			}else if(geometrySpec.fieldSubVolumes[i] instanceof CompartmentSubVolume){
 				newSubvolumes[i] = new CompartmentSubVolume(geometrySpec.fieldSubVolumes[i].getKey(), geometrySpec.fieldSubVolumes[i].getHandle());
 			}else{
@@ -200,6 +202,95 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoException {
 	addSubVolume(subVolume, false);
 }
+/**
+ * This method was created in VisualAge.
+ * @param subVolume cbit.vcell.geometry.SubVolume
+ */
+public void addSubVolume(CSGObject csgObject,boolean bFront) throws PropertyVetoException {
+
+	if (getSubVolumeIndex(csgObject) != -1){
+		throw new IllegalArgumentException("subdomain "+csgObject+" cannot be added, already exists");
+	}
+
+	//
+	// add after last analytic subvolume (but before imageSubVolumes)
+	//
+	int firstImageIndex = -1;
+	for (int i=0;i<fieldSubVolumes.length;i++){
+		if (fieldSubVolumes[i] instanceof ImageSubVolume){
+			firstImageIndex = i;
+			break;
+		}
+	}
+	
+	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length+1];
+	
+	if (firstImageIndex == -1){
+		//
+		// no image subvolumes
+		//
+		if(bFront){
+			newArray[0] = csgObject;
+			if (fieldSubVolumes.length>0){
+				System.arraycopy(fieldSubVolumes,0,newArray,1,fieldSubVolumes.length);
+			}
+		}else{
+			//add to end of analytics
+			// copy first N elements
+			if (fieldSubVolumes.length>0){
+				System.arraycopy(fieldSubVolumes,0,newArray,0,fieldSubVolumes.length);
+			}
+			// add new element to end
+			newArray[fieldSubVolumes.length] = csgObject;
+		}
+		
+	}else{
+	//
+	// first imageSubVolume at index 'firstImageIndex'
+	// insert subVolume at this index (before first ImageSubVolume) 
+	// and push all of the imageSubVolumes back
+	//
+		int newIndex = 0;
+		for (int i=0;i<fieldSubVolumes.length;i++){
+			if(bFront){
+				if (i == 0){
+					newArray[newIndex++] = csgObject;
+				}				
+			}else{
+				if (i == firstImageIndex){
+					newArray[newIndex++] = csgObject;
+				}				
+			}
+			newArray[newIndex++] = fieldSubVolumes[i];
+		}
+	}	
+
+	csgObject.setHandle(getFreeSubVolumeHandle());
+	setSubVolumes(newArray);	
+		
+/*
+	if (!subVolumeList.contains(subVolume)){
+		for (int i=0;i<subVolumeList.size();i++){
+			SubVolume sv = (SubVolume)subVolumeList.elementAt(i);
+			if (sv instanceof ImageSubVolume){
+				if (subVolume.getHandle()>=0){
+					throw new RuntimeException("subVolume already has handle set");
+				}
+				subVolume.setHandle(getFreeSubVolumeHandle());
+				insertSubVolumeAt0(subVolume,i);
+				setChanged();
+				notifyObservers(subVolume);
+				return;
+			}
+		}
+		subVolume.setHandle(getFreeSubVolumeHandle());
+		addSubVolume0(subVolume);
+		setChanged();
+		notifyObservers(subVolume);
+	}
+*/
+}
+
 /**
  * This method was created in VisualAge.
  * @param subVolume cbit.vcell.geometry.SubVolume
@@ -481,12 +572,15 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 	//
 	// rebind x,y,z,t and set Index values
 	//
-	Enumeration<AnalyticSubVolume> enumASV = getAnalyticSubVolumes();
+	Enumeration<SubVolume> enumASV = getAnalyticOrCSGSubVolumes();
 	while (enumASV.hasMoreElements()){
-		((AnalyticSubVolume)enumASV.nextElement()).rebind();
+		SubVolume sv = enumASV.nextElement();
+		if (sv instanceof AnalyticSubVolume){
+			((AnalyticSubVolume)sv).rebind();
+		}
 	}
 
-	if (getNumAnalyticSubVolumes()>0){
+	if (getNumAnalyticOrCSGSubVolumes()>0){
 		for (int k=0;k<sampleSize.getZ();k++){
 			double unit_z = (numZ>1)?((double)k)/(numZ-1):0.5;
 			double coordZ = oz + extent.getZ() * unit_z;
@@ -496,7 +590,7 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 				for (int i=0;i<sampleSize.getX();i++){
 					double unit_x = (numX>1)?((double)i)/(numX-1):0.5;
 					double coordX = ox + extent.getX() * unit_x;
-					AnalyticSubVolume subVolume = getAnalyticSubVolume(coordX,coordY,coordZ);
+					SubVolume subVolume = getAnalyticOrCSGSubVolume(coordX,coordY,coordZ);
 					if (subVolume!=null){
 						handles[displayIndex] = (byte)subVolume.getHandle();
 					}
@@ -507,6 +601,17 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 	}
 
 	return new VCImageUncompressed(null,handles,getExtent(), sampleSize.getX(),sampleSize.getY(),sampleSize.getZ());
+}
+
+
+private int getNumCSGObjects() {
+	int count=0;
+	for (SubVolume sv : fieldSubVolumes){
+		if (sv instanceof CSGObject){
+			count++;
+		}
+	}
+	return count;
 }
 
 
@@ -561,12 +666,12 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * @param x double
  * @param y double
  */
-private AnalyticSubVolume getAnalyticSubVolume(double x, double y, double z) throws GeometryException, ImageException, ExpressionException {
+private SubVolume getAnalyticOrCSGSubVolume(double x, double y, double z) throws GeometryException, ImageException, ExpressionException {
 	for (int i=0;i<fieldSubVolumes.length;i++){
 		SubVolume subVolume = fieldSubVolumes[i];
-		if (subVolume instanceof AnalyticSubVolume){
+		if (subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject){
 			if (subVolume.isInside(x,y,z,this)){
-				return (AnalyticSubVolume)subVolume;
+				return subVolume;
 			}
 		}
 	}
@@ -577,12 +682,12 @@ private AnalyticSubVolume getAnalyticSubVolume(double x, double y, double z) thr
  * This method was created by a SmartGuide.
  * @return int[]
  */
-public Enumeration<AnalyticSubVolume> getAnalyticSubVolumes() {
-	Vector<AnalyticSubVolume> analSubVolList = new Vector<AnalyticSubVolume>();
+public Enumeration<SubVolume> getAnalyticOrCSGSubVolumes() {
+	Vector<SubVolume> analSubVolList = new Vector<SubVolume>();
 	for (int i=0;i<fieldSubVolumes.length;i++){
 		SubVolume sv = fieldSubVolumes[i];
-		if (sv instanceof AnalyticSubVolume){
-			analSubVolList.addElement((AnalyticSubVolume)sv);
+		if (sv instanceof AnalyticSubVolume || sv instanceof CSGObject){
+			analSubVolList.addElement(sv);
 		}
 	}
 	return analSubVolList.elements();
@@ -826,10 +931,10 @@ public ImageSubVolume getImageSubVolumeFromPixelValue(int pixelValue) {
  * This method was created in VisualAge.
  * @return int
  */
-public int getNumAnalyticSubVolumes() {
+public int getNumAnalyticOrCSGSubVolumes() {
 	int count = 0;
 	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] instanceof AnalyticSubVolume){
+		if (fieldSubVolumes[i] instanceof AnalyticSubVolume || fieldSubVolumes[i] instanceof CSGObject){
 			count++;
 		}
 	}
@@ -1394,12 +1499,12 @@ public void setImage(VCImage image) throws PropertyVetoException {
 		//
 		//merge existing analytic subvolumes with the new image subvolumes
 		//
-		SubVolume[] allSubVolumes = new SubVolume[newImageSubVolumes.length+getNumAnalyticSubVolumes()];
-		Enumeration<AnalyticSubVolume> analyticSubVolumeEnum = getAnalyticSubVolumes();
+		SubVolume[] allSubVolumes = new SubVolume[newImageSubVolumes.length+getNumAnalyticOrCSGSubVolumes()];
+		Enumeration<SubVolume> analyticOrCSGSubVolumeEnum = getAnalyticOrCSGSubVolumes();
 		svCount = 0;
 		TreeSet<Integer> analyticSubVolHandlesTreeSet = new TreeSet<Integer>();
-		while(analyticSubVolumeEnum.hasMoreElements()){
-			allSubVolumes[svCount] = analyticSubVolumeEnum.nextElement();
+		while(analyticOrCSGSubVolumeEnum.hasMoreElements()){
+			allSubVolumes[svCount] = analyticOrCSGSubVolumeEnum.nextElement();
 			analyticSubVolHandlesTreeSet.add(allSubVolumes[svCount].getHandle());
 			svCount++;
 		}

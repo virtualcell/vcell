@@ -812,10 +812,10 @@ private void refreshButtons() {
 		getDeleteButton().setEnabled(false);
 	}else{
 		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		int numAnalyticSubVolumes = geometrySpec.getNumAnalyticSubVolumes();
-		if (numAnalyticSubVolumes>1){
+		int numAnalyticOrCSGSubVolumes = geometrySpec.getNumAnalyticOrCSGSubVolumes();
+		if (numAnalyticOrCSGSubVolumes>1){
 			getFrontButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)>0);
-			getBackButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)<(numAnalyticSubVolumes-1));
+			getBackButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)<(numAnalyticOrCSGSubVolumes-1));
 		}else{
 			getFrontButton().setEnabled(false);
 			getBackButton().setEnabled(false);

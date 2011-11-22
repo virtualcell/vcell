@@ -43,6 +43,7 @@ import org.sbml.libsbml.AnalyticGeometry;
 import org.sbml.libsbml.AnalyticVolume;
 import org.sbml.libsbml.AssignmentRule;
 import org.sbml.libsbml.BoundaryCondition;
+import org.sbml.libsbml.CSGeometry;
 import org.sbml.libsbml.Compartment;
 import org.sbml.libsbml.CompartmentMapping;
 import org.sbml.libsbml.CoordinateComponent;
@@ -59,6 +60,7 @@ import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
 import org.sbml.libsbml.ListOfAdjacentDomains;
 import org.sbml.libsbml.ListOfAnalyticVolumes;
+import org.sbml.libsbml.ListOfCSGObjects;
 import org.sbml.libsbml.ListOfCoordinateComponents;
 import org.sbml.libsbml.ListOfDomainTypes;
 import org.sbml.libsbml.ListOfDomains;
@@ -68,6 +70,7 @@ import org.sbml.libsbml.ListOfParameters;
 import org.sbml.libsbml.ListOfSampledVolumes;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.Parameter;
+import org.sbml.libsbml.ParametricGeometry;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.Reaction;
 import org.sbml.libsbml.RequiredElementsSBasePlugin;
@@ -103,6 +106,9 @@ import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
+import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -148,6 +154,7 @@ import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
@@ -2095,7 +2102,7 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
 		elementName = XMLTags.SpeciesTag;
 	} else if (tag.equals(REACTION)) {
 		if (sbmlImportRelatedElement.getChild(XMLTags.FluxStepTag, sbmlImportRelatedElement.getNamespace()) != null) {
-			elementName = XMLTags.FluxStepTag;
+		elementName = XMLTags.FluxStepTag;
 		} else if (sbmlImportRelatedElement.getChild(XMLTags.SimpleReactionTag, sbmlImportRelatedElement.getNamespace()) != null) {
 			elementName = XMLTags.SimpleReactionTag;
 		}
@@ -2454,6 +2461,78 @@ public void translateSBMLModel(VCMetaData metaData) {
 	addGeometry();
 }
 
+public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNode sbmlCSGNode){
+	if (sbmlCSGNode.isCSGPrimitive()){
+		String primitiveType = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_SPHERE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_SPHERE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CONE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CONE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CUBE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CUBE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CYLINDER)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CYLINDER);
+			return vcellPrimitive;
+		}
+		throw new RuntimeException("PrimitiveType '" + primitiveType + "' not recognized");
+	}else if (sbmlCSGNode.isCSGPseudoPrimitive()) {
+		throw new RuntimeException("pseudo primitives not yet supported");
+	}else if (sbmlCSGNode.isCSGSetOperator()) {
+		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = (org.sbml.libsbml.CSGSetOperator)sbmlCSGNode;
+		String operatorType = sbmlSetOperator.getOperationType();
+		OperatorType opType = null;
+		if (operatorType.equals(SBMLSpatialConstants.UNION)){
+			opType = OperatorType.UNION;
+		}else if (operatorType.equals(SBMLSpatialConstants.DIFFERENCE)){
+			opType = OperatorType.DIFFERENCE;
+		}else if (operatorType.equals(SBMLSpatialConstants.INTERSECTION)){
+			opType = OperatorType.INTERSECTION;
+		}else{
+			throw new RuntimeException("unsupported operator type '"+operatorType+"'");
+		}
+		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(opType);
+		for (int c = 0; c < sbmlSetOperator.getNumCSGNodeChildren(); c++){
+			vcellSetOperator.addChild(getVCellCSGNode(sbmlSetOperator.getCSGNodeChild(c)));
+		}
+		return vcellSetOperator;
+	}else if (sbmlCSGNode.isCSGTransformation()) {
+		org.sbml.libsbml.CSGTransformation sbmlTransformation = (org.sbml.libsbml.CSGTransformation)sbmlCSGNode;  
+		cbit.vcell.geometry.CSGNode vcellCSGChild = getVCellCSGNode(sbmlTransformation.getChild());
+		if (sbmlTransformation.isCSGTranslation()) {
+			org.sbml.libsbml.CSGTranslation sbmlTranslation = (org.sbml.libsbml.CSGTranslation) sbmlTransformation;
+			Vect3d translation = new Vect3d(sbmlTranslation.getTranslateX(),sbmlTranslation.getTranslateY(),sbmlTranslation.getTranslateZ());
+			cbit.vcell.geometry.CSGTranslation vcellTranslation = new cbit.vcell.geometry.CSGTranslation(translation);
+			vcellTranslation.setChild(vcellCSGChild);
+			return vcellTranslation;
+		}else if (sbmlTransformation.isCSGRotation()) {
+			org.sbml.libsbml.CSGRotation sbmlRotation = (org.sbml.libsbml.CSGRotation) sbmlTransformation;
+			Vect3d axis = new Vect3d(sbmlRotation.getRotationAxisX(),sbmlRotation.getRotationAxisY(),sbmlRotation.getRotationAxisZ());
+			double rotationAngleRadians = sbmlRotation.getRotationAngleInRadians();
+			cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(axis,rotationAngleRadians);
+			vcellRotation.setChild(vcellCSGChild);
+			return vcellRotation;
+		}else if (sbmlTransformation.isCSGScale()) {
+			org.sbml.libsbml.CSGScale sbmlScale = (org.sbml.libsbml.CSGScale) sbmlTransformation;
+			Vect3d scale = new Vect3d(sbmlScale.getScaleX(),sbmlScale.getScaleY(),sbmlScale.getScaleZ());
+			cbit.vcell.geometry.CSGScale vcellScale = new cbit.vcell.geometry.CSGScale(scale);
+			vcellScale.setChild(vcellCSGChild);
+			return vcellScale;
+		}else if (sbmlTransformation.isCSGHomogeneousTransformation()) {
+			throw new RuntimeException("homogeneous transformations not supported");
+		}else{
+			throw new RuntimeException("unsupported type of CSGTransformation");
+		}
+	}else{
+		throw new RuntimeException("unsupported type of CSGNode");
+	}
+}
+
 protected void addGeometry() {
 	// Get a SpatialModelPlugin object plugged in the model object.
 	//
@@ -2506,10 +2585,12 @@ protected void addGeometry() {
 		geometryType = GEOM_ANALYTIC;
 	} else if (gd.isSampledFieldGeometry()){
 		geometryType = GEOM_IMAGEBASED;
+	} else if (gd.isCSGeometry()) {
+		geometryType = GEOM_ANALYTIC;
 	}
 	
 	if (geometryType == GEOM_OTHER) {
-		throw new RuntimeException("VCell supports only Analytic or Image based (SampledFieldGeometry) at this timee");
+		throw new RuntimeException("VCell supports only Analytic or Image based (SampledFieldGeometry) or Constructed Solid Geometry at this time.");
 	}
 	Geometry vcGeometry = null;
 	if (geometryType == GEOM_ANALYTIC) {
@@ -2577,7 +2658,7 @@ protected void addGeometry() {
 	
 	ListOfGeometryDefinitions listOfGeomDefns = sbmlGeometry.getListOfGeometryDefinitions();
 	if ((listOfGeomDefns == null) || (sbmlGeometry.getNumGeometryDefinitions() > 1)) {
-		throw new RuntimeException("Cannot have < or > 1 geometry definition geometry");
+		throw new RuntimeException("Can have only 1 geometry definition in geometry");
 	}
 	// use the boolean bAnalytic to create the right kind of subvolume. First match the somVol=domainTypes for spDim=3. Deal witl spDim=2 afterwards.
 	GeometrySurfaceDescription vcGsd = vcGeometry.getGeometrySurfaceDescription();
@@ -2653,6 +2734,19 @@ protected void addGeometry() {
 			}
 			vcGeometry.getGeometrySpec().setSubVolumes(vcImageSubVols);
 		}
+		if (gd.isParametricGeometry()) {
+			ParametricGeometry pg = (ParametricGeometry)gd;
+		}
+		if (gd.isCSGeometry()) {
+			CSGeometry csg = (CSGeometry)gd;
+			ListOfCSGObjects listOfcsgObjs = csg.getListOfCSGObjects();
+			for (int kk = 0; kk < csg.getNumCSGObjects();kk++) {
+				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
+				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
+				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
+			}
+		}
+
 		
 		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
 		vcGsd.updateAll();
