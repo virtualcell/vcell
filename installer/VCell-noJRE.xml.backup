@@ -2,6 +2,7 @@
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
     <version>5</version>
+    <installerFilename>${product_shortname}-${product_version}-${platform_name}-JavaWebStart-installer.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
     <logoImage>vcell.gif</logoImage>
@@ -41,6 +42,11 @@
                     <destination>${installdir}</destination>
                     <name>programfileslinux</name>
                     <platforms>linux</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>C:Users/eboyce/workspace/VCell-trunk/installer/vcell5.ico</origin>
+                        </distributionFile>
+                    </distributionFileList>
                 </folder>
                 <folder>
                     <description>Program Files</description>
@@ -58,6 +64,11 @@
                     <destination>${installdir}</destination>
                     <name>programfilesosx</name>
                     <platforms>osx</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>vcell5.ico</origin>
+                        </distributionFile>
+                    </distributionFileList>
                 </folder>
             </folderList>
             <startMenuShortcutList>
