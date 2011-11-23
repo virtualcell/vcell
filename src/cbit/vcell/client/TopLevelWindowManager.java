@@ -397,7 +397,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 					}
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
 					if(copiedGeom.getGeometrySpec().getImage() != null &&
-						copiedGeom.getGeometrySpec().getNumAnalyticSubVolumes() == 0){
+						copiedGeom.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
 						runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(TopLevelWindowManager.this,
 								new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE),
 								afterTasks,
