@@ -15,9 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -31,12 +28,10 @@ import cbit.util.graph.Tree;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.HitEvent;
 import cbit.vcell.geometry.gui.HitList;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.render.Vect3d;
 
 public class RayCasterBitSet {
 	

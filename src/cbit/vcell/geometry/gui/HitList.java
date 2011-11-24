@@ -11,11 +11,8 @@
 package cbit.vcell.geometry.gui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Iterator;
-
 import cbit.vcell.geometry.surface.VolumeSamples;
 import cbit.vcell.geometry.surface.VolumeSamplesBitSet;
 import cbit.vcell.geometry.surface.VolumeSamplesLong;

@@ -59,7 +59,6 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
@@ -70,8 +69,6 @@ import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.

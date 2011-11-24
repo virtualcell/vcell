@@ -11,7 +11,6 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,8 +29,6 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.VCDataIdentifier;
-
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
@@ -42,7 +39,6 @@ import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**

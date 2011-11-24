@@ -36,9 +36,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
-
 import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
 import cbit.sql.KeyFactory;

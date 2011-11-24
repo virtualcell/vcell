@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.geometry.gui;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
 

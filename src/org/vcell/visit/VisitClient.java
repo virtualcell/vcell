@@ -1,9 +1,6 @@
 package org.vcell.visit;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.vcell.visit.jvisit.VisitManagerJVisit;
 
 public class VisitClient {

@@ -5,9 +5,7 @@ import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.visit.LocalVisitDatabaseSpec;
 import org.vcell.visit.RemoteVisitDatabaseSpec;
-import org.vcell.visit.VisitDatabaseInfo;
 import org.vcell.visit.VisitDatabaseSpec;
 import org.vcell.visit.VisitUtils;
 

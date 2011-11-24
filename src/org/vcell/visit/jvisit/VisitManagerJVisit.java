@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.visit.VisitManager;
 import org.vcell.visit.VisitSession;
 import org.vcell.visit.VisitUtils;

@@ -10,8 +10,6 @@
 
 package cbit.vcell.client.desktop.biomodel.pathway.shapes;
 
-import java.awt.Color;
-
 import org.vcell.pathway.MolecularInteraction;
 
 import cbit.vcell.client.desktop.biomodel.pathway.PathwayGraphModel;
