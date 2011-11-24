@@ -14,8 +14,6 @@ import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
