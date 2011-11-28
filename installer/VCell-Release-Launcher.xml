@@ -2,7 +2,7 @@
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
     <version>Release</version>
-    <installerFilename>${product_shortname}-${product_version}-${platform_name}-installer-with-Java.${platform_exec_suffix}</installerFilename>
+    <installerFilename>${product_shortname}-${product_version}-${platform_name}-launcher-installer-with-Java.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
     <logoImage>vcell.gif</logoImage>

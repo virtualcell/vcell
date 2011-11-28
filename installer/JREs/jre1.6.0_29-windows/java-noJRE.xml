@@ -20,12 +20,10 @@
             <windowsPath></windowsPath>
         </shortcut>
     </desktopShortcutList>
- 
-        <!-- folders storing JRE -->
-    </folderList>
- 
-        <!-- parameters for creating Java launchers -->
-        <parameterList>
+
+	<!-- folders storing JRE 
+ parameters for creating Java launchers -->
+	<parameterList>
         <stringParameter name="java_launcher_destination" value="${installdir}" ask="0">
             <description></description>
             <explanation></explanation>
@@ -100,16 +98,16 @@
         </booleanParameter>
     </parameterList>
     <postInstallationActionList>
-        <!-- change permissions of all binaries -->
-        <changePermissions abortOnError="0" files="${installdir}/java/bin/*" permissions="0755" showMessageOnError="0">
+	<!-- change permissions of all binaries -->
+	<changePermissions abortOnError="0" files="${installdir}/java/bin/*" permissions="0755" showMessageOnError="0">
             <ruleList>
                 <fileExists path="${installdir}/java/bin"/>
                 <platformTest negate="1" type="windows"/>
             </ruleList>
         </changePermissions>
- 
-        <!-- Create symbolic links on various platforms -->
-        <actionGroup>
+
+	<!-- Create symbolic links on various platforms -->
+	<actionGroup>
             <actionList>
                 <createSymLink linkName="${installdir}/java/bin/ControlPanel" target="./jcontrol">
                     <ruleList>
@@ -377,9 +375,9 @@
                 <platformTest type="solaris-sparc"/>
             </ruleList>
         </actionGroup>
- 
-        <!-- create Java launcher using preferred JRE -->
-        <createJavaLaunchers>
+
+	<!-- create Java launcher using preferred JRE -->
+	<createJavaLaunchers>
             <destination>${java_launcher_destination}</destination>
             <explanation>${msg(Installer.Java.CreateLaunchers.Explanation)}</explanation>
             <progressText>${msg(Installer.Java.CreateLaunchers.Text)}</progressText>
@@ -402,9 +400,9 @@
                 <isTrue value="${java_create_launcher}"/>
             </ruleList>
         </createJavaLaunchers>
- 
-        <!-- create start menu shortcut(s) on Microsoft Windows -->
-        <actionGroup>
+
+	<!-- create start menu shortcut(s) on Microsoft Windows -->
+	<actionGroup>
             <actionList>
                 <setInstallerVariable>
                     <name>java_launcher_startmenudirectory</name>
@@ -450,18 +448,18 @@
             </ruleList>
         </actionGroup>
     </postInstallationActionList>
- 
-        <!-- set Java information -->
-        <readyToInstallActionList>
+
+	<!-- set Java information -->
+	<readyToInstallActionList>
         <if>
             <actionList>
                 <setInstallerVariable name="java_version_major" value="1.6"/>
                 <setInstallerVariable name="java_version" value="1.6.0"/>
                 <setInstallerVariable name="java_version_full" value="1.6.0_29"/>
                 <setInstallerVariable name="java_version_vendor" value="Sun"/>
- 
-        <!-- determine Java binary name - javaw.exe on Windows, java otherwise -->
-        <setInstallerVariable>
+
+	<!-- determine Java binary name - javaw.exe on Windows, java otherwise -->
+	<setInstallerVariable>
                     <name>java_executable</name>
                     <value>${installdir}/java/bin/java</value>
                 </setInstallerVariable>
