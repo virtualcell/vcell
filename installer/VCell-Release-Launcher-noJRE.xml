@@ -85,7 +85,7 @@
             </startMenuShortcutList>
         </component>
         <include>
-            <file>JREs/jre1.6.0_29-windows/java.xml</file>
+            <file>JREs/jre1.6.0_29-windows/java-noJRE.xml</file>
         </include>
     </componentList>
     <preInstallationActionList>
