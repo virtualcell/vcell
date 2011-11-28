@@ -2465,19 +2465,19 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 	if (sbmlCSGNode.isCSGPrimitive()){
 		String primitiveType = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_SPHERE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_SPHERE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SPHERE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CONE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CONE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CONE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CUBE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CUBE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CUBE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CYLINDER)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SOLID_CYLINDER);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CYLINDER);
 			return vcellPrimitive;
 		}
 		throw new RuntimeException("PrimitiveType '" + primitiveType + "' not recognized");

@@ -45,13 +45,13 @@ public class GeometryGuiTest {
 
 	public static Geometry getExampleGeometryCSG() throws PropertyVetoException, ExpressionException, GeometryException, ImageException {
 		// translated rotated cube
-		CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.SOLID_CUBE);
+		CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.CUBE);
 		CSGRotation rotatedCube = new CSGRotation("Rotation", new Vect3d(1,2,3),Math.PI/4.0);
 		rotatedCube.setChild(cube);
 
 		// translated sphere
 		CSGTranslation translatedSphere = new CSGTranslation("translation", new Vect3d(0.5,0.5,0.5));
-		CSGPrimitive sphere = new CSGPrimitive("sphere", CSGPrimitive.PrimitiveType.SOLID_SPHERE);
+		CSGPrimitive sphere = new CSGPrimitive("sphere", CSGPrimitive.PrimitiveType.SPHERE);
 		translatedSphere.setChild(sphere);
 		
 		// union

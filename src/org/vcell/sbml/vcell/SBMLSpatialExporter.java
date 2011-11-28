@@ -1709,19 +1709,19 @@ private org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNode vcCS
 		cbit.vcell.geometry.CSGPrimitive vcCSGprimitive = (cbit.vcell.geometry.CSGPrimitive)vcCSGNode; 
 		org.sbml.libsbml.CSGPrimitive sbmlPrimitive = new org.sbml.libsbml.CSGPrimitive();
 		switch (vcCSGprimitive.getType()){
-		case SOLID_SPHERE: {
+		case SPHERE: {
 			sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_SPHERE);
 			break;
 		}
-		case SOLID_CONE: {
+		case CONE: {
 			sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CONE);
 			break;
 		}
-		case SOLID_CUBE: {
+		case CUBE: {
 			sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CUBE);
 			break;
 		}
-		case SOLID_CYLINDER: {
+		case CYLINDER: {
 			sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CYLINDER);
 			break;
 		}

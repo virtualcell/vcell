@@ -5,10 +5,10 @@ import cbit.vcell.render.Vect3d;
 public class CSGPrimitive extends CSGNode {
 	// all objects fit in unit cube of (-1,-1,-1) to (1,1,1)
 	public static enum PrimitiveType {
-		SOLID_CONE,			// (i.e. y^2+z^2 < (0.5*(x-1))^2 and x<1 and x>-1)
-		SOLID_CUBE,			// (i.e. x>=-1 and x<=1 and y>=-1 and y<=1 and z>=-1 and z<=1 
-		SOLID_CYLINDER,		// (i.e. y^2+z^2 < 1 and x<1 and x>-1)
-		SOLID_SPHERE,		// (i.e. x^2+y^2+z^2 <= 1)
+		CONE,			// (i.e. y^2+z^2 < (0.5*(x-1))^2 and x<1 and x>-1)
+		CUBE,			// (i.e. x>=-1 and x<=1 and y>=-1 and y<=1 and z>=-1 and z<=1 
+		CYLINDER,		// (i.e. y^2+z^2 < 1 and x<1 and x>-1)
+		SPHERE,		// (i.e. x^2+y^2+z^2 <= 1)
 	};
 	
 	private PrimitiveType type = null;
@@ -53,21 +53,21 @@ public class CSGPrimitive extends CSGNode {
 			return false;
 		}
 		switch (type){
-		case SOLID_SPHERE: {
+		case SPHERE: {
 			double radiusSquared = point.lengthSquared();
 			return radiusSquared <= 1.0;
 		}
-		case SOLID_CYLINDER: {
+		case CYLINDER: {
 			// already inside unit cube, so only test inside circle
 			double radiusOfCircleSquared = y*y+z*z;
 			return radiusOfCircleSquared <= 1.0;
 		}
-		case SOLID_CONE: {
+		case CONE: {
 			// already inside unit cube, so only test inside circle
 			double radius = 0.5*(x-1);
 			return y*y+z*z < radius*radius;
 		}
-		case SOLID_CUBE: {
+		case CUBE: {
 			return true;
 		}
 		default:

@@ -52,21 +52,11 @@ import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.document.GeometryOwner;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.CSGObject;
-import cbit.vcell.geometry.CSGPrimitive;
-import cbit.vcell.geometry.CSGRotation;
-import cbit.vcell.geometry.CSGScale;
-import cbit.vcell.geometry.CSGSetOperator;
-import cbit.vcell.geometry.CSGSetOperator.OperatorType;
-import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.render.Vect3d;
 /**
  * This type was created in VisualAge.
  */
@@ -648,19 +638,19 @@ public void setGeometry(Geometry newValue) {
 				getCurveRendererGeometry1().setGeometry(ivjGeometry);
 				surfaceViewer.setGeometry(ivjGeometry);
 				resolvedLocationTablePanel.setGeometrySurfaceDescription(ivjGeometry.getGeometrySurfaceDescription());
+				if (ivjGeometry.getDimension() == 0){
+					getJButtonChangeDomain().setEnabled(false);
+					tabbedPane.setVisible(false);
+					getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
+					getJButtonExport().setEnabled(false);
+				} else {
+					getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
+					getJButtonChangeDomain().setEnabled(true);
+					getJButtonExport().setEnabled(true);
+					tabbedPane.setVisible(true);
+				}
+				updateSurfaceView();
 			}
-			if (ivjGeometry.getDimension() == 0){
-				getJButtonChangeDomain().setEnabled(false);
-				tabbedPane.setVisible(false);
-				getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
-				getJButtonExport().setEnabled(false);
-			} else {
-				getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
-				getJButtonChangeDomain().setEnabled(true);
-				getJButtonExport().setEnabled(true);
-				tabbedPane.setVisible(true);
-			}
-			updateSurfaceView();
 			firePropertyChange("geometry", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

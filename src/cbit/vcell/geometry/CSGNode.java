@@ -1,7 +1,5 @@
 package cbit.vcell.geometry;
 
-import java.beans.PropertyChangeSupport;
-
 import cbit.vcell.render.Vect3d;
 
 public abstract class CSGNode {
