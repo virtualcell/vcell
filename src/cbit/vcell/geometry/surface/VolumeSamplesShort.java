@@ -12,18 +12,18 @@ package cbit.vcell.geometry.surface;
 
 import java.util.HashSet;
 
-public class VolumeSamplesLong extends VolumeSamples {
-	private long[] incidentSurfaceMaskLong;
+public class VolumeSamplesShort extends VolumeSamples {
+	private short[] incidentSurfaceMaskShort;
 	
-	public VolumeSamplesLong(int size){
+	public VolumeSamplesShort(int size){
 		super(size);
-		this.incidentSurfaceMaskLong = new long[size];
+		this.incidentSurfaceMaskShort = new short[size];
 	}
 
 	public boolean hasZeros(){
 		boolean bHasZero = false;
-		for (long mask : incidentSurfaceMaskLong){
-			if (mask == 0L){
+		for (short mask : incidentSurfaceMaskShort){
+			if (mask == 0){
 				bHasZero = true;
 				break;
 			}
@@ -33,9 +33,13 @@ public class VolumeSamplesLong extends VolumeSamples {
 	
 	public void add(int index, long mask, float distance){
 //		System.out.println("index="+index+", mask="+mask+", distance="+distance);
-		incidentSurfaceMaskLong[index] = incidentSurfaceMaskLong[index] | mask;
+		if( (mask & 0xFFFF) != mask )
+		{
+			System.err.println("Error: Surface mask doesn't fit into a short.");
+		}
+		incidentSurfaceMaskShort[index] = (short) (incidentSurfaceMaskShort[index] | mask);
 //System.out.println("mask["+index+"]="+mask+", distance="+distance);
-		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskLong[index])){
+		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskShort[index])){
 			System.out.println("connected across surface");
 		}
 //		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
@@ -49,12 +53,12 @@ public class VolumeSamplesLong extends VolumeSamples {
 			return;
 		}*/
 		
-		long[] volumeMasks = incidentSurfaceMaskLong;
+		short[] volumeMasks = incidentSurfaceMaskShort;
 		
-		long nonzeroSample = 0;
+		short nonzeroSample = 0;
 		int volumeIndex = volumeOffset;
 		for (int i=0;i<numSamples;i++){
-			if (volumeMasks[volumeIndex] != 0L){
+			if (volumeMasks[volumeIndex] != 0){
 				nonzeroSample = volumeMasks[volumeIndex];
 				break;
 			}
@@ -63,7 +67,7 @@ public class VolumeSamplesLong extends VolumeSamples {
 		
 		volumeIndex = volumeOffset;
 		for (int i=0;i<numSamples;i++){
-			if (volumeMasks[volumeIndex] == 0L){
+			if (volumeMasks[volumeIndex] == 0){
 				volumeMasks[volumeIndex] = nonzeroSample;
 			}
 			volumeIndex += volumeStride;
@@ -73,9 +77,9 @@ public class VolumeSamplesLong extends VolumeSamples {
 	@Override
 	public HashSet<Long> getUniqueMasks() {
 		HashSet<Long> uniqueMasks = new HashSet<Long>();
-		for (long mask : incidentSurfaceMaskLong){
+		for (short mask : incidentSurfaceMaskShort){
 			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(mask);
+				uniqueMasks.add(((long)mask) & 0xFFFF);
 			}
 		}
 		return uniqueMasks;
@@ -83,7 +87,6 @@ public class VolumeSamplesLong extends VolumeSamples {
 	
 	@Override
 	public long getMask(int index) {
-		return incidentSurfaceMaskLong[index];
+		return ((long)incidentSurfaceMaskShort[index]) & 0xFFFF;
 	}
-	
 }

@@ -13,26 +13,23 @@ package cbit.vcell.geometry.surface;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 
-public class VolumeSamplesBitSet implements VolumeSamples {
+import javax.management.RuntimeErrorException;
+
+public class VolumeSamplesBitSet extends VolumeSamples {
 	private HashMap<Long,BitSet> bitSets = new HashMap<Long, BitSet>();
 	int size;
 	private float[] distanceMapL1;
 	
 	public VolumeSamplesBitSet(int size){
-		this.size = size;
-		this.distanceMapL1 = new float[size];
-		Arrays.fill(this.distanceMapL1,Float.MAX_VALUE);
+		super(size);
 	}
 
 	public HashMap<Long,BitSet> getIncidentSurfaceBitSets() {
 		return bitSets;
 	}
 
-	public float[] getDistanceMapL1() {
-		return distanceMapL1;
-	}
-	
 	public boolean hasZeros(){
 		for (BitSet bs : bitSets.values()){
 			if (bs.cardinality()<size){
@@ -51,10 +48,38 @@ public class VolumeSamplesBitSet implements VolumeSamples {
 		bs.set(index);
 //		System.out.println("index="+index+", mask="+mask+", distance="+distance);
 //		incidentSurfaceMask[index] = incidentSurfaceMask[index] | mask;
-		distanceMapL1[index] = Math.min(distanceMapL1[index],distance);
+//		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
+	}
+	
+	public void fillEmpty(int numSamples, int volumeOffset, int volumeStride){
+		//
+		// if at least one hit, then there are no empty samples
+		//
+		/*if (hitEvents.size()>0){
+			return;
+		}*/
+		
+		BitSet rowPattern = new BitSet(getNumXYZ());
+		int volumeIndex = volumeOffset;
+		for (int i=0;i<numSamples;i++){
+			rowPattern.set(volumeIndex);
+			volumeIndex += volumeStride;
+		}
+
+		for (BitSet bitSet : getIncidentSurfaceBitSets().values()){
+			if (bitSet.intersects(rowPattern)){
+				bitSet.or(rowPattern);
+			}
+		}
 	}
 
-	public int getNumXYZ() {
-		return size;
+	@Override
+	public HashSet<Long> getUniqueMasks() {
+		throw new RuntimeException("VolumeSamplesBitSet.getUniqueMasks() is not implemented yet.");
+	}
+
+	@Override
+	public long getMask(int index) {
+		throw new RuntimeException("VolumeSamplesBitSet.getMask(int index) is not implemented yet.");
 	}
 }
