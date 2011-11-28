@@ -45,25 +45,25 @@ public class GeometryGuiTest {
 
 	public static Geometry getExampleGeometryCSG() throws PropertyVetoException, ExpressionException, GeometryException, ImageException {
 		// translated rotated cube
-		CSGPrimitive cube = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_CUBE);
-		CSGRotation rotatedCube = new CSGRotation(new Vect3d(1,2,3),Math.PI/4.0);
+		CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.SOLID_CUBE);
+		CSGRotation rotatedCube = new CSGRotation("Rotation", new Vect3d(1,2,3),Math.PI/4.0);
 		rotatedCube.setChild(cube);
 
 		// translated sphere
-		CSGTranslation translatedSphere = new CSGTranslation(new Vect3d(0.5,0.5,0.5));
-		CSGPrimitive sphere = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_SPHERE);
+		CSGTranslation translatedSphere = new CSGTranslation("translation", new Vect3d(0.5,0.5,0.5));
+		CSGPrimitive sphere = new CSGPrimitive("sphere", CSGPrimitive.PrimitiveType.SOLID_SPHERE);
 		translatedSphere.setChild(sphere);
 		
 		// union
-		CSGSetOperator csgSetOperator = new CSGSetOperator(OperatorType.DIFFERENCE);
+		CSGSetOperator csgSetOperator = new CSGSetOperator("difference", OperatorType.DIFFERENCE);
 		csgSetOperator.addChild(rotatedCube);
 		csgSetOperator.addChild(translatedSphere);
 		
 		// scaled union
-		CSGScale csgScale = new CSGScale(new Vect3d(3,3,3));
+		CSGScale csgScale = new CSGScale("scale", new Vect3d(3,3,3));
 		csgScale.setChild(csgSetOperator);
 		
-		CSGTranslation csgTranslatedUnion = new CSGTranslation(new Vect3d(5,5,5));
+		CSGTranslation csgTranslatedUnion = new CSGTranslation("translationUnion", new Vect3d(5,5,5));
 		csgTranslatedUnion.setChild(csgScale);
 		
 		Geometry geometry = new Geometry("csg",3);

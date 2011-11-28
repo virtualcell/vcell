@@ -40,7 +40,9 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -101,6 +103,8 @@ public class BioModelEditor extends DocumentEditor {
 //	private DataSymbolsPanel dataSymbolsPanel = null;
 	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
 	private ParameterEstimationTaskPropertiesPanel parameterEstimationTaskPropertiesPanel = null;
+	
+	private CSGObjectPropertiesPanel csgObjectPropertiesPanel;
 	
 	/**
  * BioModelEditor constructor comment.
@@ -455,6 +459,10 @@ private void initialize() {
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
+		
+		csgObjectPropertiesPanel = new CSGObjectPropertiesPanel();
+		csgObjectPropertiesPanel.setSelectionManager(selectionManager);
+		csgObjectPropertiesPanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -518,6 +526,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			pathwayData = (PathwayData)singleSelection;
 			bottomComponent = getBioModelEditorPathwayPanel();
 		} else if (singleSelection instanceof Model) {
+		} else if (singleSelection instanceof CSGObject) {
+			bottomComponent = csgObjectPropertiesPanel;
+			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
 		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
 			if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {

@@ -6,16 +6,17 @@ public class CSGPseudoPrimitive extends CSGNode {
 	private String csgObjectName = null;
 	private CSGObject csgObject = null;
 
-	public CSGPseudoPrimitive(String csgObjectName){
+	public CSGPseudoPrimitive(String name, String csgObjectName){
+		super(name);
 		this.csgObjectName = csgObjectName;
 	}
 	
-	public CSGPseudoPrimitive(CSGObject csgObject){
-		this.csgObjectName = csgObject.getName();
+	public CSGPseudoPrimitive(String name, CSGObject csgObject){
+		this(name, csgObject.getName());
 	}
 	
 	public CSGPseudoPrimitive(CSGPseudoPrimitive csgPseudoPrimitive){
-		this.csgObjectName = csgPseudoPrimitive.csgObjectName;
+		this(csgPseudoPrimitive.getName(), csgPseudoPrimitive.csgObjectName);
 	}
 	
 	@Override

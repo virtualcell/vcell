@@ -45,6 +45,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ChooseFile;
@@ -470,13 +471,13 @@ private void initialize() {
 		topH1.gridx = 0; topH1.gridy = 0;
 		topH1.gridwidth = 1;
 		topH1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		topH1.insets = new java.awt.Insets(2, 2, 0, 0);
+		topH1.insets = new java.awt.Insets(2, 0, 2, 0);
 		add(topHeader, topH1);
 
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel1.insets = new java.awt.Insets(2, 2, 0, 0);
+		constraintsJLabel1.insets = new java.awt.Insets(0, 2, 0, 0);
 		JLabel label = new javax.swing.JLabel("Domain:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		topHeader.add(label, constraintsJLabel1);
@@ -484,7 +485,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();
 		constraintsSizeLabel.anchor = GridBagConstraints.WEST;
 		constraintsSizeLabel.gridx = 1; constraintsSizeLabel.gridy = 0;
-		constraintsSizeLabel.insets = new java.awt.Insets(2, 2, 0, 2);
+		constraintsSizeLabel.insets = new java.awt.Insets(0, 2, 0, 2);
 		topHeader.add(getSizeLabel(), constraintsSizeLabel);
 
 		
@@ -492,27 +493,26 @@ private void initialize() {
 		constraintsJButtonExport.weightx = 1.0;
 		constraintsJButtonExport.anchor = GridBagConstraints.WEST;
 		constraintsJButtonExport.gridx = 2; constraintsJButtonExport.gridy = 0;
-		constraintsJButtonExport.insets = new java.awt.Insets(2, 2, 0, 2);
-		topHeader.add(getJButtonExport(), constraintsJButtonExport);
-		getJButtonExport().setEnabled(getGeometry() != null && getGeometry().getDimension() > 1);
+		constraintsJButtonExport.insets = new java.awt.Insets(0, 2, 0, 2);
+		topHeader.add(getJButtonChangeDomain(), constraintsJButtonExport);
 		
 		java.awt.GridBagConstraints constraintsJButtonChangeDomain = new java.awt.GridBagConstraints();
 		constraintsJButtonChangeDomain.gridx = 3; constraintsJButtonChangeDomain.gridy = 0;
 		constraintsJButtonChangeDomain.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJButtonChangeDomain.insets = new java.awt.Insets(2, 2, 0, 2);
-		topHeader.add(getJButtonChangeDomain(), constraintsJButtonChangeDomain);
+		constraintsJButtonChangeDomain.insets = new java.awt.Insets(0, 2, 0, 2);
+		topHeader.add(getJButtonExport(), constraintsJButtonChangeDomain);
 		
 		java.awt.GridBagConstraints gbcr = new java.awt.GridBagConstraints();
 		gbcr.gridx = 4; gbcr.gridy = 0;
 		gbcr.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbcr.insets = new java.awt.Insets(2, 0, 0, 2);
+		gbcr.insets = new java.awt.Insets(0, 0, 0, 2);
 		topHeader.add(getJButtonReplace(), gbcr);
 		getJButtonReplace().setVisible(bShowReplaceButton);
 
 		java.awt.GridBagConstraints gbcr2 = new java.awt.GridBagConstraints();
 		gbcr2.gridx = 5; gbcr2.gridy = 0;
 		gbcr2.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbcr2.insets = new java.awt.Insets(2, 0, 0, 2);
+		gbcr2.insets = new java.awt.Insets(0, 0, 0, 2);
 		if (debug_bShowResampleButton){
 			topHeader.add(getResampleButton(), gbcr2);
 		}
@@ -556,61 +556,6 @@ private void initialize() {
 }
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		GeometryViewer aGeometryViewer;
-		aGeometryViewer = new GeometryViewer();
-		frame.setContentPane(aGeometryViewer);
-		frame.setSize(aGeometryViewer.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		
-		// translated rotated cube
-		CSGPrimitive cube = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_CUBE);
-		CSGRotation rotatedCube = new CSGRotation(new Vect3d(1,2,3),Math.PI/4.0);
-		rotatedCube.setChild(cube);
-	
-		// translated sphere
-		CSGTranslation translatedSphere = new CSGTranslation(new Vect3d(0.5,0.5,0.5));
-		CSGPrimitive sphere = new CSGPrimitive(CSGPrimitive.PrimitiveType.SOLID_SPHERE);
-		translatedSphere.setChild(sphere);
-		
-		// union
-		CSGSetOperator csgSetOperator = new CSGSetOperator(OperatorType.DIFFERENCE);
-		csgSetOperator.addChild(rotatedCube);
-		csgSetOperator.addChild(translatedSphere);
-		
-		// scaled union
-		CSGScale csgScale = new CSGScale(new Vect3d(3,3,3));
-		csgScale.setChild(csgSetOperator);
-		
-		CSGTranslation csgTranslatedUnion = new CSGTranslation(new Vect3d(5,5,5));
-		csgTranslatedUnion.setChild(csgScale);
-		
-		Geometry geometry = new Geometry("csg",3);
-		CSGObject csgObject = new CSGObject(null, "obj1", 1);
-		csgObject.setRoot(csgTranslatedUnion);
-		
-		geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("background",new Expression(1.0)));
-		geometry.getGeometrySpec().addSubVolume(csgObject, true);
-		aGeometryViewer.setGeometry(geometry);
-		frame.setSize(600,600);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
-
-/**
  * Comment
  */
 private int meshmode() {
@@ -623,6 +568,9 @@ private int meshmode() {
  * @param evt java.beans.PropertyChangeEvent
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
+	if (geometryOwner == null || getGeometry() == null) {
+		return;
+	}
 	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("origin"))) {
 		this.refreshSize();
 	}
@@ -633,7 +581,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		refreshSourceDataInfo();
 	}
 	if (evt.getSource() == geometryOwner && evt.getPropertyName().equals("geometry")) {
-		onGeometryChange();
+		onGeometryOwnerGeometryChange();
 	}
 }
 
@@ -688,18 +636,31 @@ public void setGeometry(Geometry newValue) {
 			if (oldValue != null) {
 				oldValue.getGeometrySpec().removePropertyChangeListener(this);
 			}
-			ivjGeometry = newValue;
 			if (newValue != null) {
+				newValue.getGeometrySpec().addPropertyChangeListener(this);
+			}
+			ivjGeometry = newValue;
+			if (ivjGeometry != null) {
 				refreshSize();
 				getImagePlaneManagerPanel1().setSourceDataInfo(null);
 				refreshSourceDataInfo();
-				getGeometrySubVolumePanel().setGeometry(getGeometry());
-				getCurveRendererGeometry1().setGeometry(getGeometry());
+				getGeometrySubVolumePanel().setGeometry(ivjGeometry);
+				getCurveRendererGeometry1().setGeometry(ivjGeometry);
 				surfaceViewer.setGeometry(ivjGeometry);
 				resolvedLocationTablePanel.setGeometrySurfaceDescription(ivjGeometry.getGeometrySurfaceDescription());
-				newValue.getGeometrySpec().addPropertyChangeListener(this);
 			}
-			getJButtonChangeDomain().setEnabled(ivjGeometry != null);
+			if (ivjGeometry.getDimension() == 0){
+				getJButtonChangeDomain().setEnabled(false);
+				tabbedPane.setVisible(false);
+				getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
+				getJButtonExport().setEnabled(false);
+			} else {
+				getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
+				getJButtonChangeDomain().setEnabled(true);
+				getJButtonExport().setEnabled(true);
+				tabbedPane.setVisible(true);
+			}
+			updateSurfaceView();
 			firePropertyChange("geometry", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -854,26 +815,14 @@ public void setGeometryOwner(GeometryOwner newValue,DocumentWindowManager docume
 	if (newValue != null ){
 		newValue.addPropertyChangeListener(this);
 	}	
-	onGeometryChange();
+	onGeometryOwnerGeometryChange();
 }
 
-public void onGeometryChange() {
+public void onGeometryOwnerGeometryChange() {
 	if (geometryOwner == null || geometryOwner.getGeometry() == null) {
 		setGeometry(null);
 	} else {
 		setGeometry(geometryOwner.getGeometry());
-		if (geometryOwner.getGeometry().getDimension() == 0){
-			getJButtonChangeDomain().setVisible(false);
-			tabbedPane.setVisible(false);
-			getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
-			getJButtonExport().setEnabled(false);
-		} else {
-			getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
-			getJButtonChangeDomain().setVisible(true);
-			getJButtonExport().setEnabled(true);
-			tabbedPane.setVisible(true);
-		}
-		updateSurfaceView();
 	}
 }
 
@@ -889,5 +838,11 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 public void setIssueManager(IssueManager issueManager) {
 	super.setIssueManager(issueManager);
 	ivjGeometrySubVolumePanel.setIssueManager(issueManager);
+}
+
+@Override
+public void setSelectionManager(SelectionManager selectionManager) {
+	super.setSelectionManager(selectionManager);
+	ivjGeometrySubVolumePanel.setSelectionManager(selectionManager);
 }
 }

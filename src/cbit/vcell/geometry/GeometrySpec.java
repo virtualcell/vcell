@@ -603,18 +603,6 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 	return new VCImageUncompressed(null,handles,getExtent(), sampleSize.getX(),sampleSize.getY(),sampleSize.getZ());
 }
 
-
-private int getNumCSGObjects() {
-	int count=0;
-	for (SubVolume sv : fieldSubVolumes){
-		if (sv instanceof CSGObject){
-			count++;
-		}
-	}
-	return count;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (8/8/00 5:17:17 PM)
@@ -1299,6 +1287,10 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			getThumbnailImage().setDirty();
 		}
 	}
+	if (event.getSource() instanceof CSGObject && event.getPropertyName().equals(CSGObject.PROPERTY_NAME_ROOT)) {
+		getSampledImage().setDirty();
+		getThumbnailImage().setDirty();		
+	}
 }
 
 /**
@@ -1357,6 +1349,25 @@ public void removeAnalyticSubVolume(AnalyticSubVolume subVolume) throws Property
 	setSubVolumes(newArray);
 }
 
+public void removeCSGObject(CSGObject csgObject) throws PropertyVetoException {
+
+	
+	int subVolumeIndex = getSubVolumeIndex(csgObject);
+	if (subVolumeIndex == -1){
+		throw new IllegalArgumentException("subdomain "+csgObject+" cannot be removed, it doesn't belong to this Geometry");
+	}
+
+	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length-1];
+	
+	int newIndex = 0;
+	for (int i=0;i<fieldSubVolumes.length;i++){
+		if (i != subVolumeIndex){
+			newArray[newIndex++] = fieldSubVolumes[i];
+		}
+	}
+
+	setSubVolumes(newArray);
+}
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
@@ -1541,8 +1552,8 @@ public void setOrigin(Origin aOrigin) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSubVolumes
  */
-public void setSubVolumes(cbit.vcell.geometry.SubVolume[] subVolumes) throws java.beans.PropertyVetoException {
-	cbit.vcell.geometry.SubVolume[] oldSubVolumes = fieldSubVolumes;
+public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVetoException {
+	SubVolume[] oldSubVolumes = fieldSubVolumes;
 	//Check instance change
 //	if(!BeanUtils.checkFullyEqual(oldSubVolumes, subVolumes)){
 //		System.out.println("GeometrySpec.setSubVolumes has different instances of same old and new subvolumes");

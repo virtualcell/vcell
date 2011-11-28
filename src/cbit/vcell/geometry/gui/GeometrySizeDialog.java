@@ -27,6 +27,7 @@ import cbit.vcell.geometry.GeometrySpec;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class GeometrySizeDialog extends javax.swing.JDialog implements ActionListener, PropertyChangeListener {
 	private javax.swing.JButton ivjButton1 = null;
 	private javax.swing.JButton ivjButton2 = null;
@@ -54,7 +55,6 @@ public class GeometrySizeDialog extends javax.swing.JDialog implements ActionLis
 	private javax.swing.JLabel ivjSizeYUnitLabel = null;
 	private javax.swing.JLabel ivjSizeZLabel = null;
 	private javax.swing.JLabel ivjSizeZUnitLabel = null;
-	private boolean bUpdating = false;
 	private javax.swing.JPanel ivjJPanel1 = null;
 /**
  * Constructor
@@ -341,7 +341,7 @@ private javax.swing.JLabel getOriginXUnitLabel() {
 		try {
 			ivjOriginXUnitLabel = new javax.swing.JLabel();
 			ivjOriginXUnitLabel.setName("OriginXUnitLabel");
-			ivjOriginXUnitLabel.setText("�m");
+			ivjOriginXUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -403,7 +403,7 @@ private javax.swing.JLabel getOriginYUnitLabel() {
 		try {
 			ivjOriginYUnitLabel = new javax.swing.JLabel();
 			ivjOriginYUnitLabel.setName("OriginYUnitLabel");
-			ivjOriginYUnitLabel.setText("�m");
+			ivjOriginYUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -465,7 +465,7 @@ private javax.swing.JLabel getOriginZUnitLabel() {
 		try {
 			ivjOriginZUnitLabel = new javax.swing.JLabel();
 			ivjOriginZUnitLabel.setName("OriginZUnitLabel");
-			ivjOriginZUnitLabel.setText("�m");
+			ivjOriginZUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -699,7 +699,7 @@ private javax.swing.JLabel getSizeXUnitLabel() {
 		try {
 			ivjSizeXUnitLabel = new javax.swing.JLabel();
 			ivjSizeXUnitLabel.setName("SizeXUnitLabel");
-			ivjSizeXUnitLabel.setText("�m");
+			ivjSizeXUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -761,7 +761,7 @@ private javax.swing.JLabel getSizeYUnitLabel() {
 		try {
 			ivjSizeYUnitLabel = new javax.swing.JLabel();
 			ivjSizeYUnitLabel.setName("SizeYUnitLabel");
-			ivjSizeYUnitLabel.setText("�m");
+			ivjSizeYUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -823,7 +823,7 @@ private javax.swing.JLabel getSizeZUnitLabel() {
 		try {
 			ivjSizeZUnitLabel = new javax.swing.JLabel();
 			ivjSizeZUnitLabel.setName("SizeZUnitLabel");
-			ivjSizeZUnitLabel.setText("�m");
+			ivjSizeZUnitLabel.setText("\u03BCm");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -898,22 +898,16 @@ private void Ok() throws PropertyVetoException {
 	final double worldOriginY = Double.valueOf(getOriginYTextField().getText()).doubleValue();
 	final double worldOriginZ = Double.valueOf(getOriginZTextField().getText()).doubleValue();
 
-	bUpdating = true;
-	try {
-		final GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		AsynchClientTask extentOriginTask = new AsynchClientTask("Changing domain",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				geometrySpec.setExtent(new Extent(worldExtentX,worldExtentY,worldExtentZ));
-				geometrySpec.setOrigin(new Origin(worldOriginX,worldOriginY,worldOriginZ));
-				getGeometry().precomputeAll();
-			}
-		};
-		ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask}, false);
-	}finally{
-		bUpdating = false;
-	}
-
+	final GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
+	AsynchClientTask extentOriginTask = new AsynchClientTask("Changing domain",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			geometrySpec.setExtent(new Extent(worldExtentX,worldExtentY,worldExtentZ));
+			geometrySpec.setOrigin(new Origin(worldOriginX,worldOriginY,worldOriginZ));
+			getGeometry().precomputeAll();
+		}
+	};
+	ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask}, false);
 }
 /**
  * Insert the method's description here.

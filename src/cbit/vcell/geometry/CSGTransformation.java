@@ -8,13 +8,20 @@ public abstract class CSGTransformation extends CSGNode {
 	private Affine inverseTransform = null;
 	private CSGNode child = null;
 	
-	
-	CSGTransformation(Affine forward, Affine inverse){
+	public enum TransformationType {
+		Homogeneous,
+		Rotation,
+		Scale,
+		Translation,
+	}
+	CSGTransformation(String name, Affine forward, Affine inverse){
+		super(name);
 		this.forwardTransform = forward;
 		this.inverseTransform = inverse;
 	}
 	
-	CSGTransformation(){
+	CSGTransformation(String name){
+		super(name);
 		this.forwardTransform = new Affine();
 		forwardTransform.identity();
 		this.inverseTransform = new Affine();
@@ -22,7 +29,10 @@ public abstract class CSGTransformation extends CSGNode {
 	}
 	
 	CSGTransformation(CSGTransformation csgTransformation){
-		setChild(csgTransformation.getChild().cloneTree());
+		this(csgTransformation.getName(), new Affine(csgTransformation.forwardTransform), new Affine(csgTransformation.inverseTransform));
+		if (csgTransformation.getChild() != null) {
+			setChild(csgTransformation.getChild().cloneTree());
+		}
 	}
 	
 	public Affine getForwardTransform() {
@@ -47,6 +57,9 @@ public abstract class CSGTransformation extends CSGNode {
 	}
 
 	public boolean isInside(Vect3d point) {
+		if (child == null) {
+			return false;
+		}
 		Vect3d transformedPoint = inverseTransform.mult(point);
 		return child.isInside(transformedPoint);
 	}

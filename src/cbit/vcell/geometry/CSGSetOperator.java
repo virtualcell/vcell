@@ -7,21 +7,22 @@ import cbit.vcell.render.Vect3d;
 public class CSGSetOperator extends CSGNode {
 	
 	public static enum OperatorType {
-		UNION,
 		DIFFERENCE,
-		INTERSECTION
+		INTERSECTION,
+		UNION,
 	};
 	
 	private OperatorType opType = null;
 
 	private ArrayList<CSGNode> children = new ArrayList<CSGNode>();
 	
-	public CSGSetOperator(OperatorType opType){
+	public CSGSetOperator(String name, OperatorType opType){
+		super(name);
 		this.opType = opType;
 	}
 	
 	public CSGSetOperator(CSGSetOperator csgSetOperator){
-		this.opType = csgSetOperator.opType;
+		this(csgSetOperator.getName(), csgSetOperator.opType);
 		for (CSGNode child : csgSetOperator.children){
 			children.add(child.cloneTree());
 		}
@@ -34,6 +35,9 @@ public class CSGSetOperator extends CSGNode {
 	
 	@Override
 	public boolean isInside(Vect3d point) {
+		if (children.size() == 0) {
+			return false;
+		}
 		switch (opType){
 		case UNION:{
 			for (CSGNode child : children){
@@ -44,6 +48,9 @@ public class CSGSetOperator extends CSGNode {
 			return false;
 		}
 		case DIFFERENCE:{
+			if (children.size() == 1) {
+				return children.get(0).isInside(point);
+			}
 			if (children.get(0).isInside(point) && !children.get(1).isInside(point)){
 				return true;
 			}else{
@@ -68,6 +75,9 @@ public class CSGSetOperator extends CSGNode {
 		children.add(csgNode);
 	}
 
+	public void removeChild(CSGNode csgNode) {
+		children.remove(csgNode);
+	}	
 	
 	public OperatorType getOpType() {
 		return opType;
@@ -85,5 +95,16 @@ public class CSGSetOperator extends CSGNode {
 		this.children = children;
 	}
 
+	public int indexOf(CSGNode node) {
+		for (int i = 0; i < children.size(); i ++) {
+			if (node == children.get(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	
+	public void setChild(int index, CSGNode node) {
+		children.set(index, node);
+	}
 }

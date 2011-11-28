@@ -5,22 +5,21 @@ import cbit.vcell.render.Vect3d;
 public class CSGPrimitive extends CSGNode {
 	// all objects fit in unit cube of (-1,-1,-1) to (1,1,1)
 	public static enum PrimitiveType {
-		SOLID_SPHERE,		// (i.e. x^2+y^2+z^2 <= 1)
-		SOLID_CYLINDER,		// (i.e. y^2+z^2 < 1 and x<1 and x>-1)
 		SOLID_CONE,			// (i.e. y^2+z^2 < (0.5*(x-1))^2 and x<1 and x>-1)
-		SOLID_CUBE			// (i.e. x>=-1 and x<=1 and y>=-1 and y<=1 and z>=-1 and z<=1 
+		SOLID_CUBE,			// (i.e. x>=-1 and x<=1 and y>=-1 and y<=1 and z>=-1 and z<=1 
+		SOLID_CYLINDER,		// (i.e. y^2+z^2 < 1 and x<1 and x>-1)
+		SOLID_SPHERE,		// (i.e. x^2+y^2+z^2 <= 1)
 	};
 	
 	private PrimitiveType type = null;
 
-	public CSGPrimitive(PrimitiveType type) {
-		super();
+	public CSGPrimitive(String name, PrimitiveType type) {
+		super(name);
 		this.type = type;
 	}
 
 	public CSGPrimitive(CSGPrimitive primitive) {
-		super();
-		this.type = primitive.type;
+		this(primitive.getName(), primitive.type);
 	}
 
 	@Override

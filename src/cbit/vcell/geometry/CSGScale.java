@@ -7,8 +7,8 @@ public class CSGScale extends CSGTransformation {
 
 	private Vect3d scale = null;
 
-	public CSGScale(Vect3d scale) {
-		super();
+	public CSGScale(String name, Vect3d scale) {
+		super(name);
 		this.scale = new Vect3d(scale);
 		updateTransform();
 	}

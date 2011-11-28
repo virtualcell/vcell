@@ -24,6 +24,7 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.ReservedSymbol;
@@ -106,9 +107,11 @@ public Object getValueAt(int row, int col) {
 				if (subVolume instanceof AnalyticSubVolume){
 					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(), true, 
 							autoCompleteSymbolFilter);
-				}else{
-					return null;
 				}
+				if (subVolume instanceof CSGObject){
+					return "Constructed Solid Geometry";
+				} 
+				return null;
 			}
 			default:{
 				return null;
