@@ -22,22 +22,6 @@
     </desktopShortcutList>
  
         <!-- folders storing JRE -->
-        <folderList>
-        <folder>
-            <description>Java binaries - Microsoft Windows</description>
-            <destination>${installdir}/java</destination>
-            <name>java_windows</name>
-            <platforms>windows</platforms>
-            <distributionFileList>
-                <distributionFile>
-                    <allowWildcards>1</allowWildcards>
-                    <origin>JREs/jre1.6.0_29-windows/java-windows/*</origin>
-                </distributionFile>
-            </distributionFileList>
-            <ruleList>
-                <isTrue value="${java_install_jre}"/>
-            </ruleList>
-        </folder>
     </folderList>
  
         <!-- parameters for creating Java launchers -->
