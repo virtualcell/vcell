@@ -101,13 +101,13 @@ public class CSGObject extends SubVolume {
 	
 	public String getFreeName(CSGPrimitive.PrimitiveType primitiveType) {
 		switch (primitiveType) {
-		case SOLID_CONE:
+		case CONE:
 			return getFreeName(CSGNodeType.cone);
-		case SOLID_CUBE:
+		case CUBE:
 			return getFreeName(CSGNodeType.cube);
-		case SOLID_CYLINDER:
+		case CYLINDER:
 			return getFreeName(CSGNodeType.cylinder);
-		case SOLID_SPHERE:
+		case SPHERE:
 			return getFreeName(CSGNodeType.sphere);
 		}
 		return null;

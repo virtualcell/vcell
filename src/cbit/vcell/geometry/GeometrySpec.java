@@ -582,11 +582,11 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 
 	if (getNumAnalyticOrCSGSubVolumes()>0){
 		for (int k=0;k<sampleSize.getZ();k++){
-			double unit_z = (numZ>1)?((double)k)/(numZ-1):0.5;
-			double coordZ = oz + extent.getZ() * unit_z;
+			double unit_z = (numZ>1) ? ((double)k)/(numZ-1):0.5;
+			double coordZ = (numZ>1) ? oz + extent.getZ() * unit_z : 0;
 			for (int j=0;j<sampleSize.getY();j++){
-				double unit_y = (numY>1)?((double)j)/(numY-1):0.5;
-				double coordY = oy + extent.getY() * unit_y;
+				double unit_y = (numY>1) ? ((double)j)/(numY-1):0.5;
+				double coordY = (numY>1) ? oy + extent.getY() * unit_y : 0;
 				for (int i=0;i<sampleSize.getX();i++){
 					double unit_x = (numX>1)?((double)i)/(numX-1):0.5;
 					double coordX = ox + extent.getX() * unit_x;

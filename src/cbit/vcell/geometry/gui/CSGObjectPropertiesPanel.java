@@ -275,16 +275,16 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			if (csgNode instanceof CSGPrimitive) {
 				CSGPrimitive csgPrimitive = (CSGPrimitive)csgNode;
 				switch (csgPrimitive.getType()) {
-				case SOLID_CONE:
+				case CONE:
 					csgNodeLabel.icon = VCellIcons.csgConeIcon;
 					break;
-				case SOLID_CUBE:
+				case CUBE:
 					csgNodeLabel.icon = VCellIcons.csgCubeIcon;
 					break;
-				case SOLID_CYLINDER:
+				case CYLINDER:
 					csgNodeLabel.icon = VCellIcons.csgCylinderIcon;
 					break;
-				case SOLID_SPHERE:
+				case SPHERE:
 					csgNodeLabel.icon = VCellIcons.csgSphereIcon;
 					break;
 				}
@@ -498,6 +498,9 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenu transformMenu;
 	private JMenuItem[] tranformMenuItems;
 	
+	private JMenu applySetOperatorMenu;
+	private JMenuItem[] applySetOperatorMenuItems;
+	
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem editMenuItem;
 	
@@ -612,10 +615,25 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			for (int i = 0; i < numTypes; i ++) {
 				tranformMenuItems[i] = new JMenuItem(values[i].name().toLowerCase());
 				tranformMenuItems[i].addActionListener(eventHandler);
-				transformMenu.add(addTranformationMenuItems[i]);
+				transformMenu.add(tranformMenuItems[i]);
 			}
 		}
 		return transformMenu;
+	}
+	
+	private JMenu getApplySetOperatorMenu() {
+		if (applySetOperatorMenu == null) {
+			applySetOperatorMenu = new JMenu("Apply Set Operator");
+			CSGSetOperator.OperatorType[] values = CSGSetOperator.OperatorType.values();
+			int numTypes = values.length;
+			applySetOperatorMenuItems = new JMenuItem[numTypes];
+			for (int i = 0; i < numTypes; i ++) {
+				applySetOperatorMenuItems[i] = new JMenuItem(values[i].name().toLowerCase());
+				applySetOperatorMenuItems[i].addActionListener(eventHandler);
+				applySetOperatorMenu.add(applySetOperatorMenuItems[i]);
+			}
+		}
+		return applySetOperatorMenu;
 	}
 	
 	private JMenu getAddPrimitiveMenu() {
@@ -717,6 +735,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		TreePath[] selectedPaths = csgObjectTree.getSelectionPaths();
 		boolean bShowPopup = true;
 		boolean bTransform = false;
+		boolean bApplySetOperator = false;
 		boolean bAddPrimitive = false;
 		boolean bAddTransformation = false;
 		boolean bAddOperator = false;
@@ -741,16 +760,20 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 					bAddTransformation = true;
 				}
 			} else if (userObject instanceof CSGPrimitive) {
+				bApplySetOperator = true;
 				bTransform = true;
 				bAddPrimitive = false;
 				bAddOperator = false;
 				bAddTransformation = false;
 			} else if (userObject instanceof CSGSetOperator) {
-				//bTransform = true;
+				bApplySetOperator = true;
+				bTransform = true;
 				bAddPrimitive = true;
 				bAddOperator = true;
 				bAddTransformation = true;
 			} else if (userObject instanceof CSGTransformation) {
+				bApplySetOperator = true;
+				bTransform = true;
 				bEdit = true;
 				if (((CSGTransformation) userObject).getChild() == null) {
 					bAddPrimitive = true;
@@ -767,16 +790,32 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 				getAddSetOperatorMenu().setEnabled(bAddOperator);
 				popupMenu.add(getAddMenu());
 			}
-			if (bTransform) {
-				popupMenu.add(getTransformMenu());
-			}
 			if (bEdit) {
+				if (popupMenu.getComponents().length > 0) {
+					popupMenu.add(new JSeparator());
+				}
 				popupMenu.add(getEditMenuItem());
 			}
 			if (bDelete) {
-				popupMenu.add(new JSeparator());
+				if (popupMenu.getComponents().length > 0 && !bEdit) {
+					popupMenu.add(new JSeparator());
+				}
 				popupMenu.add(getDeleteMenuItem());
 			}
+			
+			if (bTransform) {
+				if (popupMenu.getComponents().length > 0) {
+					popupMenu.add(new JSeparator());
+				}
+				popupMenu.add(getTransformMenu());
+			}
+			if (bApplySetOperator) {
+				if (popupMenu.getComponents().length > 0 && !bTransform) {
+					popupMenu.add(new JSeparator());
+				}
+				popupMenu.add(getApplySetOperatorMenu());
+			}
+
 			Point mousePoint = e.getPoint();
 			popupMenu.show(csgObjectTree, mousePoint.x, mousePoint.y);
 		}
@@ -810,33 +849,53 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			CSGTransformation csgTransformation = (CSGTransformation) selectedUserObject;
 			csgTransformation.setChild(newCsgNode);
 			return true;
-		} 
-		if (selectedUserObject instanceof CSGPrimitive) {
-			CSGPrimitive csgPrimitive = (CSGPrimitive)selectedUserObject;
-			TreeNode parentNode = selectedNode.getParent();
-			if (parentNode == null || !(parentNode instanceof BioModelNode)) {
-				return false;
-			}
-			Object parentObject = ((BioModelNode)parentNode).getUserObject();
-			if (newCsgNode instanceof CSGTransformation) {
-				CSGTransformation csgTransformation = (CSGTransformation)newCsgNode;
-				csgTransformation.setChild(csgPrimitive);
-				if (parentObject == csgObject) {
-					csgObject.setRoot(csgTransformation);
-				} else if (parentObject instanceof CSGSetOperator) {
-					CSGSetOperator parentCSGSetOperator = (CSGSetOperator) parentObject;
-					int index = parentCSGSetOperator.indexOf(csgPrimitive);
-					if (index >= 0) {
-						parentCSGSetOperator.setChild(index, csgTransformation);
-						return true;
-					}
-				} else if (parentObject instanceof CSGTransformation) {
-					CSGTransformation parentCSGTransformation = (CSGTransformation) parentObject;
-					parentCSGTransformation.setChild(csgTransformation);
-					return true;
-				}
-			}
 		}
+		
+		return false;
+	}
+	
+	private boolean transformOrApplySetOperator(CSGNode newCsgNode) {
+		if (newCsgNode == null) {
+			return false;
+		}
+		Object obj = csgObjectTree.getLastSelectedPathComponent();
+		if (obj == null || !(obj instanceof BioModelNode)) {
+			return false;
+		}
+		BioModelNode selectedNode = (BioModelNode) obj;
+		Object selectedUserObject = selectedNode.getUserObject();
+		
+		if (!(selectedUserObject instanceof CSGNode)) {
+			return false;
+		}
+
+		CSGNode selectedCSGNode = (CSGNode) selectedUserObject;
+		TreeNode parentNode = selectedNode.getParent();
+		if (parentNode == null || !(parentNode instanceof BioModelNode)) {
+			return false;
+		}
+		Object parentObject = ((BioModelNode)parentNode).getUserObject();
+		if (newCsgNode instanceof CSGTransformation) {
+			CSGTransformation csgTransformation = (CSGTransformation)newCsgNode;
+			csgTransformation.setChild(selectedCSGNode);
+		} else if (newCsgNode instanceof CSGSetOperator) {
+			CSGSetOperator csgSetOperator = (CSGSetOperator)newCsgNode;
+			csgSetOperator.addChild(selectedCSGNode);
+		}
+		if (parentObject == csgObject) {
+			csgObject.setRoot(newCsgNode);
+		} else if (parentObject instanceof CSGSetOperator) {
+			CSGSetOperator parentCSGSetOperator = (CSGSetOperator) parentObject;
+			int index = parentCSGSetOperator.indexOf(selectedCSGNode);
+			if (index >= 0) {
+				parentCSGSetOperator.setChild(index, newCsgNode);
+				return true;
+			}
+		} else if (parentObject instanceof CSGTransformation) {
+			CSGTransformation parentCSGTransformation = (CSGTransformation) parentObject;
+			parentCSGTransformation.setChild(newCsgNode);
+			return true;
+		}				
 		
 		return false;
 	}
@@ -921,7 +980,20 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 					bFoundClickedMenuItem = true;
 					CSGTransformation csgTransformation = createNewCSGTransformation(values[i]);
 					objectToBeSelected = csgTransformation;
-					bGeometryChanged = addNode(csgTransformation);
+					bGeometryChanged = transformOrApplySetOperator(csgTransformation);
+					break;
+				}
+			}
+		}
+		if (!bFoundClickedMenuItem) {
+			OperatorType[] values = CSGSetOperator.OperatorType.values();
+			int numTypes = values.length;
+			for (int i = 0; i < numTypes; i ++) {
+				if (source == applySetOperatorMenuItems[i]) {
+					bFoundClickedMenuItem = true;
+					CSGSetOperator csgSetOperator = new CSGSetOperator(csgObject.getFreeName(values[i]), values[i]);
+					objectToBeSelected = csgSetOperator;
+					bGeometryChanged = transformOrApplySetOperator(csgSetOperator);
 					break;
 				}
 			}
@@ -938,11 +1010,11 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		case Homogeneous:
 			throw new RuntimeException("Homogeneous is not supported yet");
 		case Rotation:
-			return new CSGRotation(csgObject.getFreeName(TransformationType.Rotation), new Vect3d(1,2,3),Math.PI/4.0);
+			return new CSGRotation(csgObject.getFreeName(TransformationType.Rotation), new Vect3d(1, 0, 0), 0);
 		case Scale:
-			return new CSGScale(csgObject.getFreeName(TransformationType.Scale), new Vect3d(0.5,0.5,0.5));
+			return new CSGScale(csgObject.getFreeName(TransformationType.Scale), new Vect3d(1,1,1));
 		case Translation:
-			return new CSGTranslation(csgObject.getFreeName(TransformationType.Translation), new Vect3d(0.5,0.5,0.5));
+			return new CSGTranslation(csgObject.getFreeName(TransformationType.Translation), new Vect3d(0,0,0));
 		}
 		return null;
 	}
