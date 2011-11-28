@@ -16,6 +16,8 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.client.GuiConstants;
+
 /**
  * This type was created in VisualAge.
  */
@@ -171,9 +173,9 @@ void setHandle(int handle) {
  */
 public void setName(String aName) throws java.beans.PropertyVetoException {
 	String oldName = this.name;
-	fireVetoableChange("name",oldName,aName);
+	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME,oldName,aName);
 	this.name = aName;
-	firePropertyChange("name",oldName,name);
+	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME,oldName,name);
 }
 /**
  * This method was created in VisualAge.

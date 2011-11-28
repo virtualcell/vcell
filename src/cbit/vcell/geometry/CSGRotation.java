@@ -8,15 +8,15 @@ public class CSGRotation extends CSGTransformation {
 	private Vect3d axis = null;
 	private double rotationRadians = 0;
 	
-	public CSGRotation(Vect3d axis, double rotationRadians) {
-		super();
+	public CSGRotation(String name, Vect3d axis, double rotationRadians) {
+		super(name);
 		this.axis = axis;
 		this.rotationRadians = rotationRadians;
 		updateTransform(axis, rotationRadians);
 	}
 	
 	public CSGRotation(CSGRotation rotation) {
-		super();
+		super(rotation);
 		this.axis = new Vect3d(rotation.axis);
 		this.rotationRadians = rotation.rotationRadians;
 		updateTransform(axis, rotationRadians);

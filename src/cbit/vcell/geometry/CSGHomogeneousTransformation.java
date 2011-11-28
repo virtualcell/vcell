@@ -4,8 +4,8 @@ import cbit.vcell.render.Affine;
 
 public class CSGHomogeneousTransformation extends CSGTransformation {
 		
-	public CSGHomogeneousTransformation(Affine forward, Affine inverse){
-		super(forward,inverse);
+	public CSGHomogeneousTransformation(String name, Affine forward, Affine inverse){
+		super(name, forward,inverse);
 	}
 	
 	public CSGHomogeneousTransformation(CSGHomogeneousTransformation csgHomogeneousTransformation){

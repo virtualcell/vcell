@@ -419,10 +419,7 @@ public cbit.vcell.geometry.surface.GeometrySurfaceDescription getGeometrySurface
  * Return the geometrySurfaceDescription1 property value.
  * @return cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.surface.GeometrySurfaceDescription getgeometrySurfaceDescription1() {
-	// user code begin {1}
-	// user code end
+private GeometrySurfaceDescription getgeometrySurfaceDescription1() {
 	return ivjgeometrySurfaceDescription1;
 }
 
@@ -431,7 +428,6 @@ private cbit.vcell.geometry.surface.GeometrySurfaceDescription getgeometrySurfac
  * Return the JButton1 property value.
  * @return javax.swing.JButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton gethomeButton() {
 	if (ivjhomeButton == null) {
 		try {
@@ -982,8 +978,8 @@ public void resetView() {
  * @param geometrySurfaceDescription The new value for the property.
  * @see #getGeometrySurfaceDescription
  */
-public void setGeometrySurfaceDescription(cbit.vcell.geometry.surface.GeometrySurfaceDescription geometrySurfaceDescription) {
-	cbit.vcell.geometry.surface.GeometrySurfaceDescription oldValue = fieldGeometrySurfaceDescription;
+public void setGeometrySurfaceDescription(GeometrySurfaceDescription geometrySurfaceDescription) {
+	GeometrySurfaceDescription oldValue = fieldGeometrySurfaceDescription;
 	fieldGeometrySurfaceDescription = geometrySurfaceDescription;
 	firePropertyChange("geometrySurfaceDescription", oldValue, geometrySurfaceDescription);
 }

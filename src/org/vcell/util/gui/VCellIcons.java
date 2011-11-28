@@ -31,6 +31,19 @@ public abstract class VCellIcons {
 	
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
+	
+	// CSG
+	public final static Icon csgSphereIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_sphere.png"));
+	public final static Icon csgCubeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cube.png"));
+	public final static Icon csgCylinderIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cylinder.png"));
+	public final static Icon csgConeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cone.png"));
+	public final static Icon csgSetUnionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_union.png"));
+	public final static Icon csgSetIntersectionIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_intersection.png"));
+	public final static Icon csgSetDifferenceIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_set_difference.png"));
+	public final static Icon csgRotationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_rotation.png"));
+	public final static Icon csgTranslationIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_translation.png"));
+	public final static Icon csgScaleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_scale.png"));
+	
 	// table
 	public final static Icon firstPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/first_page.png"));
 	public final static Icon previousPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/previous_page.png"));

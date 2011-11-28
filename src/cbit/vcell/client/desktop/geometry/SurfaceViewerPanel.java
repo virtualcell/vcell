@@ -18,17 +18,19 @@ import cbit.vcell.geometry.gui.SurfaceEditor;
  * Creation date: (6/3/2004 6:01:55 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class SurfaceViewerPanel extends javax.swing.JPanel {
-	private cbit.vcell.geometry.gui.SurfaceEditor ivjsurfaceEditor = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private SurfaceEditor ivjsurfaceEditor = null;
+	private Geometry fieldGeometry = null;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SurfaceViewerPanel.this && (evt.getPropertyName().equals("geometry"))) 
-				connEtoC1(evt);
+			if (evt.getSource() == SurfaceViewerPanel.this && (evt.getPropertyName().equals("geometry"))) {
+				surfaceViewerPanel_Geometry();
+			}
 		};
 	};
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
 /**
  * SurfaceViewerPanel constructor comment.
@@ -37,26 +39,6 @@ public SurfaceViewerPanel() {
 	super();
 	initialize();
 }
-
-/**
- * connEtoC1:  (SurfaceViewerPanel.geometry --> SurfaceViewerPanel.surfaceViewerPanel_Geometry(Lcbit.vcell.geometry.Geometry;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.surfaceViewerPanel_Geometry(this.getGeometry());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
@@ -177,7 +159,7 @@ public void setGeometry(Geometry geometry) {
 /**
  * Comment
  */
-private void surfaceViewerPanel_Geometry(Geometry arg1) {
+private void surfaceViewerPanel_Geometry() {
 	
 	if(getGeometry() == null){
 		getsurfaceEditor().setGeometrySurfaceDescription(null);

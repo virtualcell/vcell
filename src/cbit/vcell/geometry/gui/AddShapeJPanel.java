@@ -35,6 +35,7 @@ import javax.swing.event.UndoableEditListener;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.ReservedSymbol;
 
+@SuppressWarnings("serial")
 public class AddShapeJPanel extends JPanel {
 		
 	private JTextField manualTextField;
@@ -96,7 +97,7 @@ public class AddShapeJPanel extends JPanel {
 	private final JRadioButton cylXRadioButton = new JRadioButton();
 	private final JRadioButton cylYRadioButton = new JRadioButton();
 	private final JRadioButton cylZRadioButton = new JRadioButton();
-	ButtonGroup cylAxisButtonGroup = new ButtonGroup();
+	private ButtonGroup cylAxisButtonGroup = new ButtonGroup();
 	
 	public AddShapeJPanel() {
 		super();

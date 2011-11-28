@@ -7,8 +7,8 @@ public class CSGTranslation extends CSGTransformation {
 	
 	public Vect3d translation = null;
 
-	public CSGTranslation(Vect3d translation){
-		super();
+	public CSGTranslation(String name, Vect3d translation){
+		super(name);
 		this.translation = translation;
 		updateTransformation();
 	}

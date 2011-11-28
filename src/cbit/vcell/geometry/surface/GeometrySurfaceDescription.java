@@ -25,6 +25,7 @@ import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.ImageException;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
@@ -473,6 +474,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				e.printStackTrace(System.out);
 			}
 		}
+	}
+	if (evt.getSource() instanceof CSGObject && evt.getPropertyName().equals(CSGObject.PROPERTY_NAME_ROOT)) {
+		try {
+			getRegionImage0().setDirty(); // nobody listens to this, updateAll() will propagate changes
+			getSurfaceCollection0().setDirty();
+			fieldGeometricRegions.setDirty();
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}		
 	}
 	if (evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")) {
 		String oldName = (String)evt.getOldValue();

@@ -89,6 +89,7 @@ public class ApplicationGeometryPanel extends ApplicationSubPanel {
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		structureMappingCartoonPanel.setSelectionManager(selectionManager);
+		geometryViewer.setSelectionManager(selectionManager);
 	}
 
 	@Override
