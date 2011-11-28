@@ -1,7 +1,7 @@
 <project>
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
-    <version>Release</version>
+    <version>5</version>
     <installerFilename>${product_shortname}-${product_version}-${platform_name}-installer-with-Java.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
