@@ -12,18 +12,18 @@ package cbit.vcell.geometry.surface;
 
 import java.util.HashSet;
 
-public class VolumeSamplesLong extends VolumeSamples {
-	private long[] incidentSurfaceMaskLong;
+public class VolumeSamplesInt extends VolumeSamples {
+	private int[] incidentSurfaceMaskInt;
 	
-	public VolumeSamplesLong(int size){
+	public VolumeSamplesInt(int size){
 		super(size);
-		this.incidentSurfaceMaskLong = new long[size];
+		this.incidentSurfaceMaskInt = new int[size];
 	}
 
 	public boolean hasZeros(){
 		boolean bHasZero = false;
-		for (long mask : incidentSurfaceMaskLong){
-			if (mask == 0L){
+		for (int mask : incidentSurfaceMaskInt){
+			if (mask == 0){
 				bHasZero = true;
 				break;
 			}
@@ -33,9 +33,13 @@ public class VolumeSamplesLong extends VolumeSamples {
 	
 	public void add(int index, long mask, float distance){
 //		System.out.println("index="+index+", mask="+mask+", distance="+distance);
-		incidentSurfaceMaskLong[index] = incidentSurfaceMaskLong[index] | mask;
+		if( (mask & 0xFFFFFFFF) != mask )
+		{
+			System.err.println("Error: Surface mask doesn't fit into an int.");
+		}
+		incidentSurfaceMaskInt[index] = (int) (incidentSurfaceMaskInt[index] | mask);
 //System.out.println("mask["+index+"]="+mask+", distance="+distance);
-		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskLong[index])){
+		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskInt[index])){
 			System.out.println("connected across surface");
 		}
 //		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
@@ -49,12 +53,12 @@ public class VolumeSamplesLong extends VolumeSamples {
 			return;
 		}*/
 		
-		long[] volumeMasks = incidentSurfaceMaskLong;
+		int[] volumeMasks = incidentSurfaceMaskInt;
 		
-		long nonzeroSample = 0;
+		int nonzeroSample = 0;
 		int volumeIndex = volumeOffset;
 		for (int i=0;i<numSamples;i++){
-			if (volumeMasks[volumeIndex] != 0L){
+			if (volumeMasks[volumeIndex] != 0){
 				nonzeroSample = volumeMasks[volumeIndex];
 				break;
 			}
@@ -63,7 +67,7 @@ public class VolumeSamplesLong extends VolumeSamples {
 		
 		volumeIndex = volumeOffset;
 		for (int i=0;i<numSamples;i++){
-			if (volumeMasks[volumeIndex] == 0L){
+			if (volumeMasks[volumeIndex] == 0){
 				volumeMasks[volumeIndex] = nonzeroSample;
 			}
 			volumeIndex += volumeStride;
@@ -73,9 +77,9 @@ public class VolumeSamplesLong extends VolumeSamples {
 	@Override
 	public HashSet<Long> getUniqueMasks() {
 		HashSet<Long> uniqueMasks = new HashSet<Long>();
-		for (long mask : incidentSurfaceMaskLong){
+		for (int mask : incidentSurfaceMaskInt){
 			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(mask);
+				uniqueMasks.add(((long)mask) & 0xFFFFFFFF);
 			}
 		}
 		return uniqueMasks;
@@ -83,7 +87,6 @@ public class VolumeSamplesLong extends VolumeSamples {
 	
 	@Override
 	public long getMask(int index) {
-		return incidentSurfaceMaskLong[index];
+		return ((long)incidentSurfaceMaskInt[index]) & 0xFFFFFFFF;
 	}
-	
 }

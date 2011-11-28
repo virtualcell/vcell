@@ -145,7 +145,10 @@ public class RayCasterBitSet {
 			HitList[] hitListsZ = rayCastResults.getHitListsXY();
 			for (int j = 0; j < numY; j++){
 				for (int i = 0; i < numX; i++){
-					hitListsZ[xyIndex].fillEmpty(volumeSamples, numZ, xyIndex, numXY);
+					if(hitListsZ[xyIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numZ, xyIndex, numXY);
+					}
 					xyIndex++;
 				}
 			}
@@ -159,7 +162,10 @@ public class RayCasterBitSet {
 			HitList[] hitListsY = rayCastResults.getHitListsXZ();
 			for (int k = 0; k < numZ; k++){
 				for (int i = 0; i < numX; i++){
-					hitListsY[xzIndex].fillEmpty(volumeSamples, numY, i+k*numXY, numX);
+					if(hitListsY[xzIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numY, i+k*numXY, numX);
+					}
 					xzIndex++;
 				}
 			}
@@ -173,7 +179,10 @@ public class RayCasterBitSet {
 			HitList[] hitListsX = rayCastResults.getHitListsYZ();
 			for (int k = 0; k < numZ; k++){
 				for (int j = 0; j < numY; j++){
-					hitListsX[yzIndex].fillEmpty(volumeSamples, numX, j*numX+k*numXY, 1);
+					if(hitListsX[yzIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numX, j*numX+k*numXY, 1);
+					}
 					yzIndex++;
 				}
 			}
