@@ -69,7 +69,7 @@ public class RayCaster {
 		return geometry;
 	}
 
-	public static VolumeSamplesLong volumeSampleSurface(SurfaceCollection surfaceCollection, ISize sampleSize, Origin origin, Extent extent, boolean bCellCentered) throws ImageException {
+	public static VolumeSamples volumeSampleSurface(SurfaceCollection surfaceCollection, ISize sampleSize, Origin origin, Extent extent, boolean bCellCentered) throws ImageException {
 		int numX = sampleSize.getX();
 		int numY = sampleSize.getY();
 		int numZ = sampleSize.getZ();
@@ -89,8 +89,31 @@ public class RayCaster {
 		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ);
 
 		long t2 = System.currentTimeMillis();
-
-		VolumeSamplesLong volumeSamples = new VolumeSamplesLong(numX*numY*numZ);
+		
+		long unionOfMasks = 0L;
+		for(int i=0; i<surfaceCollection.getSurfaceCount(); i++)
+		{
+			Surface surf = surfaceCollection.getSurfaces(i);
+			unionOfMasks |= surf.getInteriorMask();
+			unionOfMasks |= surf.getExteriorMask();
+		}
+		VolumeSamples volumeSamples = null;
+		if((unionOfMasks & 0xFF) == unionOfMasks )
+		{
+			volumeSamples = new VolumeSamplesByte(numX*numY*numZ);
+		}
+		else if((unionOfMasks & 0xFFFF) == unionOfMasks )
+		{
+			volumeSamples = new VolumeSamplesShort(numX*numY*numZ);
+		}
+		else if((unionOfMasks & 0xFFFFFFFF) == unionOfMasks )
+		{
+			volumeSamples = new VolumeSamplesInt(numX*numY*numZ);
+		}
+		else
+		{
+			volumeSamples = new VolumeSamplesLong(numX*numY*numZ);
+		}
 		
 		//
 		// volume sample in Z direction (index = i + j*numX)
@@ -160,7 +183,10 @@ public class RayCaster {
 			HitList[] hitListsZ = rayCastResults.getHitListsXY();
 			for (int j = 0; j < numY; j++){
 				for (int i = 0; i < numX; i++){
-					hitListsZ[xyIndex].fillEmpty(volumeSamples, numZ, xyIndex, numXY);
+					if(hitListsZ[xyIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numZ, xyIndex, numXY);
+					}
 					xyIndex++;
 				}
 			}
@@ -174,7 +200,10 @@ public class RayCaster {
 			HitList[] hitListsY = rayCastResults.getHitListsXZ();
 			for (int k = 0; k < numZ; k++){
 				for (int i = 0; i < numX; i++){
-					hitListsY[xzIndex].fillEmpty(volumeSamples, numY, i+k*numXY, numX);
+					if(hitListsY[xzIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numY, i+k*numXY, numX);
+					}
 					xzIndex++;
 				}
 			}
@@ -188,7 +217,10 @@ public class RayCaster {
 			HitList[] hitListsX = rayCastResults.getHitListsYZ();
 			for (int k = 0; k < numZ; k++){
 				for (int j = 0; j < numY; j++){
-					hitListsX[yzIndex].fillEmpty(volumeSamples, numX, j*numX+k*numXY, 1);
+					if(hitListsX[yzIndex].isEmpty())
+					{
+						volumeSamples.fillEmpty(numX, j*numX+k*numXY, 1);
+					}
 					yzIndex++;
 				}
 			}
@@ -214,6 +246,8 @@ public class RayCaster {
 		return volumeSamples;
 	}
 
+	
+	
 	private static void setSurfaceMasks(SurfaceCollection surfaceCollection) {
 		long mask = 1;
 		for (int i=0;i<surfaceCollection.getSurfaceCount();i++){
@@ -279,17 +313,10 @@ public class RayCaster {
 		Origin origin = geometry.getOrigin();
 		Extent extent = geometry.getExtent();
 		
-		VolumeSamplesLong volumeSamples = volumeSampleSurface(geometry.getGeometrySurfaceDescription().getSurfaceCollection(), sampleSize, origin, extent, bCellCentered);
-				
+		VolumeSamples volumeSamples = volumeSampleSurface(geometry.getGeometrySurfaceDescription().getSurfaceCollection(), sampleSize, origin, extent, bCellCentered);
 		// for each mask bit, find union of masks which contain that bit ... iterate until no change.
-		HashSet<Long> uniqueMasks = new HashSet<Long>();
-		long[] incidentSurfaceMasks = volumeSamples.getIncidentSurfaceMask();
-		for (long mask : incidentSurfaceMasks){
-			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(mask);
-System.out.println("+++++++++++++++++++++++++++++++++++++ unique mask : "+Long.toBinaryString(mask));
-			}
-		}
+		HashSet<Long> uniqueMasks = volumeSamples.getUniqueMasks();
+
 		ArrayList<Long> consensusMaskArray = new ArrayList<Long>(uniqueMasks);
 //		boolean bChanged = true;
 //		while (bChanged){
@@ -321,8 +348,9 @@ System.out.println("+++++++++++++++++++++++++++++++++++++ unique mask : "+Long.t
 				throw new RuntimeException("could not reconcile volume samples with original geometry");
 			}
 			byte pixelValue = (byte)subvolume.getHandle();
-			for (int i=0;i<incidentSurfaceMasks.length;i++){
-				if ((incidentSurfaceMasks[i] & mask) != 0){
+			
+			for (int i=0;i<volumeSamples.getNumXYZ();i++){
+				if ((volumeSamples.getMask(i) & mask) != 0){
 					pixels[i] = (byte)pixelValue;
 				}
 			}
@@ -609,17 +637,10 @@ System.out.println("+++++++++++++++++++++++++++++++++++++ unique mask : "+Long.t
 			int numY = sampleSize.getY();
 			int numZ = sampleSize.getZ();
 		
-		VolumeSamplesLong volumeSamples = volumeSampleSurface(surfaceCollection, sampleSize, origin, extent, false);
-				
+		VolumeSamples volumeSamples = volumeSampleSurface(surfaceCollection, sampleSize, origin, extent, false);
 		// for each mask bit, find union of masks which contain that bit ... iterate until no change.
-		HashSet<Long> uniqueMasks = new HashSet<Long>();
-		long[] incidentSurfaceMasks = volumeSamples.getIncidentSurfaceMask();
-		for (long mask : incidentSurfaceMasks){
-			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(mask);
-System.out.println("+++++++++++++++++++++++++++++++++++++ unique mask : "+Long.toBinaryString(mask));
-			}
-		}
+		HashSet<Long> uniqueMasks = volumeSamples.getUniqueMasks();
+
 		ArrayList<Long> consensusMaskArray = new ArrayList<Long>(uniqueMasks);
 		boolean bChanged = true;
 		while (bChanged){
@@ -647,8 +668,8 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 // TODO generate octree ... 2^N sampling apriori ..store in tree with info of where surfaces go for smoldyn? 
 // TODO then Smoldyn chooses num volume samples (in each of x,y,z) NumSamples_i = 2^(N-k) for (k>=2) ... then 2^(3k) subsamples for volume fraction computation .. info (e.g. included panels) summarized in subtree roots.
 //    use connectsAcrossSurface() to avoid short-circuiting a membrane.
-			for (int i=0;i<incidentSurfaceMasks.length;i++){
-				if ((incidentSurfaceMasks[i] & mask) != 0){
+			for (int i=0;i<volumeSamples.getNumXYZ();i++){
+				if ((volumeSamples.getMask(i) & mask) != 0){
 				//if (incidentSurfaceMasks[i] == mask){
 					pixels[i] = pixelValue;
 				}
@@ -736,7 +757,8 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 			newVCImage.setName(origGeometrySpec.getImage().getName());
 			ArrayList<VCPixelClass> newPixelClasses = new ArrayList<VCPixelClass>();
 			for (VCPixelClass origPixelClass : origGeometrySpec.getImage().getPixelClasses()){
-				newPixelClasses.add(new VCPixelClass(null,  origPixelClass.getPixelClassName(), origPixelClass.getPixel()));
+				SubVolume origSubvolume = origGeometrySpec.getImageSubVolumeFromPixelValue(origPixelClass.getPixel());
+				newPixelClasses.add(new VCPixelClass(null,  origSubvolume.getName(), origPixelClass.getPixel()));
 			}
 			newVCImage.setPixelClasses(newPixelClasses.toArray(new VCPixelClass[newPixelClasses.size()]));
 		}else{

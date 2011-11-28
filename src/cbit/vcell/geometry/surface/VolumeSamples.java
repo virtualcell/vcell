@@ -10,10 +10,35 @@
 
 package cbit.vcell.geometry.surface;
 
-public interface VolumeSamples {
+import java.util.HashSet;
 
-	int getNumXYZ();
+public abstract class VolumeSamples {
+	
+//	private float[] distanceMapL1;
+	private int size;
+	
+	public VolumeSamples(int size){
+		this.size = size;
+//		this.distanceMapL1 = new float[size];
+//		Arrays.fill(this.distanceMapL1,Float.MAX_VALUE);
+	}
 
-	void add(int volumeIndex, long exteriorMask, float f);
+//	public float[] getDistanceMapL1() {
+//		return distanceMapL1;
+//	}
+	
+	public abstract boolean hasZeros();
+	
+	public abstract void add(int index, long mask, float distance);
+
+	public abstract void fillEmpty(int numSamples, int volumeOffset, int volumeStride);
+	
+	public abstract HashSet<Long> getUniqueMasks();
+	
+	public abstract long getMask(int index);
+	
+	public int getNumXYZ() {
+		return size;
+	}
 
 }
