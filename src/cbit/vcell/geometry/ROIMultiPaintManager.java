@@ -349,9 +349,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 
-		final String addROIManual = "Add Domain, edit manually";
+		final String addROIManual = "1. Add empty Domain";
 //		final String addROIAssist = "Add ROI, show histogram";
-		final String addAllDistinct = "Add Pre-Segmented";
+		final String addAllDistinct = "2. Add distinct domains";
 		final String cancel = "Cancel";
 		String result = null;
 		String distinctDescr =
@@ -359,11 +359,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(!bForceAddDistinct){
 			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Image Editor",
 				distinctDescr+
-				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
+				"  Segmenting an image begins with defining at least 1 Domain."+
 				"  After creating the initial Domain you can use the segmentation tools to create/edit more Domains.  Choose an action:\n"+
-				"1. Add an 'empty' Domain to begin and edit manually."+
+				"1. Add an 'empty' Domain to begin segmenting manually."+
 //				(!bHasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
-				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n2. Add 'filled' Domains for every distinct pixel value."),
+				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n2. Add Domains for every distinct pixel value."),
 				(!bHasOriginalData
 					?new String[] {addROIManual,cancel}
 					:(uniquePixelBS.cardinality() >= 256
