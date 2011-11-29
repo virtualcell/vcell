@@ -710,6 +710,11 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 			if (selectedItem instanceof GeometryClass) {
 				GeometryClass geoClass = (GeometryClass)selectedItem;
 				domain = new Domain(geoClass);
+				if (selectedItem instanceof SubVolume) {
+					newFunctionVariableType = VariableType.VOLUME;
+				} else if (selectedItem instanceof SurfaceClass) {
+					newFunctionVariableType = VariableType.MEMBRANE;
+				}
 			} else if (selectedItem instanceof VariableType) {
 				newFunctionVariableType = (VariableType) selectedItem;
 			} else {
