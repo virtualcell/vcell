@@ -623,7 +623,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JMenu getApplySetOperatorMenu() {
 		if (applySetOperatorMenu == null) {
-			applySetOperatorMenu = new JMenu("Apply Set Operator");
+			applySetOperatorMenu = new JMenu("Apply Set Operation");
 			CSGSetOperator.OperatorType[] values = CSGSetOperator.OperatorType.values();
 			int numTypes = values.length;
 			applySetOperatorMenuItems = new JMenuItem[numTypes];

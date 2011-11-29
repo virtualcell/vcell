@@ -10,25 +10,6 @@ import cbit.vcell.render.Vect3d;
 @SuppressWarnings("serial")
 public class CSGObject extends SubVolume {
 	
-	private enum CSGNodeType {
-		cone("cone"),
-		cube("cube"),
-		cylinder("cylinder"),
-		sphere("sphere"),
-		
-		difference("difference"),
-		intersection("intersection"),
-		union("union"),
-		
-		rotation("rotation"),
-		scale("scale"),
-		tranlation("translation");
-		
-		private String label;
-		private CSGNodeType(String name) {
-			label = name;
-		}
-	}
 	public static final String PROPERTY_NAME_ROOT = "root";
 	private CSGNode root = null;
 	
@@ -87,10 +68,10 @@ public class CSGObject extends SubVolume {
 		return null;
 	}
 	
-	private String getFreeName(CSGNodeType csgNodeType) {
+	private String getFreeName(String prefix) {
 		int counter = 0;
 		while (true) {
-			String name = csgNodeType.label + counter;
+			String name = prefix + counter;
 			CSGNode csgNode = findCSGNodeByName(root, name);
 			if (csgNode == null) {
 				return name;
@@ -100,43 +81,15 @@ public class CSGObject extends SubVolume {
 	}
 	
 	public String getFreeName(CSGPrimitive.PrimitiveType primitiveType) {
-		switch (primitiveType) {
-		case CONE:
-			return getFreeName(CSGNodeType.cone);
-		case CUBE:
-			return getFreeName(CSGNodeType.cube);
-		case CYLINDER:
-			return getFreeName(CSGNodeType.cylinder);
-		case SPHERE:
-			return getFreeName(CSGNodeType.sphere);
-		}
-		return null;
+		return getFreeName(primitiveType.name().toLowerCase());
 	}
 	
 	public String getFreeName(CSGSetOperator.OperatorType operatorType) {
-		switch (operatorType) {
-		case DIFFERENCE:
-			return getFreeName(CSGNodeType.difference);
-		case INTERSECTION:
-			return getFreeName(CSGNodeType.intersection);
-		case UNION:
-			return getFreeName(CSGNodeType.union);
-		}
-		return null;
+		return getFreeName(operatorType.name().toLowerCase());
 	}
 	
 	public String getFreeName(CSGTransformation.TransformationType transformationType) {
-		switch (transformationType) {
-		case Homogeneous:
-			throw new RuntimeException("Homogeneous is not supported yet");
-		case Rotation:
-			return getFreeName(CSGNodeType.rotation);
-		case Scale:
-			return getFreeName(CSGNodeType.scale);
-		case Translation:
-			return getFreeName(CSGNodeType.tranlation);
-		}
-		return null;
+		return getFreeName(transformationType.name().toLowerCase());
 	}
 	
 	public void setRoot(CSGNode newValue) {
