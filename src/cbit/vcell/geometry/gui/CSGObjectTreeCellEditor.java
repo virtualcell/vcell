@@ -39,7 +39,7 @@ public class CSGObjectTreeCellEditor extends DefaultTreeCellEditor {
 		private JTextField textField;
 		public Vect3dCellEditor(JTextField textField) {
 			super(textField);
-			this.textField = (JTextField) editingComponent;
+			this.textField = (JTextField) editorComponent;
 		}
 
 		@Override

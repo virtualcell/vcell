@@ -558,7 +558,7 @@ private int meshmode() {
  * @param evt java.beans.PropertyChangeEvent
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (geometryOwner == null || getGeometry() == null) {
+	if (getGeometry() == null) {
 		return;
 	}
 	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("origin"))) {
