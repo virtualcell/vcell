@@ -979,7 +979,7 @@ protected Font getFont() {
 	}
 
 
-	protected void setDocument(PageFormat pageFormat) {
+	protected void createDocument(PageFormat pageFormat) {
 
 		Rectangle pageSize = new Rectangle((float) pageFormat.getWidth(), (float) pageFormat.getHeight());
 		double marginL = pageFormat.getImageableX();
@@ -1006,7 +1006,8 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		throw new IllegalArgumentException("One or more null params while publishing BioModel.");
 	}
 	try {
-		setDocument(pageFormat);
+		createDocument(pageFormat);
+		createDocWriter(fos);
 		// Add metadata before you open the document...
 		String name = bioModel.getName().trim();
 		String userName = "Unknown";
@@ -1177,7 +1178,8 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 			throw new IllegalArgumentException("One or more null params while publishing Geometry.");
 		}
 		try {
-			setDocument(pageFormat);
+			createDocument(pageFormat);
+			createDocWriter(fos);
 			//Add metadata before you open the document...
 			String name = geom.getName().trim();
 			String userName = "Unknown";
@@ -1429,7 +1431,8 @@ protected void writeHorizontalLine() throws DocumentException {
 			throw new IllegalArgumentException("One or more null params while publishing MathModel.");
 		}
 		try {
-			setDocument(pageFormat);
+			createDocument(pageFormat);
+			createDocWriter(fos);
 			// Add metadata before you open the document...
 			String name = mathModel.getName().trim();
 			String userName = "Unknown";
