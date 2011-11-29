@@ -98,8 +98,16 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			MathDescription mathDesc = mathMapping.getMathDescription();
 			// do export
 			resultString = exportMatlab(exportFile, fileFilter, mathDesc);
-		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
-			documentManager.generatePDF(bioModel, new FileOutputStream(exportFile));
+		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {   
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(exportFile);
+				documentManager.generatePDF(bioModel, fos);				
+			} finally {
+				if(fos != null) {
+					fos.close();					
+				}
+			}
 			return; 									//will take care of writing to the file as well.
 		} else {
 			// convert it if other format
@@ -176,7 +184,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			MathDescription mathDesc = mathModel.getMathDescription();
 			resultString = exportMatlab(exportFile, fileFilter, mathDesc);
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
-			documentManager.generatePDF(mathModel, new FileOutputStream(exportFile));
+			FileOutputStream fos = new FileOutputStream(exportFile);
+			documentManager.generatePDF(mathModel, fos);
+			fos.close();
 			return;                                                       //will take care of writing to the file as well.
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 			resultString = XmlHelper.mathModelToXML(mathModel);
@@ -188,7 +198,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	} else if (documentToExport instanceof Geometry){
 		Geometry geom = (Geometry)documentToExport;
 		if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
-			documentManager.generatePDF(geom, new FileOutputStream(exportFile));
+			FileOutputStream fos = new FileOutputStream(exportFile);
+			documentManager.generatePDF(geom, fos);
+			fos.close();
 			return;                                                       //will take care of writing to the file as well.
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 			resultString = XmlHelper.geometryToXML(geom);
