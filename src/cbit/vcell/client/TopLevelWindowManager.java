@@ -312,7 +312,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	if(bShowCurrentGeomChoice){
 		Vector<String[]> choiceV = new Vector<String[]>();
 		choiceV.addAll(Arrays.asList(choices));
-		choiceV.add(new String[] {"From Current Geometry"});
+		choiceV.add(new String[] {"Edit Current Geometry"});
 		choices = choiceV.toArray(new String[0][]);
 	}
 	geomType = DialogUtils.showComponentOKCancelTableList(
