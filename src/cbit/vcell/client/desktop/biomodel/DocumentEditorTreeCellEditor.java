@@ -20,6 +20,9 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultTreeCellEditor;
+import javax.swing.tree.DefaultTreeCellRenderer;
+
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
@@ -27,7 +30,7 @@ import cbit.vcell.mapping.SimulationContext;
 public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 
 	public DocumentEditorTreeCellEditor(JTree tree) {
-		super(tree, null, new DefaultCellEditor(new JTextField()));
+		super(tree, new DefaultTreeCellRenderer(), new DefaultCellEditor(new JTextField()));
 		DefaultCellEditor editor = (DefaultCellEditor) realEditor;
 		final JTextField textField = (JTextField) editor.getComponent();
 		textField.setToolTipText("Press Enter to commit");
@@ -47,17 +50,20 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 	@Override
 	public Component getTreeCellEditorComponent(JTree tree, Object value,
 			boolean isSelected, boolean expanded, boolean leaf, int row) {
-		Component component = super.getTreeCellEditorComponent(tree, value, isSelected, expanded,
-				leaf, row);
-		if (editingComponent instanceof JTextField) {
-			String text = null;
-			JTextField textField = (JTextField)editingComponent;
-			if (value instanceof BioModelNode) {
-				Object userObject = ((BioModelNode) value).getUserObject();
-				if (userObject instanceof SimulationContext) {
+		Component component = null;
+		if (value instanceof BioModelNode) {
+			Object userObject = ((BioModelNode) value).getUserObject();
+			if (userObject instanceof SimulationContext) {
+				renderer.setOpenIcon(VCellIcons.applicationIcon);
+				renderer.setClosedIcon(VCellIcons.applicationIcon);
+				renderer.setLeafIcon(VCellIcons.applicationIcon);
+				component = super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
+				if (editingComponent instanceof JTextField) {
+					String text = null;
+					JTextField textField = (JTextField)editingComponent;
 					text = ((SimulationContext) userObject).getName();
+					textField.setText(text);
 				}
-				textField.setText(text);
 			}
 		}
 		return component;

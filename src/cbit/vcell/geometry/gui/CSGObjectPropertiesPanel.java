@@ -1,8 +1,5 @@
 package cbit.vcell.geometry.gui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,46 +13,29 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Hashtable;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellEditor;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.VCellIcons;
 
-import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.geometry.CSGHomogeneousTransformation;
 import cbit.vcell.geometry.CSGNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive;
@@ -90,7 +70,11 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			Object source = e.getSource();
 			if (source == getDeleteMenuItem()) {
 				deleteNode();
+			} else if (source == getRenameMenuItem()) {
+				csgObjectTreeCellEditor.setRenaming(true);
+				csgObjectTree.startEditingAtPath(csgObjectTree.getSelectionPath());
 			} else if (source == getEditMenuItem()) {
+				csgObjectTreeCellEditor.setRenaming(false);
 				csgObjectTree.startEditingAtPath(csgObjectTree.getSelectionPath());
 			} else if (source instanceof JMenuItem) {
 				menuItemClicked(source);
@@ -119,245 +103,6 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		public void valueChanged(TreeSelectionEvent e) {
 		}
 		
-	}
-	private class CSGObjectTreeCellEditor extends DefaultTreeCellEditor {
-
-		private class RotationCellEditor extends AbstractCellEditor implements TreeCellEditor {
-			private JPanel rotationPanel = null;
-			private JTextField radianTextField;
-			private JTextField axisTextField;
-			private JButton okButton; 
-			private CSGRotation csgRotation;
-			
-			public RotationCellEditor() {
-			}
-
-			public Object getCellEditorValue() {
-				double radian = Double.parseDouble(radianTextField.getText());
-				Vect3d axis = stringToVect3d(axisTextField.getText());
-				csgRotation.setRotationRadians(radian);
-				csgRotation.setAxis(axis);
-				return csgRotation;
-			}
-
-			public Component getTreeCellEditorComponent(JTree tree,
-					Object value, boolean isSelected, boolean expanded,
-					boolean leaf, int row) {
-				if (value instanceof BioModelNode) {
-					Object userObject = ((BioModelNode) value).getUserObject();
-					if (userObject instanceof CSGRotation) {
-						createRotationPanel();
-						csgRotation = (CSGRotation)userObject;
-						radianTextField.setText(csgRotation.getRotationRadians() + "");
-						radianTextField.setCaretPosition(0);
-						axisTextField.setText(vect3dToString(csgRotation.getAxis()));
-						axisTextField.setCaretPosition(0);
-					}
-				}
-				return rotationPanel;
-			}
-			
-			private void createRotationPanel() {
-				if (rotationPanel == null) {
-					rotationPanel = new JPanel();
-					rotationPanel.setPreferredSize(new Dimension(300, 50));
-					rotationPanel.setBackground(Color.white);
-					rotationPanel.setLayout(new GridBagLayout());
-					
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.gridx = 0; 
-					gbc.gridy = 0;
-					JLabel label = new JLabel("Radian");
-					rotationPanel.add(label, gbc);
-					
-					gbc = new GridBagConstraints();
-					gbc.gridx = 1; 
-					gbc.gridy = 0;
-					gbc.weightx = 1.0;
-					gbc.fill = GridBagConstraints.HORIZONTAL;
-					gbc.insets = new Insets(0, 2, 2, 4);
-					radianTextField = new JTextField(10);
-					rotationPanel.add(radianTextField, gbc);
-					
-					gbc = new GridBagConstraints();
-					gbc.gridx = 2; 
-					gbc.gridy = 0;
-					label = new JLabel("Axis");
-					rotationPanel.add(label, gbc);
-					
-					gbc = new GridBagConstraints();
-					gbc.gridx = 3; 
-					gbc.gridy = 0;
-					gbc.weightx = 1.0;
-					gbc.insets = new Insets(0, 2, 2, 0);
-					gbc.fill = GridBagConstraints.HORIZONTAL;
-					axisTextField = new JTextField(10);
-					rotationPanel.add(axisTextField, gbc);
-					
-					gbc = new GridBagConstraints();
-					gbc.gridx = 4; 
-					gbc.gridy = 0;
-					gbc.insets = new Insets(0, 2, 4, 0);
-					okButton = new JButton("OK");
-					okButton.addActionListener(new ActionListener() {
-
-						public void actionPerformed(ActionEvent e) {
-							if (e.getSource() == okButton) {
-								fireEditingStopped();
-							}
-						}
-						
-					});
-					Border border = BorderFactory.createEmptyBorder(4, 4, 4, 4);
-					okButton.setBorder(border);
-					rotationPanel.add(okButton, gbc);
-				}
-			}
-		}
-		
-		private RotationCellEditor rotationCellEditor;
-		private DefaultCellEditor defaultCellEditor;
-		public CSGObjectTreeCellEditor(JTree tree) {
-			super(tree, null, new DefaultCellEditor(new JTextField()));
-			defaultCellEditor = (DefaultCellEditor) realEditor;
-		}		
-
-		private RotationCellEditor getRotationCellEditor() {
-			if (rotationCellEditor == null) {
-				rotationCellEditor = new RotationCellEditor();
-				for (CellEditorListener listener : defaultCellEditor.getCellEditorListeners()) {
-					rotationCellEditor.addCellEditorListener(listener);
-				}
-			}
-			return rotationCellEditor;
-		}
-		@Override
-		public Component getTreeCellEditorComponent(JTree tree, Object value,
-				boolean isSelected, boolean expanded, boolean leaf, int row) {
-			if (!(value instanceof BioModelNode)) {
-				return null;
-			}
-			Object userObject = ((BioModelNode) value).getUserObject();
-			if (!(userObject instanceof CSGTransformation)) {
-				return null;
-			}
-			Component component = null;
-			if (userObject instanceof CSGScale || userObject instanceof CSGTranslation) {
-				realEditor = defaultCellEditor;
-				component = super.getTreeCellEditorComponent(tree, value, isSelected, expanded,	leaf, row);
-				if (editingComponent instanceof JTextField) {
-					String text = null;
-					JTextField textField = (JTextField)editingComponent;	
-					if (userObject instanceof CSGScale) {
-						text = vect3dToString(((CSGScale) userObject).getScale());
-					} else if (userObject instanceof CSGTranslation) {
-						text = vect3dToString(((CSGTranslation) userObject).getTranslation());
-					}
-					textField.setText(text);
-					return component;
-				}
-			} else if (userObject instanceof CSGRotation) {
-				realEditor = getRotationCellEditor();
-				component = super.getTreeCellEditorComponent(tree, value, isSelected, expanded,	leaf, row);
-			}
-			return component;
-		}
-	}
-	
-	public class CSGObjectTreeCellRenderer extends DefaultTreeCellRenderer {
-		private class CSGNodeLabel {
-			String text;
-			Icon icon;
-		}
-		
-		private CSGNodeLabel getCSGNodeDescription(CSGNode csgNode, CSGNodeLabel csgNodeLabel) {
-			csgNodeLabel.text = csgNode.getName();
-			if (csgNode instanceof CSGPrimitive) {
-				CSGPrimitive csgPrimitive = (CSGPrimitive)csgNode;
-				switch (csgPrimitive.getType()) {
-				case CONE:
-					csgNodeLabel.icon = VCellIcons.csgConeIcon;
-					break;
-				case CUBE:
-					csgNodeLabel.icon = VCellIcons.csgCubeIcon;
-					break;
-				case CYLINDER:
-					csgNodeLabel.icon = VCellIcons.csgCylinderIcon;
-					break;
-				case SPHERE:
-					csgNodeLabel.icon = VCellIcons.csgSphereIcon;
-					break;
-				}
-				return csgNodeLabel;
-			}
-			if (csgNode instanceof CSGSetOperator) {
-				CSGSetOperator csgSetOperator = (CSGSetOperator)csgNode;
-				switch (csgSetOperator.getOpType()) {
-				case DIFFERENCE:
-					csgNodeLabel.icon = VCellIcons.csgSetDifferenceIcon;				
-					break;
-				case INTERSECTION:
-					csgNodeLabel.icon = VCellIcons.csgSetIntersectionIcon;				
-					break;
-				case UNION:
-					csgNodeLabel.icon = VCellIcons.csgSetUnionIcon;
-					break;
-				}
-			}
-			if (csgNode instanceof CSGTransformation) {
-				if (csgNode instanceof CSGRotation) {
-					CSGRotation csgRotation = (CSGRotation)csgNode;
-					Vect3d axis = csgRotation.getAxis();
-					double radius = csgRotation.getRotationRadians();
-					csgNodeLabel.text += ", radian=" + radius + ", axis=" + getVect3dDescription(axis);
-					csgNodeLabel.icon = VCellIcons.csgRotationIcon;
-				} else if (csgNode instanceof CSGTranslation) {
-					CSGTranslation csgTranslation = (CSGTranslation)csgNode;
-					Vect3d translation = csgTranslation.getTranslation();
-					csgNodeLabel.text += ", Translation=" + getVect3dDescription(translation);
-					csgNodeLabel.icon = VCellIcons.csgTranslationIcon;				
-				} else if (csgNode instanceof CSGScale) {
-					CSGScale csgScale = (CSGScale) csgNode;
-					Vect3d scale = csgScale.getScale();
-					csgNodeLabel.text += ", Scale=" + getVect3dDescription(scale);				
-					csgNodeLabel.icon = VCellIcons.csgScaleIcon;
-				} else if (csgNode instanceof CSGHomogeneousTransformation){
-					csgNodeLabel.icon = null;
-				}
-			}
-			return null;
-		}
-		
-		private int[] colormap = DisplayAdapterService.createContrastColorModel();
-		public CSGObjectTreeCellRenderer() {
-			super();
-			setBorder(new EmptyBorder(0, 2, 0, 0));
-		}
-		public Component getTreeCellRendererComponent(
-                JTree tree,
-                Object value,
-                boolean sel,
-                boolean expanded,
-                boolean leaf,
-                int row,
-                boolean hasFocus) {
-			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			if (value instanceof BioModelNode) {
-				BioModelNode node = (BioModelNode)value;
-				Object userObj = node.getUserObject();
-				CSGNodeLabel csgNodeLabel = new CSGNodeLabel();
-				if (userObj instanceof CSGObject) {
-					csgNodeLabel.text = ((CSGObject) userObj).getName();		
-					java.awt.Color handleColor = new java.awt.Color(colormap[((CSGObject) userObj).getHandle()]);
-					csgNodeLabel.icon = new ColorIcon(15,15,handleColor);
-				} else if (userObj instanceof CSGNode) {
-					getCSGNodeDescription((CSGNode) userObj, csgNodeLabel);
-				}
-				setText(csgNodeLabel.text);
-				setIcon(csgNodeLabel.icon);
-			}
-			return this;
-		}
 	}
 	
 	private class CSGObjectTreeModel extends DefaultTreeModel implements PropertyChangeListener {
@@ -455,22 +200,25 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 					if (inputString == null || inputString.length() == 0) {
 						return;
 					}
-					if (userObject instanceof CSGScale || userObject instanceof CSGTranslation) {
-						Vect3d vect3d = stringToVect3d(inputString);
-						if (userObject instanceof CSGScale) {
-							CSGScale csgScale = (CSGScale)userObject;
-							csgScale.setScale(vect3d);
-						} else if (userObject instanceof CSGTranslation) {
-							CSGTranslation csgTranslation = (CSGTranslation)userObject;
-							csgTranslation.setTranslation(vect3d);						
-						}
-						updateCSGObject((CSGNode)userObject);
+					if (userObject instanceof CSGObject) {
+						csgObject.setName(inputString);
+					} else if (userObject instanceof CSGNode) {
+						((CSGNode) userObject).setName(inputString);
+						nodeChanged(rootNode);
 					}
 				} else if (newValue instanceof CSGRotation && userObject instanceof CSGRotation) {
 					CSGRotation currCSGRotation = (CSGRotation)userObject;
 					CSGRotation newCSGRotation = (CSGRotation)newValue;
 					currCSGRotation.setAxis(newCSGRotation.getAxis());
 					currCSGRotation.setRotationRadians(newCSGRotation.getRotationRadians());
+					updateCSGObject((CSGNode)userObject);
+				} else if (newValue instanceof Vect3d) {
+					Vect3d vect3d = (Vect3d) newValue;
+					if (userObject instanceof CSGScale) {
+						((CSGScale) userObject).setScale(vect3d);
+					} else if (userObject instanceof CSGTranslation) {
+						((CSGTranslation) userObject).setTranslation(vect3d);
+					}
 					updateCSGObject((CSGNode)userObject);
 				}
 			} catch (Exception ex) {
@@ -503,9 +251,11 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem editMenuItem;
+	private JMenuItem renameMenuItem;
 	
 	private SimulationContext simulationContext;
-	
+	private CSGObjectTreeCellRenderer csgObjectTreeCellRenderer;
+	private CSGObjectTreeCellEditor csgObjectTreeCellEditor;
 	public CSGObjectPropertiesPanel() {
 		super();
 		initialize();
@@ -518,15 +268,14 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			@Override
 			public boolean isPathEditable(TreePath path) {
 				Object object = path.getLastPathComponent();
-				if (object instanceof BioModelNode) {
-					return (((BioModelNode)object).getUserObject() instanceof CSGTransformation);
-				}
-				return false;
+				return object instanceof BioModelNode;
 			}			
 		};
 		csgObjectTree.setEditable(true);
-		csgObjectTree.setCellRenderer(new CSGObjectTreeCellRenderer());
-		csgObjectTree.setCellEditor(new CSGObjectTreeCellEditor(csgObjectTree));
+		csgObjectTreeCellRenderer = new CSGObjectTreeCellRenderer();
+		csgObjectTree.setCellRenderer(csgObjectTreeCellRenderer);
+		csgObjectTreeCellEditor = new CSGObjectTreeCellEditor(csgObjectTree);
+		csgObjectTree.setCellEditor(csgObjectTreeCellEditor);
 		csgObjectTree.addMouseListener(eventHandler);
 		int rowHeight = csgObjectTree.getRowHeight();
 		if(rowHeight < 10) { 
@@ -581,6 +330,14 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			editMenuItem.addActionListener(eventHandler);
 		}
 		return editMenuItem;
+	}
+	
+	private JMenuItem getRenameMenuItem() {
+		if (renameMenuItem == null) {
+			renameMenuItem = new JMenuItem("Rename");
+			renameMenuItem.addActionListener(eventHandler);
+		}
+		return renameMenuItem;
 	}
 	
 	private JMenuItem getDeleteMenuItem() {
@@ -790,16 +547,17 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 				getAddSetOperatorMenu().setEnabled(bAddOperator);
 				popupMenu.add(getAddMenu());
 			}
-			if (bEdit) {
-				if (popupMenu.getComponents().length > 0) {
-					popupMenu.add(new JSeparator());
-				}
+			
+			if (popupMenu.getComponents().length > 0) {
+				popupMenu.add(new JSeparator());
+			}
+			// everything can be renamed
+			popupMenu.add(getRenameMenuItem());
+			if (bEdit) {				
 				popupMenu.add(getEditMenuItem());
 			}
+			
 			if (bDelete) {
-				if (popupMenu.getComponents().length > 0 && !bEdit) {
-					popupMenu.add(new JSeparator());
-				}
 				popupMenu.add(getDeleteMenuItem());
 			}
 			
@@ -1019,15 +777,15 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		return null;
 	}
 	
-	private String getVect3dDescription(Vect3d point) {
+	static String getVect3dDescription(Vect3d point) {
 		return "[" +  vect3dToString(point) + "]";
 	}
 	
-	private String vect3dToString(Vect3d point) {
+	static String vect3dToString(Vect3d point) {
 		return point.getX() + ", " + point.getY() + ", " + point.getZ();
 	}
 	
-	private Vect3d stringToVect3d(String str) {
+	static Vect3d stringToVect3d(String str) {
 		StringTokenizer st = new StringTokenizer(str, ", ");
 		double x = Double.parseDouble(st.nextToken());
 		double y = Double.parseDouble(st.nextToken());
