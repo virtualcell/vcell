@@ -1,8 +1,8 @@
 <project>
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
-    <version>Beta</version>
-    <installerFilename>${product_shortname}-${product_version}-${platform_name}-JavaWebStart-installer.${platform_exec_suffix}</installerFilename>
+    <version>Release</version>
+    <installerFilename>${product_shortname}-${product_version}-${platform_name}-PPC-JavaWebStart-installer.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
     <logoImage>vcell.gif</logoImage>
@@ -90,15 +90,20 @@
     </componentList>
     <preInstallationActionList>
         <autodetectJava>
-            <abortOnError>0</abortOnError>
+            <customErrorMessage>Java 1.5 or later is required</customErrorMessage>
             <explanation>Detecting Java</explanation>
             <promptUser>0</promptUser>
             <selectionOrder>newest</selectionOrder>
-            <showMessageOnError>0</showMessageOnError>
+            <onErrorActionList>
+                <showWarning>
+                    <text>Java 1.5 or later is needed!</text>
+                </showWarning>
+                <exit/>
+            </onErrorActionList>
             <validVersionList>
                 <validVersion>
                     <maxVersion></maxVersion>
-                    <minVersion>1.6</minVersion>
+                    <minVersion>1.5</minVersion>
                     <requireJDK>0</requireJDK>
                     <vendor></vendor>
                 </validVersion>
