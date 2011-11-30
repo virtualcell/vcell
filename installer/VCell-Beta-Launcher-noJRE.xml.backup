@@ -1,7 +1,7 @@
 <project>
     <shortName>VCell</shortName>
     <fullName>VCell</fullName>
-    <version>5.1-Beta</version>
+    <version>Beta</version>
     <installerFilename>${product_shortname}-${product_version}-${platform_name}-JavaWebStart-installer.${platform_exec_suffix}</installerFilename>
     <licenseFile>../license.txt</licenseFile>
     <leftImage>uchc-vcell.gif</leftImage>
@@ -105,48 +105,6 @@
             </validVersionList>
         </autodetectJava>
         <actionGroup>
-            <actionList>
-                <actionGroup>
-                    <actionList>
-                        <showProgressDialog>
-                            <title>Downloading files</title>
-                            <actionList>
-                                <httpGet>
-                                    <filename>${installdir}/java.tar.gz</filename>
-                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-linux.tar.gz</url>
-                                </httpGet>
-                            </actionList>
-                        </showProgressDialog>
-                        <runProgram>
-                            <program>tar</program>
-                            <programArguments>xzf ${installdir}/java.tar.gz -C ${installdir}</programArguments>
-                        </runProgram>
-                    </actionList>
-                    <ruleList>
-                        <platformTest type="linux"/>
-                    </ruleList>
-                </actionGroup>
-                <actionGroup>
-                    <actionList>
-                        <showProgressDialog>
-                            <title>Downloading files</title>
-                            <actionList>
-                                <httpGet>
-                                    <filename>${installdir}/java.exe</filename>
-                                    <url>http://www.example.com/downloads/java/1.6/jre1.6.0_24-windows.exe</url>
-                                </httpGet>
-                            </actionList>
-                        </showProgressDialog>
-                        <runProgram>
-                            <program>${installdir}/java.exe</program>
-                            <programArguments>/s INSTALLDIR="${installdir.dos}\JRE" REBOOT=Suppress</programArguments>
-                        </runProgram>
-                    </actionList>
-                    <ruleList>
-                        <platformTest type="windows"/>
-                    </ruleList>
-                </actionGroup>
-            </actionList>
             <ruleList>
                 <isFalse value="${java_autodetected}"/>
             </ruleList>

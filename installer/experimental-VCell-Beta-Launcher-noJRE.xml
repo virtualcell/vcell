@@ -95,6 +95,11 @@
             <promptUser>0</promptUser>
             <selectionOrder>newest</selectionOrder>
             <showMessageOnError>0</showMessageOnError>
+            <onErrorActionList>
+                <showWarning>
+                    <text>Java 1.6 is needed!</text>
+                </showWarning>
+            </onErrorActionList>
             <validVersionList>
                 <validVersion>
                     <maxVersion></maxVersion>
