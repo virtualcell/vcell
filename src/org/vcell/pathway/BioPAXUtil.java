@@ -10,6 +10,11 @@
 
 package org.vcell.pathway;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public class BioPAXUtil {
 
 	public static int MAX_INTERACTION_CONTROL_CHAIN_DEPTH = 10;
@@ -24,6 +29,28 @@ public class BioPAXUtil {
 			}
 		}
 		return null;
+	}
+	
+	public static Set<Control> findAllControls(Interaction interaction, PathwayModel pathwayModel) {
+		return findAllControls(interaction, pathwayModel, 0);
+	}
+
+	public static Set<Control> findAllControls(Interaction interaction, PathwayModel pathwayModel, int depth) {
+		if(depth >= MAX_INTERACTION_CONTROL_CHAIN_DEPTH) {
+			return Collections.<Control>emptySet();
+		}
+		HashSet<Control> controls = new HashSet<Control>();
+		ArrayList<BioPaxObject> parents = pathwayModel.getParents(interaction);
+		if(parents != null) {
+			for(BioPaxObject bpObject : parents) {
+				if(bpObject instanceof Control) {
+					Control control = (Control) bpObject;
+					controls.add(control);
+					controls.addAll(findAllControls(control, pathwayModel, depth + 1));
+				}
+			}			
+		}
+		return controls;
 	}
 	
 }
