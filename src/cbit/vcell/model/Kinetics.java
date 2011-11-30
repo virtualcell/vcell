@@ -673,7 +673,7 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
 		removeProxyParameter(getProxyParameter(parameterName));
 	}
 	KineticsParameter newKineticsParameter = new KineticsParameter(parameterName,expression,ROLE_UserDefined, unit);
-	KineticsParameter newKineticsParameters[] = (KineticsParameter[])BeanUtils.addElement(fieldKineticsParameters,newKineticsParameter);
+	KineticsParameter newKineticsParameters[] = BeanUtils.addElement(fieldKineticsParameters,newKineticsParameter);
 	setKineticsParameters(newKineticsParameters);
 	return newKineticsParameter;
 }
