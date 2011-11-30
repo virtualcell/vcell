@@ -504,20 +504,33 @@ private void writeGraphicsOpenGL() throws MathException {
 }
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
-	/*printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
+	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
+	
 	for (ParticleVariable pv : particleVariableList) {
 		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
 		if (varDomain == null) {
 			continue;
 		}
-		Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
-		while (subDomainEnumeration.hasMoreElements()) {
-			SubDomain subDomain = subDomainEnumeration.nextElement();
-			if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynKeyword.all + ") " + subDomain.getName());
+		boolean useConcentration = false;
+		ArrayList<ParticleInitialCondition> iniConditionList = varDomain.getParticleProperties(pv).getParticleInitialConditions();
+		for(ParticleInitialCondition iniCon:iniConditionList)
+		{
+			if(iniCon instanceof ParticleInitialConditionConcentration)
+			{
+				useConcentration = true;
 			}
 		}
-	}*/	
+		if(useConcentration)
+		{
+			Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
+			while (subDomainEnumeration.hasMoreElements()) {
+				SubDomain subDomain = subDomainEnumeration.nextElement();
+				if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
+					printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynKeyword.all + ") " + subDomain.getName());
+				}
+			}
+		}
+	}	
 	printWriter.println();
 	
 	//write command to kill molecules on membrane for adsortption to nothing
