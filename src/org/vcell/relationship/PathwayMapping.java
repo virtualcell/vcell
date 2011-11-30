@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
@@ -26,6 +27,8 @@ import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Transport;
+import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
+import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
@@ -227,19 +230,22 @@ public class PathwayMapping {
 			}
 		}
 		// create reaction object
-		if(bioModel.getModel().getReactionStep(safeId) == null){
+		ReactionStep reactionStep = bioModel.getModel().getReactionStep(safeId);
+		if(reactionStep == null){
 			// create a new reactionStep object
 			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
 			simpleReactionStep.setName(safeId);
 			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
+			addKinetics(simpleReactionStep, newRelationship, bioModel);
 		}else{
 //			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(safeId), bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, bioModel.getModel().getReactionStep(safeId), newRelationship, participants);
+			createReactionStep( bioModel, reactionStep, newRelationship, participants);
+			addKinetics(reactionStep, newRelationship, bioModel);
 		}
 	}
 	
@@ -262,19 +268,22 @@ public class PathwayMapping {
 			}
 		}
 		// create reaction object
-		if(bioModel.getModel().getReactionStep(safeId) == null){
+		ReactionStep reactionStep = bioModel.getModel().getReactionStep(safeId);
+		if(reactionStep == null){
 			// create a new reactionStep object
 			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
 			simpleReactionStep.setName(safeId);
 			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
+			addKinetics(simpleReactionStep, newRelationship, bioModel);
 		}else{
 //			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
 		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(safeId), bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, bioModel.getModel().getReactionStep(safeId), newRelationship, participants);
+			createReactionStep( bioModel, reactionStep, newRelationship, participants);
+			addKinetics(reactionStep, newRelationship, bioModel);
 		}
 	}
 	
@@ -473,11 +482,11 @@ public class PathwayMapping {
 	 * 				 	all duplicated reactions share the same participant objects)
 	 *      + just modify the existing one?
 	 */
-	private void createReactionStepFromPathway(BioModel bioModel, ReactionStep bioModelEntityObject, RelationshipObject relationshipObject) throws Exception
+	private void createReactionStepFromPathway(BioModel bioModel, ReactionStep reactionStep, RelationshipObject relationshipObject) throws Exception
 	{
 		// annotate the selected vcell object using linked pathway object
 		// add non-existing speciesContexts from linked pathway conversion
-		ReactionParticipant[] rpArray = parseReaction(bioModelEntityObject, bioModel, relationshipObject);
+		ReactionParticipant[] rpArray = parseReaction(reactionStep, bioModel, relationshipObject);
 		// create a hashtable for interaction Participants
 		Hashtable<String, BioPaxObject> participantTable = new Hashtable<String, BioPaxObject>();
 		for(BioPaxObject bpObject: ((Conversion)relationshipObject.getBioPaxObject()).getLeft()){
@@ -527,7 +536,7 @@ public class PathwayMapping {
 				}
 			}
 		}
-		(bioModelEntityObject).setReactionParticipants(rpArray);
+		(reactionStep).setReactionParticipants(rpArray);
 		// add Control to the reaction
 		for(Control control : searchControl(bioModel, relationshipObject)){
 			for(InteractionParticipant pe : control.getParticipants()){
@@ -542,10 +551,10 @@ public class PathwayMapping {
 				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
 				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
 				 */
-				(bioModelEntityObject).addReactionParticipant(new Catalyst(null,bioModelEntityObject, newSpeciescontext));
+				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
 			}
-			
 		}
+		addKinetics(reactionStep, relationshipObject, bioModel);
 	}
 	
 	private ArrayList<Control> searchControl(BioModel bioModel, RelationshipObject relationshipObject){
@@ -694,5 +703,13 @@ public class PathwayMapping {
 	private static String getSafetyName(String oldValue){
 		return TokenMangler.fixTokenStrict(oldValue, 60);
 	} 
+	
+	private void addKinetics(ReactionStep reactionStep, RelationshipObject relationshipObject, BioModel bioModel) {
+		Set<SBEntity> entities = new HashSet<SBEntity>();
+		Conversion conversion = (Conversion) relationshipObject.getBioPaxObject();
+		entities.add(conversion);
+		entities.addAll(BioPAXUtil.findAllControls(conversion, bioModel.getPathwayModel()));
+		SBPAXKineticsExtractor.extractKinetics(reactionStep, entities);		
+	}
 	
 }
