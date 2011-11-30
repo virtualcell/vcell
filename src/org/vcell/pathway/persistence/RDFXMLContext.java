@@ -87,7 +87,6 @@ public class RDFXMLContext {
 		if(URIUtil.isAbsoluteURI(id)) {
 			element.setAttribute("about", id, rdf);				
 		} else {
-			if(id == null) { System.out.println("Element " + element + " has null ID"); }
 			element.setAttribute("nodeID", id, rdf);			
 		}
 	}
@@ -97,7 +96,6 @@ public class RDFXMLContext {
 			element.setAttribute("resource", relativizeURI(element, id), rdf);
 		} else {
 			element.setAttribute("nodeID", id, rdf);
-			if(id == null) { System.out.println("Element " + element + " has null ID"); }			
 		}
 	}
 	
