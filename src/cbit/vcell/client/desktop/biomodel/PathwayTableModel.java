@@ -131,24 +131,24 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 			if (conversion.getName().size()>0){
 				return conversion.getName().get(0);
 			}else{
-				return conversion.getID();
+				return conversion.getIDShort();
 			}
 		}else if (bpObject instanceof PhysicalEntity){
 			PhysicalEntity physicalEntity =(PhysicalEntity)bpObject;
 			if (physicalEntity.getName().size()>0){
 				return physicalEntity.getName().get(0);
 			}else{
-				return physicalEntity.getID();
+				return physicalEntity.getIDShort();
 			}
 		}else if (bpObject instanceof Interaction){
 			Interaction interaction =(Interaction)bpObject;
 			if (interaction.getName().size()>0){
 				return interaction.getName().get(0);
 			}else{
-				return interaction.getID();
+				return interaction.getIDShort();
 			}
 		}else{
-			return bpObject.getID();
+			return bpObject.getIDShort();
 		}
 	}
 	

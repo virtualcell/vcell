@@ -86,7 +86,7 @@ public abstract class BioPaxShape extends Shape {
 	
 	@Override
 	public void refreshLabel() {
-		String name = "[" + bioPaxObject.getID() + "]";
+		String name = "[" + bioPaxObject.getIDShort() + "]";
 		if (bioPaxObject instanceof Entity){
 			Entity entity = (Entity)bioPaxObject;
 			ArrayList<String> names = entity.getName();

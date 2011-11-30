@@ -77,8 +77,8 @@ public class ConversionImpl extends InteractionImpl implements Conversion {
 			Stoichiometry thing = participantStoichiometry.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						participantStoichiometry.set(i, (Stoichiometry)concreteObject);
 					}

@@ -107,6 +107,7 @@ import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayReader {
 	
+	protected final RDFXMLContext context;
 	private PathwayModel pathwayModel = new PathwayModel();
 	private Namespace bp = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
 	private Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
@@ -116,9 +117,9 @@ public class PathwayReader {
 	public static void main(String args[]){
 		try {
 			Document document = XmlUtil.readXML(new File("C:\\Developer\\eclipse\\workspace\\VCell_Standard\\temp.xml"));
-			PathwayReader pathwayReader = new PathwayReader();
+			PathwayReader pathwayReader = new PathwayReader(new RDFXMLContext());
 			System.out.println("starting parsing");
-			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement(),null);
+			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement(), null);
 			System.out.println("ending parsing");
 			pathwayModel.reconcileReferences(null);
 			System.out.println(pathwayModel.show(true));
@@ -127,11 +128,14 @@ public class PathwayReader {
 			e.printStackTrace(System.out);
 		}
 	}
+	
+	public PathwayReader(RDFXMLContext context) { this.context = context; }
 
-	public PathwayModel parse(Element rootElement,ClientTaskStatusSupport clientTaskStatusSupport) {
+	public PathwayModel parse(Element rootElement, ClientTaskStatusSupport clientTaskStatusSupport) {
 		try{
 			pathwayModel.setDisableUpdate(true);
 			int counterObjects = 0;
+			@SuppressWarnings("unchecked")
 			List<Element> children = rootElement.getChildren();
 			int numChildren = children.size();
 			Iterator<Element> iter = children.iterator();
@@ -266,11 +270,13 @@ public class PathwayReader {
 				if (bioPaxObject instanceof RdfObjectProxy){
 					showUnexpected(attribute, bioPaxObject);
 				}else{
-					bioPaxObject.setID(attribute.getValue());
+					String uri = context.unAbbreviateURI(element, attribute.getValue());
+					bioPaxObject.setID(uri);
 				}
 			}else if (attribute.getName().equals("resource")){
 				if (bioPaxObject instanceof RdfObjectProxy){
-					((RdfObjectProxy)bioPaxObject).setResource(attribute.getValue());
+					String uri = context.unRelativizeURI(element, attribute.getValue());
+					bioPaxObject.setID(uri);
 				}else{
 					showUnexpected(attribute, bioPaxObject);
 				}
@@ -619,7 +625,8 @@ public class PathwayReader {
 		if (childElement.getName().equals("RELATIONSHIP-TYPE")){
 			Element relationshipTypeVocabularyElement = childElement.getChild("relationshipTypeVocabulary",bp);
 			if (relationshipTypeVocabularyElement!=null){
-				relationshipXref.getRelationshipType().add(addObjectRelationshipTypeVocabulary(relationshipTypeVocabularyElement));
+				relationshipXref.getRelationshipType().add(
+						addObjectRelationshipTypeVocabulary(relationshipTypeVocabularyElement));
 				return true;
 			}else if (childElement.getTextTrim().length()>0){
 				RelationshipTypeVocabulary relationshipTypeVocabulary = new RelationshipTypeVocabulary();
@@ -716,7 +723,8 @@ public class PathwayReader {
 		}
 	}
 	
-	private boolean addContentBiochemicalPathwayStep(BiochemicalPathwayStep biochemicalPathwayStep, Element element, Element childElement){
+	private boolean addContentBiochemicalPathwayStep(BiochemicalPathwayStep biochemicalPathwayStep, Element element, 
+			Element childElement){
 		if (addContentPathwayStep(biochemicalPathwayStep, element, childElement)){
 			return true;
 		}
@@ -819,7 +827,8 @@ public class PathwayReader {
 		}
 	}
 	
-	private boolean addContentSmallMoleculeReference(SmallMoleculeReference smallMoleculeReference, Element element, Element childElement){
+	private boolean addContentSmallMoleculeReference(SmallMoleculeReference smallMoleculeReference, Element element, 
+			Element childElement){
 		if (addContentEntityReference(smallMoleculeReference, element, childElement)){
 			return true;
 		}
@@ -1255,7 +1264,8 @@ public class PathwayReader {
 				InteractionOrPathwayProxy controlledEntityProxy = new InteractionOrPathwayProxy();
 				control.setControlledInteraction(controlledEntityProxy);
 				pathwayModel.add(controlledEntityProxy);
-				controlledEntityProxy.setResource(resourceAttribute.getValue());
+				String uri = context.unRelativizeURI(childElement, resourceAttribute.getValue());
+				controlledEntityProxy.setID(uri);
 				return true;
 			}
 			return false;
@@ -1311,7 +1321,8 @@ public class PathwayReader {
 						if(controlledVocabularyElement.getChildren().size() == 0) {
 							physicalEntityProxy.setCellularLocation(cellularLocationVocabularyProxy);
 						} else {
-							physicalEntityProxy.setCellularLocation(addObjectCellularLocationVocabulary(controlledVocabularyElement));
+							physicalEntityProxy.setCellularLocation(
+									addObjectCellularLocationVocabulary(controlledVocabularyElement));
 						}
 //						System.out.println(" -          " + controlledVocabularyElement.getName());
 						// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
@@ -1326,7 +1337,9 @@ public class PathwayReader {
 					stoichiometry.setStoichiometricCoefficient(Double.valueOf(stoichiometricCoefficientElement.getTextTrim()));
 					if(physicalEntityProxy == null) {		// reuse the proxy if we created one already
 						physicalEntityProxy = new PhysicalEntityProxy();
-						physicalEntityProxy.setResource(generateResourceID(physicalEntityPropertyElement));
+						String uri = context.unRelativizeURI(physicalEntityPropertyElement, 
+								generateResourceID(physicalEntityPropertyElement));
+						physicalEntityProxy.setID(uri);
 						pathwayModel.add(physicalEntityProxy);
 					}
 					stoichiometry.setPhysicalEntity(physicalEntityProxy);
@@ -1369,7 +1382,8 @@ public class PathwayReader {
 							if(controlledVocabularyElement.getChildren().size() == 0) {
 								physicalEntityProxy.setCellularLocation(cellularLocationVocabularyProxy);
 							} else {
-								physicalEntityProxy.setCellularLocation(addObjectCellularLocationVocabulary(controlledVocabularyElement));
+								physicalEntityProxy.setCellularLocation(
+										addObjectCellularLocationVocabulary(controlledVocabularyElement));
 							}
 	//						System.out.println(" -          " + controlledVocabularyElement.getName());
 							// we'll use the extra info in this proxy during reconciliation phase to reconstruct a complete PhysicalEntity
@@ -1452,7 +1466,8 @@ public class PathwayReader {
 		}
 	}
 	
-	private boolean addContentTransportWithBiochemicalReaction(TransportWithBiochemicalReaction transportWithBiochemicalReaction, Element element, Element childElement){
+	private boolean addContentTransportWithBiochemicalReaction(TransportWithBiochemicalReaction transportWithBiochemicalReaction, 
+			Element element, Element childElement){
 		if (addContentBiochemicalReaction(transportWithBiochemicalReaction,element,childElement)){
 			return true;
 		}
@@ -1495,7 +1510,8 @@ public class PathwayReader {
 		return false;
 	}
 	
-	private boolean addContentTemplateReactionRegulation(TemplateReactionRegulation templateReactionRegulation, Element element, Element childElement){
+	private boolean addContentTemplateReactionRegulation(TemplateReactionRegulation templateReactionRegulation, Element element, 
+			Element childElement){
 		if (addContentControl(templateReactionRegulation,element,childElement)){
 			return true;
 		}

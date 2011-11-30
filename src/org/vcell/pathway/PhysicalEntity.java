@@ -82,8 +82,8 @@ public class PhysicalEntity extends EntityImpl {
 		
 		if(cellularLocation instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)cellularLocation;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					cellularLocation = (CellularLocationVocabulary) concreteObject;
 				}
@@ -93,8 +93,8 @@ public class PhysicalEntity extends EntityImpl {
 			EntityFeature thing = feature.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						feature.set(i, (EntityFeature)concreteObject);
 					}
@@ -105,8 +105,8 @@ public class PhysicalEntity extends EntityImpl {
 			PhysicalEntity thing = memberPhysicalEntity.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						memberPhysicalEntity.set(i, (PhysicalEntity)concreteObject);
 					}
@@ -117,8 +117,8 @@ public class PhysicalEntity extends EntityImpl {
 			EntityFeature thing = notFeature.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						notFeature.set(i, (EntityFeature)concreteObject);
 					}

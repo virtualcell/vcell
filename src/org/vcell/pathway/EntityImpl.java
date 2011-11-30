@@ -15,10 +15,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
-import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBEntityImpl;
 import cbit.vcell.biomodel.meta.Identifiable;
 
-public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable {
+public class EntityImpl extends SBEntityImpl implements Entity, Identifiable {
 	
 	public static final String TYPE_GENE = "Gene";
 	public static final String TYPE_PATHWAY = "Pathway";
@@ -30,14 +30,6 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 	private ArrayList<Xref> xRef = new ArrayList<Xref>();
 	private ArrayList<Provenance> dataSource = new ArrayList<Provenance>();
 	private ArrayList<Evidence> evidence = new ArrayList<Evidence>();
-	private ArrayList<SBEntity> sbSubEntity = new ArrayList<SBEntity>();
-	
-	public ArrayList<SBEntity> getSBSubEntity() {
-		return sbSubEntity;
-	}
-	public void setSBSubEntity(ArrayList<SBEntity> sbSubEntity) {
-		this.sbSubEntity = sbSubEntity;
-	}
 	
 	public ArrayList<String> getName() {
 		return name;
@@ -76,6 +68,7 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 
 	@Override
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
+		super.replace(objectProxy, concreteObject);
 		for (int i=0; i<xRef.size(); i++) {
 			Xref thing = xRef.get(i);
 			if(thing == objectProxy) {
@@ -94,21 +87,16 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 				evidence.set(i, (Evidence)concreteObject);
 			}
 		}
-		for (int i=0; i<sbSubEntity.size(); i++) {
-			SBEntity thing = sbSubEntity.get(i);
-			if(thing == objectProxy) {
-				sbSubEntity.set(i, (SBEntity)concreteObject);
-			}
-		}
 	}
 	
 	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
+		super.replace(resourceMap, replacedBPObjects);
 		for (int i=0; i<xRef.size(); i++) {
 			Xref thing = xRef.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						xRef.set(i, (Xref)concreteObject);
 					}
@@ -119,8 +107,8 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 			Provenance thing = dataSource.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						dataSource.set(i, (Provenance)concreteObject);
 					}
@@ -131,22 +119,10 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 			Evidence thing = evidence.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						evidence.set(i, (Evidence)concreteObject);
-					}
-				}
-			}
-		}
-		for (int i=0; i<sbSubEntity.size(); i++) {
-			SBEntity thing = sbSubEntity.get(i);
-			if(thing instanceof RdfObjectProxy) {
-				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
-					if (concreteObject != null){
-						sbSubEntity.set(i, (SBEntity)concreteObject);
 					}
 				}
 			}
@@ -160,6 +136,5 @@ public class EntityImpl extends BioPaxObjectImpl implements Entity, Identifiable
 		printObjects(sb, "xRef",xRef,level);
 		printObjects(sb, "dataSource",dataSource,level);
 		printObjects(sb, "evidence",evidence,level);
-		printObjects(sb, "sbMeasurable",sbSubEntity,level);
 	}
 }

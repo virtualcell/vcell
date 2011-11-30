@@ -97,8 +97,8 @@ public class RnaRegionReference extends EntityReference {
 		
 		if(absoluteRegion instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)absoluteRegion;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					absoluteRegion = (SequenceLocation) concreteObject;
 				}
@@ -106,8 +106,8 @@ public class RnaRegionReference extends EntityReference {
 		}
 		if(organism instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)organism;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					organism = (BioSource) concreteObject;
 				}
@@ -115,8 +115,8 @@ public class RnaRegionReference extends EntityReference {
 		}
 		if(regionType instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)regionType;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					regionType = (SequenceRegionVocabulary) concreteObject;
 				}
@@ -126,8 +126,8 @@ public class RnaRegionReference extends EntityReference {
 			DnaRegionReference thing = dnaSubRegion.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof DnaRegionReference){
 							dnaSubRegion.set(i, (DnaRegionReference)concreteObject);
@@ -142,8 +142,8 @@ public class RnaRegionReference extends EntityReference {
 			RnaRegionReference thing = rnaSubRegion.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof RnaRegionReference){
 							rnaSubRegion.set(i, (RnaRegionReference)concreteObject);

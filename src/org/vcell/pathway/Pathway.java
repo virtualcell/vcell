@@ -101,8 +101,8 @@ public class Pathway extends EntityImpl {
 		
 		if(organism instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)organism;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					organism = (BioSource) concreteObject;
 				}
@@ -114,8 +114,8 @@ public class Pathway extends EntityImpl {
 			Interaction thing = pathwayComponentInteraction.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof Interaction){
 							pathwayComponentInteraction.set(i, (Interaction)concreteObject);
@@ -146,8 +146,8 @@ public class Pathway extends EntityImpl {
 			PathwayStep thing = pathwayOrder.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof PathwayStep){
 							pathwayOrder.set(i, (PathwayStep)concreteObject);

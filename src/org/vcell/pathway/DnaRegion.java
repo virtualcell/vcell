@@ -39,8 +39,8 @@ public class DnaRegion extends PhysicalEntity {
 		super.replace(resourceMap, replacedBPObjects);
 		if(entityReference instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)entityReference;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					entityReference = (EntityReference) concreteObject;
 				}

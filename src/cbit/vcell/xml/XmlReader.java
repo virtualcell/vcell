@@ -24,6 +24,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
+import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipReader;
 import org.vcell.sbml.vcell.StructureSizeSolver;
@@ -422,7 +423,7 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 	if (pathwayElement!=null){
 		Element rdfElement = pathwayElement.getChild(XMLRDF.tagRDF, XMLRDF.nsRDF);
 		if (rdfElement!=null){
-			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
+			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(new RDFXMLContext());
 			PathwayModel pathwayModel = pathwayReader.parse(rdfElement);
 			pathwayModel.reconcileReferences(null);		// ??? is this needed ???
 			// we keep as lvl 1 only the objects which we want to show in the diagram

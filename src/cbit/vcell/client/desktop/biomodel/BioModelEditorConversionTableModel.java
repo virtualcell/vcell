@@ -299,17 +299,17 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			if (conversion.getName().size()>0){
 				return conversion.getName().get(0);
 			}else{
-				return conversion.getID();
+				return conversion.getIDShort();
 			}
 		}else if (bpObject instanceof PhysicalEntity){
 			PhysicalEntity physicalEntity =(PhysicalEntity)bpObject;
 			if (physicalEntity.getName().size()>0){
 				return physicalEntity.getName().get(0);
 			}else{
-				return physicalEntity.getID();
+				return physicalEntity.getIDShort();
 			}
 		}else{
-			return bpObject.getID();
+			return bpObject.getIDShort();
 		}
 	}
 	
@@ -339,7 +339,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
 				Conversion interaction = (Conversion)bpo;
 				ArrayList<String> nameList = interaction.getName();
-				String interactionName = nameList.isEmpty() ? interaction.getID() : nameList.get(0);
+				String interactionName = nameList.isEmpty() ? interaction.getIDShort() : nameList.get(0);
 				ConversionTableRow newConversionTableRow = createTableRow(interaction, interactionName,
 						"Conversion", 1.0 , null);
 				allPathwayObjectList.add(newConversionTableRow);
@@ -531,7 +531,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 					else
 						conversionTableRow.setId(changeID(id));		
 				}else{					
-					conversionTableRow.setId(((Entity)bpObject).getID()+ "_" +location);
+					conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
 				}
 			}
 		}else{
@@ -555,7 +555,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 						else
 							conversionTableRow.setId(changeID(id));		
 					}else{
-						conversionTableRow.setId(((Entity)bpObject).getID()+ "_" +location);
+						conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
 					}
 				}
 			}
@@ -634,7 +634,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 					else
 						conversionTableRow.setId(changeID(id));		
 				}else{
-					conversionTableRow.setId(((Entity)bpObject).getID()+ "_" +location);
+					conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
 				}
 			}
 		}else{
@@ -658,7 +658,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 						else
 							conversionTableRow.setId(changeID(id));		
 					}else{
-						conversionTableRow.setId(((Entity)bpObject).getID()+ "_" +location);
+						conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
 					}
 				}
 			}

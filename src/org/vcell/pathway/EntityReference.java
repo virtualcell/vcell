@@ -104,8 +104,8 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 			EntityFeature thing = entityFeature.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						entityFeature.set(i, (EntityFeature)concreteObject);
 					}
@@ -114,8 +114,8 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 		}
 		if(entityReferenceType instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)entityReferenceType;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					entityReferenceType = (EntityReferenceTypeVocabulary) concreteObject;
 				}
@@ -125,8 +125,8 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 			EntityReference thing = memberEntityReference.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						memberEntityReference.set(i, (EntityReference)concreteObject);
 					}
@@ -137,8 +137,8 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 			Xref thing = xRef.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						xRef.set(i, (Xref)concreteObject);
 					}
@@ -149,8 +149,8 @@ public class EntityReference extends BioPaxObjectImpl implements UtilityClass {
 			Evidence thing = evidence.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						evidence.set(i, (Evidence)concreteObject);
 					}

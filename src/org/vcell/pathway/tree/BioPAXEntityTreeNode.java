@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.pathway.tree;
 
 import java.util.ArrayList;
@@ -21,10 +31,16 @@ public class BioPAXEntityTreeNode extends BioPAXTreeNode {
 
 	protected List<BioPAXTreeNode> getNewChildren() {
 		List<BioPAXTreeNode> childrenNew = new ArrayList<BioPAXTreeNode>();
-		childrenNew.add(new BioPAXNameListTreeNode(getPathwayModel(), 
-				getEntity().getName(), getParent()));
-		childrenNew.add(new BioPAXObjectListTreeNode<SBEntity>(getPathwayModel(), 
-				getEntity().getSBSubEntity(), SBEntity.class, this));
+		ArrayList<String> names = getEntity().getName();
+		if(names != null && names.size() > 0) {			
+			childrenNew.add(new BioPAXNameListTreeNode(getPathwayModel(), 
+					names, getParent()));
+		}
+		ArrayList<SBEntity> sbSubEntities = getEntity().getSBSubEntity();
+		if(sbSubEntities != null && sbSubEntities.size() > 0) {
+			childrenNew.add(new BioPAXObjectListTreeNode<SBEntity>(getPathwayModel(), 
+					sbSubEntities, SBEntity.class, this));			
+		}
 		labelText = trimLabelIfNeeded(
 				BioPAXClassNameDirectory.getNameSingular(getEntity().getClass()) + " " + 
 				StringUtil.concat(getEntity().getName(), ", "));

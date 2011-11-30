@@ -58,8 +58,8 @@ public class GroupObject extends EntityImpl {
 		for(BioPaxObject bpo : groupedObjects){
 			if(bpo instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpo;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						gObjects.add(concreteObject);
 					}

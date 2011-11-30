@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
+import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
 
 public class BioPAXTreeNode implements TreeNode {
@@ -91,6 +92,9 @@ public class BioPAXTreeNode implements TreeNode {
 	}
 	
 	protected List<BioPAXTreeNode> getNewChildren() {
+		if(StringUtil.isEmpty(labelText)) {
+			labelText = getSimplifiedLabel();
+		}
 		return new ArrayList<BioPAXTreeNode>();
 	}
 	

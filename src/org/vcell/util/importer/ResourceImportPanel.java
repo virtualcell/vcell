@@ -32,6 +32,7 @@ public class ResourceImportPanel<T> extends JPanel {
 			optionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 			JRadioButton button = new JRadioButton();
 			buttonGroup.add(button);
+			if(buttonGroup.getSelection() == null) { button.setSelected(true); }
 			button2optionMap.put(button.getModel(), option);
 			optionPanel.add(button);
 			optionPanel.add(new JLabel(option.toString()));

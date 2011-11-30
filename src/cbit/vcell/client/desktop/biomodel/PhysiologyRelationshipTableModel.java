@@ -151,7 +151,7 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 				return "unnamed";
 			}
 		}else{
-			return bpObject.getID();
+			return bpObject.getIDShort();
 		}
 	}
 	

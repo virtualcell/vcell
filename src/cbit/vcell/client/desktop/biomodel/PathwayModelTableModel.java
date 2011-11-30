@@ -131,19 +131,19 @@ public class PathwayModelTableModel extends VCellSortTableModel<BioPaxObject> im
 			if (conversion.getName().size()>0){
 				return conversion.getName().get(0);
 			}else{
-				return conversion.getID();
+				return conversion.getIDShort();
 			}
 		}else if (bpObject instanceof PhysicalEntity){
 			PhysicalEntity physicalEntity =(PhysicalEntity)bpObject;
 			if (physicalEntity.getName().size()>0){
 				return physicalEntity.getName().get(0);
 			}else{
-				return physicalEntity.getID();
+				return physicalEntity.getIDShort();
 			}
 		}else if (bpObject instanceof GroupObject){
 			return ((Entity)bpObject).getName().get(0);
 		}else{
-			return bpObject.getID();
+			return bpObject.getIDShort();
 		}
 	}
 	
