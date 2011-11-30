@@ -33,6 +33,12 @@ public class VCellPathwayResourceDirectory {
 	
 	static {
 		String fromSGMP = "from Signaling Gateway Molecule Pages";
+		addEntry(DIR + "sgmp/sgmpA001750modified.owl", "A001750 (modified) " + fromSGMP);
+		addEntry(DIR + "sgmp/sgmpA000037.owl", "A000037 " + fromSGMP);
+		addEntry(DIR + "sgmp/sgmpA001046.owl", "A001046 " + fromSGMP);
+		addEntry(DIR + "sgmp/sgmpA001750.owl", "A001750 " + fromSGMP);
+		addEntry(DIR + "sgmp/sgmpA001778.owl", "A001778 " + fromSGMP);
+		addEntry(DIR + "sgmp/sgmpA001852.owl", "A001852 " + fromSGMP);
 		addEntry(DIR + "sabio/biopax_test_R00659_modified.xml", "Sample file from SABIO-RK, modified");
 		addEntry(DIR + "sabio/biopax_test_R00659.xml", "Sample file from SABIO-RK");
 		addEntry(DIR + "sgmp/example1receptorLigand.owl", "Receptor-Ligand binding " + fromSGMP);
@@ -41,12 +47,6 @@ public class VCellPathwayResourceDirectory {
 		addEntry(DIR + "sgmp/example3selectiveChannel.owl", "Selective ion channel " + fromSGMP);
 		addEntry(DIR + "sgmp/example4transport.owl", "Transport " + fromSGMP);
 		addEntry(DIR + "metacyc/deoxyfutalosine.owl", "Deoxyfutalosine from MetcCyc");
-		addEntry(DIR + "sgmp/sgmpA000037.owl", "A000037 " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001046.owl", "A001046 " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001750.owl", "A001750 " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001750modified.owl", "A001750 (modified) " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001778.owl", "A001778 " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001852.owl", "A001852 " + fromSGMP);
 	}
 	
 	public static List<String> getPathList() { return pathList; }

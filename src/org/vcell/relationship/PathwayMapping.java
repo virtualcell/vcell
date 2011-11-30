@@ -17,13 +17,12 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.BiochemicalReaction;
 import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.ComplexAssembly;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
-import org.vcell.pathway.Degradation;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Transport;
@@ -54,17 +53,17 @@ public class PathwayMapping {
 			if(conversionTableRow.getBioPaxObject() instanceof PhysicalEntity){
 				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
-			}else if(conversionTableRow.getBioPaxObject() instanceof BiochemicalReaction){ // Conversion : BiochemicalReaction
-				createReactionStepFromTableRow(bioModel, (BiochemicalReaction)conversionTableRow.getBioPaxObject(),
-						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){ // Conversion : ComplexAssembly
 				createReactionStepFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}else if(conversionTableRow.getBioPaxObject() instanceof Transport){ // Conversion : Transport
 				createReactionStepFromTableRow(bioModel, (Transport)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
-			}else if(conversionTableRow.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
-				// to do
+//			}else if(conversionTableRow.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
+//				// to do
+			}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){ // Conversion : BiochemicalReaction
+				createReactionStepFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
+						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}
 		}
 	}
@@ -77,16 +76,16 @@ public class PathwayMapping {
 				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
 				if(bioPaxObject instanceof PhysicalEntity){
 					createSpeciesContextFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
-				}else if(bioPaxObject instanceof BiochemicalReaction){
-					createReactionStepFromBioPaxObject(bioModel, (BiochemicalReaction)bioPaxObject);
+				}else if(bioPaxObject instanceof Conversion){
+					createReactionStepFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
 				}
 			}else if(selectedObjects[i] instanceof ConversionTableRow){
 				ConversionTableRow conversionTableRow = (ConversionTableRow)selectedObjects[i];
 				if(conversionTableRow.getBioPaxObject() instanceof PhysicalEntity){
 					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
 							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
-				}else if(conversionTableRow.getBioPaxObject() instanceof BiochemicalReaction){
-					createReactionStepFromTableRow(bioModel, (BiochemicalReaction)conversionTableRow.getBioPaxObject(),
+				}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){
+					createReactionStepFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
 							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
 				}
 			}
@@ -186,30 +185,30 @@ public class PathwayMapping {
 		return freeSpeciesContext;
 	}
 	
-	private void createReactionStepFromBioPaxObject(BioModel bioModel, BiochemicalReaction bioPaxObject) throws Exception
+	private void createReactionStepFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
 	{
 		String name;
-		if(bioPaxObject.getName().size() == 0){
-			name = getSafetyName(bioPaxObject.getID());
+		if(conversion.getName().size() == 0){
+			name = getSafetyName(conversion.getID());
 		}else{
-			name = getSafetyName(bioPaxObject.getName().get(0));
+			name = getSafetyName(conversion.getName().get(0));
 		}
 		if(bioModel.getModel().getReactionStep(name) == null){
 			// create a new reactionStep object
 			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
 			simpleReactionStep.setName(name);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStepFromPathway( bioModel, simpleReactionStep, newRelationship);
 		}else{
 		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStepFromPathway( bioModel, bioModel.getModel().getReactionStep(name), newRelationship);
 		}
 	}
 	
-	private void createReactionStepFromTableRow(BioModel bioModel, BiochemicalReaction bioPaxObject,
+	private void createReactionStepFromTableRow(BioModel bioModel, Conversion bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 	{
 		// use user defined id as the name of the reaction name
@@ -398,7 +397,7 @@ public class PathwayMapping {
 		}
 	}
 	
-	private void createReactionStepFromTableRow(BioModel bioModel, BiochemicalReaction bioPaxObject,
+	private void createReactionStepFromTableRow(BioModel bioModel, Conversion conversion,
 			double stoich, String id, String location) throws Exception
 	{
 		// use user defined id as the name of the reaction name
@@ -407,13 +406,13 @@ public class PathwayMapping {
 			// create a new reactionStep object
 			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
 			simpleReactionStep.setName(name);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStepFromPathway( bioModel, simpleReactionStep, newRelationship);
 		}else{
 			bioModel.getModel().getReactionStep(name).setStructure(bioModel.getModel().getStructure(location));
 		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), bioPaxObject);
+			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
 			createReactionStepFromPathway( bioModel, bioModel.getModel().getReactionStep(name), newRelationship);
 		}
@@ -433,12 +432,12 @@ public class PathwayMapping {
 			createSpeciesContextFromPathway( bioModel, (SpeciesContext) bioModelEntityObject, relationshipObject);
 		} else if(bioModelEntityObject instanceof ReactionStep ){
 			
-			if(((BiochemicalReaction)relationshipObject.getBioPaxObject()).getName().size() == 0){
+			if(((Conversion)relationshipObject.getBioPaxObject()).getName().size() == 0){
 				((ReactionStep)bioModelEntityObject).setName(
-						getSafetyName(((BiochemicalReaction)relationshipObject.getBioPaxObject()).getID()));
+						getSafetyName((relationshipObject.getBioPaxObject().getID())));
 			}else{
 				((ReactionStep)bioModelEntityObject).setName(
-						getSafetyName(((BiochemicalReaction)relationshipObject.getBioPaxObject()).getName().get(0)));
+						getSafetyName(((Conversion)relationshipObject.getBioPaxObject()).getName().get(0)));
 			}
 			createReactionStepFromPathway( bioModel, (ReactionStep) bioModelEntityObject, relationshipObject);
 		}
@@ -481,14 +480,14 @@ public class PathwayMapping {
 		ReactionParticipant[] rpArray = parseReaction(bioModelEntityObject, bioModel, relationshipObject);
 		// create a hashtable for interaction Participants
 		Hashtable<String, BioPaxObject> participantTable = new Hashtable<String, BioPaxObject>();
-		for(BioPaxObject bpObject: ((BiochemicalReaction)relationshipObject.getBioPaxObject()).getLeft()){
+		for(BioPaxObject bpObject: ((Conversion)relationshipObject.getBioPaxObject()).getLeft()){
 			if(((PhysicalEntity)bpObject).getName().size() == 0){
 				participantTable.put(getSafetyName(((PhysicalEntity)bpObject).getID()), bpObject);
 			}else{
 				participantTable.put(getSafetyName(((PhysicalEntity)bpObject).getName().get(0)), bpObject);
 			}
 		}
-		for(BioPaxObject bpObject: ((BiochemicalReaction)relationshipObject.getBioPaxObject()).getRight()){
+		for(BioPaxObject bpObject: ((Conversion)relationshipObject.getBioPaxObject()).getRight()){
 			if(((PhysicalEntity)bpObject).getName().size() == 0){
 				participantTable.put(getSafetyName(((PhysicalEntity)bpObject).getID()), bpObject);
 			}else{
@@ -553,8 +552,9 @@ public class PathwayMapping {
 		ArrayList<Control> controlList = new ArrayList<Control>();
 		for(BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
 			if(bpObject instanceof Control){
-				if(((Control)bpObject).getControlledInteraction() == relationshipObject.getBioPaxObject()){
-					controlList.add((Control)bpObject);
+				Control control = (Control)bpObject;
+				if(BioPAXUtil.getControlledNonControlInteraction(control) == relationshipObject.getBioPaxObject()){
+					controlList.add(control);
 				}
 			}
 		}
@@ -579,8 +579,8 @@ public class PathwayMapping {
 			return null;
 		}
 		// create the reaction equation string
-		String leftHand = getParticipantsString(((BiochemicalReaction)relationshipObject.getBioPaxObject()).getLeft());
-		String rightHand = getParticipantsString(((BiochemicalReaction)relationshipObject.getBioPaxObject()).getRight());
+		String leftHand = getParticipantsString(((Conversion)relationshipObject.getBioPaxObject()).getLeft());
+		String rightHand = getParticipantsString(((Conversion)relationshipObject.getBioPaxObject()).getRight());
 		StringTokenizer st = new StringTokenizer(leftHand, "+");
 		HashMap<String, SpeciesContext> speciesContextMap = new HashMap<String, SpeciesContext>();
 		ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();

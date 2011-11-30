@@ -480,9 +480,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 					// check catalysts
 					for(BioPaxObject bp : bioModel.getPathwayModel().getBiopaxObjects()){
 						if(bp instanceof Control){
-							if(((Control)bp).getControlledInteraction() == bpObject){
+							Control control = (Control)bp;
+							if(control.getControlledInteraction() == bpObject){
 								completeSelectedBioPaxObjects.add(bp);
-								for(PhysicalEntity pe : ((Control)bp).getPhysicalControllers()){
+								for(PhysicalEntity pe : control.getPhysicalControllers()){
 									if(canDelete(bioModel, allSelectedBioPaxObjects, pe)) completeSelectedBioPaxObjects.add(pe);
 								}
 							}
