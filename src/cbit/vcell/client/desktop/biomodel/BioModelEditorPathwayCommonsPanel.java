@@ -39,6 +39,7 @@ import javax.swing.tree.TreePath;
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
+import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.sybil.util.http.pathwaycommons.search.DataSource;
 import org.vcell.sybil.util.http.pathwaycommons.search.Hit;
 import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
@@ -279,7 +280,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 //						PathwayReader pathwayReader = new PathwayReader();
 //						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
 				
-				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, getClientTaskStatusSupport());
+				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), 
+						getClientTaskStatusSupport());
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 			}

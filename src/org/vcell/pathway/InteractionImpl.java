@@ -90,8 +90,8 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 			InteractionVocabulary thing = interactionTypes.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						interactionTypes.set(i, (InteractionVocabulary)concreteObject);
 					}
@@ -102,8 +102,8 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 			InteractionParticipant thing = participants.get(i);
 			if(thing.getPhysicalEntity() instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing.getPhysicalEntity();
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						PhysicalEntity physicalEntity = (PhysicalEntity)concreteObject;
 						participants.set(i, new InteractionParticipant(this, physicalEntity, thing.getType()));

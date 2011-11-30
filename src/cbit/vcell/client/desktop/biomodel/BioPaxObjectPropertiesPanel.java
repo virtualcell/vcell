@@ -292,7 +292,7 @@ protected void refreshInterface() {
 			// interaction::participants
 			for (InteractionParticipant interactionParticipant : interaction.getParticipants()){
 				PhysicalEntity physicalEntity = interactionParticipant.getPhysicalEntity();
-				String physicalEntityName = physicalEntity.getName().size()>0 ? physicalEntity.getName().get(0) : physicalEntity.getID();
+				String physicalEntityName = physicalEntity.getName().size()>0 ? physicalEntity.getName().get(0) : physicalEntity.getIDShort();
 				String cellularLocation = "";
 				if(physicalEntity.getCellularLocation() != null){
 					cellularLocation = physicalEntity.getCellularLocation().getTerm().size()>0 ? " ["+physicalEntity.getCellularLocation().getTerm().get(0)+"]" : ""; 
@@ -321,7 +321,7 @@ protected void refreshInterface() {
 				// catalysis::controlled
 				Interaction controlledInteraction = catalysis.getControlledInteraction();
 				if (controlledInteraction!=null){
-					String controlledName = controlledInteraction.getID();
+					String controlledName = controlledInteraction.getIDShort();
 					if (controlledInteraction.getName().size()>0){
 						controlledName = controlledInteraction.getName().get(0);
 					}
@@ -393,7 +393,7 @@ private Set<String> getCatalysisSet(Interaction interaction){
 						if(ep.getName().size() > 0)
 							catalystList.add(ep.getName().get(0)+type);
 						else
-							catalystList.add(ep.getID()+type);
+							catalystList.add(ep.getIDShort()+type);
 					}
 				}
 			}
@@ -422,7 +422,7 @@ private Set<String> getControlSet(Interaction interaction){
 						if(ep.getName().size() > 0)
 							controlList.add(ep.getName().get(0)+type);
 						else{
-							controlList.add(ep.getID()+type);
+							controlList.add(ep.getIDShort()+type);
 						}
 					}
 				}
@@ -434,7 +434,7 @@ private Set<String> getControlSet(Interaction interaction){
 
 private String getEntityName(Entity bpObject){
 	if(bpObject.getName().size() == 0){
-		return bpObject.getID();
+		return bpObject.getIDShort();
 	}else{
 		return bpObject.getName().get(0);
 	}

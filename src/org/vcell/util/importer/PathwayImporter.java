@@ -2,6 +2,7 @@ package org.vcell.util.importer;
 
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
+import org.vcell.pathway.persistence.RDFXMLContext;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -19,7 +20,7 @@ public class PathwayImporter extends DataImporter {
 		String data = getPreviouslyReadData();
 		if(data != null) {
 			org.jdom.Document jdomDocument = XmlUtil.stringToXML(data, null);
-			pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, statusSupport);
+			pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), statusSupport);
 			return pathwayModel;			
 		}
 		return null;

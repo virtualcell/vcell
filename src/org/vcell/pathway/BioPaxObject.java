@@ -21,13 +21,11 @@ import cbit.vcell.biomodel.meta.Identifiable;
 
 public interface BioPaxObject extends Identifiable, Matchable {
 
-	String getID();
-	void setID(String value);
-	void setAbout(String about);
+	public void setID(String id);
+	public String getID();
+	public String getIDShort();
 	boolean hasID();
 	
-	String resourceFromID();
-
 	public ArrayList<String> getParserWarnings();
 	public void addParserWarning(String comment);
 

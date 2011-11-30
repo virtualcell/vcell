@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -201,7 +200,7 @@ public class PathwayModel {
 			HashMap<String, BioPaxObject> resourceMap = new HashMap<String, BioPaxObject>();
 			HashSet<BioPaxObject> replacedBPObjects = new HashSet<BioPaxObject>();
 			for (BioPaxObject bpObject : biopaxObjects){
-				if (bpObject.getID() != null ){
+				if (!(bpObject instanceof RdfObjectProxy) && bpObject.getID() != null ){
 					resourceMap.put(bpObject.getID(), bpObject);
 				}
 			}
@@ -253,16 +252,6 @@ public class PathwayModel {
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		}finally{
 			setDisableUpdate(false);
-		}
-	}
-
-	private void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject) {
-		Iterator<BioPaxObject> bpObjectIter = biopaxObjects.iterator();
-		while (bpObjectIter.hasNext()){
-			BioPaxObject bpObject = bpObjectIter.next();
-			if (bpObject != objectProxy){
-				bpObject.replace(objectProxy,concreteObject);
-			}
 		}
 	}
 
@@ -335,7 +324,10 @@ public class PathwayModel {
 				unresolvedProxiesCount++;
 			}
 		}
-//		System.out.println("Unresolved proxies: " + unresolvedProxiesCount);
+		boolean showUnresolvedProxyCount = false;
+		if(showUnresolvedProxyCount) {
+			System.out.println("Unresolved proxies: " + unresolvedProxiesCount);			
+		}
 		biopaxObjects = new2BiopaxObjects;
 	}
 	

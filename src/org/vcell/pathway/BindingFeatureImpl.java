@@ -45,8 +45,8 @@ public class BindingFeatureImpl extends EntityFeatureImpl implements BindingFeat
 		super.replace(resourceMap, replacedBPObjects);
 		if(bindsTo instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bindsTo;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					bindsTo = (BindingFeature) concreteObject;
 				}

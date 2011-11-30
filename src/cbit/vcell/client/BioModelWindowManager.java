@@ -851,10 +851,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 public DataImporter getPathwayImporter() { return pathwayImporter; }
 
 public void importPathway() {
-	System.out.println("Once implemented, this will open a pathway!");
 	pathwayImportPanel.showDialog(getComponent());
-//	DialogUtils.showComponentCloseDialog(JOptionPane.getFrameForComponent(getComponent()), 
-//			new JLabel("<html>Once implemented, this will open a pathway.</hmtl>"), "Opening a Pathway");
 
 }
 

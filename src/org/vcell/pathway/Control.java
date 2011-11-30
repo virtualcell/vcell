@@ -92,8 +92,8 @@ public class Control extends InteractionImpl {
 			Pathway controller = pathwayControllers.get(i);
 			if(controller instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)controller;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof Pathway){
 							pathwayControllers.set(i, (Pathway)concreteObject);
@@ -108,8 +108,8 @@ public class Control extends InteractionImpl {
 		// we assume we can only have one "controlled" entity
 		if(controlledInteraction instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)controlledInteraction;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					if(concreteObject instanceof Interaction){
 						controlledInteraction = (Interaction)concreteObject;

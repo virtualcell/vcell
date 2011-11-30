@@ -42,8 +42,8 @@ public class Stoichiometry extends BioPaxObjectImpl implements UtilityClass {
 	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
 		if(physicalEntity instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)physicalEntity;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					physicalEntity = (PhysicalEntity) concreteObject;
 				}

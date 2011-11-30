@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 import org.vcell.pathway.sbpax.SBEntity;
 
-public interface Entity extends BioPaxObject {
+public interface Entity extends SBEntity {
 	public ArrayList<String> getName();
 	public void setName(ArrayList<String> name);
 
@@ -30,6 +30,4 @@ public interface Entity extends BioPaxObject {
 	public ArrayList<Evidence> getEvidence();
 	public void setEvidence(ArrayList<Evidence> evidence);
 
-	public ArrayList<SBEntity> getSBSubEntity();
-	public void setSBSubEntity(ArrayList<SBEntity> sbSubEntity);
 }

@@ -93,6 +93,7 @@ import org.vcell.pathway.TransportWithBiochemicalReaction;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBState;
 
@@ -207,7 +208,8 @@ public class BioPAXClassNameDirectory {
 		setName(RnaReference.class, "RNA reference");
 		setName(RnaRegion.class, "RNA region");
 		setName(RnaRegionReference.class, "RNA region reference");
-		setName(SBEntity.class, "data point");
+		setName(SBEntity.class, "entry");
+		setForward(SBEntityImpl.class, SBEntity.class);
 		setName(SBMeasurable.class, "quantity");
 		setName(SBState.class, "data set");
 		setName(Score.class, "score");

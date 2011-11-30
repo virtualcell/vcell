@@ -40,7 +40,7 @@ public class PathwayBiopax3Test {
 			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\biopax3_no_id.xml"));	// sbpax3_uri_id.xml 
 //			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\SBPax3.owl"));
 //			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\Reactome3_189445.owl"));
-			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3();
+			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(new RDFXMLContext());
 			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
 //			System.out.print(pathwayModel.show(true));
 			pathwayModel.reconcileReferences(null);
@@ -66,7 +66,7 @@ public class PathwayBiopax3Test {
 			rootElement.setAttribute("version", biopaxVersion);
 			
 			// get element from producer and add it to root element
-			PathwayProducerBiopax3 xmlProducer = new PathwayProducerBiopax3();
+			PathwayProducerBiopax3 xmlProducer = new PathwayProducerBiopax3(new RDFXMLContext());
 			xmlProducer.getXML(pathwayModel, rootElement);	// here is work done
 
 			// create xml doc and convert to string

@@ -25,6 +25,7 @@ import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayProducerBiopax3;
+import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipProducer;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
@@ -462,7 +463,7 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	}
 	//Add bioPAX and relationship information
 	if (param.getPathwayModel() != null) {
-		biomodelnode.addContent(getXML(param.getPathwayModel()));
+		biomodelnode.addContent(getXML(param.getPathwayModel(), new RDFXMLContext()));
 	}
 	RelationshipModel rm = param.getRelationshipModel();
 	if (rm != null) {
@@ -473,7 +474,7 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	return biomodelnode;
 }
 
-private Element getXML(PathwayModel pathwayModel) {
+private Element getXML(PathwayModel pathwayModel, RDFXMLContext context) {
 	Element pathwayElement = new Element(XMLTags.PathwayModelTag);
 	String biopaxVersion = "3.0";
 	// create root element of rdf for BioPAX level 3
@@ -482,7 +483,7 @@ private Element getXML(PathwayModel pathwayModel) {
 	rootElement.setAttribute("version", biopaxVersion);
 	
 	// get element from producer and add it to root element
-	PathwayProducerBiopax3 xmlProducer = new PathwayProducerBiopax3();
+	PathwayProducerBiopax3 xmlProducer = new PathwayProducerBiopax3(context);
 	xmlProducer.getXML(pathwayModel, rootElement);	// here is work done
 
 	pathwayElement.addContent(rootElement);

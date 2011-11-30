@@ -49,8 +49,8 @@ public class SequenceInterval extends SequenceLocation {
 
 		if(sequenceIntervalBegin instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalBegin;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					sequenceIntervalBegin = (SequenceSite) concreteObject;
 				}
@@ -58,8 +58,8 @@ public class SequenceInterval extends SequenceLocation {
 		}
 		if(sequenceIntervalEnd instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalEnd;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					sequenceIntervalEnd = (SequenceSite) concreteObject;
 				}

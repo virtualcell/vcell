@@ -27,6 +27,8 @@ import org.sbpax.util.StringUtil;
 import org.vcell.pathway.Entity;
 import org.vcell.pathway.Pathway;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBMeasurable;
 
 public class BioPAXTreeMaker {
 
@@ -161,6 +163,10 @@ public class BioPAXTreeMaker {
 			treeNode = new BioPAXPathwayTreeNode(pathwayModel, (Pathway) object, parent);
 		} else if(object instanceof Entity) {
 			treeNode = new BioPAXEntityTreeNode(pathwayModel, (Entity) object, parent);
+		} else if(object instanceof SBMeasurable) {
+			treeNode = new BioPAXSBMeasurableTreeNode(pathwayModel, (SBMeasurable) object, parent);
+		} else if(object instanceof SBEntity) {
+			treeNode = new BioPAXSBEntityTreeNode(pathwayModel, (SBEntity) object, parent);
 		} else if(object instanceof String) {
 			treeNode = new BioPAXMessageTreeNode(pathwayModel, (String) object, parent);			
 		} else {

@@ -256,19 +256,18 @@ public class PathwayImportPanel extends JPanel {
 		add(tabbedPane);
 		add(toolBar, BorderLayout.SOUTH);
 		for(Action action : actions) { toolBar.add(new JButton(action)); }
-		tabbedPane.addTab("Read from Web", webImportPanel);		
+		tabbedPane.addTab("Choose Web Location", webImportPanel);		
 		fileChooser.setControlButtonsAreShown(false);
-		tabbedPane.addTab("Read from File", fileChooser);
-		tabbedPane.addTab("Use example", examplesImportPanel);
+		tabbedPane.addTab("Choose File", fileChooser);
+		tabbedPane.addTab("Choose Example", examplesImportPanel);
 		textPanel.setLayout(new BorderLayout());
 		textPanel.add(textScrollPane);
 		textPanel.add(textLabel, BorderLayout.NORTH);
-		tabbedPane.addTab("Show read data", textPanel);
+		tabbedPane.addTab("Raw Data", textPanel);
 		treePanel.setLayout(new BorderLayout());
 		treePanel.add(treeScrollPane);
 		treePanel.add(treeLabel, BorderLayout.NORTH);
-		tabbedPane.addTab("Show Pathway Tree", treePanel);
-//		add(new JLabel("<html>Once implemented, you will be able to choose a source of pathway data here!</html>"));
+		tabbedPane.addTab("Tree", treePanel);
 	}
 	
 	public DataImportSource getSelectedSource() {

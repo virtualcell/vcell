@@ -14,17 +14,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
+import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.util.Matchable;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
 	public final static String spaces = "                                                                                                                                                                                                                                                                        ";
 	private final static int MAX_DEPTH = 30;
-	private String ID;
-	private String about;
+	
+	private static Random random = new Random();
+	
+	private String id;
 	private ArrayList<String> comments = new ArrayList<String>();
 	private ArrayList<String> parserWarnings = new ArrayList<String>();
+	
+	public BioPaxObjectImpl() {
+		id = "node" + random.nextLong() + "_"+ System.currentTimeMillis();
+	}
 	
 	public ArrayList<String> getComments() {
 		return comments;
@@ -33,29 +41,23 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 		this.comments = comments;
 	}
 
+	public void setID(String id) { 
+		this.id = id; 
+	}
+	
 	public String getID() {
-		return ID;
+		return id;
 	}
-	public void setID(String value) {
-		this.ID = value;
-	}
-	public void setAbout(String about) {
-		this.ID = about;
-		this.about = about;
-	}
-	public String resourceFromID() {
-		if (about != null){			// if we have an about we're sure to also have an ID
-			return this.getID();	// ID and about are identical and represent an URL
-		} else if(ID != null) {
-			String resourceID = "#" + this.getID();		// just ID, "old" style
-			return resourceID;
-		}else{
-			return ("#0");
-//			throw new RuntimeException("BioPax Object does not have an ID"); 
+	
+	public String getIDShort() {
+		if(URIUtil.isAbsoluteURI(id)) {
+			return URIUtil.getLocalName(id);
 		}
+		return id;
 	}
+	
 	public boolean hasID() {
-		if (ID != null){
+		if (id != null){
 			return true;
 		}else{
 			return false;
@@ -95,11 +97,11 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 				suffix = suffix + " : \""+entity.getName().get(0)+"\"";
 			}
 		}
-		if (ID!=null){
-			suffix = suffix + "  ID='"+ID+"'";
+		if (id!=null){
+			suffix = suffix + "  ID='"+id+"'";
 		}
-		if (this instanceof RdfObjectProxy && ((RdfObjectProxy)this).getResource()!=null){
-			suffix = suffix + "  resource='"+((RdfObjectProxy)this).getResource()+"'";
+		if (this instanceof RdfObjectProxy){
+			suffix = suffix + " (proxy)";
 		}
 		if (suffix.length()>0){
 			suffix = suffix + " ";

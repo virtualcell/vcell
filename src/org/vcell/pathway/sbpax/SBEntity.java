@@ -10,8 +10,15 @@
 
 package org.vcell.pathway.sbpax;
 
-import org.vcell.pathway.BioPaxObjectImpl;
+import java.util.ArrayList;
 
-public class SBEntity extends BioPaxObjectImpl {
+import org.vcell.pathway.BioPaxObject;
 
+public interface SBEntity extends BioPaxObject {
+
+	public ArrayList<SBEntity> getSBSubEntity();
+	public void setSBSubEntity(ArrayList<SBEntity> sbSubEntity);
+	public ArrayList<SBVocabulary> getSBTerm();
+	public void setSBTerm(ArrayList<SBVocabulary> sbTerm);
+	
 }

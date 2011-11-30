@@ -80,8 +80,8 @@ public class BiochemicalReactionImpl extends ConversionImpl implements Biochemic
 			DeltaG thing = deltaG.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						deltaG.set(i, (DeltaG)concreteObject);
 					}
@@ -92,8 +92,8 @@ public class BiochemicalReactionImpl extends ConversionImpl implements Biochemic
 			KPrime thing = kEQ.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						kEQ.set(i, (KPrime)concreteObject);
 					}

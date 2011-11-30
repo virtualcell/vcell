@@ -1135,16 +1135,16 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, String newName
 		return new BigString(getServerDocumentManager().saveBioModel(new QueryHashtable(), user, bioModelXML.toString(), newName, independentSims));
 	}catch (MappingException e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e);
 	}catch (java.beans.PropertyVetoException e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e);
 	}catch (SQLException e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e);
 	}catch (XmlParseException e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e);
 	}
 }
 

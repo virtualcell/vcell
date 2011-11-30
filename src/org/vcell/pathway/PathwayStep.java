@@ -89,8 +89,8 @@ public class PathwayStep extends BioPaxObjectImpl implements UtilityClass {
 			PathwayStep thing = nextStep.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						nextStep.set(i, (PathwayStep)concreteObject);
 					}
@@ -101,8 +101,8 @@ public class PathwayStep extends BioPaxObjectImpl implements UtilityClass {
 			Interaction thing = stepProcessInteraction.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof Interaction){
 							stepProcessInteraction.set(i, (Interaction)concreteObject);
@@ -117,8 +117,8 @@ public class PathwayStep extends BioPaxObjectImpl implements UtilityClass {
 			Pathway thing = stepProcessPathway.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						if(concreteObject instanceof Pathway){
 							stepProcessPathway.set(i, (Pathway)concreteObject);
@@ -133,8 +133,8 @@ public class PathwayStep extends BioPaxObjectImpl implements UtilityClass {
 			Evidence thing = evidence.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						evidence.set(i, (Evidence)concreteObject);
 					}

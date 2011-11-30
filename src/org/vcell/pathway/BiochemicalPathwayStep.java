@@ -45,8 +45,8 @@ public class BiochemicalPathwayStep extends PathwayStep {
 		super.replace(resourceMap, replacedBPObjects);
 		if(stepConversion instanceof RdfObjectProxy) {
 			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)stepConversion;
-			if (rdfObjectProxy.getResource() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+			if (rdfObjectProxy.getID() != null){
+				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 				if (concreteObject != null){
 					stepConversion = (Conversion) concreteObject;
 				}

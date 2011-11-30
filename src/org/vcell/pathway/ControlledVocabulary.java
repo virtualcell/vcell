@@ -51,8 +51,8 @@ public class ControlledVocabulary extends BioPaxObjectImpl implements UtilityCla
 			Xref thing = xRef.get(i);
 			if(thing instanceof RdfObjectProxy) {
 				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getResource() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getResourceName());
+				if (rdfObjectProxy.getID() != null){
+					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
 					if (concreteObject != null){
 						xRef.set(i, (Xref)concreteObject);
 					}
