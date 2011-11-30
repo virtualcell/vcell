@@ -167,6 +167,9 @@ public abstract class VCellIcons {
 	}
 	
 	public static Icon getScaledIcon(Component component, Icon tempIcon) {
+		if (tempIcon == null) {
+			return null;
+		}
 		if (tempIcon.getIconWidth() == VCellIconWidth && tempIcon.getIconHeight() == VCellIconHeight) {
 			return tempIcon;
 		}
