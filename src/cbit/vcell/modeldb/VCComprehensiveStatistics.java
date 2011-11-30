@@ -55,11 +55,11 @@ public class VCComprehensiveStatistics {
 	private static String dbPassword = "cbittech";
 	private ArrayList<UserStat> userStatList = new ArrayList<UserStat>();
 	
-	private static int MONTH_IN_DAY = 30; // in days
+	private static double MONTH_IN_DAY = 365.0/12; // in days
 	private static long MINUTE_IN_MS = 60 * 1000;
 	private static long HOUR_IN_MS = 60 * MINUTE_IN_MS;
 	private static long DAY_IN_MS = 24 * HOUR_IN_MS;
-	private static long MONTH_IN_MS = MONTH_IN_DAY * DAY_IN_MS;
+	private static double MONTH_IN_MS = MONTH_IN_DAY * DAY_IN_MS;
 	
 	private ArrayList<String> internalUsers = new ArrayList<String>();
 	private ArrayList<String> internalDeveloper = new ArrayList<String>();
@@ -142,20 +142,17 @@ public class VCComprehensiveStatistics {
 	}
 	public static void main(String[] args) {
 		try {
-			if (args.length != 1 && args.length != 2) {
-				System.out.println("Usage : VCComprehensiveStatistics start_date [end_date]");
-				System.out.println("eg : VCComprehensiveStatistics 07/01/2009 [12/30/2009]");
+			if (args.length != 1) {
+				System.out.println("Usage : VCComprehensiveStatistics #months");
+				System.out.println("eg : VCComprehensiveStatistics 6]");
 				System.exit(1);
 			}
 			Date startDate = null;
 			Date endDate = null;
-			DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-			startDate = df.parse(args[0]);				
-			if (args.length == 2) {
-				endDate = df.parse(args[1]);				
-			} else {
-				endDate = Calendar.getInstance().getTime();
-			}
+			int numMonths = Integer.parseInt(args[0]);
+			endDate = Calendar.getInstance().getTime();
+			startDate = new Date(endDate.getTime() - (long)(numMonths * MONTH_IN_MS));
+			
 			if (endDate.compareTo(startDate) <= 0) {
 				throw new RuntimeException("End date must be later than start date");
 			}
@@ -491,7 +488,7 @@ public class VCComprehensiveStatistics {
 					userStat.isInternal = true;
 				}
 				if (userStat.lastLogin != null) {
-					if (userStat.lastLogin.getTime() >= startDateInMs) {
+					if (userStat.lastLogin.getTime() >= startDateInMs && userStat.lastLogin.getTime() <= endDateInMs) {
 						userStatList.add(userStat);
 						userConstraintList.add(userStat.username);
 					}
@@ -512,7 +509,7 @@ public class VCComprehensiveStatistics {
 		for (UserStat ui : userStatList) {
 			if (!ui.isDeveloper) {
 				if (!ui.isInternal && ui.lastLogin != null) {
-					long t = System.currentTimeMillis() - ui.lastLogin.getTime();
+					long t = endDateInMs - ui.lastLogin.getTime();
 					if (t < 1 * MONTH_IN_MS) {
 						out_count1mon ++;
 						out_count3mon ++;
