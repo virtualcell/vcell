@@ -504,7 +504,7 @@ private void writeGraphicsOpenGL() throws MathException {
 }
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
-	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
+	/*printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
 	for (ParticleVariable pv : particleVariableList) {
 		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
 		if (varDomain == null) {
@@ -517,7 +517,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynKeyword.all + ") " + subDomain.getName());
 			}
 		}
-	}	
+	}*/	
 	printWriter.println();
 	
 	//write command to kill molecules on membrane for adsortption to nothing
