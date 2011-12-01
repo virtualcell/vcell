@@ -10,6 +10,8 @@
 
 package cbit.vcell.render;
 
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/29/2003 1:59:38 PM)
@@ -26,7 +28,7 @@ package cbit.vcell.render;
 //
 // note: traditional subscript notation for matrices is row major
 //
-public class Affine {
+public class Affine implements Serializable{
 	double m[][] = new double[4][4];
 
 public Affine()
