@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -336,7 +337,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				URL url = new URL(defaultBaseURL + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
-						+ "&" + PathwayCommonsKeyword.q + "=" + searchText
+						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")
 						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 				System.out.println(url);
