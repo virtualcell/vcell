@@ -1,4 +1,17 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.geometry;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Affine;
 import cbit.vcell.render.Vect3d;
@@ -22,6 +35,36 @@ public class CSGRotation extends CSGTransformation {
 		updateTransform(axis, rotationRadians);
 	}
 	
+	public boolean compareEqual(Matchable obj) {
+		if (!compareEqual0(obj)){
+			return false;
+		}
+		if (!(obj instanceof CSGRotation)){
+			return false;
+		}
+		CSGRotation csgr = (CSGRotation)obj;
+
+		if (!(getChild().compareEqual(csgr.getChild()))){
+			return false;
+		}
+		
+		if (!(Compare.isEqual(rotationRadians, csgr.rotationRadians))){
+			return false;
+		}
+
+		if (!(Compare.isEqual(axis.getX(), csgr.axis.getX()))){
+			return false;
+		}
+		if (!(Compare.isEqual(axis.getY(), csgr.axis.getY()))){
+			return false;
+		}
+		if (!(Compare.isEqual(axis.getZ(), csgr.axis.getZ()))){
+			return false;
+		}
+
+		return true;
+	}
+
 	@Override
 	public CSGNode cloneTree() {
 		return new CSGRotation(this);
@@ -34,7 +77,7 @@ public class CSGRotation extends CSGTransformation {
 		inverse.setRotate(axis, -rotationRadians);
 		setTransforms(forward, inverse);
 	}
-	
+		
 	public Vect3d getAxis() {
 		return axis;
 	}

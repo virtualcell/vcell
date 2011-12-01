@@ -109,6 +109,7 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
 import cbit.vcell.geometry.CSGSetOperator.OperatorType;
+import cbit.vcell.geometry.CSGScale;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -183,6 +184,7 @@ public class SBMLSpatialImporter {
 	public static int GEOM_OTHER = 0;
 	public static int GEOM_ANALYTIC = 1;
 	public static int GEOM_IMAGEBASED = 2;
+	public static int GEOM_CSG = 3;
 	
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -2462,27 +2464,28 @@ public void translateSBMLModel(VCMetaData metaData) {
 }
 
 public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNode sbmlCSGNode){
+	String csgNodeName = sbmlCSGNode.getSpatialId();
 	if (sbmlCSGNode.isCSGPrimitive()){
 		String primitiveType = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_SPHERE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.SPHERE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.SPHERE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CONE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CONE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CONE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CUBE)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CUBE);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CUBE);
 			return vcellPrimitive;
 		}
 		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CYLINDER)){
-			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(PrimitiveType.CYLINDER);
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CYLINDER);
 			return vcellPrimitive;
 		}
 		throw new RuntimeException("PrimitiveType '" + primitiveType + "' not recognized");
 	}else if (sbmlCSGNode.isCSGPseudoPrimitive()) {
-		throw new RuntimeException("pseudo primitives not yet supported");
+		throw new RuntimeException("Pseudo primitives not yet supported in CSGeometry.");
 	}else if (sbmlCSGNode.isCSGSetOperator()) {
 		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = (org.sbml.libsbml.CSGSetOperator)sbmlCSGNode;
 		String operatorType = sbmlSetOperator.getOperationType();
@@ -2496,7 +2499,7 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 		}else{
 			throw new RuntimeException("unsupported operator type '"+operatorType+"'");
 		}
-		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(opType);
+		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(csgNodeName, opType);
 		for (int c = 0; c < sbmlSetOperator.getNumCSGNodeChildren(); c++){
 			vcellSetOperator.addChild(getVCellCSGNode(sbmlSetOperator.getCSGNodeChild(c)));
 		}
@@ -2507,24 +2510,24 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 		if (sbmlTransformation.isCSGTranslation()) {
 			org.sbml.libsbml.CSGTranslation sbmlTranslation = (org.sbml.libsbml.CSGTranslation) sbmlTransformation;
 			Vect3d translation = new Vect3d(sbmlTranslation.getTranslateX(),sbmlTranslation.getTranslateY(),sbmlTranslation.getTranslateZ());
-			cbit.vcell.geometry.CSGTranslation vcellTranslation = new cbit.vcell.geometry.CSGTranslation(translation);
+			cbit.vcell.geometry.CSGTranslation vcellTranslation = new cbit.vcell.geometry.CSGTranslation(csgNodeName, translation);
 			vcellTranslation.setChild(vcellCSGChild);
 			return vcellTranslation;
 		}else if (sbmlTransformation.isCSGRotation()) {
 			org.sbml.libsbml.CSGRotation sbmlRotation = (org.sbml.libsbml.CSGRotation) sbmlTransformation;
 			Vect3d axis = new Vect3d(sbmlRotation.getRotationAxisX(),sbmlRotation.getRotationAxisY(),sbmlRotation.getRotationAxisZ());
 			double rotationAngleRadians = sbmlRotation.getRotationAngleInRadians();
-			cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(axis,rotationAngleRadians);
+			cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(csgNodeName, axis, rotationAngleRadians);
 			vcellRotation.setChild(vcellCSGChild);
 			return vcellRotation;
 		}else if (sbmlTransformation.isCSGScale()) {
 			org.sbml.libsbml.CSGScale sbmlScale = (org.sbml.libsbml.CSGScale) sbmlTransformation;
 			Vect3d scale = new Vect3d(sbmlScale.getScaleX(),sbmlScale.getScaleY(),sbmlScale.getScaleZ());
-			cbit.vcell.geometry.CSGScale vcellScale = new cbit.vcell.geometry.CSGScale(scale);
+			cbit.vcell.geometry.CSGScale vcellScale = new cbit.vcell.geometry.CSGScale(csgNodeName, scale);
 			vcellScale.setChild(vcellCSGChild);
 			return vcellScale;
 		}else if (sbmlTransformation.isCSGHomogeneousTransformation()) {
-			throw new RuntimeException("homogeneous transformations not supported");
+			throw new RuntimeException("homogeneous transformations not supported yet.");
 		}else{
 			throw new RuntimeException("unsupported type of CSGTransformation");
 		}
@@ -2555,7 +2558,8 @@ protected void addGeometry() {
 	double origX = 0.0; double origY = 0.0; double origZ = 0.0;
 	double extentX = 1.0; double extentY = 1.0; double extentZ = 1.0;
 	int dimension = 0;
-	for (int i = 0; i < sbmlGeometry.getNumCoordinateComponents(); i++) {
+	long dim = sbmlGeometry.getNumCoordinateComponents();
+	for (int i = 0; i < dim; i++) {
 		CoordinateComponent coordComponent = listOfCoordComps.get(i);
 		if (coordComponent.getComponentType().equals("cartesianX") && (coordComponent.getIndex() == 0)) {
 			origX = coordComponent.getBoundaryMin().getValue();
@@ -2586,14 +2590,14 @@ protected void addGeometry() {
 	} else if (gd.isSampledFieldGeometry()){
 		geometryType = GEOM_IMAGEBASED;
 	} else if (gd.isCSGeometry()) {
-		geometryType = GEOM_ANALYTIC;
+		geometryType = GEOM_CSG;
 	}
 	
 	if (geometryType == GEOM_OTHER) {
 		throw new RuntimeException("VCell supports only Analytic or Image based (SampledFieldGeometry) or Constructed Solid Geometry at this time.");
 	}
 	Geometry vcGeometry = null;
-	if (geometryType == GEOM_ANALYTIC) {
+	if (geometryType == GEOM_ANALYTIC || geometryType == GEOM_CSG) {
 		vcGeometry = new Geometry("spatialGeom", dimension);
 	} else if (geometryType == GEOM_IMAGEBASED) {
 		// get image from sampledFieldGeometry
@@ -2673,6 +2677,8 @@ protected void addGeometry() {
 					vcGeometrySpec.addSubVolume(new AnalyticSubVolume(dt.getSpatialId(), new Expression(1.0)));
 				} else if (geometryType == GEOM_IMAGEBASED) {
 					
+				} else if (geometryType == GEOM_CSG) {
+					
 				}
 			} else if (dt.getSpatialDimensions() == 2) {
 				surfaceClassDomainTypesVector.add(dt);
@@ -2740,17 +2746,28 @@ protected void addGeometry() {
 		if (gd.isCSGeometry()) {
 			CSGeometry csg = (CSGeometry)gd;
 			ListOfCSGObjects listOfcsgObjs = csg.getListOfCSGObjects();
+			int numCSGObjects = (int)csg.getNumCSGObjects();
+			CSGObject[] vcCSGSubVolumes = new CSGObject[numCSGObjects+1]; 	// extra subvolume for background - basic cube primitive CSGObject 
 			for (int kk = 0; kk < csg.getNumCSGObjects();kk++) {
 				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
 				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
 				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
+				vcCSGSubVolumes[kk] = vcellCSGObject;
 			}
+			// add default background cube primitive CSGObject
+			cbit.vcell.geometry.CSGPrimitive vcellCubePrimitive = new cbit.vcell.geometry.CSGPrimitive("bgCube", PrimitiveType.CUBE);
+			CSGScale csgScaledCube = new CSGScale("bgCube_scale", new Vect3d(100,100,100));
+			csgScaledCube.setChild(vcellCubePrimitive);
+			CSGObject backgroundCSGSubVolume = new CSGObject(null, "background", numCSGObjects);
+			backgroundCSGSubVolume.setRoot(csgScaledCube);
+			vcCSGSubVolumes[numCSGObjects] = backgroundCSGSubVolume;
+			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 		}
 
 		
 		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
-		vcGsd.updateAll();
-		vcGeometry.precomputeAll(false, false);
+//		vcGsd.updateAll();
+		vcGeometry.precomputeAll(true, true);
 	}   catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage());

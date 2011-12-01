@@ -12,13 +12,18 @@ package cbit.vcell.modeldb;
 
 import java.sql.*;
 
+import org.jdom.Element;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.
@@ -60,8 +65,21 @@ public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset,
 	if (rset.wasNull()){
 		return new CompartmentSubVolume(key,handleValue);
 	}else{
-		Expression exp = new Expression(expString);
-		return new AnalyticSubVolume(key,svName,exp,handleValue);
+		try {
+			Expression exp = new Expression(expString);
+			return new AnalyticSubVolume(key,svName,exp,handleValue);
+		} catch (Exception e) {
+			String xmlStr = TokenMangler.getSQLRestoredString(expString);
+			XmlReader xmlReader = new XmlReader(true);
+			Element csgObjElement =  (XmlUtil.stringToXML(xmlStr, null)).getRootElement(); 
+			try {
+				CSGObject csgObject = xmlReader.getCSGObject(csgObjElement, key);
+				return csgObject;
+			} catch (Exception e1) {
+				e1.printStackTrace(System.out);
+				throw new DataAccessException(e1.getMessage(), e1);
+			}
+		}
 	}
 }
 /**
@@ -115,6 +133,9 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, Geometry geom,
 	buffer.append(geomKey + ",");
 	if (sv instanceof AnalyticSubVolume) {
 		buffer.append("'" + TokenMangler.getSQLEscapedString(((AnalyticSubVolume) sv).getExpression().infix()) + "',");
+	} else if (sv instanceof CSGObject) {
+		Xmlproducer producer = new Xmlproducer(true);
+		buffer.append("'" + TokenMangler.getSQLEscapedString(XmlUtil.xmlToString(producer.getXML((CSGObject)sv))) + "',");
 	} else {
 		buffer.append("null"+",");
 	}

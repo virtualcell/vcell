@@ -74,6 +74,17 @@ import cbit.vcell.dictionary.FormalProtein;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGHomogeneousTransformation;
+import cbit.vcell.geometry.CSGNode;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive;
+import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
+import cbit.vcell.geometry.CSGPseudoPrimitive;
+import cbit.vcell.geometry.CSGRotation;
+import cbit.vcell.geometry.CSGScale;
+import cbit.vcell.geometry.CSGSetOperator;
+import cbit.vcell.geometry.CSGSetOperator.OperatorType;
+import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Geometry;
@@ -200,6 +211,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DataProcessingInstructions;
@@ -5117,6 +5129,9 @@ private SubVolume getSubVolume(Element param) throws XmlParseException{
 		} else if ( typeString.equalsIgnoreCase(XMLTags.ImageBasedTypeTag) ) {
 			//Process Image based
 			newsubvolume = getImageSubVolume( param );
+		} else if ( typeString.equalsIgnoreCase(XMLTags.CSGBasedTypeTag) ) {
+			//Process Constructed Solid Geometry based
+			newsubvolume = getCSGObject( param, null );
 		} else {
 			//Throw an exception
 			throw new XmlParseException("Parse Error! Unknown Subvolume type:"+typeString);
@@ -5131,6 +5146,177 @@ private SubVolume getSubVolume(Element param) throws XmlParseException{
 	
 	return newsubvolume;
 }
+
+public CSGObject getCSGObject(Element param, KeyValue keyFromDB) throws XmlParseException {
+	//retrieve the attributes
+	String name = param.getAttributeValue(XMLTags.NameAttrTag);
+	int handle = Integer.parseInt( param.getAttributeValue(XMLTags.HandleAttrTag) );
+	
+	//process the key
+	KeyValue key = null;
+	String temp = param.getAttributeValue(XMLTags.KeyValueAttrTag);
+	
+	if (temp!=null && temp.length()>0 && this.readKeysFlag) {
+		key = new KeyValue( temp );
+	}
+	if (keyFromDB != null) {
+		key = keyFromDB;
+	}
+
+	//Retrieve CSGObject CSGNode - CSGObject element should have one child (the root node of the CSGObject) 
+	Object[] elements = param.getChildren().toArray();
+	if (elements.length > 1) {
+		throw new XmlParseException("CSGObject subvolume element cannot have more than one child element");
+	}
+	CSGNode csgRootNode = getCSGNode((Element)elements[0]);
+	
+	//Create the CSGObject
+	CSGObject newCSGObjectSubvol =  new CSGObject(key, name, handle);
+	newCSGObjectSubvol.setRoot(csgRootNode);
+
+	return  newCSGObjectSubvol;
+}
+
+private CSGNode getCSGNode(Element param) throws XmlParseException {
+	String nodeNameString = param.getName();
+	CSGNode csgNode = null;
+	
+	if (nodeNameString!=null) {
+		if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGPrimitiveTag) ) {
+			//Process CSGPrimitive 		
+			csgNode = getCSGPrimitive( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGPseudoPrimitiveTag) ) {
+			//Process CSGPseudoPrimitive
+			csgNode = getCSGPseudoPrimitive( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGSetOperatorTag) ) {
+			//Process CSGSetOperator
+			csgNode = getCSGSetOperator( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGHomogeneousTransformationTag) ) {
+			//Process CSGHomogeneousTransformation
+			csgNode = getCSGHomogeneousTransformation( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGRotationTag) ) {
+			//Process CSGRotation
+			csgNode = getCSGRotation( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGScaleTag) ) {
+			//Process CSGScale
+			csgNode = getCSGScale( param );
+		} else if ( nodeNameString.equalsIgnoreCase(XMLTags.CSGTranslationTag) ) {
+			//Process CSGTranslation
+			csgNode = getCSGTranslation( param );
+		} else {
+			//Throw an exception
+			throw new XmlParseException("Parse Error! Unknown CSGNode type : "+nodeNameString);
+		}
+
+	} else {
+		throw new XmlParseException("CSGNode : cannot be null");
+	}
+	
+	return csgNode;
+}
+
+
+private CSGPrimitive getCSGPrimitive(Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String  primitiveTypeStr = unMangle(param.getAttributeValue(XMLTags.CSGPrimitiveTypeTag));
+	
+	//---Create the new CSGPrimitive object ---
+	PrimitiveType type = CSGPrimitive.PrimitiveType.valueOf(primitiveTypeStr);
+	CSGPrimitive csgPrimitive = new CSGPrimitive(name, type);
+
+	return csgPrimitive;
+}
+
+private CSGPseudoPrimitive getCSGPseudoPrimitive(Element param) throws XmlParseException {
+	throw new XmlParseException("CSGPseudoPrimitive not implemented yet.");
+}
+
+
+private CSGSetOperator getCSGSetOperator(Element param) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String operatorTypeStr = unMangle(param.getAttributeValue(XMLTags.CSGSetOperatorTypeTag));
+	
+	//---Create the new CSGSetOperator object ---
+	OperatorType type = CSGSetOperator.OperatorType.valueOf(operatorTypeStr);
+	CSGSetOperator csgSetOperator = new CSGSetOperator(name, type);
+	
+	List<Element> children = param.getChildren();
+	Iterator<Element> iterator = children.iterator();
+	int count = 0;
+	while (iterator.hasNext()) {
+		Element tempElement = iterator.next();	
+		CSGNode csgNode = getCSGNode(tempElement);
+		csgSetOperator.addChild(csgNode);
+	}
+
+	return csgSetOperator;
+}
+
+private CSGHomogeneousTransformation getCSGHomogeneousTransformation(Element param) throws XmlParseException {
+	throw new XmlParseException("CSGHomogeneousTransformation not implemented yet.");
+}
+
+
+private CSGRotation getCSGRotation(Element param) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String rotateXStr = unMangle(param.getAttributeValue(XMLTags.CSGRotationXTag));
+	String rotateYStr = unMangle(param.getAttributeValue(XMLTags.CSGRotationYTag));
+	String rotateZStr = unMangle(param.getAttributeValue(XMLTags.CSGRotationZTag));
+	String rotationAngleStr = unMangle(param.getAttributeValue(XMLTags.CSGRotationAngleInRadiansTag));
+	Vect3d rotationAxis = new Vect3d(Double.parseDouble(rotateXStr), Double.parseDouble(rotateYStr), Double.parseDouble(rotateZStr));
+	CSGRotation csgRotation = new CSGRotation(name, rotationAxis, Double.parseDouble(rotationAngleStr));
+	
+	//Retrieve CSGNode - CSGRotation element should have one child  
+	Object[] elements = param.getChildren().toArray();
+	if (elements.length > 1) {
+		throw new XmlParseException("CSGRotation element cannot have more than one child element");
+	}
+	CSGNode csgChildNode = getCSGNode((Element)elements[0]);
+	
+	csgRotation.setChild(csgChildNode);
+	return csgRotation;
+}
+
+
+private CSGScale getCSGScale(Element param) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String scaleXStr = unMangle(param.getAttributeValue(XMLTags.CSGScaleXTag));
+	String scaleYStr = unMangle(param.getAttributeValue(XMLTags.CSGScaleYTag));
+	String scaleZStr = unMangle(param.getAttributeValue(XMLTags.CSGScaleZTag));
+	Vect3d scaleAxis = new Vect3d(Double.parseDouble(scaleXStr), Double.parseDouble(scaleYStr), Double.parseDouble(scaleZStr));
+	CSGScale csgScale = new CSGScale(name, scaleAxis);
+	
+	//Retrieve CSGNode - CSGScale element should have one child  
+	Object[] elements = param.getChildren().toArray();
+	if (elements.length > 1) {
+		throw new XmlParseException("CSGScale element cannot have more than one child element");
+	}
+	CSGNode csgChildNode = getCSGNode((Element)elements[0]);
+	
+	csgScale.setChild(csgChildNode);
+	return csgScale;
+}
+
+private CSGTranslation getCSGTranslation(Element param) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String translateXStr = unMangle(param.getAttributeValue(XMLTags.CSGTranslationXTag));
+	String translateYStr = unMangle(param.getAttributeValue(XMLTags.CSGTranslationYTag));
+	String translateZStr = unMangle(param.getAttributeValue(XMLTags.CSGTranslationZTag));
+	Vect3d translateAxis = new Vect3d(Double.parseDouble(translateXStr), Double.parseDouble(translateYStr), Double.parseDouble(translateZStr));
+	CSGTranslation csgTranslation = new CSGTranslation(name, translateAxis);
+	
+	//Retrieve CSGNode - CSGScale element should have one child  
+	Object[] elements = param.getChildren().toArray();
+	if (elements.length > 1) {
+		throw new XmlParseException("CSGScale element cannot have more than one child element");
+	}
+	CSGNode csgChildNode = getCSGNode((Element)elements[0]);
+	
+	csgTranslation.setChild(csgChildNode);
+	return csgTranslation;
+}
+
+
 
 private SurfaceClass getSurfaceClass(Element param,Geometry geom) throws XmlParseException{
 		

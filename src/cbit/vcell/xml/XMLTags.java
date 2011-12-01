@@ -207,6 +207,31 @@ public class XMLTags {
     public final static String CompartmentBasedTypeTag	= "Compartmental";
     public final static String ImageBasedTypeTag		= "Image";
     public final static String AnalyticBasedTypeTag		= "Analytical";
+
+    // Tags for CSGeometry
+    public static final String CSGBasedTypeTag 					= "CSGObject";
+    public static final String CSGPrimitiveTag					= "CSGPrimitive";
+    public static final String CSGPrimitiveTypeTag				= "CSGPrimitiveType";
+    public static final String CSGPseudoPrimitiveTag			= "CSGPseudoPrimitive";
+    public static final String CSGObjectRefTag					= "CSGObjectRef";
+    public static final String CSGSetOperatorTag				= "CSGSetOperator";
+    public static final String CSGSetOperatorTypeTag			= "CSGSetOperatorType";
+    public static final String CSGHomogeneousTransformationTag	= "CSGHomogeneousTransformation";
+    public static final String CSGRotationTag					= "CSGRotation";
+    public static final String CSGRotationXTag					= "CSGRotationX";
+    public static final String CSGRotationYTag					= "CSGRotationY";
+    public static final String CSGRotationZTag					= "CSGRotationZ";
+    public static final String CSGRotationAngleInRadiansTag		= "CSGRotationAngleInRadians";
+    public static final String CSGScaleTag						= "CSGScale";
+    public static final String CSGScaleXTag						= "CSGScaleX";
+    public static final String CSGScaleYTag						= "CSGScaleY";
+    public static final String CSGScaleZTag						= "CSGScaleZ";
+    public static final String CSGTranslationTag				= "CSGTranslation";
+    public static final String CSGTranslationXTag				= "CSGTranslationX";
+    public static final String CSGTranslationYTag				= "CSGTranslationY";
+    public static final String CSGTranslationZTag				= "CSGTranslationZ";
+    // end - tags for CSGeometry
+    
     public final static String CoordinateTag = "Coordinate";
     public final static String PolyLineTypeTag = "PolyLine";
     public final static String SplineTypeTag = "Spline";

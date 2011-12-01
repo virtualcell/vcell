@@ -62,6 +62,16 @@ import cbit.vcell.dictionary.EnzymeRef;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGHomogeneousTransformation;
+import cbit.vcell.geometry.CSGNode;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive;
+import cbit.vcell.geometry.CSGPseudoPrimitive;
+import cbit.vcell.geometry.CSGRotation;
+import cbit.vcell.geometry.CSGScale;
+import cbit.vcell.geometry.CSGSetOperator;
+import cbit.vcell.geometry.CSGTransformation;
+import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;
@@ -705,6 +715,135 @@ private Element getXML(AnalyticSubVolume param) {
 	return analytic;
 }
 
+public Element getXML(CSGObject param) {
+	Element csgObjectElement = new Element(XMLTags.SubVolumeTag);
+
+	//Add Attributes
+	csgObjectElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgObjectElement.setAttribute(XMLTags.HandleAttrTag, String.valueOf(param.getHandle()));
+	csgObjectElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.CSGBasedTypeTag);
+
+	//Create CSGNode subelement
+	Element csgNodeRoot = getXML (param.getRoot());
+	csgObjectElement.addContent(csgNodeRoot);
+
+	//If keyFlag is on print the Keyvalue
+	if (param.getKey() !=null && this.printKeysFlag) {
+		csgObjectElement.setAttribute(XMLTags.KeyValueAttrTag, param.getKey().toString());
+	}
+		
+	return csgObjectElement;
+}
+
+
+private Element getXML(CSGNode param) {
+	Element csgNodeElement = null;
+	if (param instanceof CSGPrimitive) {
+		csgNodeElement = getXML((CSGPrimitive) param);
+	} else if (param instanceof CSGPseudoPrimitive) {
+		csgNodeElement = getXML((CSGPseudoPrimitive) param);
+	}  else if (param instanceof CSGSetOperator) {
+		csgNodeElement = getXML((CSGSetOperator) param);
+	}  else if (param instanceof CSGTransformation) {
+		csgNodeElement = getXML((CSGTransformation) param);
+	}
+	return csgNodeElement; 
+}
+
+private Element getXML(CSGPrimitive param) {
+	Element csgPrimitiveElement = new Element(XMLTags.CSGPrimitiveTag);
+	csgPrimitiveElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgPrimitiveElement.setAttribute(XMLTags.CSGPrimitiveTypeTag, mangle(param.getType().name()));
+	return csgPrimitiveElement; 
+}
+
+private Element getXML(CSGPseudoPrimitive param) {
+	//	Element csgPseudoPrimitiveElement = new Element(XMLTags.CSGPseudoPrimitiveTag);
+	//	csgPseudoPrimitiveElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	//	csgPseudoPrimitiveElement.setAttribute(XMLTags.CSGObjectRefTag, mangle(param.getCsgObjectName()));
+	//	// csgObject in CSGPseudoPrimitive
+	//	Element csgObjectElement = getXML(param.getCsgObject());
+	//	csgPseudoPrimitiveElement.addContent(csgObjectElement);
+	//	return csgPseudoPrimitiveElement;
+	
+	throw new RuntimeException("Not implemented yet.");
+}
+
+private Element getXML(CSGSetOperator param) {
+	Element csgSetOperatorElement = new Element(XMLTags.CSGSetOperatorTag);
+	
+	csgSetOperatorElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgSetOperatorElement.setAttribute(XMLTags.CSGSetOperatorTypeTag, mangle(param.getOpType().name()));
+	
+	ArrayList<CSGNode> setOpChildren = param.getChildren();
+	Element csgNodeElement = null;
+	for (CSGNode setOpNode : setOpChildren) {
+		csgNodeElement = getXML(setOpNode);
+		csgSetOperatorElement.addContent(csgNodeElement);
+	}
+	
+	return csgSetOperatorElement; 
+}
+
+private Element getXML(CSGTransformation param) {
+	Element csgTransformationElement = null;
+	
+	// defer it to subclasses to get attributes
+	if (param instanceof CSGHomogeneousTransformation) {
+		csgTransformationElement = getXML((CSGHomogeneousTransformation) param);
+	} else if (param instanceof CSGRotation) {
+		csgTransformationElement = getXML((CSGRotation) param);
+	}  else if (param instanceof CSGScale) {
+		csgTransformationElement = getXML((CSGScale) param);
+	}  else if (param instanceof CSGTranslation) {
+		csgTransformationElement = getXML((CSGTranslation) param);
+	}
+	
+	// add child CSGNode on which the transformation is applied
+	Element csgNodeElement = getXML(param.getChild());
+	csgTransformationElement.addContent(csgNodeElement);
+
+	return csgTransformationElement; 
+}
+
+
+private Element getXML(CSGHomogeneousTransformation param) {
+//		Element csgHomoTransElement = new Element(XMLTags.CSGHomogeneousTransformationTag);
+//		csgHomoTransElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+//		return csgHomoTransElement;
+	
+	throw new RuntimeException("Not implemented yet.");
+}
+
+private Element getXML(CSGRotation param) {
+	Element csgRotationElement = new Element(XMLTags.CSGRotationTag);
+	csgRotationElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgRotationElement.setAttribute(XMLTags.CSGRotationXTag, String.valueOf(param.getAxis().getX()));
+	csgRotationElement.setAttribute(XMLTags.CSGRotationYTag, String.valueOf(param.getAxis().getY()));
+	csgRotationElement.setAttribute(XMLTags.CSGRotationZTag, String.valueOf(param.getAxis().getZ()));
+	csgRotationElement.setAttribute(XMLTags.CSGRotationAngleInRadiansTag, String.valueOf(param.getRotationRadians()));
+	return csgRotationElement; 
+}
+
+private Element getXML(CSGScale param) {
+	Element csgScaleElement = new Element(XMLTags.CSGScaleTag);
+	csgScaleElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgScaleElement.setAttribute(XMLTags.CSGScaleXTag, String.valueOf(param.getScale().getX()));
+	csgScaleElement.setAttribute(XMLTags.CSGScaleYTag, String.valueOf(param.getScale().getY()));
+	csgScaleElement.setAttribute(XMLTags.CSGScaleZTag, String.valueOf(param.getScale().getZ()));
+	return csgScaleElement; 
+}
+
+private Element getXML(CSGTranslation param) {
+	Element csgTranslateElement = new Element(XMLTags.CSGTranslationTag);
+	csgTranslateElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	csgTranslateElement.setAttribute(XMLTags.CSGTranslationXTag, String.valueOf(param.getTranslation().getX()));
+	csgTranslateElement.setAttribute(XMLTags.CSGTranslationYTag, String.valueOf(param.getTranslation().getY()));
+	csgTranslateElement.setAttribute(XMLTags.CSGTranslationZTag, String.valueOf(param.getTranslation().getZ()));
+	return csgTranslateElement; 
+}
+
+
 
 /**
  * This method returns a XML representation of a CompartmentSubVolume.
@@ -940,6 +1079,8 @@ private Element getXML(SubVolume param) {
 		return getXML( (CompartmentSubVolume)param );
 	} else if (param instanceof ImageSubVolume) {
 		return getXML( (ImageSubVolume)param );
+	}  else if (param instanceof CSGObject) {
+		return getXML( (CSGObject)param );
 	}
 
 	return null;
