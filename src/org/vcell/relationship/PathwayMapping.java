@@ -216,16 +216,10 @@ public class PathwayMapping {
 	{
 		// use user defined id as the name of the reaction name
 		String safeId = getSafetyName(id);
-		String bioPaxName;
-		if(bioPaxObject.getName().size() == 0 ){
-			bioPaxName = bioPaxObject.getID();
-		}else{
-			bioPaxName = bioPaxObject.getName().get(0);
-		}
 		// get participants from table rows
 		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionName().equals(bioPaxName)){
+			if(ctr.interactionId().equals(bioPaxObject.getID())){
 				participants.add(ctr);
 			}
 		}
@@ -254,16 +248,10 @@ public class PathwayMapping {
 	{
 		// use user defined id as the name of the reaction name
 		String safeId = getSafetyName(id);
-		String bioPaxName;
-		if(bioPaxObject.getName().size() == 0 ){
-			bioPaxName = bioPaxObject.getID();
-		}else{
-			bioPaxName = bioPaxObject.getName().get(0);
-		}
 		// get participants from table rows
 		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionName().equals(bioPaxName)){
+			if(ctr.interactionId().equals(bioPaxObject.getID())){
 				participants.add(ctr);
 			}
 		}
@@ -292,16 +280,10 @@ public class PathwayMapping {
 	{
 		// use user defined id as the name of the reaction name
 		String safeId = getSafetyName(id);
-		String bioPaxName;
-		if(bioPaxObject.getName().size() == 0 ){
-			bioPaxName = bioPaxObject.getID();
-		}else{
-			bioPaxName = bioPaxObject.getName().get(0);
-		}
 		// get participants from table rows
 		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionName().equals(bioPaxName)){
+			if(ctr.interactionId().equals(bioPaxObject.getID())){
 				participants.add(ctr);
 			}
 		}

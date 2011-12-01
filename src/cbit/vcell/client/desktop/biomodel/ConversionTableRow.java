@@ -16,7 +16,8 @@ public class ConversionTableRow {
 	private BioPaxObject bioPaxObject;
 //	private Boolean modifiable = new Boolean(false);
 	private double stoich;
-	private String interactionName;
+	private String interactionId;
+	private String interactionLabel;
 	private String participantType;
 	private String id;
 	private String location;
@@ -26,11 +27,17 @@ public class ConversionTableRow {
 		this.bioPaxObject = bpObject;
 	}
 	
-	public String interactionName() {
-		return interactionName;
+	public String interactionId() {
+		return interactionId;
 	}
-	public void setInteractionName(String newValue) {
-		interactionName = newValue;
+	public String interactionLabel() {
+		return interactionLabel;
+	}
+	public void setInteractionId(String newValue) {
+		interactionId = newValue;
+	}
+	public void setInteractionLabel(String newValue) {
+		interactionLabel = newValue;
 	}
 	
 	public String participantType() {
