@@ -10,12 +10,14 @@
 
 package cbit.vcell.render;
 
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/29/2003 1:04:15 PM)
  * @author: Jim Schaff
  */
-public class Vect3d {
+public class Vect3d implements Serializable {
 	double q[] = new double[3];
 
 /**
