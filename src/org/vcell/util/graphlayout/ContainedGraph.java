@@ -36,8 +36,7 @@ public interface ContainedGraph {
 
 	public static class Container extends Element {
 		
-		protected double x, y;
-		protected final double width, height;
+		protected double x, y, width, height;
 		
 		public Container(Object object, double x, double y, double width, double height) { 
 			super(object);
@@ -50,7 +49,9 @@ public interface ContainedGraph {
 		public double getX() { return x; }
 		public double getY() { return y; }
 		public double getWidth() { return width; }
+		public void setWidth(double width) { this.width = width; }
 		public double getHeight() { return height; }
+		public void setHeight(double height) { this.height = height; }
 		public double getNodeMaxX(Node node) { return getX() + getWidth() - node.getWidth(); }
 		public double getNodeMaxY(Node node) { return getY() + getHeight() - node.getHeight(); }
 		

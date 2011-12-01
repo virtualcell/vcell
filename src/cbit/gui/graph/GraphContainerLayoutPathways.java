@@ -22,6 +22,7 @@ import cbit.vcell.client.desktop.biomodel.pathway.shapes.PathwayContainerShape;
 public class GraphContainerLayoutPathways implements GraphContainerLayout {
 	
 	public static final Dimension PATHWAY_CONTAINER_MIN_SIZE = new Dimension(500, 250);
+	public static final int MIN_AREA_PER_NODE = 2000;
 	public static final int TOP_LABEL_HEIGHT = 0;
 	public static final int HEIGHT_PADDING = 14;
 	public static final int WIDTH_PADDING = 14;
@@ -59,6 +60,12 @@ public class GraphContainerLayoutPathways implements GraphContainerLayout {
 			}
 			if(preferredSize.height < PATHWAY_CONTAINER_MIN_SIZE.height) {
 				preferredSize.height = PATHWAY_CONTAINER_MIN_SIZE.height;
+			}
+			int nNodes = shape.getChildren().size();
+			int minArea = nNodes*MIN_AREA_PER_NODE;
+			while(preferredSize.width*preferredSize.height < minArea) {
+				preferredSize.width += preferredSize.width/20;
+				preferredSize.height += preferredSize.height/20;
 			}
 			return preferredSize;
 		} finally {

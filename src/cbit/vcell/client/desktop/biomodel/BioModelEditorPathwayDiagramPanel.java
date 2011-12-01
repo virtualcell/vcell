@@ -76,8 +76,10 @@ import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.tree.BioPAXTreeMaker;
 import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.graphlayout.ExpandCanvasLayouter;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.ActionBuilder;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -115,7 +117,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 	
 	public static enum ActionID implements ActionBuilder.ID {
 		SELECT, ZOOM_IN, ZOOM_OUT, RANDOM_LAYOUT, CIRCULAR_LAYOUT, ANNEALED_LAYOUT, LEVELLED_LAYOUT, 
-		RELAXED_LAYOUT, GLG_LAYOUT, SHOOT_AND_CUT_LAYOUT, WEREWOLF_LAYOUT, REACTIONS_ONLY_SHOWN, REACTION_NETWORK_SHOWN, COMPONENTS;
+		RELAXED_LAYOUT, GLG_LAYOUT, SHOOT_AND_CUT_LAYOUT, WEREWOLF_LAYOUT, EXPAND_CANVAS, SHRINK_CANVAS, REACTIONS_ONLY_SHOWN, 
+		REACTION_NETWORK_SHOWN, COMPONENTS;
 	}
 	
 	public enum PathwayPanelTabID {
@@ -637,6 +640,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 		new ActionBuilder(ActionID.LEVELLED_LAYOUT, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
 		new ActionBuilder(ActionID.RELAXED_LAYOUT, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
 		new ActionBuilder(ActionID.GLG_LAYOUT, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.SHRINK_CANVAS, "-", "Shrink Canvas", "Shrink canvas by about 10 percent"),
+		new ActionBuilder(ActionID.EXPAND_CANVAS, "+", "Expand Canvas", "Expand canvas by about 10 percent"),
+		new ActionBuilder(ActionID.GLG_LAYOUT, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
 		new ActionBuilder(ActionID.REACTIONS_ONLY_SHOWN, "", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
 		new ActionBuilder(ActionID.REACTION_NETWORK_SHOWN, "", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
 		new ActionBuilder(ActionID.COMPONENTS, "", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));
@@ -1116,6 +1122,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 			}
 			case GLG_LAYOUT : {
 				return new LayoutAction(GenericLogicGraphLayouter.LAYOUT_NAME);
+			}
+			case SHRINK_CANVAS : {
+				return new LayoutAction(ShrinkCanvasLayouter.LAYOUT_NAME);
+			}
+			case EXPAND_CANVAS : {
+				return new LayoutAction(ExpandCanvasLayouter.LAYOUT_NAME);
 			}
 			}
 		}

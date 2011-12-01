@@ -15,8 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
+import org.vcell.util.graphlayout.ExpandCanvasLayouter;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.graphlayout.StretchToBoundaryLayouter;
 import org.vcell.util.graphlayout.GraphLayouter.Client;
@@ -102,6 +104,10 @@ public class GraphLayoutManager {
 			layouter = new SimpleElipticalLayouter();
 		} else if(GenericLogicGraphLayouter.LAYOUT_NAME.equals(layoutName)) {
 			layouter = new GenericLogicGraphLayouter();
+		} else if(ShrinkCanvasLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new ShrinkCanvasLayouter();
+		} else if(ExpandCanvasLayouter.LAYOUT_NAME.equals(layoutName)) {
+			layouter = new ExpandCanvasLayouter();
 		}
 		if(layouter != null) {
 			layouter.layout(client);
