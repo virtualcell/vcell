@@ -1,4 +1,16 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.geometry;
+
+import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
@@ -22,6 +34,22 @@ public class CSGPrimitive extends CSGNode {
 		this(primitive.getName(), primitive.type);
 	}
 
+	public boolean compareEqual(Matchable obj) {
+		if (!compareEqual0(obj)){
+			return false;
+		}
+		if (!(obj instanceof CSGPrimitive)){
+			return false;
+		}
+		CSGPrimitive csgp = (CSGPrimitive)obj;
+
+		if ((getType().compareTo(csgp.getType())) != 0){
+			return false;
+		}
+
+		return true;
+	}
+	
 	@Override
 	public CSGNode cloneTree() {
 		return new CSGPrimitive(this);

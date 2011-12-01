@@ -1,6 +1,19 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package cbit.vcell.geometry;
 
 import java.util.ArrayList;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
@@ -28,6 +41,26 @@ public class CSGSetOperator extends CSGNode {
 		}
 	}
 	
+	public boolean compareEqual(Matchable obj) {
+		if (!compareEqual0(obj)){
+			return false;
+		}
+		if (!(obj instanceof CSGSetOperator)){
+			return false;
+		}
+		CSGSetOperator csgso = (CSGSetOperator)obj;
+
+		if ((getOpType().compareTo(csgso.getOpType())) != 0){
+			return false;
+		}
+
+		if (!Compare.isEqualOrNull(children, csgso.children)) {
+			return false;
+		}
+
+		return true;
+	}
+
 	@Override
 	public CSGNode cloneTree() {
 		return new CSGSetOperator(this);
@@ -107,4 +140,5 @@ public class CSGSetOperator extends CSGNode {
 	public void setChild(int index, CSGNode node) {
 		children.set(index, node);
 	}
+
 }
