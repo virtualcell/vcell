@@ -36,8 +36,10 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.util.graphlayout.ExpandCanvasLayouter;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
+import org.vcell.util.graphlayout.ShrinkCanvasLayouter;
 import org.vcell.util.graphlayout.SimpleElipticalLayouter;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.ViewPortStabilizer;
@@ -72,6 +74,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
 	private JButton glgLayoutJButton = null;
+	private JButton shrinkCanvasButton = null;
+	private JButton expandCanvasButton = null;
 	private final ReactionCartoon reactionCartoon = new ReactionCartoon();
 	private final ReactionCartoonTool reactionCartoonTool = new ReactionCartoonTool();
 
@@ -130,6 +134,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			}
 			else if (source == getGlgLayoutJButton())
 				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
+			else if (source == getShrinkCanvasButton())
+				getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
+			else if (source == getExpandCanvasButton())
+				getReactionCartoonTool().layout(ExpandCanvasLayouter.LAYOUT_NAME);
 			else if (source == getFloatRequestButton()) 
 				setFloatingRequested(!bFloatingRequested);
 		} catch (Throwable throwable) {
@@ -209,6 +217,34 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return glgLayoutJButton;
 	}
 
+	private JButton getShrinkCanvasButton() {
+		if (shrinkCanvasButton == null) {
+			try {
+				shrinkCanvasButton = createToolBarButton();
+				shrinkCanvasButton.setName("ShrinkCanvasButton");
+				shrinkCanvasButton.setToolTipText("Shrink Canvas");
+				shrinkCanvasButton.setText("-");
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return shrinkCanvasButton;
+	}
+
+	private JButton getExpandCanvasButton() {
+		if (expandCanvasButton == null) {
+			try {
+				expandCanvasButton = createToolBarButton();
+				expandCanvasButton.setName("ExpandCanvasButton");
+				expandCanvasButton.setToolTipText("Expand Canvas");
+				expandCanvasButton.setText("+");
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return expandCanvasButton;
+	}
+
 	private GraphPane getGraphPane() {
 		if (graphPane == null) {
 			try {
@@ -266,6 +302,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				toolBar.add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				toolBar.add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
+				toolBar.add(getShrinkCanvasButton(), getShrinkCanvasButton().getName());
+				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
 				toolBar.add(Box.createHorizontalGlue());
 				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {
@@ -515,6 +553,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getZoomInButton().addActionListener(this);
 		getZoomOutButton().addActionListener(this);
 		getGlgLayoutJButton().addActionListener(this);
+		getShrinkCanvasButton().addActionListener(this);
+		getExpandCanvasButton().addActionListener(this);
 		getFloatRequestButton().addActionListener(this);
 	}
 
