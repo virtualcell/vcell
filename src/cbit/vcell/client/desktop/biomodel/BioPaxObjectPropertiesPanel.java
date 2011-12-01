@@ -240,7 +240,7 @@ protected void refreshInterface() {
 			if(!(physicalEntity instanceof SmallMolecule)){
 				// physicalEntity::cellular location
 				CellularLocationVocabulary cellularLocation = physicalEntity.getCellularLocation();
-				if (cellularLocation!=null){
+				if (cellularLocation!=null && cellularLocation.getTerm() != null && cellularLocation.getTerm().size() > 0){
 					propertyList.add(new BioPaxObjectProperty("Cellular Location", cellularLocation.getTerm().get(0),cellularLocation));
 				}else if (name != null && name.size()>1){
 					String location  = name.get(1);
