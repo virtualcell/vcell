@@ -109,7 +109,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		BioPaxObject bpObject = conversionTableRow.getBioPaxObject();
 		switch(iCol) {
 			case iColInteraction:{
-				return conversionTableRow.interactionName();
+				return conversionTableRow.interactionLabel();
 			}
 			case iColParticipant:{
 				return conversionTableRow.participantType();
@@ -276,7 +276,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		    	} else 
 		    		
 		    	if (col == iColInteraction) {
-		    		int c  = o1.interactionName().compareToIgnoreCase(o2.interactionName());
+		    		int c  = o1.interactionLabel().compareToIgnoreCase(o2.interactionLabel());
 		    		return ascending ? c : -c;
 		    	}else 
 		    		
@@ -340,8 +340,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
 				Conversion conversion = (Conversion)bpo;
 				ArrayList<String> nameList = conversion.getName();
-				String interactionName = nameList.isEmpty() ? conversion.getIDShort() : nameList.get(0);
-				ConversionTableRow newConversionTableRow = createTableRow(conversion, interactionName,
+				String interactionId = conversion.getID();
+				String interactionLabel = nameList.isEmpty() ? conversion.getIDShort() : nameList.get(0);
+				ConversionTableRow newConversionTableRow = createTableRow(conversion, interactionId, interactionLabel,
 						"Conversion", 1.0 , null);
 				allPathwayObjectList.add(newConversionTableRow);
 				convertedBPObjects.add(bpo);
@@ -358,15 +359,17 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 						ConversionTableRow conversionTableRow;
 						if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).isEmpty()){
 							if(conversion instanceof Transport)
-								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionName,"Reactant", stoich , null);
+								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionId, interactionLabel,
+										"Reactant", stoich , null);
 							else
-								conversionTableRow = createTableRow(bpObject1, interactionName,"Reactant", stoich , null);
+								conversionTableRow = createTableRow(bpObject1, interactionId, interactionLabel,"Reactant", stoich , 
+										null);
 						}else{
 							if(conversion instanceof Transport)
-								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionName,
+								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionId, interactionLabel,
 										"Reactant", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1));
 							else
-								conversionTableRow = createTableRow(bpObject1, interactionName,
+								conversionTableRow = createTableRow(bpObject1, interactionId, interactionLabel,
 									"Reactant", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1));
 						}
 						allPathwayObjectList.add(conversionTableRow);
@@ -381,15 +384,17 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 						ConversionTableRow conversionTableRow;
 						if(bioModel.getRelationshipModel().getRelationshipObjects(bpObject1).isEmpty()){
 							if(conversion instanceof Transport)
-								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionName,"Product", stoich , null);
+								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionId, interactionLabel, 
+										"Product", stoich , null);
 							else
-								conversionTableRow = createTableRow(bpObject1, interactionName, "Product", stoich , null);	
+								conversionTableRow = createTableRow(bpObject1, interactionId, interactionLabel, "Product", stoich , 
+										null);	
 						}else{
 							if(conversion instanceof Transport)
-								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionName,
+								conversionTableRow = createTableRowForTransportParticipant(bpObject1, interactionId, interactionLabel,
 										"Product", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1));
 							else
-								conversionTableRow = createTableRow(bpObject1, interactionName,
+								conversionTableRow = createTableRow(bpObject1, interactionId, interactionLabel,
 									"Product", stoich , bioModel.getRelationshipModel().getRelationshipObjects(bpObject1));
 						}
 						allPathwayObjectList.add(conversionTableRow);
@@ -404,10 +409,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 								for(PhysicalEntity pe : ((Catalysis) control).getPhysicalControllers()){
 										ConversionTableRow conversionTableRow;
 										if(bioModel.getRelationshipModel().getRelationshipObjects(pe).isEmpty()){
-											conversionTableRow = createTableRow(pe, interactionName,
+											conversionTableRow = createTableRow(pe, interactionId, interactionLabel,
 													"Catalyst", 1.0 , null);
 										}else{
-											conversionTableRow = createTableRow(pe, interactionName,
+											conversionTableRow = createTableRow(pe, interactionId, interactionLabel,
 													"Catalyst", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(pe));
 										} 
 										allPathwayObjectList.add(conversionTableRow);
@@ -419,10 +424,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 								for(PhysicalEntity pe : control.getPhysicalControllers()){
 										ConversionTableRow conversionTableRow;
 										if(bioModel.getRelationshipModel().getRelationshipObjects(pe).isEmpty()){
-											conversionTableRow = createTableRow(pe, interactionName,
+											conversionTableRow = createTableRow(pe, interactionId, interactionLabel,
 													"Control", 1.0 , null);
 										}else{
-											conversionTableRow = createTableRow(pe, interactionName,
+											conversionTableRow = createTableRow(pe, interactionId, interactionLabel,
 													"Control", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(pe));
 										} 
 										allPathwayObjectList.add(conversionTableRow);
@@ -437,7 +442,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			  if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).size() == 0){
 				  PhysicalEntity physicalEntityObject = (PhysicalEntity)bpo;
 				  if(!convertedBPObjects.contains(physicalEntityObject)){
-					  ConversionTableRow conversionTableRow = createTableRow(physicalEntityObject, "", "", 1.0 , null);
+					  ConversionTableRow conversionTableRow = createTableRow(physicalEntityObject, "", "", "", 1.0 , null);
 					  allPathwayObjectList.add(conversionTableRow);
 					  convertedBPObjects.add(physicalEntityObject);
 				  }
@@ -448,10 +453,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				  if (!convertedBPObjects.contains(pe)){
 					ConversionTableRow conversionTableRow;
 					if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).isEmpty()){
-						conversionTableRow = createTableRow(pe, "",
+						conversionTableRow = createTableRow(pe, "", "",
 								"Catalyst", 1.0 , null);
 					}else{
-						conversionTableRow = createTableRow(pe, "",
+						conversionTableRow = createTableRow(pe, "", "",
 								"Catalyst", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(bpo));
 					} 
 					allPathwayObjectList.add(conversionTableRow);
@@ -466,10 +471,10 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				  if (!convertedBPObjects.contains(pe)){
 					ConversionTableRow conversionTableRow;
 					if(bioModel.getRelationshipModel().getRelationshipObjects(bpo).isEmpty()){
-						conversionTableRow = createTableRow(pe, "",
+						conversionTableRow = createTableRow(pe, "", "",
 								"Control", 1.0 , null);
 					}else{
-						conversionTableRow = createTableRow(pe, "",
+						conversionTableRow = createTableRow(pe, "", "",
 								"Control", 1.0 , bioModel.getRelationshipModel().getRelationshipObjects(bpo));
 					} 
 					allPathwayObjectList.add(conversionTableRow);
@@ -490,7 +495,7 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			String lowerCaseSearchText = searchText.toLowerCase();
 			for (ConversionTableRow rs : allPathwayObjectList){
 				BioPaxObject bpObject = rs.getBioPaxObject();
-				if (rs.interactionName().toLowerCase().contains(lowerCaseSearchText)
+				if (rs.interactionLabel().toLowerCase().contains(lowerCaseSearchText)
 					|| rs.participantType().toLowerCase().contains(lowerCaseSearchText)
 					|| getLabel(bpObject).toLowerCase().contains(lowerCaseSearchText)
 					|| getType(bpObject).toLowerCase().contains(lowerCaseSearchText) ) {
@@ -502,12 +507,14 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	
-	private ConversionTableRow createTableRow(BioPaxObject bpObject, String interactionName, String participantType, 
+	private ConversionTableRow createTableRow(BioPaxObject bpObject, String interactionId, String interactionLabel, 
+			String participantType, 
 			double  stoich, HashSet<RelationshipObject> relationshipObjects) {
 		String location = "";
 		ConversionTableRow conversionTableRow = new ConversionTableRow(bpObject);
 		
-		conversionTableRow.setInteractionName(interactionName);
+		conversionTableRow.setInteractionId(interactionId);
+		conversionTableRow.setInteractionLabel(interactionLabel);
 		conversionTableRow.setParticipantType(participantType);
 		
 		// stoichiometry and location
@@ -584,12 +591,13 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		return conversionTableRow;
 	}
 	
-	private ConversionTableRow createTableRowForTransportParticipant(BioPaxObject bpObject, String interactionName, String participantType, 
-			double  stoich, HashSet<RelationshipObject> relationshipObjects) {
+	private ConversionTableRow createTableRowForTransportParticipant(BioPaxObject bpObject, String interactionId, 
+			String interactionLabel, String participantType, double  stoich, HashSet<RelationshipObject> relationshipObjects) {
 		String location = "";
 		ConversionTableRow conversionTableRow = new ConversionTableRow(bpObject);
 		
-		conversionTableRow.setInteractionName(interactionName);
+		conversionTableRow.setInteractionId(interactionId);
+		conversionTableRow.setInteractionLabel(interactionLabel);
 		conversionTableRow.setParticipantType(participantType);
 		
 		// stoichiometry and location
