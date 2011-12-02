@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.modelopt;
+import java.beans.PropertyVetoException;
+
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -29,6 +31,9 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  */
 @SuppressWarnings("serial")
 public class ParameterEstimationTask extends AnalysisTask {
+	
+	public static final String defaultTaskName = "DefaultTask"; 
+	
 	public static final String PROPERTY_NAME_OPTIMIZATION_RESULT_SET = "optimizationResultSet";
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null;
 	private OptimizationSolverSpec fieldOptimizationSolverSpec = null;
@@ -55,13 +60,14 @@ public ParameterEstimationTask(SimulationContext simContext) throws ExpressionEx
 /**
  * ParameterEstimationTask constructor comment.
  */
-public ParameterEstimationTask(ParameterEstimationTask taskToCopy) throws ExpressionException {
+public ParameterEstimationTask(SimulationContext simContext, ParameterEstimationTask taskToCopy) throws ExpressionException, PropertyVetoException {
 	super();
-	fieldModelOptimizationSpec = new ModelOptimizationSpec(taskToCopy.getModelOptimizationSpec());
+	this.simulationContext = simContext;
+	setName(taskToCopy.getName()); 
+	fieldModelOptimizationSpec = new ModelOptimizationSpec(this, taskToCopy.getModelOptimizationSpec());
 	fieldModelOptimizationMapping = new ModelOptimizationMapping(fieldModelOptimizationSpec);
 	fieldOptimizationSolverSpec = new OptimizationSolverSpec(taskToCopy.getOptimizationSolverSpec());
 }
-
 
 /**
  * Insert the method's description here.

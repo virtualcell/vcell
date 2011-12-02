@@ -258,6 +258,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 				
 				BioModelNode[] applicationChildNodes = null;
 				if (simulationContext.isValidForFitting()) {
+					simulationContext.createDefaultParameterEstimationTask();
 					applicationChildNodes = new BioModelNode[] {
 							geometryNode,
 							settingsNode,
