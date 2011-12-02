@@ -511,16 +511,23 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 		if (varDomain == null) {
 			continue;
 		}
-		boolean useConcentration = false;
+		boolean bkillMol = false;
 		ArrayList<ParticleInitialCondition> iniConditionList = varDomain.getParticleProperties(pv).getParticleInitialConditions();
 		for(ParticleInitialCondition iniCon:iniConditionList)
 		{
 			if(iniCon instanceof ParticleInitialConditionConcentration)
 			{
-				useConcentration = true;
+				try{
+					subsituteFlatten(((ParticleInitialConditionConcentration) iniCon).getDistribution());
+				}
+				catch(Exception e)//can not be evaluated to a constant
+				{
+					bkillMol = true;
+					break;
+				}
 			}
 		}
-		if(useConcentration)
+		if(bkillMol)
 		{
 			Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 			while (subDomainEnumeration.hasMoreElements()) {
@@ -925,6 +932,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 	}
 		
 	double totalCount = 0;
+	StringBuilder localsb = new StringBuilder();
 	if (subDomain instanceof CompartmentSubDomain) {		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
 		ISize sampleSize = meshSpecification.getSamplingSize();
@@ -987,18 +995,31 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 						continue;
 					}
 					totalCount += count;
-					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
+					localsb.append(SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
 					if (dimension > 1) {
-						sb.append(" " + loy + "-" + hiy);
+						localsb.append(" " + loy + "-" + hiy);
 					
 						if (dimension > 2) {
-							sb.append(" " + loz + "-" + hiz);
+							localsb.append(" " + loz + "-" + hiz);
 						}
 					}
-					sb.append("\n");				
+					localsb.append("\n");				
 				}
 			}
 		}
+		
+		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
+		//otherwise we append the distributed molecules in different small boxes
+		try{
+			subsituteFlatten(disExpression);
+			sb.append(SmoldynKeyword.compartment_mol);
+			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + "\n");
+		}
+		catch(Exception e)//can not be evaluated to a constant
+		{
+			sb.append(localsb);
+		}
+		
 	} else if (subDomain instanceof MembraneSubDomain) {
 		ArrayList<TrianglePanel> trianglePanelList = membraneSubdomainTriangleMap.get(subDomain);
 		for (TrianglePanel trianglePanel : trianglePanelList) {
@@ -1041,9 +1062,22 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 				continue;
 			}
 			totalCount += count;
-			sb.append(SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
+			localsb.append(SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
 					+ SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
 		}
+		
+		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
+		//otherwise we append the distributed molecules in different small boxes
+		try{
+			subsituteFlatten(disExpression);
+			sb.append(SmoldynKeyword.surface_mol); 
+			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
+		}
+		catch(Exception e)//can not be evaluated to a constant
+		{
+			sb.append(localsb);
+		}
+		
 	}
 
 	return totalCount;
