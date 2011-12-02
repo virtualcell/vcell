@@ -256,7 +256,6 @@ public class PathwayModel {
 	}
 
 	private BioPaxObject findFromResourceID(String resource) {
-		resource = resource.replace("#","");
 		for (BioPaxObject bpObject : biopaxObjects){
 			if (bpObject.getID() != null){
 				if (bpObject.getID().equals(resource)){
