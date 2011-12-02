@@ -340,6 +340,22 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 		initializeForSpatial();
 	}
 	
+	if(simulationContext.fieldAnalysisTasks != null)
+	{
+		try {
+			AnalysisTask[] analysisTasks = new AnalysisTask[simulationContext.fieldAnalysisTasks.length];
+			for(int i=0; i<simulationContext.fieldAnalysisTasks.length; i++)
+			{
+				analysisTasks[i] = new ParameterEstimationTask(this, (ParameterEstimationTask)simulationContext.fieldAnalysisTasks[i]);
+			}
+			setAnalysisTasks(analysisTasks);
+		} catch (ExpressionException e) {
+			//if cannot create parameter estimation task, we don't want to block the vcell running.
+			//it will leave an empty task, which users can actually use "new" button to create parameter estimation task later.
+			e.printStackTrace(System.out);
+		}
+	}
+	
 	refreshDependencies();
 }
 
@@ -698,7 +714,7 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 			}
 		}
 
-		ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask((ParameterEstimationTask)analysisTask);
+		ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask(this, (ParameterEstimationTask)analysisTask);
 		newParameterEstimationTask.setName(parameterEstimationName);
 		addAnalysisTask(newParameterEstimationTask);
 		return newParameterEstimationTask;
@@ -2153,6 +2169,24 @@ private void initializeForSpatial() {
 	SpeciesContextSpec[] speciesContextSpec = getReactionContext().getSpeciesContextSpecs();
 	for(int i=0;i<speciesContextSpec.length;i++){
 		speciesContextSpec[i].initializeForSpatial();
+	}
+}
+
+public void createDefaultParameterEstimationTask()
+{
+	if(!this.isStoch() && this.getGeometry().getDimension() == 0 && fieldAnalysisTasks == null)
+	{
+		try{
+			ParameterEstimationTask peTask = new ParameterEstimationTask(this);
+			peTask.setName(ParameterEstimationTask.defaultTaskName);
+			addAnalysisTask(peTask);
+		}catch(Exception e)
+		{
+			//if cannot create parameter estimation task, we don't want to block the vcell running.
+			//it will leave an empty task, which users can actually use "new" button to create parameter estimation task later.
+			e.printStackTrace(System.out);
+		}
+		
 	}
 }
 }

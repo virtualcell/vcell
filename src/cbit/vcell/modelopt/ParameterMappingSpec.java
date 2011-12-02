@@ -38,20 +38,6 @@ public ParameterMappingSpec(Parameter argModelParameter) throws ExpressionExcept
 	this.current = argModelParameter.getExpression().evaluateConstant();
 }
 
-
-/**
- * ParameterMapping constructor comment.
- */
-public ParameterMappingSpec(ParameterMappingSpec parameterMappingSpecToCopy) throws ExpressionException {
-	super();
-	this.modelParameter = parameterMappingSpecToCopy.getModelParameter();
-	this.current = parameterMappingSpecToCopy.getCurrent();
-	this.low = parameterMappingSpecToCopy.getLow();
-	this.high = parameterMappingSpecToCopy.getHigh();
-	this.selected = parameterMappingSpecToCopy.isSelected();
-}
-
-
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */

@@ -71,7 +71,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 public class ModelOptimizationSpec implements java.io.Serializable, Matchable, PropertyChangeListener {
 	public static final String PROPERTY_NAME_REFERENCE_DATA = "referenceData";
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private ParameterMappingSpec[] fieldParameterMappingSpecs = null;
 	private ReferenceData fieldReferenceData = null;
@@ -86,11 +85,10 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 public ModelOptimizationSpec(ParameterEstimationTask pet) throws ExpressionException {
 	super();
 	parameterEstimationTask = pet;
-	this.fieldSimulationContext = pet.getSimulationContext();
 	// ModelOptSpec should listen to changes in model (addition/deletion of model params, species, reaction params, etc.)
 	// ModelOptSpec should listen to changes in simContext MathDesc
-	if (fieldSimulationContext != null) {
-		updateListenersList(fieldSimulationContext.getModel(), true);
+	if (getSimulationContext() != null) {
+		updateListenersList(getSimulationContext().getModel(), true);
 	}
 	refreshParameterMappingSpecs();
 }
@@ -126,12 +124,28 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) throws ExpressionException {
+public ModelOptimizationSpec(ParameterEstimationTask task, ModelOptimizationSpec modelOptimizationSpecToCopy) throws ExpressionException {
 	super();
-	this.fieldSimulationContext = modelOptimizationSpecToCopy.fieldSimulationContext;
-	fieldParameterMappingSpecs = new ParameterMappingSpec[modelOptimizationSpecToCopy.fieldParameterMappingSpecs.length];
+	parameterEstimationTask = task;
+	Parameter[] modelParameters = getModelParameters();
+	fieldParameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
+	ParameterMappingSpec[] parameterMappingSpecsCopy = modelOptimizationSpecToCopy.getParameterMappingSpecs();
 	for (int i = 0; i < fieldParameterMappingSpecs.length; i++){
-		fieldParameterMappingSpecs[i] = new ParameterMappingSpec(modelOptimizationSpecToCopy.fieldParameterMappingSpecs[i]);
+		fieldParameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
+		for (ParameterMappingSpec parameterMappingSpecCopy : parameterMappingSpecsCopy) {
+			Parameter modelParameterCopy = parameterMappingSpecCopy.getModelParameter();
+			if (modelParameterCopy == null) {
+				break;
+			}
+			if (modelParameterCopy.getName().equals(modelParameters[i].getName()) && 
+				modelParameterCopy.getNameScope() != null && modelParameters[i].getNameScope() != null && modelParameterCopy.getNameScope().getName().equals(modelParameters[i].getNameScope().getName())) {
+				fieldParameterMappingSpecs[i].setCurrent(parameterMappingSpecCopy.getCurrent());
+				fieldParameterMappingSpecs[i].setLow(parameterMappingSpecCopy.getLow());
+				fieldParameterMappingSpecs[i].setHigh(parameterMappingSpecCopy.getHigh());
+				fieldParameterMappingSpecs[i].setSelected(parameterMappingSpecCopy.isSelected());
+				break;
+			} 
+		}
 	}
 	if (modelOptimizationSpecToCopy.fieldReferenceData!=null){
 		fieldReferenceData = new SimpleReferenceData(modelOptimizationSpecToCopy.fieldReferenceData);
@@ -539,7 +553,7 @@ public ReferenceDataMappingSpec[] getReferenceDataMappingSpecs() {
  * @see #setSimulationContext
  */
 public SimulationContext getSimulationContext() {
-	return fieldSimulationContext;
+	return parameterEstimationTask.getSimulationContext();
 }
 
 
@@ -620,13 +634,13 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
  * Creation date: (12/19/2005 3:20:34 PM)
  */
 public void refreshDependencies() {
-	if (fieldSimulationContext != null) {
+	if (getSimulationContext() != null) {
 		//remove listeners - simContext, mathDesc, model, spContextSpec, reactionSteps & kinetics
-		fieldSimulationContext.removePropertyChangeListener(this);
-		Model model = fieldSimulationContext.getModel();
+		getSimulationContext().removePropertyChangeListener(this);
+		Model model = getSimulationContext().getModel();
 		updateListenersList(model, false);
 		// add listeners - simContext, mathDesc, model, spContextSpec, reactionSteps & kinetics
-		fieldSimulationContext.addPropertyChangeListener(this);
+		getSimulationContext().addPropertyChangeListener(this);
 		updateListenersList(model, true);
 	}
 	removeUncoupledParameters();
@@ -775,9 +789,9 @@ public int getReferenceDataTimeColumnIndex() {
 
 public void propertyChange(PropertyChangeEvent event) {
 	// remove ModelOptSpec as listener to model (and reactions, kinetic params, etc)
-	updateListenersList(fieldSimulationContext.getModel(), false);
+	updateListenersList(getSimulationContext().getModel(), false);
 	// re-add modelOptSpec as listener to model (and reactions, kinetic params, etc); since changes in added/deleted reactions need to be listened to.
-	updateListenersList(fieldSimulationContext.getModel(), true);
+	updateListenersList(getSimulationContext().getModel(), true);
 
 	// for all propChangeEvents, initialize ParamMapppingSpecs only then changes in params (expr or numeric) will be recorded properly
 	try {
@@ -796,7 +810,7 @@ public void propertyChange(PropertyChangeEvent event) {
 private void updateListenersList(Model model, boolean bAdd) {
 	// remove listeners - simContext, mathDesc, model, spContextSpecs, reactionSteps & kinetics (since kinetic parameters are paramMappingSpecs)
 	ReactionStep[] reactionSteps = model.getReactionSteps();
-	SpeciesContextSpec[] scsArray = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+	SpeciesContextSpec[] scsArray = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	ModelParameter[] modelParams = model.getModelParameters();
 	if (!bAdd) {
 		model.removePropertyChangeListener(this);
