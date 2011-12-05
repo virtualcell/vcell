@@ -116,8 +116,8 @@ public class BioModelEditorPathwayDiagramPanel extends DocumentEditorSubPanel
 implements PathwayEditor, ActionBuilder.Generator {
 	
 	public static enum ActionID implements ActionBuilder.ID {
-		SELECT, ZOOM_IN, ZOOM_OUT, RANDOM_LAYOUT, CIRCULAR_LAYOUT, ANNEALED_LAYOUT, LEVELLED_LAYOUT, 
-		RELAXED_LAYOUT, GLG_LAYOUT, SHOOT_AND_CUT_LAYOUT, WEREWOLF_LAYOUT, EXPAND_CANVAS, SHRINK_CANVAS, REACTIONS_ONLY_SHOWN, 
+		SELECT, ZOOM_IN, ZOOM_OUT, EXPAND_CANVAS, SHRINK_CANVAS, RANDOM_LAYOUT, CIRCULAR_LAYOUT, ANNEALED_LAYOUT, LEVELLED_LAYOUT, 
+		RELAXED_LAYOUT, GLG_LAYOUT, SHOOT_AND_CUT_LAYOUT, WEREWOLF_LAYOUT, REACTIONS_ONLY_SHOWN, 
 		REACTION_NETWORK_SHOWN, COMPONENTS;
 	}
 	
@@ -639,10 +639,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 		new ActionBuilder(ActionID.ANNEALED_LAYOUT, "", "Annealed Layout", "Reconfigure graph by annealing", VCellIcons.pathwayAnnealedIcon),
 		new ActionBuilder(ActionID.LEVELLED_LAYOUT, "", "Levelled Layout", "Reconfigure graph in levels", VCellIcons.pathwayLevelledIcon),
 		new ActionBuilder(ActionID.RELAXED_LAYOUT, "", "Relaxed Layout", "Reconfigure graph by relaxing", VCellIcons.pathwayRelaxedIcon),
-		new ActionBuilder(ActionID.GLG_LAYOUT, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
-		new ActionBuilder(ActionID.SHRINK_CANVAS, "-", "Shrink Canvas", "Shrink canvas by about 10 percent"),
-		new ActionBuilder(ActionID.EXPAND_CANVAS, "+", "Expand Canvas", "Expand canvas by about 10 percent"),
-		new ActionBuilder(ActionID.GLG_LAYOUT, "", "GLG Layout", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.pathwayRandomIcon),
+		new ActionBuilder(ActionID.GLG_LAYOUT, "", "", "Reconfigure graph by Generic Logic GraphLayout", VCellIcons.glgLayoutIcon),
+		new ActionBuilder(ActionID.EXPAND_CANVAS, "", "Expand Canvas", "Expand canvas by about 10 percent", VCellIcons.expandLayoutIcon),
+		new ActionBuilder(ActionID.SHRINK_CANVAS, "", "Shrink Canvas", "Shrink canvas by about 10 percent", VCellIcons.shrinkLayoutIcon),
 		new ActionBuilder(ActionID.REACTIONS_ONLY_SHOWN, "", "Reactions Only", "Show only Reactions", VCellIcons.pathwayReactionsOnlyIcon),
 		new ActionBuilder(ActionID.REACTION_NETWORK_SHOWN, "", "Reaction Network", "Reaction Network", VCellIcons.pathwayReactionNetworkIcon),
 		new ActionBuilder(ActionID.COMPONENTS, "", "Components", "Reactions, entities and components", VCellIcons.pathwayComponentsIcon));

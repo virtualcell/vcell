@@ -88,6 +88,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private final static Icon annealedLayoutIcon = loadIcon(IMAGE_PATH + "annealed.gif");
 	private final static Icon levelledLayoutIcon = loadIcon(IMAGE_PATH + "levelled.gif");
 	private final static Icon relaxedLayoutIcon = loadIcon(IMAGE_PATH + "relaxed.gif");
+	private final static Icon glgLayoutIcon = loadIcon(IMAGE_PATH + "glg3.gif");
+	private final static Icon shrinkLayoutIcon = loadIcon(IMAGE_PATH + "shrink.gif");
+	private final static Icon expandLayoutIcon = loadIcon(IMAGE_PATH + "expand.gif");
 
 	
 	public ReactionCartoonEditorPanel() {
@@ -209,7 +212,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				glgLayoutJButton = createToolBarButton();
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
-				glgLayoutJButton.setText("GLG");
+				glgLayoutJButton.setIcon(glgLayoutIcon);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -223,7 +226,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				shrinkCanvasButton = createToolBarButton();
 				shrinkCanvasButton.setName("ShrinkCanvasButton");
 				shrinkCanvasButton.setToolTipText("Shrink Canvas");
-				shrinkCanvasButton.setText("-");
+				shrinkCanvasButton.setIcon(shrinkLayoutIcon);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -237,7 +240,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				expandCanvasButton = createToolBarButton();
 				expandCanvasButton.setName("ExpandCanvasButton");
 				expandCanvasButton.setToolTipText("Expand Canvas");
-				expandCanvasButton.setText("+");
+				expandCanvasButton.setIcon(expandLayoutIcon);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -294,6 +297,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getZoomInButton(), getZoomInButton().getName());
 				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
+				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
+				toolBar.add(getShrinkCanvasButton(), getShrinkCanvasButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getRandomLayoutButton(), getRandomLayoutButton().getName());
 //				toolBar.add(getEdgeTugLayoutButton(), getEdgeTugLayoutButton().getName());
@@ -302,8 +307,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				toolBar.add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				toolBar.add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
-				toolBar.add(getShrinkCanvasButton(), getShrinkCanvasButton().getName());
-				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
 				toolBar.add(Box.createHorizontalGlue());
 				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {

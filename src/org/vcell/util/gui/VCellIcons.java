@@ -62,7 +62,10 @@ public abstract class VCellIcons {
 	public final static Icon pathwayReactionsOnlyIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level1.gif"));
 	public final static Icon pathwayReactionNetworkIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level2.gif"));
 	public final static Icon pathwayComponentsIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/level3.gif"));
-	
+	public final static Icon glgLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/glg3.gif"));
+	public final static Icon shrinkLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/shrink.gif"));
+	public final static Icon expandLayoutIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/expand.gif"));
+
 	public final static Icon pathwayReactionIcon = new ImageIcon(VCellIcons.class.getResource("/images/step.gif"));
 	public final static Icon pathwayTransportIcon = new ImageIcon(VCellIcons.class.getResource("/images/flux.gif"));
 	public final static Icon pathwayReactionWtIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/transportWithBiochemicalReaction.gif"));
