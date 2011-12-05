@@ -35,11 +35,11 @@ public class ParameterEstimationTask extends AnalysisTask {
 	public static final String defaultTaskName = "DefaultTask"; 
 	
 	public static final String PROPERTY_NAME_OPTIMIZATION_RESULT_SET = "optimizationResultSet";
-	private ModelOptimizationSpec fieldModelOptimizationSpec = null;
-	private OptimizationSolverSpec fieldOptimizationSolverSpec = null;
+	private ModelOptimizationSpec fieldModelOptimizationSpec = null; //parameters to be estimated, reference data and referece data/model var mapping
+	private OptimizationSolverSpec fieldOptimizationSolverSpec = null; //solver selection and setting
 	
-	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null;
-	private transient MathSymbolMapping fieldMathSymbolMapping = null;
+	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null; //objective function, constraints, model vars/parameters mapping, math symbol mapping
+	private transient MathSymbolMapping fieldMathSymbolMapping = null; //MathSymbolMapping is a field in ModelOptimizationMapping too.
 	private transient OptimizationResultSet fieldOptimizationResultSet = null;
 	private transient CopasiOptSolverCallbacks fieldOptSolverCallbacks = new CopasiOptSolverCallbacks();
 	private transient java.lang.String fieldSolverMessageText = new String();
@@ -301,4 +301,22 @@ public Double getCurrentSolution(ParameterMappingSpec parameterMappingSpec) {
 public final SimulationContext getSimulationContext() {
 	return simulationContext;
 }
+
+public boolean isEmpty(){
+	if(fieldModelOptimizationSpec == null && fieldOptimizationSolverSpec == null &&
+	   fieldModelOptimizationMapping == null && fieldMathSymbolMapping == null && fieldOptimizationResultSet == null)
+	{
+		return true;
+	}
+	if(fieldModelOptimizationSpec != null) //check empty or not by checking parameters length and reference data.
+	{
+		return fieldModelOptimizationSpec.isEmpty();
+	}
+	//optimizationSolverSpec is not going to be null, it has all defaults.
+	//modeloptimizationmapping requires parameters and data, checking parameters is enough
+	//math symboldmapping requires parameters, checking parameters is enough
+	//optimizationResultSet, without parameters it's not meaningful.
+	return false;
+}
+
 }

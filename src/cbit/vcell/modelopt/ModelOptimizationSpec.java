@@ -922,4 +922,32 @@ private static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc)
 public final ParameterEstimationTask getParameterEstimationTask() {
 	return parameterEstimationTask;
 }
+
+public boolean isEmpty()
+{
+	if((fieldParameterMappingSpecs == null || getNumberSelectedParameters() ==0)  && 
+		(fieldReferenceData == null || (fieldReferenceData.getNumDataColumns() == 0 && fieldReferenceData.getNumDataRows() == 0)) && 
+		(fieldReferenceDataMappingSpecs == null || fieldReferenceDataMappingSpecs.length == 0))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+public int getNumberSelectedParameters()
+{
+	int count = 0;
+	for(ParameterMappingSpec pms : fieldParameterMappingSpecs)
+	{
+		if(pms.isSelected())
+		{
+			count ++;
+		}
+	}
+	return count;
+}
+
 }
