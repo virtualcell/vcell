@@ -1535,7 +1535,19 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	}
 	//Add AnalysisTasks
 	if (param.getAnalysisTasks()!=null && param.getAnalysisTasks().length>0){
-		simulationcontext.addContent( getXML(param.getAnalysisTasks()) );
+		//if length of analysisTasks is 1, it might be the default added analysis task
+		//if the task is empty (no parameters set up, no reference data), we shall not save it
+		if(param.getAnalysisTasks().length == 1)
+		{
+			AnalysisTask task = param.getAnalysisTasks()[0];
+			if(task instanceof ParameterEstimationTask)
+			{
+				if(!((ParameterEstimationTask)task).isEmpty())
+				{
+					simulationcontext.addContent( getXML(param.getAnalysisTasks()) );
+				}
+			}
+		}
 	}
 	
 	// Add (Bio)events
