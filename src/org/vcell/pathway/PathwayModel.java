@@ -258,7 +258,8 @@ public class PathwayModel {
 	private BioPaxObject findFromResourceID(String resource) {
 		for (BioPaxObject bpObject : biopaxObjects){
 			if (bpObject.getID() != null){
-				if (bpObject.getID().equals(resource)){
+				// In case one of the ID is an incomplete URI
+				if (bpObject.getID().endsWith(resource) || resource.endsWith(bpObject.getID())){
 					return bpObject;
 				}
 			}
