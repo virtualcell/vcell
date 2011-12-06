@@ -52,6 +52,8 @@ public class Issue implements java.io.Serializable, Matchable {
 		StructureNotMapped,
 		GeometryClassNotMapped,
 		
+		ModelParameterExpressionError,
+		
 		InternalError,
 		ParameterBoundsDefinition,
 		ParameterEstimationBoundsError,

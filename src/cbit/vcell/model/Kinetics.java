@@ -1189,18 +1189,35 @@ public void gatherIssues(List<Issue> issueList) {
 	//
 	// check for use of symbol bindings that are species contexts that are not reaction participants
 	//
-	for (int i = 0; fieldKineticsParameters!=null && i < fieldKineticsParameters.length; i++){
-		if (fieldKineticsParameters[i].getExpression()==null){
-			issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
-		}else{
-			Expression exp = fieldKineticsParameters[i].getExpression();
-			String symbols[] = exp.getSymbols();
-			for (int j = 0; symbols!=null && j < symbols.length; j++){
-				SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
-				if (ste instanceof SpeciesContext && reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
-					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionNonParticipantSymbol, "references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
-				}else if (ste == null){
-					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionUndefinedSymbol, "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+	if (fieldKineticsParameters!=null) {
+		for (KineticsParameter kineticsParameter : fieldKineticsParameters){
+			if (kineticsParameter.getExpression()==null){
+				issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
+			}else{
+				Expression exp = kineticsParameter.getExpression();
+				String symbols[] = exp.getSymbols();
+				String issueMessagePrefix = "Kinetic parameter '" + kineticsParameter.getName() + "' in reaction '" + getReactionStep().getName() + "' ";
+				if (symbols!=null) { 
+					for (int j = 0; j < symbols.length; j++){
+						SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
+						if (ste instanceof KineticsProxyParameter) {
+							ste = ((KineticsProxyParameter) ste).getTarget();
+						}
+						if (ste == null) {
+							issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+						} else if (ste instanceof SpeciesContext) {
+							if (!getReactionStep().getModel().contains((SpeciesContext)ste)) {
+								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+							}
+							if (reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
+								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+							}
+						} else if (ste instanceof ModelParameter) {
+							if (!getReactionStep().getModel().contains((ModelParameter)ste)) {
+								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+							}
+						}
+					}
 				}
 			}
 		}

@@ -42,6 +42,7 @@ import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
@@ -584,48 +585,8 @@ public boolean contains(Structure structure) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
@@ -633,14 +594,6 @@ public void fireVetoableChange(java.lang.String propertyName, int oldValue, int 
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -655,10 +608,25 @@ public void gatherIssues(List<Issue> issueList) {
 	// check for unknown units (TBD) and unit consistency
 	//
 	try {
-		for (int i=0;i<fieldModelParameters.length;i++){
-			if (fieldModelParameters[i].getUnitDefinition()==null){
-			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
-				issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + VCUnitDefinition.TBD_SYMBOL + ")",Issue.SEVERITY_WARNING));
+		for (ModelParameter modelParameter : fieldModelParameters){
+			Expression exp = modelParameter.getExpression();
+			String symbols[] = exp.getSymbols();
+			if (symbols!=null) { 
+				String issueMsgPrefix = "Global parameter '" + modelParameter.getName() + "' "; 
+				for (int j = 0; j < symbols.length; j++){
+					SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
+					if (ste == null) {
+						issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+					} else if (ste instanceof SpeciesContext) {
+						if (!contains((SpeciesContext)ste)) {
+							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+						}						
+					} else if (ste instanceof ModelParameter) {
+						if (!contains((ModelParameter)ste)) {
+							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+						}
+					}
+				}
 			}
 		}
 		//
@@ -670,9 +638,11 @@ public void gatherIssues(List<Issue> issueList) {
 				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
-				}else if (expUnitDef == null){
+				} else if (expUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
-				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
+				} else if (paramUnitDef.isTBD()) {
+					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + VCUnitDefinition.TBD_SYMBOL + ")",Issue.SEVERITY_WARNING));
+				} else if (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
