@@ -19,13 +19,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.Enumeration;
+import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -54,15 +49,12 @@ import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.text.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -360,7 +352,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				URL url = new URL(defaultBaseURL + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
-						+ "&" + PathwayCommonsKeyword.q + "=" + searchText
+						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")
 						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 				System.out.println(url);
