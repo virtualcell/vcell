@@ -31,10 +31,6 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import com.ibm.icu.text.DateFormat;
-import com.ibm.icu.text.SimpleDateFormat;
-import com.ibm.icu.util.Calendar;
-
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
@@ -48,11 +44,11 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
+import com.ibm.icu.text.DateFormat;
+import com.ibm.icu.text.SimpleDateFormat;
+
 public class VCComprehensiveStatistics {
 	private OracleConnectionPoolDataSource oracleConnection = null;
-	private static String dbConnectURL = "jdbc:oracle:thin:@dbs4.vcell.uchc.edu:1521:orcl";
-	private static String dbUserid = "vcell";
-	private static String dbPassword = "cbittech";
 	private ArrayList<UserStat> userStatList = new ArrayList<UserStat>();
 	
 	private static double MONTH_IN_DAY = 365.0/12; // in days
@@ -104,9 +100,9 @@ public class VCComprehensiveStatistics {
 		dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,sessionLog);
 		
 		oracleConnection = new OracleConnectionPoolDataSource();
-		oracleConnection.setURL(dbConnectURL);
-		oracleConnection.setUser(dbUserid);
-		oracleConnection.setPassword(dbPassword);
+		oracleConnection.setURL(PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL));
+		oracleConnection.setUser(PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid));
+		oracleConnection.setPassword(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
 		
 		internalDeveloper.add("fgao");
 		internalDeveloper.add("anu");
@@ -142,20 +138,17 @@ public class VCComprehensiveStatistics {
 	}
 	public static void main(String[] args) {
 		try {
-			if (args.length != 1) {
-				System.out.println("Usage : VCComprehensiveStatistics #months");
-				System.out.println("eg : VCComprehensiveStatistics 6]");
+			if (args.length != 2) {
+				System.out.println("Usage : VCComprehensiveStatistics end_date #_of_retro_months ");
+				System.out.println("eg : VCComprehensiveStatistics 12/31/2009 6]");
 				System.exit(1);
 			}
 			Date startDate = null;
-			Date endDate = null;
-			int numMonths = Integer.parseInt(args[0]);
-			endDate = Calendar.getInstance().getTime();
+			DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+			Date endDate = df.parse(args[0]);
+			int numMonths = Integer.parseInt(args[1]);
 			startDate = new Date(endDate.getTime() - (long)(numMonths * MONTH_IN_MS));
 			
-			if (endDate.compareTo(startDate) <= 0) {
-				throw new RuntimeException("End date must be later than start date");
-			}
 			VCComprehensiveStatistics vcstat = new VCComprehensiveStatistics();
 			vcstat.startStatistics(startDate, endDate);			
 		} catch (Throwable ex) {
@@ -182,7 +175,7 @@ public class VCComprehensiveStatistics {
 			DateFormat df = DateFormat.getDateInstance();
 			DateFormat sdf = new SimpleDateFormat("MMM_dd_yyyy");
 			itemCount = 0;
-			statOutputPW = new PrintWriter("VCStatistics_" + sdf.format(startDate) + "_to_" + sdf.format(endDate) + ".txt");
+			statOutputPW = new PrintWriter("VCStatistics_" + PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid) + "_from_" + sdf.format(startDate) + "_to_" + sdf.format(endDate) + ".txt");
 			statOutputPW.println("Note: developers are excluded from this statistics");
 			statOutputPW.println();
 			collectUserStats(startDateInMs, endDateInMs);
@@ -481,7 +474,7 @@ public class VCComprehensiveStatistics {
 			ResultSet rset = stmt.executeQuery(sql);
 			while (rset.next()) {		
 				UserStat userStat = new UserStat(rset.getInt(1), rset.getString(2), VersionTable.getDate(rset, "lastlogin"));
-				if (internalDeveloper.contains(userStat.username) || userStat.username.startsWith("fgao")) {
+				if (internalDeveloper.contains(userStat.username)) {
 					userStat.isDeveloper = true;
 				}
 				if (internalUsers.contains(userStat.username)) {
@@ -553,7 +546,7 @@ public class VCComprehensiveStatistics {
 		for (UserStat ui : userStatList) {
 			if (!ui.isDeveloper) {
 				if (ui.isInternal && ui.lastLogin != null) {
-					long t = System.currentTimeMillis() - ui.lastLogin.getTime();
+					long t = endDateInMs - ui.lastLogin.getTime();
 					if (t < 1 * MONTH_IN_MS) {
 						in_count1mon ++;
 						in_count3mon ++;
