@@ -12,19 +12,28 @@ package org.vcell.pathway.kinetics;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.sbo.SBOList;
+import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
 
+import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class SBPAXKineticsExtractor {
@@ -73,8 +82,12 @@ public class SBPAXKineticsExtractor {
 		}
 		return entities2;
 	}
+
+	public static int nParameter = 0;
 	
-	public static void extractParameter(ReactionStep reaction, SBMeasurable measurable) throws PropertyVetoException {
+	public static Map<SBOTerm, ModelParameter> extractParameter(ReactionStep reaction, SBMeasurable measurable) 
+	throws PropertyVetoException {
+		Map<SBOTerm, ModelParameter> sboToParameters = new HashMap<SBOTerm, ModelParameter>();
 		Set<SBOTerm> sboTerms = SBPAXSBOExtractor.extractSBOTerms(measurable);
 		String symbol = null;
 		for(SBOTerm sboTerm : sboTerms) {
@@ -86,16 +99,38 @@ public class SBPAXKineticsExtractor {
 		Model model = reaction.getModel();
 		int numberCount = 0;
 		ArrayList<Double> numbers = measurable.getNumber();
-		if(StringUtil.notEmpty(symbol)) {
-			for(Double number : numbers) {
-				String parameterName = symbol + "_" + reaction.getName();
-				if(numbers.size() > 1) {
-					++numberCount;
-					parameterName = parameterName + "_" + numberCount;
-				}
-				model.addModelParameter(model.new ModelParameter(parameterName, new Expression(number.doubleValue()), Model.ROLE_UserDefined, unit));			
-			}			
+		if(StringUtil.isEmpty(symbol)) {
+			SymbolTableEntry entry = null;
+			do {
+				symbol = "p" + (++nParameter);
+				try { entry = model.getEntry(symbol); } 
+				catch (ExpressionBindingException e) { e.printStackTrace(); }
+			} while (entry != null);
 		}
+		for(Double number : numbers) {
+			String parameterName = symbol + "_" + reaction.getName();
+			if(numbers.size() > 1) {
+				++numberCount;
+				parameterName = parameterName + "_" + numberCount;
+			}
+			ModelParameter parameter = 
+				model.new ModelParameter(parameterName, new Expression(number.doubleValue()), Model.ROLE_UserDefined, unit);
+			model.addModelParameter(parameter);
+			for(SBOTerm sboTerm : sboTerms) {
+				sboToParameters.put(sboTerm, parameter);
+			}
+		}			
+		return sboToParameters;
+	}
+	
+	public static ModelParameter getParameter(Map<SBOTerm, ModelParameter> sboToParameter, SBOTerm ... sboTerms) {
+		for(SBOTerm sboTerm : sboTerms) {
+			ModelParameter parameter = sboToParameter.get(sboTerm);
+			if(parameter != null) {
+				return parameter;
+			}
+		}
+		return null;
 	}
 	
 	public static void extractKinetics(ReactionStep reaction, Set<SBEntity> entities) {
@@ -103,14 +138,33 @@ public class SBPAXKineticsExtractor {
 			printSBEntity(entity);
 		}
 		Set<SBEntity> allEntities = extractAllEntities(entities);
+		Map<SBOTerm, ModelParameter> sboToModelParameter = new HashMap<SBOTerm, ModelParameter>();
 		for(SBEntity entity : allEntities) {
 			if(entity instanceof SBMeasurable) {				
 				try {
-					extractParameter(reaction, (SBMeasurable) entity);
+					SBMeasurable sbMeasurable = (SBMeasurable) entity;
+					sboToModelParameter.putAll(extractParameter(reaction, sbMeasurable));
 				} catch (PropertyVetoException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			}
+		}
+		ModelParameter kMichaelis = getParameter(sboToModelParameter, SBOList.sbo0000027, SBOList.sbo0000322);
+		ModelParameter vMax = getParameter(sboToModelParameter, SBOList.sbo0000186);
+		if(kMichaelis != null || vMax != null) {
+			try {
+				HMM_REVKinetics kinetics = new HMM_REVKinetics(reaction);
+				if(kMichaelis != null) {
+					try { kinetics.getKmFwdParameter().setExpression(new Expression(kMichaelis.getName())); } 
+					catch (PropertyVetoException e) { e.printStackTrace(); }					
+				}
+				if(vMax != null) {
+					try { kinetics.getVmaxFwdParameter().setExpression(new Expression(vMax.getName())); } 
+					catch (PropertyVetoException e) { e.printStackTrace(); }					
+				}
+			} catch (ExpressionException e) {
+				e.printStackTrace();
 			}
 		}
 	}

@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.sbo.SBOList;
+import org.vcell.pathway.sbo.SBOTerm;
+import org.vcell.pathway.sbo.SBOUtil;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBVocabulary;
 
@@ -27,7 +30,7 @@ public class SBPAXSBOExtractor {
 				String id = xref.getId().trim();
 				if(db != null && id != null) {
 					if(db.equalsIgnoreCase("sbo") || db.equalsIgnoreCase("systems biology ontology")) {
-						SBOTerm sboTerm = SBODirectory.getTermFromID(id);
+						SBOTerm sboTerm = SBOList.getTermFromIndex(SBOUtil.getIndexFromId(id));
 						if(sboTerm != null) {
 							sboTerms.add(sboTerm);
 						}
