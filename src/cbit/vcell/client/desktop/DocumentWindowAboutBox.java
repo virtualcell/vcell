@@ -32,6 +32,7 @@ import org.vcell.util.gui.KeySequenceListener;
 public class DocumentWindowAboutBox extends JPanel {
 
 	private static final String COPASI_WEB_URL = "http://www.copasi.org";
+	private static final String SMOLDYN_WEB_URL = "http://www.smoldyn.org";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
 	private JLabel copyright = null;
@@ -173,6 +174,24 @@ public class DocumentWindowAboutBox extends JPanel {
 		return copasiText;
 	}
 	
+	private JLabel getSmoldynAttribution() {
+		JLabel smoldynText = new JLabel();
+			try {
+				
+				smoldynText.setName("SMOLDYN");
+				smoldynText.setText("<html>Featuring spatial stochastic simulation powered by <font color=blue><u>SMOLDYN</u></font></html>");
+				smoldynText.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, SMOLDYN_WEB_URL, "Failed to open SMOLDYN webpage ("+SMOLDYN_WEB_URL+")", false);
+					}
+				});
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		
+		return smoldynText;
+	}
+	
 	public JLabel getVersion() {
 		if (version == null) {
 			try {
@@ -198,7 +217,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = gridy;
+			gbc.gridy = 2;
 			gbc.gridheight = GridBagConstraints.REMAINDER;
 			gbc.insets = new Insets(0,0,4,4);
 			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
@@ -252,6 +271,16 @@ public class DocumentWindowAboutBox extends JPanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.LINE_START;
 			add(getCOPASIAttribution(), gbc);
+			
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getSmoldynAttribution(), gbc);
 			
 		} catch (Throwable throwable) {
 			handleException(throwable);
