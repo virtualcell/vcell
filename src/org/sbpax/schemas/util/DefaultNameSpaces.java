@@ -16,6 +16,7 @@ package org.sbpax.schemas.util;
 
 import org.sbpax.schemas.BioPAX3;
 import org.sbpax.schemas.SBPAX3;
+import org.vcell.pathway.sbo.SBOTerm;
 
 public class DefaultNameSpaces {
 
@@ -36,6 +37,7 @@ public class DefaultNameSpaces {
 	public static final NameSpace SBX3 = defaultMap.register("sbx3", SBPAX3.ns.uri);
 	public static final NameSpace UOME_CORE = defaultMap.register("uome-core", "http://www.sbpax.org/uome/core.owl#");
 	public static final NameSpace UOME_LIST = defaultMap.register("uome-list", "http://www.sbpax.org/uome/list.owl#");
+	public static final NameSpace SBO = defaultMap.register("sbo", SBOTerm.SBO_BASE_URI);
 	public static final NameSpace EX = defaultMap.register("ex", "http://example.org/");
 
 }
