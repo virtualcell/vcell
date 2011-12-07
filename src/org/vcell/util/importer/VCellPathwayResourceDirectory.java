@@ -33,6 +33,7 @@ public class VCellPathwayResourceDirectory {
 	
 	static {
 		String fromSGMP = "from Signaling Gateway Molecule Pages";
+		addEntry(DIR + "sabio/rsabio12.owl", "Newer sample file from SABIO-RK");
 		addEntry(DIR + "sgmp/sgmpA001750modified.owl", "A001750 (modified) " + fromSGMP);
 		addEntry(DIR + "sgmp/sgmpA000037.owl", "A000037 " + fromSGMP);
 		addEntry(DIR + "sgmp/sgmpA001046.owl", "A001046 " + fromSGMP);
