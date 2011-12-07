@@ -361,7 +361,7 @@
         <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">de Oliveira SK</bp:author>
         <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hoffmeister M</bp:author>
         <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Gambaryan S</bp:author>
-        <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Müller-Esterl W</bp:author>
+        <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Mueller-Esterl W</bp:author>
         <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Guimaraes JA</bp:author>
         <bp:author rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Smolenski AP</bp:author>
         <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">pubmed</bp:db>
@@ -433,6 +433,67 @@
           <bp:SmallMolecule rdf:ID="SmallMolecule_34">
             <bp:standardName rdf:datatype="http://www.w3.org/2001/XMLSchema#string">cAMP (cyclic AMP)</bp:standardName>
             <bp:displayName rdf:datatype="http://www.w3.org/2001/XMLSchema#string">cAMP</bp:displayName>
+            <sbx3:sbSubEntity>
+              <sbx3:SBMeasurable rdf:ID="SBMeasurable_km_30_0">
+                <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#Micromolar" />
+                <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">30.0</sbx3:hasNumber>
+                <sbx3:sbTerm>
+
+                  <sbx3:SBVocabulary rdf:ID="SBVocabulary_km">
+                    <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">michaelis constant for substrate</bp:term>
+                    <bp:xref>
+                      <bp:UnificationXref rdf:ID="UnificationXref_0000322">
+                        <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000322</bp:id>
+                        <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
+                        <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
+
+                      </bp:UnificationXref>
+                    </bp:xref>
+                  </sbx3:SBVocabulary>
+                </sbx3:sbTerm>
+              </sbx3:SBMeasurable>
+            </sbx3:sbSubEntity>
+            <sbx3:sbSubEntity>
+              <sbx3:SBMeasurable rdf:ID="SBMeasurable_vmax_120_0">
+                <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#MicromolePerMilligramMinute" />
+
+                <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">120.0</sbx3:hasNumber>
+                <sbx3:sbTerm>
+                  <sbx3:SBVocabulary rdf:ID="SBVocabulary_vmax">
+                    <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">maximal velocity</bp:term>
+                    <bp:xref>
+                      <bp:UnificationXref rdf:ID="UnificationXref_0000324">
+                        <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000324</bp:id>
+
+                        <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
+                        <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
+                      </bp:UnificationXref>
+                    </bp:xref>
+                  </sbx3:SBVocabulary>
+                </sbx3:sbTerm>
+              </sbx3:SBMeasurable>
+            </sbx3:sbSubEntity>
+
+            <sbx3:sbSubEntity>
+              <sbx3:SBMeasurable rdf:ID="SBMeasurable_kcat_210_5">
+                <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#PerSecond" />
+                <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">210.5</sbx3:hasNumber>
+                <sbx3:sbTerm>
+                  <sbx3:SBVocabulary rdf:ID="SBVocabulary_kcat">
+                    <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">catalytic rate constant</bp:term>
+                    <bp:xref>
+
+                      <bp:UnificationXref rdf:ID="UnificationXref_0000320">
+                        <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000320</bp:id>
+                        <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
+                        <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
+                      </bp:UnificationXref>
+                    </bp:xref>
+                  </sbx3:SBVocabulary>
+
+                </sbx3:sbTerm>
+              </sbx3:SBMeasurable>
+            </sbx3:sbSubEntity>
             <bp:dataSource rdf:resource="#Provenance_SGMP" />
             <bp:entityReference>
               <bp:SmallMoleculeReference rdf:ID="SmallMoleculeReference_34">
@@ -445,60 +506,6 @@
               </bp:SmallMoleculeReference>
             </bp:entityReference>
           </bp:SmallMolecule>
-          <sbx3:sbSubEntity>
-            <sbx3:SBMeasurable rdf:ID="SBMeasurable_km_30_0">
-              <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#Micromolar" />
-              <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">30.0</sbx3:hasNumber>
-              <sbx3:sbTerm>
-                <sbx3:SBVocabulary rdf:ID="SBVocabulary_km">
-                  <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">michaelis constant for substrate</bp:term>
-                  <bp:xref>
-                    <bp:UnificationXref rdf:ID="UnificationXref_0000322">
-                      <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000322</bp:id>
-                      <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
-                      <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
-                    </bp:UnificationXref>
-                  </bp:xref>
-                </sbx3:SBVocabulary>
-              </sbx3:sbTerm>
-            </sbx3:SBMeasurable>
-          </sbx3:sbSubEntity>
-          <sbx3:sbSubEntity>
-            <sbx3:SBMeasurable rdf:ID="SBMeasurable_vmax_120_0">
-              <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#MicromolePerMilligramMinute" />
-              <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">120.0</sbx3:hasNumber>
-              <sbx3:sbTerm>
-                <sbx3:SBVocabulary rdf:ID="SBVocabulary_vmax">
-                  <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">maximal velocity</bp:term>
-                  <bp:xref>
-                    <bp:UnificationXref rdf:ID="UnificationXref_0000324">
-                      <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000324</bp:id>
-                      <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
-                      <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
-                    </bp:UnificationXref>
-                  </bp:xref>
-                </sbx3:SBVocabulary>
-              </sbx3:sbTerm>
-            </sbx3:SBMeasurable>
-          </sbx3:sbSubEntity>
-          <sbx3:sbSubEntity>
-            <sbx3:SBMeasurable rdf:ID="SBMeasurable_kcat_210_5">
-              <sbx3:hasUnit rdf:resource="http://vcell.org/uome/list#PerSecond" />
-              <sbx3:hasNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#double">210.5</sbx3:hasNumber>
-              <sbx3:sbTerm>
-                <sbx3:SBVocabulary rdf:ID="SBVocabulary_kcat">
-                  <bp:term rdf:datatype="http://www.w3.org/2001/XMLSchema#string">catalytic rate constant</bp:term>
-                  <bp:xref>
-                    <bp:UnificationXref rdf:ID="UnificationXref_0000320">
-                      <bp:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0000320</bp:id>
-                      <bp:db rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SBO</bp:db>
-                      <bp:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Systems Biology Ontology</bp:comment>
-                    </bp:UnificationXref>
-                  </bp:xref>
-                </sbx3:SBVocabulary>
-              </sbx3:sbTerm>
-            </sbx3:SBMeasurable>
-          </sbx3:sbSubEntity>
         </bp:left>
         <bp:right>
           <bp:SmallMolecule rdf:ID="SmallMolecule_18">
