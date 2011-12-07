@@ -43,6 +43,33 @@ import org.vcell.sybil.util.lists.ListOfTwo;
 @SuppressWarnings("serial")
 public class IndexedGraph implements Graph {
 	
+	protected class IndexedGraphIterator implements Iterator<Statement> {
+		
+		protected final IndexedGraph graph;
+		protected final Iterator<Statement> iterator;
+		protected Statement current;
+		
+		public IndexedGraphIterator(IndexedGraph graph, 
+				Iterator<Statement> iterator) {
+			this.graph = graph;
+			this.iterator = iterator;
+		}
+
+		public boolean hasNext() { return iterator.hasNext(); }
+		
+		public Statement next() { 
+			current = iterator.next();
+			return current; 
+		}
+
+		public void remove() {
+			iterator.remove();
+			graph.removeFromAllMaps(current);
+			if(graph.contains(current)) { graph.remove(current); }
+		}
+		
+	}
+	
 	protected Set<Statement> statements = new TreeSet<Statement>(new StatementComparator());
 
 	protected Map<Value, Set<Statement>> sMap = new HashMap<Value, Set<Statement>>();
@@ -103,14 +130,17 @@ public class IndexedGraph implements Graph {
 	public boolean contains(Object o) { return statements.contains(o); }
 	public boolean containsAll(Collection<?> c) { return statements.containsAll(c); }
 	public boolean isEmpty() { return statements.isEmpty(); }
-	public Iterator<Statement> iterator() { return statements.iterator(); }
+	
+	public Iterator<Statement> iterator() { 
+		return new IndexedGraphIterator(this, statements.iterator()); 
+	}
 	
 	protected <K> void removeFromMap(Map<K, Set<Statement>> map, K key, Statement statement) {
 		Set<Statement> set = map.get(key);
 		if(set != null) {
 			set.remove(statement);
 			if(set.isEmpty()) {
-				map.remove(set);
+				map.remove(key);
 			}
 		}
 	}
@@ -173,38 +203,38 @@ public class IndexedGraph implements Graph {
 				if(object != null) {
 					Statement statement = getValueFactory().createStatement(subject, predicate, object);
 					if(statements.contains(statement)) {
-						iterator = new IterOfOne<Statement>(statement);
+						iterator = new IndexedGraphIterator(this, new IterOfOne<Statement>(statement));
 					} else {
 						iterator = new IterOfNone<Statement>();				
 					}
 				} else {
 					Set<Statement> matches = spMap.get(new ListOfTwo<Value>(subject, predicate));
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();					
+					iterator = matches != null ? new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();					
 				}
 			} else {
 				if(object != null) {
 					Set<Statement> matches = soMap.get(new ListOfTwo<Value>(subject, object));
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();					
+					iterator = matches != null ?  new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();					
 				} else {
 					Set<Statement> matches = sMap.get(subject);
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();
+					iterator = matches != null ? new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();
 				}
 			}
 		} else {
 			if(predicate != null) {
 				if(object != null) {
 					Set<Statement> matches = poMap.get(new ListOfTwo<Value>(predicate, object));
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();					
+					iterator = matches != null ? new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();					
 				} else {
 					Set<Statement> matches = pMap.get(predicate);
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();
+					iterator = matches != null ? new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();
 				}
 			} else {
 				if(object != null) {
 					Set<Statement> matches = oMap.get(object);
-					iterator = matches != null ? matches.iterator() : new IterOfNone<Statement>();
+					iterator = matches != null ? new IndexedGraphIterator(this, matches.iterator()) : new IterOfNone<Statement>();
 				} else {
-					iterator = statements.iterator();
+					iterator = new IndexedGraphIterator(this, statements.iterator());
 				}
 			}
 			
