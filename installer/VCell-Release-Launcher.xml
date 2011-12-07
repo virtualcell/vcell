@@ -75,7 +75,7 @@
             </startMenuShortcutList>
         </component>
         <include>
-            <file>JREs/jre1.6.0_29-windows/java.xml</file>
+            <file>JREs/jre1.6.0_29-windows/java_release.xml</file>
         </include>
     </componentList>
     <preInstallationActionList>
