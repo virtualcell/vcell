@@ -2467,7 +2467,7 @@ private void showAboutBox() {
 	}
 	aDocumentWindowAboutBox.getVersion().setText(version);
 	aDocumentWindowAboutBox.getBuildNumber().setText(build);
-	aDocumentWindowAboutBox.setPreferredSize(new Dimension(350,100));
+	aDocumentWindowAboutBox.setPreferredSize(new Dimension(390,120));
 	DialogUtils.showComponentCloseDialog(this, aDocumentWindowAboutBox, "About the Virtual Cell");
 }
 

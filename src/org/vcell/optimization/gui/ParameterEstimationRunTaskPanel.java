@@ -17,8 +17,10 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -59,6 +61,7 @@ import org.vcell.util.DescriptiveStatistics;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.HyperLinkLabel;
 import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ScrollTable;
@@ -124,6 +127,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private OptimizationTaskSummaryTableModel optimizationTaskSummaryTableModel;
 
 	private CopasiOptimizationMethodsHelpPanel copasiHelpPanel = null;
+	private HyperLinkLabel copasiLinkLabel = new HyperLinkLabel("See COPASI for more additional parameter estimation options and model analysis features", eventHandler, 0);
 	
 	private class RunStatusProgressDialog extends ProgressDialog {
 		private JTextField numEvaluationsTextField = null;
@@ -476,6 +480,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				optimizationMethodComboBox_ActionPerformed();	
 			} else if (e.getSource() == helpButton) {
 				showCopasiMethodHelp();
+			} else if (e.getSource() == copasiLinkLabel){
+				try {
+					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + "http://www.copasi.org/tiki-view_articles.php");
+				} catch (IOException e1) {
+					e1.printStackTrace(System.out);
+					DialogUtils.showErrorDialog(ParameterEstimationRunTaskPanel.this, "COPASI web site is not able to be connected.");
+				}
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -512,24 +523,37 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	}
 
 	private void initialize() {
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new GridBagLayout());
 
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = 0;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.weighty = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSolverPanel(), gbc);
 
-		gbc = new java.awt.GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = 0;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		add(getSolutionPanel(), gbc);
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		copasiLinkLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		panel.add(copasiLinkLabel, BorderLayout.CENTER);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = 1;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.gridwidth = 2;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(0, 8, 4, 0);
+		add(panel, gbc);
 		
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for (CopasiOptimizationMethodType com : CopasiOptimizationMethodType.values()){
