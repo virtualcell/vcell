@@ -7,7 +7,7 @@ The Problems Tab within the Properties pane provides errors and warnings identif
 	</introduction>
 
 	<operations>
-See the <link target = "ErrorList"> Errors List </link> or <link target = "WarningsList"> Warnings List </link> for explanations. 			
+See the <link target = "Errors"> Errors List </link> or <link target = "WarningsList"> Warnings List </link> for explanations. 			
 	</operations>
 	
 
