@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
+ *
+ * Licensed under the MIT License (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *  http://www.opensource.org/licenses/mit-license.php
+ */
+
 package org.vcell.util.importer;
 
 import java.awt.BorderLayout;
@@ -24,7 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
 
 import org.vcell.pathway.PathwayModel;
@@ -54,7 +63,7 @@ public class PathwayImportPanel extends JPanel {
 	protected final JLabel treeLabel = new JLabel("[No data loaded yet]");
 	protected final JTree biopaxTree = new JTree(BioPAXTreeMaker.makeEmptyTree());
 	protected final JScrollPane treeScrollPane = new JScrollPane(biopaxTree);
-	protected final JToolBar toolBar = new JToolBar();
+	protected final JPanel toolBar = new JPanel();
 	protected JDialog dialog = null;
 	
 	protected Action showAction = new AbstractAction("Show Data") {
