@@ -184,7 +184,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private JPopupMenu popupMenu;
 	private JMenuItem groupMenuItem, ungroupMenuItem, expandMenuItem, collapseMenuItem;
 	private JMenuItem groupMenuItem1, ungroupMenuItem1, expandMenuItem1, collapseMenuItem1;
-	private JMenuItem deleteMenuItem;
+	private JMenuItem deleteMenuItem, selectAllMenuItem;
 	private BioPaxRelationshipPanel bioPaxRelationshipPanel;
 	private ConversionPanel conversionPanel;
 	
@@ -245,6 +245,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 				deleteButtonPressed();
 			} else if (e.getSource() == deleteMenuItem) {
 				deleteButtonPressed();
+			} else if (e.getSource() == selectAllMenuItem) {
+				selectAll();
 			} else if(e.getSource() == groupButton) {
 				getGroupPopupMenu().show(groupButton, 0, groupButton.getHeight());
 			} else if (e.getSource() == groupMenuItem) {
@@ -670,6 +672,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 			deleteMenuItem = new JMenuItem("Delete");
 			deleteMenuItem.addActionListener(eventHandler);
 			popupMenu.add(deleteMenuItem);
+			selectAllMenuItem = new JMenuItem("Select All");
+			selectAllMenuItem.addActionListener(eventHandler);
+			popupMenu.add(selectAllMenuItem);
 			popupMenu.addSeparator();
 			
 			showPhysiologyLinksMenuItem1 = new JMenuItem("Show Linked Physiology Objects");
@@ -911,8 +916,14 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if (deleteMenuItem != null) {
 			deleteMenuItem.setEnabled(false);
 		}
+		if (selectAllMenuItem != null) {
+			selectAllMenuItem.setEnabled(false);
+		}
 		if (selectionManager != null && tabbedPane.getSelectedComponent() != sourceTabPanel) {
 			ArrayList<Object> selectedObjects = selectionManager.getSelectedObjects(BioPaxObject.class);
+			if (bioModel.getPathwayModel().getBiopaxObjects().size() > 0 && selectAllMenuItem != null) {
+				selectAllMenuItem.setEnabled(true);
+			}
 			if (selectedObjects.size() > 0) {	
 				deleteButton.setEnabled(true);
 				if (deleteMenuItem != null) {
@@ -1173,6 +1184,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 			DialogUtils.showComponentCloseDialog(this, bioPaxRelationshipPanel, "Edit Physiology Links");
 		}
 		refreshButtons();
+	}
+	
+	public void selectAll(){
+		selectionManager.setSelectedObjects(bioModel.getPathwayModel().getBiopaxObjects().toArray());
 	}
 	
 	private void groupBioPaxObjects(){
