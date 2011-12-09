@@ -419,6 +419,10 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.add(geteditButton());
 			ivjJPanel1.add(getSubsampleButton());
 			ivjJPanel1.add(gethelpButton());
+			getImportButton().setEnabled(false);
+			geteditButton().setEnabled(false);
+			getSubsampleButton().setEnabled(false);
+			gethelpButton().setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
