@@ -11,6 +11,11 @@
 package org.vcell.pathway.sbpax;
 
 import java.util.List;
+import java.util.Set;
+
+import org.sbpax.util.StringUtil;
+import org.vcell.pathway.kinetics.SBPAXSBOExtractor;
+import org.vcell.pathway.sbo.SBOTerm;
 
 public class SBPAXLabelUtil {
 
@@ -41,12 +46,20 @@ public class SBPAXLabelUtil {
 	}
 	
 	public static String makeLabel(UnitOfMeasurement unit) {
-		
-		throw new RuntimeException("Not implemented yet");
+		return "[?]";
 	}
 	
 	public static String makeLabel(SBVocabulary vocabulary) {
-		throw new RuntimeException("Not implemented yet");
+		vocabulary.getxRef();
+		Set<SBOTerm> sboTerms = SBPAXSBOExtractor.extractSBOTerms(vocabulary);
+		if(!sboTerms.isEmpty()) {
+			SBOTerm sboTerm = sboTerms.iterator().next();
+			String symbol = sboTerm.getSymbol();
+			if(StringUtil.notEmpty(symbol)) {
+				return symbol;
+			}
+		}
+		return "?";
 	}
 	
 }

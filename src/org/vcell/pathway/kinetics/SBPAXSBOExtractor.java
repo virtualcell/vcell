@@ -25,20 +25,26 @@ public class SBPAXSBOExtractor {
 	public static Set<SBOTerm> extractSBOTerms(SBEntity entity) {
 		Set<SBOTerm> sboTerms = new HashSet<SBOTerm>();
 		for(SBVocabulary sbTerm : entity.getSBTerm()) {
-			for(Xref xref : sbTerm.getxRef()) {
-				String db = xref.getDb().trim();
-				String id = xref.getId().trim();
-				if(db != null && id != null) {
-					if(db.equalsIgnoreCase("sbo") || db.equalsIgnoreCase("systems biology ontology")) {
-						SBOTerm sboTerm = SBOList.getTermFromIndex(SBOUtil.getIndexFromId(id));
-						if(sboTerm != null) {
-							sboTerms.add(sboTerm);
-						}
+			sboTerms.addAll(extractSBOTerms(sbTerm));
+		}
+		return sboTerms;
+	}
+		
+	public static Set<SBOTerm> extractSBOTerms(SBVocabulary sbTerm) {
+		Set<SBOTerm> sboTerms = new HashSet<SBOTerm>();
+		for(Xref xref : sbTerm.getxRef()) {
+			String db = xref.getDb().trim();
+			String id = xref.getId().trim();
+			if(db != null && id != null) {
+				if(db.equalsIgnoreCase("sbo") || db.equalsIgnoreCase("systems biology ontology")) {
+					SBOTerm sboTerm = SBOList.getTermFromIndex(SBOUtil.getIndexFromId(id));
+					if(sboTerm != null) {
+						sboTerms.add(sboTerm);
 					}
 				}
 			}
 		}
 		return sboTerms;
 	}
-		
+
 }

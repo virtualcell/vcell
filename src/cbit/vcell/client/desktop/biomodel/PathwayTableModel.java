@@ -16,8 +16,11 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
@@ -26,6 +29,10 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
+import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBMeasurable;
+import org.vcell.pathway.sbpax.SBPAXLabelUtil;
 import org.vcell.util.gui.ScrollTable;
 
 @SuppressWarnings("serial")
@@ -122,9 +129,28 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 	}
 	
 	private String getType(BioPaxObject bpObject){
+		if (bpObject instanceof Interaction && hasMeasuredData((Interaction)bpObject)){
+			return bpObject.getTypeLabel()+" (with data)";
+		}
 		return bpObject.getTypeLabel();
 	}
 	
+	private boolean hasMeasuredData(Interaction interaction) {
+		
+		Set<SBEntity> subEntities = new HashSet<SBEntity>();
+		subEntities.add(interaction);
+
+		Set<Control> controls = BioPAXUtil.findAllControls(interaction, pathwayModel);
+		subEntities.addAll(controls);
+		subEntities = SBPAXKineticsExtractor.extractAllEntities(subEntities);
+		for(SBEntity subEntity : subEntities) {
+			if(subEntity instanceof SBMeasurable) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private String getLabel(BioPaxObject bpObject){
 		if (bpObject instanceof Conversion){
 			Conversion conversion =(Conversion)bpObject;
