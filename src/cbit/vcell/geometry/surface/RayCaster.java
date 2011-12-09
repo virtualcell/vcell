@@ -97,16 +97,17 @@ public class RayCaster {
 			unionOfMasks |= surf.getInteriorMask();
 			unionOfMasks |= surf.getExteriorMask();
 		}
+
 		VolumeSamples volumeSamples = null;
-		if((unionOfMasks & 0xFF) == unionOfMasks )
+		if((unionOfMasks & 0x000000FFL) == unionOfMasks )
 		{
 			volumeSamples = new VolumeSamplesByte(numX*numY*numZ);
 		}
-		else if((unionOfMasks & 0xFFFF) == unionOfMasks )
+		else if((unionOfMasks & 0x0000FFFFL) == unionOfMasks )
 		{
 			volumeSamples = new VolumeSamplesShort(numX*numY*numZ);
 		}
-		else if((unionOfMasks & 0xFFFFFFFF) == unionOfMasks )
+		else if((unionOfMasks & 0xFFFFFFFFL) == unionOfMasks )
 		{
 			volumeSamples = new VolumeSamplesInt(numX*numY*numZ);
 		}

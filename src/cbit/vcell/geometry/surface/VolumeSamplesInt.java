@@ -33,11 +33,11 @@ public class VolumeSamplesInt extends VolumeSamples {
 	
 	public void add(int index, long mask, float distance){
 //		System.out.println("index="+index+", mask="+mask+", distance="+distance);
-		if( (mask & 0xFFFFFFFF) != mask )
+		if( (mask & 0xFFFFFFFFL) != mask )
 		{
 			System.err.println("Error: Surface mask doesn't fit into an int.");
 		}
-		incidentSurfaceMaskInt[index] = (int) (incidentSurfaceMaskInt[index] | mask);
+		incidentSurfaceMaskInt[index] = (int) (incidentSurfaceMaskInt[index] | (mask & 0xFFFFFFFFL));
 //System.out.println("mask["+index+"]="+mask+", distance="+distance);
 		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskInt[index])){
 			System.out.println("connected across surface");
@@ -78,8 +78,9 @@ public class VolumeSamplesInt extends VolumeSamples {
 	public HashSet<Long> getUniqueMasks() {
 		HashSet<Long> uniqueMasks = new HashSet<Long>();
 		for (int mask : incidentSurfaceMaskInt){
-			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(((long)mask) & 0xFFFFFFFF);
+			long longMask = ((long)mask) & 0xFFFFFFFFL;
+			if (!uniqueMasks.contains(longMask)){
+				uniqueMasks.add(longMask);
 			}
 		}
 		return uniqueMasks;
@@ -87,6 +88,6 @@ public class VolumeSamplesInt extends VolumeSamples {
 	
 	@Override
 	public long getMask(int index) {
-		return ((long)incidentSurfaceMaskInt[index]) & 0xFFFFFFFF;
+		return ((long)incidentSurfaceMaskInt[index]) & 0xFFFFFFFFL;
 	}
 }
