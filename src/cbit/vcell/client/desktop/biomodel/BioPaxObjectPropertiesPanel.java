@@ -51,6 +51,9 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.BioModelEntityObject;
 
 
@@ -66,11 +69,23 @@ public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel {
 		String name;
 		String value;
 		BioPaxObject bioPaxObject;
+		BioModelEntityObject bioModelEntityObject;
+		private BioPaxObjectProperty(String name, String value) {
+			super();
+			this.name = name;
+			this.value = value;
+		}
 		private BioPaxObjectProperty(String name, String value, BioPaxObject bioPaxObject) {
 			super();
 			this.name = name;
 			this.value = value;
 			this.bioPaxObject = bioPaxObject;
+		}
+		private BioPaxObjectProperty(String name, String value, BioModelEntityObject bioModelEntityObject) {
+			super();
+			this.name = name;
+			this.value = value;
+			this.bioModelEntityObject = bioModelEntityObject;
 		}
 	}
 	private static class BioPaxObjectPropertiesTableModel extends VCellSortTableModel<BioPaxObjectProperty> {
@@ -145,7 +160,13 @@ private void initialize() {
 			    if(table.convertColumnIndexToModel(ccol) == BioPaxObjectPropertiesTableModel.Column_Value) {
 			    	BioPaxObjectProperty property = tableModel.getValueAt(crow);
 			    	BioPaxObject bioPaxObject = property.bioPaxObject;
-			    	if (bioPaxObject instanceof Xref) { // if xRef, get url 
+			    	if (bioPaxObject == null) {
+			    		BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
+						if (bioModelEntityObject != null) {
+							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
+							selectionManager.setSelectedObjects(new Object[]{bioModelEntityObject});
+						}
+			    	} else if (bioPaxObject instanceof Xref) { // if xRef, get url
 			    		String url = ((Xref) bioPaxObject).getURL();
 			    		DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
 			    	}
@@ -161,16 +182,27 @@ private void initialize() {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 				if (column == BioPaxObjectPropertiesTableModel.Column_Value) {
-					BioPaxObject bpObject = tableModel.getValueAt(row).bioPaxObject;
-					String text = tableModel.getValueAt(row).value;
-					if(bpObject instanceof Xref){
-						String url = ((Xref) bpObject).getURL();
-						if(url != null){
-							setToolTipText(url);
+					BioPaxObjectProperty property = tableModel.getValueAt(row);
+					BioPaxObject bpObject = property.bioPaxObject;
+					String text = property.value;
+					if (bpObject == null) {
+						BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
+						if (bioModelEntityObject != null) {
 							if (!isSelected) {
 								setForeground(Color.blue);
 							}
 							setText("<html><u>" + text + "</u></html>");
+						}
+					} else {	
+						if(bpObject instanceof Xref){
+							String url = ((Xref) bpObject).getURL();
+							if(url != null){
+								setToolTipText(url);
+								if (!isSelected) {
+									setForeground(Color.blue);
+								}
+								setText("<html><u>" + text + "</u></html>");
+							}
 						}
 					}
 				}
@@ -217,14 +249,15 @@ protected void refreshInterface() {
 		if (sbEntity instanceof Entity){
 			Entity entity = (Entity) sbEntity;
 			// entity::type
-			propertyList.add(new BioPaxObjectProperty("Type", bioPaxObject.getTypeLabel(), null));
+			propertyList.add(new BioPaxObjectProperty("Type", bioPaxObject.getTypeLabel()));
 			// entity::name
 			ArrayList<String> name = entity.getName();
 			if (name != null){
 				if (name.size() > 0) {
-					propertyList.add(new BioPaxObjectProperty("Name", name.get(0), null));
+					propertyList.add(new BioPaxObjectProperty("Name", name.get(0)));
 				}
 			}
+
 			// entity::availability (***ignored***)
 			// entity::dataSource (***ignored***)
 			// entity::evidence (***ignored***)
@@ -232,7 +265,7 @@ protected void refreshInterface() {
 			// entity::Link
 			for(RelationshipObject rObject : bioModel.getRelationshipModel().getRelationshipObjects(bioPaxObject)){
 				BioModelEntityObject beObject = rObject.getBioModelEntityObject();
-				propertyList.add(new BioPaxObjectProperty("Linked physiology object", beObject.getName(), bioPaxObject));
+				propertyList.add(new BioPaxObjectProperty("Linked physiology object", beObject.getName(), beObject));
 			}
 
 			if(entity instanceof PhysicalEntity){
@@ -250,7 +283,7 @@ protected void refreshInterface() {
 						String location  = name.get(1);
 						if (location.contains("[") && location.contains("]")){
 							location = location.substring(location.indexOf("[")+1, location.indexOf("]"));
-							propertyList.add(new BioPaxObjectProperty("Cellular Location", location, null));
+							propertyList.add(new BioPaxObjectProperty("Cellular Location", location));
 						}
 					}
 				}
@@ -370,7 +403,7 @@ protected void refreshInterface() {
 			}
 			// entity::comments
 			for (String comment : entity.getComments()){
-				propertyList.add(new BioPaxObjectProperty("Comment", comment, null));
+				propertyList.add(new BioPaxObjectProperty("Comment", comment));
 			}
 			for(SBVocabulary sbVocab : sbEntity.getSBTerm()) {
 				
@@ -379,7 +412,6 @@ protected void refreshInterface() {
 				
 			}
 		}
-
 	}
 	tableModel.setData(propertyList);
 	

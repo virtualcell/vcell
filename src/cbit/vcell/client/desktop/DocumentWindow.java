@@ -47,6 +47,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ZEnforcer;
+import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -107,7 +108,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private DocumentWindowManager fieldWindowManager = null;
 	private JMenuItem ivjJMenuItemExport = null;
 	private JMenuItem menuItemImport = null;
-	private JMenuItem menuItemImportPathway = null;
 	private JMenuItem ivjJMenuItemServer = null;
 	private JProgressBar ivjJProgressBarConnection = null;
 	private JMenuItem ivjJMenuItemCompare = null;
@@ -130,6 +130,11 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
 	private VcellHelpViewer helpFrame = null;
+	
+	private JMenu menuImportPathway = null;
+	private JMenuItem menuItemImportPathwayWebLocation = null;
+	private JMenuItem menuItemImportPathwayFile = null;
+	private JMenuItem menuItemImportPathwayExample = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -152,8 +157,12 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			try {
 				if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
 					DocumentWindow.this.importXMLDocument();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemImportPathway())
-					DocumentWindow.this.importPathway();
+				if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
+					DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
+				else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
+					DocumentWindow.this.importPathway(PathwayImportOption.File);
+				else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayExample)
+					DocumentWindow.this.importPathway(PathwayImportOption.Example);
 			} catch (Throwable throwable) {
 				DocumentWindow.this.handleException(throwable);
 			}
@@ -1149,7 +1158,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getJMenuItemImport());
 			ivjFileMenu.add(getJMenuItemExport());
 			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuItemImportPathway());			
+			ivjFileMenu.add(getJMenuImportPathway());			
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getExitMenuItem());
 			// user code begin {1}
@@ -1307,17 +1316,26 @@ private JMenuItem getJMenuItemImport() {
 	return menuItemImport;
 }
 
-private JMenuItem getJMenuItemImportPathway() {
-	if (menuItemImportPathway == null) {
+private JMenu getJMenuImportPathway() {
+	if (menuImportPathway == null) {
 		try {
-			menuItemImportPathway = new JMenuItem();
-			menuItemImportPathway.setName("JMenuItemImportPathway");
-			menuItemImportPathway.setText("Import Pathway");
+			menuImportPathway = new JMenu();
+			menuImportPathway.setName("JMenuItemImportPathway");
+			menuImportPathway.setText("Import Pathway");
+			menuItemImportPathwayWebLocation = new JMenuItem("Web Location");
+			menuItemImportPathwayFile = new JMenuItem("File");
+			menuItemImportPathwayExample = new JMenuItem("Example");
+			menuItemImportPathwayWebLocation.addActionListener(ivjEventHandler);
+			menuItemImportPathwayFile.addActionListener(ivjEventHandler);
+			menuItemImportPathwayExample.addActionListener(ivjEventHandler);
+			menuImportPathway.add(menuItemImportPathwayWebLocation);
+			menuImportPathway.add(menuItemImportPathwayFile);
+			menuImportPathway.add(menuItemImportPathwayExample);
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
 	}
-	return menuItemImportPathway;
+	return menuImportPathway;
 }
 
 /**
@@ -2223,8 +2241,8 @@ private void importXMLDocument() {
 	getWindowManager().openDocument(VCDocument.XML_DOC);
 }
 
-private void importPathway() {
-	getWindowManager().importPathway();
+private void importPathway(PathwayImportOption pathwayImportOption) {
+	getWindowManager().importPathway(pathwayImportOption);
 }
 
 
@@ -2246,7 +2264,6 @@ private void initConnections() throws java.lang.Exception {
 	getSaveMenuItem().addActionListener(ivjEventHandler);
 	getSave_AsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemImport().addActionListener(ivjEventHandler);
-	getJMenuItemImportPathway().addActionListener(ivjEventHandler);
 	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
 	getChange_UserMenuItem().addActionListener(ivjEventHandler);
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
@@ -2638,7 +2655,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 					getWindowManager().getVCDocument() != null &&
 					getWindowManager().getVCDocument() instanceof BioModel
 			);
-			getJMenuItemImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
+			getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
 		}

@@ -76,7 +76,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private ParameterEstimationRunTaskPanel runTaskPanel = null;
 	private ReferenceDataPanel referenceDataPanel = null;
 	private UserPreferences fieldUserPreferences = null;
-	private javax.swing.JTabbedPane tabbedPane = null;
 	private javax.swing.JPanel dataMappingPanel = null;
 	private ReferenceDataMappingSpecTableModel referenceDataMappingSpecTableModel = null;
 	private javax.swing.JButton mapButton = null;
@@ -84,8 +83,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private ParameterEstimationTask fieldParameterEstimationTask = null;
 	private JButton evaluateConfidenceIntervalButton = null;
 	
-	private int selectedIndex = -1;
-	private String selectedTabTitle = null;
 	public enum ParameterEstimationPanelTabID {
 		parameters("Parameters"),
 		experimental_data_import("Experimental Data Import"),
@@ -101,7 +98,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		}
 	}
 	
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, ChangeListener, MouseListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewAnalysisTaskButton()) 
 				newParameterEstimationTaskButton_ActionPerformed();
@@ -124,11 +121,6 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == getDataModelMappingTable().getSelectionModel()) 
 				getMapButton().setEnabled(dataModelMappingTable.getSelectedRowCount() == 1);
-		}
-		public void stateChanged(ChangeEvent e) {
-			if (e.getSource() == tabbedPane) {
-				tabbedPaneSelectionChanged();
-			}			
 		}
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
@@ -162,15 +154,14 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 
 	@Override
 	protected void initialize() {
+		super.initialize();
+		
 		setName("AnalysisPanel");
 		setLayout(new java.awt.BorderLayout());
 		
 		referenceDataPanel = new ReferenceDataPanel();
 		runTaskPanel = new ParameterEstimationRunTaskPanel();
 		
-		tabbedPane = new javax.swing.JTabbedPane();
-		tabbedPane.addChangeListener(eventHandler);
-		tabbedPane.setName("JTabbedPane1");
 		getparameterMappingPanel().setBorder(GuiConstants.TAB_PANEL_BORDER);
 		referenceDataPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		getDataMappingPanel().setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -675,18 +666,4 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		fieldUserPreferences = userPreferences;		
 		referenceDataPanel.setUserPreferences(fieldUserPreferences);
 	}
-
-	public void tabbedPaneSelectionChanged() {
-		int oldSelectedIndex = selectedIndex;
-		selectedIndex = tabbedPane.getSelectedIndex();
-		if (oldSelectedIndex == selectedIndex) {
-			return;
-		}
-		if (oldSelectedIndex >= 0 && oldSelectedIndex < tabbedPane.getTabCount()) {
-			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
-		}
-		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
-		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
-	}
-
 }

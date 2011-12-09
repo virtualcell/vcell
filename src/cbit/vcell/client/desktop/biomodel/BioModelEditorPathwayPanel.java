@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,6 +52,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private JTextField textFieldSearch = null;
 	private JPopupMenu addPopupMenu;
 	private JMenuItem addSelectedOnlyMenuItem, addWithNeighborsMenuItem;
+	private JLabel pathwayTitleLabel;
 	
 	private void searchTable() {
 		String searchText = textFieldSearch.getText();
@@ -157,6 +159,18 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 6;
+		gbc.fill = GridBagConstraints.BOTH;
+		pathwayTitleLabel = new JLabel();
+		pathwayTitleLabel.setFont(pathwayTitleLabel.getFont().deriveFont(Font.BOLD));
+		pathwayTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+		add(pathwayTitleLabel, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
@@ -217,6 +231,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		if (pathwayData == null) {
 			return;
 		}
+		String pathwayName = pathwayData.getTopLevelPathwayName();
+		pathwayTitleLabel.setText(pathwayName);
 		tableModel.setPathwayModel(pathwayData.getPathwayModel());
 		
 		GuiUtils.flexResizeTableColumns(table);

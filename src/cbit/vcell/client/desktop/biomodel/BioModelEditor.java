@@ -14,8 +14,6 @@ import java.awt.Component;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
@@ -477,7 +475,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
 	boolean bShowInDatabaseProperties = false;
 	boolean bShowPathway = false;
-	PathwayData pathwayData = null;
 	if (selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
@@ -523,7 +520,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = bioModelEditorAnnotationPanel;
 		} else if (singleSelection instanceof PathwayData) {
 			bShowPathway = true;
-			pathwayData = (PathwayData)singleSelection;
 			bottomComponent = getBioModelEditorPathwayPanel();
 		} else if (singleSelection instanceof Model) {
 		} else if (singleSelection instanceof CSGObject) {
@@ -551,22 +547,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				break;
 			}
 		}
-		String pathwayName = "no-name";
-		
-//		Pathway topLevelPathway = pathwayData.getPathwayModel().getTopLevelPathway();
-//		if(topLevelPathway != null) {
-//			pathwayName = "ID = "+topLevelPathway.getID();
-//			if (topLevelPathway.getName().size()>0){
-//				pathwayName = "\""+topLevelPathway.getName().get(0)+"\"";
-//			}
-//		}
-		
-		pathwayName = "\"" + pathwayData.getTopLevelPathwayName() + "\"";
-		String tabTitle = "Pathway " + pathwayName;
+		String tabTitle = "Pathway Preview";
 		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
-		} else {
-			rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
 		}
 	} else if (bShowInDatabaseProperties) {
 		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
@@ -735,31 +718,6 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	geometryMetaDataPanel.setDocumentManager(documentManager);
 	
 	bioModelEditorApplicationPanel.setBioModelWindowManager(bioModelWindowManager);
-}
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		
-		JFrame frame = new javax.swing.JFrame();
-		BioModelEditor aBioModelEditor = new BioModelEditor();
-		frame.setContentPane(aBioModelEditor);
-		frame.setSize(aBioModelEditor.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.pack();
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
 }
 
 public final BioModelWindowManager getBioModelWindowManager() {

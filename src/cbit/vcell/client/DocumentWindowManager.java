@@ -27,6 +27,7 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JTaskBar;
+import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -310,8 +311,8 @@ public void openDocument(int documentType) {
 	getRequestManager().openDocument(documentType, this);
 }
 
-public void importPathway() {
-	getRequestManager().openPathway(this);
+public void importPathway(PathwayImportOption pathwayImportOption) {
+	getRequestManager().openPathway(this, pathwayImportOption);
 }
 
 

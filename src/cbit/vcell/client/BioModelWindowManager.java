@@ -36,6 +36,7 @@ import org.vcell.util.gui.JTaskBar;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.importer.DataImporter;
 import org.vcell.util.importer.PathwayImportPanel;
+import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 import org.vcell.util.importer.PathwayImporter;
 
 import cbit.vcell.biomodel.BioModel;
@@ -850,8 +851,8 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 
 public DataImporter getPathwayImporter() { return pathwayImporter; }
 
-public void importPathway() {
-	pathwayImportPanel.showDialog(getComponent());
+public void importPathway(PathwayImportOption pathwayImportOption) {
+	pathwayImportPanel.showDialog(getComponent(), pathwayImportOption);
 
 }
 

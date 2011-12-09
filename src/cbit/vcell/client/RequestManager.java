@@ -17,6 +17,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.OutputContext;
@@ -216,7 +217,7 @@ void openDocument(int documentType, DocumentWindowManager requester);
 
 void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, boolean inNewWindow);
 
-void openPathway(DocumentWindowManager requester);
+void openPathway(DocumentWindowManager requester, PathwayImportOption pathwayImportOption);
 
 
 	public void processComparisonResult(TMLPanel comparePanel, TopLevelWindowManager requester);
