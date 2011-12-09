@@ -38,6 +38,7 @@ import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
@@ -323,6 +324,14 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						
 						viewer.setSimulationModelInfo(new SimulationWorkspaceModelInfo(getSimWorkspace().getSimulationOwner(),sim.getName()));
 						viewer.setDataViewerManager(documentWindowManager);
+						
+						// disable 'Export' tab in the quick run results viewer for spatial simulations 
+						if (isLocal) {
+							if (viewer instanceof SimResultsViewer) {
+								((SimResultsViewer)viewer).disableExportTabForQuickRunSims();
+							}
+						}
+
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
 						documentWindowManager.addResultsFrame(newWindow);
 					}
