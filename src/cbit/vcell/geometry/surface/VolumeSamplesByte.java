@@ -33,11 +33,11 @@ public class VolumeSamplesByte extends VolumeSamples {
 	
 	public void add(int index, long mask, float distance){
 //		System.out.println("index="+index+", mask="+mask+", distance="+distance);
-		if( (mask & 0xFF) != mask )
+		if( (mask & 0x000000FFL) != mask )
 		{
 			System.err.println("Error: Surface mask doesn't fit into a byte.");
 		}
-		incidentSurfaceMaskByte[index] = (byte) (incidentSurfaceMaskByte[index] | (mask & 0xFF));
+		incidentSurfaceMaskByte[index] = (byte) (incidentSurfaceMaskByte[index] | (mask & 0x000000FFL));
 //System.out.println("mask["+index+"]="+mask+", distance="+distance);
 		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskByte[index])){
 			System.err.println("connected across surface");
@@ -78,8 +78,9 @@ public class VolumeSamplesByte extends VolumeSamples {
 	public HashSet<Long> getUniqueMasks() {
 		HashSet<Long> uniqueMasks = new HashSet<Long>();
 		for (byte mask : incidentSurfaceMaskByte){
-			if (!uniqueMasks.contains(mask)){
-				uniqueMasks.add(((long)mask) & 0xFF);
+			long longMask = ((long)mask) & 0x000000FFL;
+			if (!uniqueMasks.contains(longMask)){
+				uniqueMasks.add(longMask);
 			}
 		}
 		return uniqueMasks;
@@ -87,6 +88,6 @@ public class VolumeSamplesByte extends VolumeSamples {
 
 	@Override
 	public long getMask(int index) {
-		return ((long)incidentSurfaceMaskByte[index]) & 0xFF;
+		return ((long)incidentSurfaceMaskByte[index]) & 0x000000FFL;
 	}
 }
