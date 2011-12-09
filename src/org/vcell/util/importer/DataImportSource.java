@@ -2,10 +2,13 @@ package org.vcell.util.importer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.sbpax.util.StringUtil;
 import org.vcell.util.BeanUtils;
+
+import com.ibm.icu.impl.ICUListResourceBundle.ResourceString;
 
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
@@ -87,10 +90,18 @@ public abstract class DataImportSource {
 		
 		public String getBytes(ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
 			String data = null;
-			if(encoding != null) { 
-				data = StringUtil.textFromInputStream(loaderClass.getResourceAsStream(resourceName), encoding); 
-			} else { 
-				data = StringUtil.textFromInputStream(loaderClass.getResourceAsStream(resourceName));
+			InputStream resourceStream = null;
+			try {
+				resourceStream = loaderClass.getResourceAsStream(resourceName);
+				if(encoding != null) { 
+					data = StringUtil.textFromInputStream(resourceStream, encoding); 
+				} else { 
+					data = StringUtil.textFromInputStream(resourceStream);
+				}
+			}finally{
+				if (resourceStream != null){
+					resourceStream.close();
+				}
 			}
 			return data;
 		}

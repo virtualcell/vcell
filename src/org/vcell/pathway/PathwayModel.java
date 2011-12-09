@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.persistence.BiopaxProxy.UnitOfMeasurementProxy;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.meta.Identifiable;
@@ -202,6 +203,8 @@ public class PathwayModel {
 			for (BioPaxObject bpObject : biopaxObjects){
 				if (!(bpObject instanceof RdfObjectProxy) && bpObject.getID() != null ){
 					resourceMap.put(bpObject.getID(), bpObject);
+				} else if(bpObject instanceof UnitOfMeasurementProxy) {
+					
 				}
 			}
 

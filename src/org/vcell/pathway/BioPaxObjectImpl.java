@@ -18,6 +18,7 @@ import java.util.Random;
 
 import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.tree.BioPAXClassNameDirectory;
 import org.vcell.util.Matchable;
 
 public abstract class BioPaxObjectImpl implements BioPaxObject {
@@ -72,10 +73,15 @@ public abstract class BioPaxObjectImpl implements BioPaxObject {
 	}
 
 	public String getTypeLabel(){
-		String typeName = getClass().getName();
-		typeName = typeName.replace(getClass().getPackage().getName(),"");
-		typeName = typeName.replace(".","");
-		return typeName;
+		String label = BioPAXClassNameDirectory.getNameSingular(getClass());
+		if (label != null){
+			return label;
+		}else{
+			String typeName = getClass().getName();
+			typeName = typeName.replace(getClass().getPackage().getName(),"");
+			typeName = typeName.replace(".","");
+			return typeName;
+		}
 	}
 	
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){

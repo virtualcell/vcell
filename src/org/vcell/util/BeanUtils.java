@@ -873,13 +873,20 @@ public final class BeanUtils {
 	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
 	
 	public static String readBytesFromFile(File file, ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
 		StringBuffer stringBuffer = new StringBuffer();
-		String line = new String();
-		while((line = bufferedReader.readLine()) != null) { 				
-			stringBuffer.append(line + "\n"); 
-			if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted()){
-				break;
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = new BufferedReader(new FileReader(file));
+			String line = new String();
+			while((line = bufferedReader.readLine()) != null) { 				
+				stringBuffer.append(line + "\n"); 
+				if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted()){
+					break;
+				}
+			}
+		}finally{
+			if (bufferedReader != null){
+				bufferedReader.close();
 			}
 		}
 		return stringBuffer.toString();

@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JTable;
+
+import org.sbpax.schemas.util.SBPAX3Util;
+import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.CellularLocationVocabulary;
@@ -43,7 +46,10 @@ import org.vcell.pathway.RnaRegion;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
+import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBMeasurable;
+import org.vcell.pathway.sbpax.SBPAXLabelUtil;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -405,11 +411,21 @@ protected void refreshInterface() {
 			for (String comment : entity.getComments()){
 				propertyList.add(new BioPaxObjectProperty("Comment", comment));
 			}
-			for(SBVocabulary sbVocab : sbEntity.getSBTerm()) {
-				
-			}
-			for(SBEntity sbSubEntity : sbEntity.getSBSubEntity()) {
-				
+//			for(SBVocabulary sbVocab : sbEntity.getSBTerm()) {
+//				propertyList.add(new BioPaxObjectProperty("SBO Term", SBPAXLabelUtil.makeLabel(sbVocab)));
+//			}
+			if(sbEntity instanceof Interaction) {
+				Interaction interaction = (Interaction) sbEntity;
+				Set<SBEntity> subEntities = new HashSet<SBEntity>();
+				subEntities.add(interaction);
+				Set<Control> controls = BioPAXUtil.findAllControls(interaction, bioModel.getPathwayModel());
+				subEntities.addAll(controls);
+				subEntities = SBPAXKineticsExtractor.extractAllEntities(subEntities);
+				for(SBEntity subEntity : subEntities) {
+					if(subEntity instanceof SBMeasurable) {
+						propertyList.add(new BioPaxObjectProperty("Measured quantity", SBPAXLabelUtil.makeLabel(subEntity)));									
+					}
+				}
 			}
 		}
 	}
