@@ -11,11 +11,13 @@ import javax.swing.JPanel;
 public class WebImportPanel extends JPanel {
 
 	public static String[] urlStringOptions = new String[]{
-		"http://www.signaling-gateway.org/molecule/query?afcsid=A000037&type=sbPAXExport",
-		"http://www.signaling-gateway.org/molecule/query?afcsid=A001778&type=sbPAXExport",
+//		"http://www.signaling-gateway.org/molecule/query?afcsid=A000037&type=sbPAXExport",
+//		"http://www.signaling-gateway.org/molecule/query?afcsid=A001778&type=sbPAXExport",
 		"http://www.signaling-gateway.org/molecule/query?afcsid=A001750&type=sbPAXExport",
-		"http://www.signaling-gateway.org/molecule/query?afcsid=A001852&type=sbPAXExport",
-		"http://www.signaling-gateway.org/molecule/query?afcsid=A001046&type=sbPAXExport"};
+//		"http://www.signaling-gateway.org/molecule/query?afcsid=A001852&type=sbPAXExport",
+//		"http://www.signaling-gateway.org/molecule/query?afcsid=A001046&type=sbPAXExport",
+		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=12",
+		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RKEGG=R01026"};
 	
 	protected final JComboBox urlInput = new JComboBox(urlStringOptions);
 	protected final JLabel urlMessageLabel = new JLabel();
