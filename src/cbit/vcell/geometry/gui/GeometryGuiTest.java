@@ -2,6 +2,8 @@ package cbit.vcell.geometry.gui;
 
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.ISize;
+
 import cbit.image.ImageException;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -13,6 +15,7 @@ import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
@@ -32,9 +35,14 @@ public class GeometryGuiTest {
 				};
 			});
 			
-			Geometry geometry = getExampleGeometryCSG();
+			Geometry csGeometry = getExampleGeometryCSG();
 			
-			aGeometryViewer.setGeometry(geometry);
+			// try to convert this CSG geometry to image
+			ISize imageSize = csGeometry.getGeometrySpec().getDefaultSampledImageSize();
+			Geometry imageGeometry = RayCaster.resampleGeometry(csGeometry, imageSize);
+			
+			// aGeometryViewer.setGeometry(csGeometry);
+			aGeometryViewer.setGeometry(imageGeometry);
 			frame.setSize(600,600);
 			frame.setVisible(true);
 		} catch (Throwable exception) {
