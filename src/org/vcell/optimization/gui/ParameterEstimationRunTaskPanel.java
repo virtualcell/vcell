@@ -127,7 +127,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private OptimizationTaskSummaryTableModel optimizationTaskSummaryTableModel;
 
 	private CopasiOptimizationMethodsHelpPanel copasiHelpPanel = null;
-	private HyperLinkLabel copasiLinkLabel = new HyperLinkLabel("See COPASI for more additional parameter estimation options and model analysis features", eventHandler, 0);
+	private HyperLinkLabel copasiLinkLabel = new HyperLinkLabel("See COPASI for additional parameter estimation options and model analysis features", eventHandler, 0);
 	
 	private class RunStatusProgressDialog extends ProgressDialog {
 		private JTextField numEvaluationsTextField = null;

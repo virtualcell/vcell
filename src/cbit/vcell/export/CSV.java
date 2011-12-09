@@ -81,14 +81,18 @@ public cbit.vcell.util.RowColumnResultSet importFrom(java.io.Reader reader) thro
 	String[] stringTokens;
 	double[] doubleTokens;
 
-	//setup vars from header line
-	stringTokens = nextStrings(bufferedReader);
+	String firstLine = bufferedReader.readLine();//to read in column names.
+	//to read in first row of data to get an idea of data length(used for parsing column names).
+	doubleTokens = nextdoubles(bufferedReader);
+	
+	//setup column names from header line
+	stringTokens = readColumnNames(firstLine, doubleTokens.length);
+		
 	for (int i = 0; i < stringTokens.length; i++){
 		data.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(stringTokens[i]));
 	}
 
-	//rows
-	doubleTokens = nextdoubles(bufferedReader);
+	//other rows
 	while (doubleTokens != null) {
 		data.addRow(doubleTokens);
 		doubleTokens = nextdoubles(bufferedReader);
@@ -96,13 +100,14 @@ public cbit.vcell.util.RowColumnResultSet importFrom(java.io.Reader reader) thro
 
 	return data;
 }
+
 /**
  * This reads a line from a BufferedReader and returns it in the form of an array of doubles, tokenized by the comma character.  If there are no more lines, this should return null.
  * Creation date: (7/5/2005 2:50:03 PM)
  * @return double[]
  * @param bufferedReader java.io.BufferedReader
  */
-private double[] nextdoubles(java.io.BufferedReader bufferedReader) {
+private double[] nextdoubles(java.io.BufferedReader bufferedReader) throws Exception {
 	String[] stringTokens = nextStrings(bufferedReader);
 
 	//check if end of file
@@ -134,7 +139,7 @@ private String nextLine(java.io.BufferedReader bufferedReader) {
  * @return java.lang.String[]
  * @param bufferedReader java.io.BufferedReader
  */
-private String[] nextStrings(java.io.BufferedReader bufferedReader) {
+private String[] nextStrings(java.io.BufferedReader bufferedReader) throws Exception{
 	try {
 		String s = nextLine(bufferedReader);
 		
@@ -150,9 +155,45 @@ private String[] nextStrings(java.io.BufferedReader bufferedReader) {
 		}
 		return tokens;
 	} catch (Exception e) {
-		return null;
+		throw new Exception("Error when parsing data rows: " + e.getMessage());
 	}
 }
+
+private String[] readColumnNames(String columnLine, int numDataColumn) throws Exception
+{
+	try {
+		//check if end of file
+		if ((columnLine==null) || (columnLine.equals(""))) { return null; }
+		//setup columns from header line, it's a little complicated, since users can put anything into the column name
+		//first use comma and tab as delimiter
+		java.util.StringTokenizer tokenizer = new java.util.StringTokenizer(columnLine, ",\t");
+		//if using comma and tab doesn't parse the column name properly, try space delimiter
+		if(tokenizer.countTokens() != numDataColumn)
+		{
+			tokenizer = new java.util.StringTokenizer(columnLine, " ");
+			if(tokenizer.countTokens() < numDataColumn)
+			{
+				throw new Exception("Num of data in each row is greater than num of column names.\nPlease check your data column names(the length of column names should equal to lenght of data row.");
+			}
+			if(tokenizer.countTokens() > numDataColumn)
+			{
+				throw new Exception("Num of data in each row is smaller than num of column names.\nSolution:\n1.Check if you have put more column names than the length of data row.\n" +
+						"2.Seperate your column names with comma or tab if you want to use space in any of your column name. ");
+			}
+		}
+		
+		
+		int tokenCount = tokenizer.countTokens();
+		String[] tokens = new String[tokenCount];
+		for (int i = 0; i < tokenCount; i++){
+			tokens[i] = tokenizer.nextToken();
+		}
+		return tokens;
+	} catch (Exception e) {
+		throw new Exception("Error when parsing column names: " + e.getMessage());
+	}
+}
+
 /**
  * This writes a double to a BufferedWriter while catching the exception.
  * Creation date: (7/5/2005 2:54:05 PM)
