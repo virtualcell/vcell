@@ -26,6 +26,9 @@ public class SBOUtil {
 	}
 	
 	public static String getIndexFromId(String id) {
+		if(id.length()<7) {
+			id = "0000000" + id; 
+		}
 		return id.substring(id.length() - 7);
 	}
 	
