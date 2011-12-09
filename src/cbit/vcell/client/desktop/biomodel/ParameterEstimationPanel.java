@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.vcell.util.TokenMangler;
@@ -79,13 +80,22 @@ public class ParameterEstimationPanel extends DocumentEditorSubPanel {
 		setName("AnalysisPanel");
 		setLayout(new java.awt.BorderLayout());
 		add(getOptTestPanel(), BorderLayout.CENTER);
-		add(getButtonPanel(), BorderLayout.NORTH);		
+		add(getButtonPanel(), BorderLayout.NORTH);	
+		add(getWarnInfoPanel(), BorderLayout.SOUTH);
 		
 		addPropertyChangeListener(ivjEventHandler);
 		getNewAnalysisTaskButton().addActionListener(ivjEventHandler);
 		getDeleteAnalysisTaskButton().addActionListener(ivjEventHandler);
 		getCopyButton().addActionListener(ivjEventHandler);
 		getAnalysisTaskComboBox().addActionListener(ivjEventHandler);
+	}
+	
+	private JPanel getWarnInfoPanel()
+	{
+		JPanel panel = new JPanel();
+		JLabel label = new JLabel("<html><b>Parameter fitting is not available in VCell 5.0. Copasi-based parameter fitting is available in VCell 5.1 or later.</b></html>");
+		panel.add(label);
+		return panel;
 	}
 	
 	private OptTestPanel getOptTestPanel() {
@@ -259,10 +269,10 @@ public class ParameterEstimationPanel extends DocumentEditorSubPanel {
 	
 	private void refreshAnalysisTaskEnables() {
 		boolean bHasTasks = getAnalysisTaskComboBox().getItemCount() > 0;
-		getNewAnalysisTaskButton().setEnabled(simulationContext.getGeometry().getDimension() == 0);
+		getNewAnalysisTaskButton().setEnabled(false/*simulationContext.getGeometry().getDimension() == 0*/);
 		getAnalysisTaskComboBox().setEnabled(bHasTasks);
-		getDeleteAnalysisTaskButton().setEnabled(bHasTasks);
-		getCopyButton().setEnabled(bHasTasks);
+		getDeleteAnalysisTaskButton().setEnabled(false/*bHasTasks*/);
+		getCopyButton().setEnabled(false/*bHasTasks*/);
 	}
 	
 	private javax.swing.JButton getNewAnalysisTaskButton() {

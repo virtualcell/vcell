@@ -1030,6 +1030,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 				gbc.gridwidth = 2;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 0);
 				ivjJPanel10.add(computeProfileDistributionsCheckBox, gbc);
+				computeProfileDistributionsCheckBox.setEnabled(false);
 
 				java.awt.GridBagConstraints constraintsSolverTypeComboBox = new java.awt.GridBagConstraints();
 				constraintsSolverTypeComboBox.gridx = 0; 
@@ -1049,6 +1050,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 				//			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				gbc.anchor = GridBagConstraints.PAGE_START;
 				ivjJPanel10.add(getSolveButton(), gbc);
+				getSolveButton().setEnabled(false);
 
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 1; 
@@ -1267,6 +1269,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 				constraintsMapButton.gridx = 0; constraintsMapButton.gridy = 1;
 				constraintsMapButton.insets = new java.awt.Insets(4, 4, 4, 4);
 				getJPanel8().add(getMapButton(), constraintsMapButton);
+				getMapButton().setEnabled(false);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -1395,9 +1398,9 @@ public class OptTestPanel extends javax.swing.JPanel {
 				ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 				ivjJTabbedPane1.setName("JTabbedPane1");
 				ivjJTabbedPane1.addTab("Parameters", getparameterMappingPanel());
-				ivjJTabbedPane1.addTab("Reference Data", getJPanel2());
-				ivjJTabbedPane1.addTab("Optimization", getJPanel3());
-				ivjJTabbedPane1.addTab("Annotation", getAnnotationPanel());
+//				ivjJTabbedPane1.addTab("Reference Data", getJPanel2());
+//				ivjJTabbedPane1.addTab("Optimization", getJPanel3());
+//				ivjJTabbedPane1.addTab("Annotation", getAnnotationPanel());
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -1442,7 +1445,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 			try {
 				ivjMapButton = new javax.swing.JButton();
 				ivjMapButton.setName("MapButton");
-				ivjMapButton.setText("associate..");
+				ivjMapButton.setText("associate...");
 				ivjMapButton.setEnabled(false);
 				// user code begin {1}
 				// user code end
@@ -2069,7 +2072,8 @@ public class OptTestPanel extends javax.swing.JPanel {
 	 */
 	private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
 		if (getselectionModel1().getMinSelectionIndex()>=0){
-			getMapButton().setEnabled(true);
+//			getMapButton().setEnabled(true);
+			getMapButton().setEnabled(false);
 		}else{
 			getMapButton().setEnabled(false);
 		}

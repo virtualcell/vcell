@@ -234,12 +234,12 @@ public Object getValueAt(int row, int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	if (columnIndex == COLUMN_NAME){
+	/*if (columnIndex == COLUMN_NAME){
 		return false;
 	}else if (columnIndex == COLUMN_SCOPE){
 		return false;
 	}else if (columnIndex == COLUMN_SELECTED){
-		return true;
+		return truefalse;
 	}else if (columnIndex == COLUMN_CURRENTVALUE){
 		return true;
 	}else if (columnIndex == COLUMN_LOWVALUE){
@@ -252,7 +252,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}else{
 		return false;
-	}
+	}*/
+	return false;
 }
 
 
