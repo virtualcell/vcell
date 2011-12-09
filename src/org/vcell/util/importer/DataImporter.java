@@ -39,6 +39,6 @@ public class DataImporter {
 	}
 	
 	public String getPreviouslyReadData() { return data; }
-	public String getLabel() { return source != null ? null : source.getLabel(); }
+	public String getLabel() { return source != null ? source.getLabel() : null; }
 	
 }
