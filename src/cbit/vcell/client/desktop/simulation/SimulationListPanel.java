@@ -671,8 +671,8 @@ private void refreshButtonsLax() {
 			if (!simStatus.isRunning()){
 				bEditable = true;
 			}
-			bParticleView = firstSelection.getScanCount() == 1;			
-			bQuickRun = firstSelection.getScanCount() == 1;
+			bParticleView = firstSelection.getScanCount() == 1;	
+			bQuickRun = firstSelection.getScanCount() == 1 && !firstSelection.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume);
 		}
 		
 		// we make'em true if at least one sim satisfies criterion (lax policy)

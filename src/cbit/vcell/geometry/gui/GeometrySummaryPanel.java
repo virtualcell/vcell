@@ -10,15 +10,16 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.Color;
 import java.awt.image.MemoryImageSource;
 
-import javax.swing.border.LineBorder;
+import javax.swing.BorderFactory;
+import javax.swing.JScrollPane;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.DefaultListModelCivilized;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.GIFImage;
@@ -27,6 +28,7 @@ import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -47,11 +49,11 @@ public class GeometrySummaryPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjJLabelOrigin = null;
 	private javax.swing.JLabel ivjJLabelOriginTitle = null;
 	private javax.swing.JList ivjJList1 = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Geometry ivjgeometry1 = null;
-	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private DefaultListModelCivilized ivjDefaultListModelCivilized = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JLabel ivjGeometryVersionLabel = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
@@ -551,7 +553,7 @@ private javax.swing.JLabel getGeometryVersionLabel() {
 		try {
 			ivjGeometryVersionLabel = new javax.swing.JLabel();
 			ivjGeometryVersionLabel.setName("GeometryVersionLabel");
-			ivjGeometryVersionLabel.setBorder(new LineBorder(Color.black));
+			ivjGeometryVersionLabel.setBorder(BorderFactory.createCompoundBorder(GuiConstants.TAB_PANEL_BORDER, BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 			ivjGeometryVersionLabel.setText("GeometryName");
 			// user code begin {1}
 			// user code end
@@ -612,7 +614,7 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("SubDomains");
+			ivjJLabel1.setText("Subdomains");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -681,7 +683,7 @@ private javax.swing.JLabel getJLabelExtentTitle() {
 		try {
 			ivjJLabelExtentTitle = new javax.swing.JLabel();
 			ivjJLabelExtentTitle.setName("JLabelExtentTitle");
-			ivjJLabelExtentTitle.setText("Size (�m)");
+			ivjJLabelExtentTitle.setText("Size (\u03BCm)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -727,7 +729,7 @@ private javax.swing.JLabel getJLabelOriginTitle() {
 		try {
 			ivjJLabelOriginTitle = new javax.swing.JLabel();
 			ivjJLabelOriginTitle.setName("JLabelOriginTitle");
-			ivjJLabelOriginTitle.setText("Origin (�m)");
+			ivjJLabelOriginTitle.setText("Origin (\u03BCm)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -778,7 +780,7 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsJList1.weightx = 1.0;
 			constraintsJList1.weighty = 1.0;
 			constraintsJList1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getJList1(), constraintsJList1);
+			getJPanel1().add(new JScrollPane(getJList1()), constraintsJList1);
 
 			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
@@ -1022,12 +1024,6 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		//setSize(821, 451);
 
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weighty = 1.0;
-		add(getJPanel1(), constraintsJPanel1);
-
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
 		constraintsJPanel2.gridwidth = 2;
@@ -1035,6 +1031,12 @@ private void initialize() {
 		constraintsJPanel2.weightx = 1.0;
 		add(getJPanel2(), constraintsJPanel2);
 
+		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;
+		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJPanel1.weighty = 1.0;
+		add(getJPanel1(), constraintsJPanel1);
+		
 		java.awt.GridBagConstraints constraintsImagePlaneManagerPanel1 = new java.awt.GridBagConstraints();
 		constraintsImagePlaneManagerPanel1.gridx = 1; constraintsImagePlaneManagerPanel1.gridy = 1;
 		constraintsImagePlaneManagerPanel1.fill = java.awt.GridBagConstraints.BOTH;
@@ -1053,32 +1055,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		GeometrySummaryPanel aGeometrySummaryPanel;
-		aGeometrySummaryPanel = new GeometrySummaryPanel();
-		frame.setContentPane(aGeometrySummaryPanel);
-		frame.setSize(aGeometrySummaryPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * Set the cellRenderer1 to a new value.

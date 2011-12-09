@@ -943,7 +943,6 @@ private javax.swing.JPanel getJPanel3() {
 			java.awt.GridBagConstraints constraintsDisplayAdapterServicePanel = new java.awt.GridBagConstraints();
 			constraintsDisplayAdapterServicePanel.gridx = 0; constraintsDisplayAdapterServicePanel.gridy = 0;
 			constraintsDisplayAdapterServicePanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsDisplayAdapterServicePanel.insets = new java.awt.Insets(3, 0, 0, 0);
 			getJPanel3().add(getDisplayAdapterServicePanel(), constraintsDisplayAdapterServicePanel);
 
 			java.awt.GridBagConstraints constraintsCurveEditorToolPanel1 = new java.awt.GridBagConstraints();
@@ -1048,7 +1047,6 @@ private void initialize() {
 		constraintsJPanel3.fill = java.awt.GridBagConstraints.VERTICAL;
 		constraintsJPanel3.weightx = 0.0;
 		constraintsJPanel3.weighty = 1.0;
-		constraintsJPanel3.insets = new java.awt.Insets(4, 0, 4, 4);
 		add(getJPanel3(), constraintsJPanel3);
 
 		java.awt.GridBagConstraints constraintsInfoJlabel = new java.awt.GridBagConstraints();

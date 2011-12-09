@@ -41,6 +41,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.JTabbedPaneEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
@@ -62,8 +63,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JCheckBox functionsCheckBox = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JTabbedPane tabbedPane;
-	private int selectedIndex = -1;
-	private String selectedTabTitle = null;
 
 	private JButton addNewButton = null;
 	private JButton deleteButton = null;
@@ -183,7 +182,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
 		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
 
-		tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.addChangeListener(eventHandler);
 		
 		ParametersPanelTab parametersPanelTabs[] = new ParametersPanelTab[ParametersPanelTabID.values().length]; 
@@ -419,19 +418,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	}
 	
 	public void tabbedPaneSelectionChanged() {
-		int oldSelectedIndex = selectedIndex;
-		selectedIndex = tabbedPane.getSelectedIndex();
+		int selectedIndex = tabbedPane.getSelectedIndex();
 		if (selectedIndex < 0) {
 			return;
 		}
-		if (oldSelectedIndex == selectedIndex) {
-			return;
-		}
-		if (oldSelectedIndex >= 0) {
-			tabbedPane.setTitleAt(oldSelectedIndex, selectedTabTitle);
-		}
-		selectedTabTitle = tabbedPane.getTitleAt(selectedIndex);
-		tabbedPane.setTitleAt(selectedIndex, "<html><b>" + selectedTabTitle + "</b></html>");
 
 		ActiveView activeView = null;
 		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {

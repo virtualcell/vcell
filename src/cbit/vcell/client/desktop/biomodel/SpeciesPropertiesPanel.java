@@ -17,6 +17,8 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -28,8 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BoxLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -49,13 +54,15 @@ import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.model.SpeciesContext;
@@ -71,7 +78,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private BioModel bioModel = null;
 	
 	private JTextArea annotationTextArea;
-	private JTextArea linkedPOTextArea;
+	private JScrollPane linkedPOScrollPane;
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField nameTextField = null;
 	
@@ -268,11 +275,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(new JLabel("Linked Pathway Object(s)"), gbc);
 
-		linkedPOTextArea = new javax.swing.JTextArea("", 1, 30);
-		linkedPOTextArea.setLineWrap(true);
-		linkedPOTextArea.setWrapStyleWord(true);
-		linkedPOTextArea.setEditable(false);
-		javax.swing.JScrollPane jsp1 = new javax.swing.JScrollPane(linkedPOTextArea);
+		linkedPOScrollPane = new JScrollPane();
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
@@ -282,7 +285,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(jsp1, gbc);
+		add(linkedPOScrollPane, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -342,15 +345,27 @@ private String listLinkedPathwayObjects(){
 	if(bioModel == null || bioModel.getModel() == null){
 		return "no biomodel";
 	}
+	JPanel panel = new JPanel();
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 	String linkedPOlist = "";
 	for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(getSpeciesContext())){
-		BioPaxObject bpObject = relObject.getBioPaxObject();
+		final BioPaxObject bpObject = relObject.getBioPaxObject();
 		if(bpObject instanceof Entity){
-			linkedPOlist += ((Entity)bpObject).getName().get(0)+"\n";
+			JLabel label = new JLabel("<html><u>" + ((Entity)bpObject).getName().get(0) + "</u></html>");
+			label.setForeground(Color.blue);
+			label.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2) {
+						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
+						selectionManager.setSelectedObjects(new Object[]{bpObject});
+					}
+				}
+			});
+			panel.add(label);
 		}
 		
 	}
-	linkedPOTextArea.setText(linkedPOlist);
+	linkedPOScrollPane.setViewportView(panel);
 	return linkedPOlist;
 }
 // done

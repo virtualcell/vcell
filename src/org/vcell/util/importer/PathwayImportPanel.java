@@ -11,15 +11,17 @@
 package org.vcell.util.importer;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -35,26 +37,51 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.tree.BioPAXTreeMaker;
 import org.vcell.sybil.util.JavaUtil;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
 @SuppressWarnings("serial")
 public class PathwayImportPanel extends JPanel {
 
+	public enum PathwayImportOption {
+		Web_Location,
+		File,
+		Example,		
+	}
 	protected final SelectionManager selectionManager;
 	protected final PathwayImporter importer;
-	protected final JTabbedPane tabbedPane = new JTabbedPane();
 	protected final JFileChooser fileChooser = new JFileChooser();
 	protected final WebImportPanel webImportPanel = new WebImportPanel();
-	protected final ResourceImportPanel<String> examplesImportPanel = 
-		new ResourceImportPanel<String>(VCellPathwayResourceDirectory.getDescriptionList());
+	private ScrollTable exampleTable = new ScrollTable();
+	private VCellSortTableModel<String> exampleTableModel = new VCellSortTableModel<String>(new String[]{"Example"}) {
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return getValueAt(rowIndex);
+		}
+
+		@Override
+		protected Comparator<String> getComparator(int col, final boolean ascending) {
+			return new Comparator<String>() {
+
+				public int compare(String o1, String o2) {
+					int scale = ascending ? 1 : -1;
+					return scale * o1.compareTo(o2);
+				}
+			};
+		}
+	};
+//	protected final ResourceImportPanel<String> examplesImportPanel = 
+//		new ResourceImportPanel<String>(VCellPathwayResourceDirectory.getDescriptionList());
 	protected final JTextArea textArea = new JTextArea();
 	protected final JScrollPane textScrollPane = new JScrollPane(textArea);
 	protected final JPanel textPanel = new JPanel();
@@ -63,50 +90,16 @@ public class PathwayImportPanel extends JPanel {
 	protected final JLabel treeLabel = new JLabel("[No data loaded yet]");
 	protected final JTree biopaxTree = new JTree(BioPAXTreeMaker.makeEmptyTree());
 	protected final JScrollPane treeScrollPane = new JScrollPane(biopaxTree);
-	protected final JPanel toolBar = new JPanel();
+	protected final JPanel toolBarPanel = new JPanel();
 	protected JDialog dialog = null;
+	protected JPanel previewPanel = null;
 	
-	protected Action showAction = new AbstractAction("Show Data") {
+	protected Action previewAction = new AbstractAction("Preview") {
 		public void actionPerformed(ActionEvent e) {
 			final DataImportSource selectedSource = getSelectedSource();
-			if(selectedSource != null) {
-				AsynchClientTask readDataTask = 
-					new AsynchClientTask("Reading data from " + selectedSource.getLabel(), 
-							AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						if(importer.getPreviouslyReadData() == null) {
-							importer.readData(getClientTaskStatusSupport());								
-						}
-					}
-				};
-				AsynchClientTask showDataTask = new AsynchClientTask("Displaying data from " + selectedSource.getLabel(),
-						AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						tabbedPane.setSelectedComponent(textPanel);
-						String data = importer.getPreviouslyReadData();
-						String dataDescription = "Content of " + selectedSource.getLabel() + " (" + data.length() + " bytes):";
-						textLabel.setText(dataDescription);
-						textLabel.setToolTipText(dataDescription);
-						textArea.setText(data);
-						textArea.setToolTipText(dataDescription);
-					}
-				};
-				ClientTaskDispatcher.dispatch(PathwayImportPanel.this, new Hashtable<String, Object>(), 
-						new AsynchClientTask[]{ readDataTask, showDataTask}, true, true, null);
-				System.out.println(selectedSource.getLabel());				
+			if(selectedSource == null) {
+				DialogUtils.showErrorDialog(PathwayImportPanel.this, "no pathway is selected!");
 			} else {
-				System.out.println("Selected source is null");
-			}
-		}
-	};
-	
-	protected Action treeAction = new AbstractAction("Show Tree") {
-		public void actionPerformed(ActionEvent arg0) {
-			final DataImportSource selectedSource = getSelectedSource();
-			if(selectedSource != null) {
 				final String sourceLabel = selectedSource.getLabel();
 				AsynchClientTask readDataTask = 
 					new AsynchClientTask("Reading data from " + sourceLabel, 
@@ -128,33 +121,40 @@ public class PathwayImportPanel extends JPanel {
 						}
 					}
 				};
-				AsynchClientTask showTreeTask = new AsynchClientTask("Showing pathway from " + sourceLabel,
+				
+				AsynchClientTask showDataTask = new AsynchClientTask("Displaying data from " + sourceLabel,
 						AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						tabbedPane.setSelectedComponent(treePanel);
 						String data = importer.getPreviouslyReadData();
-						String dataDescription = "Content of " + selectedSource.getLabel() + " (" + data.length() + " bytes):";
+						String dataDescription = "Content of " + sourceLabel + " (" + data.length() + " bytes):";
+						textLabel.setText(dataDescription);
+						textLabel.setToolTipText(dataDescription);
+						textArea.setText(data);
+						textArea.setToolTipText(dataDescription);
+						
 						treeLabel.setText(dataDescription);
 						treeLabel.setToolTipText(dataDescription);
 						PathwayModel pathwayModel = importer.getPreviouslyExtractedPathwayModel();
 						biopaxTree.setModel(BioPAXTreeMaker.makeTree(pathwayModel));
 						biopaxTree.setToolTipText(dataDescription);
+						DialogUtils.showComponentCloseDialog(dialog, getPreviewPanel(), "Preview Pathway " + sourceLabel);
 					}
 				};
-				ClientTaskDispatcher.dispatch(PathwayImportPanel.this, new Hashtable<String, Object>(), 
-						new AsynchClientTask[]{ readDataTask, parseDataTask, showTreeTask}, true, true, null);
+//				ClientTaskDispatcher.dispatch(dialog, new Hashtable<String, Object>(), new AsynchClientTask[]{ readDataTask, parseDataTask, showDataTask}, false);
+				ClientTaskDispatcher.dispatch(dialog, new Hashtable<String, Object>(), new AsynchClientTask[]{ readDataTask, parseDataTask, showDataTask}, null, true, false, false, null, true);
 				System.out.println(sourceLabel);				
-			} else {
-				System.out.println("Selected source is null");
 			}
 		}
 	};
 	
-	protected Action importAction = new AbstractAction("Import Pathway") {
+	protected Action importAction = new AbstractAction("Import") {
 		public void actionPerformed(ActionEvent arg0) {
 			final DataImportSource selectedSource = getSelectedSource();
-			if(selectedSource != null) {
+			if(selectedSource == null) {
+				DialogUtils.showErrorDialog(PathwayImportPanel.this, "No pathway is selected!");
+			} else {
 				final String sourceLabel = selectedSource.getLabel();
 				AsynchClientTask readDataTask = 
 					new AsynchClientTask("Reading data from " + sourceLabel, 
@@ -185,16 +185,34 @@ public class PathwayImportPanel extends JPanel {
 						PathwayImportPanel.this.disposeDialog();
 					}
 				};
-				ClientTaskDispatcher.dispatch(PathwayImportPanel.this, new Hashtable<String, Object>(), 
-						new AsynchClientTask[]{ readDataTask, parseDataTask, showPathwayTask}, true, true, null);
+				ClientTaskDispatcher.dispatch(dialog, new Hashtable<String, Object>(), new AsynchClientTask[]{ readDataTask, parseDataTask, showPathwayTask}, null, true, false, false, null, true);
 				System.out.println(sourceLabel);				
-			} else {
-				System.out.println("Selected source is null");
 			}
 		}
 	};
 	
-	protected Action exportAction = new AbstractAction("Export Pathway") {
+	private JPanel getPreviewPanel() {
+		if (previewPanel == null) {
+			previewPanel = new JPanel(new BorderLayout());
+			previewPanel.setPreferredSize(new Dimension(500,500));
+			textPanel.setLayout(new BorderLayout());		
+			textPanel.add(textScrollPane, BorderLayout.CENTER);
+			textPanel.add(textLabel, BorderLayout.NORTH);
+			
+			treePanel.setLayout(new BorderLayout());
+			treePanel.add(treeScrollPane, BorderLayout.CENTER);
+			treePanel.add(treeLabel, BorderLayout.NORTH);
+			
+			JTabbedPane tabbedPane = new JTabbedPane();
+			tabbedPane.addTab("Raw Data", textPanel);
+			tabbedPane.addTab("Tree", treePanel);
+			
+			previewPanel.add(tabbedPane, BorderLayout.CENTER);
+		}
+		return previewPanel;
+	}
+	
+	protected Action exportAction = new AbstractAction("Export") {
 		public void actionPerformed(ActionEvent arg0) {
 			final DataImportSource selectedSource = getSelectedSource();
 			if(selectedSource != null) {
@@ -249,65 +267,82 @@ public class PathwayImportPanel extends JPanel {
 		}
 	};
 	
-	protected Action closeAction = new AbstractAction("Close Dialog") {
+	protected Action closeAction = new AbstractAction("Cancel") {
 		public void actionPerformed(ActionEvent e) {
 			PathwayImportPanel.this.disposeDialog();
 		}
 	};
 	
-	protected final List<Action> actions = Arrays.asList(showAction, treeAction, importAction, exportAction, closeAction);
+	protected final List<Action> actions = Arrays.asList(importAction/*, exportAction*/, previewAction, closeAction);
+	private CardLayout choosePathwayCardLayout;
+	private JPanel choosePathwayPanel;
+	private PathwayImportOption currentOption = null;
 	
 	public PathwayImportPanel(PathwayImporter importer, SelectionManager selectionManager) {
 		this.importer = importer;
 		this.selectionManager = selectionManager;
+		exampleTable.setModel(exampleTableModel);
+		exampleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		exampleTableModel.setData(VCellPathwayResourceDirectory.getDescriptionList());
 		setLayout(new BorderLayout());
 		setSize(400, 300);
-		add(tabbedPane);
-		add(toolBar, BorderLayout.SOUTH);
-		for(Action action : actions) { toolBar.add(new JButton(action)); }
-		tabbedPane.addTab("Choose Web Location", webImportPanel);		
+		choosePathwayPanel = new JPanel();
+		choosePathwayCardLayout = new CardLayout();
+		choosePathwayPanel.setLayout(choosePathwayCardLayout);
+		choosePathwayPanel.add(webImportPanel, PathwayImportOption.Web_Location.name());
+		choosePathwayPanel.add(fileChooser, PathwayImportOption.File.name());
+		choosePathwayPanel.add(exampleTable.getEnclosingScrollPane(), PathwayImportOption.Example.name());
+		for(Action action : actions) { 
+			toolBarPanel.add(new JButton(action)); 
+		}
+		
 		fileChooser.setControlButtonsAreShown(false);
-		tabbedPane.addTab("Choose File", fileChooser);
-		tabbedPane.addTab("Choose Example", examplesImportPanel);
-		textPanel.setLayout(new BorderLayout());
-		textPanel.add(textScrollPane);
-		textPanel.add(textLabel, BorderLayout.NORTH);
-		tabbedPane.addTab("Raw Data", textPanel);
-		treePanel.setLayout(new BorderLayout());
-		treePanel.add(treeScrollPane);
-		treePanel.add(treeLabel, BorderLayout.NORTH);
-		tabbedPane.addTab("Tree", treePanel);
+		add(choosePathwayPanel);
+		add(toolBarPanel, BorderLayout.SOUTH);
 	}
 	
 	public DataImportSource getSelectedSource() {
-		Component selectedComponent = tabbedPane.getSelectedComponent();
-		if(fileChooser.equals(selectedComponent)) {
+		switch (currentOption) {
+		case Web_Location:
+			URL url = webImportPanel.getURL();
+			if(url != null) {
+				importer.selectURL(url);
+			} else {
+				return null;
+			}
+			break;
+		case File:
 			JavaUtil.updateJFileChooser(fileChooser);
 			fileChooser.approveSelection();
 			File selectedFile = fileChooser.getSelectedFile();
 			if(selectedFile != null) {
 				importer.selectFile(selectedFile);
+			} else {
+				return null;
 			}
-		} else if(webImportPanel.equals(selectedComponent)) {
-			URL url = webImportPanel.getURL();
-			if(url != null) {
-				importer.selectURL(url);
-			}
-		} else if(examplesImportPanel.equals(selectedComponent)) {
-			String description = examplesImportPanel.getSelectedOption();
-			if(description != null) {
+			break;
+		case Example:
+			int row = exampleTable.getSelectedRow();
+			if(row >= 0) {
+				String description = exampleTableModel.getValueAt(row);
 				String path = VCellPathwayResourceDirectory.getPath(description);
 				if(path != null) {
 					importer.selectResource(path, description);
 				}
+			} else {
+				return null;
 			}
+			break;
 		}
 		return importer.getSource();
 	}
 	
-	public void showDialog(JComponent parent) {
+	public void showDialog(JComponent parent, PathwayImportOption pathwayImportOption) {
+		currentOption = pathwayImportOption;
+		choosePathwayCardLayout.show(choosePathwayPanel, currentOption.name());
+
 		Container owner = parent.getTopLevelAncestor();
-		String title = "Select Pathway Data";
+		String title = "Select Pathway";
 		boolean modal = true;
 		dialog = owner instanceof Frame ? new JDialog((Frame) owner, title, modal) : 
 			owner instanceof Dialog ? new JDialog((Dialog) owner, title, modal) : new JDialog((Frame) null, title, modal);

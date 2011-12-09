@@ -79,6 +79,7 @@ import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
+import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.gui.ImageResizePanel;
 import cbit.image.ImageException;
@@ -2508,10 +2509,10 @@ public void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requ
 	openAfterChecking(documentInfo, requester, inNewWindow);
 }
 
-public void openPathway(DocumentWindowManager windowManager) {
+public void openPathway(DocumentWindowManager windowManager, PathwayImportOption pathwayImportOption) {
 	if(windowManager instanceof BioModelWindowManager) {
 		BioModelWindowManager bioModelWindowManager = (BioModelWindowManager) windowManager;
-		bioModelWindowManager.importPathway();
+		bioModelWindowManager.importPathway(pathwayImportOption);
 	} else {
 		DialogUtils.showErrorDialog(windowManager.getComponent(), 
 				"<html>Pathways can only be imported into a BioModel. " + 
