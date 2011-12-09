@@ -2579,22 +2579,44 @@ protected void addGeometry() {
 	Origin vcOrigin = new Origin(origX, origY, origZ);
 	Extent vcExtent = new Extent(extentX, extentY, extentZ);
 	
-	// from geometry definition, find out which type of geometry : image or analytic
+	// from geometry definition, find out which type of geometry : image or analytic or CSG
 	int geometryType = GEOM_OTHER;
 	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
 		throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
 	}
-	GeometryDefinition gd = sbmlGeometry.getGeometryDefinition(0);
-	if (gd.isAnalyticGeometry()) {
-		geometryType = GEOM_ANALYTIC;
-	} else if (gd.isSampledFieldGeometry()){
-		geometryType = GEOM_IMAGEBASED;
-	} else if (gd.isCSGeometry()) {
-		geometryType = GEOM_CSG;
+	
+//	GeometryDefinition gd = sbmlGeometry.getGeometryDefinition(0);
+//	if (gd.isAnalyticGeometry()) {
+//		geometryType = GEOM_ANALYTIC;
+//	} else if (gd.isSampledFieldGeometry()){
+//		geometryType = GEOM_IMAGEBASED;
+//	} else if (gd.isCSGeometry()) {
+//		geometryType = GEOM_CSG;
+//	}
+	
+	GeometryDefinition gd = null;
+	for (int i = 0; i < sbmlGeometry.getNumGeometryDefinitions(); i++) {
+		GeometryDefinition gd_temp = sbmlGeometry.getGeometryDefinition(i);
+		if (gd_temp.isAnalyticGeometry()) {
+			if (geometryType == GEOM_OTHER) {		// set the geometry type to this type of geomtrey defintion if is has the default value of GEOM_OTHER
+				geometryType = GEOM_ANALYTIC;
+				gd = sbmlGeometry.getGeometryDefinition(i);
+			}
+		} else if (gd_temp.isSampledFieldGeometry()){
+			if (geometryType == GEOM_OTHER) {		// set the geometry type to this type of geomtrey defintion if is has the default value of GEOM_OTHER
+				geometryType = GEOM_IMAGEBASED;
+				gd = sbmlGeometry.getGeometryDefinition(i);
+			}
+		} else if (gd_temp.isCSGeometry()) {
+			if (geometryType == GEOM_OTHER) {		// set the geometry type to this type of geomtrey defintion if is has the default value of GEOM_OTHER
+				geometryType = GEOM_CSG;
+				gd = sbmlGeometry.getGeometryDefinition(i);
+			}
+		}
 	}
 	
 	if (geometryType == GEOM_OTHER) {
-		throw new RuntimeException("VCell supports only Analytic or Image based (SampledFieldGeometry) or Constructed Solid Geometry at this time.");
+		throw new RuntimeException("VCell supports only Analytic, Image based (SampledFieldGeometry) or Constructed Solid Geometry at this time.");
 	}
 	Geometry vcGeometry = null;
 	if (geometryType == GEOM_ANALYTIC || geometryType == GEOM_CSG) {
@@ -2660,10 +2682,10 @@ protected void addGeometry() {
 	// get a listOfAdjacentDomains via the Geometry object.	
 	ListOfAdjacentDomains listOfAdjacentDomains = sbmlGeometry.getListOfAdjacentDomains();
 	
-	ListOfGeometryDefinitions listOfGeomDefns = sbmlGeometry.getListOfGeometryDefinitions();
-	if ((listOfGeomDefns == null) || (sbmlGeometry.getNumGeometryDefinitions() > 1)) {
-		throw new RuntimeException("Can have only 1 geometry definition in geometry");
-	}
+//	ListOfGeometryDefinitions listOfGeomDefns = sbmlGeometry.getListOfGeometryDefinitions();
+//	if ((listOfGeomDefns == null) || (sbmlGeometry.getNumGeometryDefinitions() > 1)) {
+//		throw new RuntimeException("Can have only 1 geometry definition in geometry");
+//	}
 	// use the boolean bAnalytic to create the right kind of subvolume. First match the somVol=domainTypes for spDim=3. Deal witl spDim=2 afterwards.
 	GeometrySurfaceDescription vcGsd = vcGeometry.getGeometrySurfaceDescription();
 	Vector<DomainType> surfaceClassDomainTypesVector = new Vector<DomainType>();
@@ -2747,21 +2769,18 @@ protected void addGeometry() {
 			CSGeometry csg = (CSGeometry)gd;
 			ListOfCSGObjects listOfcsgObjs = csg.getListOfCSGObjects();
 			int numCSGObjects = (int)csg.getNumCSGObjects();
-			CSGObject[] vcCSGSubVolumes = new CSGObject[numCSGObjects+1]; 	// extra subvolume for background - basic cube primitive CSGObject 
-			for (int kk = 0; kk < csg.getNumCSGObjects();kk++) {
+			ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
+			int index = 0;
+			for (int kk = 0; kk < numCSGObjects;kk++) {
 				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
+				index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
+				// indx = n - (ordinal+1) : we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
+				// insert vcCSGObj at position 'indx' in arraylist 
 				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
 				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
-				vcCSGSubVolumes[kk] = vcellCSGObject;
+				vcCSGSubVolumes.add(index, vcellCSGObject);
 			}
-			// add default background cube primitive CSGObject
-			cbit.vcell.geometry.CSGPrimitive vcellCubePrimitive = new cbit.vcell.geometry.CSGPrimitive("bgCube", PrimitiveType.CUBE);
-			CSGScale csgScaledCube = new CSGScale("bgCube_scale", new Vect3d(100,100,100));
-			csgScaledCube.setChild(vcellCubePrimitive);
-			CSGObject backgroundCSGSubVolume = new CSGObject(null, "background", numCSGObjects);
-			backgroundCSGSubVolume.setRoot(csgScaledCube);
-			vcCSGSubVolumes[numCSGObjects] = backgroundCSGSubVolume;
-			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
+			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes.toArray(new CSGObject[numCSGObjects]));
 		}
 
 		

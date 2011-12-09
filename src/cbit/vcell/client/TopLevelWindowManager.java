@@ -301,14 +301,16 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int COPY_FROM_MATHMODEL = 7;
 	final int COPY_FROM_GEOMETRY = 8;
 	final int FROM_SCRATCH = 9;
-	final int FROM_CURRENT_GEOM = 10;
+	final int CSGEOMETRY_3D = 10;
+	final int FROM_CURRENT_GEOM = 11;
+	
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
 			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
 			{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
-			{"From scratch"}};
+			{"From scratch"}, {"Constructed Solid Geometry (3D)"}};
 	if(bShowCurrentGeomChoice){
 		Vector<String[]> choiceV = new Vector<String[]>();
 		choiceV.addAll(Arrays.asList(choices));
@@ -343,6 +345,8 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else if(geomType[0] == FROM_CURRENT_GEOM){
 		return new DocumentWindowManager.GeometrySelectionInfo();
+	} else if(geomType[0] == CSGEOMETRY_3D){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}
@@ -431,8 +435,6 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
-	
-
 
 }
 

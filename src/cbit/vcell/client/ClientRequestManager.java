@@ -131,11 +131,18 @@ import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive;
+import cbit.vcell.geometry.CSGRotation;
+import cbit.vcell.geometry.CSGScale;
+import cbit.vcell.geometry.CSGSetOperator;
+import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.ROIMultiPaintManager;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.gui.GeometrySummaryPanel;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -149,6 +156,7 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
@@ -1570,6 +1578,37 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));
 						geometry.precomputeAll();
 						hashTable.put("doc", geometry);
+					}
+				};
+				taskArray = new AsynchClientTask[] {task1};
+				break;
+			} if (createOption == VCDocument.GEOM_OPTION_CSGEOMETRY_3D) {
+				// constructed solid geometry
+				AsynchClientTask task1 = new AsynchClientTask("creating constructed solid geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), 3);
+						Extent extent = geometry.getExtent();
+						if (extent != null) {
+							// create a CSGPrimitive of type cube and scale it to the 'extent' components. Use this as the default or background CSGObject (subdomain).
+							// This can be considered as the equivalent of subdomain (with expression) 1.0 for analyticSubvolume.
+							// basic cube
+							CSGPrimitive cube = new CSGPrimitive("cube", CSGPrimitive.PrimitiveType.CUBE);
+							// scaled cube
+							double x = extent.getX();
+							double y = extent.getY();
+							double z = extent.getZ();
+							CSGScale scaledCube = new CSGScale("scale", new Vect3d(x, y, z));
+							scaledCube.setChild(cube);
+							// translated scaled cube
+							CSGTranslation translatedScaledCube = new CSGTranslation("translation", new Vect3d(x/2, y/2, z/2));
+							translatedScaledCube.setChild(scaledCube);
+							CSGObject csgObject = new CSGObject(null, "subdomain0", 0);
+							csgObject.setRoot(translatedScaledCube);
+							geometry.getGeometrySpec().addSubVolume(csgObject, false);
+							geometry.precomputeAll();
+							hashTable.put("doc", geometry);
+						}
 					}
 				};
 				taskArray = new AsynchClientTask[] {task1};
