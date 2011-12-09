@@ -130,7 +130,14 @@ private javax.swing.JPanel getParamChoicesPanel() {
 	return paramChoicesPanel;
 }
 
-
+public void disableExportTabForQuickRunSims() {
+	if (!isODEData) {
+		// disable 'Export' tab for spatial sim results (PDEDataviewer)
+		if (pdeDataViewer != null) {
+			pdeDataViewer.disableExportTabForQuickRunSims();
+		}
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:36:17 PM)
