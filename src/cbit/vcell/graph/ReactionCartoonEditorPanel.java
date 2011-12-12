@@ -279,8 +279,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		JButton button = new JButton();
 		setToolBarButtonSizes(button);
 		button.setMargin(new Insets(2, 2, 2, 2));
-//		button.setFont(new Font("Arial", 1, 10));
-		button.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+
 		return button;
 	}
 	
