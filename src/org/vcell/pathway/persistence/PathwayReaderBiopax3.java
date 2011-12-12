@@ -105,7 +105,7 @@ import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBState;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
-import org.vcell.pathway.sbpax.UnitOfMeasurementFactory;
+import org.vcell.pathway.sbpax.UnitOfMeasurementPool;
 
 import cbit.util.xml.XmlUtil;
 import static org.vcell.pathway.PathwayXMLHelper.*;
@@ -2141,7 +2141,7 @@ public class PathwayReaderBiopax3 {
 		if(element.getChildren().size() == 0) {
 			String id = parseIDAttributes(element);
 			if(id != null) {
-				return UnitOfMeasurementFactory.getUnitById(id);				
+				return UnitOfMeasurementPool.getUnitById(id);				
 			} else {
 				return new UnitOfMeasurement();
 			}
@@ -2158,7 +2158,7 @@ public class PathwayReaderBiopax3 {
 				}
 			}
 		}
-		UnitOfMeasurement unit = UnitOfMeasurementFactory.getUnitByIdOrSymbol(id, symbols);
+		UnitOfMeasurement unit = UnitOfMeasurementPool.getUnitByIdOrSymbol(id, symbols);
 		
 		addAttributes(unit, element);
 		

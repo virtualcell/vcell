@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UnitOfMeasurementFactory {
+public class UnitOfMeasurementPool {
 
 	public static final String BASE_URI = "http://www.sbpax.org/uome/list.owl#";
 	public static final String BASE_URI_OLD = "http://vcell.org/uome/list#";
