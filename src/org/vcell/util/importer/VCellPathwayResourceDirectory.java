@@ -34,11 +34,13 @@ public class VCellPathwayResourceDirectory {
 	static {
 		String fromSGMP = "from Signaling Gateway Molecule Pages";
 		String fromSABIORK = "from SABIO-RK";
-		addEntry(DIR + "sabio/rsabio12.owl", "RSABIO=12 " + fromSABIORK);
-		addEntry(DIR + "sabio/rkeggr01026.owl", "RKEGG=R01026 " + fromSABIORK);
+		addEntry(DIR + "sgmp/sgmpA001750.owl", "Phosphodiesterase 2A, cGMP stimulated (id=A001750) " + fromSGMP);
+		addEntry(DIR + "sabio/rsabio12.owl", "Glucose and Phosphohistidine (id=12) " + fromSABIORK);
+		addEntry(DIR + "sabio/rsabio65.owl", "Ribose to Ribulose (id=65) " + fromSABIORK);
+		addEntry(DIR + "sabio/rsabio11452.owl", "D-Mannose Transport (id=11452) " + fromSABIORK);
+		addEntry(DIR + "sabio/rkeggr01026.owl", "Acetylcholin breakdown (RKEGG=R01026) " + fromSABIORK);
 //		addEntry(DIR + "sgmp/sgmpA000037.owl", "A000037 " + fromSGMP);
 //		addEntry(DIR + "sgmp/sgmpA001046.owl", "A001046 " + fromSGMP);
-		addEntry(DIR + "sgmp/sgmpA001750.owl", "A001750 " + fromSGMP);
 //		addEntry(DIR + "sgmp/sgmpA001778.owl", "A001778 " + fromSGMP);
 //		addEntry(DIR + "sgmp/sgmpA001852.owl", "A001852 " + fromSGMP);
 	}

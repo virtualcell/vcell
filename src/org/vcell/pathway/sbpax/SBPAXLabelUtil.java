@@ -38,28 +38,31 @@ public class SBPAXLabelUtil {
 		}
 		List<SBVocabulary> vocabularies = entity.getSBTerm();
 		if(vocabularies != null && !vocabularies.isEmpty()) {
-			label = label + makeLabel(vocabularies.get(0));
+			label = label + "(" + makeLabel(vocabularies.get(0)) + ")";
 		} else {
-			label = label + "???";
+			label = label + "(???)";
 		}
 		return label;
 	}
 	
 	public static String makeLabel(UnitOfMeasurement unit) {
+		if(!unit.getSymbols().isEmpty()) {
+			return unit.getSymbols().iterator().next();
+		}
 		return "[?]";
 	}
 	
 	public static String makeLabel(SBVocabulary vocabulary) {
-		vocabulary.getxRef();
 		Set<SBOTerm> sboTerms = SBPAXSBOExtractor.extractSBOTerms(vocabulary);
-		if(!sboTerms.isEmpty()) {
-			SBOTerm sboTerm = sboTerms.iterator().next();
+		for(SBOTerm sboTerm : sboTerms) {
 			String symbol = sboTerm.getSymbol();
 			if(StringUtil.notEmpty(symbol)) {
 				return symbol;
+			} else {
+				return sboTerm.getId();
 			}
 		}
-		return "?";
+		return "???";
 	}
 	
 }

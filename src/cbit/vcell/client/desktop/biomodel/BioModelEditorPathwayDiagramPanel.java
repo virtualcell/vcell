@@ -423,7 +423,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 							  }
 							  infoMessage += "\n";
 					  }else if(bpo instanceof PhysicalEntity){
-							  infoMessage += "SpeciesContext: \t\'";
+							  infoMessage += "Species: \t\'";
 							  for(RelationshipObject  r : bioModel.getRelationshipModel().getRelationshipObjects(bpo)){
 								  infoMessage += r.getBioModelEntityObject().getName()+"\'\n";
 							  }

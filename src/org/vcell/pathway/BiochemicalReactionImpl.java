@@ -111,8 +111,4 @@ public class BiochemicalReactionImpl extends ConversionImpl implements Biochemic
 		printObjects(sb,"kEQ",kEQ,level);
 	}
 
-	public String getTypeLabel(){
-		return "Biochemical Reaction";
-	}
-
 }

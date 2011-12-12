@@ -27,6 +27,8 @@ public class WebImportPanel extends JPanel {
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001852&type=sbPAXExport",
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001046&type=sbPAXExport",
 		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=12",
+		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=65",
+		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=11452",
 		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RKEGG=R01026"};
 	
 	private List<String> urlList = new ArrayList<String>(Arrays.asList(urlStringOptions));

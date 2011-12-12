@@ -12,6 +12,8 @@ package org.vcell.pathway.persistence;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -103,6 +105,7 @@ import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBState;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
+import org.vcell.pathway.sbpax.UnitOfMeasurementFactory;
 
 import cbit.util.xml.XmlUtil;
 import static org.vcell.pathway.PathwayXMLHelper.*;
@@ -476,7 +479,7 @@ public class PathwayReaderBiopax3 {
 					bioPaxObject.setID(uri);
 					count++;
 				}else{
-					String uri = context.unAbbreviateURI(element, attribute.getValue());
+					String uri = context.unRelativizeURI(element, attribute.getValue());
 					bioPaxObject.setID(uri);
 					count++;
 				}
@@ -498,6 +501,36 @@ public class PathwayReaderBiopax3 {
 		if(count > 1) {
 			System.out.println(element + " has multiple ID and/or resource attributes.");
 		}
+	}
+
+	private String parseIDAttributes(Element element){
+		int count = 0;
+		String id = null;
+		for (Object attr : element.getAttributes()){
+			Attribute attribute = (Attribute)attr;
+			if (attribute.getName().equals("ID")){
+				id = context.unAbbreviateURI(element, attribute.getValue());
+				count++;
+			} else if (attribute.getName().equals("resource")){
+				id = context.unRelativizeURI(element, attribute.getValue());
+				count++;
+			} else if (attribute.getName().equals("about")){
+				id = context.unRelativizeURI(element, attribute.getValue());
+				count++;
+			} else if (attribute.getName().equals("nodeID")){
+				id = attribute.getValue();
+				count++;
+			} else{
+				showUnexpected(attribute);
+			}
+		}
+		if(count < 1) {
+			System.out.println(element + " has neither ID nor resource attributes.");
+		}
+		if(count > 1) {
+			System.out.println(element + " has multiple ID and/or resource attributes.");
+		}
+		return id;
 	}
 
 //	if(bpObject.getID() != null) {
@@ -2105,14 +2138,30 @@ public class PathwayReaderBiopax3 {
 		return sbVocabulary;
 	}
 	private UnitOfMeasurement addObjectUnitOfMeasurement(Element element) {
-		if (element.getChildren().size()==0){
-			UnitOfMeasurementProxy proxy = new UnitOfMeasurementProxy();
-			addAttributes(proxy, element);
-			pathwayModel.add(proxy);
-			return proxy;
+		if(element.getChildren().size() == 0) {
+			String id = parseIDAttributes(element);
+			if(id != null) {
+				return UnitOfMeasurementFactory.getUnitById(id);				
+			} else {
+				return new UnitOfMeasurement();
+			}
 		}
-		UnitOfMeasurement unit = new UnitOfMeasurement();
+		String id = null;
+		List<String> symbols = new ArrayList<String>();
+		id = parseIDAttributes(element);
+		for(Object childObject : element.getChildren()) {
+			if(childObject instanceof Element) {
+				Element childElement = (Element) childObject;
+				if(childElement.getName().equals("unitSymbol")) {
+					String symbol = childElement.getTextTrim();
+					symbols.add(symbol);					
+				}
+			}
+		}
+		UnitOfMeasurement unit = UnitOfMeasurementFactory.getUnitByIdOrSymbol(id, symbols);
+		
 		addAttributes(unit, element);
+		
 		for (Object child : element.getChildren()){
 			if (!addContentUnitOfMeasurement(unit,element,(Element)child)){
 				showUnexpected((Element)child);

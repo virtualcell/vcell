@@ -10,14 +10,9 @@
 
 package org.vcell.pathway.sbpax;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.sbpax.schemas.UOMECore;
-import org.sbpax.schemas.UOMEList;
 
 public class UnitOfMeasurementFactory {
 
@@ -35,8 +30,18 @@ public class UnitOfMeasurementFactory {
 			}
 		}
 	}
+		
+	public static boolean hasUnitWithId(String id) {
+		if(unitsById.containsKey(id)) { return true; }
+		id = id.replace(BASE_URI_OLD, BASE_URI);
+		if(unitsById.containsKey(id)) { return true; }
+		return false;
+	}
 	
 	public static UnitOfMeasurement getUnitById(String id) {
+		if(id.startsWith(BASE_URI_OLD)) {
+			id = id.replace(BASE_URI_OLD, BASE_URI);
+		}
 		UnitOfMeasurement unit = unitsById.get(id);
 		if(unit == null) {
 			unit = new UnitOfMeasurement();
@@ -44,6 +49,10 @@ public class UnitOfMeasurementFactory {
 			addUnit(unit);
 		}
 		return unit;
+	}
+	
+	public static boolean hasUnitWithSymbol(String symbol) {
+		return unitsBySymbol.containsKey(symbol);
 	}
 	
 	public static UnitOfMeasurement getUnitBySymbol(String symbol) {
@@ -56,21 +65,55 @@ public class UnitOfMeasurementFactory {
 		return unit;
 	}
 	
-	public static void addUnit(String localName, String symbol) {
-		String id = BASE_URI + localName;
+	public static UnitOfMeasurement getUnitByIdOrSymbol(String id, Collection<String> symbols) {
+		UnitOfMeasurement unit = null;
+		if(id != null && hasUnitWithId(id)) {
+			unit = getUnitById(id);
+		} else {
+			for(String symbol : symbols) {
+				if(hasUnitWithSymbol(symbol)) {
+					unit = getUnitBySymbol(symbol);
+					break;
+				}
+			}
+		}
+		if(unit == null) {
+			if(id != null) {
+				if(symbols.isEmpty()) {
+					unit = getUnitById(id);
+				} else {
+					unit = addUnit(id, symbols.iterator().next());
+				}
+			} else {
+				unit = new UnitOfMeasurement();
+			}
+			addUnit(unit);
+		}
+		for(String symbol : symbols) {
+			if(!unit.getSymbols().contains(symbol)) {
+				unit.getSymbols().add(symbol);
+			}
+		}
+		return unit;
+	}
+	
+	public static UnitOfMeasurement addUnit(String id, String symbol) {
 		UnitOfMeasurement unit = getUnitById(id);
-		String oldID = BASE_URI_OLD + localName;
-		unitsById.put(oldID, unit);
 		unit.getSymbols().add(symbol);
+		if(!unitsBySymbol.containsKey(symbol)) {
+			unitsBySymbol.put(symbol, unit);
+		}
+		return unit;
 	}
 
-	public static void addUnit(URI uri) {
-		String id = uri.getLocalName();
-		Iterator<Statement> iter = UOMEList.schema.match(uri, UOMECore.unitSymbol, null);
-		if(iter.hasNext()) { 
-			// TODO
-			iter.next().getObject();
-		}
-	}
+	public static final String MU = "\u03bc";
+	
+	public static final UnitOfMeasurement MICROMOLAR = addUnit(BASE_URI + "Micromolar", MU + "M");
+	public static final UnitOfMeasurement MOLAR = addUnit(BASE_URI + "Molar", "M");
+	public static final UnitOfMeasurement MOLE_PER_SECOND = addUnit(BASE_URI + "MolePerSecond", "mol/s");
+	public static final UnitOfMeasurement PH = addUnit(BASE_URI + "PH", "pH");
+	public static final UnitOfMeasurement PER_MOLAR_SECOND = addUnit(BASE_URI + "PerMolarSecond", "M^(-1)*s^(-1)");
+	public static final UnitOfMeasurement PER_SECOND = addUnit(BASE_URI + "PerSecond", "s^(-1)");
+	public static final UnitOfMeasurement SECOND = addUnit(BASE_URI + "Second", "s");
 	
 }

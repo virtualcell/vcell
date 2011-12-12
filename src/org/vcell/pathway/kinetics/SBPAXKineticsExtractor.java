@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.sbpax.util.StringUtil;
+import org.sbpax.util.sets.SetUtil;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.sbo.SBOList;
 import org.vcell.pathway.sbo.SBOTerm;
@@ -26,14 +27,14 @@ import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
 
+import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class SBPAXKineticsExtractor {
@@ -90,31 +91,47 @@ public class SBPAXKineticsExtractor {
 		Map<SBOTerm, ModelParameter> sboToParameters = new HashMap<SBOTerm, ModelParameter>();
 		Set<SBOTerm> sboTerms = SBPAXSBOExtractor.extractSBOTerms(measurable);
 		String symbol = null;
+		VCUnitDefinition targetUnit = null;
+		Set<SBOTerm> termsWithUnituM = SetUtil.newSet(SBOList.sbo0000027, SBOList.sbo0000322);
 		for(SBOTerm sboTerm : sboTerms) {
+			if(termsWithUnituM.contains(sboTerm)) {
+				targetUnit = VCUnitDefinition.UNIT_uM;
+			}
 			if(StringUtil.notEmpty(sboTerm.getSymbol())) {
 				symbol = sboTerm.getSymbol();
 			}
+			for(int i = 0; i < symbol.length(); ++i) {
+				char charAt = symbol.charAt(i);
+				if(!Character.isJavaIdentifierPart(charAt)) {
+					symbol = symbol.replace(charAt, '_');
+				}
+			}
 		}
 		VCUnitDefinition unit = UOMEUnitExtractor.extractVCUnitDefinition(measurable);
+		double conversionFactor = 1.0;
+		if(targetUnit != null && unit != null && unit != VCUnitDefinition.UNIT_TBD && !targetUnit.equals(unit)) {
+			if(unit.equals(VCUnitDefinition.UNIT_M) && targetUnit.equals(VCUnitDefinition.UNIT_uM)) {
+				conversionFactor = 1e6;
+				unit = VCUnitDefinition.UNIT_uM;
+			}
+		}
 		Model model = reaction.getModel();
-		int numberCount = 0;
 		ArrayList<Double> numbers = measurable.getNumber();
 		if(StringUtil.isEmpty(symbol)) {
-			SymbolTableEntry entry = null;
-			do {
-				symbol = "p" + (++nParameter);
-				try { entry = model.getEntry(symbol); } 
-				catch (ExpressionBindingException e) { e.printStackTrace(); }
-			} while (entry != null);
+			symbol = "p" + (++nParameter);
 		}
 		for(Double number : numbers) {
 			String parameterName = symbol + "_" + reaction.getName();
-			if(numbers.size() > 1) {
-				++numberCount;
-				parameterName = parameterName + "_" + numberCount;
+			if(model.getModelParameter(parameterName) != null) {
+				int count = 0;
+				while(model.getModelParameter(parameterName + "_"+ count) != null) {
+					++count;
+				}
+				parameterName = parameterName + "_" + count;
 			}
 			ModelParameter parameter = 
-				model.new ModelParameter(parameterName, new Expression(number.doubleValue()), Model.ROLE_UserDefined, unit);
+				model.new ModelParameter(parameterName, new Expression(conversionFactor*number.doubleValue()), 
+						Model.ROLE_UserDefined, unit);
 			model.addModelParameter(parameter);
 			for(SBOTerm sboTerm : sboTerms) {
 				sboToParameters.put(sboTerm, parameter);
@@ -150,17 +167,49 @@ public class SBPAXKineticsExtractor {
 				}
 			}
 		}
-		ModelParameter kMichaelis = getParameter(sboToModelParameter, SBOList.sbo0000027, SBOList.sbo0000322);
+		ModelParameter kMichaelis = getParameter(sboToModelParameter, SBOList.sbo0000027);
+		ModelParameter kMichaelisFwd = getParameter(sboToModelParameter, SBOList.sbo0000322);
 		ModelParameter vMax = getParameter(sboToModelParameter, SBOList.sbo0000186);
-		if(kMichaelis != null || vMax != null) {
+		ModelParameter vMaxf = getParameter(sboToModelParameter, SBOList.sbo0000324);
+		if(kMichaelisFwd != null || vMaxf != null) {
 			try {
 				HMM_REVKinetics kinetics = new HMM_REVKinetics(reaction);
+				if(kMichaelisFwd != null) {
+					try { 
+						KineticsParameter kmParameter = kinetics.getKmFwdParameter();
+						kmParameter.setExpression(new Expression(kMichaelisFwd.getName())); 
+						kmParameter.setUnitDefinition(kMichaelisFwd.getUnitDefinition());
+					} 
+					catch (PropertyVetoException e) { e.printStackTrace(); }					
+				}
+				if(vMaxf != null) {
+					try { 
+						KineticsParameter vmaxParameter = kinetics.getVmaxFwdParameter();
+						vmaxParameter.setExpression(new Expression(vMaxf.getName())); 
+						vmaxParameter.setUnitDefinition(vMaxf.getUnitDefinition());
+					} 
+					catch (PropertyVetoException e) { e.printStackTrace(); }					
+				}
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
+		} else if(kMichaelis != null || vMax != null) {
+			try {
+				HMM_IRRKinetics kinetics = new HMM_IRRKinetics(reaction);
 				if(kMichaelis != null) {
-					try { kinetics.getKmFwdParameter().setExpression(new Expression(kMichaelis.getName())); } 
+					try { 
+						KineticsParameter kmParameter = kinetics.getKmParameter();
+						kmParameter.setExpression(new Expression(kMichaelis.getName())); 
+						kmParameter.setUnitDefinition(kMichaelis.getUnitDefinition());
+					} 
 					catch (PropertyVetoException e) { e.printStackTrace(); }					
 				}
 				if(vMax != null) {
-					try { kinetics.getVmaxFwdParameter().setExpression(new Expression(vMax.getName())); } 
+					try { 
+						KineticsParameter vmaxParameter = kinetics.getVmaxParameter();
+						vmaxParameter.setExpression(new Expression(vMax.getName())); 
+						vmaxParameter.setUnitDefinition(vMax.getUnitDefinition());
+					} 
 					catch (PropertyVetoException e) { e.printStackTrace(); }					
 				}
 			} catch (ExpressionException e) {

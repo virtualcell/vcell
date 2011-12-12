@@ -11,8 +11,5 @@
 package org.vcell.pathway;
 
 public class MolecularInteraction extends InteractionImpl {
-	public String getTypeLabel(){
-		return "Molecular Interaction";
-	}
 	
 }
