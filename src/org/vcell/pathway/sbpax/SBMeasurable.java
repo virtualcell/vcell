@@ -11,8 +11,11 @@
 package org.vcell.pathway.sbpax;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 
 public class SBMeasurable extends SBEntityImpl {
@@ -45,6 +48,23 @@ public class SBMeasurable extends SBEntityImpl {
 				unit.set(i, (UnitOfMeasurement)concreteObject);
 			}
 		}
+	}
+	
+	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects) {
+		super.replace(resourceMap, replacedBPObjects);
+		for(int i = 0; i < unit.size(); ++i) {
+			UnitOfMeasurement aUnit = unit.get(i);
+			if(!URIUtil.isAbsoluteURI(aUnit.getID())) {
+				for(String symbol : aUnit.getSymbols()) {
+					UnitOfMeasurement aUnit2 = UnitOfMeasurementPool.getUnitBySymbol(symbol);
+					if(URIUtil.isAbsoluteURI(aUnit2.getID())) {
+						unit.set(i, aUnit2);
+						break;
+					}
+				}
+			}
+		}
+		
 	}
 	
 	public void showChildren(StringBuffer sb, int level){

@@ -36,10 +36,10 @@ public class UOMEToVCUnitMapper {
 	}
 	
 	static {
-		put(UnitOfMeasurementFactory.MICROMOLAR, VCUnitDefinition.UNIT_uM);
-		put(UnitOfMeasurementFactory.MOLAR, VCUnitDefinition.UNIT_M);
-		put(UnitOfMeasurementFactory.PER_SECOND, VCUnitDefinition.UNIT_per_s);
-		put(UnitOfMeasurementFactory.SECOND, VCUnitDefinition.UNIT_s);
+		put(UnitOfMeasurementPool.MICROMOLAR, VCUnitDefinition.UNIT_uM);
+		put(UnitOfMeasurementPool.MOLAR, VCUnitDefinition.UNIT_M);
+		put(UnitOfMeasurementPool.PER_SECOND, VCUnitDefinition.UNIT_per_s);
+		put(UnitOfMeasurementPool.SECOND, VCUnitDefinition.UNIT_s);
 	}
 	
 }
