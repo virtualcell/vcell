@@ -11,7 +11,5 @@
 package org.vcell.pathway;
 
 public class ComplexAssembly extends ConversionImpl {
-	public String getTypeLabel(){
-		return "Complex Assembly";
-	}
+
 }

@@ -46,7 +46,6 @@ import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBState;
 import org.vcell.pathway.sbpax.SBVocabulary;
-import org.vcell.pathway.sbpax.UnitOfMeasurement;
 
 public class BiopaxProxy {
 
@@ -60,7 +59,6 @@ public class BiopaxProxy {
 	public static class SBEntityProxy extends SBEntityImpl implements RdfObjectProxy { }
 	public static class SBMeasurableProxy extends SBMeasurable implements RdfObjectProxy { }
 	public static class SBStateProxy extends SBState implements RdfObjectProxy { }
-	public static class UnitOfMeasurementProxy extends UnitOfMeasurement implements RdfObjectProxy { }
 	public static class SBVocabularyProxy extends SBVocabulary implements RdfObjectProxy { }
 	public static class InteractionOrPathwayProxy extends InteractionImpl implements RdfObjectProxy { }
 	public static class PathwayProxy extends Pathway implements RdfObjectProxy { }

@@ -26,8 +26,4 @@ public class TransportImpl extends ConversionImpl implements Transport {
 		super.replace(resourceMap, replacedBPObjects);
 	}
 
-	public String getTypeLabel(){
-		return "Transport";
-	}
-
 }

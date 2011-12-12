@@ -109,9 +109,9 @@
 <sbx3:SBVocabulary rdf:about="http://sabio.h-its.org/biopax#SBO:0000027">
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000027"/>
 </sbx3:SBVocabulary>
-<rdf:Description rdf:about="http://sabio.h-its.org/biopax#SBO:0000147">
+<sbx3:SBVocabulary rdf:about="http://sabio.h-its.org/biopax#SBO:0000147">
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000147"/>
-</rdf:Description>
+</sbx3:SBVocabulary>
 
 <sbx3:SBVocabulary rdf:about="http://sabio.h-its.org/biopax#SBO:0000186">
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000186"/>
@@ -129,9 +129,9 @@
 
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000302"/>
 </sbx3:SBVocabulary>
-<rdf:Description rdf:about="http://sabio.h-its.org/biopax#SBO:0000304">
+<sbx3:SBVocabulary rdf:about="http://sabio.h-its.org/biopax#SBO:0000304">
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000304"/>
-</rdf:Description>
+</sbx3:SBVocabulary>
 <sbx3:SBVocabulary rdf:about="http://sabio.h-its.org/biopax#SBO:0000345">
 	<bp3:xref rdf:resource="http://sabio.h-its.org/biopax#Systems_Biology_Ontology:SBO:0000345"/>
 </sbx3:SBVocabulary>
