@@ -225,18 +225,6 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 		}		
 	};
 
-	AsynchClientTask confirmGeomTask = new AsynchClientTask("Review Geometry...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(final Hashtable<String, Object> hashTable) throws Exception {
-			Geometry geom = (Geometry)hashTable.get(GEOMETRY_KEY);
-			GeometrySummaryPanel geometrySummaryPanel = new GeometrySummaryPanel();
-			geometrySummaryPanel.setGeometry(geom);
-			int result = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(requester.getComponent()), geometrySummaryPanel, "Confirm Geometry Selection");
-			if(result != JOptionPane.OK_OPTION){
-				throw UserCancelException.CANCEL_GENERIC;
-			}
-		}		
-	};
 	AsynchClientTask processGeometryTask = new AsynchClientTask("Processing geometry...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -267,7 +255,7 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
 	ClientTaskDispatcher.dispatch(requester.getComponent(),hashTable,
-			new AsynchClientTask[] {selectDocumentTypeTask, selectLoadGeomTask, confirmGeomTask,processGeometryTask,setNewGeometryTask}, false);
+			new AsynchClientTask[] {selectDocumentTypeTask, selectLoadGeomTask,processGeometryTask,setNewGeometryTask}, false);
 	
 }
 

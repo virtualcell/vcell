@@ -121,26 +121,26 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		
-		AsynchClientTask oldEditorTask = new AsynchClientTask("creating new geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Geometry newGeom = (Geometry)hashTable.get("doc");
-				if(newGeom == null){
-					throw new IllegalArgumentException("No template geometry found during create.");
-				}
-				Boolean bShowOldGeomEditor = (Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR);
-				if(bShowOldGeomEditor){
-					GeometryViewer localGeometryViewer = new GeometryViewer(false);
-					localGeometryViewer.setGeometry(newGeom);
-					localGeometryViewer.setPreferredSize(new Dimension(700,500));
-					int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
-					localGeometryViewer.setGeometry(null);//force cleanup so localGeometryViewer can be garbage collected
-					if(result != JOptionPane.OK_OPTION){
-						throw UserCancelException.CANCEL_GENERIC;
-					}
-				}
-			}
-		};
+//		AsynchClientTask oldEditorTask = new AsynchClientTask("creating new geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				Geometry newGeom = (Geometry)hashTable.get("doc");
+//				if(newGeom == null){
+//					throw new IllegalArgumentException("No template geometry found during create.");
+//				}
+//				Boolean bShowOldGeomEditor = (Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR);
+//				if(bShowOldGeomEditor){
+//					GeometryViewer localGeometryViewer = new GeometryViewer(false);
+//					localGeometryViewer.setGeometry(newGeom);
+//					localGeometryViewer.setPreferredSize(new Dimension(700,500));
+//					int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+//					localGeometryViewer.setGeometry(null);//force cleanup so localGeometryViewer can be garbage collected
+//					if(result != JOptionPane.OK_OPTION){
+//						throw UserCancelException.CANCEL_GENERIC;
+//					}
+//				}
+//			}
+//		};
 		AsynchClientTask precomputeAllTask = new AsynchClientTask("precomputeAll geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -175,7 +175,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 
 		Geometry currentGeometry = geometryViewer.getGeometryOwner().getGeometry();
 		createGeometry(currentGeometry,
-				new AsynchClientTask[] {oldEditorTask,precomputeAllTask,setGeomOnSimContextTask}
+				new AsynchClientTask[] {/*oldEditorTask,*/precomputeAllTask,setGeomOnSimContextTask}
 				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT);
 	}
 	

@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.vcell.util.ISize;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ZEnforcer;
@@ -56,6 +57,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.mathmodel.MathModel;
 /**
  * This type was created in VisualAge.
@@ -593,14 +595,25 @@ private void refreshSize() {
 	double originY = getGeometry().getOrigin().getY();
 	double originZ = getGeometry().getOrigin().getZ();
 
-	String text = dim+"D,";
+	final String PREFIX = dim+"D,";;
+	String text = PREFIX;
+	String labelText = null;
 	if (dim==0){
 		text += " compartmental";
+		labelText = new String(text);
 	}else{
 		text += "  size=("+sizeX+(dim > 1?","+sizeY:"")+(dim > 2?","+sizeZ:"")+")"+
 				", origin=("+originX+(dim>1?","+originY:"")+(dim>2?","+originZ:"")+")";
+		if(text.length() > 50){
+			final int NUMDIGITS = 6;
+			labelText = PREFIX +
+				"  size=("+NumberUtils.formatNumber(sizeX, NUMDIGITS)+(dim > 1?","+NumberUtils.formatNumber(sizeY, NUMDIGITS):"")+(dim > 2?","+NumberUtils.formatNumber(sizeY, NUMDIGITS):"")+")"+
+				", origin=("+NumberUtils.formatNumber(originX, NUMDIGITS)+(dim>1?","+NumberUtils.formatNumber(originY, NUMDIGITS):"")+(dim>2?","+NumberUtils.formatNumber(originZ, NUMDIGITS):"")+")";
+		}else{
+			labelText = text;
+		}
 	}
-	getSizeLabel().setText(text);
+	getSizeLabel().setText(labelText);
 	getSizeLabel().setToolTipText(text);
 }
 
