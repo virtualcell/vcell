@@ -97,27 +97,27 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	final Object source = e.getSource();
 
 	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
-			AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Geometry newGeom = (Geometry)hashTable.get("doc");
-					if(newGeom != null){
-						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)){
-							GeometryViewer localGeometryViewer = new GeometryViewer(false);
-							localGeometryViewer.setGeometry(newGeom);
-							localGeometryViewer.setSize(800,600);
-							int result = DialogUtils.showComponentOKCancelDialog(
-									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
-							localGeometryViewer.setGeometry(null);
-							if(result != JOptionPane.OK_OPTION){
-								throw UserCancelException.CANCEL_GENERIC;
-							}
-						}
-					}else{
-						throw new Exception("No Geometry found in edit task");
-					}
-				}
-			};
+//			AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			@Override
+//				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					Geometry newGeom = (Geometry)hashTable.get("doc");
+//					if(newGeom != null){
+//						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)){
+//							GeometryViewer localGeometryViewer = new GeometryViewer(false);
+//							localGeometryViewer.setGeometry(newGeom);
+//							localGeometryViewer.setSize(800,600);
+//							int result = DialogUtils.showComponentOKCancelDialog(
+//									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
+//							localGeometryViewer.setGeometry(null);
+//							if(result != JOptionPane.OK_OPTION){
+//								throw UserCancelException.CANCEL_GENERIC;
+//							}
+//						}
+//					}else{
+//						throw new Exception("No Geometry found in edit task");
+//					}
+//				}
+//			};
 			AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -139,7 +139,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			};
 
 		createGeometry(getMathModel().getMathDescription().getGeometry(),
-				new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask}
+				new AsynchClientTask[] {/*editSelectTask,*/geomRegionsTask,applyGeomTask}
 		,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT);
 	}
 

@@ -297,19 +297,15 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int IMAGE_DB = 3;
 	final int IMAGE_FILE = 4;
 	final int MESH_FILE = 5;
-	final int COPY_FROM_BIOMODEL = 6;
-	final int COPY_FROM_MATHMODEL = 7;
-	final int COPY_FROM_GEOMETRY = 8;
-	final int FROM_SCRATCH = 9;
-	final int CSGEOMETRY_3D = 10;
-	final int FROM_CURRENT_GEOM = 11;
+	final int FROM_SCRATCH = 6;
+	final int CSGEOMETRY_3D = 7;
+	final int FROM_CURRENT_GEOM = 8;
 	
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
 			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
-			{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
 			{"From scratch"}, {"Constructed Solid Geometry (3D)"}};
 	if(bShowCurrentGeomChoice){
 		Vector<String[]> choiceV = new Vector<String[]>();
@@ -324,7 +320,6 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 			choices, ListSelectionModel.SINGLE_SELECTION);
 
 	VCDocument.DocumentCreationInfo documentCreationInfo = null;
-	VCDocumentInfo vcDocumentInfo = null;
 	if(geomType[0] == ANALYTIC_1D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D);
 	}else if(geomType[0] == ANALYTIC_2D){
@@ -335,12 +330,6 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE);
 	}else if(geomType[0] == IMAGE_FILE || geomType[0] == MESH_FILE){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
-	}else if(geomType[0] == COPY_FROM_BIOMODEL){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC, this);
-	}else if(geomType[0] == COPY_FROM_MATHMODEL){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.MATHMODEL_DOC, this);
-	}else if(geomType[0] == COPY_FROM_GEOMETRY){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC, this);
 	}else if(geomType[0] == FROM_SCRATCH){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else if(geomType[0] == FROM_CURRENT_GEOM){
@@ -353,8 +342,6 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = null;
 	if(documentCreationInfo != null){
 		geometrySelectionInfo = new DocumentWindowManager.GeometrySelectionInfo(documentCreationInfo);
-	}else{
-		geometrySelectionInfo = new DocumentWindowManager.GeometrySelectionInfo(vcDocumentInfo);
 	}
 	
 	return geometrySelectionInfo;
@@ -410,11 +397,10 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						hashTable.put("requestManager", getRequestManager());
 						hashTable.put(ClientRequestManager.IMAGE_FROM_DB, copiedGeom.getGeometrySpec().getImage());
 					}else{
-						hashTable.put(B_SHOW_OLD_GEOM_EDITOR, true);
-						//preload sampledimage to prevent gui delay later
-						copiedGeom.precomputeAll();
-						hashTable.put("doc",copiedGeom);
-						runtimeTasksV.addAll(Arrays.asList(afterTasks));
+						if(currentGeometry == null){
+							throw new Exception("Unexpected current geometry == null in createGeometry");
+						}
+						DialogUtils.showWarningDialog(getComponent(), "Current geometry contains analytic or CSG domains and can be edited directly within the 'Geometry Definition' tab view (no need to replace).");
 					}
 					new Thread(
 						new Runnable() {
