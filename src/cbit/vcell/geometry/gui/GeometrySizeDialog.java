@@ -10,14 +10,19 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
+import javax.swing.JPanel;
+
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -31,13 +36,10 @@ import cbit.vcell.geometry.GeometrySpec;
 public class GeometrySizeDialog extends javax.swing.JDialog implements ActionListener, PropertyChangeListener {
 	private javax.swing.JButton ivjButton1 = null;
 	private javax.swing.JButton ivjButton2 = null;
-	private javax.swing.JPanel ivjContentsPane = null;
 	private cbit.vcell.geometry.Geometry ivjGeometry = null;
 	private javax.swing.JTextField ivjOriginXTextField = null;
 	private javax.swing.JTextField ivjOriginYTextField = null;
 	private javax.swing.JTextField ivjOriginZTextField = null;
-	private javax.swing.JPanel ivjPanel = null;
-	private javax.swing.JPanel ivjPanel2 = null;
 	private javax.swing.JTextField ivjSizeXTextField = null;
 	private javax.swing.JTextField ivjSizeYTextField = null;
 	private javax.swing.JTextField ivjSizeZTextField = null;
@@ -55,7 +57,7 @@ public class GeometrySizeDialog extends javax.swing.JDialog implements ActionLis
 	private javax.swing.JLabel ivjSizeYUnitLabel = null;
 	private javax.swing.JLabel ivjSizeZLabel = null;
 	private javax.swing.JLabel ivjSizeZUnitLabel = null;
-	private javax.swing.JPanel ivjJPanel1 = null;
+	private javax.swing.JPanel buttonPanel = null;
 /**
  * Constructor
  */
@@ -189,50 +191,11 @@ private javax.swing.JButton getButton2() {
 	return ivjButton2;
 }
 /**
- * Return the ContentsPane property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getContentsPane() {
-	if (ivjContentsPane == null) {
-		try {
-			ivjContentsPane = new javax.swing.JPanel();
-			ivjContentsPane.setName("ContentsPane");
-			ivjContentsPane.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsPanel2 = new java.awt.GridBagConstraints();
-			constraintsPanel2.gridx = 0; constraintsPanel2.gridy = 0;
-			constraintsPanel2.gridwidth = 2;
-			getContentsPane().add(getPanel2(), constraintsPanel2);
-
-			java.awt.GridBagConstraints constraintsPanel = new java.awt.GridBagConstraints();
-			constraintsPanel.gridx = 0; constraintsPanel.gridy = 1;
-			constraintsPanel.gridwidth = 2;
-			constraintsPanel.insets = new java.awt.Insets(10, 0, 10, 0);
-			getContentsPane().add(getPanel(), constraintsPanel);
-
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 2;
-			constraintsJPanel1.gridwidth = 2;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.insets = new java.awt.Insets(15, 4, 4, 4);
-			getContentsPane().add(getJPanel1(), constraintsJPanel1);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjContentsPane;
-}
-/**
  * Return the Geometry property value.
  * @return cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.Geometry getGeometry() {
+private Geometry getGeometry() {
 	// user code begin {1}
 	// user code end
 	return ivjGeometry;
@@ -242,23 +205,23 @@ private cbit.vcell.geometry.Geometry getGeometry() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
+private javax.swing.JPanel getButtonPanel() {
+	if (buttonPanel == null) {
 		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
+			buttonPanel = new javax.swing.JPanel();
+			buttonPanel.setName("JPanel1");
+			buttonPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsButton2 = new java.awt.GridBagConstraints();
 			constraintsButton2.gridx = 1; constraintsButton2.gridy = 1;
 			constraintsButton2.ipadx = 20;
 			constraintsButton2.insets = new java.awt.Insets(0, 5, 0, 5);
-			getJPanel1().add(getButton2(), constraintsButton2);
+			getButtonPanel().add(getButton2(), constraintsButton2);
 
 			java.awt.GridBagConstraints constraintsButton1 = new java.awt.GridBagConstraints();
 			constraintsButton1.gridx = 2; constraintsButton1.gridy = 1;
 			constraintsButton1.insets = new java.awt.Insets(0, 5, 0, 5);
-			getJPanel1().add(getButton1(), constraintsButton1);
+			getButtonPanel().add(getButton1(), constraintsButton1);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -267,7 +230,7 @@ private javax.swing.JPanel getJPanel1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel1;
+	return buttonPanel;
 }
 /**
  * Return the OriginLabel property value.
@@ -277,7 +240,7 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JLabel getOriginLabel() {
 	if (ivjOriginLabel == null) {
 		try {
-			ivjOriginLabel = new javax.swing.JLabel();
+			ivjOriginLabel = GuiUtils.createBoldJLabel();
 			ivjOriginLabel.setName("OriginLabel");
 			ivjOriginLabel.setText("Origin");
 			// user code begin {1}
@@ -477,157 +440,6 @@ private javax.swing.JLabel getOriginZUnitLabel() {
 	return ivjOriginZUnitLabel;
 }
 /**
- * Return the Panel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getPanel() {
-	if (ivjPanel == null) {
-		try {
-			ivjPanel = new javax.swing.JPanel();
-			ivjPanel.setName("Panel");
-			ivjPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsOriginXLabel = new java.awt.GridBagConstraints();
-			constraintsOriginXLabel.gridx = 1; constraintsOriginXLabel.gridy = 0;
-			constraintsOriginXLabel.insets = new java.awt.Insets(0, 15, 0, 5);
-			getPanel().add(getOriginXLabel(), constraintsOriginXLabel);
-
-			java.awt.GridBagConstraints constraintsOriginXUnitLabel = new java.awt.GridBagConstraints();
-			constraintsOriginXUnitLabel.gridx = 3; constraintsOriginXUnitLabel.gridy = 0;
-			constraintsOriginXUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel().add(getOriginXUnitLabel(), constraintsOriginXUnitLabel);
-
-			java.awt.GridBagConstraints constraintsOriginXTextField = new java.awt.GridBagConstraints();
-			constraintsOriginXTextField.gridx = 2; constraintsOriginXTextField.gridy = 0;
-			constraintsOriginXTextField.ipadx = 70;
-			getPanel().add(getOriginXTextField(), constraintsOriginXTextField);
-
-			java.awt.GridBagConstraints constraintsOriginLabel = new java.awt.GridBagConstraints();
-			constraintsOriginLabel.gridx = 0; constraintsOriginLabel.gridy = 0;
-			constraintsOriginLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsOriginLabel.weightx = 1.0;
-			constraintsOriginLabel.insets = new java.awt.Insets(0, 15, 0, 5);
-			getPanel().add(getOriginLabel(), constraintsOriginLabel);
-
-			java.awt.GridBagConstraints constraintsOriginYLabel = new java.awt.GridBagConstraints();
-			constraintsOriginYLabel.gridx = 4; constraintsOriginYLabel.gridy = 0;
-			constraintsOriginYLabel.insets = new java.awt.Insets(0, 5, 0, 5);
-			getPanel().add(getOriginYLabel(), constraintsOriginYLabel);
-
-			java.awt.GridBagConstraints constraintsOriginYTextField = new java.awt.GridBagConstraints();
-			constraintsOriginYTextField.gridx = 5; constraintsOriginYTextField.gridy = 0;
-			constraintsOriginYTextField.ipadx = 70;
-			getPanel().add(getOriginYTextField(), constraintsOriginYTextField);
-
-			java.awt.GridBagConstraints constraintsOriginYUnitLabel = new java.awt.GridBagConstraints();
-			constraintsOriginYUnitLabel.gridx = 6; constraintsOriginYUnitLabel.gridy = 0;
-			constraintsOriginYUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel().add(getOriginYUnitLabel(), constraintsOriginYUnitLabel);
-
-			java.awt.GridBagConstraints constraintsOriginZLabel = new java.awt.GridBagConstraints();
-			constraintsOriginZLabel.gridx = 7; constraintsOriginZLabel.gridy = 0;
-			constraintsOriginZLabel.insets = new java.awt.Insets(0, 5, 0, 5);
-			getPanel().add(getOriginZLabel(), constraintsOriginZLabel);
-
-			java.awt.GridBagConstraints constraintsOriginZTextField = new java.awt.GridBagConstraints();
-			constraintsOriginZTextField.gridx = 8; constraintsOriginZTextField.gridy = 0;
-			constraintsOriginZTextField.ipadx = 70;
-			getPanel().add(getOriginZTextField(), constraintsOriginZTextField);
-
-			java.awt.GridBagConstraints constraintsOriginZUnitLabel = new java.awt.GridBagConstraints();
-			constraintsOriginZUnitLabel.gridx = 9; constraintsOriginZUnitLabel.gridy = 0;
-			constraintsOriginZUnitLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsOriginZUnitLabel.weightx = 1.0;
-			constraintsOriginZUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel().add(getOriginZUnitLabel(), constraintsOriginZUnitLabel);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjPanel;
-}
-/**
- * Return the Panel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getPanel2() {
-	if (ivjPanel2 == null) {
-		try {
-			ivjPanel2 = new javax.swing.JPanel();
-			ivjPanel2.setName("Panel2");
-			ivjPanel2.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsSizeXLabel = new java.awt.GridBagConstraints();
-			constraintsSizeXLabel.gridx = 1; constraintsSizeXLabel.gridy = 0;
-			constraintsSizeXLabel.insets = new java.awt.Insets(0, 5, 0, 5);
-			getPanel2().add(getSizeXLabel(), constraintsSizeXLabel);
-
-			java.awt.GridBagConstraints constraintsSizeXUnitLabel = new java.awt.GridBagConstraints();
-			constraintsSizeXUnitLabel.gridx = 3; constraintsSizeXUnitLabel.gridy = 0;
-			constraintsSizeXUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel2().add(getSizeXUnitLabel(), constraintsSizeXUnitLabel);
-
-			java.awt.GridBagConstraints constraintsSizeXTextField = new java.awt.GridBagConstraints();
-			constraintsSizeXTextField.gridx = 2; constraintsSizeXTextField.gridy = 0;
-			constraintsSizeXTextField.ipadx = 70;
-			getPanel2().add(getSizeXTextField(), constraintsSizeXTextField);
-
-			java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();
-			constraintsSizeLabel.gridx = 0; constraintsSizeLabel.gridy = 0;
-			constraintsSizeLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsSizeLabel.weightx = 1.0;
-			constraintsSizeLabel.ipadx = 10;
-			constraintsSizeLabel.insets = new java.awt.Insets(0, 15, 0, 15);
-			getPanel2().add(getSizeLabel(), constraintsSizeLabel);
-
-			java.awt.GridBagConstraints constraintsSizeYLabel = new java.awt.GridBagConstraints();
-			constraintsSizeYLabel.gridx = 4; constraintsSizeYLabel.gridy = 0;
-			constraintsSizeYLabel.insets = new java.awt.Insets(0, 5, 0, 5);
-			getPanel2().add(getSizeYLabel(), constraintsSizeYLabel);
-
-			java.awt.GridBagConstraints constraintsSizeYTextField = new java.awt.GridBagConstraints();
-			constraintsSizeYTextField.gridx = 5; constraintsSizeYTextField.gridy = 0;
-			constraintsSizeYTextField.ipadx = 70;
-			getPanel2().add(getSizeYTextField(), constraintsSizeYTextField);
-
-			java.awt.GridBagConstraints constraintsSizeYUnitLabel = new java.awt.GridBagConstraints();
-			constraintsSizeYUnitLabel.gridx = 6; constraintsSizeYUnitLabel.gridy = 0;
-			constraintsSizeYUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel2().add(getSizeYUnitLabel(), constraintsSizeYUnitLabel);
-
-			java.awt.GridBagConstraints constraintsSizeZLabel = new java.awt.GridBagConstraints();
-			constraintsSizeZLabel.gridx = 7; constraintsSizeZLabel.gridy = 0;
-			constraintsSizeZLabel.insets = new java.awt.Insets(0, 5, 0, 5);
-			getPanel2().add(getSizeZLabel(), constraintsSizeZLabel);
-
-			java.awt.GridBagConstraints constraintsSizeZTextField = new java.awt.GridBagConstraints();
-			constraintsSizeZTextField.gridx = 8; constraintsSizeZTextField.gridy = 0;
-			constraintsSizeZTextField.ipadx = 70;
-			getPanel2().add(getSizeZTextField(), constraintsSizeZTextField);
-
-			java.awt.GridBagConstraints constraintsSizeZUnitLabel = new java.awt.GridBagConstraints();
-			constraintsSizeZUnitLabel.gridx = 9; constraintsSizeZUnitLabel.gridy = 0;
-			constraintsSizeZUnitLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsSizeZUnitLabel.weightx = 1.0;
-			constraintsSizeZUnitLabel.insets = new java.awt.Insets(0, 5, 0, 15);
-			getPanel2().add(getSizeZUnitLabel(), constraintsSizeZUnitLabel);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjPanel2;
-}
-/**
  * Return the SizeLabel property value.
  * @return javax.swing.JLabel
  */
@@ -635,7 +447,7 @@ private javax.swing.JPanel getPanel2() {
 private javax.swing.JLabel getSizeLabel() {
 	if (ivjSizeLabel == null) {
 		try {
-			ivjSizeLabel = new javax.swing.JLabel();
+			ivjSizeLabel = GuiUtils.createBoldJLabel();
 			ivjSizeLabel.setName("SizeLabel");
 			ivjSizeLabel.setText("Size");
 			// user code begin {1}
@@ -877,7 +689,155 @@ private void initialize() {
 		setSize(512, 165);
 		setModal(true);
 		setTitle("Geometry Size");
-		setContentPane(getContentsPane());
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new GridBagLayout());
+		
+		int gridy = 0;
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 10, 4, 15);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		mainPanel.add(getSizeLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getSizeXLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		mainPanel.add(getSizeXTextField(), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getSizeXUnitLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getSizeYLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		mainPanel.add(getSizeYTextField(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getSizeYUnitLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getSizeZLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		mainPanel.add(getSizeZTextField(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getSizeZUnitLabel(), gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 10, 4, 15);
+		mainPanel.add(getOriginLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getOriginXLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		mainPanel.add(getOriginXTextField(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getOriginXUnitLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getOriginYLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;		
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		mainPanel.add(getOriginYTextField(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getOriginYUnitLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+		mainPanel.add(getOriginZLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;		
+		gbc.insets = new java.awt.Insets(4, 4, 4, 2);
+		mainPanel.add(getOriginZTextField(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(4, 0, 4, 15);
+		mainPanel.add(getOriginZUnitLabel(), gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new java.awt.Insets(10, 4, 4, 4);
+		mainPanel.add(getButtonPanel(), gbc);
+		
+		add(mainPanel);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -967,7 +927,7 @@ private void refreshSize() {
  * @param newValue cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
+private void setGeometry(Geometry newValue) {
 	try {
 		if (ivjGeometry != newValue) {
 			ivjGeometry = newValue;

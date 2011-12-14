@@ -11,10 +11,12 @@
 package org.vcell.util.gui;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellRenderer;
@@ -107,5 +109,15 @@ public class GuiUtils {
 			table.getColumnModel().getColumn(iCol).setPreferredWidth(maxColumnWidths[iCol]);
 			table.getColumnModel().getColumn(iCol).setMinWidth(headerWidths[iCol]);
 		}
+	}
+	
+	public static JLabel createBoldJLabel() {
+		return createBoldJLabel(null);
+	}
+	
+	public static JLabel createBoldJLabel(String text) {
+		JLabel label = new JLabel(text);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		return label;
 	}
 }
