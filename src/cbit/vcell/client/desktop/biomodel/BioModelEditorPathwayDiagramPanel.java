@@ -764,10 +764,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 		searchTextField = new JTextField();
 		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
-		groupButton = new JButton("Group Selected", new DownArrowIcon());
+		groupButton = new JButton("Group", new DownArrowIcon());
 		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		groupButton.addActionListener(eventHandler);
-		deleteButton = new JButton("Delete Selected");
+		deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(eventHandler);
 		physiologyLinkButton = new JButton("Physiology Links", new DownArrowIcon());
 		physiologyLinkButton.setHorizontalTextPosition(SwingConstants.LEFT);

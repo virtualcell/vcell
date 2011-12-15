@@ -90,7 +90,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 
 	private void initialize(){
 		addNewButton = new JButton("Add New");
-		deleteButton = new JButton("Delete Selected");
+		deleteButton = new JButton("Delete");
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		table = new EditorScrollTable();
