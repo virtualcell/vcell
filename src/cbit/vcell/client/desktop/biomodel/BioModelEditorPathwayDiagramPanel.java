@@ -275,11 +275,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 				// double click to collapse/expand complex object
 				if(getSelectedBioPaxObjects().size() == 1){
 					BioPaxObject bpObject = getSelectedBioPaxObjects().get(0);
-					if(((bpObject instanceof Complex) ||
-					 (bpObject instanceof Protein) ||
-					 (bpObject instanceof SmallMolecule))){
-						collapseComplex();
-					}else if(bpObject instanceof GroupObject){
+//					if(((bpObject instanceof Complex) ||
+//					 (bpObject instanceof Protein) ||
+//					 (bpObject instanceof SmallMolecule))){
+//						collapseComplex();
+//					}else 
+					if(bpObject instanceof GroupObject){
 						GroupObject groupObject = (GroupObject)bpObject;
 						if(groupObject.getType().equals(GroupObject.Type.GROUPEDCOMPLEX) 
 								|| groupObject.getType().equals(GroupObject.Type.GROUPEDINTERACTION)
@@ -958,7 +959,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 					}
 					if((selectedObjects.get(0) instanceof GroupObject)){
 						GroupObject selectedGroup = (GroupObject)selectedObjects.get(0);
-						if(	(selectedGroup.getType().equals(GroupObject.Type.GROUPEDCOMPLEX)) ||
+						if(	//(selectedGroup.getType().equals(GroupObject.Type.GROUPEDCOMPLEX)) || // expand function for complex 
 							(selectedGroup.getType().equals(GroupObject.Type.GROUPEDINTERACTION))){
 							groupButton.setEnabled(true);
 							if(expandMenuItem != null ){ // expand function only available when one grouped complex or interaction is selected
@@ -969,10 +970,10 @@ implements PathwayEditor, ActionBuilder.Generator {
 							}
 						}
 					}
-					if((selectedObjects.get(0) instanceof Complex) || 
-							(selectedObjects.get(0) instanceof Interaction) ||
-							(selectedObjects.get(0) instanceof Protein) ||
-							(selectedObjects.get(0) instanceof SmallMolecule)){
+					if( //(selectedObjects.get(0) instanceof Complex) || // collapse function for complex
+						//	(selectedObjects.get(0) instanceof  SmallMolecule) ||  // collapse function for SmallMolecular
+						//	(selectedObjects.get(0) instanceof Protein) ||  // collapse function for Protein
+							(selectedObjects.get(0) instanceof Interaction)){
 						groupButton.setEnabled(true);
 						if(collapseMenuItem != null ){
 							collapseMenuItem.setEnabled(true);
