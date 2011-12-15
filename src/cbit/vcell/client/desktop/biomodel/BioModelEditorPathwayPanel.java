@@ -52,7 +52,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private JButton importButton = null;
 	private JTextField textFieldSearch = null;
 	private JPopupMenu addPopupMenu;
-	private JMenuItem addSelectedOnlyMenuItem, addWithNeighborsMenuItem;
+	private JMenuItem addSelectedOnlyMenuItem, addWithInteractionsMenuItem, addWithComponentsMenueItem, addWithComplexesMenuItem;
 	private JLabel pathwayTitleLabel;
 	
 	private void searchTable() {
@@ -70,9 +70,13 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				getAddPopupMenu().show(importButton, 0, importButton.getHeight());
 //				importPathway();
 			} else if (e.getSource() == addSelectedOnlyMenuItem) {
-				importPathway(false);
-			} else if (e.getSource() == addWithNeighborsMenuItem) {
-				importPathway(true);
+				importPathway(false, false, false);
+			} else if (e.getSource() == addWithInteractionsMenuItem) {
+				importPathway(false, false, true);
+			} else if (e.getSource() == addWithComponentsMenueItem) {
+				importPathway(false, true, true);
+			} else if (e.getSource() == addWithComplexesMenuItem) {
+				importPathway(true, true, true);
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -99,7 +103,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	public void importPathway(boolean isNeighborsIncluded) {
+	public void importPathway(boolean addComplexes, boolean addComponents, boolean addInteractions) {
 		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
 		int[] rows = table.getSelectedRows();
 		if (rows == null || rows.length == 0) {
@@ -110,7 +114,12 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			selectedBioPaxObjects.add(bioPaxObject);
 		}
 		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
-		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects, isNeighborsIncluded);
+		PathwayModel rawPathwayModel = pathwayData.getPathwayModel();
+		if(addComplexes) { selectionExpander.forPhysicalEntitiesAddComplexes(rawPathwayModel, selectedBioPaxObjects); }
+		if(addComponents) { selectionExpander.forComplexesAddComponents(rawPathwayModel, selectedBioPaxObjects); }
+		if(addInteractions) { selectionExpander.forPhysicalEntitiesAddInteractions(rawPathwayModel, selectedBioPaxObjects); }
+		selectionExpander.forInteractionsAddControls(rawPathwayModel, selectedBioPaxObjects);
+		selectionExpander.forInteractionsAddParticipants(rawPathwayModel, selectedBioPaxObjects);
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		HashSet<BioPaxObject> objectsToDelete = new HashSet<BioPaxObject>();
 		for (BioPaxObject candidateObject : selectedBioPaxObjects){
@@ -252,10 +261,16 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 			addPopupMenu = new JPopupMenu();
 			addSelectedOnlyMenuItem = new JMenuItem("Selected Only");
 			addSelectedOnlyMenuItem.addActionListener(eventHandler);			
-			addWithNeighborsMenuItem = new JMenuItem("With Neighbors");
-			addWithNeighborsMenuItem.addActionListener(eventHandler);
+			addWithInteractionsMenuItem = new JMenuItem("Plus Interactions");
+			addWithInteractionsMenuItem.addActionListener(eventHandler);
+			addWithComponentsMenueItem = new JMenuItem("Plus Components");
+			addWithComponentsMenueItem.addActionListener(eventHandler);
+			addWithComplexesMenuItem = new JMenuItem("Plus Complexes");
+			addWithComplexesMenuItem.addActionListener(eventHandler);
 			addPopupMenu.add(addSelectedOnlyMenuItem);
-			addPopupMenu.add(addWithNeighborsMenuItem);	
+			addPopupMenu.add(addWithInteractionsMenuItem);
+			addPopupMenu.add(addWithComponentsMenueItem);
+			addPopupMenu.add(addWithComplexesMenuItem);	
 		}
 		return addPopupMenu;
 	}
