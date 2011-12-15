@@ -11,6 +11,7 @@
 package cbit.vcell.graph;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,7 +85,15 @@ public class ReactionCartoon extends ModelCartoon {
 			}
 			Shape shape = getShapeFromModelObject(obj);
 			if (shape != null) {
-				shape.getSpaceManager().setRelPos(node.location);
+				Point relPosOld = shape.getRelPos();
+				Point relPosNew = node.location;
+				// In old models, the same node can appear in multiple diagrams.
+				// Now, we have only one diagram, so if a node has multiple positions,
+				// some would overwrite others.
+				// This attempts to prevent overwriting a position with a worse one.
+				if(relPosOld.x + relPosOld.y < relPosNew.x + relPosNew.y) {
+					shape.setRelPos(relPosNew);					
+				}
 			}
 		}
 	}
