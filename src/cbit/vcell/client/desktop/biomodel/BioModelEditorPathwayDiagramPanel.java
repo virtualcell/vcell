@@ -448,13 +448,15 @@ implements PathwayEditor, ActionBuilder.Generator {
 		deleteSelectedBioPaxObjects(this, bioModel, graphCartoonTool.getGraphModel());
 	}
 	public static void deleteSelectedBioPaxObjects(Component guiRequester, BioModel bioModel, GraphModel graphModel) {
-		List<BioPaxObject> selected = getSelectedBioPaxObjects(graphModel); // all objects required by user
-		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
-		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the all objects that will be deleted from the pathway model
-		HashSet<GroupObject> undeletedGroupObjects = new HashSet<GroupObject>(); // used for recover group objects
 		StringBuilder warning = new StringBuilder("You can NOT delete the following pathway objects:\n\n");
 		StringBuilder text = new StringBuilder("You are going to DELETE the following pathway objects:\n\n");
-		List<BioPaxObject> allSelectedBioPaxObjects = new ArrayList<BioPaxObject> ();
+		List<BioPaxObject> selected = getSelectedBioPaxObjects(graphModel); // all objects required by user
+		List<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject> (); // the user required objects that can be deleted
+		List<BioPaxObject> completeSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // all objects that will be deleted from the pathway model
+		HashSet<GroupObject> undeletedGroupObjects = new HashSet<GroupObject>(); // used for recover group objects
+		List<BioPaxObject> allSelectedBioPaxObjects = new ArrayList<BioPaxObject> (); // all objects required by user + grouped elements contained in selected group objects
+		
+		// build a list of selected objects with selected grouped elements
 		for (BioPaxObject bpObject : selected){
 			if(bpObject instanceof GroupObject){ // all elements of the groupObject will be deleted
 				allSelectedBioPaxObjects.add(bpObject);
@@ -464,11 +466,13 @@ implements PathwayEditor, ActionBuilder.Generator {
 				allSelectedBioPaxObjects.add(bpObject);
 			}
 		}
+		
+		// check whether each selected object can be deleted
+		// if so, whether participants and catalysts of a selected reaction can be deleted
 		for (BioPaxObject bpObject : allSelectedBioPaxObjects) {
 			if(canDelete(bioModel, allSelectedBioPaxObjects, bpObject)){
 				selectedBioPaxObjects.add(bpObject);
 				text.append("    " + bpObject.getTypeLabel() + ": \'" + PhysiologyRelationshipTableModel.getLabel(bpObject) + "\'\n");
-				
 				completeSelectedBioPaxObjects.add(bpObject);
 				if(bpObject instanceof Conversion){// all its participants and its catalysts will be deleted if deleting a conversion
 					// check each participant
@@ -489,7 +493,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 							if(control.getControlledInteraction() == bpObject){
 								completeSelectedBioPaxObjects.add(bp);
 								for(PhysicalEntity pe : control.getPhysicalControllers()){
-									if(canDelete(bioModel, allSelectedBioPaxObjects, pe)) completeSelectedBioPaxObjects.add(pe);
+									if(canDelete(bioModel, allSelectedBioPaxObjects, pe)) 
+										completeSelectedBioPaxObjects.add(pe);
 								}
 							}
 						}
@@ -587,8 +592,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 					if (((Conversion)bp).getRight().contains(bpObject)) return false;
 				}
 			}else if(bp instanceof Control){  // CANNOT delete any catalysts before deleting the reaction
-//				if(((Control)bp).getPhysicalControllers().contains(bpObject) 
-//						&& !selectedBioPaxObjects.contains(((Control)bp).getControlledInteraction())) return false;
+				if(((Control)bp).getPhysicalControllers().contains(bpObject) 
+						&& !selectedBioPaxObjects.contains(((Control)bp).getControlledInteraction())) return false;
 
 			}
 		}
