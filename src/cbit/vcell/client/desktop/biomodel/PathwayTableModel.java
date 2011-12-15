@@ -16,8 +16,10 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.BioPAXUtil;
@@ -32,26 +34,29 @@ import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
-import org.vcell.pathway.sbpax.SBPAXLabelUtil;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.biomodel.BioModel;
+
 @SuppressWarnings("serial")
-public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshipTableRow> implements PathwayListener {
+public class PathwayTableModel extends VCellSortTableModel<BioPaxObject> implements PathwayListener {
 
 
 	public static final int colCount = 3;
-	public static final int iColSelected = 0;
-	public static final int iColEntity = 1;
-	public static final int iColType = 2;
+	public static final int iColEntity = 0;
+	public static final int iColType = 1;
+	public static final int iColImported = 2;
 	
 	// filtering variables 
 	protected String searchText = null;
 	//done
 
+	private BioModel bioModel = null;
+	private Map<BioPaxObject, Boolean> bioPaxObjectImportedMap = new HashMap<BioPaxObject, Boolean>();
 	private PathwayModel pathwayModel;
 
 	public PathwayTableModel(ScrollTable table) {
-		super(table, new String[] {"Select", "Entity Name", "Type"});
+		super(table, new String[] {"Entity Name", "Type", "Imported?"});
 	}
 	
 	public void setPathwayModel(PathwayModel newValue){
@@ -70,16 +75,15 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
-		if(iCol == iColSelected) { return Boolean.class; }
+		if(iCol == iColImported) { return Boolean.class; }
 		else { return String.class; }
 	}
 	
 	public Object getValueAt(int iRow, int iCol) {
-		PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
-		BioPaxObject bpObject = entitySelectionTableRow.getBioPaxObject();
+		BioPaxObject bpObject = getValueAt(iRow);
 		switch(iCol) {		
-			case iColSelected:{
-				return entitySelectionTableRow.selected();
+			case iColImported:{
+				return bioPaxObjectImportedMap.get(bpObject);
 			}
 			case iColEntity:{
 				return getLabel(bpObject);
@@ -93,33 +97,22 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 		}
 	}
 	
-	public boolean isCellEditable(int iRow, int iCol) {
-		return iCol == iColSelected;
-	}
-	
-	public void setValueAt(Object valueNew, int iRow, int iCol) {
-		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
-			entitySelectionTableRow.setSelected((Boolean) valueNew);
-		}
-	}
-	
 	// generate the sortable table. Set up the functions for each column
-	public Comparator<PhysiologyRelationshipTableRow> getComparator(final int col, final boolean ascending) {
-		return new Comparator<PhysiologyRelationshipTableRow>() {
-		    public int compare(PhysiologyRelationshipTableRow o1, PhysiologyRelationshipTableRow o2){
-		    	if (col == iColSelected) {
-		    		int c  = o1.selected().compareTo(o2.selected());
+	public Comparator<BioPaxObject> getComparator(final int col, final boolean ascending) {
+		return new Comparator<BioPaxObject>() {
+		    public int compare(BioPaxObject o1, BioPaxObject o2){
+		    	if (col == iColImported) {
+		    		int c  = bioPaxObjectImportedMap.get(o1).compareTo(bioPaxObjectImportedMap.get(o2));
 		    		return ascending ? c : -c;
 		    	} else 
 
 		    	if (col == iColEntity) {// only sortable on entity column
-		    		int c  = getLabel(o1.getBioPaxObject()).compareToIgnoreCase(getLabel(o2.getBioPaxObject()));
+		    		int c  = getLabel(o1).compareToIgnoreCase(getLabel(o2));
 		    		return ascending ? c : -c;
 		    	} else 
 		    		
 		    	if (col == iColType) {
-		    		int c  = getType(o1.getBioPaxObject()).compareToIgnoreCase(getType(o2.getBioPaxObject()));
+		    		int c  = getType(o1).compareToIgnoreCase(getType(o2));
 		    		return ascending ? c : -c;
 		    	}
 
@@ -193,25 +186,45 @@ public class PathwayTableModel extends VCellSortTableModel<PhysiologyRelationshi
 			return;
 		}
 		
-		List<PhysiologyRelationshipTableRow> allPathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
+		List<BioPaxObject> allPathwayObjectList = new ArrayList<BioPaxObject>();
 		for (BioPaxObject bpObject1 : pathwayModel.getBiopaxObjects()){
 			if (bpObject1 instanceof PhysicalEntity || (bpObject1 instanceof Interaction && !(bpObject1 instanceof Control))){
-				allPathwayObjectList.add(new PhysiologyRelationshipTableRow(bpObject1));
+				allPathwayObjectList.add(bpObject1);
 			}
 		}
-		ArrayList<PhysiologyRelationshipTableRow> pathwayObjectList = new ArrayList<PhysiologyRelationshipTableRow>();
-		for (PhysiologyRelationshipTableRow rs : allPathwayObjectList){
-			BioPaxObject bpObject = rs.getBioPaxObject();
+		ArrayList<BioPaxObject> pathwayObjectList = new ArrayList<BioPaxObject>();
+		for (BioPaxObject bpObject : allPathwayObjectList){
 			if (searchText == null || searchText.length() == 0 
 					|| getLabel(bpObject).toLowerCase().contains(searchText.toLowerCase())
 					|| getType(bpObject).toLowerCase().contains(searchText.toLowerCase()) ) {
-				pathwayObjectList.add(rs);
+				pathwayObjectList.add(bpObject);
+				bioPaxObjectImportedMap.put(bpObject, bioModel != null && bioModel.getPathwayModel().find(bpObject) != null);
 			}
 		}
 		setData(pathwayObjectList);
 	}
 
 	public void pathwayChanged(PathwayEvent event) {
-		refreshData();		
+		refreshBioPaxImportedMap();
+	}
+	
+	private void refreshBioPaxImportedMap() {
+		bioPaxObjectImportedMap.clear();
+		for (int i = 0; i < getRowCount(); i ++) {
+			BioPaxObject bpObject = getValueAt(i);
+			bioPaxObjectImportedMap.put(bpObject, bioModel != null && bioModel.getPathwayModel().find(bpObject) != null);
+		}
+		fireTableRowsUpdated(0, getRowCount());
+	}
+
+	public void setBioModel(BioModel newValue) {
+		BioModel oldValue = bioModel;
+		this.bioModel = newValue;
+		if (oldValue != null) {
+			oldValue.getPathwayModel().removePathwayListener(this);
+		}
+		if (newValue != null) {
+			newValue.getPathwayModel().addPathwayListener(this);
+		}
 	}
 }

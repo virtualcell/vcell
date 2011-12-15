@@ -101,11 +101,13 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	
 	public void importPathway(boolean isNeighborsIncluded) {
 		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
-		for (int i = 0; i < table.getRowCount(); i ++) {
-			PhysiologyRelationshipTableRow entitySelectionTableRow = tableModel.getValueAt(i);
-			if (entitySelectionTableRow.selected()) { 
-				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
-			}
+		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		for (int row : rows) {
+			BioPaxObject bioPaxObject = tableModel.getValueAt(row);
+			selectedBioPaxObjects.add(bioPaxObject);
 		}
 		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
 		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects, isNeighborsIncluded);
@@ -242,6 +244,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	public void setBioModel(BioModel bioModel) {
 		this.bioModel = bioModel;
+		tableModel.setBioModel(bioModel);
 	}
 	
 	private JPopupMenu getAddPopupMenu() {
