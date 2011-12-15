@@ -18,7 +18,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -28,6 +30,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.State;
@@ -39,7 +43,10 @@ import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VCML;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -74,9 +81,6 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	public static final String ORIGIN_PROPERTY = "origin";
 	public static final String EXTENT_PROPERTY = "extent";
 	
-	private boolean fieldValid = true;
-	private java.lang.String fieldWarningMessage = "";
-
 /**
  * This method was created in VisualAge.
  * @param name java.lang.String
@@ -983,14 +987,6 @@ void updateSampledImage() throws GeometryException, ImageException, ExpressionEx
 		ISize sampleSize = getDefaultSampledImageSize();
 		getSampledImage().setValue(createSampledImage(sampleSize));
 		getThumbnailImage().setValue(createThumbnailImage());
-		try {
-			verifyCompleteSampling(getSampledImage().getCurrentValue());
-			setWarningMessage("");
-			setValid(true);
-		}catch (ImageException e){
-			setWarningMessage(e.getMessage());
-			setValid(false);
-		}
 	}
 }
 
@@ -1177,16 +1173,6 @@ byte[] getUncompressedPixels() throws cbit.image.ImageException {
 
 
 /**
- * Gets the valid property (boolean) value.
- * @return The valid property value.
- * @see #setValid
- */
-public boolean getValid() {
-	return fieldValid;
-}
-
-
-/**
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
@@ -1216,17 +1202,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	};
 	return vetoPropertyChange;
 }
-
-
-/**
- * Gets the warningMessage property (java.lang.String) value.
- * @return The warningMessage property value.
- * @see #setWarningMessage
- */
-public java.lang.String getWarningMessage() {
-	return fieldWarningMessage;
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -1571,84 +1546,58 @@ public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVeto
 	firePropertyChange("subVolumes", oldSubVolumes, subVolumes);
 }
 
-
-/**
- * Sets the valid property (boolean) value.
- * @param valid The new value for the property.
- * @see #getValid
- */
-private void setValid(boolean valid) {
-	boolean oldValue = fieldValid;
-	fieldValid = valid;
-	firePropertyChange("valid", new Boolean(oldValue), new Boolean(valid));
-}
-
-
-/**
- * Sets the warningMessage property (java.lang.String) value.
- * @param warningMessage The new value for the property.
- * @see #getWarningMessage
- */
-private void setWarningMessage(java.lang.String warningMessage) {
-	String oldValue = fieldWarningMessage;
-	fieldWarningMessage = warningMessage;
-	firePropertyChange("warningMessage", oldValue, warningMessage);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/5/00 10:13:05 PM)
- * @exception cbit.vcell.geometry.GeometryException The exception description.
- */
-private void verifyCompleteSampling(VCImage argSampledImage) throws ImageException {
-	
-	boolean bHasError = false;
-	String errorMessage = "";
-
-	//
-	// make sure that each sample was assigned to a SubVolume
-	//
-	int count = 0;
-	byte samples[] = argSampledImage.getPixels();
-	for (int i = 0; i < samples.length; i++){
-		if (samples[i] == -1){
-			count++;
-		}
+public void gatherIssues(GeometryOwner geometryOwner, List<Issue> issueVector) {
+	Object issueSource = null;
+	if (geometryOwner instanceof SimulationContext) {
+		issueSource = ((SimulationContext) geometryOwner).getGeometryContext();
+	} else if (geometryOwner instanceof MathModel) {
+		issueSource = geometryOwner.getGeometry();
 	}
-	if (count>0){
-		bHasError = true;
-		errorMessage = "Invalid Geometry - "+count+" of "+samples.length+" samples of geometry domain didn't map to any subdomain";
-	}
-	//
-	// make sure that each subvolume is resolved in the geometry
-	//
-	Vector<SubVolume> missingSubVolumeList = new Vector<SubVolume>();
-	SubVolume subVolumes[] = getSubVolumes();
-	for (int i=0;i<subVolumes.length;i++){
-		if (argSampledImage.getPixelClassFromPixelValue(subVolumes[i].getHandle())==null){
-			missingSubVolumeList.add(subVolumes[i]);
+	if (getDimension() > 0) {
+		VCImage argSampledImage = getSampledImage().getCurrentValue();
+		
+		if (argSampledImage == null) {
+			return;
 		}
-	}
-	if (missingSubVolumeList.size()>0){
-		if (bHasError){
-			errorMessage += "\n";
-		}else{
-			errorMessage = "Invalid Geometry - ";
+		try {
+			//
+			// make sure that each sample was assigned to a SubVolume
+			//
+			int count = 0;
+			byte samples[] = argSampledImage.getPixels();
+			for (int i = 0; i < samples.length; i++){
+				if (samples[i] == -1){
+					count++;
+				}
+			}
+			if (count>0){
+				String errorMessage = "Invalid Geometry - " + count + " of "+samples.length + " samples of geometry domain didn't map to any subdomain";
+				Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
+				issueVector.add(issue);
+			}
+			//
+			// make sure that each subvolume is resolved in the geometry
+			//
+			ArrayList<SubVolume> missingSubVolumeList = new ArrayList<SubVolume>();
+			SubVolume subVolumes[] = getSubVolumes();
+			for (int i=0;i<subVolumes.length;i++){
+				if (argSampledImage.getPixelClassFromPixelValue(subVolumes[i].getHandle())==null){
+					missingSubVolumeList.add(subVolumes[i]);
+				}
+			}
+			if (missingSubVolumeList.size()>0){
+				for (int i = 0; i < missingSubVolumeList.size(); i++){
+					String errorMessage = "Subdomain '" + missingSubVolumeList.get(i).getName() + "' is not resolved in geometry domain";
+					Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
+					issueVector.add(issue);
+				}
+			}	
+		} catch (Exception ex) {
+			Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, ex.getMessage(), Issue.SEVERITY_ERROR);
+			issueVector.add(issue);
 		}
-		errorMessage += "Subdomain(s)";
-		bHasError = true;
-		for (int i = 0; i < missingSubVolumeList.size(); i++){
-			errorMessage += " '" + ((SubVolume)missingSubVolumeList.elementAt(i)).getName()+"'";
-		}
-		errorMessage += " not resolved in geometry domain";
-	}	
-
-	if (bHasError){
-		throw new ImageException(errorMessage);
 	}
 }
-
 
 /**
  * Insert the method's description here.
