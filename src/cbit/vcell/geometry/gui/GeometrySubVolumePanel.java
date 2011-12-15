@@ -10,7 +10,6 @@
 
 package cbit.vcell.geometry.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -65,7 +64,6 @@ public class GeometrySubVolumePanel extends DocumentEditorSubPanel {
 	private javax.swing.JPanel buttonPanel = null;
 	private ScrollTable ivjScrollPaneTable = null;
 	private SubVolume ivjSelectedSubVolume = null;
-	private javax.swing.JLabel ivjJWarningLabel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private GeometrySpec ivjGeometrySpec = null;
 	private JButton addShapeButton = null;
@@ -99,9 +97,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			if (evt.getSource() == GeometrySubVolumePanel.this.getGeometrySpec() && (evt.getPropertyName().equals("subVolumes"))) {
 				setSelectedSubVolume(findSubVolume());
 			} 
-			if (evt.getSource() == GeometrySubVolumePanel.this.getGeometrySpec() && (evt.getPropertyName().equals("warningMessage"))) {
-				updateWarningLabel();
-			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == GeometrySubVolumePanel.this.getScrollPaneTable().getSelectionModel()) {
@@ -144,21 +139,7 @@ private void deleteSubvolume() {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoM10:  (Geometry.warningMessage --> JWarningLabel.text)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void updateWarningLabel() {
-	try {
-		getJWarningLabel().setVisible(false);
-		if (getGeometrySpec().getWarningMessage() != null && getGeometrySpec().getWarningMessage().length() > 0) {		
-			getJWarningLabel().setVisible(true);
-			getJWarningLabel().setText(String.valueOf(getGeometrySpec().getWarningMessage()));
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoM6:  (FrontButton.action.actionPerformed(java.awt.event.ActionEvent) --> Geometry.bringForward(Lcbit.vcell.geometry.AnalyticSubVolume;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -521,30 +502,6 @@ private javax.swing.JPanel getButtonPanel() {
 }
 
 /**
- * Return the JWarningLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJWarningLabel() {
-	if (ivjJWarningLabel == null) {
-		try {
-			ivjJWarningLabel = new javax.swing.JLabel();
-			ivjJWarningLabel.setFont(ivjJWarningLabel.getFont().deriveFont(ivjJWarningLabel.getFont().getSize2D() - 1));
-			ivjJWarningLabel.setName("JWarningLabel");
-			ivjJWarningLabel.setText(" ");
-			ivjJWarningLabel.setVisible(false);
-			ivjJWarningLabel.setForeground(Color.red);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJWarningLabel;
-}
-/**
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
@@ -621,11 +578,6 @@ private void initialize() {
 		constraintsJPanel1.insets = new java.awt.Insets(2,2,2,2);
 		add(getButtonPanel(), constraintsJPanel1);
 		
-		java.awt.GridBagConstraints constraintsJWarningLabel = new java.awt.GridBagConstraints();
-		constraintsJWarningLabel.gridx = 0; constraintsJWarningLabel.gridy = 1;
-		constraintsJWarningLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJWarningLabel.insets = new java.awt.Insets(2,2,2,2);
-		add(getJWarningLabel(), constraintsJWarningLabel);
 		initConnections();
 		geometrySubVolumePanel_Initialize();
 	} catch (java.lang.Throwable ivjExc) {

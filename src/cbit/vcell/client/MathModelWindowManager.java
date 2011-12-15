@@ -18,16 +18,13 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;

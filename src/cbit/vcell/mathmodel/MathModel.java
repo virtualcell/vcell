@@ -28,6 +28,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
@@ -718,6 +719,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 	
 	public void gatherIssues(List<Issue> issueList) {
+		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
+		if (geometrySpec != null) {
+			geometrySpec.gatherIssues(this, issueList);
+		}
 		fieldMathDescription.gatherIssues(issueList);
 		outputFunctionContext.gatherIssues(issueList);
 	}

@@ -234,24 +234,29 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 /**
  * Insert the method's description here.
  * Creation date: (11/1/2005 9:48:55 AM)
- * @param issueVector java.util.Vector
+ * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
+public void gatherIssues(List<Issue> issueList) {
+	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
+	if (geometrySpec != null) {
+		geometrySpec.gatherIssues(getSimulationContext(), issueList);
+	}
+	
 	for (int i = 0; fieldStructureMappings!=null && i < fieldStructureMappings.length; i++){
-		fieldStructureMappings[i].gatherIssues(issueVector);
+		fieldStructureMappings[i].gatherIssues(issueList);
 	}
 	for (GeometryClass gc : fieldGeometry.getGeometryClasses()) {
 		Structure[] structuresFromGeometryClass = getStructuresFromGeometryClass(gc);
 		if (structuresFromGeometryClass == null || structuresFromGeometryClass.length == 0) {
 			UnmappedGeometryClass unmappedGeometryClass = new UnmappedGeometryClass(gc);
-			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain " + gc.getName() + " is not mapped to any physiological structure.", Issue.SEVERITY_ERROR);
-			issueVector.add(issue);
+			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain '" + gc.getName() + "' is not mapped to any physiological structure.", Issue.SEVERITY_ERROR);
+			issueList.add(issue);
 		}
 	}
 	if(getSimulationContext().isStoch() && getGeometry().getDimension() != 0 && getGeometry().getDimension() != 3)
 	{
 		Issue issue = new Issue(this, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
-		issueVector.add(issue);
+		issueList.add(issue);
 	}
 }
 /**

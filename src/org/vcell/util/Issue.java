@@ -51,6 +51,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		StructureMappingSizeParameterNotSet,
 		StructureNotMapped,
 		GeometryClassNotMapped,
+		SubVolumeVerificationError,
 		
 		ModelParameterExpressionError,
 		
