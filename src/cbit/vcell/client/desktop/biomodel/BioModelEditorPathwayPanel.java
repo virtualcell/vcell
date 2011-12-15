@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -147,7 +148,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		tableModel = new PathwayTableModel(table);
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
-		importButton = new JButton("Add Selected", new DownArrowIcon());
+		importButton = new JButton("Import", new DownArrowIcon());
+		importButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		importButton.setEnabled(false);
 		importButton.addActionListener(eventHandler);
 		
@@ -245,9 +247,9 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private JPopupMenu getAddPopupMenu() {
 		if (addPopupMenu == null) {
 			addPopupMenu = new JPopupMenu();
-			addSelectedOnlyMenuItem = new JMenuItem("Add Selected Only");
+			addSelectedOnlyMenuItem = new JMenuItem("Selected Only");
 			addSelectedOnlyMenuItem.addActionListener(eventHandler);			
-			addWithNeighborsMenuItem = new JMenuItem("Add with Neighbors");
+			addWithNeighborsMenuItem = new JMenuItem("With Neighbors");
 			addWithNeighborsMenuItem.addActionListener(eventHandler);
 			addPopupMenu.add(addSelectedOnlyMenuItem);
 			addPopupMenu.add(addWithNeighborsMenuItem);	

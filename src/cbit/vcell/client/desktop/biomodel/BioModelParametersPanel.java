@@ -152,7 +152,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private void initialize(){
 		addNewButton = new JButton("Add New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
-		deleteButton = new JButton("Delete Selected Global Parameter(s)");
+		deleteButton = new JButton("Delete Global Parameter(s)");
 		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 		textFieldSearch = new JTextField(10);
@@ -199,12 +199,26 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(new JLabel("Search "), gbc);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(addNewButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(deleteButton, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,50,4,4);
+		buttonPanel.add(new JLabel("Search"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
@@ -212,21 +226,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(textFieldSearch, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,50,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(addNewButton, gbc);
 		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(deleteButton, gbc);
-				
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);

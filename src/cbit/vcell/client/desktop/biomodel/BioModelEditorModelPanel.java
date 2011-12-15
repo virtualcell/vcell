@@ -366,7 +366,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	
 	private void initialize(){
 		newButton = new JButton("Add New");
-		deleteButton = new JButton("Delete Selected");
+		deleteButton = new JButton("Delete");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
