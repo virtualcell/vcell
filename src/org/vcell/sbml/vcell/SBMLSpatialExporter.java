@@ -1732,6 +1732,7 @@ private void addGeometry() {
 		try {
 			ImageData imageData = sampledField.createImageData();
 			byte[] imagePixelsBytes = vcImage.getPixelsCompressed();
+			imageData.setDataType("compressed");
 			int[] imagePixelsInt = new int[imagePixelsBytes.length];
 			for (int i = 0; i < imagePixelsBytes.length; i++) {
 				imagePixelsInt[i] = (int)imagePixelsBytes[i];
