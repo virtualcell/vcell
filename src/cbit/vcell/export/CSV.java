@@ -186,7 +186,7 @@ private String[] readColumnNames(String columnLine, int numDataColumn) throws Ex
 		int tokenCount = tokenizer.countTokens();
 		String[] tokens = new String[tokenCount];
 		for (int i = 0; i < tokenCount; i++){
-			tokens[i] = tokenizer.nextToken();
+			tokens[i] = tokenizer.nextToken().trim();
 		}
 		return tokens;
 	} catch (Exception e) {
