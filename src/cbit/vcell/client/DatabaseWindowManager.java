@@ -988,9 +988,9 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public BioModelInfo selectBioModelInfo() throws Exception {
+public BioModelInfo selectBioModelInfo(TopLevelWindowManager requester) throws Exception {
 	
-	Object choice = showOpenDialog(getBioModelDbTreePanel(), this);
+	Object choice = showOpenDialog(getBioModelDbTreePanel(), requester);
 
 	// Get Biomodelinfo from bioMOdelDBTreePanel
 	if (choice != null && choice.equals("Open")) {
