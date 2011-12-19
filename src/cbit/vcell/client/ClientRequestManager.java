@@ -1460,7 +1460,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					public void run(Hashtable<String, Object> hashTable) throws Exception {		
 						// spatial or non-spatial
 						if (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS) {
-							GeometryInfo geometryInfo = (GeometryInfo)getMdiManager().getDatabaseWindowManager().selectDocument(VCDocument.GEOMETRY_DOC, getMdiManager().getDatabaseWindowManager());
+							GeometryInfo geometryInfo = (GeometryInfo)getMdiManager().getDatabaseWindowManager().selectDocument(VCDocument.GEOMETRY_DOC, requester/*getMdiManager().getDatabaseWindowManager()*/);
 							hashTable.put("geometryInfo", geometryInfo);
 						}
 					}
@@ -1488,7 +1488,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {		
 						// spatial or non-spatial
-						BioModelInfo bioModelInfo = getMdiManager().getDatabaseWindowManager().selectBioModelInfo();
+						BioModelInfo bioModelInfo = getMdiManager().getDatabaseWindowManager().selectBioModelInfo(requester);
 						if (bioModelInfo != null) { // may throw UserCancelException
 							hashTable.put("bioModelInfo", bioModelInfo);
 						}
@@ -2192,7 +2192,7 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 			}
 		};
 		
-		getMdiManager().getDatabaseWindowManager().createGeometry(
+		requester.createGeometry(
 				null, new AsynchClientTask[] {createSpatialMathModelTask,createNewDocumentTask},
 				"Choose geometry type to start MathModel creation","Create MathModel");
 		return null;
