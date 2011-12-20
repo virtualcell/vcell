@@ -27,10 +27,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -70,12 +70,12 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -2339,6 +2339,9 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 				}
 			}				
 		}else{
+			if (simData instanceof SimulationData) {
+				function = ((SimulationData)simData).simplifyFunction(function);
+			}
 			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
 		if (simDataBlock != null) {
