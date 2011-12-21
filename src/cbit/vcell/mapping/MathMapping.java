@@ -2637,6 +2637,8 @@ protected GeometryClass getDefaultGeometryClass(Expression expr) throws Expressi
 								SurfaceClass surfaceSymbolGeomClass = (SurfaceClass)symbolGeomClass;
 								if (!surfaceSymbolGeomClass.isAdjacentTo((SubVolume)geometryClass)) {
 									throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + surfaceSymbolGeomClass.getName() + "' & volume domain '" + geometryClass.getName() + "' that cannot be evaluated.");
+								}else{
+									geometryClass = symbolGeomClass;
 								}
 							}
 						} else {
