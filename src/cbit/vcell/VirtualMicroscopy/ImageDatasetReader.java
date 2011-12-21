@@ -78,26 +78,49 @@ public class ImageDatasetReader {
 		}
 		return imageSizeInfo;
 	}
-	private static ImageReader getImageReader(String imageID) throws FormatException,IOException{
-		ImageReader imageReader = new ImageReader();
-		// create OME-XML metadata store of the latest schema version
-		MetadataStore store = MetadataTools.createOMEXMLMetadata();
-		// or if you want a specific schema version, you can use:
-		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
-//		MetadataRetrieve meta = (MetadataRetrieve) store;
-		store.createRoot();
-		imageReader.setMetadataStore(store);
-//		FormatReader.debug = true;
-		imageReader.setId(imageID);
-		return imageReader;
-
-	}
 	
-	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws FormatException, IOException, ImageException {
+	
+    private static ImageReader getImageReader(String imageID) throws Exception{
+        return getImageReader0(imageID, true);
+    }
+    private static ImageReader getImageReader0(String imageID, boolean bRetry) throws Exception{
+        try {
+                ClassLoader.getSystemClassLoader().loadClass("loci.formats.ImageReader");
+                ImageReader imageReader = new ImageReader();
+                // create OME-XML metadata store of the latest schema version
+                MetadataStore store = MetadataTools.createOMEXMLMetadata();
+                // or if you want a specific schema version, you can use:
+                //MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
+                //MetadataRetrieve meta = (MetadataRetrieve) store;
+                store.createRoot();
+                imageReader.setMetadataStore(store);
+                //FormatReader.debug = true;
+                imageReader.setId(imageID);
+                return imageReader;
+        } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                if (bRetry == false) {
+                        throw e;
+                }
+                return null;
+//                if (VCellClientClasspathUtils.detectBioformatsVersion() != VCellClientClasspathUtils.BIOFORMATS_JAR_NOT_FOUND) {
+//                        //load the classpath
+//                        return getImageReader0(imageID, false);
+//                } else {
+//                        //offer to download and do it if user agrees
+//                        
+//                        return getImageReader0(imageID, false);
+//                }
+        }
+
+}
+	
+	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws Exception {
 		return ImageDatasetReader.readImageDatasetChannels(imageID, status,true,null,null)[0];
 	}
 	
-	private static ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels,ISize resize) throws IOException,ImageException,FormatException{
+	private static ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels,ISize resize) throws Exception{
 		ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
 		Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
 		Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
@@ -214,7 +237,7 @@ public class ImageDatasetReader {
 		return new DomainInfo(iSize, extent,origin);
 	}
 
-	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels,Integer timeIndex,ISize resize) throws FormatException, IOException, ImageException {
+	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels,Integer timeIndex,ISize resize) throws Exception {
 		if (imageID.toUpperCase().endsWith(".ZIP")){
 			return readZipFile(imageID, true, bMergeChannels,resize);
 		}
