@@ -53,6 +53,7 @@ import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -219,8 +220,8 @@ public class PSLIDPanel extends JPanel{
 			fos.write(compartmentImage);
 			fos.close();
 //			FieldDataFileOperationSpec fdos_compartment = FieldDataGUIPanel.createFDOSFromImageFile(compartmentImageFile,false);
-			ImageDataset compartmentImageDataset = ImageDatasetReader.readImageDataset(compartmentImageFile.getAbsolutePath(), null);
-			ImageDataset proteinImageDataset = ImageDatasetReader.readImageDataset(proteinImageFile.getAbsolutePath(), null);
+			ImageDataset compartmentImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(compartmentImageFile.getAbsolutePath(), null);
+			ImageDataset proteinImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(proteinImageFile.getAbsolutePath(), null);
 
 			short[] compartmentShorts = compartmentImageDataset.getImage(0,0,0).getPixels();
 			short[] proteinShorts = proteinImageDataset.getImage(0,0,0).getPixels();
@@ -645,7 +646,7 @@ public class PSLIDPanel extends JPanel{
 					fos = new FileOutputStream(generatedImageFile);
 					fos.write(generatedCellProteinImage);
 					fos.close();
-					ImageDataset[] generatedImageDatasetArr = ImageDatasetReader.readImageDatasetChannels(generatedImageFile.getAbsolutePath(), null, false,null,null);
+					ImageDataset[] generatedImageDatasetArr = ImageDatasetReaderFactory.createImageDatasetReader().readImageDatasetChannels(generatedImageFile.getAbsolutePath(), null, false,null,null);
 					short[][] generatedChannels = new short[3][];
 					for (int i = 0; i < generatedChannels.length; i++) {
 						generatedChannels[i] = generatedImageDatasetArr[i].getImage(0,0,0).getPixels();

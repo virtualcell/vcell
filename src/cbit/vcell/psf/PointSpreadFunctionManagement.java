@@ -31,6 +31,7 @@ import cbit.image.ImageFile;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -116,7 +117,7 @@ public class PointSpreadFunctionManagement {
 				File filePSF = (File)hashTable.get("filePSF");
 				String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 				
-				ImageDataset imageDataset = ImageDatasetReader.readImageDataset(filePSF.getAbsolutePath(),null);
+				ImageDataset imageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(filePSF.getAbsolutePath(),null);
 				Extent extent = imageDataset.getExtent();
 				ISize isize = imageDataset.getISize();
 				Origin origin = new Origin(0,0,0);
