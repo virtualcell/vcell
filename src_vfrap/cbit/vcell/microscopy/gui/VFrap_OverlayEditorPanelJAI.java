@@ -60,6 +60,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
@@ -1468,7 +1469,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 						if(!customROIImport.importROI(inputFile)){
-							ImageDataset importImageDataset = ImageDatasetReader.readImageDataset(inputFile.getAbsolutePath(), null);
+							ImageDataset importImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(inputFile.getAbsolutePath(), null);
 							if(importImageDataset.getISize().getX() * importImageDataset.getISize().getY() != 
 								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
 								throw new Exception(

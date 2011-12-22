@@ -31,6 +31,7 @@ import org.vcell.util.StdoutSessionLog;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
@@ -92,13 +93,13 @@ public class NonGUIFRAPTest {
 			String backgroundROIPathName) throws Exception{
 		ExternalDataFileContents extDataFilecontents = new ExternalDataFileContents();
 			extDataFilecontents.imageData =
-				ImageDatasetReader.readImageDataset(imageDataPathName, null);
+				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(imageDataPathName, null);
 			extDataFilecontents.cellROIData =
-				ImageDatasetReader.readImageDataset(cellROIPathName,null);
+				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(cellROIPathName,null);
 			extDataFilecontents.bleachROIData =
-				ImageDatasetReader.readImageDataset(bleachROIPathName,null);
+				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(bleachROIPathName,null);
 			extDataFilecontents.backgroundROIData =
-				ImageDatasetReader.readImageDataset(backgroundROIPathName,null);
+				ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(backgroundROIPathName,null);
 
 		return extDataFilecontents;
 	}
