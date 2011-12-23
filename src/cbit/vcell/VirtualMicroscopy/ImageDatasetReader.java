@@ -9,8 +9,6 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public interface ImageDatasetReader {
 
-	public abstract double[] getTimesOnly(String fileName) throws Exception;
-
 	public abstract ClientRequestManager.ImageSizeInfo getImageSizeInfo(
 			String fileName, Integer forceZSize) throws Exception;
 
