@@ -351,7 +351,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 		final String addROIManual = "1. Add empty Domain";
 //		final String addROIAssist = "Add ROI, show histogram";
-		final String addAllDistinct = "2. Add distinct domains";
+		final String addAllDistinct = "2. Assume Pre-Segmented";
 		final String cancel = "Cancel";
 		String result = null;
 		String distinctDescr =
@@ -359,11 +359,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(!bForceAddDistinct){
 			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Image Editor",
 				distinctDescr+
-				"  Segmenting an image begins with defining at least 1 Domain."+
-				"  After creating the initial Domain you can use the segmentation tools to create/edit more Domains.  Choose an action:\n"+
+				"  Segmenting an image begins with defining Domain(s) manually or automatically."+
+				"  Editing tools are used to create/edit more Domains.  Choose an action:\n"+
 				"1. Add an 'empty' Domain to begin segmenting manually."+
 //				(!bHasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
-				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n2. Add Domains for every distinct pixel value."),
+				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n2. Pre-Segmented (add Domains for every distinct pixel value)."),
 				(!bHasOriginalData
 					?new String[] {addROIManual,cancel}
 					:(uniquePixelBS.cardinality() >= 256
@@ -792,14 +792,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return finalGeometryHolder[0];
 	}
 	private VCImage checkAll() throws Exception{
-		if(overlayEditorPanelJAI.getHighliteInfo() != null){
-			final String highlightDiscard = "discard 'highlights'";
-			final String cancelAssign = "Cancel, back to segmentation...";
+		if(!overlayEditorPanelJAI.isHistogramSelectionEmpty()/*overlayEditorPanelJAI.getHighliteInfo() != null*/){
+			final String highlightDiscard = "discard, continue";
+			final String cancelAssign = "Cancel";
 			String result = DialogUtils.showWarningDialog(
 					overlayEditorPanelJAI,
-					"Warning: Highlights from the 'Resolve' or 'Histogram' tools are present.  Choose an action:\n"+
-					"1.  Discard highlights without applying.\n"+
-					"2.  Go back to segmentation tool. (Use 'Utilities' menu to apply highlights)",
+					"Warning: Selections from the 'Histogram Tool' are present.  Choose an action:\n"+
+					"1.  Discard selection without applying.\n"+
+					"2.  Cancel, go back to Geometry Editor. (hint: Use 'Histogram Tool' apply)",
 					new String[] {highlightDiscard,cancelAssign}, highlightDiscard);
 			if(result.equals(highlightDiscard)){
 				overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
@@ -827,14 +827,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		boolean bForceAssignBackground = false;
 		if(bHasUnassignedBackground){
 			final String assignToBackground = "Assign as default 'background'";
-			final String cancelAssign = "Cancel, back to segmentation...";
+			final String cancelAssign = "Cancel";
 			String result = DialogUtils.showWarningDialog(
 					overlayEditorPanelJAI,
-					"Warning: some areas of image segmentation have not been assigned to a Domain."+
-					"  This can happen when small unintended gaps are left between adjacent Domains Regions"+
-					" or areas around the edges were intentionally left as background.  Choose an action:\n"+
+					"Warning: some areas of image segmentation have not been assigned to a Domain.  "+
+					"Choose an action:\n"+
 					"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
-					"2.  Go back to segmentation tool. (note: use 'Utilities...'->'Resolve regions...')",
+					"2.  Cancel, back to Geometry Editor. (hint: look at 'Domain Regions' list for 'bkgrnd' entries)",
 					new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
 			if(result.equals(assignToBackground)){
 				bForceAssignBackground = true;
@@ -969,7 +968,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			String edgeDescrFrag = "on the "+(b3DTouch?"XY and Z":(borderInfo.bXYTouch?"XY":"Z"))+" border.";
 			final String addBorder = "Add empty border";
 			final String keep = "Keep as is";
-			final String cancel = "Go back to segmentation tool";
+			final String cancel = "Cancel";
 			String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
 					"One or more Domain Regions touches the outer boundary "+edgeDescrFrag+"\n"+
 					"Choose an option:\n"+
