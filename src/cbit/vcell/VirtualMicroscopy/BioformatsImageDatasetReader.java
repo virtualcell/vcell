@@ -26,8 +26,6 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.swing.JOptionPane;
-
 import loci.formats.FormatException;
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
@@ -41,10 +39,6 @@ import loci.formats.meta.MetadataStore;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.VCellClientClasspathUtils;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.SimpleUserMessage;
 
 import cbit.image.ImageException;
 import cbit.vcell.client.ClientRequestManager;
@@ -52,19 +46,6 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class BioformatsImageDatasetReader implements ImageDatasetReader {
 	
-	/* (non-Javadoc)
-	 * @see cbit.vcell.VirtualMicroscopy.ImageDatasetReader#getTimesOnly(java.lang.String)
-	 */
-	public double[] getTimesOnly(String fileName) throws Exception{
-		if(fileName.toUpperCase().endsWith(".ZIP")){
-			return new double[] {0.0};
-		}else{
-			return getTimes(getImageReader(fileName));
-		}
-	}
-	/* (non-Javadoc)
-	 * @see cbit.vcell.VirtualMicroscopy.ImageDatasetReader#getImageSizeInfo(java.lang.String, java.lang.Integer)
-	 */
 	public ClientRequestManager.ImageSizeInfo getImageSizeInfo(String fileName,Integer forceZSize) throws Exception{
 		ClientRequestManager.ImageSizeInfo imageSizeInfo = null;
 		if(fileName.toUpperCase().endsWith(".ZIP")){
