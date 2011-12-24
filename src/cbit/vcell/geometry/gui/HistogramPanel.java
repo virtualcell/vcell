@@ -34,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -312,6 +313,32 @@ public class HistogramPanel extends JPanel {
 			}
 		}
 	}
+	//
+	//Create listener to manage the problems of knowing when the mouse has exited a composite component
+	//requires this listener be added to main component and all children to work properly
+	//Examples of problematic mouseexit events:
+	//mouse over internal components triggers mouseexit from parent (not a real exit from parent)
+	//mouseexit from child component back into main component (mouseexit from child but not an exit from main component)
+	//quick mouse from child component to outside parent skips parent component (parent mouseexited never trigggered)
+	//
+	private boolean bEverWarnedApply = false;//this makes warning appear only once per editor session (requested by Les)
+	private MouseAdapter exitListener = new MouseAdapter() {
+		@Override
+		public void mouseExited(MouseEvent e) {
+			super.mouseExited(e);
+			//Check if the user ever said they never want to see this warning again in userprefernces
+			boolean bGlobalApplyWarning = (userPreferences==null?true:userPreferences.getShowWarning(UserPreferences.WARN_GEOMEDIT_HISTOGRAM_APPLY));
+			//If user has never been warned and the user wants to be warned and there is a selection to warn about
+			if(!bEverWarnedApply && bGlobalApplyWarning && !isSelectionEmpty()){
+				Point convertedPoint = SwingUtilities.convertPoint((Component)e.getSource(), e.getPoint(), HistogramPanel.this.getParent());
+				if(!HistogramPanel.this.getBounds().contains(convertedPoint)){
+					bEverWarnedApply = true;
+					PopupGenerator.showWarningDialog(HistogramPanel.this, userPreferences, UserMessage.warn_geom_histogram_apply,null);
+				}
+			}
+		}
+		
+	};
 	private void init(){
 		applyButton.setFont(Font.decode("Dialog-BOLD-12"));
 //		hideButton.setFont(Font.decode("Dialog-10"));
@@ -384,19 +411,6 @@ public class HistogramPanel extends JPanel {
 						mouseStartPoint = null;
 					}
 					repaint();
-					if(!isSelectionEmpty() && userPreferences != null){
-						PopupGenerator.showWarningDialog(HistogramPanel.this, userPreferences, UserMessage.warn_geom_histogram_apply,null);
-					}
-//					if(bWarn && !isSelectionEmpty()){
-//						final String OK = "OK";
-//						final String OK_STOP = "OK, don't warn again";
-//						String result = DialogUtils.showWarningDialog(HistogramPanel.this,
-//							"Histogram tool has an active pixel range selection, press the 'Apply...' button to create update/create Domain Regions.",
-//							new String[] {OK,OK_STOP}, OK_STOP);
-//						if(OK_STOP.equals(result)){
-//							bWarn = false;
-//						}
-//					}
 				}
 			}
 		);
@@ -437,7 +451,17 @@ public class HistogramPanel extends JPanel {
 					repaint();
 				}
 			}
-		);		
+		);
+		
+		//Setup for mouse exit warning if histogram selection exists
+		addMouseListener(exitListener);
+		Component[] children = getComponents();
+		for (int i = 0; i < children.length; i++) {
+			if(!(children[i] instanceof JLabel)){
+				children[i].addMouseListener(exitListener);
+			}
+		}
+		//
 	}
 	private int forceInBounds(int forceThis){
 		if(forceThis < HORZ_EDGE_OFFSET){
