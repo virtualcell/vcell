@@ -3276,14 +3276,16 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 
 public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack, Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
 	try{
-		ImageDataset imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
-		if (imagedataSet!=null && bCropOutBlack){
-			Rectangle nonZeroRect = imagedataSet.getNonzeroBoundingRectangle();
-			if(nonZeroRect != null){
-				imagedataSet = imagedataSet.crop(nonZeroRect);
+		ImageDataset[] imagedataSets = ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(),null,false,saveOnlyThisTimePointIndex,null);
+		if (imagedataSets!=null && bCropOutBlack){
+			for (int i = 0; i < imagedataSets.length; i++) {
+				Rectangle nonZeroRect = imagedataSets[i].getNonzeroBoundingRectangle();
+				if(nonZeroRect != null){
+					imagedataSets[i] = imagedataSets[i].crop(nonZeroRect);
+				}				
 			}
 		}
-		return createFDOSWithChannels(new ImageDataset[] {imagedataSet},saveOnlyThisTimePointIndex);
+		return createFDOSWithChannels(imagedataSets,null);
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		throw new DataFormatException(e.getMessage());
