@@ -335,7 +335,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	
 	private void askInitialize(boolean bForceAddDistinct){
 
-		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
+		final TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
 		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
 		for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
 			short[] dataToSegment = getImageDataSetChannel().getAllImages()[i].getPixels();
@@ -393,25 +393,62 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 		try{
-			if(result.equals(addAllDistinct)){
-				Integer[] uniquePivValArr = sortedPixVal.toArray(new Integer[0]);
-				int[] lookup = new int[uniquePivValArr[uniquePivValArr.length-1]+1];
-				Arrays.fill(lookup, -1);
-				for (int i = 0; i < uniquePivValArr.length; i++) {
-					lookup[uniquePivValArr[i]] = i+1;
-					overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, i+1);					
-				}
-				for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
-					short[] dataToSegment = getImageDataSetChannel().getAllImages()[i].getPixels();
-					byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-					for (int j = 0; j < dataToSegment.length; j++) {
-						if((int)(dataToSegment[j]&0x0000FFFF) != 0){
-							roiBytes[j] = (byte)lookup[(int)(dataToSegment[j]&0x0000FFFF)];
+			if(result.equals(addAllDistinct)){//try add all distinct, fail if too many regions
+				final String LOOKUP_KEY = "LOOKUP_KEY";
+				AsynchClientTask createDistinctROI = new AsynchClientTask("Create distinct ROI...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						Integer[] uniquePivValArr = sortedPixVal.toArray(new Integer[0]);
+						int[] lookup = new int[uniquePivValArr[uniquePivValArr.length-1]+1];
+						Arrays.fill(lookup, -1);
+						for (int i = 0; i < uniquePivValArr.length; i++) {
+							lookup[uniquePivValArr[i]] = i+1;
+							overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, i+1);					
+						}
+						hashTable.put(LOOKUP_KEY, lookup);
+					}
+				};
+				AsynchClientTask applyDistinctROI = new AsynchClientTask("Apply distinct ROI...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						int[] lookup = (int[])hashTable.get(LOOKUP_KEY);
+						for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
+							short[] dataToSegment = getImageDataSetChannel().getAllImages()[i].getPixels();
+							byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+							for (int j = 0; j < dataToSegment.length; j++) {
+								if((int)(dataToSegment[j]&0x0000FFFF) != 0){
+									roiBytes[j] = (byte)lookup[(int)(dataToSegment[j]&0x0000FFFF)];
+								}
+							}
 						}
 					}
-				}
-				overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
-				refreshObjects();
+				};
+				AsynchClientTask failTask = new AsynchClientTask("Check fail...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false,false,true) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						Throwable throwable = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+						if(throwable != null){
+							//cleanup
+							ComboboxROIName[] comboboxROINames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+							for (int i = 0; i < comboboxROINames.length; i++) {
+								overlayEditorPanelJAI.deleteROIName(comboboxROINames[i]);
+							}
+							for (int i = 0; i < roiComposite.length; i++) {
+								byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+								Arrays.fill(roiBytes, (byte)0);
+							}
+						}
+					}
+				};
+				AsynchClientTask clearHighlightsTask = new AsynchClientTask("Apply distinct ROI...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						overlayEditorPanelJAI.setHighliteInfo(null,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+					}
+				};
+				ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,
+						new Hashtable<String, Object>(),
+						new AsynchClientTask[] {createDistinctROI,applyDistinctROI,createRegionImageTask,failTask,clearHighlightsTask,saveSortRegionImageTask,updateList});
 			}else{
 				try {
 					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
@@ -1130,9 +1167,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				overlayEditorPanelJAI.setHighliteInfo(null, OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY);
 			}
 			updateUnderlayHistogramDisplay();
-		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDALLDISTINCT_PROPERTY)){
-			askInitialize(true);
-		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAD_PROPERTY)){
+		}
+//		else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDALLDISTINCT_PROPERTY)){
+//			askInitialize(true);
+//		}
+		else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_PAD_PROPERTY)){
 			try {
 				padROIDataAsk();
 			} catch (Exception e) {
@@ -1349,39 +1388,47 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private void refreshObjects(){
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(), getRefreshObjectsTasks());
 	}
-	private AsynchClientTask[] getRefreshObjectsTasks(){
-		AsynchClientTask createRegionImageTask = new AsynchClientTask("create RegionImage",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				InterruptCalc localInterruptCalc = getInterruptCalc(lastInterruptRegionCalculation);
-				VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
-				RegionImage localRegionImage =
-					new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
-							checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
-							localInterruptCalc);
-				if(localInterruptCalc.isInterrupted()){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				regionImage = localRegionImage;
-				sortedRegionInfos = regionImage.getRegionInfos();//returns copy
-				Arrays.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
-					public int compare(RegionInfo o1, RegionInfo o2) {
-						int retval = o2.getNumPixels() - o1.getNumPixels();
-						if(retval == 0){
-							retval =  o1.getPixelValue() - o2.getPixelValue();
-						}
-						return retval;
+	private static final String LOCAL_REGION_IMAGE = "LOCAL_REGION_IMAGE";
+	private AsynchClientTask createRegionImageTask = new AsynchClientTask("create RegionImage",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			InterruptCalc localInterruptCalc = getInterruptCalc(lastInterruptRegionCalculation);
+			VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+			RegionImage localRegionImage =
+				new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
+						checkImage.getExtent(),ROIMultiPaintManager.DEFAULT_ORIGIN, RegionImage.NO_SMOOTHING,
+						localInterruptCalc);
+			if(localInterruptCalc.isInterrupted()){
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			hashTable.put(LOCAL_REGION_IMAGE, localRegionImage);
+		}		
+	};
+	private AsynchClientTask saveSortRegionImageTask = new AsynchClientTask("create RegionImage",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			regionImage = (RegionImage)hashTable.get(LOCAL_REGION_IMAGE);
+			sortedRegionInfos = regionImage.getRegionInfos();//returns copy
+			Arrays.sort(sortedRegionInfos,new Comparator<RegionInfo>() {
+				public int compare(RegionInfo o1, RegionInfo o2) {
+					int retval = o2.getNumPixels() - o1.getNumPixels();
+					if(retval == 0){
+						retval =  o1.getPixelValue() - o2.getPixelValue();
 					}
-				});
-			}
-		};
-		AsynchClientTask updateList = new AsynchClientTask("update List",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				overlayEditorPanelJAI.setResolvedList(sortedRegionInfos);
-			}
-		};
-		return new AsynchClientTask[] {createRegionImageTask,updateList};
+					return retval;
+				}
+			});
+		}
+	};
+	private AsynchClientTask updateList = new AsynchClientTask("update List",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			overlayEditorPanelJAI.setResolvedList(sortedRegionInfos);
+		}
+	};
+
+	private AsynchClientTask[] getRefreshObjectsTasks(){
+		return new AsynchClientTask[] {createRegionImageTask,saveSortRegionImageTask,updateList};
 	}
 	//-----UNDO methods-------------------------
 	private BufferedImage[] undoROIComposite;

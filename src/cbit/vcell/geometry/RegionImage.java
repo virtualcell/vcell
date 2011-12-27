@@ -9,10 +9,24 @@
  */
 
 package cbit.vcell.geometry;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Vector;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.Extent;
+import org.vcell.util.ObjectReferenceWrapper;
+import org.vcell.util.Origin;
+
+import cbit.image.ImageException;
+import cbit.image.VCImage;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
-import cbit.util.graph.Tree;
 import cbit.util.graph.Node;
+import cbit.util.graph.Tree;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.geometry.surface.OrigSurface;
@@ -24,16 +38,6 @@ import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.render.Vect3d;
-import java.io.Serializable;
-import java.util.*;
-
-import org.vcell.util.Coordinate;
-import org.vcell.util.Extent;
-import org.vcell.util.ObjectReferenceWrapper;
-import org.vcell.util.Origin;
-
-import cbit.image.ImageException;
-import cbit.image.VCImage;
 
 public class RegionImage implements Serializable {
 	
@@ -53,6 +57,7 @@ public class RegionImage implements Serializable {
 	private final static int NOT_VISITED = -1;
 	private final static int DEPTH_END_SEED = -2;
 
+	
 //	public static class CompactUnsignedIntStorage{
 //		private byte[] smallRange;
 //		private int SMALL_RANGE_SIZE = 256;
@@ -598,9 +603,8 @@ private void createLink(Vector<Integer>[] regionLinkArr,int currentRegion,int[] 
 //Calculate regions using single pass algorithm.  Creates information
 //used to generate surfaces as well
 //
-private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, Origin origin,ClientTaskStatusSupport clientTaskStatusSupport) throws cbit.image.ImageException {
+private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, Origin origin,ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException {
 
-	long startTime = System.currentTimeMillis();
 	//Find linked pixel values in x,y,z and surface elements locations
 	final int EMPTY_REGION = 0;
 	final int FIRST_REGION = 1;
@@ -816,6 +820,9 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 			}
 		}
 		regionsV.add(holderV);
+		if(regionsV.size() > 0x0000FFFF){//unsigned short max, must match getShortEncodedRegionIndexImage()
+			throw new ImageException("Error: image segmentation contains more than "+(0x0000FFFF)+" distinct regions.");
+		}
 		int regionSize = 0;
 		byte pixelCheck = regionImagePixelV.elementAt(holderV.elementAt(0));
 		for (int j = 0; j < holderV.size(); j++) {
@@ -1532,28 +1539,6 @@ public int getNumY() {
 public int getNumZ() {
 	return numZ;
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
-private int getRegionIndex(int x, int y, int z) throws IndexOutOfBoundsException {
-	if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
-		throw new IndexOutOfBoundsException("("+x+","+y+","+z+") is outside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
-	}
-	int index = x + y*numX + z*numXY;
-	for (int i = 0; i < regionInfos.length; i++){
-		if (regionInfos[i].mask.get(index)){
-			return regionInfos[i].regionIndex;
-		}
-	}
-	throw new RuntimeException("pixel("+x+","+y+","+z+") not assigned to a region");
-}
-
 
 /**
  * This method was created in VisualAge.
