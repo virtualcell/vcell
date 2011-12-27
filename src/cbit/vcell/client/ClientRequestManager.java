@@ -191,7 +191,7 @@ public ClientRequestManager(VCellClient vcellClient) {
 }
 
 private static final String GEOMETRY_KEY = "geometry";
-private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext) {
+private AsynchClientTask createSelectDocTask(final TopLevelWindowManager requester){
 	AsynchClientTask selectDocumentTypeTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -205,7 +205,10 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 			hashTable.put("vcDocumentInfo", vcDocumentInfo);
 		}		
 	};
+	return selectDocumentTypeTask;
+}
 
+private AsynchClientTask createSelectLoadGeomTask(final TopLevelWindowManager requester){
 	AsynchClientTask selectLoadGeomTask = new AsynchClientTask("Select/Load geometry...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -215,6 +218,14 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 			hashTable.put(GEOMETRY_KEY, geom);
 		}		
 	};
+	return selectLoadGeomTask;
+}
+
+private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext) {
+
+	AsynchClientTask selectDocumentTypeTask = createSelectDocTask(requester);
+	
+	AsynchClientTask selectLoadGeomTask = createSelectLoadGeomTask(requester);
 
 	AsynchClientTask processGeometryTask = new AsynchClientTask("Processing geometry...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -1446,16 +1457,6 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 		}
 		case VCDocument.MATHMODEL_DOC: {
 			if ((createOption == VCDocument.MATH_OPTION_NONSPATIAL) || (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS)) {
-				AsynchClientTask task1 = new AsynchClientTask("asking for geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {		
-						// spatial or non-spatial
-						if (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS) {
-							GeometryInfo geometryInfo = (GeometryInfo)getMdiManager().getDatabaseWindowManager().selectDocument(VCDocument.GEOMETRY_DOC, requester/*getMdiManager().getDatabaseWindowManager()*/);
-							hashTable.put("geometryInfo", geometryInfo);
-						}
-					}
-				};
 				AsynchClientTask task2 = new AsynchClientTask("creating mathmodel", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -1463,15 +1464,20 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						if (createOption == VCDocument.MATH_OPTION_NONSPATIAL) {
 							geometry = new Geometry("Untitled", 0);
 						} else {
-							GeometryInfo geometryInfo = (GeometryInfo)hashTable.get("geometryInfo");
-							geometry = (Geometry)getDocumentManager().getGeometry(geometryInfo);
+							geometry = (Geometry)hashTable.get(GEOMETRY_KEY);
 						}
 						MathModel mathModel = createMathModel("Untitled", geometry);
 						mathModel.setName("MathModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
 						hashTable.put("doc", mathModel);
 					}
 				};
-				taskArray = new AsynchClientTask[] {task1, task2};
+				if (createOption == VCDocument.MATH_OPTION_SPATIAL_EXISTS){
+					AsynchClientTask task1 = createSelectDocTask(requester);
+					AsynchClientTask task1b = createSelectLoadGeomTask(requester);
+					taskArray = new AsynchClientTask[] {task1, task1b,task2};
+				}else{
+					taskArray = new AsynchClientTask[] {task2};
+				}
 				break;
 			}else if (createOption == VCDocument.MATH_OPTION_FROMBIOMODELAPP){
 			
