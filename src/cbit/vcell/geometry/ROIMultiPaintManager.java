@@ -448,7 +448,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				};
 				ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,
 						new Hashtable<String, Object>(),
-						new AsynchClientTask[] {createDistinctROI,applyDistinctROI,createRegionImageTask,failTask,clearHighlightsTask,saveSortRegionImageTask,updateList});
+						new AsynchClientTask[] {createDistinctROI,applyDistinctROI,createRegionImageTask,failTask,clearHighlightsTask,saveSortRegionImageTask,updateList},false,false,null,true);
 			}else{
 				try {
 					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors(),null);
