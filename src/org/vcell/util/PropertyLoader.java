@@ -57,6 +57,11 @@ public class PropertyLoader {
 	public static final String visitSmoldynVisitExecutableProperty	= "vcell.visit.smoldynvisitexecutable";
 	public static final String visitSmoldynScriptPathProperty		= "vcell.visit.smoldynscript";
 	
+	//BioFormats plugin properties
+	
+	public static final String bioformatsJarFileName		= "vcell.bioformatsJarFileName";
+	public static final String bioformatsJarDownloadURL		= "vcell.bioformatsJarDownloadURL";
+	
 	// Smoldyn
 	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
 	
