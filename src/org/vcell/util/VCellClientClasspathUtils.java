@@ -13,9 +13,22 @@ public class VCellClientClasspathUtils {
 
 	public static String bioformatsJarFileName = null;
 	
-	private static File getBioformatsJarPath(){
-		return new File(ResourceUtil.getVcellHome(),"plugins"+File.separator+"bioformats_omexml_locicommon_brnch41.jar");
+	public static File getBioformatsJarPath(){
+		//return new File(ResourceUtil.getVcellHome(),"plugins"+File.separator+"bioformats_omexml_locicommon_brnch41.jar");
+		return new File(ResourceUtil.getVcellHome(),"plugins"+File.separator+PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName));
 	}
+	
+	private static String getBioformatsJarDownloadURLString(){
+		
+		//TODO: get the file URL from a property
+		//return "http://vcell.org/webstart/Alpha/bioformats_omexml_locicommon_brnch41.jar";
+		return PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarDownloadURL);
+	}
+	
+	private static File getPluginFolder(){
+		return new File(ResourceUtil.getVcellHome(),"plugins");
+	}
+	
 	private static boolean bBioformatsJarExists() {
 		return getBioformatsJarPath().exists();
 	}
@@ -27,7 +40,7 @@ public class VCellClientClasspathUtils {
 			
 			URL u = jarFilePath.toURL();
 			//URL u = f.toURL();
-			System.out.println(u.getPath());
+			//System.out.println(u.getPath());
 		
 			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 			Class urlClass = URLClassLoader.class;
@@ -39,23 +52,38 @@ public class VCellClientClasspathUtils {
 	
 	public static void tryToLoadBioformatsLibrary() throws Exception {
 		
-			try {
+			
 				File f = getBioformatsJarPath();
 				addBioformatsJarToPath(f);
-				System.out.println("Apparently succeeded in adding bioformats library");
+				//System.out.println("Apparently succeeded in adding bioformats library");
 
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Apparantly failed to add bioformats library");
-				//  Alert user that jar loading failed 
-			}
 	}
 	
 	public static boolean downloadBioformatsJar(){
 		boolean bSuccess = false;
+		boolean bPluginFolderExists = false;
 		
+		try {
+			
+			if (!(bPluginFolderExists = getPluginFolder().exists())) {
+				bPluginFolderExists = getPluginFolder().mkdir();
+				if (bPluginFolderExists) {
+					getPluginFolder().setWritable(true);}
+				else {
+					return false;
+				}
+			}
+			FileUtils.saveUrlToFile(getBioformatsJarPath(), getBioformatsJarDownloadURLString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			//System.out.println("There was a problem either accessing plugin folder, creating the plugin, making it writable, or downloading the jar.");
+			return false;
+		}
 		
+		bSuccess = true;
 		return bSuccess;
+		
+		
 		
 	}
 }

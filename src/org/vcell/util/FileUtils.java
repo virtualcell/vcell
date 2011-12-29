@@ -11,6 +11,8 @@
 package org.vcell.util;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -181,6 +183,34 @@ public static File[] getAllDirectories(File rootDir) {
 	return allDirectories.toArray(new File[allDirectories.size()]);
 }
 
+//Following two methods were adapted from stackoverflow.com, question # 921262. Licensed under Creative Commons Attribution-ShareAlike 3.0 License
+//License text: http://creativecommons.org/licenses/by-sa/3.0/legalcode
+public static void saveUrlToFile(String filename, String urlString) throws MalformedURLException, IOException {
+	     saveUrlToFile(new File(filename), urlString);
+}
 
+public static void saveUrlToFile(File file, String urlString) throws MalformedURLException, IOException {
+    BufferedInputStream in = null;
+    FileOutputStream fout = null;
+    try
+    {
+        in = new BufferedInputStream(new URL(urlString).openStream());
+        fout = new FileOutputStream(file);
+
+        byte data[] = new byte[1024];
+        int count;
+        while ((count = in.read(data, 0, 1024)) != -1)
+        {
+        	fout.write(data, 0, count);
+        }
+    }
+    finally
+    {
+        if (in != null)
+        	{in.close();}
+        if (fout != null)
+        	{fout.close();}
+    }
+}
 
 }
