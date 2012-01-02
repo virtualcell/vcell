@@ -90,6 +90,13 @@
 	into any other domain region by selecting from the pop-up menu list.  This "Convert selected regions to Domain" function provides another quick way to edit domain regions in the image canvas.
 	</para>
 	<para>
+	Other interface controls include the Domain/Image slider (J) which lets the user view only the current user-defined domains (slider to Domains side) or to view only the imported image (slider to Image side)
+	or to view a "mix" of the domains and Image (slider to middle).  When the Domain/Image mix slider is somewhere between Domain and Image a composite of both is displayed in the main view area.  The mix view allows 
+	the user to see how the user-defined domains line-up with the original imported image.  The "Add background border" button (K-left) adds 2 additional pixels to the edges of the 
+	main view area that increases the total domain area and fills the edge with "background".  The "Extrude 2D to 3D" button (K-right) lets the user turn a 2D domain into a 3D domain by extrusion.  
+	Any current domain regions will be copied to new slices in 3D.
+	</para>
+	<para>
 	The "origin" and "size" of the geometry can be edited by clicking the "Attributes..." button.  The "origin" defines where the first defined geometry point exists in simulation world space.
 	The "size" defines the total length of the geometry in each axis (XYZ) in simulation world space.  The length can be entered per image pixel or total.
 	The origin and size can also be set after the geometry is finished and applied to an application. (Application->Geometry Definition->Edit Domain... ) (described elsewhere).
