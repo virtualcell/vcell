@@ -11,6 +11,9 @@
 package cbit.vcell.parser;
 
 /* JJT: 0.2.2 */
+import java.util.HashSet;
+import java.util.Set;
+
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
@@ -91,13 +94,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 		// form error message for user's consumption.
 		//
 		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT)+"\"";
-		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT);
-		if (symbols!=null && symbols.length>0){
+		Set<String> symbols = new HashSet<String>();
+		jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT, symbols);
+		if (symbols.size()>0){
 			errorMsg += "\n  where:\n";
-			SymbolTableEntry symbolTableEntries[] = new SymbolTableEntry[symbols.length];
-			for (int i=0;i<symbols.length;i++){
-				symbolTableEntries[i] = jjtGetChild(0).getBinding(symbols[i]);
-				errorMsg += "      " + symbolTableEntries[i].getName() + " = " + intervals[symbolTableEntries[i].getIndex()] + "\n";
+			for (String symbol : symbols){
+				SymbolTableEntry symbolTableEntry = jjtGetChild(0).getBinding(symbol);
+				errorMsg += "      " + symbolTableEntry.getName() + " = " + intervals[symbolTableEntry.getIndex()] + "\n";
 			}
 		}
 		throw new DivideByZeroException(errorMsg);
@@ -117,23 +120,23 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 		// form error message for user's consumption.
 		//
 		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT)+"\"";
-		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT);
-		if (symbols!=null && symbols.length>0){
+		Set<String> symbols = new HashSet<String>();
+		jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT, symbols);
+		if (symbols.size()>0){
 			errorMsg += "\n  where:\n";
-			SymbolTableEntry symbolTableEntries[] = new SymbolTableEntry[symbols.length];
-			for (int i=0;i<symbols.length;i++){
-				symbolTableEntries[i] = jjtGetChild(0).getBinding(symbols[i]);
+			for (String symbol : symbols){
+				SymbolTableEntry symbolTableEntry = jjtGetChild(0).getBinding(symbol);
 				try {
-					if (symbolTableEntries[i].getExpression()!=null){
-						errorMsg += "      " + symbolTableEntries[i].getName() + " = " + symbolTableEntries[i].getExpression().evaluateVector(values) + "\n";
-					}else if (symbolTableEntries[i].getIndex()>-1){
-						errorMsg += "      " + symbolTableEntries[i].getName() + " = " + values[symbolTableEntries[i].getIndex()] + "\n";
+					if (symbolTableEntry.getExpression()!=null){
+						errorMsg += "      " + symbolTableEntry.getName() + " = " + symbolTableEntry.getExpression().evaluateVector(values) + "\n";
+					}else if (symbolTableEntry.getIndex()>-1){
+						errorMsg += "      " + symbolTableEntry.getName() + " = " + values[symbolTableEntry.getIndex()] + "\n";
 					}else {
-						errorMsg += "      " + symbolTableEntries[i].getName() + " = <<<UNBOUND IDENTIFIER>>>\n";
+						errorMsg += "      " + symbolTableEntry.getName() + " = <<<UNBOUND IDENTIFIER>>>\n";
 					}
 				}catch (Throwable e){
-					System.out.println("ASTInvertTermNode.evaluateVector() DIV-BY-ZERO, error evaluating "+symbols[i]);
-					throw new ExpressionException(errorMsg + "      " + symbolTableEntries[i].getName() + " = <<<ERROR>>> " + e.getMessage()+"\n");
+					System.out.println("ASTInvertTermNode.evaluateVector() DIV-BY-ZERO, error evaluating "+symbol);
+					throw new ExpressionException(errorMsg + "      " + symbolTableEntry.getName() + " = <<<ERROR>>> " + e.getMessage()+"\n");
 				}
 			}
 		}

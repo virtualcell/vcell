@@ -10,12 +10,14 @@
 
 package cbit.vcell.parser;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */
 public class VariableSymbolTable implements SymbolTable {
-	Vector<SymbolTableEntry> varList = new Vector<SymbolTableEntry>();
+	Map<String, SymbolTableEntry> varHash = new HashMap<String, SymbolTableEntry>();
 /**
  * VariableSymbolTable constructor comment.
  */
@@ -27,25 +29,17 @@ public VariableSymbolTable() {
  * @param var cbit.vcell.math.Variable
  */
 public void addVar(SymbolTableEntry var) {
-	if (getEntry(var.getName())==null){
-		varList.addElement(var);
+	if (varHash.get(var.getName())==null){
+		varHash.put(var.getName(), var);
 	}
 }
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(String identifierString) {
-	for (int i=0;i<varList.size();i++){
-		SymbolTableEntry var = varList.elementAt(i);
-		if (var.getName().equals(identifierString)){
-			return var;
-		}
-	}
-	return null;
+public SymbolTableEntry getEntry(String identifierString) {	
+	return varHash.get(identifierString);
 }
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	for (SymbolTableEntry ste : varList) {
-		entryMap.put(ste.getName(), ste);
-	}
+	entryMap.putAll(varHash);
 }
 }
