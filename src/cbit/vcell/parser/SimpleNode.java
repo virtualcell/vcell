@@ -10,6 +10,7 @@
 
 package cbit.vcell.parser;
 /* JJT: 0.2.2 */
+import java.util.Set;
 import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -148,12 +149,10 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language) {
-	String[] stringArray = null;
+public void getSymbols(int language, Set<String> symbolSet) {
 	for (int i=0;i<jjtGetNumChildren();i++){
-		stringArray = stringArrayMerge(stringArray,jjtGetChild(i).getSymbols(language));
+		jjtGetChild(i).getSymbols(language, symbolSet);
 	}	
-	return stringArray;
 }
 
 public void jjtAddChild(Node n) {

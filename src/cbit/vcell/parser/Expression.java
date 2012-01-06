@@ -13,7 +13,9 @@ package cbit.vcell.parser;
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -389,7 +391,7 @@ public SymbolTableEntry getSymbolBinding(String symbol) {
  * @exception java.lang.Exception The exception description.
  */
 public String[] getSymbols() {
-	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT);
+	return getSymbols(SimpleNode.LANGUAGE_DEFAULT);
 }
 /**
  * This method was created by a SmartGuide.
@@ -397,17 +399,14 @@ public String[] getSymbols() {
  * @exception java.lang.Exception The exception description.
  */
 public String[] getSymbols(int language) {
-	return rootNode.getSymbols(language);
+	Set<String> symbolSet = new HashSet<String>();
+	rootNode.getSymbols(language, symbolSet);
+	if (symbolSet.size() == 0) {
+		return null;
+	}
+	return symbolSet.toArray(new String[symbolSet.size()]);	
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
- */
-public Iterator<String> getSymbolsIterator() {
-	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT)).iterator();
-}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.String[]

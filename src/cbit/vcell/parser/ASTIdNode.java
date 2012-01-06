@@ -12,6 +12,8 @@ package cbit.vcell.parser;
 
 /* JJT: 0.2.2 */
 
+import java.util.Set;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.TokenMangler;
@@ -262,10 +264,8 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * @return java.lang.String[]
  */
 @Override
-public String[] getSymbols(int language) {
-	String array[] = new String[1];
-	array[0] = infixString(language);
-	return array;
+public void getSymbols(int language, Set<String> symbolSet) {
+	symbolSet.add(infixString(language));
 }
 
 public static final String VISIT_RESEVED_X = "___X___";

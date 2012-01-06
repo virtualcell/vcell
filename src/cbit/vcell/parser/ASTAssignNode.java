@@ -11,6 +11,8 @@
 package cbit.vcell.parser;
 
 /* JJT: 0.2.2 */
+import java.util.Set;
+
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -111,8 +113,8 @@ public SymbolTableEntry getBinding(String symbol) {
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language) {
-	return jjtGetChild(1).getSymbols(language);
+public void getSymbols(int language, Set<String> symbolSet) {
+	jjtGetChild(1).getSymbols(language, symbolSet);
 }
 
 public String infixString(int lang) {

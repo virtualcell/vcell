@@ -15,6 +15,7 @@ package cbit.vcell.parser;
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships
    between nodes. */
+import java.util.Set;
 import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -89,7 +90,7 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language);
+public void getSymbols(int language, Set<String> symbolSet);
   /** infixString method, prints expressions in infix */
   String infixString(int lang);  
   /** This method tells the node to add its argument to the node's
