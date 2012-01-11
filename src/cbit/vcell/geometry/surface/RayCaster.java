@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.vcell.util.Extent;
@@ -32,6 +33,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.HitEvent;
 import cbit.vcell.geometry.gui.HitList;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.render.DistancePointSegment;
 import cbit.vcell.render.Vect3d;
 
 public class RayCaster {
@@ -85,7 +87,7 @@ public class RayCaster {
 		}
 		setSurfaceMasks(surfaceCollection);
 		
-		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ);
+		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ, false);
 
 		long t2 = System.currentTimeMillis();
 		
@@ -406,10 +408,23 @@ public class RayCaster {
 	// compute ray intersection in X-Z plane with ray cast from y = -Infinity to +Infinity
 	// hitList is indexed as (i+numX*k)
 	//
-	public static RayCastResults rayCastXYZ(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ){
+	public static RayCastResults rayCastXYZ(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ, boolean bComputeDistance){
+		// TODO: do not delete the comments below, they are needed for testing
+		// meaningful for a cube of 10x10x10 containing a sphere of radius 3 centered at 5,5,5
+		bComputeDistance = true;
+//		int numErrors = 0;							// number of errors where the actual distance - theoretical distance > errorThreshold
+//		final double errorThreshold = 0.5;			// arbitrary threshold
+//		double numLocalDistanceMapElements = 0;		// number of actual elements in the local distance map
+//		double cumulativeError = 0;					// total error for the elements in the local distance map
+//		final double circleCenter = 5.0;			// sphere is centered at coords 5,5,5
+//		final double circleRadius = 3;
+		
+		final double padFactor = 2; 			// half-width of local distance map; use big number for full brute-force sampling.
+
 		int numX = samplesX.length;
 		int numY = samplesY.length;
 		int numZ = samplesZ.length;
+		double[] distanceMap = null;
 		
 		double epsilon = 1e-8; // roundoff factor.
 		
@@ -501,6 +516,7 @@ public class RayCaster {
 						endK = Math.max(endK,  kk);
 					}
 				}
+				
 				int numRaysX = Math.max(0,endJ-startJ+1)*Math.max(0,endK-startK+1);
 				int numRaysY = Math.max(0,endI-startI+1)*Math.max(0,endK-startK+1);
 				int numRaysZ = Math.max(0,endI-startI+1)*Math.max(0,endJ-startJ+1);
@@ -523,6 +539,70 @@ public class RayCaster {
 				}
 				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
 					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
+					if (bComputeDistance){
+						if (distanceMap==null){
+							distanceMap = new double[numX*numY*numZ];
+							Arrays.fill(distanceMap, Double.POSITIVE_INFINITY);
+						}
+						// precompute ray indices that are within the bounding box of the quad.
+						double padDistanceX = (samplesX[1]-samplesX[0])*padFactor;
+						double padDistanceY = (samplesY[1]-samplesY[0])*padFactor;
+						double padDistanceZ = (samplesZ[1]-samplesZ[0])*padFactor;
+						int tstartI = numX;
+						int tendI = -1;
+						for (int ii=0;ii<numX;ii++){
+							double sampleX = samplesX[ii];
+							if (sampleX >= minX-padDistanceX && sampleX <= maxX+padDistanceX){
+								tstartI = Math.min(startI, ii);
+								tendI = Math.max(endI,  ii);
+							}
+						}
+						int tstartJ = numY;
+						int tendJ = -1;
+						for (int jj=0;jj<numY;jj++){
+							double sampleY = samplesY[jj];
+							if (sampleY >= minY-padDistanceY && sampleY <= maxY+padDistanceY){
+								tstartJ = Math.min(startJ, jj);
+								tendJ = Math.max(endJ,  jj);
+							}
+						}
+						int tstartK = numZ;
+						int tendK = -1;
+						for (int kk=0;kk<numZ;kk++){
+							double sampleZ = samplesZ[kk];
+							if (sampleZ >= minZ-padDistanceZ && sampleZ <= maxZ+padDistanceZ){
+								tstartK = Math.min(startK, kk);
+								tendK = Math.max(endK,  kk);
+							}
+						}
+						// time breakout (purkinje example, pad 5, 10x sample rate):
+						// 20 sec - empty loops
+						// 56 sec - vector allocations
+						// 50 sec - distance map computation
+						// 04 sec - comparison and replacement						
+						Vect3d testPoint = new Vect3d();
+						Vect3d tr1 = new Vect3d();
+						Vect3d tr2 = new Vect3d();
+						Vect3d tr3 = new Vect3d();
+						for (int ii=tstartI;ii<=tendI;ii++){
+							for (int jj=tstartJ;jj<=tendJ;jj++){
+								for (int kk=tstartK;kk<=tendK;kk++){
+//									Vect3d testPoint = new Vect3d(samplesX[ii],samplesY[jj],samplesZ[kk]);
+//									Vect3d tr1 = new Vect3d(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
+//									Vect3d tr2 = new Vect3d(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
+//									Vect3d tr3 = new Vect3d(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
+									testPoint.set(samplesX[ii],samplesY[jj],samplesZ[kk]);
+									tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
+									tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
+									tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
+									double distanceToTriangle3d = Vect3d.distanceToTriangle3d3(testPoint, tr1, tr2, tr3);	// always a positive number
+									int distanceMapIndex = ii+jj*numX+kk*numX*numY;
+									double bestMatch = Math.min(distanceMap[distanceMapIndex],distanceToTriangle3d);
+									distanceMap[distanceMapIndex] = bestMatch;
+								}
+							}
+						}
+					}
 					double ax = triangle.getNodes()[0].getX();
 					double ay = triangle.getNodes()[0].getY();
 					double az = triangle.getNodes()[0].getZ();
@@ -568,9 +648,9 @@ public class RayCaster {
 								hitList.addHitEvent(new HitEvent(surface,polygon,nz,v2z));
 //System.out.println("hit xy @ x="+samplesX[rayIndexI]+", y="+samplesY[rayIndexJ]+" ... ray hit at z="+v2z);
 								hitCount++;
+								}
 							}
 						}
-					}
 					}
 					// SAMPLE IN XZ
 					{
@@ -627,9 +707,42 @@ public class RayCaster {
 				}
 			}
 		}
+		
+// TODO: do not delete the comments below, they are needed for testing on a particular model
+//		if(bComputeDistance) {
+//		for (int i=0;i<numX;i++){
+//			for (int j=0;j<numY;j++){
+//				for (int k=0;k<numZ;k++){
+//					if(distanceMap[i+j*numX+k*numX*numY] < Double.POSITIVE_INFINITY) {
+//						double cx = circleCenter;
+//						double cy = circleCenter;
+//						double cz = circleCenter;
+//						double di = samplesX[i]-cx;
+//						double dj = samplesY[j]-cy;		// (double)i - incorrect because it's the voxel corner, not its center
+//						double dk = samplesZ[k]-cz;
+//						double computed = Math.sqrt( di*di + dj*dj + dk*dk );
+//						computed = circleRadius - computed;	// radius is 3
+//						numLocalDistanceMapElements++;
+//						double error = computed - distanceMap[i+j*numX+k*numX*numY];
+//						cumulativeError += Math.abs(error);
+//						if(Math.abs(error) > errorThreshold) {
+//							numErrors++;
+//							System.out.print(i + ", " + j + ", " + k + "   : " + error);
+//							System.out.println("        nice error!");
+//						}
+//					}
+//				}
+//			}
+//		}
+//		System.out.println(numErrors + " errors above the threshold of " + errorThreshold);
+//		System.out.println("elements in the local distance map: " + numLocalDistanceMapElements);
+//		System.out.println("cumulative error: " + cumulativeError + ",     average error: " + cumulativeError/numLocalDistanceMapElements);
+//		System.out.println(numX + ", " + numY + ", " + numZ);
+//		}
+		
 		long t2 = System.currentTimeMillis();
 		System.out.println("*********************** ray cast XYZ ("+hitCount+" hits), "+(t2-t1)+"ms *********************");
-		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ);
+		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ, distanceMap);
 	}
 
 	public static Geometry createGeometry(SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
