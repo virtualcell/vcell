@@ -552,8 +552,8 @@ public class RayCaster {
 						for (int ii=0;ii<numX;ii++){
 							double sampleX = samplesX[ii];
 							if (sampleX >= minX-padDistanceX && sampleX <= maxX+padDistanceX){
-								tstartI = Math.min(startI, ii);
-								tendI = Math.max(endI,  ii);
+								tstartI = Math.min(tstartI, ii);
+								tendI = Math.max(tendI,  ii);
 							}
 						}
 						int tstartJ = numY;
@@ -561,8 +561,8 @@ public class RayCaster {
 						for (int jj=0;jj<numY;jj++){
 							double sampleY = samplesY[jj];
 							if (sampleY >= minY-padDistanceY && sampleY <= maxY+padDistanceY){
-								tstartJ = Math.min(startJ, jj);
-								tendJ = Math.max(endJ,  jj);
+								tstartJ = Math.min(tstartJ, jj);
+								tendJ = Math.max(tendJ,  jj);
 							}
 						}
 						int tstartK = numZ;
@@ -570,8 +570,8 @@ public class RayCaster {
 						for (int kk=0;kk<numZ;kk++){
 							double sampleZ = samplesZ[kk];
 							if (sampleZ >= minZ-padDistanceZ && sampleZ <= maxZ+padDistanceZ){
-								tstartK = Math.min(startK, kk);
-								tendK = Math.max(endK,  kk);
+								tstartK = Math.min(tstartK, kk);
+								tendK = Math.max(tendK,  kk);
 							}
 						}
 						// time breakout (purkinje example, pad 5, 10x sample rate):
@@ -901,6 +901,137 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 		newGeometry.precomputeAll(true,true);
 		
 		return newGeometry;
+	}
+	
+	
+	public static double[] localUnsignedDistanceMap(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ){
+
+		final double padFactor = 2; 			// half-width of local distance map; use big number for full brute-force sampling.
+
+		int numX = samplesX.length;
+		int numY = samplesY.length;
+		int numZ = samplesZ.length;
+		double[] distanceMap = null;
+		
+		double epsilon = 1e-8; // roundoff factor.
+		
+		long t1 = System.currentTimeMillis();
+
+		// here we expect either triangles or nonplanar quads which will be broken up into two triangles.
+		int hitCount=0;
+		cbit.vcell.geometry.surface.Triangle triangles[] = new cbit.vcell.geometry.surface.Triangle[2];
+		for (int j = 0; j < surfaceCollection.getSurfaceCount(); j++){
+			Surface surface = surfaceCollection.getSurfaces(j);
+			for (int k = 0; k < surface.getPolygonCount(); k++){
+				Polygon polygon = surface.getPolygons(k);
+				Node[] nodes = polygon.getNodes();
+				double p0x = nodes[0].getX();
+				double p0y = nodes[0].getY();
+				double p0z = nodes[0].getZ();
+				double p1x = nodes[1].getX();
+				double p1y = nodes[1].getY();
+				double p1z = nodes[1].getZ();
+				double p2x = nodes[2].getX();
+				double p2y = nodes[2].getY();
+				double p2z = nodes[2].getZ();
+				double minX = Math.min(p0x, Math.min(p1x, p2x));
+				double maxX = Math.max(p0x, Math.max(p1x, p2x));
+				double minY = Math.min(p0y, Math.min(p1y, p2y));
+				double maxY = Math.max(p0y, Math.max(p1y, p2y));
+				double minZ = Math.min(p0z, Math.min(p1z, p2z));
+				double maxZ = Math.max(p0z, Math.max(p1z, p2z));
+				if (polygon.getNodeCount()==4){
+					double p3x = nodes[3].getX();
+					double p3y = nodes[3].getY();
+					double p3z = nodes[3].getZ();
+					minX = Math.min(minX,p3x);
+					maxX = Math.max(maxX,p3x);
+					minY = Math.min(minY,p3y);
+					maxY = Math.max(maxY,p3y);
+					minZ = Math.min(minZ,p3z);
+					maxZ = Math.max(maxZ,p3z);
+				}
+				
+				Vect3d unitNormal = new Vect3d();
+				polygon.getUnitNormal(unitNormal);
+				// convert quads to triangles if necessary
+				int numTriangles;
+				if (polygon.getNodeCount()==3){
+					numTriangles = 1;
+					triangles[0] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(1), polygon.getNodes(2));
+				}else if (polygon.getNodeCount()==4){
+					numTriangles = 2;
+					triangles[0] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(1), polygon.getNodes(2));
+					triangles[1] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(2), polygon.getNodes(3));
+				}else{
+					throw new RuntimeException("polygons with "+polygon.getNodeCount()+" edges are supported");
+				}
+				
+				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
+					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
+
+					if (distanceMap==null){
+						distanceMap = new double[numX*numY*numZ];
+						Arrays.fill(distanceMap, Double.POSITIVE_INFINITY);
+					}
+					// precompute ray indices that are within the bounding box of the quad.
+					double padDistanceX = (samplesX[1]-samplesX[0])*padFactor;
+					double padDistanceY = (samplesY[1]-samplesY[0])*padFactor;
+					double padDistanceZ = (samplesZ[1]-samplesZ[0])*padFactor;
+					int tstartI = numX;
+					int tendI = -1;
+					for (int ii=0;ii<numX;ii++){
+						double sampleX = samplesX[ii];
+						if (sampleX >= minX-padDistanceX && sampleX <= maxX+padDistanceX){
+							tstartI = Math.min(tstartI, ii);
+							tendI = Math.max(tendI,  ii);
+						}
+					}
+					int tstartJ = numY;
+					int tendJ = -1;
+					for (int jj=0;jj<numY;jj++){
+						double sampleY = samplesY[jj];
+						if (sampleY >= minY-padDistanceY && sampleY <= maxY+padDistanceY){
+							tstartJ = Math.min(tstartJ, jj);
+							tendJ = Math.max(tendJ,  jj);
+						}
+					}
+					int tstartK = numZ;
+					int tendK = -1;
+					for (int kk=0;kk<numZ;kk++){
+						double sampleZ = samplesZ[kk];
+						if (sampleZ >= minZ-padDistanceZ && sampleZ <= maxZ+padDistanceZ){
+							tstartK = Math.min(tstartK, kk);
+							tendK = Math.max(tendK,  kk);
+						}
+					}
+					// time breakout (purkinje example, pad 5, 10x sample rate):
+					// 20 sec - empty loops
+					// 56 sec - vector allocations
+					// 50 sec - distance map computation
+					// 04 sec - comparison and replacement						
+					Vect3d testPoint = new Vect3d();
+					Vect3d tr1 = new Vect3d();
+					Vect3d tr2 = new Vect3d();
+					Vect3d tr3 = new Vect3d();
+					for (int ii=tstartI;ii<=tendI;ii++){
+						for (int jj=tstartJ;jj<=tendJ;jj++){
+							for (int kk=tstartK;kk<=tendK;kk++){
+								testPoint.set(samplesX[ii],samplesY[jj],samplesZ[kk]);
+								tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
+								tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
+								tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
+								double distanceToTriangle3d = Vect3d.distanceToTriangle3d3(testPoint, tr1, tr2, tr3);	// always a positive number
+								int distanceMapIndex = ii+jj*numX+kk*numX*numY;
+								double bestMatch = Math.min(distanceMap[distanceMapIndex],distanceToTriangle3d);
+								distanceMap[distanceMapIndex] = bestMatch;
+							}
+						}
+					}
+				}
+			}
+		}
+		return distanceMap;
 	}
 	
 }
