@@ -411,7 +411,7 @@ public class RayCaster {
 	public static RayCastResults rayCastXYZ(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ, boolean bComputeDistance){
 		// TODO: do not delete the comments below, they are needed for testing
 		// meaningful for a cube of 10x10x10 containing a sphere of radius 3 centered at 5,5,5
-		bComputeDistance = true;
+//		bComputeDistance = true;
 //		int numErrors = 0;							// number of errors where the actual distance - theoretical distance > errorThreshold
 //		final double errorThreshold = 0.5;			// arbitrary threshold
 //		double numLocalDistanceMapElements = 0;		// number of actual elements in the local distance map
