@@ -547,7 +547,7 @@ public class RayCasterBitSet {
 		}
 		long t2 = System.currentTimeMillis();
 		System.out.println("*********************** ray cast XYZ ("+hitCount+" hits), "+(t2-t1)+"ms *********************");
-		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ);
+		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ, null);
 	}
 	public static Geometry createGeometry(SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
 		int numX = sampleSize.getX();

@@ -19,14 +19,19 @@ public class RayCastResults {
 	private HitList[] hitListsXY;  // index = i + numX*j
 	private HitList[] hitListsXZ;  // index = i + numX*k
 	private HitList[] hitListsYZ;  // index = j + numY*k
+	private double[] distanceMap;   // index = i + numX*j + numX*numY*k  
 	
-	public RayCastResults(HitList[] aHitListXY, HitList[] aHitListXZ, HitList[] aHitListYZ, int aNumX, int aNumY, int aNumZ){
+	public RayCastResults(HitList[] aHitListXY, HitList[] aHitListXZ, HitList[] aHitListYZ, int aNumX, int aNumY, int aNumZ, double[] aDistanceMap){
 		this.hitListsXY = aHitListXY;
 		this.hitListsXZ = aHitListXZ;
 		this.hitListsYZ = aHitListYZ;
 		this.numX = aNumX;
 		this.numY = aNumY;
 		this.numZ = aNumZ;
+		if (aDistanceMap!=null && aDistanceMap.length!=numX*numY*numZ){
+			throw new RuntimeException("distance map wrong size");
+		}
+		this.distanceMap = aDistanceMap;
 	}
 
 	public int getNumX() {
@@ -53,5 +58,43 @@ public class RayCastResults {
 		return hitListsYZ;
 	}
 	
+	public double[] getDistanceMap(){
+		return distanceMap;
+	}
 	
+	static public double[] computeSignedDistanceMap(boolean[] insideBoundary, double[] distanceMap) {
+		if(insideBoundary.length != distanceMap.length) {
+			throw new RuntimeException("Arguments must have the same size");
+		}
+		// pass1: all the points within the local distance field INSIDE the mesh become negative
+		for(int i=0; i<insideBoundary.length; i++) {
+			if(insideBoundary[i] && distanceMap[i] != Double.POSITIVE_INFINITY) {
+				distanceMap[i] = -distanceMap[i];
+			}
+		}
+		// pass2: compute the maxNegative and the maxPositive
+		double maxNegative = 0;
+		double maxPositive = 0;
+		for(int i=0; i<insideBoundary.length; i++) {
+			if(distanceMap[i] == Double.POSITIVE_INFINITY) {
+				continue;
+			}
+			if(distanceMap[i] < 0) {
+				maxNegative = Math.min(maxNegative, distanceMap[i]);
+			}else if(distanceMap[i] >0) {
+				maxPositive = Math.max(maxPositive, distanceMap[i]);				
+			}
+		}
+		// pass 3: all the Double.POSITIVE_INFINITY points inside are set to maxNegative, all outside are set to maxPositive
+		for(int i=0; i<insideBoundary.length; i++) {
+			if(distanceMap[i] == Double.POSITIVE_INFINITY) {
+				if(insideBoundary[i]) {
+					distanceMap[i] = maxNegative;
+				} else {
+					distanceMap[i] = maxPositive;
+				}
+			}
+		}
+		return distanceMap;
+	}
 }
