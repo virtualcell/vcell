@@ -33,7 +33,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.HitEvent;
 import cbit.vcell.geometry.gui.HitList;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.render.DistancePointSegment;
 import cbit.vcell.render.Vect3d;
 
 public class RayCaster {
