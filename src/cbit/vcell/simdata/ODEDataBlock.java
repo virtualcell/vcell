@@ -37,8 +37,12 @@ public cbit.vcell.solver.ode.ODESimData getODESimData() {
  * This method was created in VisualAge.
  * @return long
  */
-public long getSizeInBytes() {
+ public long getSizeInBytes() {
 	return odeSimData.getSizeInBytes();
+}
+ 
+public long getEstimatedSizeInBytes() {
+	return odeSimData.getEstimatedSizeInBytes();
 }
 /**
  * This method was created in VisualAge.
