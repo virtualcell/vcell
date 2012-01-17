@@ -69,7 +69,7 @@ public static Enumeration<Variable> getRequiredVariables(Expression exp, SymbolT
  * @param exp cbit.vcell.parser.Expression
  */
 private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp, SymbolTable symbolTable) throws ExpressionException {
-	Vector requiredVarList = new Vector();
+	Vector<Variable> requiredVarList = new Vector<Variable>();
 	if (exp != null){
 		String identifiers[] = exp.getSymbols();
 		if (identifiers != null){
@@ -77,26 +77,29 @@ private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp
 				//
 				// look for globally bound variables
 				//
-				Variable var = (Variable)symbolTable.getEntry(identifiers[i]);
+				SymbolTableEntry entry = symbolTable.getEntry(identifiers[i]);
 				//
 				// look for reserved symbols
 				//
-				if (var == null){
-					var = ReservedMathSymbolEntries.getReservedVariableEntry(identifiers[i]);
+				if (entry == null){
+					entry = ReservedMathSymbolEntries.getReservedVariableEntry(identifiers[i]);
 				}
 				//
 				// PseudoConstant's are locally bound variables, look for existing binding
 				//
-				if (var==null){
+				if (entry == null){
 					SymbolTableEntry ste = exp.getSymbolBinding(identifiers[i]);
 					if (ste instanceof PseudoConstant){
-						var = (Variable)ste;
+						entry = ste;
 					}
-				}
-				if (var==null){
+				}				
+				if (entry == null){
 					throw new ExpressionBindingException("unresolved symbol "+identifiers[i]+" in expression "+exp);
 				}		
-				requiredVarList.addElement(var);
+				if (!(entry instanceof Variable)) {
+					throw new RuntimeException("MathUtilities.getRequiredVariablesExplicit() only gets required math variable. Use math side symbol table, e.g. MathDescription, SimulationSymbolTable, etc.");
+				}
+				requiredVarList.addElement((Variable)entry);
 			}
 		}		
 	}	
@@ -122,8 +125,8 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		// get All symbols (identifiers), make list of functions
 		//
 //System.out.println("substituteFunctions() exp2 = '"+exp2+"'");
-		Enumeration enum1 = getRequiredVariablesExplicit(exp2, symbolTable);
-		Vector functionList = new Vector();
+		Enumeration<Variable> enum1 = getRequiredVariablesExplicit(exp2, symbolTable);
+		Vector<Variable> functionList = new Vector<Variable>();
 		while (enum1.hasMoreElements()){
 			Variable var = (Variable)enum1.nextElement();
 			if (var instanceof Function){
