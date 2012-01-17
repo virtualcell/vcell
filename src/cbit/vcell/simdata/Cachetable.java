@@ -181,8 +181,8 @@ public VCData put(VCDataIdentifier vcdID, VCData data) {
 public ODEDataBlock put(ODEDataInfo odeDataInfo, ODEDataBlock odeDataBlock) {
 
 	ODEDataBlock oldODEDataBlock = null;
-			
-	TimeWrapper oldTimeWrapper = put(odeDataInfo, new TimeWrapper(odeDataBlock, odeDataBlock.getSizeInBytes(), odeDataInfo));
+	
+	TimeWrapper oldTimeWrapper = put(odeDataInfo, new TimeWrapper(odeDataBlock,odeDataBlock.getEstimatedSizeInBytes(), odeDataInfo));
 
 	if (oldTimeWrapper!=null){
 		oldODEDataBlock = (ODEDataBlock)oldTimeWrapper.getObject();

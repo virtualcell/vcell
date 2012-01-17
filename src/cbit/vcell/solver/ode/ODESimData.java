@@ -90,6 +90,12 @@ public String getMathName() {
 	return mathName;
 }
 
+private long getDataSizeInBytes(){
+	return 8/*sizeof(Double)*/*getRowCount()/*times*/*getDataColumnCount()/*variables*/;
+}
+public long getEstimatedSizeInBytes(){
+	return 2/*fudge(descr,display,names)*/*getDataSizeInBytes();
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/14/00 2:10:15 PM)
@@ -106,7 +112,7 @@ public long getSizeInBytes() {
 			sizeInBytes += (((ODESolverResultSetColumnDescription)dataColumns[c]).getParameterName()!=null)?(dataColumns[c].getParameterName().length()):((new String("null")).length());
 		}
 	}
-	sizeInBytes += 8*(getRowCount())*(getDataColumnCount());
+	sizeInBytes += getDataSizeInBytes();
 	FunctionColumnDescription functionColumns[] = getFunctionColumnDescriptions();
 	for (int c = 0; c < functionColumns.length; c++) {
 		sizeInBytes += functionColumns[c].getFunctionName().length();
