@@ -10,6 +10,7 @@
 
 package cbit.vcell.math;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -749,31 +750,32 @@ public boolean isDummy(SimulationSymbolTable simSymbolTable, CompartmentSubDomai
 	return false; // non zero rate or velocity
 }
 
-
 @Override
 public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException {
+	checkInitialCondition(mathDesc);
 	if (getVariable() instanceof VolVariable) {
-		checkValid_Volume(mathDesc, getBoundaryXm(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getBoundaryXp(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getBoundaryYm(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getBoundaryYp(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getBoundaryZm(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getBoundaryZp(), (CompartmentSubDomain)subDomain);
+		ArrayList<Expression> expList = new ArrayList<Expression>();
+		expList.add(getBoundaryXm());
+		expList.add(getBoundaryXp());
+		expList.add(getBoundaryYm());
+		expList.add(getBoundaryYp());
+		expList.add(getBoundaryZm());
+		expList.add(getBoundaryZp());
 
-		checkValid_Volume(mathDesc, getVelocityX(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getVelocityY(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getVelocityZ(), (CompartmentSubDomain)subDomain);
+		expList.add(getVelocityX());
+		expList.add(getVelocityY());
+		expList.add(getVelocityZ());
+				
+		expList.add(getGradientX());
+		expList.add(getGradientY());
+		expList.add(getGradientZ());
+				
+		expList.add(getRateExpression());
+		expList.add(getExactSolution());
+
+		expList.add(diffusionExp);
+		checkValid_Volume(mathDesc, expList, (CompartmentSubDomain)subDomain);
 		
-		checkValid_Volume(mathDesc, getGradientX(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getGradientY(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getGradientZ(), (CompartmentSubDomain)subDomain);
-		
-		checkValid_Volume(mathDesc, getRateExpression(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getInitialExpression(), (CompartmentSubDomain)subDomain);
-		checkValid_Volume(mathDesc, getExactSolution(), (CompartmentSubDomain)subDomain);
-
-		checkValid_Volume(mathDesc, diffusionExp, (CompartmentSubDomain)subDomain);
-
 		// jump condition can have membrane variable in it
 		MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)subDomain);
 		for (int i = 0; membranes!=null && i < membranes.length; i++){
@@ -783,13 +785,6 @@ public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws Mat
 			}
 		}
 	} else if (getVariable() instanceof MemVariable) {
-		checkValid_Membrane(mathDesc, getBoundaryXm(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getBoundaryXp(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getBoundaryYm(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getBoundaryYp(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getBoundaryZm(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getBoundaryZp(), (MembraneSubDomain)subDomain);
-
 		if (getVelocityX() != null 
 			|| getVelocityY() != null
 			|| getVelocityZ() != null) {
@@ -802,11 +797,20 @@ public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws Mat
 			throw new MathException("Gradient is not supported for membrane variables");
 		}
 		
-		checkValid_Membrane(mathDesc, getRateExpression(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getInitialExpression(), (MembraneSubDomain)subDomain);
-		checkValid_Membrane(mathDesc, getExactSolution(), (MembraneSubDomain)subDomain);
+		ArrayList<Expression> expList = new ArrayList<Expression>();
+		expList.add(getBoundaryXm());
+		expList.add(getBoundaryXp());
+		expList.add(getBoundaryYm());
+		expList.add(getBoundaryYp());
+		expList.add(getBoundaryZm());
+		expList.add(getBoundaryZp());
+				
+		expList.add(getRateExpression());
+		expList.add(getExactSolution());
 
-		checkValid_Membrane(mathDesc, diffusionExp, (MembraneSubDomain)subDomain);
+		expList.add(diffusionExp);
+		
+		checkValid_Membrane(mathDesc, expList, (MembraneSubDomain)subDomain);
 	}
 }
 

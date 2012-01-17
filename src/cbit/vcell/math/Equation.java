@@ -12,6 +12,7 @@ package cbit.vcell.math;
 
 import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.Compare;
@@ -346,73 +347,91 @@ public boolean hasDiscontinuities(MathDescription mathDesc) throws ExpressionExc
 
 public abstract void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException;
 
-protected void checkValid_Volume(MathDescription mathDesc, Expression exp, CompartmentSubDomain compartmentSubDomain) throws MathException, ExpressionException {
-	if (exp == null) {
-		return;
+protected void checkInitialCondition(MathDescription mathDesc) throws ExpressionException, MathException {
+	Enumeration<Variable> varEnum = MathUtilities.getRequiredVariables(getInitialExpression(), mathDesc);
+	while (varEnum.hasMoreElements()) {
+		Variable refVar = varEnum.nextElement();
+		if (refVar instanceof VolVariable
+			|| refVar instanceof VolumeRegionVariable
+			|| refVar instanceof MemVariable
+			|| refVar instanceof MembraneRegionVariable
+			|| refVar instanceof VolumeParticleVariable
+			|| refVar instanceof MembraneParticleVariable) {
+			throw new MathException("Initial condition for variable '" + getVariable().getName() + "' references one or more variables. Initial conditions cannot reference variables.");
+		}
 	}
-	Domain volumeDomain = new Domain(compartmentSubDomain);
-	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
-	String[] symbols = newExp.getSymbols();
-	if (symbols == null) {
-		return;
-	}
-	for (String symbol : symbols) {
-		Variable variable = mathDesc.getVariable(symbol);
-		if (variable != null && variable.getDomain()!=null){
-			// if variable defined on this surface or the appropriate volume domain, then it is ok.
-			if (variable.getDomain().compareEqual(volumeDomain)){
-				continue;
+}
+	
+protected void checkValid_Volume(MathDescription mathDesc, List<Expression> expList, CompartmentSubDomain compartmentSubDomain) throws MathException, ExpressionException {
+	for (Expression exp : expList) {
+		if (exp == null) {
+			return;
+		}
+		Domain volumeDomain = new Domain(compartmentSubDomain);
+		Enumeration<Variable> varEnum = MathUtilities.getRequiredVariables(getInitialExpression(), mathDesc);
+		while (varEnum.hasMoreElements()) {
+			Variable refVar = varEnum.nextElement();
+			if (refVar != null && refVar.getDomain()!=null){
+				// if variable defined on this surface or the appropriate volume domain, then it is ok.
+				if (refVar.getDomain().compareEqual(volumeDomain)){
+					continue;
+				}
+			}
+			if ((refVar instanceof MemVariable
+					|| refVar instanceof MembraneRandomVariable
+					|| refVar instanceof MembraneParticleVariable
+					|| refVar instanceof MembraneRegionVariable)) {
+				String varType = "membrane";
+				if (refVar instanceof MembraneRandomVariable) {
+					varType = "membrane random";
+				} else if (refVar instanceof MembraneRegionVariable) {
+					varType = "membrane region";
+				} else if (refVar instanceof MembraneParticleVariable) {
+					varType = "membrane particle";
+				}
+				throw new MathException("Equation for volume variable '" + getVariable().getName() + "' references " + varType
+						+ " variable '" + refVar.getName() + "'.");
 			}
 		}
-		if ((variable instanceof MemVariable
-				|| variable instanceof MembraneRandomVariable
-				|| variable instanceof MembraneRegionVariable)) {
-			String varType = "membrane";
-			if (variable instanceof MembraneRandomVariable) {
-				varType = "membrane random";
-			} else if (variable instanceof MembraneRegionVariable) {
-				varType = "membrane region";
-			}
-			throw new MathException("Equation for volume variable '" + getVariable().getName() + "' references " + varType
-					+ " variable '" + symbol + "'.");
-		}
-	}	
+	}
 } 
 
-protected void checkValid_Membrane(MathDescription mathDesc, Expression exp, MembraneSubDomain membraneSubDomain) throws MathException, ExpressionException {
-	if (exp == null) {
-		return;
-	}
-	Domain surfaceDomain = new Domain(membraneSubDomain);
-	Domain volume1Domain = new Domain(membraneSubDomain.getInsideCompartment());
-	Domain volume2Domain = new Domain(membraneSubDomain.getOutsideCompartment());
-	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
-	String[] symbols = newExp.getSymbols();
-	if (symbols == null) {
-		return;
-	}
-	for (String symbol : symbols) {
-		Variable variable = mathDesc.getVariable(symbol);
-		if (variable!=null && variable.getDomain()!=null){
-			// if variable defined on this surface or the appropriate volume domain, then it is ok.
-			if (variable.getDomain().compareEqual(surfaceDomain) || variable.getDomain().compareEqual(volume1Domain) || variable.getDomain().compareEqual(volume2Domain)){
-				continue;
+protected void checkValid_Membrane(MathDescription mathDesc, List<Expression> expList, MembraneSubDomain membraneSubDomain) throws MathException, ExpressionException {
+	for (Expression exp : expList) {
+		if (exp == null) {
+			return;
+		}
+		Domain surfaceDomain = new Domain(membraneSubDomain);
+		Domain volume1Domain = new Domain(membraneSubDomain.getInsideCompartment());
+		Domain volume2Domain = new Domain(membraneSubDomain.getOutsideCompartment());
+		Enumeration<Variable> varEnum = MathUtilities.getRequiredVariables(getInitialExpression(), mathDesc);
+		while (varEnum.hasMoreElements()) {
+			Variable refVar = varEnum.nextElement();
+			if (refVar!=null && refVar.getDomain()!=null){
+				// if variable defined on this surface or the appropriate volume domain, then it is ok.
+				if (refVar.getDomain().compareEqual(surfaceDomain) || refVar.getDomain().compareEqual(volume1Domain) || refVar.getDomain().compareEqual(volume2Domain)){
+					continue;
+				}
+			}
+			String refVarName = refVar.getName();
+			if (refVar instanceof VolumeRandomVariable) {
+				throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references volume random variable '" + refVarName + "'.");
+			}
+			if (refVar instanceof VolumeParticleVariable) {
+				throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references volume particle variable '" + refVarName + "'.");
+			}
+			if (refVar instanceof VolVariable
+					|| refVar instanceof VolumeRegionVariable) {
+				String varType = "volume";
+				if (refVar instanceof VolumeRegionVariable) {
+					varType = "volume region";
+				}
+				throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references " +
+						varType + " variable '" + refVarName + "'. Please use " +
+						refVarName + "_INSIDE or " + refVarName + "_OUTSIDE to denote " + varType + " variable " + refVarName  + "'s solution at the membrane");
 			}
 		}
-		if (variable instanceof VolVariable
-				|| variable instanceof VolumeRandomVariable
-				|| variable instanceof VolumeRegionVariable) {
-			String varType = "volume";
-			if (variable instanceof MembraneRandomVariable) {
-				varType = "volume random";
-			} else if (variable instanceof MembraneRegionVariable) {
-				varType = "volume region";
-			}
-			throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references " +
-					varType + " variable '" + variable.getName() + "'. Please use " +
-				    symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol  + "'s solution at the membrane");
-		}
-	}	
+	}
 }
 
 }
