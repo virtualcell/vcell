@@ -518,7 +518,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			if(iniCon instanceof ParticleInitialConditionConcentration)
 			{
 				try{
-					subsituteFlatten(((ParticleInitialConditionConcentration) iniCon).getDistribution());
+					subsituteFlattenToConstant(((ParticleInitialConditionConcentration) iniCon).getDistribution());
 				}
 				catch(Exception e)//can not be evaluated to a constant
 				{
@@ -648,26 +648,27 @@ private void writeReactions() throws ExpressionException, MathException {
 					reactants.add(a.getVar());
 				}
 			}
-			double rateDefinition = 0;
+			Expression rateDefinition = null;
 			JumpProcessRateDefinition jprd = pjp.getParticleRateDefinition();
+
 			if(jprd instanceof MacroscopicRateConstant) {
-				try {
-					rateDefinition = subsituteFlatten(((MacroscopicRateConstant) jprd).getExpression());
-				} catch (NotAConstantException ex) {
-					throw new ExpressionException("reacion rate for jump process " + pjp.getName() + " is not a constant. Constants are required for all reaction rates.");
-				}
+				rateDefinition = subsituteFlatten(((MacroscopicRateConstant) jprd).getExpression());
 			} else if(jprd instanceof InteractionRadius) {
-				try {
-					rateDefinition = subsituteFlatten(((InteractionRadius) jprd).getExpression());
-				} catch (NotAConstantException ex) {
-					throw new ExpressionException("interaction radius for jump process " + pjp.getName() + " is not a constant. Constants are required for all interaction radius.");
-				}
+				rateDefinition = subsituteFlatten(((InteractionRadius) jprd).getExpression());
 			} else {
 				new RuntimeException("The jump process rate definition is not supported");
 			}
 			
-			if (rateDefinition == 0) {
+			
+			if (rateDefinition.isZero()) {
 				continue;
+			}
+			if (!mathDesc.isSpatialHybrid()) {
+				try {
+					rateDefinition.evaluateConstant();
+				} catch (ExpressionException ex) {
+					throw new ExpressionException("reaction rate for jump process " + pjp.getName() + " is not a constant. Constants are required for all reaction rates.");
+				}
 			}
 			//if the reaction rate is not 0, means we are going to run the simulations
 			//Smoldyn takes maximum 2nd order reaction.
@@ -680,17 +681,24 @@ private void writeReactions() throws ExpressionException, MathException {
 				throw new MathException("VCell spatial stochastic models support up to 2nd order reactions. \n" + "The reaction:" + pjp.getName() + " has more than 2 products.");
 			}
 			
+			String rateDefinitionStr = simulation.getMathDescription().isSpatialHybrid() ? rateDefinition.infix() : rateDefinition.evaluateConstant() + "";
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
-//				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
-				printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
-				writeReactionCommand(reactants, products, subdomain, rateDefinition);
+				//0th order reaction, product limited to one and we'll let the reaction know where it happens
+				if(reactants.size() == 0 && products.size() == 1)
+				{
+					printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+				}
+				else{
+					printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
+				}
+				writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 			} else if (subdomain instanceof MembraneSubDomain){
 				//0th order reaction, product limited to one and it can be on mem or in vol
 				if(reactants.size() == 0 && products.size() == 1)
 				{
 					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-					writeReactionCommand(reactants, products, subdomain, rateDefinition);
+					writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 				}
 				//consuming of a species to nothing, limited to one reactant
 				else if(reactants.size() == 1 && products.size() == 0)
@@ -698,13 +706,13 @@ private void writeReactions() throws ExpressionException, MathException {
 					if(getMembraneVariableCount(reactants) == 1)//consuming a mem species in mem reaction
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, rateDefinition);
+						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					//consuming a vol spcies in mem reaction
 					//it equals to adsorption, species A from vol adsorbed to mem as again species A, and then we kill the speceis A on mem.
 					else if(getVolumeVariableCount(reactants) == 1)
 					{
-						writeRateTransitionCommand(reactants, products, subdomain, rateDefinition);
+						writeRateTransitionCommand(reactants, products, subdomain, rateDefinitionStr);
 						String speciesName = reactants.get(0).getName();
 						String killMolCmd = "cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)";
 						killMolCommands.add(killMolCmd);
@@ -718,11 +726,11 @@ private void writeReactions() throws ExpressionException, MathException {
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, rateDefinition);
+						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					else//Other single molecular reactions
 					{
-						writeRateTransitionCommand(reactants, products, subdomain, rateDefinition);
+						writeRateTransitionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 				}
 				else //membrane reactions which are not one to one, or 0th order, or consuming species
@@ -731,14 +739,14 @@ private void writeReactions() throws ExpressionException, MathException {
 					if((getMembraneVariableCount(reactants) == 1))
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-						writeReactionCommand(reactants, products, subdomain, rateDefinition);
+						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					else // bimolecular membrane reaction
 					{
 						if(jprd instanceof InteractionRadius)
 						{
 							printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
-							writeReactionByInteractionRadius(reactants, products, subdomain, rateDefinition, pjp.getName());
+							writeReactionByInteractionRadius(reactants, products, subdomain, rateDefinitionStr, pjp.getName());
 						}
 						else
 						{
@@ -753,7 +761,7 @@ private void writeReactions() throws ExpressionException, MathException {
 
 }
 
-private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
+private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstant) throws MathException, DivideByZeroException, ExpressionException
 {
 	if (reacts.size() == 0) {
 		printWriter.print(0);
@@ -779,7 +787,7 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 }
 
 
-private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double interactionRadius, String reactionName) throws MathException
+private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String interactionRadius, String reactionName) throws MathException
 {
 	if (reacts.size() == 0) {
 		printWriter.print(0);
@@ -808,7 +816,7 @@ private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variab
 
 //used to write molecule transition rate command when it interacts with surface, the possible states can be 
 //reflection, transmission, adsorption, desorption  
-private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, double rateConstant) throws MathException
+private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstant) throws MathException
 {
 	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
 	
@@ -1011,7 +1019,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
 		//otherwise we append the distributed molecules in different small boxes
 		try{
-			subsituteFlatten(disExpression);
+			subsituteFlattenToConstant(disExpression);
 			sb.append(SmoldynKeyword.compartment_mol);
 			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + "\n");
 		}
@@ -1069,7 +1077,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
 		//otherwise we append the distributed molecules in different small boxes
 		try{
-			subsituteFlatten(disExpression);
+			subsituteFlattenToConstant(disExpression);
 			sb.append(SmoldynKeyword.surface_mol); 
 			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
 		}
@@ -1086,7 +1094,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 private double writeInitialCount(ParticleInitialConditionCount initialCount, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
 	double count = 0;
 	try {
-		count = subsituteFlatten(initialCount.getCount());
+		count = subsituteFlattenToConstant(initialCount.getCount());
 	} catch (NotAConstantException ex) {
 		throw new ExpressionException("initial count for variable " + variableName + " is not a constant. Constants are required for all intial counts");
 	}
@@ -1107,21 +1115,21 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 				if (initialCount.isXUniform()) {
 					sb.append(" " + initialCount.getLocationX().infix());					
 				} else {
-					double locX = subsituteFlatten(initialCount.getLocationX());
+					double locX = subsituteFlattenToConstant(initialCount.getLocationX());
 					sb.append(" " + locX);
 				}
 				if (dimension > 1) {
 					if (initialCount.isYUniform()) {
 						sb.append(" " + initialCount.getLocationY().infix());					
 					} else {
-						double locY = subsituteFlatten(initialCount.getLocationY());
+						double locY = subsituteFlattenToConstant(initialCount.getLocationY());
 						sb.append(" " + locY);
 					}
 					if (dimension > 2) {
 						if (initialCount.isZUniform()) {
 							sb.append(" " + initialCount.getLocationZ().infix());					
 						} else {
-							double locZ = subsituteFlatten(initialCount.getLocationZ());
+							double locZ = subsituteFlattenToConstant(initialCount.getLocationZ());
 							sb.append(" " + locZ);
 						}
 					}
@@ -1837,15 +1845,21 @@ private void writeWallSurfaces() throws SolverException {
 		}
 	}
 }
-private double subsituteFlatten(Expression exp) throws MathException, NotAConstantException, ExpressionException {
-	Expression newExp = new Expression(exp);
-	newExp.bindExpression(simulationSymbolTable);
-	newExp = simulationSymbolTable.substituteFunctions(newExp).flatten();
+
+private double subsituteFlattenToConstant(Expression exp) throws MathException, NotAConstantException, ExpressionException {
+	Expression newExp = subsituteFlatten(exp);
 	try {
 		return newExp.evaluateConstant();
 	} catch (ExpressionException ex) {
 		throw new NotAConstantException();
 	}
+}
+
+private Expression subsituteFlatten(Expression exp) throws MathException, ExpressionException {
+	Expression newExp = new Expression(exp);
+	newExp.bindExpression(simulationSymbolTable);
+	newExp = simulationSymbolTable.substituteFunctions(newExp).flatten();
+	return newExp;
 }
 
 private void writeDiffusions() throws ExpressionBindingException,
@@ -1867,7 +1881,7 @@ private void writeDiffusions() throws ExpressionBindingException,
 				variableName = getVariableName(pp.getVariable(), null);
 			}
 			try {
-				double diffConstant = subsituteFlatten(pp.getDiffusion());
+				double diffConstant = subsituteFlattenToConstant(pp.getDiffusion());
 				printWriter.println(SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
 			} catch (NotAConstantException ex) {
 				throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
