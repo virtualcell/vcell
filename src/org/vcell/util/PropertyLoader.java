@@ -60,6 +60,7 @@ public class PropertyLoader {
 	//BioFormats plugin properties
 	
 	public static final String bioformatsJarFileName		= "vcell.bioformatsJarFileName";
+	public static final String bioformatsClasspath			= "vcell.bioformatsClasspath";
 	public static final String bioformatsJarDownloadURL		= "vcell.bioformatsJarDownloadURL";
 	
 	// Smoldyn
