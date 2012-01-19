@@ -48,7 +48,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				} else {
 					label = ((User)userObject).getName()+"                             ";
 				}
-				component.setToolTipText("User Name");
+				component.setToolTipText(label);
 				component.setText(label);
 			}else if(userObject instanceof MathModelInfo){
 				MathModelInfo mathModelInfo = (MathModelInfo)userObject;
@@ -75,6 +75,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		e.printStackTrace(System.out);
 	}
 	//
+	if (component.getToolTipText() == null || component.getToolTipText().length() == 0) {
+		component.setToolTipText(component.getText());
+	}
 	return component;
 }
 

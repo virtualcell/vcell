@@ -210,97 +210,19 @@ public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
  * This method was created in VisualAge.
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public void addSubVolume(CSGObject csgObject,boolean bFront) throws PropertyVetoException {
-
-	if (getSubVolumeIndex(csgObject) != -1){
-		throw new IllegalArgumentException("subdomain "+csgObject+" cannot be added, already exists");
-	}
-
-	//
-	// add after last analytic subvolume (but before imageSubVolumes)
-	//
-	int firstImageIndex = -1;
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] instanceof ImageSubVolume){
-			firstImageIndex = i;
-			break;
-		}
-	}
-	
-	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length+1];
-	
-	if (firstImageIndex == -1){
-		//
-		// no image subvolumes
-		//
-		if(bFront){
-			newArray[0] = csgObject;
-			if (fieldSubVolumes.length>0){
-				System.arraycopy(fieldSubVolumes,0,newArray,1,fieldSubVolumes.length);
-			}
-		}else{
-			//add to end of analytics
-			// copy first N elements
-			if (fieldSubVolumes.length>0){
-				System.arraycopy(fieldSubVolumes,0,newArray,0,fieldSubVolumes.length);
-			}
-			// add new element to end
-			newArray[fieldSubVolumes.length] = csgObject;
-		}
-		
-	}else{
-	//
-	// first imageSubVolume at index 'firstImageIndex'
-	// insert subVolume at this index (before first ImageSubVolume) 
-	// and push all of the imageSubVolumes back
-	//
-		int newIndex = 0;
-		for (int i=0;i<fieldSubVolumes.length;i++){
-			if(bFront){
-				if (i == 0){
-					newArray[newIndex++] = csgObject;
-				}				
-			}else{
-				if (i == firstImageIndex){
-					newArray[newIndex++] = csgObject;
-				}				
-			}
-			newArray[newIndex++] = fieldSubVolumes[i];
-		}
-	}	
-
-	csgObject.setHandle(getFreeSubVolumeHandle());
-	setSubVolumes(newArray);	
-		
-/*
-	if (!subVolumeList.contains(subVolume)){
-		for (int i=0;i<subVolumeList.size();i++){
-			SubVolume sv = (SubVolume)subVolumeList.elementAt(i);
-			if (sv instanceof ImageSubVolume){
-				if (subVolume.getHandle()>=0){
-					throw new RuntimeException("subVolume already has handle set");
-				}
-				subVolume.setHandle(getFreeSubVolumeHandle());
-				insertSubVolumeAt0(subVolume,i);
-				setChanged();
-				notifyObservers(subVolume);
-				return;
-			}
-		}
-		subVolume.setHandle(getFreeSubVolumeHandle());
-		addSubVolume0(subVolume);
-		setChanged();
-		notifyObservers(subVolume);
-	}
-*/
+public void addSubVolume(AnalyticSubVolume subVolume,boolean bFront) throws PropertyVetoException {
+	addAnalyticSubVolumeOrCSGObject(subVolume, bFront);
 }
 
-/**
- * This method was created in VisualAge.
- * @param subVolume cbit.vcell.geometry.SubVolume
- */
-public void addSubVolume(AnalyticSubVolume subVolume,boolean bFront) throws PropertyVetoException {
+public void addSubVolume(CSGObject csgObject, boolean bFront) throws PropertyVetoException {
+	addAnalyticSubVolumeOrCSGObject(csgObject, bFront);
+}
 
+private void addAnalyticSubVolumeOrCSGObject(SubVolume subVolume, boolean bFront) throws PropertyVetoException {
+	if (!(subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject)) {
+		throw new IllegalArgumentException("Only AnalyticSubVolume or CSGObject can added");
+	}
+	
 	if (getSubVolumeIndex(subVolume) != -1){
 		throw new IllegalArgumentException("subdomain "+subVolume+" cannot be added, already exists");
 	}
@@ -392,13 +314,24 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
+public void bringForward(AnalyticSubVolume subVolume) throws PropertyVetoException {
+	bringForwardAnalyticSubVolumeOrCSGObject(subVolume);
+}
+
+public void bringForward(CSGObject subVolume) throws PropertyVetoException {
+	bringForwardAnalyticSubVolumeOrCSGObject(subVolume);
+}
 
 /**
  * This method was created in VisualAge.
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public void bringForward(AnalyticSubVolume subVolume) throws PropertyVetoException {
+private void bringForwardAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throws PropertyVetoException {
 
+	if (!(subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject)) {
+		throw new IllegalArgumentException("Only AnalyticSubVolume or CSGObject can be brought forward");
+	}
+	
 	//
 	// copy existing array
 	//
@@ -419,27 +352,15 @@ public void bringForward(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 	}
 
 	//
-	// if not already the first AnalyticSubVolume, then swap with neighbor at index-1
+	// if not already the first AnalyticSubVolume or CSGObject, then swap with neighbor at index-1
 	//
-	if ((index > 0) && (newArray[index-1] instanceof AnalyticSubVolume)){
-		AnalyticSubVolume tempSubVolume = (AnalyticSubVolume)newArray[index-1];
+	if ((index > 0) && (newArray[index-1] instanceof AnalyticSubVolume || newArray[index-1] instanceof CSGObject)){
+		SubVolume tempSubVolume = newArray[index-1];
 		newArray[index-1] = subVolume;
 		newArray[index] = tempSubVolume;
 	
 		setSubVolumes(newArray);
 	}
-
-	
-/*
-	int index = subVolumeList.indexOf(subVolume);
-	if (index>0){
-		AnalyticSubVolume prevSubVolume = (AnalyticSubVolume)subVolumeList.elementAt(index-1);
-		subVolumeList.setElementAt(subVolume,index-1);
-		subVolumeList.setElementAt(prevSubVolume,index);
-		setChanged();
-		notifyObservers();
-	}
-*/
 }
 
 
@@ -1305,7 +1226,13 @@ public void refreshDependencies() {
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
 public void removeAnalyticSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoException {
+	removeAnalyticSubVolumeOrCSGObject(subVolume);
+}
 
+private void removeAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throws PropertyVetoException {
+	if (!(subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject)) {
+		throw new IllegalArgumentException("Only AnalyticSubVolume or CSGObject can deleted");
+	}
 	
 	int subVolumeIndex = getSubVolumeIndex(subVolume);
 	if (subVolumeIndex == -1){
@@ -1325,23 +1252,7 @@ public void removeAnalyticSubVolume(AnalyticSubVolume subVolume) throws Property
 }
 
 public void removeCSGObject(CSGObject csgObject) throws PropertyVetoException {
-
-	
-	int subVolumeIndex = getSubVolumeIndex(csgObject);
-	if (subVolumeIndex == -1){
-		throw new IllegalArgumentException("subdomain "+csgObject+" cannot be removed, it doesn't belong to this Geometry");
-	}
-
-	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length-1];
-	
-	int newIndex = 0;
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (i != subVolumeIndex){
-			newArray[newIndex++] = fieldSubVolumes[i];
-		}
-	}
-
-	setSubVolumes(newArray);
+	removeAnalyticSubVolumeOrCSGObject(csgObject);
 }
 
 /**
@@ -1366,7 +1277,17 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
 public void sendBackward(AnalyticSubVolume subVolume) throws PropertyVetoException {
+	sendBackwardAnalyticSubVolumeOrCSGObject(subVolume);
+}
 
+public void sendBackward(CSGObject subVolume) throws PropertyVetoException {
+	sendBackwardAnalyticSubVolumeOrCSGObject(subVolume);
+}
+
+private void sendBackwardAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throws PropertyVetoException {
+	if (!(subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject)) {
+		throw new IllegalArgumentException("Only AnalyticSubVolume or CSGObject can be moved back");
+	}
 	//
 	// copy existing array
 	//
@@ -1387,26 +1308,15 @@ public void sendBackward(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 	}
 
 	//
-	// if not already the last AnalyticSubVolume, then swap with neighbor at index+1
+	// if not already the last AnalyticSubVolume or CSGObject, then swap with neighbor at index+1
 	//
-	if ((index < (newArray.length-1)) && (newArray[index+1] instanceof AnalyticSubVolume)){
-		AnalyticSubVolume tempSubVolume = (AnalyticSubVolume)newArray[index+1];
+	if ((index < (newArray.length-1)) && (newArray[index+1] instanceof AnalyticSubVolume || newArray[index+1] instanceof CSGObject)){
+		SubVolume tempSubVolume = newArray[index+1];
 		newArray[index+1] = subVolume;
 		newArray[index] = tempSubVolume;
 
 		setSubVolumes(newArray);
 	}
-	
-/*
-	int index = subVolumeList.indexOf(subVolume);
-	if (index<subVolumeList.size()-1){
-		AnalyticSubVolume nextSubVolume = (AnalyticSubVolume)subVolumeList.elementAt(index+1);
-		subVolumeList.setElementAt(subVolume,index+1);
-		subVolumeList.setElementAt(nextSubVolume,index);
-		setChanged();
-		notifyObservers();
-	}
-*/
 }
 
 

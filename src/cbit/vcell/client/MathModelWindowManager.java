@@ -162,7 +162,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
 		return;
 	}
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
-	simWindow.getFrame().setLocation(100 + 20 * simulationWindowsHash.size(), 100 + 15 * simulationWindowsHash.size());
+	simWindow.getFrame().setLocation(10, 10);
 	showFrame(simWindow.getFrame());
 }
 
