@@ -3,15 +3,17 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="matlab_work"/>
+	<classpathentry kind="src" path="inverseSrc"/>
 	<classpathentry kind="src" path="src_jvisit"/>
 	<classpathentry kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
@@ -66,5 +68,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
 	<classpathentry kind="lib" path="lib/netty-3.2.5.Final.jar"/>
+	<classpathentry kind="lib" path="lib/jamtio.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

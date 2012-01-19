@@ -903,7 +903,7 @@ private Element getXML(ControlPointCurve param) {
  * @return Element
  * @param param cbit.vcell.geometry.Coordinate
  */
-private Element getXML(Coordinate param) {
+public Element getXML(Coordinate param) {
 	Element coord = new Element(XMLTags.CoordinateTag);
 
 	//X
@@ -945,7 +945,7 @@ private Element getXML(Filament param) {
  * @return Element
  * @param param cbit.vcell.geometry.Geometry
  */
-Element getXML(Geometry param) throws XmlParseException{
+public Element getXML(Geometry param) throws XmlParseException{
 	Element geometry = new Element(XMLTags.GeometryTag);
 
 	// Add attributes

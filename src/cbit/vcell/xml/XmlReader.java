@@ -769,7 +769,7 @@ private ControlPointCurve getControlPointCurve(Element param) {
  * @return cbit.vcell.geometry.Coordinate
  * @param param org.jdom.Element
  */
-private Coordinate getCoordinate(Element param) {
+public Coordinate getCoordinate(Element param) {
 	//get attributes
 	double x = Double.parseDouble( param.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( param.getAttributeValue(XMLTags.YAttrTag) );
