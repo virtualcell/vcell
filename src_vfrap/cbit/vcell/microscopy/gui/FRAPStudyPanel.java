@@ -238,7 +238,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	    		{
 		  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
 		  	    			{
-		  	    				loadWizard.showModalDialog(new Dimension(460,300));
+		  	    				loadWizard.showModalDialog(new Dimension(480,300));
 		  	    			}
 		  	    		};
 		  	    		

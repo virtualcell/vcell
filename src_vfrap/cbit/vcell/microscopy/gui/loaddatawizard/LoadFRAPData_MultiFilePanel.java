@@ -115,7 +115,7 @@ public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListene
 		add(upPanel, BorderLayout.CENTER);
 		add(botPanel, BorderLayout.SOUTH);
 		    
-	    setSize(440,200);
+//	    setSize(440,200);
 	}
 
 	public void actionPerformed(ActionEvent evt)

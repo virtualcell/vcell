@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -50,6 +51,7 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -94,7 +96,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
-	private static final String IMPORTFILESERIES_ACTION_COMMAND = "Import file series ...";
 	//	private static final String PRINT_ACTION_COMMAND = "Print";
 	private static final String EXIT_ACTION_COMMAND = "Exit";
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
@@ -115,8 +116,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
-	private static final JMenuItem mfileSeries = new JMenuItem(IMPORTFILESERIES_ACTION_COMMAND);
-	//	private static final JMenuItem mprint = new JMenuItem(PRINT_ACTION_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
@@ -130,7 +129,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private HelpViewer hviewer = null;
 	private UndoableEdit lastUndoableEdit;
 	private PreferencePanel preferencePanel = null;
-	private LoadFRAPData_MultiFilePanel multiFileDialog = null;
 	private VirtualFrapBatchRunFrame batchRunFrame = null;
 	private boolean bStandalone = true;
 	//for drag and drop action 
@@ -252,18 +250,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 				{
 					AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
 					ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
-				}
-				else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
-				{
-					if (multiFileDialog != null)
-					{
-						multiFileDialog.setVisible(true);
-					}	 
-					else
-					{
-						multiFileDialog = new LoadFRAPData_MultiFilePanel(VirtualFrapMainFrame.this);
-						multiFileDialog.setVisible(true);
-					}
 				}
 				else if(arg.equals(EXIT_ACTION_COMMAND))
 				{
@@ -527,11 +513,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 
 		msaveas.addActionListener(menuHandler);
 		fileMenu.add(msaveas);
-
-		fileMenu.addSeparator();
-
-		mfileSeries.addActionListener(menuHandler);
-		fileMenu.add(mfileSeries);
 
 		fileMenu.addSeparator();
 
