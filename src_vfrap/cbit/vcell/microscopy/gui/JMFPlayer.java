@@ -163,7 +163,6 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	    			public void run(Hashtable<String, Object> hashTable) throws Exception
 	    			{
 	    				FileUtils.copyFile(movieFile, output);
-	    				
 	    			}
 	    		};
 	    		ClientTaskDispatcher.dispatch(JMFPlayer.this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask},true, false, true,null,true);
