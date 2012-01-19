@@ -146,7 +146,10 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	if (bShowInDatabaseProperties) {
 		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
-			if (rightBottomTabbedPane.getTitleAt(destComponentIndex) == DATABASE_PROPERTIES_TAB_TITLE) {
+			Component c = rightBottomTabbedPane.getComponentAt(destComponentIndex);
+			if (c == bioModelMetaDataPanel
+				|| c == mathModelMetaDataPanel
+				|| c == geometryMetaDataPanel) {
 				break;
 			}
 		}

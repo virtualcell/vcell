@@ -144,26 +144,24 @@ private void deleteSubvolume() {
  * connEtoM6:  (FrontButton.action.actionPerformed(java.awt.event.ActionEvent) --> Geometry.bringForward(Lcbit.vcell.geometry.AnalyticSubVolume;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void moveSubvolumeFront() {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getSelectedSubVolume() != null)) {
 			AsynchClientTask task1 = new AsynchClientTask("moving to front", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getGeometrySpec().bringForward((AnalyticSubVolume)getSelectedSubVolume());
+					SubVolume selectedSubVolume = getSelectedSubVolume();
+					if (selectedSubVolume instanceof CSGObject) {
+						getGeometrySpec().bringForward((CSGObject)selectedSubVolume);
+					} else if (selectedSubVolume instanceof AnalyticSubVolume) {
+						getGeometrySpec().bringForward((AnalyticSubVolume)selectedSubVolume);
+					}
 					getGeometry().precomputeAll();
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -171,26 +169,24 @@ private void moveSubvolumeFront() {
  * connEtoM9:  (BackButton.action.actionPerformed(java.awt.event.ActionEvent) --> Geometry.sendBackward(Lcbit.vcell.geometry.AnalyticSubVolume;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void moveBack() {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getSelectedSubVolume() != null)) {
 			AsynchClientTask task1 = new AsynchClientTask("moving to back", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getGeometrySpec().sendBackward((AnalyticSubVolume)getSelectedSubVolume());
+					SubVolume selectedSubVolume = getSelectedSubVolume();
+					if (selectedSubVolume instanceof CSGObject) {
+						getGeometrySpec().sendBackward((CSGObject)selectedSubVolume);
+					} else if (selectedSubVolume instanceof AnalyticSubVolume) {
+						getGeometrySpec().sendBackward((AnalyticSubVolume)selectedSubVolume);
+					}
 					getGeometry().precomputeAll();
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
