@@ -681,8 +681,14 @@ private void writeReactions() throws ExpressionException, MathException {
 			
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
-//				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
-				printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
+				//0th order reaction, product limited to one and we'll let the reaction know where it happens
+				if(reactants.size() == 0 && products.size() == 1)
+				{
+					printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+				}
+				else{
+					printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
+				}
 				writeReactionCommand(reactants, products, subdomain, rateDefinition);
 			} else if (subdomain instanceof MembraneSubDomain){
 				//0th order reaction, product limited to one and it can be on mem or in vol
