@@ -317,6 +317,11 @@ private synchronized void copyCells(String actionCommand) {
 				columns[i] = i;
 			}
 		}
+		//make sure there is at least a table cell is selected
+		if(rows.length < 1 || columns.length < 1)
+		{
+			throw new Exception("No table cell is selected.");
+		}
 		StringBuffer buffer = new StringBuffer();
 		//check if selected first column is time.
 		boolean bHasTimeColumn = false;
