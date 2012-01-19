@@ -6,8 +6,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="matlab_work"/>
-	<classpathentry kind="src" path="inverseSrc"/>
 	<classpathentry kind="src" path="src_jvisit"/>
 	<classpathentry kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap"/>
