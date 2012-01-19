@@ -129,6 +129,7 @@ import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -839,7 +840,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 				(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
 		new String[] {
 			"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(finalBVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-			"Time (s)",
+			ReservedSymbol.TIME.getName(),
 			"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
