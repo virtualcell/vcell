@@ -27,7 +27,7 @@ public class Bundle {
 	}
 	
 	public void load() throws MalformedURLException {
-		classLoader = new PluginClassLoader(classpathURLs);
+		classLoader = new PluginClassLoader(classpathURLs, Bundle.class.getClassLoader());
 	}
 	
 	public void checkClasspathExists() throws FileNotFoundException {
