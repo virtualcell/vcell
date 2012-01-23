@@ -1,27 +1,63 @@
 package cbit.vcell.VirtualMicroscopy;
 
-import java.io.*;
+import java.io.FilePermission;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
+import java.security.AllPermission;
+import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
-import java.util.Enumeration;
-import java.util.jar.Manifest;
+import java.security.Permissions;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.util.List;
 
 public class PluginClassLoader extends URLClassLoader {
 	
-
+//	private PermissionCollection allPermissions = new AllPermission().newPermissionCollection();
+	private PermissionCollection permissions = new Permissions();
+	{
+//		permissions.add(new PropertyPermission("*", "read"));
+//		permissions.add(new FilePermission("<<ALL FILES>>", "read"));
+		permissions.add(new AllPermission());
+	}
+	
     public PluginClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
 		super(urls, parent, factory);
+		addReadPermission(urls);
 	}
 
 	public PluginClassLoader(URL[] urls, ClassLoader parent) {
 		super(urls, parent);
+		addReadPermission(urls);
 	}
 
 	public PluginClassLoader(URL[] urls) {
 		super(urls);
+		addReadPermission(urls);
+	}
+	
+	private void addReadPermission(URL[] urls) {
+		for (URL url : urls) {
+			String file = url.getFile();
+			permissions.add(new FilePermission(file, "read"));
+		}
+	}
+	
+	@Override
+	protected PermissionCollection getPermissions(CodeSource codesource) {
+//		System.out.println("PluginClassLoader.getPermissions("+codesource+")");
+		CodeSigner[] codeSigners = codesource.getCodeSigners();
+		if (codeSigners != null && codeSigners.length == 1) {
+			List<? extends Certificate> certificates = codeSigners[0].getSignerCertPath().getCertificates();
+			for (Certificate certificate : certificates) {
+				if (certificate != null && certificate.toString().contains("UCONN Health Center")) {
+					return permissions;		
+				}
+			}
+		}
+		return super.getPermissions(codesource);
 	}
 
 //	@Override
@@ -52,12 +88,6 @@ public class PluginClassLoader extends URLClassLoader {
 //	public Enumeration<URL> findResources(String name) throws IOException {
 //		System.out.println("PluginClassLoader.findResources("+name+")");
 //		return super.findResources(name);
-//	}
-//
-//	@Override
-//	protected PermissionCollection getPermissions(CodeSource codesource) {
-//		System.out.println("PluginClassLoader.getPermissions("+codesource+")");
-//		return super.getPermissions(codesource);
 //	}
 //
 //	@Override
