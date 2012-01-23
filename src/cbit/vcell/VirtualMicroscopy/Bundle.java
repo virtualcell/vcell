@@ -48,14 +48,15 @@ public class Bundle {
 	
 	public static void main(String[] args){
 		try {
-			final String BioformatsClasspath = "\\developer\\eclipse\\workspace\\VCBioformatsPlugin\\lib\\bioformats_omexml_locicommon_brnch41.jar;\\developer\\eclipse\\workspace\\VCBioformatsPlugin\\bin";
+			final String BioformatsClasspath = "\\developer\\eclipse\\workspace\\VCBioformatsPlugin\\bin";
+//			final String BioformatsClasspath = "d:\\temp\\vcu.jar";
 
 			Bundle bundle = new Bundle(BioformatsClasspath);
 			bundle.load();
 			
 			ImageDatasetReader imageDatasetReader = null;
 			
-			imageDatasetReader = bundle.createImageDatasetReader();
+			imageDatasetReader = bundle.createImageDatasetReader();			
 			System.out.println(imageDatasetReader+", "+imageDatasetReader.getClass().getName()+", "+imageDatasetReader.getClass().getClassLoader());
 			imageDatasetReader = bundle.createImageDatasetReader();
 			System.out.println(imageDatasetReader+", "+imageDatasetReader.getClass().getName()+", "+imageDatasetReader.getClass().getClassLoader());
@@ -64,7 +65,9 @@ public class Bundle {
 			imageDatasetReader = bundle.createImageDatasetReader();
 			System.out.println(imageDatasetReader+", "+imageDatasetReader.getClass().getName()+", "+imageDatasetReader.getClass().getClassLoader());
 			
-			
+			ImageDataset imageDataSet = imageDatasetReader.readImageDataset("\\Developer\\Eclipse\\workspace\\VCell\\resources\\icons\\vcell.gif", null);
+//			ImageDataset imageDataSet = imageDatasetReader.readImageDataset("d:\\Developer\\Eclipse\\workspace\\VCell\\resources\\icons\\vcell.gif", null);
+			System.out.println("size of vcell.gif : " + imageDataSet.getISize());
 			bundle.unload();
 			
 		} catch (Throwable e) {
