@@ -20,33 +20,38 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 public class ReservedMathSymbolEntries {
 	
 	private static HashMap<String,ReservedVariable> symbolTableEntries = null;
-	private static HashMap<String,SymbolTableFunctionEntry> symbolTableFunctionEntries = null;
+	private static HashMap<String,SymbolTableFunctionEntry> mathSymbolTableFunctionEntries = null;
+	private static HashMap<String,SymbolTableFunctionEntry> postProcessingSymbolTableFunctionEntries = null;
 	
 	public static ReservedVariable getReservedVariableEntry(String symbolName) {
 		ReservedVariable ste = getSymbolTableEntries().get(symbolName);
 		return ste;
 	}
-	
-	public static SymbolTableFunctionEntry getFunctionDefinitionEntry(String symbolName) {
-		SymbolTableFunctionEntry ste = getSymbolTableFunctionEntries().get(symbolName);
-		return ste;
-	}
-	
-	public static SymbolTableEntry getEntry(String symbolName) {
+		
+	public static SymbolTableEntry getEntry(String symbolName, boolean bIncludePostProcessing) {
 		SymbolTableEntry ste = getSymbolTableEntries().get(symbolName);
 		if (ste!=null){
 			return ste;
 		}
-		SymbolTableFunctionEntry steFunction = getSymbolTableFunctionEntries().get(symbolName);
+		SymbolTableFunctionEntry steFunction = getMathSymbolTableFunctionEntries().get(symbolName);
 		if (steFunction!=null){
 			return steFunction;
+		}
+		if (bIncludePostProcessing){
+			steFunction = getPostProcessingSymbolTableFunctionEntries().get(symbolName);
+			if (steFunction!=null){
+				return steFunction;
+			}
 		}
 		return null;
 	}
 	
-	public static void getAll(Map<String, SymbolTableEntry> entryMap) {
+	public static void getAll(Map<String, SymbolTableEntry> entryMap, boolean bIncludePostProcessing) {
 		entryMap.putAll(getSymbolTableEntries());
-		entryMap.putAll(getSymbolTableFunctionEntries());
+		entryMap.putAll(getMathSymbolTableFunctionEntries());
+		if (bIncludePostProcessing){
+			entryMap.putAll(getPostProcessingSymbolTableFunctionEntries());
+		}
 	}
 
 	private static HashMap<String,ReservedVariable> getSymbolTableEntries(){
@@ -60,18 +65,25 @@ public class ReservedMathSymbolEntries {
 		return symbolTableEntries;
 	}
 	
-	private static HashMap<String,SymbolTableFunctionEntry> getSymbolTableFunctionEntries(){
-		if (symbolTableFunctionEntries==null){
-			symbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
-			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
-			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
-			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
-			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_convolution.getName(),MathFunctionDefinitions.Function_convolution);
-			symbolTableFunctionEntries.put(FieldFunctionDefinition.fieldFunctionDefinition.getName(),FieldFunctionDefinition.fieldFunctionDefinition);
-			symbolTableFunctionEntries.put(GradientFunctionDefinition.gradientFunctionDefinition.getName(),GradientFunctionDefinition.gradientFunctionDefinition);
+	private static HashMap<String,SymbolTableFunctionEntry> getMathSymbolTableFunctionEntries(){
+		if (mathSymbolTableFunctionEntries==null){
+			mathSymbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
+			mathSymbolTableFunctionEntries.put(FieldFunctionDefinition.fieldFunctionDefinition.getName(),FieldFunctionDefinition.fieldFunctionDefinition);
+			mathSymbolTableFunctionEntries.put(GradientFunctionDefinition.gradientFunctionDefinition.getName(),GradientFunctionDefinition.gradientFunctionDefinition);
 		}
-		return symbolTableFunctionEntries;
+		return mathSymbolTableFunctionEntries;
+	}
+	
+	private static HashMap<String,SymbolTableFunctionEntry> getPostProcessingSymbolTableFunctionEntries(){
+		if (postProcessingSymbolTableFunctionEntries==null){
+			postProcessingSymbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
+			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_convolution.getName(),MathFunctionDefinitions.Function_convolution);
+		}
+		return postProcessingSymbolTableFunctionEntries;
 	}
 	
 	

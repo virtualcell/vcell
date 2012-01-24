@@ -78,11 +78,13 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldDescription = new String();
 	private transient java.lang.String fieldWarning = null;
+	private PostProcessingBlock postProcessingBlock = new PostProcessingBlock(this);
 	
 	private ArrayList<Event> eventList = new ArrayList<Event>();
 
 	private boolean bRegionSizeFunctionsUsed = false;
 
+	
 /**
  * MathDescription constructor comment.
  */
@@ -1083,7 +1085,7 @@ public java.lang.String getDescription() {
 public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedMathSymbolEntries.getEntry(id);
+	entry = ReservedMathSymbolEntries.getEntry(id,false);
 	if (entry != null){
 		if (entry instanceof SymbolTableFunctionEntry){
 			if (entry.equals(MathFunctionDefinitions.Function_regionArea_current)
@@ -3342,7 +3344,7 @@ public String getMathType()
 
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedMathSymbolEntries.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap,false);
 	for (Variable v : variableList) {
 		entryMap.put(v.getName(), v);
 	}
