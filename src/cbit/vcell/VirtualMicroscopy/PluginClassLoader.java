@@ -51,9 +51,17 @@ public class PluginClassLoader extends URLClassLoader {
 		CodeSigner[] codeSigners = codesource.getCodeSigners();
 		if (codeSigners != null && codeSigners.length == 1) {
 			List<? extends Certificate> certificates = codeSigners[0].getSignerCertPath().getCertificates();
-			for (Certificate certificate : certificates) {
-				if (certificate != null && certificate.toString().contains("UCONN Health Center")) {
-					return permissions;		
+			Object[] signers = getClass().getSigners();
+			boolean bSameCertificates = true;
+			if (signers != null && certificates != null && signers.length == certificates.size()) {
+				for (int i = 0; i < signers.length; i ++) {
+					if (signers[i] == null || !signers[i].equals(certificates.get(i))) {
+						bSameCertificates = false;
+						break;
+					}
+				}
+				if (bSameCertificates) {
+					return permissions;
 				}
 			}
 		}
