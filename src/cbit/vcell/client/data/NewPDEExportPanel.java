@@ -14,9 +14,12 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.swing.ButtonGroup;
@@ -37,7 +40,12 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.LocalVCDataIdentifier;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
@@ -45,23 +53,33 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 import cbit.image.DisplayAdapterService;
+import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.ExportSettings;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.ImageSpecs;
+import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
@@ -2454,8 +2472,63 @@ private void startExport() {
 	if (!okToExport) {
 		return;
 	}
-	// pass the request down the line; non-blocking call
-	getDataViewerManager().startExport(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext(),getExportSpecs());
+	
+	// determine of sim result is from local (quick) run or on server.
+	final OutputContext outputContext = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext();
+	final ExportSpecs exportSpecs = getExportSpecs();
+	boolean isLocalSimResult = false;
+	VCDataIdentifier vcId = exportSpecs.getVCDataIdentifier();  
+	if (vcId instanceof LocalVCDataIdentifier) {
+		isLocalSimResult = true;
+	}
+
+	// find out if smoldyn export choice is 'particle' - not available at this time
+	boolean isParticle = false;
+	if (getExportSettings1().getFormatSpecificSpecs() instanceof ImageSpecs) {
+		isParticle = ((ImageSpecs)getExportSettings1().getFormatSpecificSpecs()).getParticleMode() == FormatSpecificSpecs.PARTICLE_SELECT;
+	} else if (getExportSettings1().getFormatSpecificSpecs() instanceof MovieSpecs) {
+		isParticle = ((MovieSpecs)getExportSettings1().getFormatSpecificSpecs()).getParticleMode() == FormatSpecificSpecs.PARTICLE_SELECT;
+	} 
+		
+	if (isLocalSimResult && isParticle) {
+		DialogUtils.showErrorDialog(this, "Particle export for Smoldyn particles unavailable in local data at this time.");
+		return;
+	}
+	
+	// pass the export request down the line; non-blocking call
+	if (!isLocalSimResult) {
+		// for sims that ran on server, do as before.
+		getDataViewerManager().startExport(outputContext,exportSpecs);
+	} else {
+		
+		AsynchClientTask localExportTast = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+			@SuppressWarnings("unchecked")
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				startLocalExport(outputContext, exportSpecs);
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {localExportTast}, false, true, null);
+	}
+}
+
+private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpecs) {
+	// for local sims, create dataSetControllerProvider and export locally
+	try {
+		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
+		File primaryDir = ResourceUtil.getLocalRootDir();
+		User usr = ResourceUtil.tempUser;
+		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
+		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
+		DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
+		ExportEvent localExportEvent = dataServerImpl.makeRemoteFile(outputContext,usr, exportSpecs);
+		ClientRequestManager.downloadExportedData(this, null, localExportEvent);
+	} catch (FileNotFoundException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Unable to export local sim results data : " + e.getMessage());
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Unable to export local sim results data : " + e.getMessage());
+	}
 }
 
 /**

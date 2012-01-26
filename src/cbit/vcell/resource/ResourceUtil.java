@@ -33,6 +33,11 @@ public class ResourceUtil {
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
 	public final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
+	
+	// temporary : until a more permanent, robust solution is thought out for running vcell locally.
+	private static String lastUserLocalDir = null;
+	
+
 	private final static String osname;
 	static {
 		if (bWindows) {
@@ -95,6 +100,15 @@ public class ResourceUtil {
 	}
 	
 	private static List<String> libList = null;
+
+	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
+	public static String getLastUserLocalDir() {
+		return lastUserLocalDir;
+	}
+	
+	public static void setLastUserLocalDir(String lastUserLocalDir) {
+		ResourceUtil.lastUserLocalDir = lastUserLocalDir;
+	}
 
 	public static File getUserHomeDir()
 	{

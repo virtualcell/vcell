@@ -159,6 +159,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
@@ -1789,13 +1790,13 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 /**
  * Comment
  */
-protected void downloadExportedData(final TopLevelWindowManager requester, final ExportEvent evt) {
+public static void downloadExportedData(final Component requester, final UserPreferences userPrefs, final ExportEvent evt) {
 	URL location = null;
 	try {
 		location = new URL(evt.getLocation());
 	} catch (java.net.MalformedURLException exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester.getComponent(), "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(requester, "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
 		return;
 	}
 	final URL url = location;
@@ -1822,7 +1823,16 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+			// user pref could be null if trying local export
+			String defaultPath = null;
+			if (userPrefs == null) {
+				defaultPath = ResourceUtil.getLastUserLocalDir();
+				if (defaultPath == null || defaultPath.length() == 0) {
+					defaultPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
+				}
+			} else {
+				defaultPath = userPrefs.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+			}
 			final VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
@@ -1860,7 +1870,7 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
 
 		    fileChooser.setSelectedFile(file);
 			fileChooser.setDialogTitle("Save exported dataset...");
-			int approve = fileChooser.showSaveDialog(requester.getComponent());
+			int approve = fileChooser.showSaveDialog(requester);
 			if (approve == JFileChooser.APPROVE_OPTION) {
 				hashTable.put("selectedFile", fileChooser.getSelectedFile());
 			} else {
@@ -1876,16 +1886,32 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
 			if (selectedFile == null) {
 				return;
 			}
-			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-			String newPath = selectedFile.getParent();
+			String defaultPath = null;
+			String newPath = null;
+			
+			if (userPrefs != null) {
+				defaultPath = userPrefs.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+				newPath = selectedFile.getParent();
+		        if (!newPath.equals(defaultPath)) {
+		        	userPrefs.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+		        }
+			} else { 
+				// if export is local export, userPrefs = null
+				defaultPath = ResourceUtil.getLastUserLocalDir();
+				newPath = selectedFile.getParent();
 	        if (!newPath.equals(defaultPath)) {
-				getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+		        	ResourceUtil.setLastUserLocalDir(newPath);
+		        }
 	        }
 //	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
-			//
 			if (selectedFile.exists()) {
-				String question = PopupGenerator.showWarningDialog(requester.getComponent(), getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
-				if (question.equals(UserMessage.OPTION_CANCEL)){
+				String question = null;
+				if (userPrefs != null) {
+					question = PopupGenerator.showWarningDialog(requester, userPrefs, UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
+				} else {
+					question = DialogUtils.showWarningDialog(requester, "Overwrite File?", "Overwrite file '" + selectedFile.getAbsolutePath() + "'?", new String[] {UserMessage.OPTION_OVERWRITE_FILE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OVERWRITE_FILE);
+				}
+				if (question != null && question.equals(UserMessage.OPTION_CANCEL)){
 					return;
 				}
 			}
@@ -1895,7 +1921,7 @@ protected void downloadExportedData(final TopLevelWindowManager requester, final
             fo.close();
 		}
 	};
-	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
+	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
 }
 
 
@@ -1979,7 +2005,7 @@ public void exportMessage(ExportEvent event) {
 			//e.printStackTrace(System.out);
 		//}
 		// try to download the thing
-		downloadExportedData(getMdiManager().getFocusedWindowManager(), event);
+		downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
 	}	
 }
 
