@@ -309,7 +309,7 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedMathSymbolEntries.getEntry(identifier);
+	entry = ReservedMathSymbolEntries.getEntry(identifier,false);
 	if (entry != null){
 		return entry;
 	}
@@ -1530,7 +1530,7 @@ public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedMathSymbolEntries.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap, false);
 	for (DataSetIdentifier dsi : dataSetIdentifierList) {
 		entryMap.put(dsi.getName(), dsi);
 	}

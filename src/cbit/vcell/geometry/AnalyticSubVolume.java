@@ -172,6 +172,6 @@ public void setExpression(Expression exp) throws ExpressionBindingException {
 
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedMathSymbolEntries.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap, false);
 }
 }

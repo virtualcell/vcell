@@ -310,7 +310,7 @@ public double[] getDataTimes() {
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedMathSymbolEntries.getEntry(identifier);
+	entry = ReservedMathSymbolEntries.getEntry(identifier, false);
 	if (entry != null){
 		return entry;
 	}
@@ -1149,7 +1149,7 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedMathSymbolEntries.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap, false);
 	for (DataSetIdentifier dsi : dataSetIdentifierList) {
 		entryMap.put(dsi.getName(), dsi);
 	}
