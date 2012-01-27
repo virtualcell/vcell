@@ -25,12 +25,12 @@ import oracle.jdbc.pool.OracleConnectionPoolDataSource;
 
 public class VCStatistics {
 	private OracleConnectionPoolDataSource oracleConnection = null;
-	private static String dbConnectURL = "jdbc:oracle:thin:@dbs4.vcell.uchc.edu:1521:orcl";
+	private static String dbConnectURL = "jdbc:oracle:thin:@dbs6.cam.uchc.edu:1521:orcl";
 	private static String dbUserid = "vcell";
 	private static String dbPassword = "cbittech";
 	private ArrayList<String> userNameList = new ArrayList<String>();
 	private ArrayList<Integer> userIDList = new ArrayList<Integer>();
-	private static String simDataDir = "\\\\cfs01\\raid\\vcell\\users\\";
+	private static String simDataDir = "\\\\cfs01\\ifs\\raid\\vcell\\users\\";
 	private class UserModelCount {
 		int userID;
 		int modelCount;

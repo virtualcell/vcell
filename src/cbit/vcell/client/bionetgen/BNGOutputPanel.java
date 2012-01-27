@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.client.bionetgen;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -1589,8 +1589,8 @@ private MultiPurposeTextPanel getBNGLInputPanel() {
 }
 
 
-private List<String> getBNGAutoCompletionWords() {
-	List<String> words = new ArrayList<String>();
+private Set<String> getBNGAutoCompletionWords() {
+	Set<String> words = new HashSet<String>();
     words.add("Molecules");
     words.add("begin");
     words.add("generate_network({overwrite=>1,max_iter=>100,max_agg=>100});\n");
@@ -1609,8 +1609,8 @@ private List<String> getBNGAutoCompletionWords() {
     return words;
 }
 
-private List<String> getBNGkeywords() {
-	List<String> words = new ArrayList<String>();
+private Set<String> getBNGkeywords() {
+	Set<String> words = new HashSet<String>();
     words.add("begin");
     words.add("end");   
     return words;

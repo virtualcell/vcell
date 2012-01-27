@@ -538,5 +538,12 @@ public class XMLTags {
 	public static final String relationshipObjectTag = "RelationshipObject";
 	public static final String bioPaxObjectIdTag = "bioPaxObjectID";
 	public static final String bioModelObjectIdTag = "bioModelObjectID";
-
+	
+	// Post Processing Block
+	public final static String PostProcessingBlock = "PostProcessing";
+	public final static String ExplicitDataGenerator = "Explicit";
+	public final static String ProjectionDataGenerator = "Projection";
+	public final static String ProjectionAxis = "Axis";
+	public final static String ProjectionOperation = "Operation";
+	public final static String ProjectionFunction = "Function";	
 }

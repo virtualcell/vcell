@@ -37,6 +37,7 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
+import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
@@ -65,6 +66,7 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ProjectFunctionDefinition;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
@@ -1512,6 +1514,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	
 	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
 		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
+		Expression concExp = new Expression(0.0);
+		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
+		}
 		ConvolutionKernel kernel = measurement.getConvolutionKernel();
 		if (kernel instanceof ExperimentalPSF){
 			ExperimentalPSF psf = (ExperimentalPSF)kernel;
@@ -1528,17 +1535,14 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
 				varHash.addVariable(new Function("__PSF__",psfExp,null));
 			}
-		}else{
-			varHash.addVariable(new Function("__PSF__",new Expression("z"),null));
+			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
+			varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
+			
+		}else if (kernel instanceof ProjectionZKernel){
+			Expression projectExp = Expression.function(ProjectFunctionDefinition.FUNCTION_name,concExp,new Expression("'z'"),new Expression("'sum'"));
+			varHash.addVariable(newFunctionOrConstant(measurement.getName(),projectExp,null));
 		}
-		Expression concExp = new Expression(0.0);
-		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
-			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
-			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
-		}
-		Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
 		
-		varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
 	}
 	
 	//

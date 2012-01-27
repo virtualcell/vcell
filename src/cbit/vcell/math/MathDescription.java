@@ -298,6 +298,10 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqual(eventList, mathDesc.eventList)) {
 		return false;
 	}
+	
+	if (!Compare.isEqualOrNull(postProcessingBlock, mathDesc.postProcessingBlock)) {
+		return false;
+	}
 
 	return true;
 }
@@ -1493,7 +1497,7 @@ public String getVCML_database() throws MathException {
 	//
 	// regular VCML exception, no name, and no geometry
 	//
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 //	buffer.append(VCML.MathDescription+" "+version.getName()+" {\n");
 	buffer.append(VCML.MathDescription+" {\n");
 	buffer.append("\n");
@@ -1690,6 +1694,11 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 	}
 	
+	// Post Processing block
+	if (postProcessingBlock.getNumDataGenerators() > 0) {
+		buffer.append(postProcessingBlock.getVCML() + "\n");
+	}
+		
 	Enumeration<SubDomain> enum2 = getSubDomains();
 	while (enum2.hasMoreElements()){
 		SubDomain subDomain = enum2.nextElement();
@@ -2913,7 +2922,7 @@ if(name.equals("ATP/ADP"))
 {
 	name = "ATP_ADP_renamed";
 	System.err.print("Applying species function name change ATP/ADP to ATP_ADP for a specific user (key=2288008)");
-	Thread.currentThread().dumpStack();
+	Thread.dumpStack();
 }
 				
 				Function function = new Function(name,exp,domain);
@@ -2994,6 +3003,10 @@ if(name.equals("ATP/ADP"))
 				String name = Variable.getNameFromCombinedIdentifier(token);
 				RandomVariable randomVariable = new MembraneRandomVariable(name, this, tokens, domain);
 				varHash.addVariable(randomVariable);
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.PostProcessingBlock)) {
+				postProcessingBlock.read(tokens);
 				continue;
 			}
 			throw new MathFormatException("unexpected identifier "+token);
@@ -3398,6 +3411,11 @@ public boolean hasVolumeRegionEquations() {
 
 public boolean hasRegionSizeFunctions() {
 	return bRegionSizeFunctionsUsed;
+}
+
+
+public final PostProcessingBlock getPostProcessingBlock() {
+	return postProcessingBlock;
 }
 
 }

@@ -1212,11 +1212,11 @@ public class MultiPurposeTextPanel extends JPanel {
 		getSearchTextField().setText("");
 	}
 
-	public void setAutoCompletionWords(List<String> acw) {
+	public void setAutoCompletionWords(Set<String> acw) {
 		autoCompletionWords.addAll(acw);
 	}
 	
-	public void setKeywords(List<String> kw) {
+	public void setKeywords(Set<String> kw) {
 		keywords.addAll(kw);
 	}
 	

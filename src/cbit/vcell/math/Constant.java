@@ -30,9 +30,6 @@ public class Constant extends Variable {
  */
 public Constant(String name, Expression exp) {
 	super(name, null);
-	if (name==null){
-		throw new IllegalArgumentException("name is null");
-	}
 	if (exp==null){
 		throw new IllegalArgumentException("exp is null");
 	}
@@ -53,7 +50,7 @@ public Constant(String name, Expression exp) {
  * @param symbolTable cbit.vcell.parser.SymbolTable
  * @exception java.lang.Exception The exception description.
  */
-public void bind(SymbolTable symbolTable) throws cbit.vcell.parser.ExpressionBindingException {
+public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	if (exp!=null){
 		exp.bindExpression(symbolTable);	
 	}	
@@ -105,7 +102,7 @@ public Expression getExpression() {
  * @return java.lang.String
  */
 public String getVCML() {
-	return VCML.Constant+"  "+getName()+"\t "+((exp==null)?"null":exp.infix())+";";
+	return VCML.Constant + "  " + getName() + "\t" + exp.infix() + ";";
 }
 
 

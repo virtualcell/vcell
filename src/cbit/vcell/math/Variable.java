@@ -75,7 +75,10 @@ public abstract class Variable implements SymbolTableEntry, Serializable, Matcha
  * This method was created by a SmartGuide.
  * @param name java.lang.String
  */
-protected Variable ( String argName, Domain argDomain ) {
+protected Variable (String argName, Domain argDomain ) {
+	if (argName == null) {
+		throw new IllegalArgumentException("Variable does not have a name");
+	}
 	String nameWithPeriodsMangled = argName.replace('.','_');
 	if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
 		throw new RuntimeException("unexpected character sequence in variable name "+argName);
@@ -125,7 +128,7 @@ public abstract boolean compareEqual(Matchable object, boolean bIgnoreMissingDom
  * @return boolean
  * @param object java.lang.Object
  */
-protected boolean compareEqual0(Matchable object, boolean bIgnoreMissingDomains) {
+protected boolean compareEqual0(Matchable object, boolean bIgnoreMissingDomain) {
 	Variable var = null;
 	if (object == null){
 		return false;
@@ -146,7 +149,7 @@ protected boolean compareEqual0(Matchable object, boolean bIgnoreMissingDomains)
 	//
 	// compare domains
 	//
-	if (!bIgnoreMissingDomains){
+	if (!bIgnoreMissingDomain){
 		if (!Compare.isEqualOrNull(getDomain(),var.getDomain())){
 			return false;
 		}

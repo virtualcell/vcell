@@ -18,16 +18,17 @@ import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 
 public class FieldFunctionDefinition extends SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry.Differentiable {
 	
-	public final static String FUNCTION_name				= "vcField";
-	public final static FieldFunctionDefinition fieldFunctionDefinition = new FieldFunctionDefinition();
+	public final static String FUNCTION_name = "vcField";
+	private static final FunctionArgType[] ARGUMENT_TYPES = new FunctionArgType[] { FunctionArgType.LITERAL, FunctionArgType.LITERAL, FunctionArgType.NUMERIC, FunctionArgType.LITERAL };
+	private static final String[] ARGUMENT_NAMES = new String[]{"DatasetName","VariableName","Time","VariableType"};
 	
-	private FieldFunctionDefinition() {
-		super("vcField", 
-				new String[]{"DatasetName","VariableName","Time","VariableType"}, 
-				new FunctionArgType[] { FunctionArgType.LITERAL, FunctionArgType.LITERAL, FunctionArgType.NUMERIC, FunctionArgType.LITERAL }, 
-				null,  // expression 
-				null,  // units
-				null); // namescope
+	public FieldFunctionDefinition() {
+		super(FUNCTION_name, 
+			ARGUMENT_NAMES, 
+			ARGUMENT_TYPES, 
+			null,  // expression 
+			null,  // units
+			null); // namescope
 	}
 
 	public Expression differentiate(Expression[] args, String variable) throws ExpressionException {

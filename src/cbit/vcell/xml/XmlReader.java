@@ -126,6 +126,7 @@ import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -154,17 +155,18 @@ import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
-import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VarIniCount;
+import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
@@ -1611,7 +1613,7 @@ if(name.equals("ATP/ADP"))
 {
 	name = "ATP_ADP_renamed";
 	System.err.print("Applying species function name change ATP/ADP to ATP_ADP for a specific user (key=2288008)");
-	Thread.currentThread().dumpStack();
+	Thread.dumpStack();
 }
 	
 	
@@ -2653,7 +2655,74 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 			throw new XmlParseException(e.getMessage());
 		}
 	}
+	iterator = param.getChildren(XMLTags.PostProcessingBlock, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		tempelement = (Element)iterator.next();
+		getPostProcessingBlock(mathdes, tempelement);
+	}
 	return mathdes;
+}
+
+private void getPostProcessingBlock(MathDescription mathDesc, Element element) throws XmlParseException {
+	Iterator<Element> iterator = element.getChildren(XMLTags.ExplicitDataGenerator, vcNamespace).iterator();
+	while (iterator.hasNext()){
+		Element tempelement = (Element)iterator.next();
+		
+		ExplicitDataGenerator explicitDataGenerator = getExplicitDataGenerator(tempelement);
+		try {
+			mathDesc.getPostProcessingBlock().addDataGenerator(explicitDataGenerator);
+		} catch (MathException e) {
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	iterator = element.getChildren(XMLTags.ProjectionDataGenerator, vcNamespace).iterator();
+	while (iterator.hasNext()){
+		Element tempelement = (Element)iterator.next();
+		
+		ProjectionDataGenerator projectionDataGenerator = getProjectionDataGenerator(tempelement);
+		try {
+			mathDesc.getPostProcessingBlock().addDataGenerator(projectionDataGenerator);
+		} catch (MathException e) {
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+}
+
+private ExplicitDataGenerator getExplicitDataGenerator(Element element) {
+	String name = unMangle( element.getAttributeValue( XMLTags.NameAttrTag) );
+	String domainStr = unMangle( element.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	String temp = element.getText();
+	
+	Expression exp = unMangleExpression(temp);
+	ExplicitDataGenerator explicitDataGenerator = new ExplicitDataGenerator(name, domain, exp);
+	return explicitDataGenerator;
+}
+
+private ProjectionDataGenerator getProjectionDataGenerator(Element element) {
+	String name = unMangle( element.getAttributeValue( XMLTags.NameAttrTag) );
+	String domainStr = unMangle( element.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+
+	Element e = element.getChild(XMLTags.ProjectionAxis, vcNamespace);
+	String axis = e.getText();
+//	ProjectionDataGenerator.Axis axis = ProjectionDataGenerator.Axis.valueOf(s);
+	
+	e = element.getChild(XMLTags.ProjectionOperation, vcNamespace);
+	String operation = e.getText();
+//	ProjectionDataGenerator.Operation operation = ProjectionDataGenerator.Operation.valueOf(s);	
+	
+	e = element.getChild(XMLTags.ProjectionFunction, vcNamespace);
+	String s = e.getText();	
+	Expression exp = unMangleExpression(s);
+	ProjectionDataGenerator projectionDataGenerator = new ProjectionDataGenerator(name, domain, axis, operation, exp);
+	return projectionDataGenerator;
 }
 
 private RandomVariable getRandomVariable(Element param) throws XmlParseException {

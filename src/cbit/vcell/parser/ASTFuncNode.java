@@ -11,6 +11,7 @@
 package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.ArrayList;
+import java.util.Set;
 
 import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
@@ -155,6 +156,23 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		}
 		String formalDefinition = getFormalDefinition();
 		SymbolTableEntry symbolTableEntry = symbolTable.getEntry(formalDefinition);
+		if (symbolTableEntry instanceof SymbolTableFunctionEntry) {
+			FunctionArgType[] argTypes = new FunctionArgType[jjtGetNumChildren()];
+			for (int i = 0; i < argTypes.length; i++) {
+				if (jjtGetChild(i) instanceof ASTLiteralNode){
+					String argName = ((SymbolTableFunctionEntry) symbolTableEntry).getArgNames()[i];
+					Set<String> allowableArguments = ((SymbolTableFunctionEntry) symbolTableEntry).getAllowableLiteralValues(argName);
+					if (allowableArguments == null || allowableArguments.isEmpty()) {
+						continue;
+					}
+					String value = ((ASTLiteralNode)jjtGetChild(i)).infixString(LANGUAGE_DEFAULT);
+					if (!allowableArguments.contains(value)) {
+						throw new ExpressionBindingException(value + " is not a valid arugment for argument " + argName + " in function " 
+								+ ((SymbolTableFunctionEntry) symbolTableEntry).getFunctionName());
+					}
+				}
+			}
+		}
 		if (symbolTableEntry==null){
 			throw new ExpressionBindingException("function definition '" + formalDefinition + "' is not found. " 
 					+ "Check that you have provided the correct name and argument types (e.g. vcRegionVolume('cytosol')).");
