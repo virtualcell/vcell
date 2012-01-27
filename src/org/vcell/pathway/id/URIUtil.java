@@ -33,23 +33,31 @@ public class URIUtil {
 	}
 
 	// the algorithm is taken from OpenRDF Sesame
-	public static String getLocalName(String uri) {
+	public static int getURISplitPosition(String uri) {
 		int iSharp = uri.indexOf("#");
 		if(iSharp >= 0) {
-			return uri.substring(iSharp + 1, uri.length());
+			return iSharp + 1;
 		} else {
 			int iSlash = uri.lastIndexOf("/");
 			if(iSlash >= 0) {
-				return uri.substring(iSlash + 1, uri.length());				
+				return iSlash + 1;				
 			} else {
 				int iColon = uri.lastIndexOf(":");
 				if(iColon >= 0) {
-					return uri.substring(iColon + 1, uri.length());				
+					return iColon + 1;				
 				} else {
-					return uri;
+					return 0;
 				}				
 			}
 		}
+	}
+		
+	public static String getLocalName(String uri) {
+		return uri.substring(getURISplitPosition(uri));
+	}
+		
+	public static String getNameSpace(String uri) {
+		return uri.substring(0, getURISplitPosition(uri));
 	}
 		
 }

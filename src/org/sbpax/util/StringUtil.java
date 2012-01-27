@@ -110,5 +110,23 @@ public class StringUtil {
 		}
 		return chain;
 	}
+
+	public static final String [] consonants = 
+	{"B", "C", "D", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"},
+	vowels = {"A", "E", "I", "O", "U"};
+	public static final int nConsonants = consonants.length, nVowels = vowels.length;
+	
+	public static String createMnemonicRandomString(long n) {
+		String mnemoString = "";
+		while(n > 0) {
+			mnemoString = consonants[(int) (n % nConsonants)] + mnemoString;
+			n /= nConsonants;
+			mnemoString = vowels[(int) (n % nVowels)] + mnemoString;
+			n /= nVowels;
+			mnemoString = consonants[(int) (n % nConsonants)] + mnemoString;
+			n /= nConsonants;
+		}
+		return mnemoString;
+	}
 	
 }
