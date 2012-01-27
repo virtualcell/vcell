@@ -24,7 +24,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.sbpax.util.StatementComparator;
 import org.sbpax.util.iterators.IterOfNone;
 import org.sbpax.util.iterators.IterOfOne;
@@ -69,6 +68,8 @@ public class IndexedGraph implements Graph {
 		}
 		
 	}
+	
+	public static final ValueFactory VALUE_FACTORY = new ValueFactoryImpl();
 	
 	protected Set<Statement> statements = new TreeSet<Statement>(new StatementComparator());
 
@@ -193,7 +194,7 @@ public class IndexedGraph implements Graph {
 		return add(getValueFactory().createStatement(arg0, arg1, arg2));
 	}
 
-	public ValueFactory getValueFactory() { return ValueFactoryImpl.getInstance(); }
+	public ValueFactory getValueFactory() { return VALUE_FACTORY; }
 
 	public Iterator<Statement> match(Resource subject, URI predicate, Value object,
 			Resource... contexts) {
