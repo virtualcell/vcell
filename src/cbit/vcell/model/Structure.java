@@ -10,18 +10,22 @@
 
 package cbit.vcell.model;
 
-import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.field.FieldFunctionDefinition;
-import cbit.vcell.parser.ExpressionBindingException;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Vector;
 
 import org.vcell.util.Cacheable;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -212,7 +216,7 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 		if (ste.equals(ReservedSymbol.X) || ste.equals(ReservedSymbol.Y) || ste.equals(ReservedSymbol.Z)){
 			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
 		}
-		if (ste.equals(FieldFunctionDefinition.fieldFunctionDefinition)){
+		if (ste.equals(MathFunctionDefinitions.fieldFunctionDefinition)){
 			throw new ExpressionBindingException("can't use field functions, Physiological Models must be spatially independent");
 		}
 		return ste;
@@ -366,7 +370,7 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	entryMap.remove(ReservedSymbol.X);
 	entryMap.remove(ReservedSymbol.Y);
 	entryMap.remove(ReservedSymbol.Z);
-	entryMap.remove(FieldFunctionDefinition.fieldFunctionDefinition);
+	entryMap.remove(MathFunctionDefinitions.fieldFunctionDefinition);
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {

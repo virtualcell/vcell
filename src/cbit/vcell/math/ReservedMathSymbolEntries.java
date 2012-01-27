@@ -13,7 +13,6 @@ package cbit.vcell.math;
 import java.util.HashMap;
 import java.util.Map;
 
-import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 
@@ -72,8 +71,8 @@ public class ReservedMathSymbolEntries {
 			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
 			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
 			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
-			mathSymbolTableFunctionEntries.put(FieldFunctionDefinition.fieldFunctionDefinition.getName(),FieldFunctionDefinition.fieldFunctionDefinition);
-			mathSymbolTableFunctionEntries.put(GradientFunctionDefinition.gradientFunctionDefinition.getName(),GradientFunctionDefinition.gradientFunctionDefinition);
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(),MathFunctionDefinitions.fieldFunctionDefinition);
+			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.gradientFunctionDefinition.getName(),MathFunctionDefinitions.gradientFunctionDefinition);
 		}
 		return mathSymbolTableFunctionEntries;
 	}
@@ -81,7 +80,8 @@ public class ReservedMathSymbolEntries {
 	private static HashMap<String,SymbolTableFunctionEntry> getPostProcessingSymbolTableFunctionEntries(){
 		if (postProcessingSymbolTableFunctionEntries==null){
 			postProcessingSymbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
-			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_convolution.getName(),MathFunctionDefinitions.Function_convolution);
+			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.convFunctionDefinition.getName(),MathFunctionDefinitions.convFunctionDefinition);
+			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.projectFunctionDefinition.getName(),MathFunctionDefinitions.projectFunctionDefinition);
 		}
 		return postProcessingSymbolTableFunctionEntries;
 	}

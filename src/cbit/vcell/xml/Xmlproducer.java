@@ -111,6 +111,8 @@ import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.DataGenerator;
+import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -123,6 +125,7 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
@@ -132,13 +135,14 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
@@ -2231,9 +2235,53 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
     	math.addContent(getXML(iter.next()));
     }
 
+    PostProcessingBlock postProcessingBlock = mathdes.getPostProcessingBlock();
+    if (postProcessingBlock.getNumDataGenerators() > 0) {    	
+    	math.addContent(getXML(postProcessingBlock));
+    }
+
     return math;
 }
 
+private Element getXML(PostProcessingBlock postProcessingBlock) {
+	Element element = new Element(XMLTags.PostProcessingBlock);
+    for (DataGenerator dataGenerator : postProcessingBlock.getDataGeneratorList()) {
+    	if (dataGenerator instanceof ExplicitDataGenerator) {
+	    	Element e = new Element(XMLTags.ExplicitDataGenerator);
+	    	e.setAttribute(XMLTags.NameAttrTag, mangle(dataGenerator.getName()));
+	    	if (dataGenerator.getDomain()!=null){
+	    		e.setAttribute(XMLTags.DomainAttrTag, mangle(dataGenerator.getDomain().getName()));
+	    	}
+	    	e.addContent(mangleExpression(dataGenerator.getExpression()));
+	    	element.addContent(e);
+    	} else if (dataGenerator instanceof ProjectionDataGenerator) {
+    		element.addContent(getXML((ProjectionDataGenerator)dataGenerator));
+    	}
+    } 
+    return element;
+}
+
+private Element getXML(ProjectionDataGenerator projectionDataGenerator) {
+	Element element = new Element(XMLTags.ProjectionDataGenerator);
+	element.setAttribute(XMLTags.NameAttrTag, mangle(projectionDataGenerator.getName()));
+	if (projectionDataGenerator.getDomain()!=null){
+		element.setAttribute(XMLTags.DomainAttrTag, mangle(projectionDataGenerator.getDomain().getName()));
+	}
+	
+	Element e = new Element(XMLTags.ProjectionAxis);
+	e.addContent(projectionDataGenerator.getAxis().name());
+	element.addContent(e);
+	
+	e = new Element(XMLTags.ProjectionOperation);
+	e.addContent(projectionDataGenerator.getOperation().name());
+	element.addContent(e);
+	
+	e = new Element(XMLTags.ProjectionFunction);
+	e.addContent(mangleExpression(projectionDataGenerator.getFunction()));
+	element.addContent(e); 
+	
+	return element;
+}
 
 private Element getXML(RandomVariable var) {
 	Element randomVariableElement = null;

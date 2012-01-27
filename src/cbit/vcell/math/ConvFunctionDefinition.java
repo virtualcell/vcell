@@ -19,13 +19,14 @@ import cbit.vcell.parser.SymbolTableFunctionEntry.Evaluable;
 
 public class ConvFunctionDefinition extends SimpleSymbolTableFunctionEntry implements Differentiable, Evaluable {
 	
-	public final static String FUNCTION_name				= "vcConv";
-	public final static ConvFunctionDefinition convFunctionDefinition = new ConvFunctionDefinition();
+	public final static String FUNCTION_name = "vcConv";
+	private final static String[] ARGUMENT_NAMES = new String[]{"function","kernel"};
+	private static final FunctionArgType[] ARGUMENT_TYPES = new FunctionArgType[] { FunctionArgType.NUMERIC, FunctionArgType.NUMERIC };
 		  
-	private ConvFunctionDefinition() {
-		super("vcConv", 
-				new String[]{"function","kernel"}, 
-				new FunctionArgType[] { FunctionArgType.NUMERIC, FunctionArgType.NUMERIC }, 
+	public ConvFunctionDefinition() {
+		super(FUNCTION_name, 
+				ARGUMENT_NAMES, 
+				ARGUMENT_TYPES, 
 				null,  // expression 
 				null,  // units
 				null); // namescope

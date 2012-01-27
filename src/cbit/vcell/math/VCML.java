@@ -199,4 +199,11 @@ public class VCML {
 	
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
 	public final static String SundialsSolverOptions_maxOrderAdvection	= "MaxOrderAdvection";
+	
+	public final static String PostProcessingBlock = "PostProcessing";
+	public final static String ExplicitDataGenerator = "Explicit";
+	public final static String ProjectionDataGenerator = "Projection";
+	public final static String ProjectionAxis = "Axis";
+	public final static String ProjectionOperation = "Operation";
+	public final static String ProjectionFunction = "Function";
 }

@@ -600,6 +600,9 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 			}
 		} else if (numGeomClasses == 1) {
 			objectsList.add(geomClassSet.iterator().next());
+			if (gatherFlag == 1) {
+				objectsList.add(VariableType.MEMBRANE);
+			}
 		} else if (gatherFlag == 1) {		//  all volumes
 			if (numGeomClasses == 2) {
 				// all subvolumes, if there are only 2, check for adjacency.

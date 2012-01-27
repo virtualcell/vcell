@@ -13,7 +13,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JMenu;
@@ -39,8 +41,8 @@ public class MathDescEditor extends JPanel implements ActionListener, KeyListene
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MultiPurposeTextPanel vcmlPane = null;
 	
-	private final static List<String> autoCompletionWords = new ArrayList<String>();
-	private final static List<String> keywords = new ArrayList<String>();
+	private final static Set<String> autoCompletionWords = new HashSet<String>();
+	private final static Set<String> keywords = new HashSet<String>();
 
 /**
  * Constructor
@@ -291,7 +293,7 @@ public boolean hasUnappliedChanges() {
 	return getApplyButton().isEnabled();
 }
 
-private static List<String> getAutoCompletionWords() {
+private static Set<String> getAutoCompletionWords() {
 	if (autoCompletionWords.size() == 0) {
 		autoCompletionWords.add(VCML.BoundaryXm);
 		autoCompletionWords.add(VCML.CompartmentSubDomain);
@@ -367,6 +369,13 @@ private static List<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleLocationX);
 		autoCompletionWords.add(VCML.ParticleLocationY);
 		autoCompletionWords.add(VCML.ParticleLocationZ);
+		
+		autoCompletionWords.add(VCML.PostProcessingBlock);
+		autoCompletionWords.add(VCML.ExplicitDataGenerator);
+		autoCompletionWords.add(VCML.ProjectionDataGenerator);
+		autoCompletionWords.add(VCML.ProjectionAxis);
+		autoCompletionWords.add(VCML.ProjectionOperation);
+		autoCompletionWords.add(VCML.ProjectionFunction);
 	}
 	
 	return autoCompletionWords;
@@ -471,7 +480,7 @@ public JMenu getEditMenu() {
 }
 
 
-public static List<String> getkeywords() {
+public static Set<String> getkeywords() {
 	if (keywords.size() == 0) {
 		keywords.add(VCML.BoundaryXm);
 		keywords.add(VCML.BoundaryXp);
@@ -557,6 +566,13 @@ public static List<String> getkeywords() {
 		keywords.add(VCML.ParticleLocationY);
 		keywords.add(VCML.ParticleLocationZ);
 		keywords.add(VCML.ParticleDiffusion);
+		
+		keywords.add(VCML.PostProcessingBlock);
+		keywords.add(VCML.ExplicitDataGenerator);
+		keywords.add(VCML.ProjectionDataGenerator);
+		keywords.add(VCML.ProjectionAxis);
+		keywords.add(VCML.ProjectionOperation);
+		keywords.add(VCML.ProjectionFunction);		
 	}
 	 return keywords;
 }

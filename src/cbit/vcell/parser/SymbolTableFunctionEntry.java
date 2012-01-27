@@ -10,6 +10,8 @@
 
 package cbit.vcell.parser;
 
+import java.util.Set;
+
 /**
  * A <code>SymbolTableEntry</code> describes an interface for any object that
  * can represent the value corresponding to a symbol in an expression.  
@@ -38,5 +40,5 @@ public int getNumArguments();
 public FunctionArgType[] getArgTypes();
 public String[] getArgNames();
 public String getFunctionName();
-
+public Set<String> getAllowableLiteralValues(String argumentName); 
 }

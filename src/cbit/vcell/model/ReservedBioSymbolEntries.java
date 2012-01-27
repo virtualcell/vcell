@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cbit.vcell.field.FieldFunctionDefinition;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -145,7 +146,7 @@ public class ReservedBioSymbolEntries {
 	private static HashMap<String,SymbolTableFunctionEntry> getSymbolTableFunctionEntries(){
 		if (symbolTableFunctionEntries==null){
 			symbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
-			symbolTableFunctionEntries.put(FieldFunctionDefinition.fieldFunctionDefinition.getName(),FieldFunctionDefinition.fieldFunctionDefinition);
+			symbolTableFunctionEntries.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(),MathFunctionDefinitions.fieldFunctionDefinition);
 		}
 		return symbolTableFunctionEntries;
 	}
