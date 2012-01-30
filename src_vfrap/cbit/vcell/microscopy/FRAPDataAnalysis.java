@@ -376,8 +376,8 @@ public class FRAPDataAnalysis {
 //	public static void main(String args[]){
 //		try {
 //			//ImageDataset imageDataset = VirtualFrapTest.readImageDataset("\\\\fs3\\ccam\\Public\\VirtualMicroscopy\\FRAP data from Ann\\ran bleach in nucleus\\bleach3.lsm");
-//			ImageDataset imageDataset = ImageDatasetReader.readImageDataset("\\temp\\lsm\\bleach3.lsm", null);
-//			ImageDataset roiImageDataset = ImageDatasetReader.readImageDataset("\\temp\\lsm\\BleachingRegionMask.tif", null);
+//			ImageDataset imageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset("\\temp\\lsm\\bleach3.lsm", null);
+//			ImageDataset roiImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset("\\temp\\lsm\\BleachingRegionMask.tif", null);
 //			if (roiImageDataset.getSizeC()>0 || roiImageDataset.getSizeT()>0){
 //				throw new RuntimeException("roi data must be single channel and single time");
 //			}
