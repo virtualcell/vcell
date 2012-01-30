@@ -1842,11 +1842,6 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 	return ivjJTabbedPane1;
 }
 
-public void disableExportTabForQuickRunSims() {
-	// 'Export' tab is at tab index 1
-	getJTabbedPane1().setEnabledAt(1, false);
-}
-
 /**
  * Return the KymographJButton property value.
  * @return javax.swing.JButton

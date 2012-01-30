@@ -25,12 +25,14 @@ import java.util.Vector;
 import javax.swing.JInternalFrame;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
+import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
@@ -38,7 +40,6 @@ import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
@@ -53,11 +54,14 @@ import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
@@ -274,8 +278,10 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 							// ---- preliminary : construct the localDatasetControllerProvider
 							StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 							File primaryDir = ResourceUtil.getLocalRootDir();
+							User usr = sim.getVersion().getOwner();
 							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, dataSetControllerImpl);
+							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
+							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
 							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
 							File localSimDir = ResourceUtil.getLocalSimDir();
 							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
@@ -324,13 +330,6 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						
 						viewer.setSimulationModelInfo(new SimulationWorkspaceModelInfo(getSimWorkspace().getSimulationOwner(),sim.getName()));
 						viewer.setDataViewerManager(documentWindowManager);
-						
-						// disable 'Export' tab in the quick run results viewer for spatial simulations 
-						if (isLocal) {
-							if (viewer instanceof SimResultsViewer) {
-								((SimResultsViewer)viewer).disableExportTabForQuickRunSims();
-							}
-						}
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
 						documentWindowManager.addResultsFrame(newWindow);
@@ -573,6 +572,16 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 			Solver solver = createQuickRunSolver(log, localSimDataDir, simJob);
 			if (solver == null) {
 				throw new RuntimeException("null solver");
+			}
+			if (solver instanceof SmoldynSolver) {
+				// check if spatial stochastic simulation (smoldyn solver) has data processing instructions with field data - need to access server for field data, so cannot do local simulation run. 
+				DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
+				if (dpi != null) {
+					FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
+					if (fdis != null) {
+						throw new RuntimeException("Spatial Stochastic simulation '" + simulation.getName() + "' (Smoldyn solver) with field data (in data processing instructions) cannot be run locally at this time since field data needs to be retrieved from the VCell server.");
+					}
+				}
 			}
 			solver.addSolverListener(new SolverListener() {
 				public void solverStopped(SolverEvent event) {

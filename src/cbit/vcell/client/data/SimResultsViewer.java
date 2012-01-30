@@ -11,7 +11,6 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,7 +29,6 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.server.DataManager;
@@ -42,7 +40,6 @@ import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
@@ -133,16 +130,6 @@ private DataViewer getMainViewer() {
 private javax.swing.JPanel getParamChoicesPanel() {
 	return paramChoicesPanel;
 }
-
-public void disableExportTabForQuickRunSims() {
-	if (!isODEData) {
-		// disable 'Export' tab for spatial sim results (PDEDataviewer)
-		if (pdeDataViewer != null) {
-			pdeDataViewer.disableExportTabForQuickRunSims();
-		}
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -422,5 +409,6 @@ public static ExportSpecs.ExportParamScanInfo getParamScanInfo(Simulation simula
 	}
 	return new ExportSpecs.ExportParamScanInfo(paramScanJobIndexes, selectedParamScanJobIndex, scanConstantNames, scanConstValues);
 }
+
 
 }
