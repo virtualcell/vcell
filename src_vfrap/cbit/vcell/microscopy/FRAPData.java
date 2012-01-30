@@ -404,8 +404,7 @@ public void chopImages(int startTimeIndex, int endTimeIndex)
 }
 
 public void changeImageExtent(double imageSizeX, double imageSizeY) {
-	Extent extent = getImageDataset().getExtent();
-	double imageSizeZ = extent.getZ();
+	double imageSizeZ = getImageDataset().getExtent().getZ();
 	getImageDataset().setExtent(new Extent(imageSizeX, imageSizeY, imageSizeZ));
 }
 

@@ -107,7 +107,8 @@ public class FRAPDataAnalysis {
 		long numPixelsInBleachedROI = bleachedROI_2D.getRoiImages()[0].getNumXYZ() - bleachedROI_2D.getRoiImages()[0].countPixelsByValue((short)0);
 		// assume ROI is a circle, A = Pi*R^2
 		// so R = sqrt(A/Pi)
-		double area = bleachedROI_2D.getRoiImages()[0].getPixelAreaXY() * numPixelsInBleachedROI;
+		double imagePixelArea = frapData.getImageDataset().getAllImages()[0].getPixelAreaXY();
+		double area = imagePixelArea * numPixelsInBleachedROI;
 		double bleachRadius = Math.sqrt(area/Math.PI);// Radius of ROI(assume that ROI is a circle)
 		// assume cell is a circle, A = Pi*R^2
 		// so R = sqrt(A/Pi)
