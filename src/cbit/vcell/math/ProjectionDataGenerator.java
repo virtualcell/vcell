@@ -128,7 +128,7 @@ public class ProjectionDataGenerator extends DataGenerator {
 
 	@Override
 	public String getVCML() throws MathException {
-		return VCML.ProjectionDataGenerator + "  " + getName() + " " + VCML.BeginBlock + "\n"
+		return VCML.ProjectionDataGenerator + "  " + getQualifiedName() + " " + VCML.BeginBlock + "\n"
 				+ "\t\t" + VCML.ProjectionAxis + "\t" + axis.name() + "\n"
 				+ "\t\t" + VCML.ProjectionOperation + "\t" + operation.name() + "\n"
 				+ "\t\t" + VCML.ProjectionFunction + "\t" + function.infix()+";\n"

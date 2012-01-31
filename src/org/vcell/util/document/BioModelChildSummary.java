@@ -36,6 +36,7 @@ public class BioModelChildSummary implements java.io.Serializable {
 	public final static String TYPE_STOCH_STR = "Stochastic";
 	public final static String TYPE_DETER_STR = "Deterministic";
 	public final static String TYPE_UNKNOWN_STR = "Unknown";
+	public final static String GEOMETRY_DIMENSION_SUFFIX = "D";
 /**
  * Insert the method's description here.
  * Creation date: (8/23/2004 9:58:44 PM)
@@ -112,7 +113,10 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 			geoNamesV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 			int[] temp = new int[geoDimsArr.length + 1];
 			System.arraycopy(geoDimsArr,0,temp,0,geoDimsArr.length);
-			temp[temp.length-1] = Integer.parseInt((String)st.nextElement());
+			// can be 2D or 2 (without D)
+			String nextline = (String)st.nextElement();
+			nextline = nextline.replace(GEOMETRY_DIMENSION_SUFFIX, "");
+			temp[temp.length-1] = Integer.parseInt(nextline);
 			geoDimsArr = temp;
 			
 			int numSims = Integer.parseInt((String)st.nextElement());
@@ -244,7 +248,7 @@ public String toDatabaseSerialization() {
 		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(BioModelChildSummary.TYPE_TOKEN+appTypes[i]))+"\n");
 		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(scAnnots[i]))+"\n");
 		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(geoNames[i]))+"\n");
-		sb.append(geoDims[i]+"\n");
+		sb.append(geoDims[i]+GEOMETRY_DIMENSION_SUFFIX+"\n");
 		//Simulations
 		sb.append(simNames[i].length+"\n");//num simulations
 		for(int j=0;j<simNames[i].length;j+= 1){

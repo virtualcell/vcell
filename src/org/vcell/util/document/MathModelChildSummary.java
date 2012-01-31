@@ -85,7 +85,11 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 		}
 //		mmcs.modelType = (String)TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
 //		mmcs.geoName = (String)TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
-		mmcs.geoDim = Integer.parseInt((String)st.nextElement());
+		
+		// can be 2D or 2 (without D)
+		String nextline = (String)st.nextElement();
+		nextline = nextline.replace(BioModelChildSummary.GEOMETRY_DIMENSION_SUFFIX, "");
+		mmcs.geoDim = Integer.parseInt(nextline);
 		
 		Vector<String> simNamesV = new Vector<String>();
 		Vector<String> simAnnotsV = new Vector<String>();
@@ -169,7 +173,7 @@ public String toDatabaseSerialization() {
 	sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(BioModelChildSummary.TYPE_TOKEN+modelType))+"\n");
 	sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(geoName))+"\n");
 
-	sb.append(geoDim+"\n");
+	sb.append(geoDim+BioModelChildSummary.GEOMETRY_DIMENSION_SUFFIX+"\n");
 	
 	//Simulations
 	sb.append(simNames.length+"\n");//num simulations

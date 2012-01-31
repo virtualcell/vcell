@@ -449,6 +449,9 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getMathDescription().hasGradient()) {
 		requiredFeatures.add(SolverFeature.Feature_GradientSourceTerm);
 	}
+	if (getMathDescription().getPostProcessingBlock().getNumDataGenerators() > 0) {
+		requiredFeatures.add(SolverFeature.Feature_PostProcessingBlock);
+	}
 	return requiredFeatures;
 }
 /**

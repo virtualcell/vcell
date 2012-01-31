@@ -48,7 +48,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_SerialParameterScans("Serial Parameter Scans"),
 		Feature_VolumeRegionEquations("Volume Region Equations"),
 		Feature_RegionSizeFunctions("Region Size Functions"),
-		Feature_GradientSourceTerm("Gradient Source Term");
+		Feature_GradientSourceTerm("Gradient Source Term"),
+		Feature_PostProcessingBlock("Post Processing");
 				
 		private String name;
 		private SolverFeature(String name) {
@@ -164,7 +165,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
 		"Adams-Moulton (Fifth Order, Fixed Time Step)",
 		"IDA (Variable Order, Variable Time Step, ODE/DAE)",
-		"Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step)",
+		"Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)",
 		"Gibson (Next Reaction Stochastic Method)",
 		"Hybrid (Gibson + Euler-Maruyama Method)",
 		"Hybrid (Gibson + Milstein Method)",
@@ -950,6 +951,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
 		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		featureSet.add(SolverFeature.Feature_Stochastic);
+		featureSet.add(SolverFeature.Feature_PostProcessingBlock);
 		break;
 		
 	case TYPE_SUNDIALS_PDE:

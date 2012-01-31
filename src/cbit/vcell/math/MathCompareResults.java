@@ -47,7 +47,9 @@ public class MathCompareResults {
 		MathDifferent_FAILURE_FLATTENING_DIV_BY_ZERO(false,"MathDifferent:FailedFlatteningDivideByZero"),
 
 		MathDifferent_NOT_SAVED(false,"MathDifferent:NotSaved"),
-		MathEquivalent_SAME(false,"MathEquivalent:Same");
+		MathEquivalent_SAME(false,"MathEquivalent:Same"),
+		
+		MathDifferent_DIFFERENT_PostProcessingBlock(false,"MathDifferent:DifferentPostProcessingBlock");
 
 		public final boolean equivalent;
 		public final String description;

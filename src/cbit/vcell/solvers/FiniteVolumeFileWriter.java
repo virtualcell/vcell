@@ -36,8 +36,10 @@ import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Equation;
+import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastSystem;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.GaussianDistribution;
@@ -54,6 +56,8 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PostProcessingBlock;
+import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.ReservedVariable;
@@ -69,6 +73,7 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -86,6 +91,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -175,6 +181,11 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		
 		VARIABLE_BEGIN,
 		VARIABLE_END,
+		
+		POST_PROCESSING_BLOCK_BEGIN,
+		POST_PROCESSING_BLOCK_END,
+		EXPLICIT_DATA_GENERATOR,
+		PROJECTION_DATA_GENERATOR,
 	}
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir) {	// for optimization only, no messaging
@@ -262,6 +273,7 @@ public void write(String[] parameterNames) throws Exception {
 	writeSerialParameterScans();	
 	writeFieldData();	
 	writeDataProcessor();
+	writePostProcessingBlock();
 	writeCompartments();	
 	writeMembranes();
 	
@@ -288,6 +300,28 @@ private void writeSmoldyn() throws Exception {
 	printWriter.println(FVInputFileKeyword.SMOLDYN_BEGIN);
 	printWriter.println(FVInputFileKeyword.SMOLDYN_INPUT_FILE + " " + inputFilename);
 	printWriter.println(FVInputFileKeyword.SMOLDYN_END);
+	printWriter.println();
+}
+
+private void writePostProcessingBlock() throws SolverException {
+	PostProcessingBlock postProcessingBlock = simulationJob.getSimulation().getMathDescription().getPostProcessingBlock();
+	if (postProcessingBlock.getNumDataGenerators() == 0) {
+		return;
+	}
+	printWriter.println(" # Post Processing Block");
+	printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
+	for (DataGenerator dataGenerator : postProcessingBlock.getDataGeneratorList()) {
+		String varName = dataGenerator.getName();
+		String domainName = dataGenerator.getDomain() == null ? null : dataGenerator.getDomain().getName();
+		if (dataGenerator instanceof ProjectionDataGenerator) {
+			ProjectionDataGenerator pdg = (ProjectionDataGenerator)dataGenerator;
+			printWriter.println(FVInputFileKeyword.PROJECTION_DATA_GENERATOR + " " + varName + " " + domainName 
+					+ " " + pdg.getAxis() + " " + pdg.getOperation() + " " + pdg.getFunction().infix()  +";");			
+		} else {
+			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
+		}
+	}
+	printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_END);
 	printWriter.println();
 }
 

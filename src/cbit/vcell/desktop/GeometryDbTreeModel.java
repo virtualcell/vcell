@@ -198,10 +198,12 @@ public void databaseDelete(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getOldVersionInfo() instanceof GeometryInfo){
 		GeometryInfo removedGeometryInfo = (GeometryInfo)databaseEvent.getOldVersionInfo();
 		BioModelNode removedNode = ((BioModelNode)getRoot()).findNodeByUserObject(removedGeometryInfo);
-		if (removedNode.getParent()!=null && removedNode.getSiblingCount()==1){ // just this one version
-			removedNode = (BioModelNode)removedNode.getParent();
+		if (removedNode != null) {
+			if (removedNode.getParent()!=null && removedNode.getSiblingCount()==1){ // just this one version
+				removedNode = (BioModelNode)removedNode.getParent();
+			}
+			removeNodeFromParent(removedNode);
 		}
-		removeNodeFromParent(removedNode);
 	}
 }
 
