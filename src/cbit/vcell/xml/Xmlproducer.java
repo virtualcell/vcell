@@ -95,6 +95,9 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
@@ -1568,10 +1571,31 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	if ( param.getVersion() != null) {
 		simulationcontext.addContent( getXML(param.getVersion(), param) );
 	}
+	
+	// Add microscope measurements
+	simulationcontext.addContent(getXML(param.getMicroscopeMeasurement()));
 		
 	return simulationcontext;
 }
 
+public Element getXML(MicroscopeMeasurement microscopeMeasurement) {
+	Element element = new Element(XMLTags.MicroscopeMeasurement);
+	element.setAttribute(XMLTags.NameAttrTag, microscopeMeasurement.getName());
+	
+	ArrayList<SpeciesContext> speciesContextList = microscopeMeasurement.getFluorescentSpecies();
+	for (SpeciesContext sc : speciesContextList) {
+		Element e = new Element(XMLTags.FluorescenceSpecies);
+		e.setAttribute(XMLTags.NameAttrTag, sc.getName());
+		element.addContent(e);
+	}
+	ConvolutionKernel ck = microscopeMeasurement.getConvolutionKernel();
+	Element e = new Element(XMLTags.ConvolutionKernel);
+	if (ck instanceof ProjectionZKernel) {
+		e.setAttribute(XMLTags.TypeAttrTag, XMLTags.ProjectionZKernel);
+	}
+	element.addContent(e);
+	return element;
+}
 
 private Element getXML(DataContext dataContext) {
 	Element dataContextElement = new Element(XMLTags.DataContextTag);

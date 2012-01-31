@@ -546,4 +546,10 @@ public class XMLTags {
 	public final static String ProjectionAxis = "Axis";
 	public final static String ProjectionOperation = "Operation";
 	public final static String ProjectionFunction = "Function";	
+	
+	// Microscope Measurement
+	public final static String MicroscopeMeasurement = "MicroscopeMeasurement";
+	public final static String ConvolutionKernel = "ConvolutionKernel";
+	public final static String FluorescenceSpecies = "FluorescenceSpecies";
+	public final static String ProjectionZKernel = "ProjectionZKernel";
 }

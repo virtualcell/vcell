@@ -225,6 +225,7 @@ public void setMathModel(MathModel newValue) {
 	vcmlEditorPanel.setMathModel(mathModel);
 	updateGeometryViewerOwner();	
 	mathModelEditorTreeModel.setMathModel(mathModel);
+	mathModelEditorAnnotationPanel.setMathModel(mathModel);
 	
 	issueManager.setVCDocument(mathModel);
 }

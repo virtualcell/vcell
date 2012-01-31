@@ -966,6 +966,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
 		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		featureSet.add(SolverFeature.Feature_GradientSourceTerm);
+		featureSet.add(SolverFeature.Feature_PostProcessingBlock);
 		break;
 		
 	case TYPE_SMOLDYN:

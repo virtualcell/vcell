@@ -14,12 +14,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.sbml.libsbml.Species;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.Matchable;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
-public class MicroscopeMeasurement implements Serializable  {
+public class MicroscopeMeasurement implements Serializable, Matchable  {
 	
 	public static final String CONVOLUTION_KERNEL_PROPERTYNAME = "convolutionKernel";
 	public static final String FLUORESCENT_SPECIES_PROPERTYNAME = "fluorescentSpecies";
@@ -30,7 +37,7 @@ public class MicroscopeMeasurement implements Serializable  {
 	private transient PropertyChangeSupport propertyChangeSupport = null;
 	
 
-	public static abstract class ConvolutionKernel implements Serializable{
+	public static abstract class ConvolutionKernel implements Serializable, Matchable {
 	}
 	
 	public static class ExperimentalPSF extends ConvolutionKernel {
@@ -44,12 +51,21 @@ public class MicroscopeMeasurement implements Serializable  {
 		public DataSymbol getPSFDataSymbol(){
 			return this.psfDataSymbol;
 		}
+		public boolean compareEqual(Matchable obj) {
+			// TODO Auto-generated method stub
+			return false;
+		}
 	}
 		public static class ProjectionZKernel extends ConvolutionKernel {
+
+			public boolean compareEqual(Matchable obj) {
+				// TODO Auto-generated method stub
+				return true;
+			}
 	}
 		
 		
-	public MicroscopeMeasurement(String argName, ConvolutionKernel argConvolutionKernel, Expression argFluorescentMoleculeExpression) {
+	public MicroscopeMeasurement(String argName, ConvolutionKernel argConvolutionKernel) {
 		this.name = argName;
 		this.convolutionKernel = argConvolutionKernel;
 	}
@@ -60,6 +76,29 @@ public class MicroscopeMeasurement implements Serializable  {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public boolean compareEqual(Matchable object) {
+		MicroscopeMeasurement microscopeMeasurement = null;
+		if (!(object instanceof MicroscopeMeasurement)){
+			return false;
+		}
+		
+		microscopeMeasurement = (MicroscopeMeasurement)object;
+			 
+		if (!Compare.isEqual(getName(),microscopeMeasurement.getName())){
+			return false;
+		}
+		if (!Compare.isEqual(getFluorescentSpecies(), microscopeMeasurement.getFluorescentSpecies())){
+			return false;
+		}
+		
+		if (!Compare.isEqualOrNull(convolutionKernel, microscopeMeasurement.convolutionKernel)){
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public ArrayList<SpeciesContext> getFluorescentSpecies(){
 		return fluorescentSpecies;
 	}
@@ -108,6 +147,15 @@ public class MicroscopeMeasurement implements Serializable  {
 
 	public boolean contains(SpeciesContext sc) {
 		return fluorescentSpecies.contains(sc);
+	}
+
+	public void gatherIssues(List<Issue> issueVector) {
+		if (fluorescentSpecies.size() > 0) {
+//			if(getConvolutionKernel() instanceof ProjectionZKernel && simulationContext.getGeometry().getDimension() != 3) {	
+//				Issue issue = new Issue(this, IssueCategory.Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning, "Projection in Z only supports 3D geometry.", Issue.SEVERITY_ERROR);
+//				issueVector.add(issue);
+//			}
+		}
 	}
 
 }

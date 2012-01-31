@@ -107,7 +107,10 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -4522,21 +4525,12 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			}
 		}
 	}
-
-	//Retrieve Simulations and gave it to the BioModel object
-	//****** All thsi was moved to the getSimulationContext. Because the Simcontext needs to be added to
-	//****** the Biomodel before the Simulations.
-	/*
-	iterator = param.getChildren(XMLTags.SimulationTag).iterator();
-	while (iterator.hasNext()) {
-		try {
-			biomodel.addSimulation( getSimulation((Element)iterator.next(), newmathdesc) );
-			;
-		} catch(java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException("A PropertyVetoException occurred when adding a Simulation entity to the BioModel in the SimContext " + name+" : "+e.getMessage());
-		}
-	}*/
+	
+	// Microscope Measurement
+	org.jdom.Element element = param.getChild(XMLTags.MicroscopeMeasurement, vcNamespace);
+	if (element != null) {
+		getMicroscopeMeasurement(element, newsimcontext);
+	}
 	
 	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
 		StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
@@ -4545,6 +4539,25 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	return newsimcontext;
 }
 
+public void getMicroscopeMeasurement(Element element, SimulationContext simContext) {
+	MicroscopeMeasurement microscopeMeasurement = simContext.getMicroscopeMeasurement();
+	
+	String name = element.getAttributeValue(XMLTags.NameAttrTag);
+	microscopeMeasurement.setName(name);
+		
+	Element e = element.getChild(XMLTags.ConvolutionKernel, vcNamespace);
+	String type = e.getAttributeValue(XMLTags.TypeAttrTag);
+	if (type.equals(XMLTags.ProjectionZKernel)) {
+		microscopeMeasurement.setConvolutionKernel(new ProjectionZKernel());
+	}
+	
+	List<Element> children = element.getChildren(XMLTags.FluorescenceSpecies, vcNamespace);
+	for (Element c : children) {
+		String speciesName = c.getAttributeValue(XMLTags.NameAttrTag);
+		SpeciesContext sc = simContext.getModel().getSpeciesContext(speciesName);
+		microscopeMeasurement.addFluorescentSpecies(sc);
+	}
+}
 
 private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataContext dataContext) {
 	ArrayList<DataSymbol> dataSymbolsList = new ArrayList<DataSymbol>();
