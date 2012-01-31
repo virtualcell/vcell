@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -199,7 +200,7 @@ public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,
  * @param simContext
  * @return
  */
-public static String getXMLStringForDatabase(SimulationContext simContext) {
+public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	Element appComponentsElement = new Element(XMLTags.ApplicationComponents);
 	
 	// first fill in bioevents from simContext
@@ -213,6 +214,8 @@ public static String getXMLStringForDatabase(SimulationContext simContext) {
 			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
 		}
 	}
+	Element element = new Xmlproducer(false).getXML(simContext.getMicroscopeMeasurement());
+	appComponentsElement.addContent(element);
 	
 	// fill in other application components when ready (rate rules, etc. etc.?)
 	
@@ -262,23 +265,27 @@ private Element getAppComponentsElement(Connection con, KeyValue simContextRef) 
  * @return
  * @throws SQLException
  * @throws DataAccessException
+ * @throws PropertyVetoException 
  */
-public BioEvent[] getBioEvents(Connection con, SimulationContext simContext) throws SQLException, DataAccessException {
-	BioEvent[] bioEvents = null;
+public void readAppComponents(Connection con, SimulationContext simContext) throws SQLException, DataAccessException, PropertyVetoException {
 	
 	try {
 		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
 		if (appComponentsElement != null) {
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
 			if (bioEventsElement != null) {
-				bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+				BioEvent[] bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+				simContext.setBioEvents(bioEvents);
+			}
+			Element element = appComponentsElement.getChild(XMLTags.MicroscopeMeasurement);
+			if (element != null) {
+				new XmlReader(false).getMicroscopeMeasurement(element, simContext);
 			}
 		}
 	} catch (XmlParseException e) {
 		e.printStackTrace(System.out);
 		throw new DataAccessException("Error retrieving bioevents : " + e.getMessage());
 	}
-	return bioEvents;
 }
 
 }

@@ -31,8 +31,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	
 	private enum ProtocolsPanelTabID {
 		events("Events"),
-		electrical("Electrical");
-//		microscope_measurements("Microscope Measurements");
+		electrical("Electrical"),
+		microscope_measurements("Microscope Measurements");
 		
 		String title = null;
 		ProtocolsPanelTabID(String name) {
@@ -63,12 +63,12 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
 		
-		ProtocolsPanelTab simsPanelTabs[] = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
-		simsPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
-		simsPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
-//		simsPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
+		ProtocolsPanelTab tabs[] = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
+		tabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
+		tabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
+		tabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
 		
-		for (ProtocolsPanelTab tab : simsPanelTabs) {
+		for (ProtocolsPanelTab tab : tabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
 			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}		

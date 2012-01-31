@@ -11,6 +11,7 @@
 package cbit.vcell.mapping.gui;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,7 +35,10 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.data.DataSymbol;
+import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SimulationContext;
@@ -47,7 +51,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 	private JTextField nameTextField;
 	private JRadioButton rdbtnZprojection = null;
 	private JRadioButton rdbtnExperimental = null;
-	JComboBox pointSpreadFunctionsComboBox = null;
+	private JComboBox pointSpreadFunctionsComboBox = null;
 	private SimulationContext simulationContext = null;
 	private AllPointSpreadFunctionsComboModel pointSpreadFunctionsComboModel = new AllPointSpreadFunctionsComboModel();
 	private AllSpeciesContextListModel allSpeciesContextListModel = new AllSpeciesContextListModel();
@@ -80,9 +84,10 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		this.simulationContext = simulationContext;
 		allSpeciesContextListModel.setSimulationContext(simulationContext);
 		fluorescenceSpeciesContextListModel.setSimulationContext(simulationContext);
-
 		pointSpreadFunctionsComboModel.setSimulationContext(simulationContext);
 
+		MicroscopeMeasurement microscopeMeasurement = simulationContext.getMicroscopeMeasurement();
+		nameTextField.setText(microscopeMeasurement.getName());
 		refreshButtons();
 	}
 
@@ -95,7 +100,9 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		try {
 			// top panel
 			JPanel topPanel = new JPanel();
-			JLabel lblFluoescenceFunctionName = new JLabel("fluorescence function name ");			
+			JLabel lblFluoescenceFunctionName = new JLabel("Fluorescence Function Name ");	
+			Font boldFont = lblFluoescenceFunctionName.getFont().deriveFont(Font.BOLD);
+			lblFluoescenceFunctionName.setFont(boldFont);
 			topPanel.add(lblFluoescenceFunctionName);			
 			nameTextField = new JTextField();
 			nameTextField.setColumns(20);
@@ -105,14 +112,16 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new GridBagLayout());
 			
-			JLabel label = new JLabel("all species");
+			JLabel label = new JLabel("All Species");
+			label.setFont(boldFont);
 			GridBagConstraints gbc_label = new GridBagConstraints();
 			gbc_label.insets = new Insets(4, 4, 4, 4);
 			gbc_label.gridx = 0;
 			gbc_label.gridy = 0;
 			middlePanel.add(label, gbc_label);
 			
-			JLabel label_1 = new JLabel("fluorescent species");
+			JLabel label_1 = new JLabel("Fluorescent Species");
+			label_1.setFont(boldFont);
 			GridBagConstraints gbc_label_1 = new GridBagConstraints();
 			gbc_label_1.insets = new Insets(4, 4, 4, 4);
 			gbc_label_1.gridx = 2;
@@ -195,14 +204,15 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			// bottom panel
 			JPanel bottomPanel = new JPanel();
 			bottomPanel.setLayout(new GridBagLayout());			
-			JLabel lblConvolutionKernel = new JLabel("point spread function");
+			JLabel lblConvolutionKernel = new JLabel("Point Spread Function");
+			lblConvolutionKernel.setFont(boldFont);
 			GridBagConstraints gbc_lblConvolutionKernel = new GridBagConstraints();
 			gbc_lblConvolutionKernel.gridx = 0;
 			gbc_lblConvolutionKernel.gridy = 0;
 			gbc_lblConvolutionKernel.insets = new Insets(4, 4, 5, 5);
 			bottomPanel.add(lblConvolutionKernel, gbc_lblConvolutionKernel);		
 			
-			rdbtnZprojection = new JRadioButton("z-projection");
+			rdbtnZprojection = new JRadioButton("z Projection");
 			rdbtnZprojection.setSelected(true);
 			rdbtnZprojection.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -216,7 +226,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_rdbtnZprojection.insets = new Insets(4, 4, 5, 5);
 			bottomPanel.add(rdbtnZprojection, gbc_rdbtnZprojection);
 			
-			rdbtnExperimental = new JRadioButton("experimental");
+			rdbtnExperimental = new JRadioButton("Experimental");
 			rdbtnExperimental.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					rdbtnExperimentalActionPerformed(e);
@@ -405,7 +415,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 
 	public static void main(java.lang.String[] args) {
 		try {
-			JFrame frame = new javax.swing.JFrame("SimulationListPanel");
+			JFrame frame = new javax.swing.JFrame();
 			MicroscopeMeasurementPanel aPanel = new MicroscopeMeasurementPanel();
 			frame.setContentPane(aPanel);
 			frame.setSize(aPanel.getSize());
@@ -414,8 +424,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 					System.exit(0);
 				};
 			});
-			java.awt.Insets insets = frame.getInsets();
-			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+			frame.pack();
 			frame.setVisible(true);
 		} catch (Throwable exception) {
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");

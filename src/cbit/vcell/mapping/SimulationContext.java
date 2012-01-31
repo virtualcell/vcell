@@ -30,6 +30,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -265,18 +266,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
-	private MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(),new Expression(0.0));
+	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel());
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
-		if(microscopeMeasurement == null) {
-			microscopeMeasurement = new MicroscopeMeasurement("fluor", new ProjectionZKernel(), new Expression(0.0));
-		}
 		return microscopeMeasurement;
-	}
-
-
-	public void setMicroscopeMeasurement(MicroscopeMeasurement microscopeMeasurement) {
-		this.microscopeMeasurement = microscopeMeasurement;
 	}
 
 /**
@@ -669,6 +662,10 @@ public boolean compareEqual(Matchable object) {
 	
 	if(!Compare.isEqualOrNull(getDataContext(), simContext.getDataContext())){
 		return false;
+	}	
+	
+	if(!Compare.isEqualOrNull(getMicroscopeMeasurement(), simContext.getMicroscopeMeasurement())){
+		return false;
 	}
 
 	return true;
@@ -859,6 +856,7 @@ public void gatherIssues(List<Issue> issueVector) {
 		}
 	}
 	getOutputFunctionContext().gatherIssues(issueVector);
+	getMicroscopeMeasurement().gatherIssues(issueVector);
 }
 
 

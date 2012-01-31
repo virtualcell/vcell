@@ -67,6 +67,7 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ProjectFunctionDefinition;
+import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
@@ -1512,39 +1513,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 	
-	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
-		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
-		Expression concExp = new Expression(0.0);
-		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
-			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
-			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
-		}
-		ConvolutionKernel kernel = measurement.getConvolutionKernel();
-		if (kernel instanceof ExperimentalPSF){
-			ExperimentalPSF psf = (ExperimentalPSF)kernel;
-			DataSymbol psfDataSymbol = psf.getPSFDataSymbol();
-			if (psfDataSymbol instanceof FieldDataSymbol){
-				FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)psfDataSymbol;
-				String fieldDataName = ((FieldDataSymbol) psfDataSymbol).getExternalDataIdentifier().getName();
-				
-				Expression psfExp = Expression.function(
-						FieldFunctionDefinition.FUNCTION_name, 
-						new Expression("'"+fieldDataName+"'"), 
-						new Expression("'"+fieldDataSymbol.getFieldDataVarName()+"'"), 
-						new Expression(fieldDataSymbol.getFieldDataVarTime()), 
-						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
-				varHash.addVariable(new Function("__PSF__",psfExp,null));
-			}
-			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
-			varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
-			
-		}else if (kernel instanceof ProjectionZKernel){
-			Expression projectExp = Expression.function(ProjectFunctionDefinition.FUNCTION_name,concExp,new Expression("'z'"),new Expression("'sum'"));
-			varHash.addVariable(newFunctionOrConstant(measurement.getName(),projectExp,null));
-		}
-		
-	}
-	
 	//
 	// add functions for field data symbols
 	//
@@ -2573,6 +2541,41 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			Event mathEvent = new Event(be.getName(), mathTriggerExpr, mathDelay, mathEventAssignmentsList);
 			mathDesc.addEvent(mathEvent);
 		}
+	}
+	
+	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
+		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
+		Expression concExp = new Expression(0.0);
+		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
+		}
+		ConvolutionKernel kernel = measurement.getConvolutionKernel();
+		if (kernel instanceof ExperimentalPSF){
+			ExperimentalPSF psf = (ExperimentalPSF)kernel;
+			DataSymbol psfDataSymbol = psf.getPSFDataSymbol();
+			if (psfDataSymbol instanceof FieldDataSymbol){
+				FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)psfDataSymbol;
+				String fieldDataName = ((FieldDataSymbol) psfDataSymbol).getExternalDataIdentifier().getName();
+				
+				Expression psfExp = Expression.function(
+						FieldFunctionDefinition.FUNCTION_name, 
+						new Expression("'"+fieldDataName+"'"), 
+						new Expression("'"+fieldDataSymbol.getFieldDataVarName()+"'"), 
+						new Expression(fieldDataSymbol.getFieldDataVarTime()), 
+						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
+				varHash.addVariable(new Function("__PSF__",psfExp,null));
+			}
+			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
+			varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
+			
+		}else if (kernel instanceof ProjectionZKernel){
+			if (mathDesc.getGeometry().getDimension() == 3) {
+				ProjectionDataGenerator dataGenerator = new ProjectionDataGenerator(measurement.getName(), null, ProjectionDataGenerator.Axis.z, ProjectionDataGenerator.Operation.sum, concExp);
+				mathDesc.getPostProcessingBlock().addDataGenerator(dataGenerator);
+			}
+		}
+		
 	}
 	
 	if (!mathDesc.isValid()){

@@ -28,6 +28,16 @@ public class ProjectionDataGenerator extends DataGenerator {
 	private Axis axis;
 	private Expression function;
 	
+	public ProjectionDataGenerator(String argName, Domain argDomain, Axis axis, Operation op, Expression function) {
+		super(argName, argDomain);
+		this.axis = axis;
+		this.operation = op;
+		if (function == null) {
+			throw new IllegalArgumentException("Projection '" + argName + "' does not have an expression.");
+		}
+		this.function = function;
+	}
+
 	public ProjectionDataGenerator(String argName, Domain argDomain, String axisStr, String opStr, Expression function) {
 		super(argName, argDomain);
 		setAxis(axisStr);
