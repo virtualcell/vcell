@@ -235,10 +235,12 @@ public void databaseDelete(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getOldVersionInfo() instanceof MathModelInfo){
 		MathModelInfo removedMathModelInfo = (MathModelInfo)databaseEvent.getOldVersionInfo();
 		BioModelNode removedNode = ((BioModelNode)getRoot()).findNodeByUserObject(removedMathModelInfo);
-		if (removedNode.getParent()!=null && removedNode.getSiblingCount()==1){ // just this one version
-			removedNode = (BioModelNode)removedNode.getParent();
+		if (removedNode != null) {
+			if (removedNode.getParent()!=null && removedNode.getSiblingCount()==1){ // just this one version
+				removedNode = (BioModelNode)removedNode.getParent();
+			}
+			removeNodeFromParent(removedNode);
 		}
-		removeNodeFromParent(removedNode);
 	}
 }
 

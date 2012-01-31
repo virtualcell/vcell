@@ -78,7 +78,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldDescription = new String();
 	private transient java.lang.String fieldWarning = null;
-	private PostProcessingBlock postProcessingBlock = new PostProcessingBlock(this);
+	private final PostProcessingBlock postProcessingBlock = new PostProcessingBlock(this);
 	
 	private ArrayList<Event> eventList = new ArrayList<Event>();
 
@@ -319,6 +319,9 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 		    return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
 		}else{
 		    //if (!bSilent) System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
+			if (!oldMathDesc.postProcessingBlock.compareEqual(newMathDesc.postProcessingBlock)) {
+				return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PostProcessingBlock,"Post processing block does not match");
+			}
 			Variable oldVars[] = (Variable[])BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
 			Variable newVars[] = (Variable[])BeanUtils.getArray(newMathDesc.getVariables(),Variable.class);
 			if (oldVars.length != newVars.length){
@@ -2664,6 +2667,15 @@ public void gatherIssues(List<Issue> issueList) {
 			event.bind(this);
 		}catch (ExpressionBindingException e){
 			Issue issue = new Issue(event, IssueCategory.MathDescription_SpatialModel_Event, e.getMessage(), Issue.SEVERITY_ERROR);
+			issueList.add(issue);
+		}		
+	}
+	
+	for (DataGenerator dataGenerator : postProcessingBlock.getDataGeneratorList()) {
+		try {
+			dataGenerator.bind(this);
+		}catch (ExpressionBindingException e){
+			Issue issue = new Issue(dataGenerator, IssueCategory.MathDescription_SpatialModel_PostProcessingBlock, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}		
 	}

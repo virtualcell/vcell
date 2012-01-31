@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -31,10 +32,12 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
-
-import com.ibm.icu.util.StringTokenizer;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.messaging.admin.DatePanel;
@@ -56,14 +59,31 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 				return true;
 			}
 			String lowerCaseNamePattern = stringPattern.toLowerCase();
-			if (docInfo.getVersion().getOwner().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
+			if (docInfo.getVersion().getOwner().getName().toLowerCase().contains(lowerCaseNamePattern)) {
 				return true;
 			}
-			if (docInfo.getVersion().getName().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
+			if (docInfo.getVersion().getName().toLowerCase().contains(lowerCaseNamePattern)) {
 				return true;
 			}
-			if (docInfo.getSoftwareVersion().getDescription().toLowerCase().indexOf(lowerCaseNamePattern) >= 0) {
+			if (docInfo.getSoftwareVersion() != null && docInfo.getSoftwareVersion().getDescription() != null 
+					&& docInfo.getSoftwareVersion().getDescription().toLowerCase().contains(lowerCaseNamePattern)) {
 				return true;
+			}
+			if (docInfo instanceof BioModelInfo) {
+				BioModelChildSummary bioModelChildSummary = ((BioModelInfo) docInfo).getBioModelChildSummary();
+				if (bioModelChildSummary != null) {
+					if (bioModelChildSummary.toDatabaseSerialization().toLowerCase().contains(lowerCaseNamePattern)) {
+						return true;
+					}
+				}
+			}
+			if (docInfo instanceof MathModelInfo) {
+				MathModelChildSummary mathModelChildSummary = ((MathModelInfo) docInfo).getMathModelChildSummary();
+				if (mathModelChildSummary != null) {
+					if (mathModelChildSummary.toDatabaseSerialization().toLowerCase().contains(lowerCaseNamePattern)) {
+						return true;
+					}
+				}
 			}
 			return false;
 		}
