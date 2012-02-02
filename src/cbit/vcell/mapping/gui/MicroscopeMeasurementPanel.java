@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping.gui;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -23,6 +24,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -35,6 +37,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
@@ -43,6 +46,8 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.mapping.MicroscopeMeasurement;
@@ -87,7 +92,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (value instanceof SpeciesContext && component instanceof JLabel){
 				SpeciesContext sc = (SpeciesContext)value;
-				((JLabel)component).setText(sc.getName());
+				((JLabel)component).setText(" " + sc.getName());
 			}
 			return component;
 		}
@@ -191,6 +196,90 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		refreshInterface();		
 	}
 	
+	private JPanel createPSFPanel() {
+		JPanel panel = new JPanel(new GridBagLayout());
+		
+		JLabel label = new JLabel("Point Spread Function");
+		Font boldFont = label.getFont().deriveFont(Font.BOLD);
+		label.setHorizontalAlignment(JLabel.CENTER);
+		label.setFont(boldFont);
+		JPanel p = new JPanel();
+		p.setBackground(new Color(0xdee3e9));
+		p.add(label);
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+		panel.add(p, gbc);		
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(new JSeparator(), gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(rdbtnZprojection, gbc);
+														
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(radioButtonGaussian, gbc);		
+
+		gaussianPsfPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		gaussianPsfPanel.add(new JLabel("Sigma XY"));
+		gaussianPsfPanel.add(sigmaXYTextField);
+		gaussianPsfPanel.add(new JLabel("Sigma Z"));
+		gaussianPsfPanel.add(sigmaZTextField);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(gaussianPsfPanel, gbc);		
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(rdbtnExperimental, gbc);	
+		
+		experimentalPsfPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+		experimentalPsfPanel.add(pointSpreadFunctionsComboBox);
+		experimentalPsfPanel.add(importPsfButton);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(experimentalPsfPanel, gbc);		
+		
+		panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		return panel;
+	}
 	private void initialize() {
 		try {
 			nameTextField = new JTextField(20);
@@ -235,9 +324,9 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			buttonGroup.add(rdbtnExperimental);
 			buttonGroup.add(radioButtonGaussian);
 
-			sigmaXYTextField = new JTextField(5);
+			sigmaXYTextField = new JTextField(10);
 			sigmaXYTextField.addFocusListener(internalEventHandler);
-			sigmaZTextField = new JTextField(5);
+			sigmaZTextField = new JTextField(10);
 			sigmaZTextField.addFocusListener(internalEventHandler);
 			
 			setLayout(new GridBagLayout());
@@ -247,7 +336,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
 			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new Insets(8,4,4,4);
+			gbc.insets = new Insets(5,4,4,4);
 			JLabel lblFluoescenceFunctionName = new JLabel("Fluorescence Function Name");	
 			Font boldFont = lblFluoescenceFunctionName.getFont().deriveFont(Font.BOLD);
 			lblFluoescenceFunctionName.setFont(boldFont);
@@ -257,123 +346,98 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc.gridx = 1;
 			gbc.gridy = gridy;
 			gbc.gridwidth = 2;
-			gbc.insets = new Insets(8,4,4,4);
+			gbc.insets = new Insets(5,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.LINE_START;
 			add(nameTextField, gbc);
 						
 			gridy ++;
-			JLabel lblConvolutionKernel = new JLabel("Point Spread Function");
-			lblConvolutionKernel.setFont(boldFont);
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			add(lblConvolutionKernel, gbc);		
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(rdbtnZprojection, gbc);
-															
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(0, 4, 8, 4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(radioButtonGaussian, gbc);		
-
-			gaussianPsfPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			gaussianPsfPanel.add(new JLabel("Sigma XY"));
-			gaussianPsfPanel.add(sigmaXYTextField);
-			gaussianPsfPanel.add(new JLabel("Sigma Z"));
-			gaussianPsfPanel.add(sigmaZTextField);
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = gridy;
-			gbc.gridwidth = GridBagConstraints.REMAINDER;
-			gbc.insets = new Insets(0, 4, 8, 4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(gaussianPsfPanel, gbc);		
-			
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(0, 4, 8, 4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(rdbtnExperimental, gbc);	
-			
-			experimentalPsfPanel = new JPanel(new GridLayout(1, 2, 10, 0));
-			experimentalPsfPanel.add(pointSpreadFunctionsComboBox);
-			experimentalPsfPanel.add(importPsfButton);
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = gridy;
-			gbc.gridwidth = GridBagConstraints.REMAINDER;
-			gbc.insets = new Insets(0, 4, 8, 4);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(experimentalPsfPanel, gbc);		
-			
-			gridy ++;
-			JLabel label = new JLabel("Select Fluorescent Species");
-			label.setHorizontalAlignment(JLabel.CENTER);
-			label.setFont(boldFont);
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
 			gbc.gridwidth = GridBagConstraints.REMAINDER;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4,4,4,4);
-			add(label, gbc);
-			
-//			JLabel label_1 = new JLabel("Fluorescent Species");
-//			label_1.setFont(boldFont);
-//			gbc = new GridBagConstraints();
-//			gbc.insets = new Insets(4, 4, 4, 4);
-//			gbc.gridx = 2;
-//			gbc.gridy = gridy;
-//			gbc.insets = new Insets(4,4,4,4);
-//			add(label_1, gbc);
-			
+			gbc.insets = new Insets(4, 4, 4, 4);
+			add(createPSFPanel(), gbc);	
+									
 			gridy ++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(4,10,4,4);
-			gbc.weightx = 1;
-			gbc.weighty = 1.0;
-			gbc.gridwidth = 2;
-			gbc.fill = GridBagConstraints.BOTH;
-			add(new JScrollPane(allSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), gbc);
-			
-			JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));
-			buttonPanel.add(addButton);			
-			buttonPanel.add(removeButton);			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = gridy;
 			gbc.insets = new Insets(4,4,4,4);
-			add(buttonPanel, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(4,4,4,10);
 			gbc.weightx = 1;
 			gbc.weighty = 1.0;
-			gbc.gridwidth = 2;
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
 			gbc.fill = GridBagConstraints.BOTH;
-//			JScrollPane fluorSpeciesScrollPane = new JScrollPane(fluorescentSpeciesContextList);
-//			fluorSpeciesScrollPane.setPreferredSize(new Dimension(250, 80));
-			add(new JScrollPane(fluorescentSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), gbc);			
+			add(createFluorescentSpeciesPanel(), gbc);
+			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
+	}
+	
+	private JPanel createFluorescentSpeciesPanel() {
+		JPanel panel = new JPanel(new GridBagLayout());
+		int gridy = 0;
+		
+		JLabel label = new JLabel("Choose Fluorescent Species");
+		Font boldFont = label.getFont().deriveFont(Font.BOLD);
+		label.setHorizontalAlignment(JLabel.CENTER);
+		label.setFont(boldFont);
+		JPanel p = new JPanel();
+		p.setBackground(new Color(0xdee3e9));
+		p.add(label);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(4,4,4,4);
+		panel.add(p, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		panel.add(new JSeparator(), gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,10,4,4);
+		gbc.weightx = 1;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		panel.add(new JScrollPane(allSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), gbc);
+		
+		JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));
+		buttonPanel.add(addButton);			
+		buttonPanel.add(removeButton);			
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		panel.add(buttonPanel, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,10);
+		gbc.weightx = 1;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		JScrollPane scrollPane2 = new JScrollPane(fluorescentSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane2.setPreferredSize(allSpeciesContextList.getPreferredSize());
+		panel.add(scrollPane2, gbc);
+		
+		panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		return panel;
 	}
 	
 	// selection changed in combobox
