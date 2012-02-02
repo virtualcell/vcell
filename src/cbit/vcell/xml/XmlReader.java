@@ -107,10 +107,11 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -125,6 +126,9 @@ import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.ConvolutionDataGenerator;
+import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
+import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
@@ -2689,6 +2693,17 @@ private void getPostProcessingBlock(MathDescription mathDesc, Element element) t
 			throw new XmlParseException(e.getMessage());
 		}
 	}
+	iterator = element.getChildren(XMLTags.ConvolutionDataGenerator, vcNamespace).iterator();
+	while (iterator.hasNext()){
+		Element tempelement = (Element)iterator.next();
+		
+		ConvolutionDataGenerator convolutionDataGenerator = getConvolutionDataGenerator(tempelement);
+		try {
+			mathDesc.getPostProcessingBlock().addDataGenerator(convolutionDataGenerator);
+		} catch (MathException e) {
+			throw new XmlParseException(e.getMessage());
+		}
+	}
 }
 
 private ExplicitDataGenerator getExplicitDataGenerator(Element element) {
@@ -2703,6 +2718,32 @@ private ExplicitDataGenerator getExplicitDataGenerator(Element element) {
 	Expression exp = unMangleExpression(temp);
 	ExplicitDataGenerator explicitDataGenerator = new ExplicitDataGenerator(name, domain, exp);
 	return explicitDataGenerator;
+}
+
+private ConvolutionDataGenerator getConvolutionDataGenerator(Element element) {
+	String name = unMangle( element.getAttributeValue( XMLTags.NameAttrTag) );
+
+	Element e = element.getChild(XMLTags.FunctionTag, vcNamespace);
+	String s = e.getText();	
+	Expression function = unMangleExpression(s);
+	
+	ConvolutionDataGeneratorKernel kernel = null;
+	Element kernelElement = element.getChild(XMLTags.Kernel, vcNamespace);
+	String kernelType = kernelElement.getAttributeValue(XMLTags.TypeAttrTag);
+	if (kernelType.equals(XMLTags.KernelType_Gaussian)) {
+		Element e0 = kernelElement.getChild(XMLTags.KernelGaussianSigmaXY, vcNamespace);
+		s = e0.getText();	
+		Expression sigmaXY = unMangleExpression(s);
+		
+		e0 = kernelElement.getChild(XMLTags.KernelGaussianSigmaZ, vcNamespace);
+		s = e0.getText();	
+		Expression sigmaZ = unMangleExpression(s);
+		
+		kernel = new GaussianConvolutionDataGeneratorKernel(sigmaXY, sigmaZ);
+	}
+	
+	ConvolutionDataGenerator cdg = new ConvolutionDataGenerator(name, kernel, function);
+	return cdg;
 }
 
 private ProjectionDataGenerator getProjectionDataGenerator(Element element) {
@@ -2721,7 +2762,7 @@ private ProjectionDataGenerator getProjectionDataGenerator(Element element) {
 	String operation = e.getText();
 //	ProjectionDataGenerator.Operation operation = ProjectionDataGenerator.Operation.valueOf(s);	
 	
-	e = element.getChild(XMLTags.ProjectionFunction, vcNamespace);
+	e = element.getChild(XMLTags.FunctionTag, vcNamespace);
 	String s = e.getText();	
 	Expression exp = unMangleExpression(s);
 	ProjectionDataGenerator projectionDataGenerator = new ProjectionDataGenerator(name, domain, axis, operation, exp);
@@ -4545,12 +4586,23 @@ public void getMicroscopeMeasurement(Element element, SimulationContext simConte
 	String name = element.getAttributeValue(XMLTags.NameAttrTag);
 	microscopeMeasurement.setName(name);
 		
-	Element e = element.getChild(XMLTags.ConvolutionKernel, vcNamespace);
-	String type = e.getAttributeValue(XMLTags.TypeAttrTag);
-	if (type.equals(XMLTags.ProjectionZKernel)) {
-		microscopeMeasurement.setConvolutionKernel(new ProjectionZKernel());
+	Element kernelElement = element.getChild(XMLTags.ConvolutionKernel, vcNamespace);
+	String type = kernelElement.getAttributeValue(XMLTags.TypeAttrTag);
+	ConvolutionKernel ck = null;
+	if (type.equals(XMLTags.ConvolutionKernel_Type_ProjectionZKernel)) {
+		ck = new ProjectionZKernel();
+	} else if (type.equals(XMLTags.ConvolutionKernel_Type_GaussianConvolutionKernel)) {
+		Element e = kernelElement.getChild(XMLTags.KernelGaussianSigmaXY, vcNamespace);
+		String s = e.getText();	
+		Expression sigmaXY = unMangleExpression(s);
+		
+		e = kernelElement.getChild(XMLTags.KernelGaussianSigmaZ, vcNamespace);
+		s = e.getText();	
+		Expression sigmaZ = unMangleExpression(s);
+		
+		ck = new GaussianConvolutionKernel(sigmaXY, sigmaZ);
 	}
-	
+	microscopeMeasurement.setConvolutionKernel(ck);
 	List<Element> children = element.getChildren(XMLTags.FluorescenceSpecies, vcNamespace);
 	for (Element c : children) {
 		String speciesName = c.getAttributeValue(XMLTags.NameAttrTag);
