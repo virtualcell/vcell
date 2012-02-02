@@ -230,7 +230,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.insets = new Insets(0, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(rdbtnZprojection, gbc);
 														
@@ -238,7 +238,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.insets = new Insets(0, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(radioButtonGaussian, gbc);		
 
@@ -253,7 +253,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.insets = new Insets(0, 4, 2, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(gaussianPsfPanel, gbc);		
 		
@@ -261,7 +261,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(rdbtnExperimental, gbc);	
 		
@@ -273,7 +273,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.insets = new Insets(0, 4, 8, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(experimentalPsfPanel, gbc);		
 		
@@ -393,7 +393,6 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(4,4,4,4);
 		panel.add(p, gbc);
 		
 		gridy ++;
@@ -402,7 +401,6 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.gridy = gridy;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		panel.add(new JSeparator(), gbc);
 		
@@ -414,11 +412,12 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.weightx = 1;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(allSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), gbc);
+		JScrollPane scrollPane1 = new JScrollPane(allSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		panel.add(scrollPane1, gbc);
 		
 		JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));
-		buttonPanel.add(addButton);			
-		buttonPanel.add(removeButton);			
+		buttonPanel.add(addButton);
+		buttonPanel.add(removeButton);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -433,7 +432,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		JScrollPane scrollPane2 = new JScrollPane(fluorescentSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane2.setPreferredSize(allSpeciesContextList.getPreferredSize());
+		scrollPane2.setPreferredSize(scrollPane1.getPreferredSize());
 		panel.add(scrollPane2, gbc);
 		
 		panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
