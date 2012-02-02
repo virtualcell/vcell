@@ -375,7 +375,13 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ProjectionDataGenerator);
 		autoCompletionWords.add(VCML.ProjectionAxis);
 		autoCompletionWords.add(VCML.ProjectionOperation);
-		autoCompletionWords.add(VCML.ProjectionFunction);
+		
+		autoCompletionWords.add(VCML.ConvolutionDataGenerator);
+		autoCompletionWords.add(VCML.Kernel);
+		autoCompletionWords.add(VCML.KernelGaussian);
+		autoCompletionWords.add(VCML.KernelGaussianSigmaXY);
+		autoCompletionWords.add(VCML.KernelGaussianSigmaZ);
+
 	}
 	
 	return autoCompletionWords;
@@ -572,7 +578,11 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.ProjectionDataGenerator);
 		keywords.add(VCML.ProjectionAxis);
 		keywords.add(VCML.ProjectionOperation);
-		keywords.add(VCML.ProjectionFunction);		
+		keywords.add(VCML.ConvolutionDataGenerator);
+		keywords.add(VCML.Kernel);
+		keywords.add(VCML.KernelGaussian);
+		keywords.add(VCML.KernelGaussianSigmaXY);
+		keywords.add(VCML.KernelGaussianSigmaZ);
 	}
 	 return keywords;
 }

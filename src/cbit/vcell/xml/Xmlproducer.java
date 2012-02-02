@@ -97,6 +97,7 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionContext;
@@ -110,6 +111,9 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.ConvolutionDataGenerator;
+import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
+import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
@@ -1589,11 +1593,22 @@ public Element getXML(MicroscopeMeasurement microscopeMeasurement) {
 		element.addContent(e);
 	}
 	ConvolutionKernel ck = microscopeMeasurement.getConvolutionKernel();
-	Element e = new Element(XMLTags.ConvolutionKernel);
+	Element kernelElement = new Element(XMLTags.ConvolutionKernel);
 	if (ck instanceof ProjectionZKernel) {
-		e.setAttribute(XMLTags.TypeAttrTag, XMLTags.ProjectionZKernel);
+		kernelElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.ConvolutionKernel_Type_ProjectionZKernel);
+	} else if (ck instanceof GaussianConvolutionKernel){
+		kernelElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.ConvolutionKernel_Type_GaussianConvolutionKernel);
+		
+		GaussianConvolutionKernel gck = (GaussianConvolutionKernel)ck;
+		Element e = new Element(XMLTags.KernelGaussianSigmaXY);
+		e.addContent(mangleExpression(gck.getSigmaXY_um()));
+		kernelElement.addContent(e);
+		
+		e = new Element(XMLTags.KernelGaussianSigmaZ);
+		e.addContent(mangleExpression(gck.getSigmaZ_um()));
+		kernelElement.addContent(e);
 	}
-	element.addContent(e);
+	element.addContent(kernelElement);
 	return element;
 }
 
@@ -2280,9 +2295,38 @@ private Element getXML(PostProcessingBlock postProcessingBlock) {
 	    	element.addContent(e);
     	} else if (dataGenerator instanceof ProjectionDataGenerator) {
     		element.addContent(getXML((ProjectionDataGenerator)dataGenerator));
+    	} else if (dataGenerator instanceof ConvolutionDataGenerator) {
+    		element.addContent(getXML((ConvolutionDataGenerator)dataGenerator));
     	}
     } 
     return element;
+}
+
+private Element getXML(ConvolutionDataGenerator convolutionDataGenerator) {
+	Element element = new Element(XMLTags.ConvolutionDataGenerator);
+	element.setAttribute(XMLTags.NameAttrTag, mangle(convolutionDataGenerator.getName()));
+	
+	Element kernelElement = new Element(XMLTags.Kernel);
+	ConvolutionDataGeneratorKernel kernel = convolutionDataGenerator.getKernel();
+	if (kernel instanceof GaussianConvolutionDataGeneratorKernel) {
+		kernelElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.KernelType_Gaussian);
+	
+		GaussianConvolutionDataGeneratorKernel gck = (GaussianConvolutionDataGeneratorKernel)kernel;
+		Element e = new Element(XMLTags.KernelGaussianSigmaXY);
+		e.addContent(mangleExpression(gck.getSigmaXY_um()));
+		kernelElement.addContent(e);
+		
+		e = new Element(XMLTags.KernelGaussianSigmaZ);
+		e.addContent(mangleExpression(gck.getSigmaZ_um()));
+		kernelElement.addContent(e);
+	}
+	element.addContent(kernelElement);
+	
+	Element e = new Element(XMLTags.FunctionTag);
+	e.addContent(mangleExpression(convolutionDataGenerator.getFunction()));
+	element.addContent(e);	
+
+	return element;
 }
 
 private Element getXML(ProjectionDataGenerator projectionDataGenerator) {
@@ -2300,7 +2344,7 @@ private Element getXML(ProjectionDataGenerator projectionDataGenerator) {
 	e.addContent(projectionDataGenerator.getOperation().name());
 	element.addContent(e);
 	
-	e = new Element(XMLTags.ProjectionFunction);
+	e = new Element(XMLTags.FunctionTag);
 	e.addContent(mangleExpression(projectionDataGenerator.getFunction()));
 	element.addContent(e); 
 	

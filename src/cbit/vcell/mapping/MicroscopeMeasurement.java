@@ -25,6 +25,7 @@ import org.vcell.util.Issue.IssueCategory;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 public class MicroscopeMeasurement implements Serializable, Matchable  {
 	
@@ -38,6 +39,41 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 	
 
 	public static abstract class ConvolutionKernel implements Serializable, Matchable {
+	}
+
+	public static class GaussianConvolutionKernel extends ConvolutionKernel {
+		private Expression sigmaXY_um = new Expression(0.3);
+		private Expression sigmaZ_um = new Expression(1.5); 
+ 
+		public GaussianConvolutionKernel() {
+		}
+		public boolean compareEqual(Matchable obj) {
+			if (!(obj instanceof GaussianConvolutionKernel)) {
+				return false;
+			}
+			GaussianConvolutionKernel gck = (GaussianConvolutionKernel)obj;
+			if (!Compare.isEqualOrNull(sigmaXY_um, gck.sigmaXY_um)) {
+				return false;
+			}
+			if (!Compare.isEqualOrNull(sigmaZ_um, gck.sigmaZ_um)) {
+				return false;
+			}
+			return false;
+		}
+
+		public GaussianConvolutionKernel(Expression sigmaXY_um, Expression sigmaZ_um) {
+			super();
+			this.sigmaXY_um = sigmaXY_um;
+			this.sigmaZ_um = sigmaZ_um;
+		}
+
+		public final Expression getSigmaXY_um() {
+			return sigmaXY_um;
+		}
+
+		public final Expression getSigmaZ_um() {
+			return sigmaZ_um;
+		}
 	}
 	
 	public static class ExperimentalPSF extends ConvolutionKernel {
@@ -56,12 +92,12 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 			return false;
 		}
 	}
-		public static class ProjectionZKernel extends ConvolutionKernel {
+	public static class ProjectionZKernel extends ConvolutionKernel {
 
-			public boolean compareEqual(Matchable obj) {
-				// TODO Auto-generated method stub
-				return true;
-			}
+		public boolean compareEqual(Matchable obj) {
+			// TODO Auto-generated method stub
+			return true;
+		}
 	}
 		
 		

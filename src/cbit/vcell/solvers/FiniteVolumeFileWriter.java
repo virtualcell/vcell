@@ -36,6 +36,9 @@ import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.ConvolutionDataGenerator;
+import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
+import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
 import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Equation;
@@ -64,6 +67,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
@@ -186,6 +190,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		POST_PROCESSING_BLOCK_END,
 		EXPLICIT_DATA_GENERATOR,
 		PROJECTION_DATA_GENERATOR,
+		GAUSSIAN_CONVOLUTION_DATA_GENERATOR,
 	}
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir) {	// for optimization only, no messaging
@@ -303,7 +308,7 @@ private void writeSmoldyn() throws Exception {
 	printWriter.println();
 }
 
-private void writePostProcessingBlock() throws SolverException {
+private void writePostProcessingBlock() throws SolverException, ExpressionException {
 	PostProcessingBlock postProcessingBlock = simulationJob.getSimulation().getMathDescription().getPostProcessingBlock();
 	if (postProcessingBlock.getNumDataGenerators() == 0) {
 		return;
@@ -312,11 +317,24 @@ private void writePostProcessingBlock() throws SolverException {
 	printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
 	for (DataGenerator dataGenerator : postProcessingBlock.getDataGeneratorList()) {
 		String varName = dataGenerator.getName();
-		String domainName = dataGenerator.getDomain() == null ? null : dataGenerator.getDomain().getName();
+		Domain domain = dataGenerator.getDomain();
+		String domainName = domain == null ? null : domain.getName();
 		if (dataGenerator instanceof ProjectionDataGenerator) {
 			ProjectionDataGenerator pdg = (ProjectionDataGenerator)dataGenerator;
+			Expression function = subsituteExpression(pdg.getFunction(), VariableDomain.VARIABLEDOMAIN_VOLUME);
 			printWriter.println(FVInputFileKeyword.PROJECTION_DATA_GENERATOR + " " + varName + " " + domainName 
-					+ " " + pdg.getAxis() + " " + pdg.getOperation() + " " + pdg.getFunction().infix()  +";");			
+					+ " " + pdg.getAxis() + " " + pdg.getOperation() + " " + function.infix()  +";");			
+		} else if (dataGenerator instanceof ConvolutionDataGenerator) {
+			ConvolutionDataGenerator convolutionDataGenerator = (ConvolutionDataGenerator) dataGenerator;
+			ConvolutionDataGeneratorKernel kernel = convolutionDataGenerator.getKernel();
+			if (kernel instanceof GaussianConvolutionDataGeneratorKernel) {
+				GaussianConvolutionDataGeneratorKernel gck = (GaussianConvolutionDataGeneratorKernel)kernel;
+				Expression function = subsituteExpression(convolutionDataGenerator.getFunction(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				Expression sigmaXY = subsituteExpression(gck.getSigmaXY_um(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				Expression sigmaZ = subsituteExpression(gck.getSigmaZ_um(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				printWriter.println(FVInputFileKeyword.GAUSSIAN_CONVOLUTION_DATA_GENERATOR + " " + varName + " " + domainName 
+						+ " " + sigmaXY.infix() + " " + sigmaZ.infix() + " " + function.infix()  +";");
+			}
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
 		}

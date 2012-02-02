@@ -57,6 +57,12 @@ public final class PostProcessingBlock implements SymbolTable, Serializable, Mat
 				addDataGenerator(dataGenerator);
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.ConvolutionDataGenerator)){
+				token = tokens.nextToken();
+				DataGenerator dataGenerator = new ConvolutionDataGenerator(token, tokens);
+				addDataGenerator(dataGenerator);
+				continue;
+			}
 		}
 	}
 

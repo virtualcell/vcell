@@ -205,5 +205,9 @@ public class VCML {
 	public final static String ProjectionDataGenerator = "Projection";
 	public final static String ProjectionAxis = "Axis";
 	public final static String ProjectionOperation = "Operation";
-	public final static String ProjectionFunction = "Function";
+	public final static String ConvolutionDataGenerator = "Convolution";
+	public final static String Kernel = "Kernel";
+	public final static String KernelGaussian = "Gaussian";
+	public final static String KernelGaussianSigmaXY = "SigmaXY";
+	public final static String KernelGaussianSigmaZ = "SigmaZ";
 }
