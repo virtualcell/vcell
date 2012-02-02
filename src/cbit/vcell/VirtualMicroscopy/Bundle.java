@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 import sun.misc.URLClassPath;
 
@@ -32,7 +33,7 @@ public class Bundle {
 	
 	public void checkClasspathExists() throws FileNotFoundException {
 		for (URL url : classpathURLs){
-			if (!new File(url.getPath()).exists()){
+			if (!new File(URLDecoder.decode(  url.getPath())).exists()){
 				throw new FileNotFoundException(url.getFile());
 			}
 		}
