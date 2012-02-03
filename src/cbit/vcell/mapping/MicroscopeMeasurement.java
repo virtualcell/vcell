@@ -143,10 +143,7 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 		return convolutionKernel;
 	}
 	public void setConvolutionKernel(ConvolutionKernel argConvolutionKernel) {
-		if(argConvolutionKernel == null) {
-			return;
-		}
-		if(argConvolutionKernel.equals(this.convolutionKernel)) {
+		if(convolutionKernel == argConvolutionKernel) {
 			return;
 		}
 		ConvolutionKernel oldValue = this.convolutionKernel;
