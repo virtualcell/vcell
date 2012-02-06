@@ -65,6 +65,7 @@ import cbit.vcell.psf.PointSpreadFunctionManagement;
 @SuppressWarnings("serial")
 public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 	
+	private static final Color ItemBackgroundColor = new Color(0xdee3e9);
 	private JTextField nameTextField;
 	private JRadioButton rdbtnZprojection = null;
 	
@@ -243,7 +244,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		label.setHorizontalAlignment(JLabel.CENTER);
 		label.setFont(boldFont);
 		JPanel p = new JPanel();
-		p.setBackground(new Color(0xdee3e9));
+		p.setBackground(ItemBackgroundColor);
 		p.add(label);
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -364,24 +365,53 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			
 			setLayout(new GridBagLayout());
 			
-			int gridy = 0;			
+			JPanel panel = new JPanel(new GridBagLayout());
+			panel.setBackground(Color.white);
+			panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = gridy;
+			gbc.gridy = 0;
 			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new Insets(4,4,4,4);
-			JLabel lblFluoescenceFunctionName = new JLabel("Fluorescence Function Name");	
-			Font boldFont = lblFluoescenceFunctionName.getFont().deriveFont(Font.BOLD);
-			lblFluoescenceFunctionName.setFont(boldFont);
-			add(lblFluoescenceFunctionName, gbc);			
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			JLabel label = new JLabel("Fluorescence Function Name");	
+			Font boldFont = label.getFont().deriveFont(Font.BOLD);
+			label.setFont(boldFont);
+			JPanel p = new JPanel();
+			p.setBackground(ItemBackgroundColor);
+			p.add(label);
+			panel.add(p, gbc);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(4,4,4,4);
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.weighty = 1.0;
 			gbc.anchor = GridBagConstraints.LINE_START;
-			add(nameTextField, gbc);
-						
+			panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.insets = new Insets(1, 4, 1, 1);
+			gbc.fill = GridBagConstraints.BOTH;
+			nameTextField.setBorder(null);
+			gbc.anchor = GridBagConstraints.LINE_START;
+			panel.add(nameTextField, gbc);
+			
+			int gridy = 0;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			add(panel, gbc);	
+			
 			gridy ++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -417,7 +447,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		label.setHorizontalAlignment(JLabel.CENTER);
 		label.setFont(boldFont);
 		JPanel p = new JPanel();
-		p.setBackground(new Color(0xdee3e9));
+		p.setBackground(ItemBackgroundColor);
 		p.add(label);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
