@@ -14,11 +14,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -30,7 +32,7 @@ public class RegistrationPanel extends JPanel {
 	//http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm
 	public static final String[] COUNTRY_LIST = new String[] {
 		"UNITED STATES",
-		"AFGHANISTAN","�LAND ISLANDS","ALBANIA","ALGERIA","AMERICAN SAMOA",
+		"AFGHANISTAN", "ALBANIA","ALGERIA","AMERICAN SAMOA",
 		"ANDORRA","ANGOLA","ANGUILLA","ANTARCTICA","ANTIGUA AND BARBUDA",
 		"ARGENTINA","ARMENIA","ARUBA","AUSTRALIA","AUSTRIA",
 		"AZERBAIJAN","BAHAMAS","BAHRAIN","BANGLADESH","BARBADOS",
@@ -66,7 +68,7 @@ public class RegistrationPanel extends JPanel {
 		"OMAN","PAKISTAN","PALAU","PALESTINIAN TERRITORY, OCCUPIED","PANAMA",
 		"PAPUA NEW GUINEA","PARAGUAY","PERU","PHILIPPINES","PITCAIRN",
 		"POLAND","PORTUGAL","PUERTO RICO","QATAR","REUNION",
-		"ROMANIA","RUSSIAN FEDERATION","RWANDA","SAINT BARTH�LEMY","SAINT HELENA",
+		"ROMANIA","RUSSIAN FEDERATION","RWANDA","SAINT BARTHELEMY","SAINT HELENA",
 		"SAINT KITTS AND NEVIS","SAINT LUCIA","SAINT MARTIN","SAINT PIERRE AND MIQUELON","SAINT VINCENT AND THE GRENADINES",
 		"SAMOA","SAN MARINO","SAO TOME AND PRINCIPE","SAUDI ARABIA","SENEGAL",
 		"SERBIA","SEYCHELLES","SIERRA LEONE","SINGAPORE","SLOVAKIA",
@@ -127,7 +129,7 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_1.weightx = 0;
 		gridBagConstraints_1.gridy = 1;
 		gridBagConstraints_1.gridx = 0;
-		add(welcomeTextArea, gridBagConstraints_1);
+		add(new JScrollPane(welcomeTextArea), gridBagConstraints_1);
 
 		final JLabel loginIdLabel = new JLabel();
 		loginIdLabel.setText("Login ID *");
@@ -192,7 +194,7 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_8.gridwidth = 3;
 		gridBagConstraints_8.gridy = 4;
 		gridBagConstraints_8.gridx = 1;
-		add(pleaseEnterYourTextArea, gridBagConstraints_8);
+		add(new JScrollPane(pleaseEnterYourTextArea), gridBagConstraints_8);
 
 		final JLabel emailLabel = new JLabel();
 		emailLabel.setText("E-Mail *");

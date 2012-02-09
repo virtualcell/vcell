@@ -10,9 +10,11 @@
 
 package cbit.rmi.event;
 
+import org.vcell.util.document.User;
+
+import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 
 /**
  * Insert the type's description here.
@@ -20,7 +22,7 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
  * @author: Fei Gao
  */
 public class SimulationJobStatusEvent extends MessageEvent {
-	private cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
+	private SimulationJobStatus jobStatus = null;
 	private Double progress = null;
 	private Double timePoint = null;	
 /**
@@ -84,7 +86,7 @@ public Double getTimepoint() {
  * Creation date: (2/10/2004 1:30:21 PM)
  * @return cbit.vcell.server.User
  */
-public org.vcell.util.document.User getUser() {
+public User getUser() {
 	return null;
 }
 /**
@@ -103,12 +105,13 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof SimulationJobStatusEvent){
 		SimulationJobStatusEvent simulationJobStatusEvent = (SimulationJobStatusEvent)messageEvent;
 		
-		if (jobStatus.isRunning() && getProgress() != null && simulationJobStatusEvent.jobStatus.isRunning() && simulationJobStatusEvent.getProgress() !=null){
-			if (getProgress()<simulationJobStatusEvent.getProgress()){
-				return true;
+		if (jobStatus.getVCSimulationIdentifier().equals(simulationJobStatusEvent.getVCSimulationIdentifier())) {
+			if (jobStatus.isRunning() && getProgress() != null && simulationJobStatusEvent.jobStatus.isRunning() && simulationJobStatusEvent.getProgress() !=null){
+				if (getProgress()<simulationJobStatusEvent.getProgress()){
+					return true;
+				}
 			}
 		}
-			
 	}
 		
 	return false;
