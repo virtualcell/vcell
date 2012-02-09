@@ -372,6 +372,8 @@ public void expandSearchPanel(boolean bExpand) {
 }
 
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-	treeModel.updateConnectionStatus(connStatus);
+	if (treeModel != null) {
+		treeModel.updateConnectionStatus(connStatus);
+	}
 }
 }
