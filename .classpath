@@ -20,7 +20,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/stax-api-1.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/wstx-asl-3.2.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xml-apis.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/bioformats_omexml_locicommon_brnch41.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/new_activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/NetCDF2_2_20_VCell.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/new_mail.jar"/>

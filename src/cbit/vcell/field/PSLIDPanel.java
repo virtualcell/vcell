@@ -38,9 +38,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import loci.formats.gui.AWTImageTools;
-import loci.formats.gui.BufferedImageReader;
-
 import org.jdom.Element;
 import org.jdom.filter.Filter;
 import org.vcell.util.BeanUtils;
@@ -52,6 +49,8 @@ import org.vcell.util.Origin;
 import org.vcell.util.Preference;
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -203,106 +202,91 @@ public class PSLIDPanel extends JPanel{
 	}
 
 	private static FieldDataFileOperationSpec createCompositeFDOS(
-		byte[] proteinImage,byte[] compartmentImage,Coordinate pixelSizes,String cellProteinName) throws Exception{
-		
-		FileOutputStream fos = null;
-		try {
-			File proteinImageFile = File.createTempFile("pslidProt", ".tif");
-			proteinImageFile.deleteOnExit();
-			fos = new FileOutputStream(proteinImageFile);
-			fos.write(proteinImage);
-			fos.close();
-			File compartmentImageFile = File.createTempFile("pslidComp", ".tif");
-			compartmentImageFile.deleteOnExit();
-			fos = new FileOutputStream(compartmentImageFile);
-			fos.write(compartmentImage);
-			fos.close();
-//			FieldDataFileOperationSpec fdos_compartment = FieldDataGUIPanel.createFDOSFromImageFile(compartmentImageFile,false);
-			loci.formats.ImageReader compartmentImageReader = new loci.formats.ImageReader();
-			loci.formats.IFormatReader compartmentFormatReader = compartmentImageReader.getReader(compartmentImageFile.getAbsolutePath());
-			compartmentFormatReader.setId(compartmentImageFile.getAbsolutePath());
-//			compartmentFormatReader.setColorTableIgnored(true);
-			byte[] compartmentBytes = compartmentFormatReader.openBytes(0);
-			short[] compartmentShorts = new short[compartmentBytes.length];
-			for (int i = 0; i < compartmentShorts.length; i++) {
-				compartmentShorts[i] = compartmentBytes[i];
-			}
-//			FieldDataFileOperationSpec fdos_protein = FieldDataGUIPanel.createFDOSFromImageFile(proteinImageFile,false);
-			loci.formats.ImageReader proteinImageReader = new loci.formats.ImageReader();
-			loci.formats.IFormatReader proteinFormatReader = proteinImageReader.getReader(proteinImageFile.getAbsolutePath());
-			proteinFormatReader.setId(proteinImageFile.getAbsolutePath());
-//			byte[] proteinBytes = proteinFormatReader.openBytes(proteinImageFile.getAbsolutePath(), 0);
-//			short[] proteinShorts = new short[proteinBytes.length];
-//			for (int i = 0; i < compartmentShorts.length; i++) {
-//				proteinShorts[i] = proteinBytes[i];
-//			}
-			short[] proteinShorts = AWTImageTools.getShorts(BufferedImageReader.makeBufferedImageReader(proteinFormatReader).openImage(0))[0];
+			byte[] proteinImage,byte[] compartmentImage,Coordinate pixelSizes,String cellProteinName) throws Exception{
+			
+			FileOutputStream fos = null;
+			try {
+				File proteinImageFile = File.createTempFile("pslidProt", ".tif");
+				proteinImageFile.deleteOnExit();
+				fos = new FileOutputStream(proteinImageFile);
+				fos.write(proteinImage);
+				fos.close();
+				File compartmentImageFile = File.createTempFile("pslidComp", ".tif");
+				compartmentImageFile.deleteOnExit();
+				fos = new FileOutputStream(compartmentImageFile);
+				fos.write(compartmentImage);
+				fos.close();
+//				FieldDataFileOperationSpec fdos_compartment = FieldDataGUIPanel.createFDOSFromImageFile(compartmentImageFile,false);
+				ImageDataset compartmentImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(compartmentImageFile.getAbsolutePath(), null);
+				ImageDataset proteinImageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(proteinImageFile.getAbsolutePath(), null);
 
-			int xsize_uncrop = compartmentFormatReader.getSizeX();
-			int ysize_uncrop = compartmentFormatReader.getSizeY();
-//			if(
-//					compartmentFormatReader.getSizeX(compartmentImageFile.getAbsolutePath()) != isize.getX() ||
-//					compartmentFormatReader.getSizeY(compartmentImageFile.getAbsolutePath()) != isize.getY() ||
-//					compartmentFormatReader.getSizeZ(compartmentImageFile.getAbsolutePath()) != isize.getZ() ||
-//					proteinFormatReader.getSizeX(proteinImageFile.getAbsolutePath()) != isize.getX() ||
-//					proteinFormatReader.getSizeY(proteinImageFile.getAbsolutePath()) != isize.getY() ||
-//					proteinFormatReader.getSizeZ(proteinImageFile.getAbsolutePath()) != isize.getZ() ||
-//					compartmentShorts.length != proteinShorts.length ||
-//					compartmentShorts.length != (isize.getX() * isize.getY()*isize.getZ()))
-//			{
-//				throw new Exception("comaprtment and protein image sizes are incompatible");
-//			}
-			//Min Bounding
-			final int CELL_PIXEL_VAL = 1;
-			int minx = xsize_uncrop;
-			int miny = ysize_uncrop;
-			int maxx = 0;
-			int maxy = 0;
-			for (int i = 0; i < compartmentShorts.length; i++) {
-				if(compartmentShorts[i] == CELL_PIXEL_VAL){
-					minx = Math.min(minx,i%xsize_uncrop);
-					miny = Math.min(miny,i/xsize_uncrop);
-					maxx = Math.max(maxx,i%xsize_uncrop);
-					maxy = Math.max(maxy,i/xsize_uncrop);
-				}
-			}
-			//Pad
-			minx = Math.max(minx-3,0);
-			miny = Math.max(miny-3,0);
-			maxx = Math.min(maxx+3,xsize_uncrop);
-			maxy = Math.min(maxy+3,ysize_uncrop);
-			//Crop
-			int cropIndex = 0;
-			short[] proteinCropShorts = new short[(maxx-minx+1) * (maxy-miny+1)];
-			short[] compartmentCropShorts = new short[proteinCropShorts.length];
-			for (int y = 0; y < ysize_uncrop; y++) {
-				for (int x = 0; x < xsize_uncrop; x++) {
-					if(y>= miny && y<= maxy && x>= minx && x <= maxx){
-						proteinCropShorts[cropIndex] = proteinShorts[y*xsize_uncrop+x];
-						compartmentCropShorts[cropIndex] = compartmentShorts[y*xsize_uncrop+x];
-						cropIndex++;
+				short[] compartmentShorts = compartmentImageDataset.getImage(0,0,0).getPixels();
+				short[] proteinShorts = proteinImageDataset.getImage(0,0,0).getPixels();
+				int xsize_uncrop = compartmentImageDataset.getISize().getX();
+				int ysize_uncrop = compartmentImageDataset.getISize().getY();
+//				if(
+//						compartmentFormatReader.getSizeX(compartmentImageFile.getAbsolutePath()) != isize.getX() ||
+//						compartmentFormatReader.getSizeY(compartmentImageFile.getAbsolutePath()) != isize.getY() ||
+//						compartmentFormatReader.getSizeZ(compartmentImageFile.getAbsolutePath()) != isize.getZ() ||
+//						proteinFormatReader.getSizeX(proteinImageFile.getAbsolutePath()) != isize.getX() ||
+//						proteinFormatReader.getSizeY(proteinImageFile.getAbsolutePath()) != isize.getY() ||
+//						proteinFormatReader.getSizeZ(proteinImageFile.getAbsolutePath()) != isize.getZ() ||
+//						compartmentShorts.length != proteinShorts.length ||
+//						compartmentShorts.length != (isize.getX() * isize.getY()*isize.getZ()))
+//				{
+//					throw new Exception("comaprtment and protein image sizes are incompatible");
+//				}
+				//Min Bounding
+				final int CELL_PIXEL_VAL = 1;
+				int minx = xsize_uncrop;
+				int miny = ysize_uncrop;
+				int maxx = 0;
+				int maxy = 0;
+				for (int i = 0; i < compartmentShorts.length; i++) {
+					if(compartmentShorts[i] == CELL_PIXEL_VAL){
+						minx = Math.min(minx,i%xsize_uncrop);
+						miny = Math.min(miny,i/xsize_uncrop);
+						maxx = Math.max(maxx,i%xsize_uncrop);
+						maxy = Math.max(maxy,i/xsize_uncrop);
 					}
 				}
+				//Pad
+				minx = Math.max(minx-3,0);
+				miny = Math.max(miny-3,0);
+				maxx = Math.min(maxx+3,xsize_uncrop);
+				maxy = Math.min(maxy+3,ysize_uncrop);
+				//Crop
+				int cropIndex = 0;
+				short[] proteinCropShorts = new short[(maxx-minx+1) * (maxy-miny+1)];
+				short[] compartmentCropShorts = new short[proteinCropShorts.length];
+				for (int y = 0; y < ysize_uncrop; y++) {
+					for (int x = 0; x < xsize_uncrop; x++) {
+						if(y>= miny && y<= maxy && x>= minx && x <= maxx){
+							proteinCropShorts[cropIndex] = proteinShorts[y*xsize_uncrop+x];
+							compartmentCropShorts[cropIndex] = compartmentShorts[y*xsize_uncrop+x];
+							cropIndex++;
+						}
+					}
+				}
+				final int xsize = maxx-minx+1;
+				final int ysize = maxy-miny+1;
+				
+				FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
+				fdos_composite.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME };
+				fdos_composite.varNames = new String[] { "protein_"+cellProteinName,"compartment_"+cellProteinName };
+				fdos_composite.shortSpecData = new short[][][] {{proteinCropShorts,compartmentCropShorts}};
+				fdos_composite.times = new double[] { 0 };
+				fdos_composite.origin = new Origin(0,0,0);
+				fdos_composite.isize = new ISize(xsize,ysize,1);
+				fdos_composite.extent =
+					new Extent(fdos_composite.isize.getX()*pixelSizes.getX(),
+							fdos_composite.isize.getY()*pixelSizes.getY(),
+							(pixelSizes.getZ() == 0?.5:fdos_composite.isize.getZ()*pixelSizes.getZ()));
+				return fdos_composite;
+			}finally{
+				if(fos != null){try{fos.close();}catch(Exception e){}}
 			}
-			final int xsize = maxx-minx+1;
-			final int ysize = maxy-miny+1;
-			
-			FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
-			fdos_composite.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME };
-			fdos_composite.varNames = new String[] { "protein_"+cellProteinName,"compartment_"+cellProteinName };
-			fdos_composite.shortSpecData = new short[][][] {{proteinCropShorts,compartmentCropShorts}};
-			fdos_composite.times = new double[] { 0 };
-			fdos_composite.origin = new Origin(0,0,0);
-			fdos_composite.isize = new ISize(xsize,ysize,1);
-			fdos_composite.extent =
-				new Extent(fdos_composite.isize.getX()*pixelSizes.getX(),
-						fdos_composite.isize.getY()*pixelSizes.getY(),
-						(pixelSizes.getZ() == 0?.5:fdos_composite.isize.getZ()*pixelSizes.getZ()));
-			return fdos_composite;
-		}finally{
-			if(fos != null){try{fos.close();}catch(Exception e){}}
 		}
-	}
 	private void guiState(){
 		boolean bLastQuerySame = proteinCellcomboBox.getSelectedItem() == lastQueriedPSLIDCellProteinSeries;
 		boolean bLastDownloadSame = imageIDcomboBox.getSelectedItem() == lastDownloadedImageSetID;
@@ -659,10 +643,11 @@ public class PSLIDPanel extends JPanel{
 					fos = new FileOutputStream(generatedImageFile);
 					fos.write(generatedCellProteinImage);
 					fos.close();
-					loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
-					loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
-					generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
-					short[][] generatedChannels = AWTImageTools.getShorts(BufferedImageReader.makeBufferedImageReader(generatedFormatReader).openImage(0));
+					ImageDataset[] generatedImageDatasetArr = ImageDatasetReaderFactory.createImageDatasetReader().readImageDatasetChannels(generatedImageFile.getAbsolutePath(), null, false,null,null);
+					short[][] generatedChannels = new short[3][];
+					for (int i = 0; i < generatedChannels.length; i++) {
+						generatedChannels[i] = generatedImageDatasetArr[i].getImage(0,0,0).getPixels();
+					}
 					final int PROTEIN_CHANNEL = 1;
 					final int CELL_CHANNEL = 2;
 					final int NUCLEUS_CHANNEL = 0;
@@ -675,8 +660,8 @@ public class PSLIDPanel extends JPanel{
 						compartmentShorts[i] =
 							(generatedChannels[NUCLEUS_CHANNEL][i] != 0?(short)NUCLEUS_PIXEL_VAL:(generatedChannels[CELL_CHANNEL][i] != 0?(short)CELL_PIXEL_VAL:(short)0) );
 					}
-					int xsize_uncrop = generatedFormatReader.getSizeX();
-					int ysize_uncrop = generatedFormatReader.getSizeY();
+					int xsize_uncrop = generatedImageDatasetArr[0].getISize().getX();
+					int ysize_uncrop =generatedImageDatasetArr[0].getISize().getY();
 
 					//Fill
 					int MASTER_INDEX = 0;
