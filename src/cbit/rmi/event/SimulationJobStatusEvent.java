@@ -103,13 +103,16 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof SimulationJobStatusEvent){
 		SimulationJobStatusEvent simulationJobStatusEvent = (SimulationJobStatusEvent)messageEvent;
 		
-		if (jobStatus.getVCSimulationIdentifier().equals(simulationJobStatusEvent.getVCSimulationIdentifier())) {		
-			if (jobStatus.isRunning() && getProgress() != null && simulationJobStatusEvent.jobStatus.isRunning() && simulationJobStatusEvent.getProgress() !=null){
+		SimulationJobStatus jobStatus2 = simulationJobStatusEvent.jobStatus;
+		if (jobStatus != null && jobStatus2 != null 
+				&& jobStatus.getVCSimulationIdentifier().equals(jobStatus2.getVCSimulationIdentifier()) 
+				&& jobStatus.getJobIndex() == jobStatus2.getJobIndex()) {
+			if (jobStatus.isRunning() && getProgress() != null && jobStatus2.isRunning() && simulationJobStatusEvent.getProgress() !=null){
 				if (getProgress()<simulationJobStatusEvent.getProgress()){
 					return true;
 				}
 			}
-		}			
+		}		
 	}
 		
 	return false;
