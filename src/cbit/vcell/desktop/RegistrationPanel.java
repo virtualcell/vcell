@@ -26,13 +26,15 @@ import javax.swing.JTextField;
 
 import org.vcell.util.document.UserInfo;
 
+import cbit.vcell.client.GuiConstants;
+
 
 public class RegistrationPanel extends JPanel {
 	
 	//http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm
 	public static final String[] COUNTRY_LIST = new String[] {
 		"UNITED STATES",
-		"AFGHANISTAN", "ALBANIA","ALGERIA","AMERICAN SAMOA",
+		"AFGHANISTAN", "ÅLAND ISLANDS", "ALBANIA","ALGERIA","AMERICAN SAMOA",
 		"ANDORRA","ANGOLA","ANGUILLA","ANTARCTICA","ANTIGUA AND BARBUDA",
 		"ARGENTINA","ARMENIA","ARUBA","AUSTRALIA","AUSTRIA",
 		"AZERBAIJAN","BAHAMAS","BAHRAIN","BANGLADESH","BARBADOS",
@@ -122,6 +124,7 @@ public class RegistrationPanel extends JPanel {
 		welcomeTextArea.setLineWrap(true);
 		welcomeTextArea.setEditable(false);
 		welcomeTextArea.setText("Welcome to The Virtual Cell user registration page. Please fill out all of the information below and you will be able to immediately begin using the Virtual Cell.  Required fields have an asterisk(*). ");
+		welcomeTextArea.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_1.gridwidth = 4;
@@ -129,7 +132,7 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_1.weightx = 0;
 		gridBagConstraints_1.gridy = 1;
 		gridBagConstraints_1.gridx = 0;
-		add(new JScrollPane(welcomeTextArea), gridBagConstraints_1);
+		add(welcomeTextArea, gridBagConstraints_1);
 
 		final JLabel loginIdLabel = new JLabel();
 		loginIdLabel.setText("Login ID *");
@@ -188,13 +191,14 @@ public class RegistrationPanel extends JPanel {
 		pleaseEnterYourTextArea.setWrapStyleWord(true);
 		pleaseEnterYourTextArea.setLineWrap(true);
 		pleaseEnterYourTextArea.setText("Please enter your password twice. Also please note that if you request, your password can be sent (in plain text) over e-mail, so it is recommended that you don't use the same password that you use elsewhere. Passwords may only contain letters and numbers and are case sensitive. ");
+		pleaseEnterYourTextArea.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(4, 4, 20, 4);
 		gridBagConstraints_8.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_8.gridwidth = 3;
 		gridBagConstraints_8.gridy = 4;
 		gridBagConstraints_8.gridx = 1;
-		add(new JScrollPane(pleaseEnterYourTextArea), gridBagConstraints_8);
+		add(pleaseEnterYourTextArea, gridBagConstraints_8);
 
 		final JLabel emailLabel = new JLabel();
 		emailLabel.setText("E-Mail *");
