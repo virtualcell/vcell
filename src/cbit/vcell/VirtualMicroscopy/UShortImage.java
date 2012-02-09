@@ -13,6 +13,7 @@ package cbit.vcell.VirtualMicroscopy;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
+import java.awt.image.DataBufferUShort;
 import java.awt.image.Kernel;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -58,6 +59,17 @@ public UShortImage(short pixels[], Origin aOrigin, org.vcell.util.Extent aExtent
 	}
 	this.pixels = pixels;
 }
+public static BufferedImage createUnsignedBufferedImage(short[] shortArr,int numX,int numY){
+	if(shortArr.length != (numX*numY)){
+		throw new RuntimeException("UShortImage.createBufferedImage: X*Y size does not match array length");
+	}
+	BufferedImage bufferedImage = new BufferedImage(numX,numY, BufferedImage.TYPE_USHORT_GRAY);
+	short[] bufferedImageArr = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
+	System.arraycopy(shortArr, 0, bufferedImageArr, 0, shortArr.length);
+	return bufferedImage;
+
+}
+
 public short getPixel(int x, int y, int z) throws ImageException {
 	if (x<0||x>=getNumX()||y<0||y>=getNumY()||z<0||z>=getNumZ()){
 		throw new IllegalArgumentException("("+x+","+y+","+z+") is not inside (0,0,0) and ("+(getNumX()-1)+","+(getNumY()-1)+","+(getNumZ()-1)+")");

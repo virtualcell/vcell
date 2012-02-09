@@ -90,6 +90,7 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
@@ -1100,7 +1101,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						}
 						hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
 						if(dirFiles.length > 1){
-							origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
+							origImageSizeInfo = ImageDatasetReaderFactory.createImageDatasetReader().getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
 							final String importZ = "Import Z-Sections";
 							final String cancelOption = "Cancel";
 							String result = DialogUtils.showWarningDialog(guiParent, 
@@ -1112,7 +1113,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						}
 						hashTable.put(DIR_FILES, dirFiles);
 					}else{
-						origImageSizeInfo = ImageDatasetReader.getImageSizeInfo(imageFile.getAbsolutePath(),null);
+						origImageSizeInfo = ImageDatasetReaderFactory.createImageDatasetReader().getImageSizeInfo(imageFile.getAbsolutePath(),null);
 						hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 					}
 					hashTable.put(ORIG_IMAGE_SIZE_INFO, origImageSizeInfo);
@@ -1254,7 +1255,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					int sizeXY = 0;
 					ISize firstImageISize = null;
 					for (int i = 0; i < dirFiles.length; i++) {
-						ImageDataset[] imageDatasets = ImageDatasetReader.readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null,resize);
+						ImageDataset[] imageDatasets = ImageDatasetReaderFactory.createImageDatasetReader().readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null,resize);
 						for (int c = 0; c < imageDatasets.length; c++) {
 							if(imageDatasets[c].getSizeZ() != 1 || imageDatasets[c].getSizeT() != 1){
 								throwImportWholeDirectoryException(imageFile,
@@ -1289,7 +1290,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					}
 					getClientTaskStatusSupport().setMessage("Reading file...");
 					ImageDataset[] imageDatasets =
-						ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex,resize);
+							ImageDatasetReaderFactory.createImageDatasetReader().readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex,resize);
 					fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,null);
 				}
 				hashTable.put(FDFOS, fdfos);
@@ -3255,7 +3256,7 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 
 public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack, Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
 	try{
-		ImageDataset imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
+		ImageDataset imagedataSet = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(imageFile.getAbsolutePath(),null);
 		if (imagedataSet!=null && bCropOutBlack){
 			Rectangle nonZeroRect = imagedataSet.getNonzeroBoundingRectangle();
 			if(nonZeroRect != null){
