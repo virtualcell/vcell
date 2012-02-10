@@ -10,7 +10,13 @@
 
 package cbit.vcell.render;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Random;
+
+import cbit.vcell.geometry.surface.Node;
 
 /**
  * Insert the type's description here.
@@ -41,6 +47,14 @@ public Vect3d(Vect3d v) {
 	q[0] = v.q[0];
 	q[1] = v.q[1];
 	q[2] = v.q[2];
+}
+/**
+ * Vect3d constructor comment.
+ */
+public Vect3d(Node p) {
+	q[0] = p.getX();
+	q[1] = p.getY();
+	q[2] = p.getZ();
 }
 
 public Vect3d cross(Vect3d v){
@@ -91,13 +105,15 @@ public void set(double x, double y, double z) {
 	q[1] = y;
 	q[2] = z;
 }
-/**
- * Vect3d constructor comment.
- */
 public void set(Vect3d v) {
 	q[0] = v.q[0];
 	q[1] = v.q[1];
 	q[2] = v.q[2];
+}
+public void set(Node p) {
+	q[0] = p.getX();
+	q[1] = p.getY();
+	q[2] = p.getZ();
 }
 public void add(Vect3d v) {
 	q[0] += v.q[0];
@@ -129,6 +145,11 @@ public String toString(){
  */
 public Vect3d uminus() {
 	return new Vect3d(-q[0],-q[1],-q[2]);
+}
+public void uminusFast() {
+	q[0] = -q[0];
+	q[1] = -q[1];
+	q[2] = -q[2];
 }
 /**           
 * Normalizes the vector.
@@ -166,500 +187,144 @@ public static double DistanceToPlane(Vect3d point, Vect3d t0, Vect3d t1, Vect3d 
 	return Math.abs(disp.dot(n));
 }
 
-public static void main(String args[]){
-	try {
-		Vect3d t1 = new Vect3d(1, 0, 0);
-		Vect3d t2 = new Vect3d(0, 2, 0);
-		Vect3d t3 = new Vect3d(0, 0, 0);
-		Vect3d p0 = new Vect3d(5, 5, 2);		// clearly outside the triangle
-		Vect3d p1 = new Vect3d(0.5, 0.5, 1);	// clearly inside the triangle
-		double distanceToTriangle3d = 0;
-		distanceToTriangle3d = distanceToTriangle3d(p0, t1, t2, t3);
-		System.out.println("Distance to triangle = " + distanceToTriangle3d);
-		System.out.println(" -------------------------------------------------- ");
-		distanceToTriangle3d = distanceToTriangle3d(p1, t1, t2, t3);
-		System.out.println("Distance to triangle = " + distanceToTriangle3d);
-		System.out.println(" -------------------------------------------------- ");
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
-}
 public static double distanceToTriangle3d(Vect3d p0, Vect3d t1, Vect3d t2, Vect3d t3) {
+	// we allocate these here once and reuse them (through set()) as much as we can
+	// because allocations are very expensive and this method is called many many times
+	Vect3d tmp = new Vect3d();
+	Vect3d tmp1 = new Vect3d();
 	
-	Vect3d tmp = new Vect3d(t1);
-	tmp.sub(t2);
-	Vect3d tmp1 = new Vect3d(t1);
-	tmp1.sub(t3);
-	Vect3d normal = tmp.cross(tmp1);
-	normal.unit();												// 1  - the normal
+	tmp.set(t2);
+	tmp.sub(t1);
+	tmp1.set(t3);
+	tmp1.sub(t1);
+	Vect3d normal = tmp.cross(tmp1);						// 1  - the normal
+	double normalLength = normal.length();
 //	System.out.println("the normal = " + normal + ", length = " + normal.length());
 
-	tmp = new Vect3d(p0);
+	tmp.set(p0);
 	tmp.sub(t1);
-	double cosalpha = tmp.dot(normal) / (tmp.length()*normal.length());	// 2  - cosalpha
+	double tmpLength = tmp.length();
+	double cosalpha = tmp.dot(normal) / (tmpLength*normalLength);	// 2  - cosalpha   
 //	System.out.println("cos alpha = " + cosalpha);
 
-	double projectionLength = tmp.length() * cosalpha;			// 3    - projection length
+	double projectionLength = tmpLength * cosalpha;			// 3    - projection length
+//	double otherMethod = DistanceToPlane(p0, t1, t2, t3);
 //	System.out.println("projectionLength = " + projectionLength);
 				
 	Vect3d projection =  new Vect3d(normal);
-	projection.uminus();
-	projection.scale(projectionLength / normal.length());		// 4    - projection vector
+	projection.uminusFast();
+	projection.scale(projectionLength / normalLength);		// 4    - projection vector
 //	System.out.println("projection = " + projection);
 		
 	Vect3d projected = new Vect3d(p0);
-	projected.sub(projection);									// 5    - projection of p0 onto the triangle plane
+	projected.add(projection);									// 5    - projection of p0 onto the triangle plane
 //	System.out.println("projected = " + projected);
 		
-	Vect3d v1 = new Vect3d(t2);					// 6a    - t2t1		
-	v1.sub(t1);
+	Vect3d v1 = new Vect3d(t1);					// 6a    - t2t1		
+	v1.sub(t2);
 	v1.unit();
-	Vect3d t3t1 = new Vect3d(t3);				// t3t1
-	t3t1.sub(t1);
-	t3t1.unit();
-	v1.add(t3t1);
+	tmp.set(t1);								// t3t1
+	tmp.sub(t3);
+	tmp.unit();
+	v1.add(tmp);
 //	System.out.println("v1 = " + v1);
 		
-	Vect3d v2 = new Vect3d(t3);					// 6b    - t3t2
-	v2.sub(t2);
+	Vect3d v2 = new Vect3d(t2);					// 6b    - t3t2
+	v2.sub(t3);
 	v2.unit();
-	Vect3d t1t2 = new Vect3d(t1);				// t1t2
-	t1t2.sub(t2);
-	t1t2.unit();
-	v2.add(t1t2);
+	tmp.set(t2);								// t1t2
+	tmp.sub(t1);
+	tmp.unit();
+	v2.add(tmp);
 //	System.out.println("v2 = " + v2);
 		
-	Vect3d v3 = new Vect3d(t1);					// 6c    - t1t3
-	v3.sub(t3);
+	Vect3d v3 = new Vect3d(t3);					// 6c    - t1t3
+	v3.sub(t1);
 	v3.unit();
-	Vect3d t2t3 = new Vect3d(t2);				// t2t3
-	t2t3.sub(t3);
-	t2t3.unit();
-	v3.add(t2t3);
+	tmp.set(t3);								// t2t3
+	tmp.sub(t2);
+	tmp.unit();
+	v3.add(tmp);
 //	System.out.println("v3 = " + v3);
 		
-	tmp = new Vect3d(t1);
-	tmp.sub(projected);
-	Vect3d f1v = v1.cross(tmp);
-	double f1 = f1v.dot(normal);		// f1 > 0 means projected is ^ of v1 (anticlockwise)
+	tmp.set(projected);
+	tmp.sub(t1);
+	tmp1.set(v1);						// f1v
+	tmp1.crossFast(tmp);
+	double f1 = tmp1.dot(normal);		// f1 > 0 means projected is anticlockwise of v1
 //	System.out.println("f1 = " + f1);
 		
-	tmp = new Vect3d(t2);
-	tmp.sub(projected);
-	Vect3d f2v = v2.cross(tmp);
-	double f2 = f2v.dot(normal);
+	tmp.set(projected);
+	tmp.sub(t2);
+	tmp1.set(v2);						// f2v
+	tmp1.crossFast(tmp);
+	double f2 = tmp1.dot(normal);
 //	System.out.println("f2 = " + f2);
 
-	tmp = new Vect3d(t3);
-	tmp.sub(projected);
-	Vect3d f3v = v3.cross(tmp);
-	double f3 = f3v.dot(normal);
+	tmp.set(projected);
+	tmp.sub(t3);
+	tmp1.set(v3);
+	tmp1.crossFast(tmp);				// f3v
+	double f3 = tmp1.dot(normal);
 //	System.out.println("f3 = " + f3);
 
 	boolean bInside = false;
 	double distanceToTriangle = 0;
 	if(f1 >= 0 && f2 < 0) {
-//		System.out.println("Projection of point is inside the v1, v2 quadrant...");
-		bInside = isInsideTriangle(projected, normal, t1, t2);
+//		System.out.println("Projection of point is inside the t1, t2 quadrant...");
+		bInside = isInsideTriangle(projected, normal, t1, t2, tmp, tmp1);
 		if(bInside == true) {		// easy case, length of projection already known
 //			System.out.println("Distance from point to triangle is " + projectionLength);
 			distanceToTriangle = projectionLength;
 		} else {
-			distanceToTriangle = distanceToTriangleUtil(projected, t1, t2, p0, projectionLength);
+			distanceToTriangle = distanceToTriangleUtil(projected, t1, t2, p0, projectionLength, tmp, tmp1);
 		}
 	}
 	else if(f2 >= 0 && f3 < 0) {
-//		System.out.println("Projection of point is inside the v2, v3 quadrant...");
-		bInside = isInsideTriangle(projected, normal, t2, t3);
+//		System.out.println("Projection of point is inside the t2, t3 quadrant...");
+		bInside = isInsideTriangle(projected, normal, t2, t3, tmp, tmp1);
 		if(bInside == true) {
 //			System.out.println("Distance from point to triangle is " + projectionLength);
 			distanceToTriangle = projectionLength;
 		} else {
-			distanceToTriangle = distanceToTriangleUtil(projected, t2, t3, p0, projectionLength);
+			distanceToTriangle = distanceToTriangleUtil(projected, t2, t3, p0, projectionLength, tmp, tmp1);
 		}
 	}
 	else if(f1 < 0 && f3 >= 0) {
-//		System.out.println("Projection of point is inside the v1, v3 quadrant...");
-		bInside = isInsideTriangle(projected, normal, t3, t1);
+//		System.out.println("Projection of point is inside the t1, t3 quadrant...");
+		bInside = isInsideTriangle(projected, normal, t3, t1, tmp, tmp1);
 		if(bInside == true) {
 //			System.out.println("Distance from point to triangle is " + projectionLength);
 			distanceToTriangle = projectionLength;
 		} else {
-			distanceToTriangle = distanceToTriangleUtil(projected, t3, t1, p0, projectionLength);
+			distanceToTriangle = distanceToTriangleUtil(projected, t3, t1, p0, projectionLength, tmp, tmp1);
 		}
 	}
 	return Math.abs(distanceToTriangle);
 }
 
 public static double distanceToTriangleUtil(Vect3d projected, Vect3d left, Vect3d right,
-			Vect3d p0, double projectionLength) {
-	double distanceToTriangle = 0;
-	Vect3d tmp1 = new Vect3d(projected);
-	tmp1.sub(left);
-	Vect3d tmp2 = new Vect3d(projected);
-	tmp2.sub(right);
-	Vect3d tmp3 = new Vect3d(left);
-	tmp3.sub(right);
-	Vect3d r = tmp2.cross(tmp1).cross(tmp3);							// 8    - r
-	double cosgamma = tmp1.dot(r) / (tmp1.length() * r.length());		// 9
-	double projectionToSegmentLength = tmp1.length() * cosgamma;		// 10
-	Vect3d projectedToSegment = new Vect3d(r);
-	projectedToSegment.scale(projectionToSegmentLength / r.length());	// 11
-	Vect3d p2 = new Vect3d(projected);		// projection of 'projected' onto the segment
-	p2.add(projectedToSegment);									// 12
-		
-	double d1 = Math.sqrt( (p2.getX()-left.getX())*(p2.getX()-left.getX()) +
-			(p2.getY()-left.getY())*(p2.getY()-left.getY()) +
-			(p2.getZ()-left.getZ())*(p2.getZ()-left.getZ())
-	);
-	double d2 = Math.sqrt( (right.getX()-left.getX())*(right.getX()-left.getX()) +
-			(right.getY()-left.getY())*(right.getY()-left.getY()) +
-			(right.getZ()-left.getZ())*(right.getZ()-left.getZ())
-	);
-	double t = d1/d2;
-	if(t<0) {			// p0 is closest to vertex left
-		distanceToTriangle = Math.sqrt( (left.getX()-p0.getX())*(left.getX()-p0.getX()) +
-				(left.getY()-p0.getY())*(left.getY()-p0.getY()) +
-				(left.getZ()-p0.getZ())*(left.getZ()-p0.getZ())
-		);
-	} else if(t>0) {	// p0 is closest to vertex right
-		distanceToTriangle = Math.sqrt( (right.getX()-p0.getX())*(right.getX()-p0.getX()) +
-				(right.getY()-p0.getY())*(right.getY()-p0.getY()) +
-				(right.getZ()-p0.getZ())*(right.getZ()-p0.getZ())
-		);
-	} else {			// p0 is closest to line
-		distanceToTriangle = Math.sqrt(projectionToSegmentLength*projectionToSegmentLength +
-				projectionLength*projectionLength);
-	}
-	return distanceToTriangle;
-}
-public static boolean isInsideTriangle(Vect3d point, Vect3d normal, Vect3d left, Vect3d right) {
-	Vect3d tmp1 = new Vect3d(point);
-	tmp1.sub(left);
-	Vect3d tmp2 = new Vect3d(point);
-	tmp2.sub(right);
-	Vect3d tmp3 = tmp1.cross(tmp2);
-	double loc = tmp3.dot(normal);		// 7
-	if(loc < 0) {
-//		System.out.println("        ... and outside the triangle.");
-		return false;
-	} else {
-//		System.out.println("        ... and inside the triangle.");
-		return true;
-	}
-}
-
-public static double distanceToTriangle3d2(Vect3d p0, Vect3d t1, Vect3d t2, Vect3d t3) {
-	// we allocate these here once and reuse them (through set()) as much as we can
-	// because allocations are very expensive and this method is called many many times
-	Vect3d tmp = new Vect3d();
-	Vect3d tmp1 = new Vect3d();
-	
-	tmp.set(t1);
-	tmp.sub(t2);
-	tmp1.set(t1);
-	tmp1.sub(t3);
-	Vect3d normal = tmp.cross(tmp1);
-	normal.unit();												// 1  - the normal
-//	System.out.println("the normal = " + normal + ", length = " + normal.length());
-
-	tmp.set(p0);
-	tmp.sub(t1);
-	double cosalpha = tmp.dot(normal) / (tmp.length()*normal.length());	// 2  - cosalpha
-//	System.out.println("cos alpha = " + cosalpha);
-
-	double projectionLength = tmp.length() * cosalpha;			// 3    - projection length
-//	System.out.println("projectionLength = " + projectionLength);
-				
-	Vect3d projection =  new Vect3d(normal);
-	projection.uminus();
-	projection.scale(projectionLength / normal.length());		// 4    - projection vector
-//	System.out.println("projection = " + projection);
-		
-	Vect3d projected = new Vect3d(p0);
-	projected.sub(projection);									// 5    - projection of p0 onto the triangle plane
-//	System.out.println("projected = " + projected);
-		
-	Vect3d v1 = new Vect3d(t2);					// 6a    - t2t1		
-	v1.sub(t1);
-	v1.unit();
-	tmp.set(t3);								// t3t1
-	tmp.sub(t1);
-	tmp.unit();
-	v1.add(tmp);
-//	System.out.println("v1 = " + v1);
-		
-	Vect3d v2 = new Vect3d(t3);					// 6b    - t3t2
-	v2.sub(t2);
-	v2.unit();
-	tmp.set(t1);								// t1t2
-	tmp.sub(t2);
-	tmp.unit();
-	v2.add(tmp);
-//	System.out.println("v2 = " + v2);
-		
-	Vect3d v3 = new Vect3d(t1);					// 6c    - t1t3
-	v3.sub(t3);
-	v3.unit();
-	tmp.set(t2);								// t2t3
-	tmp.sub(t3);
-	tmp.unit();
-	v3.add(tmp);
-//	System.out.println("v3 = " + v3);
-		
-	tmp.set(t1);
-	tmp.sub(projected);
-	tmp1.set(v1);						// f1v
-	tmp1.crossFast(tmp);
-	double f1 = tmp1.dot(normal);		// f1 > 0 means projected is anticlockwise of v1
-//	System.out.println("f1 = " + f1);
-		
-	tmp.set(t2);
-	tmp.sub(projected);
-	tmp1.set(v2);						// f2v
-	tmp1.crossFast(tmp);
-	double f2 = tmp1.dot(normal);
-//	System.out.println("f2 = " + f2);
-
-	tmp.set(t3);
-	tmp.sub(projected);
-	tmp1.set(v3);
-	tmp1.crossFast(tmp);				// f3v
-	double f3 = tmp1.dot(normal);
-//	System.out.println("f3 = " + f3);
-
-	boolean bInside = false;
-	double distanceToTriangle = 0;
-	if(f1 >= 0 && f2 < 0) {
-//		System.out.println("Projection of point is inside the v1, v2 quadrant...");
-		bInside = isInsideTriangle2(projected, normal, t1, t2);
-		if(bInside == true) {		// easy case, length of projection already known
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil2(projected, t1, t2, p0, projectionLength);
-		}
-	}
-	else if(f2 >= 0 && f3 < 0) {
-//		System.out.println("Projection of point is inside the v2, v3 quadrant...");
-		bInside = isInsideTriangle2(projected, normal, t2, t3);
-		if(bInside == true) {
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil2(projected, t2, t3, p0, projectionLength);
-		}
-	}
-	else if(f1 < 0 && f3 >= 0) {
-//		System.out.println("Projection of point is inside the v1, v3 quadrant...");
-		bInside = isInsideTriangle2(projected, normal, t3, t1);
-		if(bInside == true) {
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil2(projected, t3, t1, p0, projectionLength);
-		}
-	}
-	return Math.abs(distanceToTriangle);
-}
-
-public static double distanceToTriangleUtil2(Vect3d projected, Vect3d left, Vect3d right,
-			Vect3d p0, double projectionLength) {
-	double distanceToTriangle = 0;
-	Vect3d tmp1 = new Vect3d(projected);
-	tmp1.sub(left);
-	Vect3d tmp2 = new Vect3d(projected);
-	tmp2.sub(right);
-	Vect3d tmp3 = new Vect3d(left);
-	tmp3.sub(right);
-	// TODO: is this really (P0'P1 x P0'P2) x P1P2   ???  optimize!!!
-	tmp2.crossFast(tmp1);												// 8    - r
-	tmp2.crossFast(tmp3);
-	double cosgamma = tmp1.dot(tmp2) / (tmp1.length() * tmp2.length());	// 9
-	double projectionToSegmentLength = tmp1.length() * cosgamma;		// 10
-																	// projectedToSegment (reuse tmp2 for speed)
-	double len = tmp2.length();
-	tmp2.scale(projectionToSegmentLength / len);						// 11
-	tmp3.set(projected);												// projection of 'projected' onto the segment (reuse tmp3 for speed)
-	tmp3.add(tmp2);														// 12
-		
-	double d1 = Math.sqrt( (tmp3.getX()-left.getX())*(tmp3.getX()-left.getX()) +
-			(tmp3.getY()-left.getY())*(tmp3.getY()-left.getY()) +
-			(tmp3.getZ()-left.getZ())*(tmp3.getZ()-left.getZ())
-	);
-	double d2 = Math.sqrt( (right.getX()-left.getX())*(right.getX()-left.getX()) +
-			(right.getY()-left.getY())*(right.getY()-left.getY()) +
-			(right.getZ()-left.getZ())*(right.getZ()-left.getZ())
-	);
-	double t = d1/d2;
-	if(t<0) {			// p0 is closest to vertex left
-		distanceToTriangle = Math.sqrt( (left.getX()-p0.getX())*(left.getX()-p0.getX()) +
-				(left.getY()-p0.getY())*(left.getY()-p0.getY()) +
-				(left.getZ()-p0.getZ())*(left.getZ()-p0.getZ())
-		);
-	} else if(t>0) {	// p0 is closest to vertex right
-		distanceToTriangle = Math.sqrt( (right.getX()-p0.getX())*(right.getX()-p0.getX()) +
-				(right.getY()-p0.getY())*(right.getY()-p0.getY()) +
-				(right.getZ()-p0.getZ())*(right.getZ()-p0.getZ())
-		);
-	} else {			// p0 is closest to line
-		distanceToTriangle = Math.sqrt(projectionToSegmentLength*projectionToSegmentLength +
-				projectionLength*projectionLength);
-	}
-	return distanceToTriangle;
-}
-public static boolean isInsideTriangle2(Vect3d point, Vect3d normal, Vect3d left, Vect3d right) {
-	Vect3d tmp1 = new Vect3d(point);
-	tmp1.sub(left);
-	Vect3d tmp2 = new Vect3d(point);
-	tmp2.sub(right);
-	tmp1.crossFast(tmp2);
-	double loc = tmp1.dot(normal);		// 7
-	if(loc < 0) {
-//		System.out.println("        ... and outside the triangle.");
-		return false;
-	} else {
-//		System.out.println("        ... and inside the triangle.");
-		return true;
-	}
-}
-
-public static double distanceToTriangle3d3(Vect3d p0, Vect3d t1, Vect3d t2, Vect3d t3) {
-	// we allocate these here once and reuse them (through set()) as much as we can
-	// because allocations are very expensive and this method is called many many times
-	Vect3d tmp = new Vect3d();
-	Vect3d tmp1 = new Vect3d();
-	
-	tmp.set(t1);
-	tmp.sub(t2);
-	tmp1.set(t1);
-	tmp1.sub(t3);
-	Vect3d normal = tmp.cross(tmp1);
-	double normalLength = normal.length();
-	normal.unit();												// 1  - the normal
-//	System.out.println("the normal = " + normal + ", length = " + normal.length());
-
-	tmp.set(p0);
-	tmp.sub(t1);
-	double tmpLength = tmp.length();
-	double cosalpha = tmp.dot(normal) / (tmpLength*normalLength);	// 2  - cosalpha
-//	System.out.println("cos alpha = " + cosalpha);
-
-	double projectionLength = tmpLength * cosalpha;			// 3    - projection length
-//	System.out.println("projectionLength = " + projectionLength);
-				
-	Vect3d projection =  new Vect3d(normal);
-	projection.uminus();
-	projection.scale(projectionLength / normalLength);		// 4    - projection vector
-//	System.out.println("projection = " + projection);
-		
-	Vect3d projected = new Vect3d(p0);
-	projected.sub(projection);									// 5    - projection of p0 onto the triangle plane
-//	System.out.println("projected = " + projected);
-		
-	Vect3d v1 = new Vect3d(t2);					// 6a    - t2t1		
-	v1.sub(t1);
-	v1.unit();
-	tmp.set(t3);								// t3t1
-	tmp.sub(t1);
-	tmp.unit();
-	v1.add(tmp);
-//	System.out.println("v1 = " + v1);
-		
-	Vect3d v2 = new Vect3d(t3);					// 6b    - t3t2
-	v2.sub(t2);
-	v2.unit();
-	tmp.set(t1);								// t1t2
-	tmp.sub(t2);
-	tmp.unit();
-	v2.add(tmp);
-//	System.out.println("v2 = " + v2);
-		
-	Vect3d v3 = new Vect3d(t1);					// 6c    - t1t3
-	v3.sub(t3);
-	v3.unit();
-	tmp.set(t2);								// t2t3
-	tmp.sub(t3);
-	tmp.unit();
-	v3.add(tmp);
-//	System.out.println("v3 = " + v3);
-		
-	tmp.set(t1);
-	tmp.sub(projected);
-	tmp1.set(v1);						// f1v
-	tmp1.crossFast(tmp);
-	double f1 = tmp1.dot(normal);		// f1 > 0 means projected is anticlockwise of v1
-//	System.out.println("f1 = " + f1);
-		
-	tmp.set(t2);
-	tmp.sub(projected);
-	tmp1.set(v2);						// f2v
-	tmp1.crossFast(tmp);
-	double f2 = tmp1.dot(normal);
-//	System.out.println("f2 = " + f2);
-
-	tmp.set(t3);
-	tmp.sub(projected);
-	tmp1.set(v3);
-	tmp1.crossFast(tmp);				// f3v
-	double f3 = tmp1.dot(normal);
-//	System.out.println("f3 = " + f3);
-
-	boolean bInside = false;
-	double distanceToTriangle = 0;
-	if(f1 >= 0 && f2 < 0) {
-//		System.out.println("Projection of point is inside the v1, v2 quadrant...");
-		bInside = isInsideTriangle3(projected, normal, t1, t2, tmp, tmp1);
-		if(bInside == true) {		// easy case, length of projection already known
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil3(projected, t1, t2, p0, projectionLength, tmp, tmp1);
-		}
-	}
-	else if(f2 >= 0 && f3 < 0) {
-//		System.out.println("Projection of point is inside the v2, v3 quadrant...");
-		bInside = isInsideTriangle3(projected, normal, t2, t3, tmp, tmp1);
-		if(bInside == true) {
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil3(projected, t2, t3, p0, projectionLength, tmp, tmp1);
-		}
-	}
-	else if(f1 < 0 && f3 >= 0) {
-//		System.out.println("Projection of point is inside the v1, v3 quadrant...");
-		bInside = isInsideTriangle3(projected, normal, t3, t1, tmp, tmp1);
-		if(bInside == true) {
-//			System.out.println("Distance from point to triangle is " + projectionLength);
-			distanceToTriangle = projectionLength;
-		} else {
-			distanceToTriangle = distanceToTriangleUtil3(projected, t3, t1, p0, projectionLength, tmp, tmp1);
-		}
-	}
-	return Math.abs(distanceToTriangle);
-}
-
-public static double distanceToTriangleUtil3(Vect3d projected, Vect3d left, Vect3d right,
 			Vect3d p0, double projectionLength,
 			Vect3d tmp1, Vect3d tmp2) {		// transmitted as working buffers, to avoid expensive allocations
 	double distanceToTriangle = 0;
-	tmp1.set(projected);
-	tmp1.sub(left);
-	double tmp1Length = tmp1.length();
-	tmp2.set(projected);
-	tmp2.sub(right);
-	Vect3d tmp3 = new Vect3d(left);
-	tmp3.sub(right);
-	tmp2.crossFast(tmp1);												// 8    - r
-	tmp2.crossFast(tmp3);
-	double len = tmp2.length();
-	double cosgamma = tmp1.dot(tmp2) / (tmp1Length * len);				// 9
-	double projectionToSegmentLength = tmp1Length * cosgamma;			// 10
-																	// projectedToSegment (reuse tmp2 for speed)
-	tmp2.scale(projectionToSegmentLength / len);						// 11
+	
+	tmp1.set(right);
+	tmp1.sub(projected);
+	tmp2.set(left);
+	tmp2.sub(projected);
+	double tmp2Length = tmp2.length();
+	Vect3d tmp3 = new Vect3d(right);
+	tmp3.sub(left);
+	tmp1.crossFast(tmp2);												// 8    - r
+	tmp1.crossFast(tmp3);
+	
+	double len = tmp1.length();
+	double cosgamma = tmp2.dot(tmp1) / (tmp2Length * len);				// 9
+	double projectionToSegmentLength = tmp2Length * cosgamma;			// 10
+																	// projectedToSegment (reuse tmp1 for speed)
+	tmp1.scale(projectionToSegmentLength / len);						// 11
 	tmp3.set(projected);												// projection of 'projected' onto the segment (reuse tmp3 for speed)
-	tmp3.add(tmp2);														// 12
+	tmp3.add(tmp1);														// 12
 	
 	double rx = right.getX();
 	double ry = right.getY();
@@ -674,26 +339,34 @@ public static double distanceToTriangleUtil3(Vect3d projected, Vect3d left, Vect
 	double ty = tmp3.getY();
 	double tz = tmp3.getZ();
 	
-	double d1 = Math.sqrt( (tx-lx)*(tx-lx) + (ty-ly)*(ty-ly) + (tz-lz)*(tz-lz) );
-	double d2 = Math.sqrt( (rx-lx)*(rx-lx) + (ry-ly)*(ry-ly) + (rz-lz)*(rz-lz) );
-	double t = d1/d2;
 	
-	if(t<0) {			// p0 is closest to vertex left
-		distanceToTriangle = Math.sqrt( (lx-px)*(lx-px) + (ly-py)*(ly-py) + (lz-pz)*(lz-pz) );
-	} else if(t>0) {	// p0 is closest to vertex right
-		distanceToTriangle = Math.sqrt( (rx-px)*(rx-px) + (ry-py)*(ry-py) + (rz-pz)*(rz-pz) );
-	} else {			// p0 is closest to line
+	double d1 = (tx-lx)*(tx-lx) + (ty-ly)*(ty-ly) + (tz-lz)*(tz-lz);	// distance to left
+	double d2 = (tx-rx)*(tx-rx) + (ty-ry)*(ty-ry) + (tz-rz)*(tz-rz);	// distance to right
+	double d = (rx-lx)*(rx-lx) + (ry-ly)*(ry-ly) + (rz-lz)*(rz-lz);		// distance between left and right
+	
+	
+	if(d1<=d && d2<=d) {
+//		System.out.println(" closest to line ");
 		distanceToTriangle = Math.sqrt(projectionToSegmentLength*projectionToSegmentLength +
 				projectionLength*projectionLength);
+	} else {
+		if(d1<d2) {
+//			System.out.println(" closest to vertex left " + left);
+			distanceToTriangle = Math.sqrt( (lx-px)*(lx-px) + (ly-py)*(ly-py) + (lz-pz)*(lz-pz) );
+		} else {
+//			System.out.println(" closest to vertex right " + right);
+			distanceToTriangle = Math.sqrt( (rx-px)*(rx-px) + (ry-py)*(ry-py) + (rz-pz)*(rz-pz) );
+		}
+		
 	}
 	return distanceToTriangle;
 }
-public static boolean isInsideTriangle3(Vect3d point, Vect3d normal, Vect3d left, Vect3d right, 
+public static boolean isInsideTriangle(Vect3d point, Vect3d normal, Vect3d left, Vect3d right, 
 		Vect3d tmp1, Vect3d tmp2) {		// transmitted as working buffers, to avoid expensive allocations
-	tmp1 .set(point);
-	tmp1.sub(left);
-	tmp2.set(point);
-	tmp2.sub(right);
+	tmp1 .set(left);
+	tmp1.sub(point);
+	tmp2.set(right);
+	tmp2.sub(point);
 	tmp1.crossFast(tmp2);
 	double loc = tmp1.dot(normal);		// 7
 	if(loc < 0) {
@@ -703,6 +376,312 @@ public static boolean isInsideTriangle3(Vect3d point, Vect3d normal, Vect3d left
 //		System.out.println("        ... and inside the triangle.");
 		return true;
 	}
+}
+
+public static void main(String args[]){
+	try {
+		double distanceToTriangle3d = 0;
+		
+		Node nt1 = new Node(1, 0, 0);
+		Node nt2 = new Node(0, 2, 0);
+		Node nt3 = new Node(0, 0, 0.05);
+		
+		Vect3d t1 = new Vect3d(nt1);
+		Vect3d t2 = new Vect3d(nt2);
+		Vect3d t3 = new Vect3d(nt3);
+		
+		{
+			Vect3d xt1 = new Vect3d(1,0,5);
+			Vect3d xt2 = new Vect3d(0,2,5);
+			Vect3d xt3 = new Vect3d(0,0,5);
+
+			Vect3d p1 = new Vect3d(-1,-1,8);
+			Vect3d p2 = new Vect3d(-1,-1,2);
+
+			double d1 = DistanceToPlane(p1, xt1, xt2, xt3);
+			double d2 = DistanceToPlane(p2, xt1, xt2, xt3);
+			System.out.println(d1 + ", " + d2);
+			
+			d1 = distanceToTriangle3d(p1, xt1, xt2, xt3);
+			d2 = distanceToTriangle3d(p2, xt1, xt2, xt3);
+			System.out.println(d1 + ", " + d2);
+
+
+		}
+		
+		
+		{		// quadrant test
+		Vect3d a = new Vect3d(0.5, -1, 3);		// inside t1, t3 quadrant
+		Vect3d b = new Vect3d(-1, 1, 3);		// inside t2, t3 quadrant
+		Vect3d c = new Vect3d(2, 2, 3);			// inside t1, t2 quadrant
+		
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant");
+		distanceToTriangle3d = distanceToTriangle3d(b, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant");
+		distanceToTriangle3d = distanceToTriangle3d(c, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant");
+		}
+		
+		{
+		Vect3d a = new Vect3d();
+		a.set(-0.5, -4, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to t3 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(0.5, -1, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(1.2, -2, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to t1 vertex");
+		System.out.println(" -------------------------------------------------- ");
+
+		a.set(-0.5, -4, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to t3 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(0.5, -1, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(1.2, -2, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t3 quadrant, closest to t1 vertex");
+		System.out.println(" ==================================================== ");
+	
+		a.set(3, 0.5, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to t1 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(2, 2, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(0.5, 4, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to t2 vertex");
+		System.out.println(" -------------------------------------------------- ");
+
+		a.set(3, 0.5, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to t1 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(2, 2, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(0.5, 4, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t1, t2 quadrant, closest to t2 vertex");
+		System.out.println(" ================================================== ");
+
+		a.set(-1.5, 3, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to t2 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(-1, 1, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(-3, -0.5, 3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to t3 vertex");
+		System.out.println(" -------------------------------------------------- ");
+
+		a.set(-1.5, 3, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to t2 vertex");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(-1, 1, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to line");
+		System.out.println(" -------------------------------------------------- ");
+		a.set(-3, -0.5, -3);
+		distanceToTriangle3d = distanceToTriangle3d(a, t1, t2, t3);
+		System.out.println("Should say it's inside t2, t3 quadrant, closest to t3 vertex");
+		System.out.println(" ===================================================== ");
+
+		}
+		
+		{		// exact distance test
+		double distanceToTriangleExperimental = 0;
+		Node np1 = new Node(0.3, 0.3, 3);	// inside the triangle
+		Node np2 = new Node(-1, -1, 3);		// closest to vertex
+		Node np3 = new Node(1, 1, 3);		// closest to line
+		Node np4 = new Node(0.5, -0.5, 3);	// closest to line
+		
+		Vect3d p1 = new Vect3d(np1);
+		Vect3d p2 = new Vect3d(np2);
+		Vect3d p3 = new Vect3d(np3);
+		Vect3d p4 = new Vect3d(np4);
+
+		distanceToTriangleExperimental = distanceToTriangleExperimental(np1, nt1, nt2, nt3);
+		distanceToTriangle3d = distanceToTriangle3d(p1, t1, t2, t3);
+		System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (inside the triangle) - should be " + distanceToTriangleExperimental);
+		System.out.println(" -------------------------------------------------- ");
+		
+		distanceToTriangleExperimental = distanceToTriangleExperimental(np2, nt1, nt2, nt3);
+		distanceToTriangle3d = distanceToTriangle3d(p2, t1, t2, t3);
+		System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to vertex) - should be " + distanceToTriangleExperimental);
+		System.out.println(" -------------------------------------------------- ");
+		
+		distanceToTriangleExperimental = distanceToTriangleExperimental(np3, nt1, nt2, nt3);
+		distanceToTriangle3d = distanceToTriangle3d(p3, t1, t2, t3);
+		System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to line) - should be " + distanceToTriangleExperimental);
+		System.out.println(" -------------------------------------------------- ");
+		
+		distanceToTriangleExperimental = distanceToTriangleExperimental(np4, nt1, nt2, nt3);
+		distanceToTriangle3d = distanceToTriangle3d(p4, t1, t2, t3);
+		System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to line) - should be " + distanceToTriangleExperimental);
+		System.out.println(" -------------------------------------------------- ");
+		}
+		
+		{		// an error case, to be fixed
+//				47, 37, 39
+//				44, 44, 38	closest
+//				56, 38, 49
+//				17, 60, 40	test point
+//				- from points: 31.692043572731926
+//				- exact comp : 45.74405664170047
+//				- error: 14.052013068968542
+			
+			Node ntt1 = new Node(47, 37, 39);
+			Node ntt2 = new Node(44, 44, 38);		// closest to this one
+			Node ntt3 = new Node(56, 38, 49);
+			Node naa = new Node(17, 60, 40);
+			
+			Vect3d tt1 = new Vect3d(ntt1);
+			Vect3d tt2 = new Vect3d(ntt2);
+			Vect3d tt3 = new Vect3d(ntt3);
+			Vect3d aa = new Vect3d(naa);
+			
+			double x1 = distanceBetweenPoints(naa, ntt1);
+			double x2 = distanceBetweenPoints(naa, ntt2);
+			double x3 = distanceBetweenPoints(naa, ntt3);
+			System.out.println("Distance to verteces: " + x1 +", " + x2 + "' " + x3);
+			double distanceToTriangleExperimental = distanceToTriangleExperimental(naa, ntt1, ntt2, ntt3);
+			distanceToTriangle3d = distanceToTriangle3d(aa, tt1, tt2, tt3);
+			System.out.println("Distance to triangle = " + distanceToTriangle3d + "  (closest to vertex t2) - should be " + distanceToTriangleExperimental);
+		}
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+	}
+	
+	// we work inside a cube of 100x100x100
+	// we pick a triangle inside and we fill it with random points
+	// we randomly generate points within the cube and we compute the distance to triangle in 2 ways:
+	// using distanceToTriangle3d()
+	// we compute the distance from the point to each of the points within the triangle and we keep the smallest result
+	// different results mean that there are errors in distanceToTriangle3d()
+	Random rand = new Random();
+	Node testPoint = new Node();
+	Node A = new Node(30+rand.nextDouble()*30, 30+rand.nextDouble()*30, 30+rand.nextDouble()*30);
+	Node B = new Node(30+rand.nextDouble()*30, 30+rand.nextDouble()*30, 30+rand.nextDouble()*30);
+	Node C = new Node(30+rand.nextDouble()*30, 30+rand.nextDouble()*30, 30+rand.nextDouble()*30);
+	System.out.println("Node A:  " + A.getX() + ", " + A.getY() + ", " + A.getZ());
+	System.out.println("Node B:  " + B.getX() + ", " + B.getY() + ", " + B.getZ());
+	System.out.println("Node C:  " + C.getX() + ", " + C.getY() + ", " + C.getZ());
+	
+	Vect3d vTestPoint = new Vect3d();
+	Vect3d vA = new Vect3d(A);
+	Vect3d vB = new Vect3d(B);
+	Vect3d vC = new Vect3d(C);
+	
+	int counter = 0;
+	for(int i=0; i<1000; i++) {			// randomly generate some points and compute the distance from them to the triangle
+	
+		testPoint.setX(rand.nextDouble()*100);
+		testPoint.setY(rand.nextDouble()*100);
+		testPoint.setZ(rand.nextDouble()*100);
+		vTestPoint.set(testPoint);
+//		System.out.println("testPoint:  " + testPoint.getX() + ", " + testPoint.getY() + ", " + testPoint.getZ());
+
+		double eD = distanceToTriangleExperimental(testPoint, A, B, C);
+		double eE = distanceToTriangle3d(vTestPoint, vA, vB, vC);
+		if(Math.abs(eD-eE) > 0.05) {
+//			System.out.println("- from points: " + eD);
+//			System.out.println("- exact comp : " + eE);
+			System.out.println("- error: " + Math.abs(eD-eE));
+			counter++;
+		}
+	
+	}
+	System.out.println(counter + " errors");
+}
+
+private static double distanceToTriangleExperimental(Node p, Node A, Node B, Node C) {
+	double d = Double.MAX_VALUE;
+	Node closestNode = null;
+	
+	Random rand = new Random();
+	try {
+	BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\triangle.3D"));
+	out.write("x y z value\n");
+	out.write(p.getX()+1 + " " + p.getY() + " " + p.getZ() + " 1\n");
+	out.write(p.getX() + " " + p.getY()+1 + " " + p.getZ() + " 1\n");
+	out.write(p.getX() + " " + p.getY() + " " + p.getZ()+1 + " 1\n");
+
+	for(int i=0; i<10000; i++) {
+		double a = rand.nextDouble();
+		double b = rand.nextDouble();
+		Node r = PointInTriangle(a, b, A, B, C);
+		String line = new String(r.getX() + " " + r.getY() + " " + r.getZ() + " 2\n");
+		out.write(line);
+
+		double dd = distanceBetweenPoints(p, r);
+		if(dd < d) {
+			d = dd;
+			closestNode = r;
+		}
+	}
+	
+	Node[] NA = new Node[3];		// check the vertexes as well
+	NA[0] = A;
+	NA[1] = B;
+	NA[2] = C;
+	for(int i=0; i<3; i++) {
+		String line = new String(NA[i].getX() + " " + NA[i].getY() + " " + NA[i].getZ() + " 2\n");
+		out.write(line);
+		double dd = distanceBetweenPoints(p, NA[i]);
+		if(dd < d) {
+			d = dd;
+			closestNode = NA[i];
+		}
+	}
+
+	String line1 = new String(closestNode.getX() + " " + closestNode.getY() + " " + closestNode.getZ() + " 3\n");
+	out.write(line1);
+//	System.out.println("closestNode:  " + closestNode.getX() + ", " + closestNode.getY() + ", " + closestNode.getZ());
+	out.close();
+	} catch (IOException e) {
+	}
+	return d;
+}
+private static double distanceBetweenPoints(Node p, Node r) {
+	double dd = Math.sqrt(	(p.getX()-r.getX())*(p.getX()-r.getX()) + 
+							(p.getY()-r.getY())*(p.getY()-r.getY()) + 
+							(p.getZ()-r.getZ())*(p.getZ()-r.getZ()) );
+	return dd;
+}
+
+private static Node PointInTriangle(double a, double b, Node A, Node B, Node C)
+{
+	double c = 0;
+	double px, py, pz;
+	if (a + b > 1)
+	{
+		a = 1 - a;
+		b = 1 - b;
+	}
+	c = 1 - a - b;
+
+	px = (a * A.getX()) + (b * B.getX()) + (c * C.getX());
+	py = (a * A.getY()) + (b * B.getY()) + (c * C.getY());
+	pz = (a * A.getZ()) + (b * B.getZ()) + (c * C.getZ());
+	Node point = new Node(px, py, pz);
+	return point;
 }
 
 }
