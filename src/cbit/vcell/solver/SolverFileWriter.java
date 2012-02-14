@@ -77,4 +77,9 @@ protected void writeJMSParamters() {
 	}
 }
 
+public SimulationJob getSimulationJob()
+{
+	return simulationJob;
+}
+
 }

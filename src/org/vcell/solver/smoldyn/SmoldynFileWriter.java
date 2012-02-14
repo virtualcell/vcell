@@ -74,6 +74,8 @@ import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -107,7 +109,9 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.visit.GetSystemProperties;
 
 
 /**
@@ -663,7 +667,16 @@ private void writeReactions() throws ExpressionException, MathException {
 			if (rateDefinition.isZero()) {
 				continue;
 			}
-			if (!mathDesc.isSpatialHybrid()) {
+			if (mathDesc.isSpatialHybrid()) {
+				String symbols[] = rateDefinition.getSymbols();
+				if(symbols != null)	
+				{
+					if(subdomain instanceof MembraneSubDomain)
+					{
+						rateDefinition = new Expression(FiniteVolumeFileWriter.replaceVolumeVariable(getSimulationJob(), (MembraneSubDomain)subdomain, rateDefinition));
+					}
+				}
+			}else{
 				try {
 					rateDefinition.evaluateConstant();
 				} catch (ExpressionException ex) {
@@ -681,7 +694,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				throw new MathException("VCell spatial stochastic models support up to 2nd order reactions. \n" + "The reaction:" + pjp.getName() + " has more than 2 products.");
 			}
 			
-			String rateDefinitionStr = simulation.getMathDescription().isSpatialHybrid() ? rateDefinition.infix() : rateDefinition.evaluateConstant() + "";
+			String rateDefinitionStr = simulation.getMathDescription().isSpatialHybrid() ? rateDefinition.infix() + ";" : rateDefinition.evaluateConstant() + "";
 			if(subdomain instanceof CompartmentSubDomain) 
 			{
 				//0th order reaction, product limited to one and we'll let the reaction know where it happens
@@ -761,7 +774,7 @@ private void writeReactions() throws ExpressionException, MathException {
 
 }
 
-private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstant) throws MathException, DivideByZeroException, ExpressionException
+private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstantStr) throws MathException, DivideByZeroException, ExpressionException
 {
 	if (reacts.size() == 0) {
 		printWriter.print(0);
@@ -783,7 +796,7 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 		}
 	}
 				
-	printWriter.println(" " + rateConstant);
+	printWriter.println(" " + rateConstantStr); //rateConstantStr don't need a ";" behind, since it is the last parameter
 }
 
 
@@ -816,7 +829,7 @@ private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variab
 
 //used to write molecule transition rate command when it interacts with surface, the possible states can be 
 //reflection, transmission, adsorption, desorption  
-private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstant) throws MathException
+private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstantStr) throws MathException
 {
 	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
 	
@@ -834,7 +847,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		{
 			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.fsoln + " ");
 		}
-		printWriter.print(rateConstant + " ");
+		printWriter.print(rateConstantStr + " ");
 		printWriter.println(prods.get(0).getName());
 	}
 	//Desorption. Membrane reaction with reactants on membrane and products in either inside or outside membrane solution, 0th order desorption doesn't work in the way
@@ -850,7 +863,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		{
 			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
 		}
-		printWriter.print(rateConstant + " ");
+		printWriter.print(rateConstantStr + " ");
 		printWriter.println(prods.get(0).getName());
 	}
 	//Adsorption. Membrane reaction with reactants in either inside or outside membrane solution and products are adsorbed on membrane
@@ -866,7 +879,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		{
 			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
 		}
-		printWriter.print(rateConstant + " ");
+		printWriter.print(rateConstantStr + " ");
 		if(prods.size() == 1)
 		{
 			printWriter.println(prods.get(0).getName());
