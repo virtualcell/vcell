@@ -1,5 +1,8 @@
 package cbit.vcell.render;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -46,7 +49,7 @@ class PointEx {
 	}
 
 	public int compareTo(double otherDistance) {
-		double epsilon = 0.00000000001;
+		double epsilon = 0.000000001;
 		
 		if(this.distance + epsilon < otherDistance) {
 			return -1;
@@ -565,24 +568,38 @@ public class FastMarchingMethod {
 		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap);
 		distanceMap = fmm.march();
 
-		int numIterations = 10000;
+		
+		final int numIterations = 200000;
 		double errorThreshold = 0.35;
 		int errorCount = 0;
 		Random rand = new Random();
+		
+		try {
+		BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\FFM.3D"));
+		out.write("x y z value\n");
+
 		for(int j=0; j<numIterations; j++) {
-			x = (int)(3+rand.nextDouble()*96);
-			y = (int)(3+rand.nextDouble()*96);
-			z = (int)(3+rand.nextDouble()*96);
+			x = (int)(rand.nextDouble()*100);
+			y = (int)(rand.nextDouble()*100);
+			z = (int)(rand.nextDouble()*100);
 			i = x + y*numX + z*numX*numY;
 			p = new Vect3d(x, y, z);
 			d1 = Vect3d.distanceToTriangle3d(p, A, B, C);
 			double delta = Math.abs(d1-distanceMap[i]);
+
+			String line = new String(x + " " + y + " " + z + " " + (int)(delta*100) + "\n");
+			out.write(line);
+
 			if(delta > errorThreshold) {
 				System.out.println(x + ", " + y + ", " + z + " - delta: " + delta);
 				errorCount++;
 			}
 		}
+		out.close();
 		System.out.println("Delta above threshold " + errorThreshold + " occured in " + errorCount + " cases out of " + numIterations);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		System.out.println("A few random examples: ffm distance vs. exact distance");
 		for(int j=0; j<5; j++) {

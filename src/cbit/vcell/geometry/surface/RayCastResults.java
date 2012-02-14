@@ -62,10 +62,16 @@ public class RayCastResults {
 		return distanceMap;
 	}
 	
-	static public double[] computeSignedDistanceMap(boolean[] insideBoundary, double[] distanceMap) {
-		if(insideBoundary.length != distanceMap.length) {
+	static public double[] computeSignedDistanceMap(boolean[] insideBoundary, double[] unsignedDistanceMap) {
+		if(insideBoundary.length != unsignedDistanceMap.length) {
 			throw new RuntimeException("Arguments must have the same size");
 		}
+		
+		double[] distanceMap = null;
+		if(unsignedDistanceMap != null) {
+			distanceMap = unsignedDistanceMap.clone();
+		}
+
 		// pass1: all the points within the local distance field INSIDE the mesh become negative
 		for(int i=0; i<insideBoundary.length; i++) {
 			if(insideBoundary[i] && distanceMap[i] != Double.POSITIVE_INFINITY) {
