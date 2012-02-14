@@ -33,6 +33,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.HitEvent;
 import cbit.vcell.geometry.gui.HitList;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.render.FastMarchingMethod;
 import cbit.vcell.render.Vect3d;
 
 public class RayCaster {
@@ -86,7 +87,7 @@ public class RayCaster {
 		}
 		setSurfaceMasks(surfaceCollection);
 		
-		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ, false);
+		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ, 0);
 
 		long t2 = System.currentTimeMillis();
 		
@@ -407,10 +408,11 @@ public class RayCaster {
 	// compute ray intersection in X-Z plane with ray cast from y = -Infinity to +Infinity
 	// hitList is indexed as (i+numX*k)
 	//
-	public static RayCastResults rayCastXYZ(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ, boolean bComputeDistance){
+	// padFactor - half-width of local distance map; 0 means no padding (and no distance map computation), use big number for full brute-force sampling.
+	//
+	public static RayCastResults rayCastXYZ(SurfaceCollection surfaceCollection, double[] samplesX, double[] samplesY, double[] samplesZ, double padFactor){
 		// TODO: do not delete the comments below, they are needed for testing
 		// meaningful for a cube of 10x10x10 containing a sphere of radius 3 centered at 5,5,5
-//		bComputeDistance = true;
 //		int numErrors = 0;							// number of errors where the actual distance - theoretical distance > errorThreshold
 //		final double errorThreshold = 0.5;			// arbitrary threshold
 //		double numLocalDistanceMapElements = 0;		// number of actual elements in the local distance map
@@ -418,7 +420,7 @@ public class RayCaster {
 //		final double circleCenter = 5.0;			// sphere is centered at coords 5,5,5
 //		final double circleRadius = 3;
 		
-		final double padFactor = 2; 			// half-width of local distance map; use big number for full brute-force sampling.
+//		padFactor = 3; 								// only for testing !!!!
 
 		int numX = samplesX.length;
 		int numY = samplesY.length;
@@ -426,7 +428,6 @@ public class RayCaster {
 		double[] distanceMap = null;
 		
 		double epsilon = 1e-8; // roundoff factor.
-		
 		long t1 = System.currentTimeMillis();
 
 		HitList hitListsXY[] = new HitList[numX*numY];
@@ -538,7 +539,7 @@ public class RayCaster {
 				}
 				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
 					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
-					if (bComputeDistance){
+					if (padFactor>0){
 						if (distanceMap==null){
 							distanceMap = new double[numX*numY*numZ];
 							Arrays.fill(distanceMap, Double.POSITIVE_INFINITY);
@@ -586,15 +587,11 @@ public class RayCaster {
 						for (int ii=tstartI;ii<=tendI;ii++){
 							for (int jj=tstartJ;jj<=tendJ;jj++){
 								for (int kk=tstartK;kk<=tendK;kk++){
-//									Vect3d testPoint = new Vect3d(samplesX[ii],samplesY[jj],samplesZ[kk]);
-//									Vect3d tr1 = new Vect3d(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
-//									Vect3d tr2 = new Vect3d(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
-//									Vect3d tr3 = new Vect3d(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
 									testPoint.set(samplesX[ii],samplesY[jj],samplesZ[kk]);
 									tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
 									tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
 									tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
-									double distanceToTriangle3d = Vect3d.distanceToTriangle3d3(testPoint, tr1, tr2, tr3);	// always a positive number
+									double distanceToTriangle3d = Vect3d.distanceToTriangle3d(testPoint, tr1, tr2, tr3);	// always a positive number
 									int distanceMapIndex = ii+jj*numX+kk*numX*numY;
 									double bestMatch = Math.min(distanceMap[distanceMapIndex],distanceToTriangle3d);
 									distanceMap[distanceMapIndex] = bestMatch;
@@ -918,7 +915,6 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 		long t1 = System.currentTimeMillis();
 
 		// here we expect either triangles or nonplanar quads which will be broken up into two triangles.
-		int hitCount=0;
 		cbit.vcell.geometry.surface.Triangle triangles[] = new cbit.vcell.geometry.surface.Triangle[2];
 		for (int j = 0; j < surfaceCollection.getSurfaceCount(); j++){
 			Surface surface = surfaceCollection.getSurfaces(j);
@@ -1021,7 +1017,7 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 								tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
 								tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
 								tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
-								double distanceToTriangle3d = Vect3d.distanceToTriangle3d3(testPoint, tr1, tr2, tr3);	// always a positive number
+								double distanceToTriangle3d = Vect3d.distanceToTriangle3d(testPoint, tr1, tr2, tr3);	// always a positive number
 								int distanceMapIndex = ii+jj*numX+kk*numX*numY;
 								double bestMatch = Math.min(distanceMap[distanceMapIndex],distanceToTriangle3d);
 								distanceMap[distanceMapIndex] = bestMatch;
