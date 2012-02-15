@@ -93,7 +93,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private void showOrHideMicroscopeMeasurementPanel() {
 		ProtocolsPanelTab tab = protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
-		if (simulationContext.getGeometry().getDimension() > 0 && (!simulationContext.isStoch() || simulationContext.getMathDescription().isSpatialHybrid())) {
+		if (simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch()) {
 			if (index < 0) {
 				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 			}
