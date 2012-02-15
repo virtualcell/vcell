@@ -49,7 +49,8 @@ class PointEx {
 	}
 
 	public int compareTo(double otherDistance) {
-		double epsilon = 0.000000001;
+//		double epsilon = 0.000000001;
+		double epsilon = 0.1;
 		
 		if(this.distance + epsilon < otherDistance) {
 			return -1;
@@ -68,6 +69,7 @@ class PointEx {
  ***/
 public class FastMarchingMethod {
 
+	private int countPosition16452=0;
     // auxiliary constants used for selecting max and min values of certain variables
     private static final double MAX_NUMBER = Double.POSITIVE_INFINITY;
     
@@ -134,14 +136,14 @@ public class FastMarchingMethod {
 			if(max<distance) {
 				max=distance;
 				if(max%20 == 0) {
-//					System.out.println("Max distance reached " + max + ", narrowBand size is " + narrowBand.size());
+					System.out.println("Max distance reached " + max + ", narrowBand size is " + narrowBand.size());
 				}
 			}
 			manageCandidates(frozenElement.getPosition());
 		}
 		
 		long t3 = System.currentTimeMillis();
-//		System.out.println("---------- " + (int)((t3-t1)/1000) + " seconds ----------");
+		System.out.println("---------- " + (int)((t3-t1)/1000) + " seconds ----------");
 		
 		for(int i=0; i<distanceMap.length; i++) {
 			distanceMap[i] = points[i].getDistance();
@@ -151,6 +153,7 @@ public class FastMarchingMethod {
 	
 	private void manageCandidates(int currentPosition) {
 		int candidatePosition = 0;
+//		System.out.println("     candidate " + currentPosition);
 		
 		candidatePosition = nextOnX(currentPosition);
 		manageCandidate(candidatePosition);
@@ -174,6 +177,10 @@ public class FastMarchingMethod {
 			return;				// already frozen, nothing to do
 		}
 		double candidateDistance = 0;
+
+//		if(candidatePosition == 16452) {
+//			countPosition16452++;
+//		}
 		candidateDistance = computeDistance(candidatePosition);
 		if(candidateDistance == -1) {
 			throw new RuntimeException("Unable to compute distance at position " + candidatePosition);
@@ -263,8 +270,13 @@ public class FastMarchingMethod {
 		} else if(r.getType() == RootsType.degenerate) {
 			double distance = r.getRoot1();
 			return distance;
-		} else {
+		} else if(r.getType() == RootsType.error) {
+			System.out.println(" Quadratic ecuation: Cannot solve c = 0. ");
 			return -1;
+		} else {
+//			System.out.println(" Quadratic ecuation: Imaginary roots. ");
+			double distance = r.getRoot1();
+			return distance;
 		}
 	}
 
