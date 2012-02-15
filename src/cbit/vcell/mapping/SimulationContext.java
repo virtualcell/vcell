@@ -30,7 +30,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -266,7 +265,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
-	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel());
+	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(), this);
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;

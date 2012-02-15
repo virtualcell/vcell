@@ -38,6 +38,7 @@ import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
@@ -113,6 +114,10 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
 							SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
 							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
+							setSelectedObjects(new Object[] {object});
+						} else if (object instanceof MicroscopeMeasurement) {
+							SimulationContext simulationContext = ((MicroscopeMeasurement) object).getSimulationContext();
+							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments));
 							setSelectedObjects(new Object[] {object});
 						} else if (object instanceof OutputFunctionIssueSource) {
 							SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
