@@ -51,6 +51,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		}		
 	}
 	
+	private ProtocolsPanelTab protocolPanelTabs[] = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length];
+	
 	public ApplicationProtocolsPanel() {
 		super();
 		initialize();
@@ -63,12 +65,12 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
 		
-		ProtocolsPanelTab tabs[] = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
-		tabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
-		tabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
-		tabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
+		protocolPanelTabs = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
+		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
 		
-		for (ProtocolsPanelTab tab : tabs) {
+		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
 			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}		
@@ -79,13 +81,32 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		super.setSimulationContext(newValue);
 		eventsDisplayPanel.setSimulationContext(simulationContext);
 		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
-		microscopeMeasurementPanel.setSimulationContext(simulationContext);
+		showOrHideMicroscopeMeasurementPanel();
 	}
 	
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
+	}
+
+	private void showOrHideMicroscopeMeasurementPanel() {
+		ProtocolsPanelTab tab = protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()];
+		int index = tabbedPane.indexOfComponent(tab.component);
+		if (simulationContext.getGeometry().getDimension() > 0 && (!simulationContext.isStoch() || simulationContext.getMathDescription().isSpatialHybrid())) {
+			if (index < 0) {
+				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			}
+			microscopeMeasurementPanel.setSimulationContext(simulationContext);
+		} else {
+			if (index >= 0) {
+				Component selectedComponent = tabbedPane.getSelectedComponent();
+				tabbedPane.remove(tab.component);
+				if (selectedComponent == tab.component) {
+					tabbedPane.setSelectedIndex(0);
+				}
+			}
+		}
 	}
 
 	@Override

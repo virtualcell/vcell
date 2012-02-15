@@ -2580,6 +2580,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (mathDesc.getGeometry().getDimension() == 3) {
 				ProjectionDataGenerator dataGenerator = new ProjectionDataGenerator(measurement.getName(), null, ProjectionDataGenerator.Axis.z, ProjectionDataGenerator.Operation.sum, concExp);
 				mathDesc.getPostProcessingBlock().addDataGenerator(dataGenerator);
+			} else {
+				throw new MappingException("Z Projection is only supported in 3D spatial applications.");
 			}
 		}
 		

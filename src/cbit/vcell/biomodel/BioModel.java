@@ -44,6 +44,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.Applica
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
@@ -1153,6 +1154,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = "App(" + ((GeometryContext)source).getSimulationContext().getNameScope().getPathDescription() + ")";
 		} else if (source instanceof ModelOptimizationSpec) {
 			description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getNameScope().getPathDescription() + ") / Parameter Estimation";
+		} else if (source instanceof MicroscopeMeasurement) {
+			description = "App(" + ((MicroscopeMeasurement)source).getSimulationContext().getNameScope().getPathDescription() + ") / Microscope Measurements";
 		}
 		return description;
 	}
@@ -1179,6 +1182,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		} else if (object instanceof UnmappedGeometryClass) {
 			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
+		} else if (object instanceof MicroscopeMeasurement) {
+			description = ((MicroscopeMeasurement) object).getName();
 		}else if (object instanceof GeometryContext) {
 			description = "Geometry";
 		}else if (object instanceof ModelOptimizationSpec) {

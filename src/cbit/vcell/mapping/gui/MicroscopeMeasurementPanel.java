@@ -11,6 +11,7 @@
 package cbit.vcell.mapping.gui;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -344,7 +345,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			pointSpreadFunctionsComboBox.addActionListener(internalEventHandler);
 			pointSpreadFunctionsComboBox.setEnabled(false);
 			
-			rdbtnZprojection = new JRadioButton("z Projection");
+			rdbtnZprojection = new JRadioButton("Z Projection");
 			rdbtnZprojection.addActionListener(internalEventHandler);
 			
 			importPsfButton = new JButton("Import PSF");
@@ -474,6 +475,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		JScrollPane scrollPane1 = new JScrollPane(allSpeciesContextList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane1.setPreferredSize(new Dimension(200,200));
 		panel.add(scrollPane1, gbc);
 		
 		JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));

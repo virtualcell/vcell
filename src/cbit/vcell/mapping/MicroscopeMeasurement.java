@@ -16,17 +16,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sbml.libsbml.Species;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
+@SuppressWarnings("serial")
 public class MicroscopeMeasurement implements Serializable, Matchable  {
 	
 	public static final String CONVOLUTION_KERNEL_PROPERTYNAME = "convolutionKernel";
@@ -36,7 +35,7 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 	private ArrayList<SpeciesContext> fluorescentSpecies = new ArrayList<SpeciesContext>();
 	private ConvolutionKernel convolutionKernel = null;
 	private transient PropertyChangeSupport propertyChangeSupport = null;
-	
+	private SimulationContext simulationContext;
 
 	public static abstract class ConvolutionKernel implements Serializable, Matchable {
 	}
@@ -101,9 +100,10 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 	}
 		
 		
-	public MicroscopeMeasurement(String argName, ConvolutionKernel argConvolutionKernel) {
+	public MicroscopeMeasurement(String argName, ConvolutionKernel argConvolutionKernel, SimulationContext simContext) {
 		this.name = argName;
 		this.convolutionKernel = argConvolutionKernel;
+		simulationContext = simContext;
 	}
 
 	public String getName() {
@@ -184,11 +184,15 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 
 	public void gatherIssues(List<Issue> issueVector) {
 		if (fluorescentSpecies.size() > 0) {
-//			if(getConvolutionKernel() instanceof ProjectionZKernel && simulationContext.getGeometry().getDimension() != 3) {	
-//				Issue issue = new Issue(this, IssueCategory.Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning, "Projection in Z only supports 3D geometry.", Issue.SEVERITY_ERROR);
-//				issueVector.add(issue);
-//			}
+			if(getConvolutionKernel() instanceof ProjectionZKernel && simulationContext.getGeometry().getDimension() != 3) {
+				Issue issue = new Issue(this, IssueCategory.Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning, "Z Projection is only supported in 3D spatial applications.", Issue.SEVERITY_ERROR);
+				issueVector.add(issue);
+			}
 		}
+	}
+
+	public final SimulationContext getSimulationContext() {
+		return simulationContext;
 	}
 
 }
