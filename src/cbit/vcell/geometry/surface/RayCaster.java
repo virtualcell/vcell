@@ -11,7 +11,9 @@
 package cbit.vcell.geometry.surface;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -420,8 +422,6 @@ public class RayCaster {
 //		final double circleCenter = 5.0;			// sphere is centered at coords 5,5,5
 //		final double circleRadius = 3;
 		
-//		padFactor = 3; 								// only for testing !!!!
-
 		int numX = samplesX.length;
 		int numY = samplesY.length;
 		int numZ = samplesZ.length;
@@ -539,6 +539,9 @@ public class RayCaster {
 				}
 				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
 					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
+
+//					padFactor = 2; 								// only for testing !!!!
+
 					if (padFactor>0){
 						if (distanceMap==null){
 							distanceMap = new double[numX*numY*numZ];
@@ -703,6 +706,31 @@ public class RayCaster {
 				}
 			}
 		}
+		
+		FastMarchingMethod fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap);
+		distanceMap = fmm.march();
+// TODO: uncomment the code below to write to file in a format readable by visit
+//		int numIterations = distanceMap.length;
+//		try {
+//			BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\theRealThing.3D"));
+//			out.write("x y z value\n");
+//			for(int j=0; j<numIterations; j++) {
+//				int x = getX(j, numX, numY);
+//				int y = getY(j, numX, numY);
+//				int z = getZ(j, numX, numY);
+//				if(distanceMap[j] == Double.POSITIVE_INFINITY) {
+//					continue;
+//				}
+//				if(x%2==0 && y%2==0 && z%2==0) {
+//					String line = new String(x + " " + y + " " + z + " " + distanceMap[j] + "\n");
+//					out.write(line);
+//				}
+//			}
+//			out.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+
 		
 // TODO: do not delete the comments below, they are needed for testing on a particular model
 //		if(bComputeDistance) {
@@ -1001,11 +1029,7 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 							tendK = Math.max(tendK,  kk);
 						}
 					}
-					// time breakout (purkinje example, pad 5, 10x sample rate):
-					// 20 sec - empty loops
-					// 56 sec - vector allocations
-					// 50 sec - distance map computation
-					// 04 sec - comparison and replacement						
+
 					Vect3d testPoint = new Vect3d();
 					Vect3d tr1 = new Vect3d();
 					Vect3d tr2 = new Vect3d();
@@ -1029,5 +1053,23 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 		}
 		return distanceMap;
 	}
+	
+	private static int getX(int position, int numX, int numY) {
+    	int z = (int)(position/(numX*numY));
+    	int tmp1 = position - z*numX*numY;
+    	int x = (int)(tmp1%numX);
+    	return x;
+	}
+	private static int getY(int position, int numX, int numY) {
+    	int z = (int)(position/(numX*numY));
+    	int tmp1 = position - z*numX*numY;
+    	int y = (int)(tmp1/numX);
+    	return y;
+	}
+	private static int getZ(int position, int numX, int numY) {
+    	int z = (int)(position/(numX*numY));
+    	return z;
+	}
+
 	
 }
