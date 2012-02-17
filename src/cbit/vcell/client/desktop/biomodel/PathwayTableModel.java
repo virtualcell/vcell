@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.sbpax.schemas.util.SBPAX3Util;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Control;
@@ -31,7 +32,6 @@ import org.vcell.pathway.PathwayEvent;
 import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
-import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.util.gui.ScrollTable;
@@ -135,7 +135,7 @@ public class PathwayTableModel extends VCellSortTableModel<BioPaxObject> impleme
 
 		Set<Control> controls = BioPAXUtil.findAllControls(interaction, pathwayModel);
 		subEntities.addAll(controls);
-		subEntities = SBPAXKineticsExtractor.extractAllEntities(subEntities);
+		subEntities = SBPAX3Util.extractAllEntities(subEntities);
 		for(SBEntity subEntity : subEntities) {
 			if(subEntity instanceof SBMeasurable) {
 				return true;

@@ -46,11 +46,9 @@ import org.vcell.pathway.RnaRegion;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
-import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBPAXLabelUtil;
-import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -420,7 +418,7 @@ protected void refreshInterface() {
 				subEntities.add(interaction);
 				Set<Control> controls = BioPAXUtil.findAllControls(interaction, bioModel.getPathwayModel());
 				subEntities.addAll(controls);
-				subEntities = SBPAXKineticsExtractor.extractAllEntities(subEntities);
+				subEntities = SBPAX3Util.extractAllEntities(subEntities);
 				for(SBEntity subEntity : subEntities) {
 					if(subEntity instanceof SBMeasurable) {
 						propertyList.add(new BioPaxObjectProperty("Measured quantity", SBPAXLabelUtil.makeLabel(subEntity)));									

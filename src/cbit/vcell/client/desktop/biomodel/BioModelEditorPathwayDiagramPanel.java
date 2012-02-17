@@ -1279,8 +1279,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}else if(bpObject instanceof Protein || bpObject instanceof SmallMolecule){
 			Set<BioPaxObject> bioPaxObjects = new HashSet<BioPaxObject>(bioModel.getPathwayModel().getBiopaxObjects());
 			ArrayList<String> name = new ArrayList<String>();
-			ArrayList<BioPaxObject> parents = bioModel.getPathwayModel().getParents(bpObject);
-			if(parents == null){
+			List<BioPaxObject> parents = bioModel.getPathwayModel().getParents(bpObject);
+			if(parents.isEmpty()){
 				DialogUtils.showErrorDialog(this, 
 						"No Collapse action happened because protein, " 
 						+ getEntityName((Entity)bpObject)+ ", doesn't involve in any complexes in the pathway data.");

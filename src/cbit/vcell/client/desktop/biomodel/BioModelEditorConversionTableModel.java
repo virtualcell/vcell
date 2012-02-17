@@ -40,7 +40,6 @@ import org.vcell.pathway.Transport;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
@@ -162,9 +161,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 				if(valueNew instanceof String) {
 					ConversionTableRow conversonTableRow = getValueAt(iRow);
 					if(isValid(((String)valueNew).trim()))
-						conversonTableRow.setId(getSafetyName(((String)valueNew).trim()));
+						conversonTableRow.setId(BioPAXUtil.getSafetyName(((String)valueNew).trim()));
 					else
-						conversonTableRow.setId(getSafetyName((changeID(((String)valueNew).trim()))));
+						conversonTableRow.setId(BioPAXUtil.getSafetyName((changeID(((String)valueNew).trim()))));
 				}
 				break;
 			}
@@ -173,8 +172,8 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 					ConversionTableRow conversonTableRow = getValueAt(iRow);
 					conversonTableRow.setLocation(((Structure)valueNew).getName().trim());
 					// update id value
-					setValueAt(getSafetyName(getLabel(conversonTableRow.getBioPaxObject()))+"_"+
-							getSafetyName(((Structure)valueNew).getName().trim()),iRow,iColID);
+					setValueAt(BioPAXUtil.getSafetyName(getLabel(conversonTableRow.getBioPaxObject()))+"_"+
+							BioPAXUtil.getSafetyName(((Structure)valueNew).getName().trim()),iRow,iColID);
 				}
 				break;
 			}
@@ -550,16 +549,11 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		// id
 		if(relationshipObjects == null){
 			if(bpObject instanceof Entity) {
-				ArrayList<String> nameList = ((Entity)bpObject).getName();
-				if(!nameList.isEmpty()) {
-					String id = (getSafetyName(nameList.get(0))+"_"+location).trim();
-					if(isValid(id))
-						conversionTableRow.setId(id);
-					else
-						conversionTableRow.setId(changeID(id));		
-				}else{					
-					conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
-				}
+				String id = (BioPAXUtil.getName((Entity) bpObject)+"_"+location).trim();
+				if(isValid(id))
+					conversionTableRow.setId(id);
+				else
+					conversionTableRow.setId(changeID(id));		
 			}
 		}else{
 			String id = null;
@@ -574,16 +568,11 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			}else{
 				// a new bmObject will be created if no linked bmObject in the same location
 				if(bpObject instanceof Entity) {
-					ArrayList<String> nameList = ((Entity)bpObject).getName();
-					if(!nameList.isEmpty()) {
-						id = (getSafetyName(nameList.get(0))+"_"+location).trim();
-						if(isValid(id))
-							conversionTableRow.setId(id);
-						else
-							conversionTableRow.setId(changeID(id));		
-					}else{
-						conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
-					}
+					id = (BioPAXUtil.getName((Entity) bpObject)+"_"+location).trim();
+					if(isValid(id))
+						conversionTableRow.setId(id);
+					else
+						conversionTableRow.setId(changeID(id));		
 				}
 			}
 		}
@@ -654,16 +643,11 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		// id
 		if(relationshipObjects == null){
 			if(bpObject instanceof Entity) {
-				ArrayList<String> nameList = ((Entity)bpObject).getName();
-				if(!nameList.isEmpty()) {
-					String id = (getSafetyName(nameList.get(0))+"_"+location).trim();
-					if(isValid(id))
-						conversionTableRow.setId(id);
-					else
-						conversionTableRow.setId(changeID(id));		
-				}else{
-					conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
-				}
+				String id = (BioPAXUtil.getName((Entity) bpObject)+"_"+location).trim();
+				if(isValid(id))
+					conversionTableRow.setId(id);
+				else
+					conversionTableRow.setId(changeID(id));		
 			}
 		}else{
 			String id = null;
@@ -678,16 +662,11 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 			}else{
 				// a new bmObject will be created if no linked bmObject in the same location
 				if(bpObject instanceof Entity) {
-					ArrayList<String> nameList = ((Entity)bpObject).getName();
-					if(!nameList.isEmpty()) {
-						id = (getSafetyName(nameList.get(0))+"_"+location).trim();
-						if(isValid(id))
-							conversionTableRow.setId(id);
-						else
-							conversionTableRow.setId(changeID(id));		
-					}else{
-						conversionTableRow.setId(((Entity)bpObject).getIDShort()+ "_" +location);
-					}
+					id = (BioPAXUtil.getName((Entity) bpObject)+"_"+location).trim();
+					if(isValid(id))
+						conversionTableRow.setId(id);
+					else
+						conversionTableRow.setId(changeID(id));		
 				}
 			}
 		}
@@ -756,10 +735,5 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 		}
 		return null;
 	}
-	
-	//convert the name of biopax object to safety vcell object name
-	private static String getSafetyName(String oldValue){
-		return TokenMangler.fixTokenStrict(oldValue, 60);
-	} 
 	
 }
