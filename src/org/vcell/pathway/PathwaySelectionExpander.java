@@ -25,12 +25,10 @@ public class PathwaySelectionExpander {
 			selectedToAdd.clear();
 			for(BioPaxObject selected : selectedSet) {
 				if(selected instanceof PhysicalEntity) {
-					ArrayList<BioPaxObject> parents = pathwayModel.getParents(selected);
-					if(parents != null){
-						for(BioPaxObject parent : parents){
-							if((!selectedSet.contains(parent)) && (parent instanceof Complex)) {
-								selectedToAdd.add(parent);							
-							}
+					List<BioPaxObject> parents = pathwayModel.getParents(selected);
+					for(BioPaxObject parent : parents){
+						if((!selectedSet.contains(parent)) && (parent instanceof Complex)) {
+							selectedToAdd.add(parent);							
 						}
 					}				
 				}
@@ -74,14 +72,12 @@ public class PathwaySelectionExpander {
 		Set<BioPaxObject> selectedToAdd = new HashSet<BioPaxObject>();
 		for(BioPaxObject selected : selectedList) {
 			if(selected instanceof PhysicalEntity) {
-				ArrayList<BioPaxObject> parents = pathwayModel.getParents(selected);
-				if(parents != null){
-					for(BioPaxObject parent : parents){
-						if((!selectedSet.contains(parent)) && (parent instanceof Interaction)) {
-							selectedToAdd.add(parent);							
-						}
+				List<BioPaxObject> parents = pathwayModel.getParents(selected);
+				for(BioPaxObject parent : parents){
+					if((!selectedSet.contains(parent)) && (parent instanceof Interaction)) {
+						selectedToAdd.add(parent);							
 					}
-				}				
+				}
 			}
 		}
 		selectedSet.addAll(selectedToAdd);
@@ -100,14 +96,12 @@ public class PathwaySelectionExpander {
 			selectedToAdd.clear();
 			for(BioPaxObject selected : selectedSet) {
 				if(selected instanceof Interaction) {
-					ArrayList<BioPaxObject> parents = pathwayModel.getParents(selected);
-					if(parents != null){
-						for(BioPaxObject parent : parents){
-							if((!selectedSet.contains(parent)) && (parent instanceof Control)) {
-								selectedToAdd.add(parent);							
-							}
+					List<BioPaxObject> parents = pathwayModel.getParents(selected);
+					for(BioPaxObject parent : parents){
+						if((!selectedSet.contains(parent)) && (parent instanceof Control)) {
+							selectedToAdd.add(parent);							
 						}
-					}				
+					}
 				}
 			}
 			selectedSet.addAll(selectedToAdd);

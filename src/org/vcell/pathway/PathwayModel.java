@@ -486,12 +486,10 @@ public class PathwayModel {
 	}
 
 	// get parents list for one Biopax object
-	public ArrayList<BioPaxObject> getParents(BioPaxObject bpObject){
+	public List<BioPaxObject> getParents(BioPaxObject bpObject){
 		ArrayList<BioPaxObject> parentObjects = new ArrayList<BioPaxObject>();
 		HashSet<BioPaxObject> parentSet = parentMap.get(bpObject);
-		if(parentSet == null){
-			return null;
-		}else{
+		if(parentSet != null){
 			for(BioPaxObject bp : parentSet){
 				parentObjects.add(bp);
 			}

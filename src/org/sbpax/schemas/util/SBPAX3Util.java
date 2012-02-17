@@ -10,6 +10,9 @@
 
 package org.sbpax.schemas.util;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -17,6 +20,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.sbpax.schemas.BioPAX3;
 import org.sbpax.schemas.SBPAX3;
 import org.sbpax.schemas.UOMEList;
+import org.vcell.pathway.sbpax.SBEntity;
 
 
 public class SBPAX3Util {
@@ -97,6 +101,21 @@ public class SBPAX3Util {
 				UOMEList.PerSecond);
 	}
 	
+	public static Set<SBEntity> extractAllEntities(SBEntity entity) {
+		Set<SBEntity> entities = new HashSet<SBEntity>();
+		entities.add(entity);
+		for(SBEntity subEntity : entity.getSBSubEntity()) {
+			entities.addAll(extractAllEntities(subEntity));
+		}
+		return entities;
+	}
 
-	
+	public static Set<SBEntity> extractAllEntities(Set<SBEntity> entities) {
+		Set<SBEntity> entities2 = new HashSet<SBEntity>();
+		for(SBEntity entity : entities) {
+			entities2.addAll(extractAllEntities(entity));
+		}
+		return entities2;
+	}
+		
 }

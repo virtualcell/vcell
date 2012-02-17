@@ -37,11 +37,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/js.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-js.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
@@ -54,10 +54,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
 	<classpathentry kind="lib" path="lib/netty-3.2.5.Final.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-model-2.6.2.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-api-2.6.2.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-n3-2.6.2.jar"/>
-	<classpathentry kind="lib" path="sesame/sesame-rio-rdfxml-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-model-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-api-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-n3-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-rdfxml-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jamtio.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -13,7 +13,15 @@ package org.vcell.pathway;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.sbpax.util.sets.SetOfOne;
+import org.sbpax.util.sets.SetOfThree;
+import org.sbpax.util.sets.SetOfTwo;
+import org.vcell.pathway.InteractionParticipant.Type;
+import org.vcell.sybil.util.JavaUtil;
+import org.vcell.util.TokenMangler;
 
 public class BioPAXUtil {
 
@@ -40,17 +48,148 @@ public class BioPAXUtil {
 			return Collections.<Control>emptySet();
 		}
 		HashSet<Control> controls = new HashSet<Control>();
-		ArrayList<BioPaxObject> parents = pathwayModel.getParents(interaction);
-		if(parents != null) {
-			for(BioPaxObject bpObject : parents) {
-				if(bpObject instanceof Control) {
-					Control control = (Control) bpObject;
-					controls.add(control);
-					controls.addAll(findAllControls(control, pathwayModel, depth + 1));
-				}
-			}			
+		List<BioPaxObject> parents = pathwayModel.getParents(interaction);
+		for(BioPaxObject bpObject : parents) {
+			if(bpObject instanceof Control) {
+				Control control = (Control) bpObject;
+				controls.add(control);
+				controls.addAll(findAllControls(control, pathwayModel, depth + 1));
+			}
 		}
 		return controls;
+	}
+	
+	public static class Process {
+		
+		protected final Conversion conversion;
+		protected final Catalysis catalysis;
+		protected final Modulation modulation;
+		
+		public Process(Conversion conversion, Catalysis catalysis, Modulation modulation) {
+			this.conversion = conversion;
+			this.catalysis = catalysis;
+			this.modulation = modulation;
+		}
+		
+		public Process(Conversion conversion, Catalysis catalysis) { 
+			this(conversion, catalysis, null); 
+		}
+		
+		public Process(Conversion conversion) { this(conversion, null); }
+		
+		public Conversion getConversion() { return conversion; }
+		public Catalysis getCatalysis() { return catalysis; }
+		public Modulation getModulation() { return modulation; }
+		
+		public Interaction getTopLevelInteraction() {
+			if(modulation != null) { return modulation; }
+			if(catalysis != null) { return catalysis; }	
+			return conversion;
+		}
+		
+		public Set<Interaction> getInteractions() {
+			if(modulation != null) { 
+				return new SetOfThree<Interaction>(conversion, catalysis, modulation); 
+			}
+			if(catalysis != null) { return new SetOfTwo<Interaction>(conversion, catalysis); }	
+			return new SetOfOne<Interaction>(conversion);			
+		}
+
+		public Set<PhysicalEntity> getControllers() {
+			HashSet<PhysicalEntity> controllers = new HashSet<PhysicalEntity>();
+			if(catalysis != null) {
+				for(InteractionParticipant participant : catalysis.getParticipants(Type.CONTROLLER)) {
+					controllers.add(participant.getPhysicalEntity());
+				}
+			}
+			if(modulation != null) {
+				for(InteractionParticipant participant : modulation.getParticipants(Type.CONTROLLER)) {
+					controllers.add(participant.getPhysicalEntity());
+				}
+			}
+			return controllers;
+		}
+		
+		public int hashCode() {
+			return JavaUtil.hashCode(conversion) + JavaUtil.hashCode(catalysis) 
+			+ JavaUtil.hashCode(modulation);
+		}
+		
+		public boolean equals(Object o) {
+			if(o instanceof Process) {
+				Process op = (Process) o;
+				return JavaUtil.equals(conversion, op.getConversion()) && 
+				JavaUtil.equals(catalysis, op.getCatalysis()) && 
+				JavaUtil.equals(modulation, op.getModulation());
+			}
+			return false;
+		}
+	
+		public String getName() {
+			String name = BioPAXUtil.getName(conversion);
+			if(catalysis != null) {
+				List<PhysicalEntity> catalysts = 
+					catalysis.getParticipantPhysicalEntities(Type.CONTROLLER);
+				if(catalysts.isEmpty()) {
+					name = name + "_unknown";
+				} else {
+					for(PhysicalEntity catalyst : catalysts) {
+						name = name + "_" + BioPAXUtil.getName(catalyst);
+					}
+				}
+			}
+			if(modulation != null) {
+				List<PhysicalEntity> modulators = 
+					modulation.getParticipantPhysicalEntities(Type.CONTROLLER);
+				if(modulators.isEmpty()) {
+					name = name + "_unknown";
+				} else {
+					for(PhysicalEntity catalyst : modulators) {
+						name = name + "_" + BioPAXUtil.getName(catalyst);
+					}
+				}
+			}
+			return name;
+		}
+		
+	}
+	
+	public static Set<Process> getAllProcesses(PathwayModel pathwayModel, Conversion conversion) {
+		HashSet<Process> processes = new HashSet<Process>();
+		for(BioPaxObject parent : pathwayModel.getParents(conversion)) {
+			if(parent instanceof Catalysis) {
+				Catalysis catalysis = (Catalysis) parent;
+				boolean hasModulation = false;
+				for(BioPaxObject grandParent : pathwayModel.getParents(parent)) {
+					if(grandParent instanceof Modulation) {
+						Modulation modulation = (Modulation) grandParent;
+						processes.add(new Process(conversion, catalysis, modulation));
+						hasModulation = true;
+					}
+				}
+				if(!hasModulation) {
+					processes.add(new Process(conversion, catalysis));
+				}
+			}
+		}
+		if(processes.isEmpty()) {
+			processes.add(new Process(conversion));
+		}
+		return processes;
+	}
+	
+	//convert the name of biopax object to safety vcell object name
+	public static String getSafetyName(String oldValue){
+		return TokenMangler.fixTokenStrict(oldValue, 60);
+	} 
+	
+	public static String getName(Entity entity) {
+		ArrayList<String> nameList = entity.getName();
+		if(!nameList.isEmpty()) {
+			return (getSafetyName(nameList.get(0))).trim();
+		}else{					
+			return entity.getIDShort();
+		}
 	}
 	
 }

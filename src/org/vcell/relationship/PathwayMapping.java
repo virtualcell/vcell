@@ -12,6 +12,7 @@ package org.vcell.relationship;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -19,10 +20,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.pathway.BioPAXUtil;
+import org.vcell.pathway.BioPAXUtil.Process;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.ComplexAssembly;
-import org.vcell.pathway.Control;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
@@ -32,7 +32,6 @@ import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
-import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
@@ -57,15 +56,15 @@ public class PathwayMapping {
 				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
 			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){ // Conversion : ComplexAssembly
-				createReactionStepFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
+				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}else if(conversionTableRow.getBioPaxObject() instanceof Transport){ // Conversion : Transport
-				createReactionStepFromTableRow(bioModel, (Transport)conversionTableRow.getBioPaxObject(),
+				createReactionStepsFromTableRow(bioModel, (Transport)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 //			}else if(conversionTableRow.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
 //				// to do
 			}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){ // Conversion : BiochemicalReaction
-				createReactionStepFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
+				createReactionStepsFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
 						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
 			}
 		}
@@ -80,7 +79,7 @@ public class PathwayMapping {
 				if(bioPaxObject instanceof PhysicalEntity){
 					createSpeciesContextFromBioPaxObject(bioModel, (PhysicalEntity)bioPaxObject);
 				}else if(bioPaxObject instanceof Conversion){
-					createReactionStepFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
+					createReactionStepsFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
 				}
 			}else if(selectedObjects[i] instanceof ConversionTableRow){
 				ConversionTableRow conversionTableRow = (ConversionTableRow)selectedObjects[i];
@@ -88,7 +87,7 @@ public class PathwayMapping {
 					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
 							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
 				}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){
-					createReactionStepFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
+					createReactionStepsFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
 							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
 				}
 			}
@@ -188,119 +187,122 @@ public class PathwayMapping {
 		return freeSpeciesContext;
 	}
 	
-	private void createReactionStepFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
+	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
 	{
-		String name;
-		if(conversion.getName().size() == 0){
-			name = getSafetyName(conversion.getID());
-		}else{
-			name = getSafetyName(conversion.getName().get(0));
+		for(Process process :BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion)) {
+			String name = process.getName();
+			if(bioModel.getModel().getReactionStep(name) == null){
+				// create a new reactionStep object
+				ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
+				simpleReactionStep.setName(name);
+				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStepFromPathway(bioModel, process, simpleReactionStep, newRelationship);
+			}else{
+				// add missing parts for the existing reactionStep
+				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStepFromPathway(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship);
+			}
 		}
-		if(bioModel.getModel().getReactionStep(name) == null){
-			// create a new reactionStep object
-			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
-			simpleReactionStep.setName(name);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStepFromPathway( bioModel, simpleReactionStep, newRelationship);
-		}else{
-		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStepFromPathway( bioModel, bioModel.getModel().getReactionStep(name), newRelationship);
+	}
+
+	private void createReactionStepsFromTableRow(BioModel bioModel, Conversion bioPaxObject,
+			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
+			{
+		// use user defined id as the name of the reaction name
+		// get participants from table rows
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
+			for(ConversionTableRow ctr : conversionTableRows){
+				if(ctr.interactionId().equals(bioPaxObject.getID())){
+					participants.add(ctr);
+				}
+			}
+			// create reaction object
+			String name = getSafetyName(process.getName() + "_" + location);
+			ReactionStep reactionStep = bioModel.getModel().getReactionStep(name);
+			if(reactionStep == null){
+				// create a new reactionStep object
+				ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
+				simpleReactionStep.setName(name);
+				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants);
+				addKinetics(simpleReactionStep, process);
+			}else{
+				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
+				// add missing parts for the existing reactionStep
+				RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, reactionStep, newRelationship, participants);
+				addKinetics(reactionStep, process);
+			}
 		}
 	}
 	
-	private void createReactionStepFromTableRow(BioModel bioModel, Conversion bioPaxObject,
+	private void createReactionStepsFromTableRow(BioModel bioModel, ComplexAssembly bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 	{
 		// use user defined id as the name of the reaction name
-		String safeId = getSafetyName(id);
 		// get participants from table rows
-		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
-		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionId().equals(bioPaxObject.getID())){
-				participants.add(ctr);
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
+			for(ConversionTableRow ctr : conversionTableRows){
+				if(ctr.interactionId().equals(bioPaxObject.getID())){
+					participants.add(ctr);
+				}
 			}
-		}
-		// create reaction object
-		ReactionStep reactionStep = bioModel.getModel().getReactionStep(safeId);
-		if(reactionStep == null){
-			// create a new reactionStep object
-			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
-			simpleReactionStep.setName(safeId);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
-			addKinetics(simpleReactionStep, newRelationship, bioModel);
-		}else{
-//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
-		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, reactionStep, newRelationship, participants);
-			addKinetics(reactionStep, newRelationship, bioModel);
+			// create reaction object
+			String name = getSafetyName(process.getName() + "_" + location);
+			ReactionStep reactionStep = bioModel.getModel().getReactionStep(name);
+			if(reactionStep == null){
+				// create a new reactionStep object
+				ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
+				simpleReactionStep.setName(name);
+				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, simpleReactionStep, newRelationship, participants);
+				addKinetics(simpleReactionStep, process);
+			}else{
+				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
+				// add missing parts for the existing reactionStep
+				RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, reactionStep, newRelationship, participants);
+				addKinetics(reactionStep, process);
+			}
 		}
 	}
 	
-	private void createReactionStepFromTableRow(BioModel bioModel, ComplexAssembly bioPaxObject,
+	private void createReactionStepsFromTableRow(BioModel bioModel, Transport bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
-	{
-		// use user defined id as the name of the reaction name
-		String safeId = getSafetyName(id);
-		// get participants from table rows
-		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
-		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionId().equals(bioPaxObject.getID())){
-				participants.add(ctr);
+			{
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+			// use user defined id as the name of the reaction name
+			// get participants from table rows
+			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
+			for(ConversionTableRow ctr : conversionTableRows){
+				if(ctr.interactionId().equals(bioPaxObject.getID())){
+					participants.add(ctr);
+				}
 			}
-		}
-		// create reaction object
-		ReactionStep reactionStep = bioModel.getModel().getReactionStep(safeId);
-		if(reactionStep == null){
-			// create a new reactionStep object
-			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
-			simpleReactionStep.setName(safeId);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, simpleReactionStep, newRelationship, participants);
-			addKinetics(simpleReactionStep, newRelationship, bioModel);
-		}else{
-//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
-		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(reactionStep, bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, reactionStep, newRelationship, participants);
-			addKinetics(reactionStep, newRelationship, bioModel);
-		}
-	}
-	
-	private void createReactionStepFromTableRow(BioModel bioModel, Transport bioPaxObject,
-			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
-	{
-		// use user defined id as the name of the reaction name
-		String safeId = getSafetyName(id);
-		// get participants from table rows
-		ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
-		for(ConversionTableRow ctr : conversionTableRows){
-			if(ctr.interactionId().equals(bioPaxObject.getID())){
-				participants.add(ctr);
+			// create reaction object
+			String name = getSafetyName(process.getName() + "_" + location);
+			if(bioModel.getModel().getReactionStep(name) == null){
+				// create a new reactionStep object
+				FluxReaction fluxReactionStep = bioModel.getModel().createFluxReaction((Membrane)bioModel.getModel().getStructure(location));
+				fluxReactionStep.setName(name);
+				RelationshipObject newRelationship = new RelationshipObject(fluxReactionStep, bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, fluxReactionStep, newRelationship, participants);
+			}else{
+				//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
+				// add missing parts for the existing reactionStep
+				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), bioPaxObject);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStep(bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship, participants);
 			}
-		}
-		// create reaction object
-		if(bioModel.getModel().getReactionStep(safeId) == null){
-			// create a new reactionStep object
-			FluxReaction fluxReactionStep = bioModel.getModel().createFluxReaction((Membrane)bioModel.getModel().getStructure(location));
-			fluxReactionStep.setName(safeId);
-			RelationshipObject newRelationship = new RelationshipObject(fluxReactionStep, bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, fluxReactionStep, newRelationship, participants);
-		}else{
-//			bioModel.getModel().getReactionStep(safeId).setStructure(bioModel.getModel().getStructure(location));
-		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(safeId), bioPaxObject);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStep( bioModel, bioModel.getModel().getReactionStep(safeId), newRelationship, participants);
 		}
 	}
 	
@@ -317,8 +319,9 @@ public class PathwayMapping {
 	 * 				 	all duplicated reactions share the same participant objects)
 	 *      + just modify the existing one?
 	 */
-	private void createReactionStep(BioModel bioModel, ReactionStep reactionStep, RelationshipObject relationshipObject, 
-			ArrayList<ConversionTableRow> participants) throws Exception
+	private void createReactionStep(BioModel bioModel, Process process, ReactionStep reactionStep, 
+			RelationshipObject relationshipObject, ArrayList<ConversionTableRow> participants) 
+	throws Exception
 	{
 		if (reactionStep == null || bioModel == null || bioModel.getRelationshipModel() == null || participants.size() < 1) {
 			return;
@@ -355,85 +358,67 @@ public class PathwayMapping {
 		reactionStep.setReactionParticipants(rpArray);
 		
 		// add Controls to the reaction
+		Set<PhysicalEntity> controllers = process.getControllers();
 		for(ConversionTableRow ctr : participants){
-			if(ctr.participantType().equals("Catalyst")){
-				String safeId = getSafetyName(ctr.id());
-				/* 
-				 * using addCatalyst() to create catalyst in reaction: 
-				 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
-				 */
-				//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
-				
-				/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
-				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
-				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
-				 */
-				reactionStep.addReactionParticipant(
-						new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
-			}else if(ctr.participantType().equals("Control")){
-				String safeId = getSafetyName(ctr.id());
-				/* 
-				 * using addCatalyst() to create catalyst in reaction: 
-				 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
-				 */
-				//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
-				
-				/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
-				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
-				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
-				 */
-				reactionStep.addReactionParticipant(
-						new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
+			if(controllers.contains(ctr.getBioPaxObject())) {
+				if(ctr.participantType().equals("Catalyst")){
+					String safeId = getSafetyName(ctr.id());
+					/* 
+					 * using addCatalyst() to create catalyst in reaction: 
+					 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
+					 */
+					//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
+
+					/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
+					 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
+					 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
+					 */
+					reactionStep.addReactionParticipant(
+							new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
+				}else if(ctr.participantType().equals("Control")){
+					String safeId = getSafetyName(ctr.id());
+					/* 
+					 * using addCatalyst() to create catalyst in reaction: 
+					 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
+					 */
+					//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
+
+					/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
+					 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
+					 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
+					 */
+					reactionStep.addReactionParticipant(
+							new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
+				}
+
 			}
 		}
 	}
 	
-	private void createReactionStepFromTableRow(BioModel bioModel, Conversion conversion,
+	private void createReactionStepsFromTableRow(BioModel bioModel, Conversion conversion,
 			double stoich, String id, String location) throws Exception
 	{
 		// use user defined id as the name of the reaction name
-		String name = getSafetyName(id);
-		if(bioModel.getModel().getReactionStep(name) == null){
-			// create a new reactionStep object
-			ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
-			simpleReactionStep.setName(name);
-			RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStepFromPathway( bioModel, simpleReactionStep, newRelationship);
-		}else{
-			bioModel.getModel().getReactionStep(name).setStructure(bioModel.getModel().getStructure(location));
-		// add missing parts for the existing reactionStep
-			RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
-			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
-			createReactionStepFromPathway( bioModel, bioModel.getModel().getReactionStep(name), newRelationship);
+		Set<Process> processes = BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion);
+		for(Process process : processes) {
+			String name = getSafetyName(process.getName() + "_" + location);
+			if(bioModel.getModel().getReactionStep(name) == null){
+				// create a new reactionStep object
+				ReactionStep simpleReactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructure(location));
+				simpleReactionStep.setName(name);
+				RelationshipObject newRelationship = new RelationshipObject(simpleReactionStep, conversion);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStepFromPathway( bioModel, process, simpleReactionStep, newRelationship);
+			}else{
+				bioModel.getModel().getReactionStep(name).setStructure(bioModel.getModel().getStructure(location));
+			// add missing parts for the existing reactionStep
+				RelationshipObject newRelationship = new RelationshipObject(bioModel.getModel().getReactionStep(name), conversion);
+				bioModel.getRelationshipModel().addRelationshipObject(newRelationship);
+				createReactionStepFromPathway( bioModel, process, bioModel.getModel().getReactionStep(name), newRelationship);
+			}			
 		}
 	}
 		
-	public void createBioModelEntityFromPathway(BioModel bioModel, BioModelEntityObject bioModelEntityObject, RelationshipObject relationshipObject)throws Exception 
-	{
-		if(bioModel == null){
-			return;
-		}
-		if(bioModel.getRelationshipModel() == null){
-			return;
-		}
-		// convert biopax object to vcell object		
-		if(bioModelEntityObject instanceof SpeciesContext ){
-			// annotate the selected vcell object using linked pathway object 
-			createSpeciesContextFromPathway( bioModel, (SpeciesContext) bioModelEntityObject, relationshipObject);
-		} else if(bioModelEntityObject instanceof ReactionStep ){
-			
-			if(((Conversion)relationshipObject.getBioPaxObject()).getName().size() == 0){
-				((ReactionStep)bioModelEntityObject).setName(
-						getSafetyName((relationshipObject.getBioPaxObject().getID())));
-			}else{
-				((ReactionStep)bioModelEntityObject).setName(
-						getSafetyName(((Conversion)relationshipObject.getBioPaxObject()).getName().get(0)));
-			}
-			createReactionStepFromPathway( bioModel, (ReactionStep) bioModelEntityObject, relationshipObject);
-		}
-	}
-	
 	/* for SpeciesContext object: 
 	 * 1. annotate the selected vcell object using linked pathway object
 	 * 2. map all pathway neighbors to the selected vcell object -- not done yet!
@@ -464,7 +449,8 @@ public class PathwayMapping {
 	 * 				 	all duplicated reactions share the same participant objects)
 	 *      + just modify the existing one?
 	 */
-	private void createReactionStepFromPathway(BioModel bioModel, ReactionStep reactionStep, RelationshipObject relationshipObject) throws Exception
+	private void createReactionStepFromPathway(BioModel bioModel, Process process, 
+			ReactionStep reactionStep, RelationshipObject relationshipObject) throws Exception
 	{
 		// annotate the selected vcell object using linked pathway object
 		// add non-existing speciesContexts from linked pathway conversion
@@ -520,50 +506,23 @@ public class PathwayMapping {
 		}
 		(reactionStep).setReactionParticipants(rpArray);
 		// add Control to the reaction
-		for(Control control : searchControl(bioModel, relationshipObject)){
-			for(InteractionParticipant pe : control.getParticipants()){
+		if(process.getCatalysis() != null) {
+			for(InteractionParticipant pe : process.getCatalysis().getParticipants()){
 				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
-				/* 
-				 * using addCatalyst() to create catalyst in reaction: 
-				 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
-				 */
-				//	((ReactionStep)bioModelEntityObject).addCatalyst(newSpeciescontext);
-				
-				/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
-				 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
-				 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
-				 */
 				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
 			}
+			
 		}
-		addKinetics(reactionStep, relationshipObject, bioModel);
+		if(process.getModulation() != null) {
+			for(InteractionParticipant pe : process.getModulation().getParticipants()){
+				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
+				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
+			}
+			
+		}
+		addKinetics(reactionStep, process);
 	}
 	
-	private ArrayList<Control> searchControl(BioModel bioModel, RelationshipObject relationshipObject){
-		ArrayList<Control> controlList = new ArrayList<Control>();
-		for(BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
-			if(bpObject instanceof Control){
-				Control control = (Control)bpObject;
-				if(BioPAXUtil.getControlledNonControlInteraction(control) == relationshipObject.getBioPaxObject()){
-					controlList.add(control);
-				}
-			}
-		}
-		return controlList;
-	} 
-	
-	private ArrayList<Catalysis> searchCatalyst(BioModel bioModel, RelationshipObject relationshipObject){
-		ArrayList<Catalysis> catalystList = new ArrayList<Catalysis>();
-		for(BioPaxObject bpObject : bioModel.getPathwayModel().getBiopaxObjects()){
-			if(bpObject instanceof Catalysis){
-				if(((Catalysis)bpObject).getControlledInteraction() == relationshipObject.getBioPaxObject()){
-					catalystList.add((Catalysis)bpObject);
-				}
-			}
-		}
-		return catalystList;
-	}
-
 	private ReactionParticipant[] parseReaction(ReactionStep reactionStep, BioModel bioModel, RelationshipObject relationshipObject  ) 
 			throws ExpressionException, PropertyVetoException {
 		if (reactionStep == null || bioModel == null || bioModel.getRelationshipModel() == null) {
@@ -686,12 +645,9 @@ public class PathwayMapping {
 		return TokenMangler.fixTokenStrict(oldValue, 60);
 	} 
 	
-	private void addKinetics(ReactionStep reactionStep, RelationshipObject relationshipObject, BioModel bioModel) {
-		Set<SBEntity> entities = new HashSet<SBEntity>();
-		Conversion conversion = (Conversion) relationshipObject.getBioPaxObject();
-		entities.add(conversion);
-		entities.addAll(BioPAXUtil.findAllControls(conversion, bioModel.getPathwayModel()));
-		SBPAXKineticsExtractor.extractKinetics(reactionStep, entities);		
+	private void addKinetics(ReactionStep reactionStep, Process process) {
+		SBPAXKineticsExtractor.extractKinetics(reactionStep, 
+				Collections.<SBEntity>unmodifiableSet(process.getInteractions()));		
 	}
 	
 }

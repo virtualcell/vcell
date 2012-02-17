@@ -10,6 +10,9 @@
 
 package org.vcell.pathway.sbo;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class SBOUtil {
 
 	public static SBOTerm createSBOTermFromIndex(String index, String symbol, 
@@ -42,6 +45,26 @@ public class SBOUtil {
 	
 	public static SBOTerm createSBOTermFromURI(String uri) {
 		return new SBOTerm(getIndexFromURI(uri));
+	}
+	
+	public static void setChild(SBOTerm parent, SBOTerm child) {
+		parent.getSubClasses().add(child);
+		child.getSuperClasses().add(parent);
+	}
+	
+	public static Set<SBOTerm> getAllDescendents(SBOTerm term) {
+		Set<SBOTerm> descendents = new HashSet<SBOTerm>();
+		Set<SBOTerm> descendentsNew = new HashSet<SBOTerm>();			
+		descendentsNew.add(term);
+		do {
+			Set<SBOTerm> descendentsNewNew = new HashSet<SBOTerm>();
+			for(SBOTerm descendent : descendentsNew) {
+				descendentsNewNew.addAll(descendent.getSubClasses());
+			}
+			descendents.addAll(descendentsNew);
+			descendentsNew = descendentsNewNew;
+		} while(!descendentsNew.isEmpty());
+		return descendents;
 	}
 	
 }
