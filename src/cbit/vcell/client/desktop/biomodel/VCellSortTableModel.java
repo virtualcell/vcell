@@ -323,8 +323,11 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 		if (firstObjectRowIndex < 0) {
 			return;
 		}
+		int oldValue = currentPageIndex;
 		currentPageIndex = firstObjectRowIndex / MAX_ROWS_PER_PAGE;
-		updateVisibleRows();
+		if (oldValue != currentPageIndex) {
+			updateVisibleRows();
+		}
 		
 		Set<Integer> oldSelectionSet = new HashSet<Integer>();
 		for (int row : table.getSelectedRows()) {

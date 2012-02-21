@@ -361,7 +361,11 @@ public class ScrollTable extends JTable {
 	public void tableChanged(TableModelEvent e) {		
 		super.tableChanged(e);
 		if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
+				}
+			});
 		}
 		if (vcellSortTableModel != null) {
 			if (vcellSortTableModel.getNumPages() == 1) {
