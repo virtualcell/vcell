@@ -283,7 +283,7 @@ Element getXML(VCImage param) throws XmlParseException{
 			compressedPixels = param.getPixelsCompressed();
 		} catch (ImageException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ImageParseException occurred when tring to retrieving the compressed Pixels"+" : "+e.getMessage());
+			throw new XmlParseException("An ImageParseException occurred when tring to retrieving the compressed Pixels", e);
 		}
 		Element imagedata = new Element(XMLTags.ImageDataTag);
 		
@@ -470,7 +470,7 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 		biomodelnode.addContent( getXML(param.getModel()) );
 	} catch (XmlParseException e) {
 		e.printStackTrace();
-		throw new XmlParseException("An error occurred while processing the BioModel " + name+" : "+e.getMessage());
+		throw new XmlParseException("An error occurred while processing the BioModel " + name, e);
 	}
 	//Get SimulationContexts
 	if ( param.getSimulationContexts()!=null ){
@@ -987,7 +987,7 @@ public Element getXML(Geometry param) throws XmlParseException{
 			geometry.addContent( getXML(param.getGeometrySpec().getImage()) );
 		} catch (XmlParseException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A problem occurred when trying to get the Image for the geometry " + name+" : "+e.getMessage());
+			throw new XmlParseException("A problem occurred when trying to get the Image for the geometry " + name, e);
 		}
 	}
 	//Add subvolumes elements 
@@ -1470,7 +1470,7 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 		simulationcontext.addContent(getXML(param.getGeometryContext().getGeometry()));
 	} catch (XmlParseException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A problem occurred when trying to process the geometry for the simulationContext " + name+" : "+e.getMessage());
+		throw new XmlParseException("A problem occurred when trying to process the geometry for the simulationContext " + name, e);
 	}
 	// write GeometryContext (geometric mapping)
 	simulationcontext.addContent(getXML(param.getGeometryContext()));
@@ -2999,7 +2999,7 @@ public Element getXML(MathModel param) throws XmlParseException{
 		mathmodel.addContent( getXML(param.getMathDescription().getGeometry()) );
 	} catch (XmlParseException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A problem occurred when trying to process the geometry!"+" : "+e.getMessage());
+		throw new XmlParseException("A problem occurred when trying to process the geometry!", e);
 	}
 	//Add Mathdescription
 	mathmodel.addContent( getXML(param.getMathDescription()) );
@@ -3347,7 +3347,7 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 		}
 	} catch (XmlParseException e) {
 		e.printStackTrace();
-		throw new XmlParseException("An error occurred while procesing a Structure for the model " + versionName+" : "+e.getMessage());
+		throw new XmlParseException("An error occurred while procesing a Structure for the model " + versionName, e);
 	}
 	//Process SpeciesContexts
 	SpeciesContext[] specarray = param.getSpeciesContexts();
@@ -3518,7 +3518,7 @@ private Element getXML(SimpleReaction param) throws XmlParseException {
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException("Invalid value for the charge valence: " + 
-									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName()+" : "+e.getMessage());
+									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName(), e);
 	}
 	simplereaction.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
 	if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_ELECTRICAL_ONLY){

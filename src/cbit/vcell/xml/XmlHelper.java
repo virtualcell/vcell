@@ -128,7 +128,7 @@ public class XmlHelper {
 //			xmlString = XmlUtil.xmlToString(element);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new XmlParseException("Unable to generate Biomodel XML: " + e.getMessage());
+			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		} 
 		
 		return xmlString;
@@ -165,7 +165,7 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
 	    return merger;                                               //return the tree-diff instead of the root node.
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new XmlParseException(e.getMessage());
+		throw new XmlParseException(e);
 	}
 
 }
@@ -199,10 +199,10 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 			return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
-			throw new XmlParseException(e.getMessage());
+			throw new XmlParseException(e);
 		} catch (IOException e) {
 			e.printStackTrace(System.out);
-			throw new XmlParseException(e.getMessage());
+			throw new XmlParseException(e);
 		}
 	} else{
 		throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SBML export");
@@ -763,7 +763,7 @@ public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 		sim = reader.getSimulation(simElement, md);
 	} catch (PropertyVetoException pve) {
 		pve.printStackTrace();
-		throw new XmlParseException("Unable to parse simulation string."+" : "+pve.getMessage());
+		throw new XmlParseException("Unable to parse simulation string.", pve);
 	}
 
 	sim.refreshDependencies();

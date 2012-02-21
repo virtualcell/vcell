@@ -97,7 +97,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
 				fieldDataIDs[count ++] = 
 					FieldDataIdentifierSpec.fromCSVString(st.nextToken());
 			}catch(ExpressionException e){
-				throw new XmlParseException("Error creating FieldDataIdentifierSpec "+e.getMessage());
+				throw new XmlParseException("Error creating FieldDataIdentifierSpec", e);
 			}
 		}
 	} catch (MessagePropertyNotFoundException ex) {

@@ -29,4 +29,12 @@ public XmlParseException() {
 public XmlParseException(String s) {
 	super(s);
 }
+
+public XmlParseException(Throwable e) {
+	super(e);
+}
+
+public XmlParseException(String s, Throwable e) {
+	super(s, e);
+}
 }
