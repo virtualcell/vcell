@@ -30,8 +30,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
 	
 	private enum ProtocolsPanelTabID {
-		events("Events"),
 		electrical("Electrical"),
+		events("Events"),
 		microscope_measurements("Microscope Measurements");
 		
 		String title = null;
@@ -79,8 +79,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
-		eventsDisplayPanel.setSimulationContext(simulationContext);
 		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
+		showOrHideEventsPanel();
 		showOrHideMicroscopeMeasurementPanel();
 	}
 	
@@ -89,26 +89,44 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
 	}
-
-	private void showOrHideMicroscopeMeasurementPanel() {
-		ProtocolsPanelTab tab = protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()];
+	
+	private void showOrHidePanel(ProtocolsPanelTabID tabID, boolean bShow) {
+		ProtocolsPanelTab tab = protocolPanelTabs[tabID.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
-		if (simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch()) {
-			if (index < 0) {
-				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-			}
-			microscopeMeasurementPanel.setSimulationContext(simulationContext);
+		if (bShow) {
+			tabbedPane.setEnabledAt(index, true);
 		} else {
 			if (index >= 0) {
 				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.remove(tab.component);
+				tabbedPane.setEnabledAt(index, false);
 				if (selectedComponent == tab.component) {
-					tabbedPane.setSelectedIndex(0);
+					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
+						if (tabbedPane.isEnabledAt(i)) {
+							tabbedPane.setSelectedIndex(i);
+							break;
+						}
+					}
 				}
 			}
 		}
 	}
 
+	private void showOrHideMicroscopeMeasurementPanel() {
+		boolean bShow = simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch();
+		showOrHidePanel(ProtocolsPanelTabID.microscope_measurements, bShow);
+		if (bShow) {
+			microscopeMeasurementPanel.setSimulationContext(simulationContext);
+		}
+	}
+	
+	private void showOrHideEventsPanel() {
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		showOrHidePanel(ProtocolsPanelTabID.events, bShow);
+		if (bShow) {
+			eventsDisplayPanel.setSimulationContext(simulationContext);
+		}
+	}
+	
 	@Override
 	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();

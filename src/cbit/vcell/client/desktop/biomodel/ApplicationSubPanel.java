@@ -39,7 +39,7 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 	
 	protected void tabbedPaneSelectionChanged() {		
 		ActiveView activeView = getActiveView();
-		if (activeView != null) {
+		if (activeView != null && isShowing()) {
 			setActiveView(activeView);
 		}
 		
