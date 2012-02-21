@@ -282,7 +282,7 @@ private void changeExpression() {
 			return;
 		}
 		String text = expressionTextField.getText();
-		if(text.equals(parameter.getExpression().infix())) {
+		if(text != null && text.equals(parameter.getExpression().infix())) {
 			return;
 		}
 		if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
