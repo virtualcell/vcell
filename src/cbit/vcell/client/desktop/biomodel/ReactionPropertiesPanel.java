@@ -482,10 +482,10 @@ private JButton getJToggleButton() {
  				}else if (kinetics instanceof LumpedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
-						double size = Double.parseDouble(response);
 						if (response == null || response.length() == 0) {
 							throw new NumberFormatException("Please type in a valid compartment size.");
 						}
+						double size = Double.parseDouble(response);
 						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
 					} catch (NumberFormatException ex) {
