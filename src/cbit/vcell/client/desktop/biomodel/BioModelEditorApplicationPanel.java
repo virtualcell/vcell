@@ -120,9 +120,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		
 		for (ApplicationPanelTab tab : appPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			if (tab.id != ApplicationPanelTabID.parameterEstimation) {
-				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-			}
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
@@ -186,18 +184,21 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 
 	private void showOrHideFittingPanel() {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
-		int indexOfFittingPanel = tabbedPane.indexOfComponent(tab.component);
+		int index = tabbedPane.indexOfComponent(tab.component);
 		if (simulationContext.isValidForFitting()) {
-			if (indexOfFittingPanel < 0) {
-				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-			}
+			tabbedPane.setEnabledAt(index, true);
 			parameterEstimationPanel.setSimulationContext(simulationContext);
 		} else {
-			if (indexOfFittingPanel >= 0) {
+			if (index >= 0) {
 				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.remove(tab.component);
+				tabbedPane.setEnabledAt(index, false);
 				if (selectedComponent == tab.component) {
-					tabbedPane.setSelectedIndex(0);
+					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
+						if (tabbedPane.isEnabledAt(i)) {
+							tabbedPane.setSelectedIndex(i);
+							break;
+						}
+					}
 				}
 			}
 		}
