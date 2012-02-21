@@ -53,7 +53,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 					
 				} catch (VCID.InvalidVCIDException e){
 					e.printStackTrace();
-					throw new XmlParseException(e.getMessage());
+					throw new XmlParseException(e);
 				}
 			}
 		}

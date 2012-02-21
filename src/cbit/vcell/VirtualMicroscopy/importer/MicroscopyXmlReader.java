@@ -90,7 +90,7 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 		while((readCount+= rawInputStream.read(shortsAsBytes, readCount, shortsAsBytes.length-readCount)) != shortsAsBytes.length){}
 	}catch(Exception e){
 		e.printStackTrace();
-		throw new XmlParseException("error reading image pixels: "+e.getMessage());
+		throw new XmlParseException("error reading image pixels: ", e);
 	}finally{
 		if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){e2.printStackTrace();}}
 	}
@@ -122,7 +122,7 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 		newimage = new UShortImage(shortPixels,origin,extent,aNumX,aNumY,aNumZ);
 	} catch (ImageException e) {
 		e.printStackTrace();
-		throw new XmlParseException("error reading image: "+e.getMessage());
+		throw new XmlParseException("error reading image: ", e);
 	}
 	return newimage;
 }

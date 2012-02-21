@@ -911,7 +911,7 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Invalid value for the charge valence: " + 
-										(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + fluxRxn.getName()+" : "+e.getMessage());
+										(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + fluxRxn.getName(), e);
 		}
 		rxnElement.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
 
