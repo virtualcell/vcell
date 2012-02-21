@@ -464,9 +464,14 @@ private JButton getJToggleButton() {
 				if (kinetics instanceof DistributedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
+						if (response == null || response.length() == 0) {
+							throw new NumberFormatException("Please type in a valid compartment size.");
+						}
 						double size = Double.parseDouble(response);
 						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
+					} catch (NumberFormatException ex) {
+						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						
 					} catch (Exception e2){
 						if (kinetics.getKineticsDescription().isElectrical()){
 							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
@@ -478,8 +483,13 @@ private JButton getJToggleButton() {
 					try {
 						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
+						if (response == null || response.length() == 0) {
+							throw new NumberFormatException("Please type in a valid compartment size.");
+						}
 						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
+					} catch (NumberFormatException ex) {
+						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						
 					} catch (Exception e2){
 						if (kinetics.getKineticsDescription().isElectrical()){
 							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);

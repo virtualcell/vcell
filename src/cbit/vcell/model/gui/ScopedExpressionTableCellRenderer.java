@@ -89,7 +89,7 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 			Dimension size = getSize();
 			graphics.setColor(getBackground());
 			graphics.fillRect(0,0,size.width,size.height);
-			if (icon!=null){
+			if (icon!=null && borderInsets != null){
 				icon.paintIcon(this,graphics,borderInsets.left, borderInsets.top);
 			}
 		}
