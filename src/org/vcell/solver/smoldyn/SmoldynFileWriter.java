@@ -1478,10 +1478,9 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 
 	printWriter.println("# compartments");
 	resampledGeometry.precomputeAll();
-	Geometry interiorPointGeometry = RayCaster.resampleGeometry(resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
-	for (SubVolume subVolume : interiorPointGeometry.getGeometrySpec().getSubVolumes()) {		
+	for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {		
 		printWriter.println(SmoldynKeyword.start_compartment + " " + subVolume.getName());		
-		for (SurfaceClass sc : interiorPointGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
+		for (SurfaceClass sc : resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
 			if (sc.getAdjacentSubvolumes().contains(subVolume)) {
 				printWriter.println(SmoldynKeyword.surface + " " + sc.getName());
 			}
@@ -1506,6 +1505,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 //		}
 		
 		// gather all the points in all the regions
+		Geometry interiorPointGeometry = RayCaster.resampleGeometry(resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
 		SubVolume interiorPointSubVolume = interiorPointGeometry.getGeometrySpec().getSubVolume(subVolume.getName());
 		GeometricRegion[] geometricRegions = interiorPointGeometry.getGeometrySurfaceDescription().getGeometricRegions(interiorPointSubVolume);
 		RegionInfo[] regionInfos = interiorPointGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfos();
