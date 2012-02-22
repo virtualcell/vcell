@@ -19,19 +19,14 @@ public class RayCastResults {
 	private HitList[] hitListsXY;  // index = i + numX*j
 	private HitList[] hitListsXZ;  // index = i + numX*k
 	private HitList[] hitListsYZ;  // index = j + numY*k
-	private double[] distanceMap;   // index = i + numX*j + numX*numY*k  
 	
-	public RayCastResults(HitList[] aHitListXY, HitList[] aHitListXZ, HitList[] aHitListYZ, int aNumX, int aNumY, int aNumZ, double[] aDistanceMap){
+	public RayCastResults(HitList[] aHitListXY, HitList[] aHitListXZ, HitList[] aHitListYZ, int aNumX, int aNumY, int aNumZ){
 		this.hitListsXY = aHitListXY;
 		this.hitListsXZ = aHitListXZ;
 		this.hitListsYZ = aHitListYZ;
 		this.numX = aNumX;
 		this.numY = aNumY;
 		this.numZ = aNumZ;
-		if (aDistanceMap!=null && aDistanceMap.length!=numX*numY*numZ){
-			throw new RuntimeException("distance map wrong size");
-		}
-		this.distanceMap = aDistanceMap;
 	}
 
 	public int getNumX() {
@@ -56,10 +51,6 @@ public class RayCastResults {
 
 	public HitList[] getHitListsYZ() {
 		return hitListsYZ;
-	}
-	
-	public double[] getDistanceMap(){
-		return distanceMap;
 	}
 	
 	static public double[] computeSignedDistanceMap(boolean[] insideBoundary, double[] unsignedDistanceMap) {
