@@ -6,74 +6,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
+import cbit.vcell.geometry.surface.DistanceMapGenerator;
 import cbit.vcell.geometry.surface.Node;
 
 /***
- * FastMarchingMethod high accuracy class
- ***/
-
-class PointEx {
-	private static final double MAX_NUMBER = Double.POSITIVE_INFINITY;
-    private double distance;
-    private int position;		// index in the image map
-    private int hole;			// index in the binary heap; -1 is meaningless and indicates some error
-    
-    public PointEx(double distance, int position) {
-		this.setDistance(distance);
-		this.setPosition(position);
-		this.setHole(-1);
-    }
-    public PointEx(int position) {
-		this.setDistance(MAX_NUMBER);
-		this.setPosition(position);
-		this.setHole(-1);
-    }
-    
-    public void setDistance(double distance) {
-    	this.distance = distance;
-    }
-    public double getDistance() {
-    	return this.distance;
-    }
-    public void setPosition(int position) {
-    	this.position = position;
-    }
-    public int getPosition() {
-    	return this.position;
-    }
-    public void setHole(int hole) {
-		this.hole = hole;
-	}
-	public int getHole() {
-		return hole;
-	}
-
-	public int compareTo(double otherDistance) {
-//		double epsilon = 0.000000001;
-		double epsilon = 0.1;
-		
-		if(this.distance + epsilon < otherDistance) {
-			return -1;
-		} else if(this.distance > otherDistance + epsilon) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-}
-
-
-//@SuppressWarnings({"unused", "unchecked", "rawtypes"})
-/***
- * This class is the main class. It implements the fast marching and level set methods  
+ * This class implements the fast marching method  
  ***/
 public class FastMarchingMethod {
 
-	private int countPosition16452=0;
     // auxiliary constants used for selecting max and min values of certain variables
     private static final double MAX_NUMBER = Double.POSITIVE_INFINITY;
     
-    private enum State { far, narrow, frozen }
+    private enum State { far, narrow, frozen, cold }	// we don't compute distance for cold points
     private enum RootsType {error, degenerate, real, imaginar}
 
     // image matrix dimension, their values are read in from image files
@@ -90,7 +34,8 @@ public class FastMarchingMethod {
     // distanceMap array meaning:
     // the non-POSITIVE_INFINITY points represent the initial condition
     // all the rest initialized at Double.POSITIVE_INFINITY
-	public FastMarchingMethod(int numX, int numY, int numZ, double[] distanceMap) {
+    // if ignoreMask is null we don't ignore anything
+	public FastMarchingMethod(int numX, int numY, int numZ, double[] distanceMap, boolean[] ignoreMask) {
 		// index = x + y*numX + z*numX*numY
 		this.numX = numX;
 		this.numY = numY;
@@ -103,13 +48,20 @@ public class FastMarchingMethod {
 		this.distanceMap = distanceMap;
 		state = new State[numX*numY*numZ];
 		Arrays.fill(state, State.far);
+		if(ignoreMask != null && ignoreMask.length == distanceMap.length) {
+			for(int i=0; i<arraySize; i++) {
+				if(ignoreMask[i]  == true) {
+					state[i] = State.cold;
+				}
+			}
+		}
 		points = new PointEx[numX*numY*numZ];
 		Arrays.fill(points, null);
 
 	}
 	
 	// here is done all the work, returns the completed distanceMap array
-	public double[] march() {
+	public void march() {
 		// ---------------- initializations ---------------
 		long t1 = System.currentTimeMillis();
 		int frozenCount = initializeFrozen();
@@ -118,20 +70,20 @@ public class FastMarchingMethod {
 				manageCandidates(i);
 			}
 		}
-		long t2 = System.currentTimeMillis();
-//		System.out.println(" end of initialization, " + frozenCount + " frozen elements, duration " + 
-//				(int)((t2-t1)/1000) + " seconds.");
 		
 		// ----------------- work loop ---------------------
 		int max = 0;
+		int position = 0;
 		while(!narrowBand.isEmpty()) {
 			PointEx frozenElement = (PointEx) narrowBand.removeMin();
-			state[frozenElement.getPosition()] = State.frozen;
+			position = frozenElement.getPosition();
+			state[position] = State.frozen;
 			
-			if(points[frozenElement.getPosition()] != frozenElement) {
+			if(points[position] != frozenElement) {
 				throw new RuntimeException("Element mismatch: must be the same element.");
 			}
 			
+			distanceMap[position] = frozenElement.getDistance();
 			int distance = (int)(frozenElement.getDistance());
 			if(max<distance) {
 				max=distance;
@@ -139,7 +91,7 @@ public class FastMarchingMethod {
 					System.out.println("Max distance reached " + max + ", narrowBand size is " + narrowBand.size());
 				}
 			}
-			manageCandidates(frozenElement.getPosition());
+			manageCandidates(position);
 		}
 		
 		long t3 = System.currentTimeMillis();
@@ -148,7 +100,6 @@ public class FastMarchingMethod {
 		for(int i=0; i<distanceMap.length; i++) {
 			distanceMap[i] = points[i].getDistance();
 		}
-		return distanceMap;
 	}
 	
 	private void manageCandidates(int currentPosition) {
@@ -174,17 +125,14 @@ public class FastMarchingMethod {
 			return;				// out of bounds, nothing to do
 		}
 		if(state[candidatePosition] == State.frozen) {
-			return;				// already frozen, nothing to do
+			return;				// already frozen (computed), nothing to do
 		}
-		double candidateDistance = 0;
+		if(state[candidatePosition] == State.cold) {
+			return;				// we ignore cold points, nothing to do
+		}
 
-//		if(candidatePosition == 16452) {
-//			countPosition16452++;
-//		}
-		candidateDistance = computeDistance(candidatePosition);
-		if(candidateDistance == -1) {
-			throw new RuntimeException("Unable to compute distance at position " + candidatePosition);
-		}
+		double candidateDistance = computeDistance(candidatePosition);
+
 		PointEx candidate = points[candidatePosition];
 		if(state[candidatePosition] == State.narrow) {
 			narrowBand.decreaseKey(candidate.getHole(), candidateDistance);			// already part of narrow band, decrease key if possible
@@ -217,42 +165,48 @@ public class FastMarchingMethod {
 		double b = 0;
 		double c = -1;
 		
+		int nP = 0;			// neighbour position
+		int dP = 0;			// deep position (1 step away from np)
+		double distance1 = MAX_NUMBER;
+		double distance2 = MAX_NUMBER;
 		for(int j=0; j<3; j++) {		// 3 dimensions: x y z
 			double val1 = MAX_NUMBER;
 			double val2 = MAX_NUMBER;
 			// TODO: not sure how well this works if we find frozen cells in both directions
 			for(int i=0; i<2; i++){		// 2 directions: prev, next
-				int nP = neighborPosition[2*j+i];
+				nP = neighborPosition[2*j+i];
 				if(nP == -1) {
 					continue;			// neighbor out of bounds
 				}
-				if(state[nP] == State.frozen) {	// the only distances we know are for the frozen cells
-					double distance1 = getDistanceAt(nP);
-					if(distance1 == -1) {		// since State says frozen, the Point element must be in the frozen list
-						throw new RuntimeException("Frozen element missing at " +nP);
+				if(state[nP] != State.frozen) {	// the only distances we know are for the frozen cells
+					continue;
+				}
+
+				distance1 = getDistanceAt(nP);
+				if(distance1 == MAX_NUMBER) {		// since State says frozen, the Point element must be in the frozen list
+					throw new RuntimeException("Frozen element missing at " +nP);
+				}
+				if(distance1 < val1) {
+					val1 = distance1;
+					distance2 = MAX_NUMBER;
+					dP = deepPosition[2*j+i];
+					if(dP == -1) {
+						distance2 = MAX_NUMBER;		// neighbor out of bounds, coefficient will be ignored
+					} else {
+						if(state[dP] == State.frozen) {
+							distance2 = getDistanceAt(dP);
+						}
 					}
-					if(distance1 < val1) {
-						val1 = distance1;
-						double distance2 = MAX_NUMBER;
-						int dP = deepPosition[2*j+i];
-						if(dP == -1) {
-							distance2 = MAX_NUMBER;		// neighbor out of bounds, coefficient will be ignored
-						} else {
-							if(state[dP] == State.frozen) {
-								distance2 = getDistanceAt(dP);
-							}
-						}
-						if(distance2!=-1 && distance2<MAX_NUMBER && distance2<=distance1) {
-							val2 = distance2;
-						} else {
-							val2 = MAX_NUMBER;
-						}
+					if(distance2<MAX_NUMBER && distance2<=distance1) {
+						val2 = distance2;
+					} else {
+						val2 = MAX_NUMBER;
 					}
 				}
 			}
 			if(val2 != MAX_NUMBER) {
-				double tp = (1.0/3)*(4*val1-val2);
-				double aa = 9.0/4;
+				double tp = (1.0/3.0)*(4*val1-val2);
+				double aa = 9.0/4.0;
 				a += aa;
 				b -= 2 * aa * tp;
 				c+= aa * tp * tp;
@@ -271,22 +225,22 @@ public class FastMarchingMethod {
 			double distance = r.getRoot1();
 			return distance;
 		} else if(r.getType() == RootsType.error) {
-			System.out.println(" Quadratic ecuation: Cannot solve c = 0. ");
-			return -1;
+			throw new RuntimeException("Unable to compute distance at position " + candidatePosition);
 		} else {
-//			System.out.println(" Quadratic ecuation: Imaginary roots. ");
+//			System.out.println(" Quadratic equation: Imaginary roots. ");
 			double distance = r.getRoot1();
 			return distance;
 		}
 	}
 
 	private double getDistanceAt(int nP) {
-		double distance = points[nP].getDistance();
-		if( distance< MAX_NUMBER) {
-			return distance;
-		} else {
-			return -1;
+		double pointDist = points[nP].getDistance();
+		double mapDist = distanceMap[nP];
+		if( pointDist != mapDist) {	// sanity check
+			throw new RuntimeException("For frozen points, the 'distance' in the distanceMap and " +
+					"corresponding PointEx object must be the same for index " + nP);
 		}
+		return points[nP].getDistance();
 	}
 
 	private int initializeFrozen() {
@@ -296,8 +250,11 @@ public class FastMarchingMethod {
 			for(int y=0; y<numY; y++) {
 				for(int x=0; x<numX; x++) {
 					index = x + y*numX + z*numX*numY;
+					if(state[index] == State.cold) {
+						continue;	// no need to allocate a PointEx object for the cold points
+					}
 					double distance = distanceMap[index];
-					
+					// TODO: i think we don't need to allocate PointEx objects for the frozen points
 					points[index] = new PointEx(distance, index);
 					if(distance < MAX_NUMBER) {
 						state[index] = State.frozen;
@@ -395,20 +352,21 @@ public class FastMarchingMethod {
     		return r;
     	}
     	double discriminant = discriminant(a,b,c);		// discriminant of quadratic equation
+    	// TODO: add "if discriminant between -epsilon and +epsilon we still have a -b/2/a root"
     	if ( discriminant >= 0.0 ) {					// two real roots
-    		r.setRoot1((double)(-b/2.0/a-(double)Math.sqrt(discriminant)/2.0/a));
-    		r.setRoot2((double)(-b/2.0/a+(double)Math.sqrt(discriminant)/2.0/a));
+    		r.setRoot1(-b/2.0/a-Math.sqrt(discriminant)/2.0/a);
+    		r.setRoot2(-b/2.0/a+Math.sqrt(discriminant)/2.0/a);
     		r.setType(RootsType.real);
     		return r;
     	} else {
-    		r.setRoot1((double)(-b/2.0/a));				// two complex roots
-    		r.setRoot2((double)(Math.sqrt(-discriminant)/2.0/a));
+    		r.setRoot1(-b/2.0/a);				// two complex roots
+    		r.setRoot2(Math.sqrt(-discriminant)/2.0/a);
     		r.setType(RootsType.imaginar);
     		return r;
     	}
     }
     private static double discriminant(double a, double b, double c) {
-    	return (double)(b*b-4.0*a*c);
+    	return b*b-4.0*a*c;
     }
 
 	// index = x + y*numX + z*numX*numY;
@@ -466,11 +424,11 @@ public class FastMarchingMethod {
 		distanceMap[0] = 0;		// initial condition (exact distances from origin)
 		distanceMap[1] = 1;
 		distanceMap[2] = 1;
-		distanceMap[3] = 1.4142135;			// sqrt(2) - diagonal of a square
+		distanceMap[3] =  1.4142135;			// sqrt(2) - diagonal of a square
 		distanceMap[4] = 1;
-		distanceMap[5] = 1.4142135;
-		distanceMap[6] = 1.4142135;
-		distanceMap[7] = 1.7320508;			// sqrt(3) - diagonal of a cube
+		distanceMap[5] =  1.4142135;
+		distanceMap[6] =  1.4142135;
+		distanceMap[7] =  1.7320508;			// sqrt(3) - diagonal of a cube
 		// ----- next points distances for the above initial conditions
 		// 			FMM results vs. 	FMMHA results vs. 	exact computed results:
 		//  8:		2.000000			2.000000			2.000000
@@ -482,7 +440,7 @@ public class FastMarchingMethod {
 		// 14:		3.303524			3.129413			3.162277	sqrt(10)
 		// 15:		3.569388 (0.25)		3.339079 (0.02)		3.316624	sqrt(2+9)
 
-		FastMarchingMethod fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap);
+		FastMarchingMethod fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
 		
 		System.out.println("Verifying indexes manipulation; index = x + y*numX + z*numX*numY");
 		int index = 0;
@@ -544,7 +502,7 @@ public class FastMarchingMethod {
 		distanceMap[i+1] = 1;
 		distanceMap[i+2] = 1;
 		
-		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap);
+		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
 		
 		long t1 = System.currentTimeMillis();
 		fmm.march();
@@ -577,12 +535,12 @@ public class FastMarchingMethod {
 		i = (int)(C.getX() + C.getY()*numX + C.getZ()*numX*numY);
 		distanceMap[i] = 0;
 		
-		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap);
-		distanceMap = fmm.march();
+		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
+		fmm.march();
 
 		
-		final int numIterations = 200000;
-		double errorThreshold = 0.35;
+		final int numIterations = 500000;
+		double errorThreshold = 0.51;
 		int errorCount = 0;
 		Random rand = new Random();
 		
@@ -596,7 +554,7 @@ public class FastMarchingMethod {
 			z = (int)(rand.nextDouble()*100);
 			i = x + y*numX + z*numX*numY;
 			p = new Vect3d(x, y, z);
-			d1 = Vect3d.distanceToTriangle3d(p, A, B, C);
+			d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
 			double delta = Math.abs(d1-distanceMap[i]);
 
 			String line = new String(x + " " + y + " " + z + " " + (int)(delta*100) + "\n");
@@ -620,9 +578,54 @@ public class FastMarchingMethod {
 			z = (int)(1 + rand.nextDouble()*98);
 			i = x + y*numX + z*numX*numY;
 			p = new Vect3d(x, y, z);
-			d1 = Vect3d.distanceToTriangle3d(p, A, B, C);
+			d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
 			System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1);
 		}
+
+		System.out.println("");
+		System.out.println(" -------------------- TEST 4 - compare accuracy ----------------------- ");
+		
+		p = null;
+		d1 = 0;
+
+		numX = 10;
+		numY = 10;
+		numZ = 10;
+		numItems = numX*numY*numZ;
+
+		distanceMap = new double[numItems];
+		Arrays.fill(distanceMap, MAX_NUMBER);
+		
+		Node AA = new Node(1, 0, 0);
+		Node BB = new Node(0, 1, 0);
+		Node CC = new Node(0, 0, 1);
+		
+		A = new Vect3d(AA);
+		B = new Vect3d(BB);
+		C = new Vect3d(CC);
+		
+		distanceMap[0] = -0.5773503;
+		i = (int)(A.getX() + A.getY()*numX + A.getZ()*numX*numY);
+		distanceMap[i] = 0.8164966;
+		i = (int)(B.getX() + B.getY()*numX + B.getZ()*numX*numY);
+		distanceMap[i] = 0.8164966;
+		i = (int)(C.getX() + C.getY()*numX + C.getZ()*numX*numY);
+		distanceMap[i] = 0.8164966;
+		
+		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
+		fmm.march();
+
+		x=1;
+		y=1;
+		z=1;
+		i = x + y*numX + z*numX*numY;
+		p = new Vect3d(x, y, z);
+		Node pp = new Node(x, y, z);
+		d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
+		double d2 = DistanceMapGenerator.distanceToTriangleExperimental(pp, AA, BB, CC, "c:\\TEMP\\triangle.3D");
+		System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1 +
+//				",   exper dist: " + d2 + 
+				",    should be 1.1547005");
 
 		
 		System.out.println("Done");
