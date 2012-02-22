@@ -2217,6 +2217,10 @@ public Node flatten() throws ExpressionException {
 		if (tempChildren.size()!=1) throw new ExpressionException("log() expects 1 argument");
 		break;
 	}
+	case LOG_10: {
+		if (tempChildren.size()!=1) throw new ExpressionException("log10() expects 1 argument");
+		break;
+	}
 	case SIN: {
 		if (tempChildren.size()!=1) throw new ExpressionException("sin() expects 1 argument");
 		break;
