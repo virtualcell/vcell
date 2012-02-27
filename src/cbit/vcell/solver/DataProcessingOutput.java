@@ -13,8 +13,12 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+
+import cbit.image.SourceDataInfo;
 
 
 
@@ -29,6 +33,10 @@ import org.vcell.util.BeanUtils;
 public class DataProcessingOutput implements Serializable {
 	private byte[] compressedBytes = null;
 	private transient byte[] uncompressedBytes = null;
+	private double[] times;
+	private String[] variableStatNames;
+	private double[][] variableStatValues;
+	private HashMap<String, Vector<SourceDataInfo>> dataGenerators = new HashMap<String, Vector<SourceDataInfo>>();
 
 /**
  * BigString constructor comment.
@@ -99,5 +107,52 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	deflate();
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);
+}
+
+
+public double[] getTimes() {
+	return times;
+}
+
+
+public void setTimes(double[] times) {
+	this.times = times;
+}
+
+
+public String[] getVariableStatNames() {
+	return variableStatNames;
+}
+
+
+public void setVariableStatNames(String[] variableStatNames) {
+	this.variableStatNames = variableStatNames;
+}
+
+
+public double[][] getVariableStatValues() {
+	return variableStatValues;
+}
+public double[] getVariableStatValues(String varName){
+	for (int i = 0; i < getVariableStatNames().length; i++) {
+		if(getVariableStatNames()[i].equals(varName)){
+			return getVariableStatValues()[i];
+		}
+	}
+	return null;
+}
+
+public void setVariableStatValues(double[][] variableStatValues) {
+	this.variableStatValues = variableStatValues;
+}
+
+
+public HashMap<String, Vector<SourceDataInfo>> getDataGenerators() {
+	return dataGenerators;
+}
+
+
+public void setDataGenerators(HashMap<String, Vector<SourceDataInfo>> other) {
+	this.dataGenerators = other;
 }
 }

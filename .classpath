@@ -59,5 +59,8 @@
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-n3-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-rdfxml-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jamtio.jar"/>
+	<classpathentry kind="lib" path="lib/jhdf5.jar"/>
+	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
+	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
