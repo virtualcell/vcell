@@ -42,6 +42,12 @@ public interface SimDataConstants {
 	public static final String STOCH_DATA_EXTENSION = ".stochbi"; //stoch
 	public static final String PARTICLE_DATA_EXTENSION = ".particle";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION = ".dataProcOutput";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_HDF5 = ".hdf5";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_TIMES = "Times";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX = "Time";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS = "VariableStatistics";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING = "PostProcessing";
+	
 	public static final String ZIPFILE_EXTENSION = ".zip";
 	public static final String FIELDDATARESAMP_EXTENSION = ".fdat";
 	

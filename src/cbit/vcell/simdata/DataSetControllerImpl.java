@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,13 +37,23 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
+import ncsa.hdf.object.Metadata;
+import ncsa.hdf.object.h5.H5Group;
+import ncsa.hdf.object.h5.H5ScalarDS;
+
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Range;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -56,6 +67,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
+import cbit.image.SourceDataInfo;
 import cbit.plot.PlotData;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -593,33 +605,146 @@ private TimeSeriesJobResults calculateStatisticsFromWhole(
     throw new IllegalArgumentException("Couldn't determine format of data to return");
 }
 
-public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException, IOException {
+public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException {
 
 	try {
+
 		User user = vcdID.getOwner();
 		File primaryUserDir = getPrimaryUserDir(user, false);
 		File secondaryUserDir = getSecondaryUserDir(user);
 		if ((primaryUserDir == null || !primaryUserDir.exists()) && (secondaryUserDir == null || !secondaryUserDir.exists())) {
 			throw new IOException("neither primary user dir nor secondary user dir exists");
 		}
+
 		File dataProcessingOutputFile = new File(primaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
 		if (!dataProcessingOutputFile.exists()){
 			dataProcessingOutputFile = new File(secondaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
 		}
 		if (!dataProcessingOutputFile.exists()) {
-			return null;
-		}	 
+			throw new Exception("File not found "+dataProcessingOutputFile.getAbsolutePath());
+		}
 		FileInputStream fis = new FileInputStream(dataProcessingOutputFile);
 		byte[] byteArray = new byte[(int)dataProcessingOutputFile.length()];
 		int numRead = fis.read(byteArray);
 		if (numRead!=byteArray.length){
 			throw new IOException("read only "+numRead+" / "+byteArray.length+" bytes in DataProcessingOutput file");
 		}
-		return new DataProcessingOutput(byteArray);			
-	}catch (IOException e){
+		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput(byteArray);
+		
+		
+		
+		File dataProcessingOutputFileDDF5 = new File(primaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
+		if (!dataProcessingOutputFileDDF5.exists()){
+			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
+		}
+		if (!dataProcessingOutputFileDDF5.exists()) {
+			throw new Exception("File not found "+dataProcessingOutputFileDDF5.getAbsolutePath());
+		}
+		// retrieve an instance of H5File
+	    FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+	    if (fileFormat == null){
+	        throw new Exception("Cannot find HDF5 FileFormat.");
+	    }
+	    // open the file with read-only access
+	    FileFormat testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+	    if (testFile == null){
+	        throw new Exception("Failed to open file: "+dataProcessingOutputFileDDF5.getAbsolutePath());
+	    }
+	    // open the file and retrieve the file structure
+	    testFile.open();
+	    Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
+	    populateHDF5(root, "",dataProcessingOutput,false,null);
+	    // close file resource
+	    testFile.close();
+
+		
+		return dataProcessingOutput;
+	}catch (Exception e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
+}
+private static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String otherName) throws Exception
+{
+    if (g == null)
+        return;
+
+    List members = g.getMemberList();
+
+    int n = members.size();
+    indent += "    ";
+    HObject obj = null;
+    for (int i=0; i<n; i++){
+    	
+        obj = (HObject)members.get(i);
+        System.out.print(indent+obj+" ("+obj.getClass().getName()+") isGroup="+(obj instanceof Group));
+        if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS)){
+	    	List<Metadata> metaDataL = obj.getMetadata();
+	    	if(metaDataL != null){
+	    		String[] variableStatNames = new String[metaDataL.size()];
+	    		for (int j = 0; j < metaDataL.size(); j++) {
+	        		Attribute attr = (Attribute)metaDataL.get(j);
+	        		variableStatNames[j] = attr.toString(",");
+	        		System.out.print(" "+attr.getName()+"='"+variableStatNames[j]+"'");
+				}
+	        	dataProcessingOutput.setVariableStatNames(variableStatNames);
+	        	dataProcessingOutput.setVariableStatValues(new double[variableStatNames.length][dataProcessingOutput.getTimes().length]);
+	        	bVS = true;
+	    	}
+        }else if(obj instanceof H5ScalarDS){
+        	H5ScalarDS h5ScalarDS = (H5ScalarDS)obj;
+        	Object data = h5ScalarDS.read();
+        	
+        	long[] dims = h5ScalarDS.getDims();
+        	if(dims != null){
+	        	System.out.print(" dims=(");
+	        	for (int j = 0; j < dims.length; j++) {
+					System.out.print((j>0?"x":"")+dims[j]);
+				}
+	        	System.out.print(")");
+        	}
+        	
+//        	System.out.print(" len="+times.length);
+        	if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMES)){
+            	double[] times = (double[])data;
+            	dataProcessingOutput.setTimes(times);        		
+        	}else if(bVS){
+        		double[] stats = (double[])data;
+        		int timeIndex = Integer.parseInt(obj.getName().substring("time".length()));
+        		for (int j = 0; j < stats.length; j++) {
+            		dataProcessingOutput.getVariableStatValues()[j][timeIndex] = stats[j];		
+				}
+        	}else{
+        		double min = ((double[])data)[0];
+        		double max = min;
+        		for (int j = 0; j < ((double[])data).length; j++) {
+					min = Math.min(min, ((double[])data)[j]);
+					max = Math.max(max, ((double[])data)[j]);
+				}
+        		int xSize = (int)dims[0];
+        		int ySize = (int)(dims.length>1?dims[1]:1);
+        		int zSize = (int)(dims.length>2?dims[2]:1);
+        		SourceDataInfo sourceDataInfo = 
+        			new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, (double[])data, new Extent(1,1,1), null, new Range(min, max), 0, xSize, 1, ySize, xSize, zSize, xSize*ySize);
+        		Vector<SourceDataInfo> otherData = dataProcessingOutput.getDataGenerators().get(otherName);
+        		int timeIndex = Integer.parseInt(obj.getName().substring(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX.length()));
+        		otherData.add(sourceDataInfo);
+        		if(otherData.size()-1 != timeIndex){
+        			throw new Exception("Error HDF5 parse: added data index does not match timeIndex");
+        		}
+        	}
+        }else if (obj instanceof H5Group && !obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING)){
+        	bVS = false;
+        	otherName = obj.getName();
+        	dataProcessingOutput.getDataGenerators().put(otherName, new Vector<SourceDataInfo>());
+        }
+        System.out.println();
+        
+        if (obj instanceof Group)
+        {
+        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVS,otherName);
+        }
+    }
 }
 
 private boolean isDomainInside(CartesianMesh mesh, Domain domain, int membraneIndex) {
