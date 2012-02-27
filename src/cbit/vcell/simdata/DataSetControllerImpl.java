@@ -693,9 +693,26 @@ private static void populateHDF5(Group g, String indent,DataProcessingOutput dat
 	    	}
         }else if(obj instanceof H5ScalarDS){
         	H5ScalarDS h5ScalarDS = (H5ScalarDS)obj;
-        	Object data = h5ScalarDS.read();
-        	
+//        	h5ScalarDS.init();
+//        	long[] selectedDims = h5ScalarDS.getSelectedDims();
+//        	long[] startDims = h5ScalarDS.getStartDims();
+//        	long[] stride = h5ScalarDS.getStride();
+//        	int[] selectedIndex = h5ScalarDS.getSelectedIndex();
+
+        	h5ScalarDS.init();
         	long[] dims = h5ScalarDS.getDims();
+        	
+        	//make sure all dimensions are selected for loading if 3D
+        	//for 3D, only 1st slice selected by default
+        	long[] selectedDims = h5ScalarDS.getSelectedDims();
+        	if(selectedDims != null && selectedDims.length > 2){
+        		//changes internal class variable used during read
+        		selectedDims[2] = dims[2];
+        	}
+        	
+        	//load all data
+        	Object data = h5ScalarDS.read();
+
         	if(dims != null){
 	        	System.out.print(" dims=(");
 	        	for (int j = 0; j < dims.length; j++) {
