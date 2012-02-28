@@ -42,14 +42,13 @@ import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class PointSpreadFunctionManagement {
 
-	static final String psfStaticName = "fluor";
-	
 	static 	JFileChooser fc = null;
 	private JPanel parentWindow = null;
 	private SimulationContext simulationContext = null;
@@ -151,7 +150,7 @@ public class PointSpreadFunctionManagement {
 				fdos.cartesianMesh = cartesianMesh;
 				fdos.doubleSpecData =  pixData;
 				fdos.specEDI = null;
-				fdos.varNames = new String[] {psfStaticName};
+				fdos.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME};
 				fdos.times = imageDataset.getImageTimeStamps();
 				fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 				fdos.origin = origin;
@@ -173,7 +172,7 @@ public class PointSpreadFunctionManagement {
 		   		String fluorName = "psf_" + initialFieldDataName;
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.POINT_SPREAD_FUNCTION, 
 						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
-						pSFImageEDI, psfStaticName, VariableType.VOLUME.getTypeName(), 0D);
+						pSFImageEDI, SimDataConstants.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), 0D);
 				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 			}
 		};

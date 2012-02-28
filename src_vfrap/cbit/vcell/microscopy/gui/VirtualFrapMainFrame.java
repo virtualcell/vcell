@@ -56,6 +56,7 @@ import org.vcell.util.gui.ZEnforcer;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
@@ -270,7 +271,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 						}
 					}
 				}
-				// Help menu
 				else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
 				{
 					if(hviewer == null)
@@ -478,8 +478,8 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 					}
 				}
 		);
-		System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
-		System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+//		System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+//		System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 		System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultSimDataDirectory());
 		System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
 
@@ -523,6 +523,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 		//
 		//    fileMenu.addSeparator();
 
+		
 		menuExit.addActionListener(menuHandler);
 		fileMenu.add(menuExit);
 

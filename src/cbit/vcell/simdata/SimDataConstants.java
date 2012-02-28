@@ -52,8 +52,9 @@ public interface SimDataConstants {
 	public static final String FIELDDATARESAMP_EXTENSION = ".fdat";
 	
 	public static final String JAVA_INPUT_EXTENSION = ".javaInput";
-
 	public static final String HISTOGRAM_INDEX_NAME = "TrialNo";
+
+	public static final String FLUOR_DATA_NAME = "fluor";
 	
 	public static final int PDE_DATA = 0;
 	public static final int ODE_DATA = 1;

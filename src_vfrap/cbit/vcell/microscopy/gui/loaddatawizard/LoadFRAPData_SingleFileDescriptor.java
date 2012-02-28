@@ -131,7 +131,15 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
-    					}else //.lsm or other image formatss
+    					}else if(inFile.getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5))
+    					{
+    						if(inFile != null)
+    						{
+    							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromHDF5File(inFile,  this.getClientTaskStatusSupport());
+    							isFileLoaded = true;
+    						}
+    					}
+    					else //.lsm or other image formatss
     					{
     							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;

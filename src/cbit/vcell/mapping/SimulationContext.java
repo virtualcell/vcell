@@ -74,6 +74,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -265,7 +266,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
-	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(), this);
+	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimDataConstants.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
