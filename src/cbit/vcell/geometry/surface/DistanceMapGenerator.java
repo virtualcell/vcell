@@ -28,12 +28,13 @@ public class DistanceMapGenerator {
 		double[] samplesZ = new double[subvolumeHandleImage.getNumZ()];
 		ISize sampleSize = new ISize(subvolumeHandleImage.getNumX(),subvolumeHandleImage.getNumY(), subvolumeHandleImage.getNumZ());
 		byte[] pixels = subvolumeHandleImage.getPixels();
-		boolean[] insideMask = new boolean[sampleSize.getXYZ()];
+		boolean[] ignoreMask = new boolean[sampleSize.getXYZ()];
 		Origin origin = geometry.getOrigin();
 		Extent extent = geometry.getExtent();
 		RayCaster.sampleXYZCoordinates(sampleSize, origin, extent, samplesX, samplesY, samplesZ, bCellCentered);
 		
 		ArrayList<SubvolumeSignedDistanceMap> distanceMaps = new ArrayList<SubvolumeSignedDistanceMap>();
+		int count = 0;
 		for (SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()){
 			//
 			// find surfaces that bound the current SubVolume
@@ -54,33 +55,33 @@ public class DistanceMapGenerator {
 			double[] distanceMap = localUnsignedDistanceMap(surfaces, samplesX, samplesY, samplesZ, 2);
 			
 			// extend signed distance map using fast marching method from narrow band to all points.
-			// will do it in 2 steps, positive growth first towards inside, then change the sign of the whole distance map, then positive growth towards the exterior
+			// will do it in 2 steps, positive growth first towards inside, then change the sign of the whole 
+			//   distance map, then positive growth towards the exterior
 			// this way, the interior distances will end negative and the exterior distances positive
-			// 2 step growth saves memory and reduces the number of elements present at any given time in the binary heap (which is the most time consuming factor)
-			Arrays.fill(insideMask, false);
+			// 2 step growth saves memory and reduces the number of elements present at any given time in the binary 
+			//   heap (binary heap manipulation is the most time consuming factor and it depends on the # of elements)
+			Arrays.fill(ignoreMask, true);
 			int subvolumeHandle = subVolume.getHandle();
-			for (int i = 0; i<insideMask.length; i++){
-				if (pixels[i] == subvolumeHandle){
-					insideMask[i] = true;
-				} else {
-					if (distanceMap[i]!=Double.MAX_VALUE){
-						distanceMap[i] = -distanceMap[i];
+			for (int i = 0; i<ignoreMask.length; i++){
+				if (pixels[i] == subvolumeHandle){		// inside
+					ignoreMask[i] = false;
+				} else {								// outside
+					if (distanceMap[i] < Double.MAX_VALUE){
+						distanceMap[i] = -distanceMap[i];		// make negative the part of narrow band which is outside
 					}
 				}
 			}
 
 			// step 1, we compute distances for the points "inside"
 			// the points outside are cold (we don't compute their distances this step)
-			FastMarchingMethod fmm = new FastMarchingMethod(samplesX.length, samplesY.length, samplesZ.length, distanceMap, insideMask);
+			FastMarchingMethod fmm = new FastMarchingMethod(samplesX.length, samplesY.length, samplesZ.length, distanceMap, ignoreMask);
 			fmm.march();
 			
 			// sign change of the half-completed distance map, the "interior" will become negative as it should be
 			subvolumeHandle = subVolume.getHandle();
-			for (int i = 0; i<insideMask.length; i++){
-				if (pixels[i] == subvolumeHandle){
-					if (distanceMap[i]!=Double.MAX_VALUE){
-						distanceMap[i] = -distanceMap[i];
-					}
+			for (int i = 0; i<distanceMap.length; i++){
+				if (distanceMap[i] < Double.MAX_VALUE){
+					distanceMap[i] = -distanceMap[i];
 				}
 			}
 
@@ -89,8 +90,27 @@ public class DistanceMapGenerator {
 			fmm = new FastMarchingMethod(samplesX.length, samplesY.length, samplesZ.length, distanceMap, null);
 			fmm.march();
 			
+//			try {
+//			int xm = samplesX.length;
+//			int ym = samplesY.length;
+//			BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\mapOutside" + count + ".3D"));
+//			out.write("x y z value\n");
+//			
+//			for(int j=0; j<distanceMap.length; j++) {
+//				int x = getX(j,xm,ym);
+//				int y = getY(j,xm,ym);
+//				int z = getZ(j,xm,ym);
+//				if((j%3 == 0) && (distanceMap[j] < Double.MAX_VALUE)) {
+//					out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*100) + "\n");
+//				}
+//			}
+//			out.close();
+//			} catch (IOException e) {
+//			}
+			
 			SubvolumeSignedDistanceMap subvolumeSignedDistanceMap = new SubvolumeSignedDistanceMap(subVolume, samplesX, samplesY, samplesZ, distanceMap);
 			distanceMaps.add(subvolumeSignedDistanceMap);
+//			count++;
 		}
 		return distanceMaps.toArray(new SubvolumeSignedDistanceMap[distanceMaps.size()]);
 	}
