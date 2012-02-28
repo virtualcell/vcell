@@ -16,7 +16,10 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.Vector;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.KernelJAI;
@@ -32,11 +35,21 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
+import ncsa.hdf.object.Metadata;
+import ncsa.hdf.object.h5.H5Group;
+import ncsa.hdf.object.h5.H5ScalarDS;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
+import org.vcell.util.FileUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
+import org.vcell.util.Range;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -45,6 +58,7 @@ import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
+import cbit.image.SourceDataInfo;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -54,7 +68,9 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
@@ -248,7 +264,8 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
 			if(progressListener != null){
-				progressListener.setProgress((((i+1)/times.length))*100);
+				int progress = (int)(((i+1)*1.0/times.length)*100);
+				progressListener.setProgress(progress);
 			}
 		}
 	
@@ -314,6 +331,68 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 
 		return frapData;
 	}
+	
+	
+	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, ClientTaskStatusSupport progressListener) throws Exception
+	{
+		String str = FileUtils.readFileToString(inputHDF5File);
+		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput(str.getBytes());
+		if (!inputHDF5File.exists()) {
+		throw new Exception("File not found "+inputHDF5File.getAbsolutePath());
+		}
+		// retrieve an instance of H5File
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		if (fileFormat == null){
+		throw new Exception("Cannot find HDF5 FileFormat.");
+		}
+		// open the file with read-only access
+		FileFormat hdf5File = fileFormat.open(inputHDF5File.getAbsolutePath(), FileFormat.READ);
+		if (hdf5File == null){
+		throw new Exception("Failed to open file: "+inputHDF5File.getAbsolutePath());
+		}
+		// open the file and retrieve the file structure
+		hdf5File.open();
+		Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5File.getRootNode()).getUserObject();
+		DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null);
+		// close file resource
+		hdf5File.close();
+		//set messge to load variable
+		if(progressListener != null)
+		{
+			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
+		}
+		// construct 
+		double[] time = dataProcessingOutput.getTimes(); 
+		HashMap<String, Vector<SourceDataInfo>> varMaps = dataProcessingOutput.getDataGenerators();
+		Vector<SourceDataInfo> sdInfo = varMaps.get(SimDataConstants.FLUOR_DATA_NAME);
+		UShortImage[] dataImages = new UShortImage[time.length];
+		for (int i = 0; i < time.length; i++) {
+			double[] doubleData = (double[])sdInfo.get(i).getData();
+			short[] shortData = new short[doubleData.length];
+			for(int j=0; j<doubleData.length; j++)
+			{
+				shortData[j] = (short)doubleData[j];
+			}
+			dataImages[i] = new UShortImage(
+						shortData,
+						sdInfo.get(i).getOrigin(),
+						sdInfo.get(i).getExtent(),
+						sdInfo.get(i).getXSize(),sdInfo.get(i).getYSize(),sdInfo.get(i).getZSize());
+			
+			if(progressListener != null){
+				int progress = (int)(((i+1)*1.0/time.length)*100);
+				progressListener.setProgress(progress);
+			}
+		}
+		
+		ImageDataset imageDataSet = new ImageDataset(dataImages,time,sdInfo.get(0).getZSize());
+		FRAPData frapData = new FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
+		
+		return frapData;
+	}
+
+	
+	
 	/**
 	 * Constructor for FRAPData.
 	 * @param argImageDataset ImageDataset

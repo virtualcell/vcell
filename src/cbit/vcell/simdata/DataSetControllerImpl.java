@@ -664,7 +664,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 		throw new DataAccessException(e.getMessage());
 	}
 }
-private static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String otherName) throws Exception
+public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String otherName) throws Exception
 {
     if (g == null)
         return;

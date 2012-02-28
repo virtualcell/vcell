@@ -325,10 +325,9 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	      ToolBarHandler th = new ToolBarHandler();
 	      toolBar.addToolBarHandler(th);
 	      mb = new JMenuBar();
-
 	      
-		  System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
-		  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+//		  System.setProperty(PropertyLoader.primarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+//		  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 		  System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultSimDataDirectory());
 	      System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
 

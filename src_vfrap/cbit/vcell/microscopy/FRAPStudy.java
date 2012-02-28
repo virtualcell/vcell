@@ -1001,7 +1001,7 @@ public class FRAPStudy implements Matchable{
     	fdos.cartesianMesh = cartesianMesh;
     	fdos.doubleSpecData =  pixData;
     	fdos.specEDI = newImageExtDataID;
-    	fdos.varNames = new String[] {"fluor","bg_average"};
+    	fdos.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME,"bg_average"};
     	fdos.owner = LocalWorkspace.getDefaultOwner();
     	fdos.times = timesArray;
     	fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};
