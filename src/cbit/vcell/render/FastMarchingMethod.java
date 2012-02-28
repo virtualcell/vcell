@@ -98,7 +98,9 @@ public class FastMarchingMethod {
 		System.out.println("---------- " + (int)((t3-t1)/1000) + " seconds ----------");
 		
 		for(int i=0; i<distanceMap.length; i++) {
-			distanceMap[i] = points[i].getDistance();
+			if(points[i] != null) {
+				distanceMap[i] = points[i].getDistance();
+			}
 		}
 	}
 	
@@ -583,7 +585,7 @@ public class FastMarchingMethod {
 		}
 
 		System.out.println("");
-		System.out.println(" -------------------- TEST 4 - compare accuracy ----------------------- ");
+		System.out.println(" -------------------- TEST 4 - negative entries ----------------------- ");
 		
 		p = null;
 		d1 = 0;
@@ -596,36 +598,138 @@ public class FastMarchingMethod {
 		distanceMap = new double[numItems];
 		Arrays.fill(distanceMap, MAX_NUMBER);
 		
-		Node AA = new Node(1, 0, 0);
-		Node BB = new Node(0, 1, 0);
-		Node CC = new Node(0, 0, 1);
+		Node AA = new Node(0.501, 0.5, 0.5);
+		Node BB = new Node(0.5, 0.501, 0.5);
+		Node CC = new Node(0.5, 0.5, 0.501);
 		
 		A = new Vect3d(AA);
 		B = new Vect3d(BB);
 		C = new Vect3d(CC);
 		
-		distanceMap[0] = -0.5773503;
-		i = (int)(A.getX() + A.getY()*numX + A.getZ()*numX*numY);
-		distanceMap[i] = 0.8164966;
-		i = (int)(B.getX() + B.getY()*numX + B.getZ()*numX*numY);
-		distanceMap[i] = 0.8164966;
-		i = (int)(C.getX() + C.getY()*numX + C.getZ()*numX*numY);
-		distanceMap[i] = 0.8164966;
+		distanceMap[0] = -0.86602540378443864676372317075294;
+		distanceMap[1] = 0.86602540378443864676372317075294;
+		distanceMap[10] = 0.86602540378443864676372317075294;
+		distanceMap[11] = 0.86602540378443864676372317075294;
+		distanceMap[100] = 0.86602540378443864676372317075294;
+		distanceMap[101] = 0.86602540378443864676372317075294;
+		distanceMap[110] = 0.86602540378443864676372317075294;
+		distanceMap[111] = 0.86602540378443864676372317075294;
 		
 		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
 		fmm.march();
 
-		x=1;
-		y=1;
-		z=1;
+		x=5;
+		y=5;
+		z=5;
 		i = x + y*numX + z*numX*numY;
 		p = new Vect3d(x, y, z);
 		Node pp = new Node(x, y, z);
 		d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
 		double d2 = DistanceMapGenerator.distanceToTriangleExperimental(pp, AA, BB, CC, "c:\\TEMP\\triangle.3D");
 		System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1 +
-//				",   exper dist: " + d2 + 
-				",    should be 1.1547005");
+				",   exper dist: " + d2	);
+		
+		
+		x=2;
+		y=1;
+		z=0;
+		i = x + y*numX + z*numX*numY;
+		p = new Vect3d(x, y, z);
+		pp = new Node(x, y, z);
+		d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
+		d2 = DistanceMapGenerator.distanceToTriangleExperimental(pp, AA, BB, CC, "c:\\TEMP\\triangle.3D");
+		System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1 +
+				",   exper dist: " + d2);
+
+
+		
+		System.out.println("");
+		System.out.println(" -------------------- TEST 5 ----------------------- ");
+		
+		p = null;
+		d1 = 0;
+
+		numX = 10;
+		numY = 10;
+		numZ = 10;
+		numItems = numX*numY*numZ;
+
+		distanceMap = new double[numItems];
+		Arrays.fill(distanceMap, MAX_NUMBER);
+		
+		AA = new Node(0.01, 0, 0);
+		BB = new Node(0, 0.01, 0);
+		CC = new Node(0, 0, 0.01);
+		
+		A = new Vect3d(AA);
+		B = new Vect3d(BB);
+		C = new Vect3d(CC);
+		
+		distanceMap[0] = 0;
+		distanceMap[1] = 1;
+		distanceMap[10] = 1;
+		distanceMap[11] = 1.4142135623730950488016887242097;
+		distanceMap[100] = 1;
+		distanceMap[101] = 1.4142135623730950488016887242097;
+		distanceMap[110] = 1.4142135623730950488016887242097;
+		distanceMap[111] = 1.7320508075688772935274463415059;
+		
+		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
+		fmm.march();
+
+		x=5;
+		y=5;
+		z=5;
+		i = x + y*numX + z*numX*numY;
+		p = new Vect3d(x, y, z);
+		pp = new Node(x, y, z);
+		d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
+		d2 = DistanceMapGenerator.distanceToTriangleExperimental(pp, AA, BB, CC, "c:\\TEMP\\triangle.3D");
+		System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1 +
+				",   exper dist: " + d2	);
+		
+		
+		x=2;
+		y=1;
+		z=0;
+		i = x + y*numX + z*numX*numY;
+		p = new Vect3d(x, y, z);
+		pp = new Node(x, y, z);
+		d1 = DistanceMapGenerator.distanceToTriangle3d(p, A, B, C);
+		d2 = DistanceMapGenerator.distanceToTriangleExperimental(pp, AA, BB, CC, "c:\\TEMP\\triangle.3D");
+		System.out.println(x + ", " + y + ", " + z + " - ffm dist: " + distanceMap[i] + ",   exact dist: " + d1 +
+				",   exper dist: " + d2);
+
+		
+		System.out.println("");
+		System.out.println(" -------------------- TEST 6 - narrow vertical column ---------------------- ");
+
+		p = null;
+		d1 = 0;
+
+		numX = 2;
+		numY = 2;
+		numZ = 10;
+		numItems = numX*numY*numZ;
+
+		distanceMap = new double[numItems];
+		Arrays.fill(distanceMap, MAX_NUMBER);
+		
+		distanceMap[0] = -0.3;
+		distanceMap[1] = -0.3;
+		distanceMap[2] = -0.3;
+		distanceMap[3] = -0.3;
+		distanceMap[4] = 0.7;
+		distanceMap[5] = 0.7;
+		distanceMap[6] = 0.7;
+		distanceMap[7] = 0.7;
+		
+		fmm = new FastMarchingMethod(numX, numY, numZ, distanceMap, null);
+		fmm.march();
+
+		for(int j=8; j<numItems; j++) {
+			System.out.println(j + ":  " + distanceMap[j]);
+		}
 
 		
 		System.out.println("Done");
