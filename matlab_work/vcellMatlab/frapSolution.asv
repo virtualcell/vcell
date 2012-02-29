@@ -7,8 +7,8 @@ classdef frapSolution < handle
         problem           % object that holds parameters and geometry
         
         % discretization
-        xarray            % x coordinate of each mesh element
-        yarray            % y coordinate of each mesh element
+        xarray            % x coordinate of each matrix element
+        yarray            % y coordinate of each matrix element
         A_matrix          % sparse laplacian matrix, cell region indexing
         numMeshPoints     % number of rows (size of cell region)
         
@@ -115,10 +115,9 @@ classdef frapSolution < handle
             figure(figure1)
             imagesc(normmesh);
             figure(figure2)
-            surfc(normmesh);
+            surf(normmesh);
             if (bSymmetric == 1)
-                axis([0 this.problem.numY 0 this.problem.numX 0 200]);
-            end
+                axis
             figure(figure1)
         end
         

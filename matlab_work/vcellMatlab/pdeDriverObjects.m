@@ -13,7 +13,7 @@ problem.cell2Radius = problem.domainSizeX/3.5;
 problem.cell2CenterX = problem.domainSizeX/3;
 problem.cell2CenterY = problem.domainSizeX/3;
 
-problem.numX = 60;
+problem.numX = 100;
 problem.numY = 100;
 
 problem.initMask();
@@ -25,19 +25,16 @@ solution.initialFluorescence = solution.getGaussianBleachPattern(0.63, 0.63, 80.
 
 solution.plotInitialConditions();
 
-display('solving pde');
-tic
-
 solution.solutionTimes = 0 : 0.2 : 1;
 solution.solve();
 
-toc
+solution.computeEigenvalues(100);
+solution.animateEigenfunctions(0.2);
 
-display('plotting results');
+solution.animateSolution(solution.getSolutionT(),1);
 
-solution.plotSolution(2);
-solution.plotSolution(3);
-solution.plotSolution(4);
-solution.plotSolution(5);
-solution.plotSolution(6);
+% solution.plotSolution(3);
+% solution.plotSolution(4);
+% solution.plotSolution(5);
+% solution.plotSolution(6);
 
