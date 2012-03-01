@@ -34,7 +34,7 @@ public class DistanceMapGenerator {
 		RayCaster.sampleXYZCoordinates(sampleSize, origin, extent, samplesX, samplesY, samplesZ, bCellCentered);
 		
 		ArrayList<SubvolumeSignedDistanceMap> distanceMaps = new ArrayList<SubvolumeSignedDistanceMap>();
-		int count = 0;
+//		int count = 0;
 		for (SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()){
 			//
 			// find surfaces that bound the current SubVolume
@@ -52,7 +52,9 @@ public class DistanceMapGenerator {
 			}
 			// find unsigned distances in a narrow band for surfaces that bound this SubVolume (expensive)
 			// values outside the band are assumed to be initialized to Double.MAX_VALUE
+//			long timeBeforeMS = System.currentTimeMillis();
 			double[] distanceMap = localUnsignedDistanceMap(surfaces, samplesX, samplesY, samplesZ, 2);
+//			System.out.println("time of narrow band = "+(System.currentTimeMillis()-timeBeforeMS)/1000.0+" seconds");
 			
 			// extend signed distance map using fast marching method from narrow band to all points.
 			// will do it in 2 steps, positive growth first towards inside, then change the sign of the whole 
@@ -90,7 +92,7 @@ public class DistanceMapGenerator {
 			fmm = new FastMarchingMethod(samplesX.length, samplesY.length, samplesZ.length, distanceMap, null);
 			fmm.march();
 			
-//			try {
+//			try {			// save some points in a VisIt compatible format
 //			int xm = samplesX.length;
 //			int ym = samplesY.length;
 //			BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\mapOutside" + count + ".3D"));
@@ -120,11 +122,29 @@ public class DistanceMapGenerator {
 		int numX = samplesX.length;
 		int numY = samplesY.length;
 		int numZ = samplesZ.length;
-		double[] distanceMap = null;
+		double[] distanceMapFast = new double[numX*numY*numZ];
+		Arrays.fill(distanceMapFast, Double.POSITIVE_INFINITY);
+//		double[] distanceMapOrig = new double[numX*numY*numZ];
+//		Arrays.fill(distanceMapOrig, Double.POSITIVE_INFINITY);
 		
 		double epsilon = 1e-8; // roundoff factor.
 		long t1 = System.currentTimeMillis();
 	
+		Vect3d tmp1 = new Vect3d();
+		Vect3d tmp2 = new Vect3d();
+		Vect3d tmp3 = new Vect3d();
+		Vect3d tmp4 = new Vect3d();
+		Vect3d tmp5 = new Vect3d();
+		Vect3d tmp6 = new Vect3d();
+		Vect3d testPoint = new Vect3d();
+		Vect3d tr1 = new Vect3d();
+		Vect3d tr2 = new Vect3d();
+		Vect3d tr3 = new Vect3d();
+
+		double padDistanceX = (samplesX[1]-samplesX[0])*padFactor;
+		double padDistanceY = (samplesY[1]-samplesY[0])*padFactor;
+		double padDistanceZ = (samplesZ[1]-samplesZ[0])*padFactor;
+
 		// here we expect either triangles or nonplanar quads which will be broken up into two triangles.
 		cbit.vcell.geometry.surface.Triangle triangles[] = new cbit.vcell.geometry.surface.Triangle[2];
 		for (Surface surface : surfaces){
@@ -176,14 +196,7 @@ public class DistanceMapGenerator {
 				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
 					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
 	
-					if (distanceMap==null){
-						distanceMap = new double[numX*numY*numZ];
-						Arrays.fill(distanceMap, Double.POSITIVE_INFINITY);
-					}
 					// precompute ray indices that are within the bounding box of the quad.
-					double padDistanceX = (samplesX[1]-samplesX[0])*padFactor;
-					double padDistanceY = (samplesY[1]-samplesY[0])*padFactor;
-					double padDistanceZ = (samplesZ[1]-samplesZ[0])*padFactor;
 					int tstartI = numX;
 					int tendI = -1;
 					for (int ii=0;ii<numX;ii++){
@@ -212,28 +225,36 @@ public class DistanceMapGenerator {
 						}
 					}
 					
-					Vect3d testPoint = new Vect3d();
-					Vect3d tr1 = new Vect3d();
-					Vect3d tr2 = new Vect3d();
-					Vect3d tr3 = new Vect3d();
+					tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
+					tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
+					tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
 					for (int ii=tstartI;ii<=tendI;ii++){
 						for (int jj=tstartJ;jj<=tendJ;jj++){
 							for (int kk=tstartK;kk<=tendK;kk++){
 								testPoint.set(samplesX[ii],samplesY[jj],samplesZ[kk]);
-								tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
-								tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
-								tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
-								double distanceToTriangle3d = DistanceMapGenerator.distanceToTriangle3d(testPoint, tr1, tr2, tr3);	// always a positive number
 								int distanceMapIndex = ii+jj*numX+kk*numX*numY;
-								double bestMatch = Math.min(distanceMap[distanceMapIndex],distanceToTriangle3d);
-								distanceMap[distanceMapIndex] = bestMatch;
+								
+								//double distanceToTriangle3d = DistanceMapGenerator.distanceToTriangle3d(testPoint, tr1, tr2, tr3);	// always a positive number
+								double distanceToTriangle3dSquared = DistanceMapGenerator.squaredDistanceToTriangle3dFast(distanceMapFast[distanceMapIndex],testPoint, tr1, tr2, tr3, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6);
+								double bestMatchFast = Math.min(distanceMapFast[distanceMapIndex],distanceToTriangle3dSquared);
+								distanceMapFast[distanceMapIndex] = bestMatchFast;
+//								double bestMatchOrig = Math.min(distanceMapOrig[distanceMapIndex],distanceToTriangle3d*distanceToTriangle3d);
+//								distanceMapOrig[distanceMapIndex] = bestMatchOrig;
+//								if (Math.abs(distanceMapFast[distanceMapIndex] - distanceMapOrig[distanceMapIndex]) > 1e-8){
+//									throw new RuntimeException("distance("+ii+","+jj+","+kk+"): orig = "+distanceMapOrig[distanceMapIndex]+", fast = "+distanceMapFast[distanceMapIndex]);
+//								}
 							}
 						}
 					}
 				}
 			}
 		}
-		return distanceMap;
+		for (int i=0;i<distanceMapFast.length;i++){
+			if (distanceMapFast[i]!=Double.MAX_VALUE){
+				distanceMapFast[i] = Math.sqrt(distanceMapFast[i]);
+			}
+		}
+		return distanceMapFast;
 	}
 
 	
@@ -276,66 +297,85 @@ public class DistanceMapGenerator {
 	}
 
 	public static double distanceToTriangle3d(Vect3d p0, Vect3d t1, Vect3d t2, Vect3d t3) {
-		// we allocate these here once and reuse them (through set()) as much as we can
-		// because allocations are very expensive and this method is called many many times
 		Vect3d tmp = new Vect3d();
 		Vect3d tmp1 = new Vect3d();
+		Vect3d tmp2 = new Vect3d();
+		Vect3d v1 = new Vect3d();
+		Vect3d v2 = new Vect3d();
+		Vect3d v3 = new Vect3d();
+		return Math.sqrt(squaredDistanceToTriangle3dFast(Double.MAX_VALUE, p0, t1, t2, t3, tmp, tmp1, tmp2, v1, v2, v3));
+	}
+
+	
+	public static double squaredDistanceToTriangle3dFast(double bestSquaredDistance, Vect3d p0, Vect3d t1, Vect3d t2, Vect3d t3, Vect3d tmp, Vect3d tmp1, Vect3d tmp2, Vect3d v1, Vect3d v2, Vect3d v3) {
+		// we allocate these here once and reuse them (through set()) as much as we can
+		// because allocations are very expensive and this method is called many many times
 		
 		tmp.set(t2);
 		tmp.sub(t1);
 		tmp1.set(t3);
 		tmp1.sub(t1);
 		Vect3d normal = tmp.cross(tmp1);						// 1  - the normal
-		double normalLength = normal.length();
+		double normalLengthSquared = normal.lengthSquared();
 	//	System.out.println("the normal = " + normal + ", length = " + normal.length());
 	
 		tmp.set(p0);
 		tmp.sub(t1);
-		double tmpLength = tmp.length();
-		if(tmpLength == 0 || normalLength == 0) {
+		double tmpLengthSquared = tmp.lengthSquared();
+		if(tmpLengthSquared == 0 || normalLengthSquared == 0) {
 			return 0;		// point is in a vertex
 		}
-		double cosalpha = tmp.dot(normal) / (tmpLength*normalLength);	// 2  - cosalpha  
+		
+		double tmpDotNormal = tmp.dot(normal);
+		double sign = Math.signum(tmpDotNormal);
+		double cosalphaSquared = tmpDotNormal*tmpDotNormal / (tmpLengthSquared*normalLengthSquared);	// 2  - cosalpha  
 	//	System.out.println("cos alpha = " + cosalpha);
 	
-		double projectionLength = tmpLength * cosalpha;			// 3    - projection length
+		double projectionLengthSquared = tmpLengthSquared * cosalphaSquared;			// 3    - projection length
 	//	double otherMethod = DistanceToPlane(p0, t1, t2, t3);
 	//	System.out.println("projectionLength = " + projectionLength);
 					
 		Vect3d projection =  new Vect3d(normal);
 		projection.uminusFast();
-		projection.scale(projectionLength / normalLength);		// 4    - projection vector
+		projection.scale(sign*Math.sqrt(projectionLengthSquared / normalLengthSquared));		// 4    - projection vector
 	//	System.out.println("projection = " + projection);
+		if (projection.lengthSquared() >= bestSquaredDistance){
+			//System.out.println("skipping ... projection.lengthSquared() = "+projection.lengthSquared()+", bestSquaredDistance = "+bestSquaredDistance);
+			return bestSquaredDistance;
+		}
 			
 		Vect3d projected = new Vect3d(p0);
 		projected.add(projection);									// 5    - projection of p0 onto the triangle plane
 	//	System.out.println("projected = " + projected);
 			
-		Vect3d v1 = new Vect3d(t1);					// 6a    - t2t1		
-		v1.sub(t2);
-		v1.unit();
-		tmp.set(t1);								// t3t1
-		tmp.sub(t3);
-		tmp.unit();
-		v1.add(tmp);
+		Vect3d v21 = tmp;
+		Vect3d v31 = tmp1;
+		Vect3d v32 = tmp2;
+		
+		v21.set(t1);
+		v21.sub(t2);
+		v21.unit();
+		v31.set(t1);								// t3t1
+		v31.sub(t3);
+		v31.unit();
+		v32.set(t2);								// t3t1
+		v32.sub(t3);
+		v32.unit();
+		
+		v1.set(v21);
+		v1.add(v31);
 	//	System.out.println("v1 = " + v1);
 			
-		Vect3d v2 = new Vect3d(t2);					// 6b    - t3t2
-		v2.sub(t3);
-		v2.unit();
-		tmp.set(t2);								// t1t2
-		tmp.sub(t1);
-		tmp.unit();
-		v2.add(tmp);
+		
+		v2.set(v32);
+		v2.sub(v21);
 	//	System.out.println("v2 = " + v2);
 			
-		Vect3d v3 = new Vect3d(t3);					// 6c    - t1t3
-		v3.sub(t1);
-		v3.unit();
-		tmp.set(t3);								// t2t3
-		tmp.sub(t2);
-		tmp.unit();
-		v3.add(tmp);
+		// v13 + v23   =   - v31 - v32   =    -(v31 + v32)
+		v3.set(v31);
+		v3.add(v32);
+		v3.uminusFast();
+		
 	//	System.out.println("v3 = " + v3);
 				
 		tmp.set(projected);
@@ -360,65 +400,63 @@ public class DistanceMapGenerator {
 	//	System.out.println("f3 = " + f3);
 	
 		boolean bInside = false;
-		double distanceToTriangle = 0;
+		double squaredDistanceToTriangle = 0;
 		if(f1 >= 0 && f2 < 0) {
 //			System.out.println("Projection of point is inside the t1, t2 quadrant...");
-			bInside = isInsideTriangle(projected, normal, t1, t2, tmp, tmp1);
+			bInside = isInsideTriangleFast(projected, normal, t1, t2, tmp, tmp1);
 			if(bInside == true) {		// easy case, length of projection already known
 //				System.out.println("Distance from point to triangle is " + projectionLength);
-				distanceToTriangle = projectionLength;
+				squaredDistanceToTriangle = projectionLengthSquared;
 			} else {
-				distanceToTriangle = distanceToTriangleUtil(projected, t1, t2, p0, projectionLength, tmp, tmp1);
+				squaredDistanceToTriangle = squaredDistanceToTriangleUtilFast(projected, t1, t2, p0, projectionLengthSquared, tmp, tmp1, tmp2);
 			}
 		}
 		else if(f2 >= 0 && f3 < 0) {
 //			System.out.println("Projection of point is inside the t2, t3 quadrant...");
-			bInside = isInsideTriangle(projected, normal, t2, t3, tmp, tmp1);
+			bInside = isInsideTriangleFast(projected, normal, t2, t3, tmp, tmp1);
 			if(bInside == true) {
 //				System.out.println("Distance from point to triangle is " + projectionLength);
-				distanceToTriangle = projectionLength;
+				squaredDistanceToTriangle = projectionLengthSquared;
 			} else {
-				distanceToTriangle = distanceToTriangleUtil(projected, t2, t3, p0, projectionLength, tmp, tmp1);
+				squaredDistanceToTriangle = squaredDistanceToTriangleUtilFast(projected, t2, t3, p0, projectionLengthSquared, tmp, tmp1, tmp2);
 			}
 		}
 		else if(f1 < 0 && f3 >= 0) {
 //			System.out.println("Projection of point is inside the t1, t3 quadrant...");
-			bInside = isInsideTriangle(projected, normal, t3, t1, tmp, tmp1);
+			bInside = isInsideTriangleFast(projected, normal, t3, t1, tmp, tmp1);
 			if(bInside == true) {
 //				System.out.println("Distance from point to triangle is " + projectionLength);
-				distanceToTriangle = projectionLength;
+				squaredDistanceToTriangle = projectionLengthSquared;
 			} else {
-				distanceToTriangle = distanceToTriangleUtil(projected, t3, t1, p0, projectionLength, tmp, tmp1);
+				squaredDistanceToTriangle = squaredDistanceToTriangleUtilFast(projected, t3, t1, p0, projectionLengthSquared, tmp, tmp1, tmp2);
 			}
 		} else if (f1 == 0 && f2 == 0 && f3 == 0) {
-			distanceToTriangle = projectionLength;
+			squaredDistanceToTriangle = projectionLengthSquared;
 		} else {
 			throw new RuntimeException("Unable to localize projection of point on triangle plane, f1=" + f1 + 
 					", f2=" + f2 + ", f3=" + f3);
 		}
-		return Math.abs(distanceToTriangle);
+		return squaredDistanceToTriangle;
 	}
 
-	private static double distanceToTriangleUtil(Vect3d projected, Vect3d left, Vect3d right,
-				Vect3d p0, double projectionLength,
-				Vect3d tmp1, Vect3d tmp2) {		// transmitted as working buffers, to avoid expensive allocations
-		double distanceToTriangle = 0;
+	private static double squaredDistanceToTriangleUtilFast(Vect3d projected, Vect3d left, Vect3d right,
+				Vect3d p0, double squaredProjectionLength,
+				Vect3d tmp1, Vect3d tmp2, Vect3d tmp3) {		// transmitted as working buffers, to avoid expensive allocations
+		double squaredDistanceToTriangle = 0;
 		
 		tmp1.set(right);
 		tmp1.sub(projected);
 		tmp2.set(left);
 		tmp2.sub(projected);
-		double tmp2Length = tmp2.length();
-		Vect3d tmp3 = new Vect3d(right);
+		tmp3.set(right);
 		tmp3.sub(left);
 		tmp1.crossFast(tmp2);												// 8    - r
 		tmp1.crossFast(tmp3);
 		
-		double len = tmp1.length();
-		double cosgamma = tmp2.dot(tmp1) / (tmp2Length * len);				// 9
-		double projectionToSegmentLength = tmp2Length * cosgamma;			// 10
+		double length1 = tmp1.length();
+		double projectionToSegmentLength = tmp2.dot(tmp1) / length1;			// 10
 																		// projectedToSegment (reuse tmp1 for speed)
-		tmp1.scale(projectionToSegmentLength / len);						// 11
+		tmp1.scale(projectionToSegmentLength / length1);						// 11
 		tmp3.set(projected);												// projection of 'projected' onto the segment (reuse tmp3 for speed)
 		tmp3.add(tmp1);														// 12
 			
@@ -435,30 +473,44 @@ public class DistanceMapGenerator {
 		double ty = tmp3.getY();
 		double tz = tmp3.getZ();
 			
-		double d1 = (tx-lx)*(tx-lx) + (ty-ly)*(ty-ly) + (tz-lz)*(tz-lz);	// distance to left
-		double d2 = (tx-rx)*(tx-rx) + (ty-ry)*(ty-ry) + (tz-rz)*(tz-rz);	// distance to right
-		double d = (rx-lx)*(rx-lx) + (ry-ly)*(ry-ly) + (rz-lz)*(rz-lz);		// distance between left and right
+		double tx_minus_lx = tx-lx;
+		double ty_minus_ly = ty-ly;
+		double tz_minus_lz = tz-lz;
+		double d1 = tx_minus_lx*tx_minus_lx + ty_minus_ly*ty_minus_ly + tz_minus_lz*tz_minus_lz;	// distance squared to left
+		double tx_minus_rx = tx-rx;
+		double ty_minus_ry = ty-ry;
+		double tz_minus_rz = tz-rz;
+		double d2 = tx_minus_rx*tx_minus_rx + ty_minus_ry*ty_minus_ry + tz_minus_rz*tz_minus_rz;	// distance squared to right
+		double rx_minus_lx = rx-lx;
+		double ry_minus_ly = ry-ly;
+		double rz_minus_lz = rz-lz;
+		double d = rx_minus_lx*rx_minus_lx + ry_minus_ly*ry_minus_ly + rz_minus_lz*rz_minus_lz;		// distance squared between left and right
 			
 		if(d1<=d && d2<=d) {
 //			System.out.println(" closest to line ");
-			distanceToTriangle = Math.sqrt(projectionToSegmentLength*projectionToSegmentLength +
-					projectionLength*projectionLength);
+			squaredDistanceToTriangle = projectionToSegmentLength*projectionToSegmentLength + squaredProjectionLength;
 		} else {
 			if(d1<d2) {
 //				System.out.println(" closest to vertex left " + left);
-				distanceToTriangle = Math.sqrt( (lx-px)*(lx-px) + (ly-py)*(ly-py) + (lz-pz)*(lz-pz) );
+				double lx_minus_px = lx-px;
+				double ly_minus_py = ly-py;
+				double lz_minus_pz = lz-pz;
+				squaredDistanceToTriangle = lx_minus_px*lx_minus_px + ly_minus_py*ly_minus_py + lz_minus_pz*lz_minus_pz;
 			} else {
 //				System.out.println(" closest to vertex right " + right);
-				distanceToTriangle = Math.sqrt( (rx-px)*(rx-px) + (ry-py)*(ry-py) + (rz-pz)*(rz-pz) );
+				double rx_minus_px = rx-px;
+				double ry_minus_py = ry-py;
+				double rz_minus_pz = rz-pz;
+				squaredDistanceToTriangle = rx_minus_px*rx_minus_px + ry_minus_py*ry_minus_py + rz_minus_pz*rz_minus_pz;
 			}
 				
 		}
-		return distanceToTriangle;
+		return squaredDistanceToTriangle;
 	}
 
-	private static boolean isInsideTriangle(Vect3d point, Vect3d normal, Vect3d left, Vect3d right, 
+	private static boolean isInsideTriangleFast(Vect3d point, Vect3d normal, Vect3d left, Vect3d right, 
 			Vect3d tmp1, Vect3d tmp2) {		// transmitted as working buffers, to avoid expensive allocations
-		tmp1 .set(left);
+		tmp1.set(left);
 		tmp1.sub(point);
 		tmp2.set(right);
 		tmp2.sub(point);
