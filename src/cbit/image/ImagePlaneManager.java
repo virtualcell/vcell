@@ -10,6 +10,8 @@
 
 package cbit.image;
 
+import java.io.Serializable;
+
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
@@ -349,7 +351,7 @@ private void updateImagePlaneData() {
 		return;
 	}
 	int type = getSourceDataInfo().getType();
-	Object data = getSourceDataInfo().getData();
+	Serializable data = getSourceDataInfo().getData();
 	int startIndex = getSourceDataInfo().getStartIndex();
 	SourceDataInfo sdiSource = getSourceDataInfo();
 	//
