@@ -335,8 +335,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 	
 	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, ClientTaskStatusSupport progressListener) throws Exception
 	{
-		String str = FileUtils.readFileToString(inputHDF5File);
-		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput(str.getBytes());
+		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput();
 		if (!inputHDF5File.exists()) {
 		throw new Exception("File not found "+inputHDF5File.getAbsolutePath());
 		}

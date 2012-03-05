@@ -9,6 +9,7 @@
  */
 
 package cbit.image;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 
 import org.vcell.util.Coordinate;
@@ -23,9 +24,9 @@ import cbit.vcell.solvers.CartesianMesh;
  * Creation date: (10/5/00 11:14:42 AM)
  * @author: 
  */
-public class SourceDataInfo {
+public class SourceDataInfo implements Serializable {
 	private int type;
-	private Object data;
+	private Serializable data;
 	private int startIndex;
 	private int xSize;
 	private int xIncrement;
@@ -44,7 +45,7 @@ public class SourceDataInfo {
 /**
  * ImageSourceDataInfo constructor comment.
  */
-public SourceDataInfo(int argType, Object argData, Extent argExtent,Origin argOrigin,Range argMinMax,int argStartIndex, int argXSize, int argXIncrement, int argYSize, int argYIncrement, int argZSize, int argZIncrement) {
+public SourceDataInfo(int argType, Serializable argData, Extent argExtent,Origin argOrigin,Range argMinMax,int argStartIndex, int argXSize, int argXIncrement, int argYSize, int argYIncrement, int argZSize, int argZIncrement) {
 	super();
 	type = argType;
 	data = argData;
@@ -75,7 +76,7 @@ public SourceDataInfo(int argType, Object argData, Extent argExtent,Origin argOr
 /**
  * ImageSourceDataInfo constructor comment.
  */
-public SourceDataInfo(int argType,Object argData,Range dataRange,int argStartIndex,int argXSize,int argXIncrement,double argXOrigin,double argXExtent,int argYSize,int argYIncrement,double argYOrigin,double argYExtent) {
+public SourceDataInfo(int argType,Serializable argData,Range dataRange,int argStartIndex,int argXSize,int argXIncrement,double argXOrigin,double argXExtent,int argYSize,int argYIncrement,double argYOrigin,double argYExtent) {
 	this(argType,argData,new Extent(argXExtent,argYExtent,1),new Origin(argXOrigin,argYOrigin,0),dataRange,argStartIndex,argXSize,argXIncrement,argYSize,argYIncrement,1,0);
 }
 
@@ -97,7 +98,7 @@ public int calculateWorldIndex(CoordinateIndex ci){
  * Creation date: (10/5/00 5:13:52 PM)
  * @return java.lang.Object
  */
-public Object getData() {
+public Serializable getData() {
 	return data;
 }
 

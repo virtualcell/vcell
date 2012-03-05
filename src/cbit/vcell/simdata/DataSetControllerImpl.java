@@ -629,7 +629,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 		if (numRead!=byteArray.length){
 			throw new IOException("read only "+numRead+" / "+byteArray.length+" bytes in DataProcessingOutput file");
 		}
-		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput(byteArray);
+		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput();
 		
 		
 		
