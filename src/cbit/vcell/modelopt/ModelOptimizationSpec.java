@@ -94,16 +94,7 @@ public ModelOptimizationSpec(ParameterEstimationTask pet) throws ExpressionExcep
 }
 
 public void gatherIssues(java.util.List<Issue> issueList) {
-	boolean bParameterAdded = false;
-	if (fieldParameterMappingSpecs != null) {
-		for (ParameterMappingSpec pms : fieldParameterMappingSpecs) {
-			if (pms.isSelected()) {
-				bParameterAdded = true;
-				break;
-			}
-		}
-	}
-	if (!bParameterAdded) {
+	if (!hasSelectedParameters()) {
 		issueList.add(new Issue(this,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization.",Issue.SEVERITY_WARNING));
 	}
 	
@@ -119,6 +110,18 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 	if (!bExperimentalDataMapped) {
 		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column.",Issue.SEVERITY_WARNING));
 	}	
+}
+
+public boolean hasSelectedParameters()
+{
+	if (fieldParameterMappingSpecs != null) {
+		for (ParameterMappingSpec pms : fieldParameterMappingSpecs) {
+			if (pms.isSelected()) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 /**
