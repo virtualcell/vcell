@@ -48,6 +48,13 @@ public interface SimDataConstants {
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS = "VariableStatistics";
 	public static final String DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING = "PostProcessing";
 	
+	public static final String DATA_PROCESSING_OUTPUT_ORIGINX = "OriginX";
+	public static final String DATA_PROCESSING_OUTPUT_ORIGINY = "OriginY";
+	public static final String DATA_PROCESSING_OUTPUT_ORIGINZ = "OriginZ";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENTX = "ExtentX";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENTY = "ExtentY";
+	public static final String DATA_PROCESSING_OUTPUT_EXTENTZ = "ExtentZ";
+	
 	public static final String ZIPFILE_EXTENSION = ".zip";
 	public static final String FIELDDATARESAMP_EXTENSION = ".fdat";
 	

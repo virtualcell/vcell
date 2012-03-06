@@ -53,6 +53,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Origin;
 import org.vcell.util.Range;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -635,7 +636,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 		
 		File dataProcessingOutputFileDDF5 = new File(primaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		if (!dataProcessingOutputFileDDF5.exists()){
-			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
+			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		}
 		if (!dataProcessingOutputFileDDF5.exists()) {
 			throw new Exception("File not found "+dataProcessingOutputFileDDF5.getAbsolutePath());
@@ -653,7 +654,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 	    // open the file and retrieve the file structure
 	    testFile.open();
 	    Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
-	    populateHDF5(root, "",dataProcessingOutput,false,null);
+	    populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
 	    // close file resource
 	    testFile.close();
 
@@ -664,7 +665,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 		throw new DataAccessException(e.getMessage());
 	}
 }
-public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String otherName) throws Exception
+public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception
 {
     if (g == null)
         return;
@@ -674,6 +675,8 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
     int n = members.size();
     indent += "    ";
     HObject obj = null;
+//    HashMap<String, Origin> originHashmap = new HashMap<String, Origin>();
+//    HashMap<String, Extent> extentHashmap = new HashMap<String, Extent>();
     for (int i=0; i<n; i++){
     	
         obj = (HObject)members.get(i);
@@ -681,11 +684,11 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS)){
 	    	List<Metadata> metaDataL = obj.getMetadata();
 	    	if(metaDataL != null){
-	    		String[] variableStatNames = new String[metaDataL.size()];
-	    		for (int j = 0; j < metaDataL.size(); j++) {
-	        		Attribute attr = (Attribute)metaDataL.get(j);
-	        		variableStatNames[j] = attr.toString(",");
-	        		System.out.print(" "+attr.getName()+"='"+variableStatNames[j]+"'");
+	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);
+	    		String[] variableStatNames = new String[attrHashMap.size()];
+	    		Iterator<String> attrIter = attrHashMap.keySet().iterator();
+	    		for (int j = 0; j < attrHashMap.size(); j++) {
+	        		variableStatNames[j] = attrHashMap.get(attrIter.next());
 				}
 	        	dataProcessingOutput.setVariableStatNames(variableStatNames);
 	        	dataProcessingOutput.setVariableStatValues(new double[variableStatNames.length][dataProcessingOutput.getTimes().length]);
@@ -699,11 +702,14 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 //        	long[] stride = h5ScalarDS.getStride();
 //        	int[] selectedIndex = h5ScalarDS.getSelectedIndex();
 
+        	
+        	
+        	
         	h5ScalarDS.init();
         	long[] dims = h5ScalarDS.getDims();
         	
         	//make sure all dimensions are selected for loading if 3D
-        	//for 3D, only 1st slice selected by default
+        	//note: for 3D, only 1st slice selected by default
         	long[] selectedDims = h5ScalarDS.getSelectedDims();
         	if(selectedDims != null && selectedDims.length > 2){
         		//changes internal class variable used during read
@@ -714,6 +720,12 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         	Object data = h5ScalarDS.read();
 
         	if(dims != null){
+        		if(dims.length > 1){
+        			//For HDF5View (x stored in index 1) and (y stored in index 0) so must switch back to normal assumption
+        			long dimsY = dims[0];
+        			dims[0] = dims[1];
+        			dims[1] = dimsY;
+        		}
 	        	System.out.print(" dims=(");
 	        	for (int j = 0; j < dims.length; j++) {
 					System.out.print((j>0?"x":"")+dims[j]);
@@ -742,8 +754,8 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         		int ySize = (int)(dims.length>1?dims[1]:1);
         		int zSize = (int)(dims.length>2?dims[2]:1);
         		SourceDataInfo sourceDataInfo = 
-        			new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, (double[])data, new Extent(1,1,1), null, new Range(min, max), 0, xSize, 1, ySize, xSize, zSize, xSize*ySize);
-        		Vector<SourceDataInfo> otherData = dataProcessingOutput.getDataGenerators().get(otherName);
+        			new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, (double[])data, (imgDataExtent==null?new Extent(1,1,1):imgDataExtent), (imgDataOrigin==null?null:imgDataOrigin), new Range(min, max), 0, xSize, 1, ySize, xSize, zSize, xSize*ySize);
+        		Vector<SourceDataInfo> otherData = dataProcessingOutput.getDataGenerators().get(imgDataName);
         		int timeIndex = Integer.parseInt(obj.getName().substring(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX.length()));
         		otherData.add(sourceDataInfo);
         		if(otherData.size()-1 != timeIndex){
@@ -752,18 +764,40 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         	}
         }else if (obj instanceof H5Group && !obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING)){
         	bVS = false;
-        	otherName = obj.getName();
-        	dataProcessingOutput.getDataGenerators().put(otherName, new Vector<SourceDataInfo>());
+        	imgDataName = obj.getName();
+        	dataProcessingOutput.getDataGenerators().put(imgDataName, new Vector<SourceDataInfo>());
+
+	    	List<Metadata> metaDataL = obj.getMetadata();
+	    	if(metaDataL != null){//assume 6 attributes defining origin and extent
+	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);
+	    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINZ)));
+	    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTZ)));
+//	    		originHashmap.put(imgDataName,orign);
+//	    		extentHashmap.put(imgDataName,extent);
+	    	}
+
         }
         System.out.println();
         
         if (obj instanceof Group)
         {
-        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVS,otherName);
+        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVS,imgDataName,imgDataOrigin,imgDataExtent);
         }
     }
 }
-
+private static HashMap<String, String> getHDF5Attributes(HObject hObject) throws Exception{
+	HashMap<String, String> attrHashMap = new HashMap<String, String>();
+	List<Metadata> metaDataL = hObject.getMetadata();
+	if(metaDataL != null){
+		for (int j = 0; j < metaDataL.size(); j++) {
+    		Attribute attr = (Attribute)metaDataL.get(j);
+    		String attrValue = attr.toString(",");
+    		System.out.print(" "+attr.getName()+"='"+attrValue+"'");
+    		attrHashMap.put(attr.getName(),attr.toString(","));
+		}
+	}
+	return attrHashMap;
+}
 private boolean isDomainInside(CartesianMesh mesh, Domain domain, int membraneIndex) {
 	boolean bInside = true;
 	int volIndexNear = mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex();
