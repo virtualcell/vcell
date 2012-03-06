@@ -227,6 +227,10 @@ public void refreshDependencies() {
  * Creation date: (5/2/2006 11:01:21 PM)
  */
 public void refreshMappings() throws MappingException, MathException {
+	if(!fieldModelOptimizationSpec.hasSelectedParameters())
+	{
+		throw new RuntimeException("No parameters are selected for optimization.");
+	}
 	if (fieldModelOptimizationSpec.getReferenceData()==null){
 		throw new RuntimeException("reference data not specified");
 	}
@@ -237,6 +241,7 @@ public void refreshMappings() throws MappingException, MathException {
 					"Go to \"Reference Data\" to assign model associations to all reference data.");
 		}
 	}
+	
 	fieldMathSymbolMapping = getModelOptimizationMapping().computeOptimizationSpec();
 }
 

@@ -29,20 +29,20 @@ public class Parameter implements Matchable{
  * OptimizationVariable constructor comment.
  * @param name java.lang.String
  */
-public Parameter(String argName, double argLowerBound, double argUpperBound, double argScale, double argInitialGuess) {
+public Parameter(String argName, double argLowerBound, double argUpperBound, double argScale, double argInitialGuess) throws OptimizationException{
 	this.name = argName;
 	this.lowerBound = argLowerBound;
 	this.upperBound = argUpperBound;
 	if (lowerBound > upperBound) {
-		throw new RuntimeException("Lower bound cannot be greater than upper bound for parameter "+name);
+		throw new OptimizationException("Lower bound cannot be greater than upper bound for parameter "+name);
 	}
 	this.scale = argScale;
 	if (scale <= 0.0) {
-		throw new RuntimeException("Scale should be positive");
+		throw new OptimizationException("Scale should be positive");
 	}
 	this.initialGuess = argInitialGuess;
 	if ((initialGuess < lowerBound) || (initialGuess > upperBound)) {
-		throw new RuntimeException("Initial guess for parameter "+name+" should be between lower and upper bounds.");
+		throw new OptimizationException("Initial guess for parameter "+name+" should be between lower and upper bounds.");
 	}
 }
 
