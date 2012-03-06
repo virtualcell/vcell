@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
@@ -35,21 +34,14 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
-import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.Metadata;
-import ncsa.hdf.object.h5.H5Group;
-import ncsa.hdf.object.h5.H5ScalarDS;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
-import org.vcell.util.Range;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -352,7 +344,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		// open the file and retrieve the file structure
 		hdf5File.open();
 		Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5File.getRootNode()).getUserObject();
-		DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null);
+		DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
 		// close file resource
 		hdf5File.close();
 		//set messge to load variable
