@@ -493,6 +493,15 @@ public ParameterMappingSpec getParameterMappingSpec(Parameter parameter) {
 	return null;
 }
 
+private ParameterMappingSpec getParameterMappingSpecByCompareEqual(Parameter parameter) {
+	for (int i = 0;fieldParameterMappingSpecs!=null && i < fieldParameterMappingSpecs.length; i++){
+		if (fieldParameterMappingSpecs[i].getModelParameter().compareEqual(parameter)) 
+		{
+			return fieldParameterMappingSpecs[i];
+		}
+	}
+	return null;
+}
 
 /**
  * Gets the parameterMapping property (cbit.vcell.modelopt.ParameterMapping[]) value.
@@ -586,28 +595,28 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 private void refreshParameterMappingSpecs() throws ExpressionException {
 	Parameter modelParameters[] = getModelParameters();
 
-	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
+	ParameterMappingSpec[] newParameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	
 	java.util.ArrayList<Issue> issueList = new java.util.ArrayList<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
 	Issue[] issues = (Issue[])BeanUtils.getArray(issueList,Issue.class);
 	
-	for (int i = 0; i < parameterMappingSpecs.length; i++){
-		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
+	for (int i = 0; i < newParameterMappingSpecs.length; i++){
+		newParameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
 		//check if parameter mapping spec already exist
 		ParameterMappingSpec  memoryParameterMappingSpec = null;
 		if(this.getParameterMappingSpecs() != null && this.getParameterMappingSpecs().length > 0)
 		{
-			memoryParameterMappingSpec = this.getParameterMappingSpec(modelParameters[i]);
+			memoryParameterMappingSpec = this.getParameterMappingSpecByCompareEqual(modelParameters[i]);
 		}
 		//parameter mapping spec already exist
 		if(memoryParameterMappingSpec != null)
 		{
-			parameterMappingSpecs[i].setCurrent(memoryParameterMappingSpec.getCurrent());
-			parameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
-			parameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
-			parameterMappingSpecs[i].setSelected(memoryParameterMappingSpec.isSelected());
+			newParameterMappingSpecs[i].setCurrent(memoryParameterMappingSpec.getCurrent());
+			newParameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
+			newParameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
+			newParameterMappingSpecs[i].setSelected(memoryParameterMappingSpec.isSelected());
 		}
 		else //not found
 		{
@@ -616,15 +625,15 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 					if (issues[j] instanceof SimpleBoundsIssue){
 						SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
 						net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
-						parameterMappingSpecs[i].setLow(bounds.lo());
-						parameterMappingSpecs[i].setHigh(bounds.hi());
+						newParameterMappingSpecs[i].setLow(bounds.lo());
+						newParameterMappingSpecs[i].setHigh(bounds.hi());
 					}
 				}
 			}
 		}
 	}
 	try {
-		setParameterMappingSpecs(parameterMappingSpecs);
+		setParameterMappingSpecs(newParameterMappingSpecs);
 //		removeUncoupledParameters();
 	} catch (PropertyVetoException e) {
 		e.printStackTrace(System.out);
