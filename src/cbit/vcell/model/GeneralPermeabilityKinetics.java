@@ -185,7 +185,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 			Expression tempCurrentExpression = null;
 			Expression rate = getSymbolExpression(rateParm);
-			Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+			Expression F_nmol = getSymbolExpression(getReactionStep().getModel().getFARADAY_CONSTANT_NMOLE());
 			tempCurrentExpression = Expression.mult(rate, z, F_nmol);
 			if (currentParm == null){
 				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),tempCurrentExpression,ROLE_CurrentDensity,null));

@@ -13,6 +13,7 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -67,7 +68,7 @@ public abstract class LumpedKinetics extends Kinetics {
 		return getKineticsParameterFromRole(ROLE_LumpedCurrent);
 	}
 
-	public static LumpedKinetics toLumpedKinetics(DistributedKinetics distributedKinetics, double size){
+	public static LumpedKinetics toLumpedKinetics(DistributedKinetics distributedKinetics, double size, ReservedSymbol kMoleReservedSymbol){
 		KineticsParameter[] distKineticsParms = distributedKinetics.getKineticsParameters();
 		ReactionStep reactionStep = distributedKinetics.getReactionStep();
 		try {
@@ -85,7 +86,7 @@ public abstract class LumpedKinetics extends Kinetics {
 			}else{
 				lumpedKinetics = new GeneralLumpedKinetics(reactionStep);
 				Expression lumpingFactor = null;
-				Expression kmole = distributedKinetics.getSymbolExpression(ReservedSymbol.KMOLE);
+				Expression kmole = distributedKinetics.getSymbolExpression(kMoleReservedSymbol);
 				if (reactionStep.getStructure() instanceof Membrane){
 					if (reactionStep instanceof FluxReaction){
 						// size/KMOLE  (from uM.um.s-1 to molecules.s-1)

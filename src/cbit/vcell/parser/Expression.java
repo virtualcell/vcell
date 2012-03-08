@@ -480,25 +480,25 @@ public int hashCode() {
 	   StringBuffer visitStr = new StringBuffer(after_Infix_VISIT);
 		do{
 			boolean bFound = false;
-			int index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_X);
+			int index = visitStr.indexOf(ASTIdNode.VISIT_RESERVED_X);
 			if(index != -1){
 				bFound = true;
-				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_X.length(), "coord("+visitMeshName+")[0]");
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESERVED_X.length(), "coord("+visitMeshName+")[0]");
 			}
-			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_Y);
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESERVED_Y);
 			if(index != -1){
 				bFound = true;
-				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_Y.length(), "coord("+visitMeshName+")[1]");
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESERVED_Y.length(), "coord("+visitMeshName+")[1]");
 			}
-			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_Z);
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESERVED_Z);
 			if(index != -1){
 				bFound = true;
-				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_Z.length(), "coord("+visitMeshName+")[2]");
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESERVED_Z.length(), "coord("+visitMeshName+")[2]");
 			}
-			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_T);
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESERVED_T);
 			if(index != -1){
 				bFound = true;
-				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_T.length(), "time("+visitMeshName+")");
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESERVED_T.length(), "time("+visitMeshName+")");
 			}
 			if(!bFound){
 				break;

@@ -31,8 +31,6 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -177,10 +175,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 				// This new symbolTable is this SpeciesContextSpec, but omits its parameters, so that the SpeciesContextSpecParameter
 				// expression that is being bound cannot contain other speciesContextSpecParameters in its expression.
 				expression.bindExpression(new SymbolTable() {
-					public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+					public SymbolTableEntry getEntry(String identifierString) {
 						SymbolTableEntry ste = SpeciesContextSpec.this.getEntry(identifierString);
 						if (ste instanceof SpeciesContextSpecParameter) {
-							throw new ExpressionBindingException("\nCannot use a speciesContextSpec parameter (e.g., diff, initConc, Vel_X, etc.) in another speciesContextSpec parameter expression.");
+							throw new RuntimeException("\nCannot use a speciesContextSpec parameter (e.g., diff, initConc, Vel_X, etc.) in another speciesContextSpec parameter expression.");
 						}
 						return ste;
 					}
@@ -726,7 +724,7 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityZParameter() {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -740,20 +738,13 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 	}
 	
 	if (ste!=null){
-		return addProxyParameter(ste);
+		if (ste instanceof SymbolTableFunctionEntry){
+			return ste;
+		} else {
+			return addProxyParameter(ste);
+		}
 	}
 	
-	//
-	// if all else fails, try reserved symbols
-	//
-	SymbolTableEntry reservedSTE = ReservedBioSymbolEntries.getEntry(identifierString);
-	if (reservedSTE instanceof SymbolTableFunctionEntry){
-		return reservedSTE;
-	}
-	if (reservedSTE != null){
-		return addProxyParameter(reservedSTE);
-	}
-
 	return null;
 }
 
@@ -789,13 +780,8 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getInitialCountParameter()
  * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	SymbolTableEntry ste = null;
-
-	ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste!=null){
-		return ste;
-	}
 
 	ste = getParameterFromName(identifier);
 	if (ste!=null){
@@ -1358,11 +1344,12 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 	} else {
 		// convert concentration(particles/volume) to number of particles
 		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
+		cbit.vcell.model.Model.ReservedSymbol kMole = getSimulationContext().getModel().getKMOLE();
 		try {
-			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize / ReservedSymbol.KMOLE.getExpression().evaluateConstant())));
+			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize / kMole.getExpression().evaluateConstant())));
 		} catch (ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
-			Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getExpression().evaluateConstant());
+			Expression denominatorExpr = new Expression(kMole.getExpression().evaluateConstant());
 			iniParticlesExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
 		}
 	}
@@ -1387,10 +1374,11 @@ public Expression convertParticlesToConcentration(Expression iniParticles) throw
 	} else {
 		// convert concentration(particles/volume) to number of particles
 		// particles = [iniParticles(uM)/size(um3)]*KMOLE
+		cbit.vcell.model.Model.ReservedSymbol kMole = getSimulationContext().getModel().getKMOLE();
 		try {
-			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant()*ReservedSymbol.KMOLE.getExpression().evaluateConstant() / structSize));
+			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant()*kMole.getExpression().evaluateConstant() / structSize));
 		} catch (ExpressionException e) {
-			Expression numeratorExpr = Expression.mult(iniParticles, new Expression(ReservedSymbol.KMOLE.getExpression().evaluateConstant()));
+			Expression numeratorExpr = Expression.mult(iniParticles, new Expression(kMole.getExpression().evaluateConstant()));
 			Expression denominatorExpr = new Expression(structSize);
 			iniConcentrationExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
 		}
@@ -1409,7 +1397,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {

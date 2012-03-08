@@ -13,12 +13,12 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 
 import java.util.Set;
-
 import net.sourceforge.interval.ia_math.RealInterval;
-
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.model.Model;
+
 
 public class ASTIdNode extends SimpleNode {
 
@@ -268,10 +268,10 @@ public void getSymbols(int language, Set<String> symbolSet) {
 	symbolSet.add(infixString(language));
 }
 
-public static final String VISIT_RESEVED_X = "___X___";
-public static final String VISIT_RESEVED_Y = "___Y___";
-public static final String VISIT_RESEVED_Z = "___Z___";
-public static final String VISIT_RESEVED_T = "___T___";
+public static final String VISIT_RESERVED_X = "___X___";
+public static final String VISIT_RESERVED_Y = "___Y___";
+public static final String VISIT_RESERVED_Z = "___Z___";
+public static final String VISIT_RESERVED_T = "___T___";
 public String infixString(int lang) {
 	String idName = name;
 	if (lang == LANGUAGE_DEFAULT) {
@@ -285,16 +285,32 @@ public String infixString(int lang) {
 	}else if (lang == LANGUAGE_ECLiPSe) {
 		return TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else if (lang == LANGUAGE_VISIT) {
-		if(idName.equals(ReservedSymbol.X.getName())){
-			return VISIT_RESEVED_X;
-		}else if(idName.equals(ReservedSymbol.Y.getName())){
-			return VISIT_RESEVED_Y;
-		}else if(idName.equals(ReservedSymbol.Z.getName())){
-			return VISIT_RESEVED_Z;
-		}else if(idName.equals(ReservedSymbol.TIME.getName())){
-			return VISIT_RESEVED_T;
+		if(symbolTableEntry instanceof Model.ReservedSymbol) {
+			Model.ReservedSymbol rs = (Model.ReservedSymbol)symbolTableEntry;
+			if (rs.isX()){
+				return VISIT_RESERVED_X;
+			} else if (rs.isY()){
+				return VISIT_RESERVED_Y;
+			}  else if (rs.isZ()){
+				return VISIT_RESERVED_Z;
+			} else if (rs.isTime()){
+				return VISIT_RESERVED_T;
+			}
+		} else if(symbolTableEntry instanceof ReservedVariable) {
+			ReservedVariable rv = (ReservedVariable)symbolTableEntry;
+			if (rv.isX()){
+				return VISIT_RESERVED_X;
+			} else if (rv.isY()){
+				return VISIT_RESERVED_Y;
+			}  else if (rv.isZ()){
+				return VISIT_RESERVED_Z;
+			} else if (rv.isTIME()){
+				return VISIT_RESERVED_T;
+			}
 		}
+
 		return idName;
+		
 	}else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}

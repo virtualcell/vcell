@@ -12,8 +12,8 @@ package org.vcell.optimization.gui;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -37,7 +37,7 @@ public SymbolTableEntryTableCellRenderer() {
 				return this;
 			}
 			SymbolTableEntry ste = (SymbolTableEntry)value;
-			if (ste instanceof ReservedSymbol){
+			if (ste instanceof Model.ReservedSymbol){
 				setText(ste.getName());
 			}else if (ste instanceof SpeciesContext){
 				setText("["+ste.getName()+"]");

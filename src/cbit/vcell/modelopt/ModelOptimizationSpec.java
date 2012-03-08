@@ -55,7 +55,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
@@ -189,7 +188,7 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 	//
 	// add time
 	//
-	Node timeNode = new Node("t",ReservedSymbol.TIME);
+	Node timeNode = new Node("t",ReservedVariable.TIME);
 	digraph.addNode(timeNode);
 	
 	//
@@ -789,7 +788,7 @@ public int getReferenceDataTimeColumnIndex() {
 	if (mappingSpecs != null) {
 		for (int i = 0; i < mappingSpecs.length; i ++) {
 			SymbolTableEntry modelObject = mappingSpecs[i].getModelObject();
-			if (modelObject != null && (modelObject.equals(ReservedVariable.TIME) || modelObject.equals(ReservedSymbol.TIME))) {
+			if (modelObject != null && (modelObject.equals(ReservedVariable.TIME))) {
 				timeIndex = i;
 				break;
 			}

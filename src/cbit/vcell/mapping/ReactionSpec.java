@@ -25,8 +25,6 @@ import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -338,7 +336,7 @@ public void gatherIssues(List<Issue> issueList) {}
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 
 	//
 	// look locally (in the ReactionSpec) to resolve identifier
@@ -364,15 +362,8 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
-	SymbolTableEntry ste = null;
-
-	ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste!=null){
-		return ste;
-	}
-
-	ste = getReactionSpecParameterFromName(identifier);
+public SymbolTableEntry getLocalEntry(java.lang.String identifier)  {
+	SymbolTableEntry ste = getReactionSpecParameterFromName(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -781,10 +772,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		for (SymbolTableEntry ste : fieldReactionSpecParameters) {
 			entryMap.put(ste.getName(), ste);
 		}
-		ReservedBioSymbolEntries.getAll(entryMap);
-		entryMap.remove(ReservedSymbol.X);
-		entryMap.remove(ReservedSymbol.Y);
-		entryMap.remove(ReservedSymbol.Z);
 	}
 
 

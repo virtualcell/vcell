@@ -17,7 +17,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -186,7 +185,7 @@ public Expression getNormalizedConcentrationCorrection(SimulationContext simulat
 		// everything mapped to molecules/sq-um : need volume/area fraction and KMOLE
 		//
 		Expression exp = Expression.div(new Expression(getVolumePerUnitAreaParameter(),simulationContext.getNameScope()),
-				new Expression(ReservedSymbol.KMOLE,simulationContext.getNameScope()));
+				new Expression(simulationContext.getModel().getKMOLE(),simulationContext.getNameScope()));
 		return exp;
 	}else{
 		throw new RuntimeException("structure "+getStructure().getName()+" not mapped");

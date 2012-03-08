@@ -189,7 +189,7 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 		public String getName() {
 			return "Default";
 		}		
-		public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) throws ExpressionBindingException {
+		public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) {
 			return null;
 		}		
 		public void getExternalEntries(Map<String, SymbolTableEntry> entryMap) {}		
@@ -239,7 +239,7 @@ public SimpleSymbolTable(String symbols[], NameScope argNameScope, VCUnitDefinit
 }
 
 
-public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifier) {
 	//
 	// check if in the current scope with no scoping
 	//
@@ -254,7 +254,7 @@ public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingExce
 }
 
 
-public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(String identifier) {
 	//
 	// check if in the current scope with no scoping
 	//

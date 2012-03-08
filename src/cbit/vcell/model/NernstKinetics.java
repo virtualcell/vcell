@@ -178,10 +178,11 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	}
 	
 	if (R0!=null && P0!=null){
+		Model model = getReactionStep().getModel();
 		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
-		Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
-		Expression R = getSymbolExpression(ReservedSymbol.GAS_CONSTANT);
-		Expression T = getSymbolExpression(ReservedSymbol.TEMPERATURE);
+		Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
+		Expression R = getSymbolExpression(model.getGAS_CONSTANT());
+		Expression T = getSymbolExpression(model.getTEMPERATURE());
 		Expression P0_exp = getSymbolExpression(P0.getSpeciesContext());
 		Expression R0_exp = getSymbolExpression(R0.getSpeciesContext());
 		Expression V_exp = getSymbolExpression(V);
@@ -199,11 +200,11 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 			Expression tempRateExpression = null;
 			Expression current = getSymbolExpression(currentParm);
 			if (getReactionStep() instanceof SimpleReaction){
-				Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+				Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());
 //				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
 				tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), current);
 			}else{
-				Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+				Expression F_nmol = getSymbolExpression(model.getFARADAY_CONSTANT_NMOLE());
 //				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
 				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
 			}

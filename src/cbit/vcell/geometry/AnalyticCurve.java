@@ -124,13 +124,10 @@ protected int getDefaultNumSamples() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifier) {
 	ReservedParameterSymbol symbol = ReservedParameterSymbol.fromString(identifier);
-	if (symbol==null){
-		throw new ExpressionBindingException("identifier "+identifier+" not bound");
-	}
 	if (!symbol.isU()){
-		throw new ExpressionBindingException("found identifier "+identifier+", expecting "+ReservedParameterSymbol.getU());
+		throw new RuntimeException("found identifier "+identifier+", expecting "+ReservedParameterSymbol.getU());
 	}
 	return symbol;
 }

@@ -21,7 +21,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -229,6 +228,7 @@ public Expression getStructureSizeCorrection(SimulationContext simulationContext
 }
 
 public Expression getSizeCorrection(SimulationContext simulationContext,boolean bIncludeKMOLE) throws ExpressionException {
+	cbit.vcell.model.Model.ReservedSymbol kMole = simulationContext.getModel().getKMOLE();
 	if (getGeometryClass() instanceof CompartmentSubVolume){
 		if (simulationContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
 			//
@@ -236,7 +236,7 @@ public Expression getSizeCorrection(SimulationContext simulationContext,boolean 
 			//
 			Expression exp = new Expression(getSizeParameter(),simulationContext.getNameScope());
 			if (bIncludeKMOLE){
-				exp = Expression.mult(exp,new Expression(ReservedSymbol.KMOLE,simulationContext.getNameScope()));
+				exp = Expression.mult(exp,new Expression(kMole,simulationContext.getModel().getNameScope()));
 			}
 			return exp;
 		} else {
@@ -254,10 +254,10 @@ public Expression getSizeCorrection(SimulationContext simulationContext,boolean 
 				NameScope nameScope = simulationContext.getNameScope();
 				Expression surfaceToVolParameter = new Expression(getSurfaceToVolumeParameter(), nameScope);
 				Expression volFractionParameter = new Expression(getVolumeFractionParameter(), nameScope);
-				Expression kmole = new Expression(ReservedSymbol.KMOLE, nameScope);
+				Expression kmoleExpr = new Expression(kMole, simulationContext.getModel().getNameScope());
 				Expression exp = null;
 				if (bIncludeKMOLE){
-					exp = Expression.mult(surfaceToVolParameter, volFractionParameter, kmole);
+					exp = Expression.mult(surfaceToVolParameter, volFractionParameter, kmoleExpr);
 				}else{
 					exp = Expression.mult(surfaceToVolParameter, volFractionParameter);
 				}
@@ -286,7 +286,7 @@ public Expression getSizeCorrection(SimulationContext simulationContext,boolean 
 		//
 		Expression exp = new Expression(getAreaPerUnitVolumeParameter(),simulationContext.getNameScope());
 		if (bIncludeKMOLE){
-			exp = Expression.mult(exp,new Expression(ReservedSymbol.KMOLE,simulationContext.getNameScope()));
+			exp = Expression.mult(exp,new Expression(kMole,simulationContext.getModel().getNameScope()));
 		}
 		return exp;
 	}else if (getGeometryClass() instanceof SurfaceClass){

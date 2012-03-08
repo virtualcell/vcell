@@ -53,6 +53,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
@@ -61,8 +62,6 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
@@ -74,6 +73,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
@@ -267,6 +267,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
 	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimDataConstants.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
+	
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -990,7 +991,7 @@ public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -1042,18 +1043,17 @@ public KeyValue getKey() {
  * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
-	// try reserved symbols
-	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste!=null){
-		return ste;
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
+	// try field function(s) first
+	if (identifier.equals(MathFunctionDefinitions.fieldFunctionDefinition.getName())) {
+		return MathFunctionDefinitions.fieldFunctionDefinition;
 	}
 	
-	// if simulationContext parameter exists, then return it
-	ste = getSimulationContextParameter(identifier);
+	SymbolTableEntry ste = getSimulationContextParameter(identifier);
 	if (ste != null){
 		return ste;
 	}
+	
 
 	// if dataContext parameter exists, then return it
 	ste = getDataContext().getDataSymbol(identifier);
@@ -1903,8 +1903,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			if (nameSet.contains(name)){
 				throw new PropertyVetoException("multiple bioevents with same name '"+name+"' defined",evt);
 			}
-			if (ReservedBioSymbolEntries.getEntry(name)!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+name+"' as a bioevent name",evt);
+			if (getEntry(name)!=null){
+				throw new PropertyVetoException("cannot use existing symbol '"+name+"' as a bioevent name",evt);
 			}
 			nameSet.add(name);
 		}
@@ -2017,7 +2017,7 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : dataContext.getDataSymbols()){
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
+	entryMap.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(), MathFunctionDefinitions.fieldFunctionDefinition);
 }
 
 
@@ -2033,16 +2033,16 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 			}
 			int dimension = getGeometry().getDimension();
 			if (dimension == 0) {
-				if (ste == ReservedSymbol.X || ste == ReservedSymbol.Y || ste == ReservedSymbol.Z) {
+				if (ste == getModel().getX() || ste == getModel().getY() || ste == getModel().getZ()) {
 					return false;
 				}
 			} else {
 				if (dimension < 3) {
-					if (ste == ReservedSymbol.Z) {
+					if (ste == getModel().getZ()) {
 						return false;
 					}
 					if (dimension < 2) {
-						if (ste == ReservedSymbol.Y) {
+						if (ste == getModel().getY()) {
 							return false;
 						}
 					}

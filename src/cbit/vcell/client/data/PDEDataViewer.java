@@ -128,8 +128,8 @@ import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -810,17 +810,13 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	SymbolTableEntry[] symbolTableEntries = null;
 	if(tsjrss.getVariableNames().length == 1){
 		symbolTableEntries = new SymbolTableEntry[3/*4*/];//max.mean.min,sum
-		try{
-			if(getSimulation() != null && getSimulation().getMathDescription() != null){
-				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjrss.getVariableNames()[0]);
-			}else{
-				symbolTableEntries[0] = new SimpleSymbolTable(tsjrss.getVariableNames()).getEntry(tsjrss.getVariableNames()[0]);
-			}
-			symbolTableEntries[1] = symbolTableEntries[0];
-			symbolTableEntries[2] = symbolTableEntries[0];
-		}catch(ExpressionBindingException e){
-			e.printStackTrace();
+		if(getSimulation() != null && getSimulation().getMathDescription() != null){
+			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjrss.getVariableNames()[0]);
+		}else{
+			symbolTableEntries[0] = new SimpleSymbolTable(tsjrss.getVariableNames()).getEntry(tsjrss.getVariableNames()[0]);
 		}
+		symbolTableEntries[1] = symbolTableEntries[0];
+		symbolTableEntries[2] = symbolTableEntries[0];
 	}
 	SymbolTableEntry[] finalSymbolTableEntries = symbolTableEntries;
 	boolean finalBVolume = bVolume;
@@ -840,7 +836,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 				(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
 		new String[] {
 			"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(finalBVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-			ReservedSymbol.TIME.getName(),
+			ReservedVariable.TIME.getName(),
 			"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
@@ -2285,16 +2281,12 @@ private void showSpatialPlot() {
 	final String varName = getPdeDataContext().getVariableName();
 	final double timePoint = getPdeDataContext().getTimePoint();
 	final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[1];
-	try{
-		if(getSimulation() != null && getSimulation().getMathDescription() != null){
-			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
-		}
-		if(symbolTableEntries[0] == null){
-			Domain domain = null; //TODO domain
-			symbolTableEntries[0] = new VolVariable(varName,domain);
-		}
-	} catch (ExpressionBindingException e){
-		e.printStackTrace();
+	if(getSimulation() != null && getSimulation().getMathDescription() != null){
+		symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
+	}
+	if(symbolTableEntries[0] == null){
+		Domain domain = null; //TODO domain
+		symbolTableEntries[0] = new VolVariable(varName,domain);
 	}
 	
 	AsynchClientTask task1 = new AsynchClientTask("Retrieving spatial series for variable '" + varName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {

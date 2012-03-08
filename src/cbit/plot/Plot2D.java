@@ -14,7 +14,7 @@ import javax.swing.event.*;
 
 import org.vcell.util.Range;
 
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
@@ -487,7 +487,7 @@ public void setVisiblePlots(boolean[] visiblePlots, boolean arg_isHistogram) {
 public SymbolTableEntry getPlotDataSymbolTableEntry(int tableColumn) {
 	int index = tableColumn % 2;
 	if (index == 0) {
-		return ReservedSymbol.TIME;
+		return ReservedVariable.TIME;
 	}
 	
 	return getSymbolTableEntries()[index];

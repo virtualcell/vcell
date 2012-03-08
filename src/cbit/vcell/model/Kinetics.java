@@ -1759,15 +1759,10 @@ protected void removeProxyParameter(KineticsProxyParameter parameter) {
 void removeUnresolvedParameters(SymbolTable symbolTable) {
 	Kinetics.UnresolvedParameter unresolvedParms[] = (Kinetics.UnresolvedParameter[])fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
-		try {
-			SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
-			if (ste != unresolvedParms[i]){
-				unresolvedParms = (Kinetics.UnresolvedParameter[])BeanUtils.removeElement(unresolvedParms,unresolvedParms[i]);
-				i--;
-			}
-		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("unexpected exception while removing Unresolved Parameters: "+e.getMessage());
+		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
+		if (ste != unresolvedParms[i]){
+			unresolvedParms = (Kinetics.UnresolvedParameter[])BeanUtils.removeElement(unresolvedParms,unresolvedParms[i]);
+			i--;
 		}
 	}
 	setUnresolvedParameters(unresolvedParms);

@@ -45,7 +45,7 @@ import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 import java.awt.CardLayout;
@@ -439,8 +439,8 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 					columnCount ++;
 				}
 			}
-			Plot2D plot2D = new SingleXPlot2D(null, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
-					new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
+			Plot2D plot2D = new SingleXPlot2D(null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+					new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 			plotPane.setPlot2D(plot2D);
 		} catch (Exception e1) {
 			DialogUtils.showErrorDialog(this, e1.getMessage(), e1);

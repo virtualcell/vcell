@@ -13,6 +13,8 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
+
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -207,13 +209,14 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 		currentParm.setExpression(new Expression(0.0));
 		
 		// Kon parameter
+		ReservedSymbol pi_ReservedSymbol = getReactionStep().getModel().getPI_CONSTANT();
 		Expression Pa = Expression.max(getSymbolExpression(conc_react1Param), getSymbolExpression(conc_react2Param));
-		Expression sqrt_Pa_PI = Expression.sqrt(Expression.mult(Pa, getSymbolExpression(ReservedSymbol.PI_CONSTANT))); //sqrt(Pa*PI)
+		Expression sqrt_Pa_PI = Expression.sqrt(Expression.mult(Pa, getSymbolExpression(pi_ReservedSymbol))); //sqrt(Pa*PI)
 		Expression b = Expression.div(new Expression(1), sqrt_Pa_PI); //  1/sqrt(Pa*PI)
 		Expression ln_b = Expression.log(b);
 		Expression ln_Radius = Expression.log(getSymbolExpression(bindingRadiusParam));
 		Expression sumD = Expression.add(getSymbolExpression(diff_react1Param), getSymbolExpression(diff_react2Param));
-		Expression exp2_PI_D = Expression.mult(new Expression(2.0), getSymbolExpression(ReservedSymbol.PI_CONSTANT), sumD); //2*PI*D
+		Expression exp2_PI_D = Expression.mult(new Expression(2.0), getSymbolExpression(pi_ReservedSymbol), sumD); //2*PI*D
 		Expression expLnb_LnR = Expression.add(ln_b, Expression.negate(ln_Radius)); //Lnb-LnR
 		Expression kOnExp = Expression.div(exp2_PI_D, expLnb_LnR); // Kon = 2*PI*D/Ln(b/R)
 		

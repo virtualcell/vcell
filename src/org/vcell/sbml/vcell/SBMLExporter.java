@@ -23,6 +23,7 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLError;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
@@ -47,6 +48,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -313,6 +315,7 @@ protected void addParameters() throws ExpressionException {
 	sbmlParam.setConstant(true);
 	// Now add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
 	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
 		sbmlParam = sbmlModel.createParameter();
@@ -338,7 +341,7 @@ protected void addParameters() throws ExpressionException {
 					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 					paramExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 				}
@@ -636,7 +639,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 	// to export to SBML. We need to translate them back to VCell units within the expr; then we translate the VCell rate units into SBML units.
 
 	Model vcModel = vcBioModel.getModel();
-//	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	String[] symbols = origRateExpr.getSymbols();
 	if (symbols != null) {
 	for (int i = 0; i < symbols.length; i++) {
@@ -665,7 +668,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 			origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 		}
@@ -678,8 +681,9 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
  * addSpecies comment.
  */
 protected void addSpecies() {
-	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
-
+	Model vcModel = vcBioModel.getModel();
+	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.libsbml.Species sbmlSpecies = sbmlModel.createSpecies();
 		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
@@ -706,7 +710,7 @@ protected void addSpecies() {
 		VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
 		SBMLUnitParameter sbmlUnitParam = null;
 		try {
-			sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+			sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 			Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression()).flatten();
 			sbmlSpecies.setInitialConcentration(initConcExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
@@ -716,7 +720,7 @@ protected void addSpecies() {
 			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
 				try {
-					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 					Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression());
 					if (sbmlLevel == 2 && sbmlVersion == 3) {
 						// L2V3 - add expression as init assignment
@@ -812,6 +816,7 @@ protected void addEvents() throws ExpressionException {
 	
 	if (vcBioevents != null) {
 		Model vcModel = vcBioModel.getModel();
+		ReservedSymbol kMole = vcModel.getKMOLE();
 		for (int i = 0; i < vcBioevents.length; i++) {
 			Event sbmlEvent = sbmlModel.createEvent();
 			sbmlEvent.setId(vcBioevents[i].getName());
@@ -848,7 +853,7 @@ protected void addEvents() throws ExpressionException {
 					SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(spContext);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(spContext.getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 					eventAssgnExpr = Expression.mult(eventAssgnExpr, sbmlUnitParam.getExpression()).flatten();
 				}
 				math = getFormulaFromExpression(eventAssgnExpr);
@@ -861,6 +866,7 @@ protected void addEvents() throws ExpressionException {
 private Expression adjustSpeciesConcFactor(Expression origExpr) throws ExpressionException {
 	Expression expr = new Expression(origExpr);
 	String[] symbols = expr.getSymbols();
+	ReservedSymbol kMole = getSelectedSimContext().getModel().getKMOLE();
 	for (int k = 0; symbols != null && k < symbols.length; k++) {
 		SpeciesContext vcSpeciesContext = vcBioModel.getModel().getSpeciesContext(symbols[k]); 
 		if (vcSpeciesContext != null) {
@@ -868,7 +874,7 @@ private Expression adjustSpeciesConcFactor(Expression origExpr) throws Expressio
 			SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 			expr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 		}
@@ -1020,64 +1026,6 @@ private Simulation getSelectedSimulation() {
 
 public String getSBMLFile() {
 
-	//
-	// If a simulation with math overrides has been selected, the overrides should be applied to the exported model
-	// First clone the simContext, so that the original doesn't get overridden.
-	// Obtain the overrides from simulation, check which type of parameter and set the expression from mathOverrides object
-	//
-//	try {
-//		SimulationContext clonedSimContext = (SimulationContext)org.vcell.util.BeanUtils.cloneSerializable(getSelectedSimContext());
-//		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
-//			// need to clone simContext and apply overrides before proceeding.
-//			clonedSimContext.getModel().refreshDependencies();
-//			clonedSimContext.refreshDependencies();			
-//			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(clonedSimContext);
-//			cbit.vcell.mapping.MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
-//
-//			cbit.vcell.solver.MathOverrides mathOverrides = getSelectedSimulation().getMathOverrides();
-//			String[] moConstNames = mathOverrides.getOverridenConstantNames();
-//			for (int i = 0; i < moConstNames.length; i++){
-//				cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
-//				// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
-//				Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], getSelectedSimulationJob().getJobIndex());
-//				// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
-//				// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
-//				// retrieve its value (symbolTableEntry) from hash.
-//				cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
-//				cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
-//				if (stes == null) {
-//					throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
-//				}
-//				if (stes.length > 1) {
-//					throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
-//				}
-//				if (stes[0] instanceof Parameter) {
-//					Parameter param = (Parameter)stes[0];
-//					if (param.isExpressionEditable()) {
-//						if (param instanceof Kinetics.KineticsParameter) {
-//							// Kinetics param has to be set separately for the integrity of the kinetics object
-//							Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
-//							ReactionStep[] rs = clonedSimContext.getModel().getReactionSteps();
-//							for (int j = 0; j < rs.length; j++){
-//								if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
-//									rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
-//								}
-//							}
-//						} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
-//							// If it is any other editable param, set its expression with the 
-//							((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
-//						}
-//					}
-//				}
-//			}
-//		}
-//		// After setting the overrides, set the vcOverriddenSimContext to the clonedSimContext
-//		setOverriddenSimContext(clonedSimContext);
-//	} catch (Exception e) {
-//		e.printStackTrace(System.out);
-//		throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
-//	}
-
 	// Create an SBMLDocument and create the sbmlModel from the document, so that other details can be added to it in translateBioModel()
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 	// If the chosen simulation is not null, the exported model's name should reflect it
@@ -1121,8 +1069,8 @@ public String getSBMLFile() {
 
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
-	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
-
+	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
+	
 	// Error check - use libSBML's document.printError to print to outputstream
 	System.out.println("\n\nSBML Export Error Report");
 	OStringStream oStrStream = new OStringStream();

@@ -510,7 +510,7 @@ public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeZp() {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -527,7 +527,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
  * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
 	Parameter parameter = getParameter(identifier);
 	

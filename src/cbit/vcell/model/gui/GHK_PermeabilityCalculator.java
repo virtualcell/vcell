@@ -258,9 +258,9 @@ private void updatePermeability() {
 		}
 		double z = getGhkKinetics().getReactionStep().getChargeCarrierValence().getConstantValue();
 
-		double R = cbit.vcell.model.ReservedSymbol.GAS_CONSTANT.getConstantValue();
+		double R = getGhkKinetics().getReactionStep().getModel().getGAS_CONSTANT().getConstantValue();
 		double T = 300;
-		double F = cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getConstantValue();
+		double F = getGhkKinetics().getReactionStep().getModel().getFARADAY_CONSTANT().getConstantValue();
 		double Co = fieldOutsideConcentration;
 		double Ci = fieldInsideConcentration;
 		double g = getConductanceAtNernst();

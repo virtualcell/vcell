@@ -98,8 +98,6 @@ import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 @SuppressWarnings("serial")
@@ -817,20 +815,12 @@ public class MultiPurposeTextPanel extends JPanel {
 		
 		Collections.sort(tempList, new Comparator<String>() {
 			public int compare(String o1, String o2) {
-				ReservedSymbol r1 = ReservedBioSymbolEntries.getReservedSymbolEntry(o1);
-				ReservedSymbol r2 = ReservedBioSymbolEntries.getReservedSymbolEntry(o2);
-				if (r1 == null && r2 != null) {
-					return -1;
-				} else if (r1 != null && r2 == null) {
+				ReservedVariable v1 = ReservedMathSymbolEntries.getReservedVariableEntry(o1);
+				ReservedVariable v2 = ReservedMathSymbolEntries.getReservedVariableEntry(o2);
+				if (v1 == null && v2 != null) {
 					return 1;
-				} else if (r1 != null && r2 != null) {
-					ReservedVariable v1 = ReservedMathSymbolEntries.getReservedVariableEntry(o1);
-					ReservedVariable v2 = ReservedMathSymbolEntries.getReservedVariableEntry(o2);
-					if (v1 == null && v2 != null) {
-						return 1;
-					} else if (v1 != null && v2 == null) {
-						return -1;
-					}
+				} else if (v1 != null && v2 == null) {
+					return -1;
 				}
 				return o1.compareToIgnoreCase(o2);
 			}

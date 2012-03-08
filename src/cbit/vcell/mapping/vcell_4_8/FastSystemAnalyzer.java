@@ -21,12 +21,12 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -68,17 +68,13 @@ FastSystemAnalyzer(FastSystem argFastSystem, SymbolTable argSymbolTable) throws 
 	refreshAll();
 }
 
-public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String id) {
 	// combines mathDesc symbolTable and pseudoconstants from fastSysAnalyzer.
-	try {
-		SymbolTableEntry ste = symbolTable.getEntry(id);
-		if (ste == null){
-			ste = getPseudoConstant(id);
-		}
-		return ste;
-	} catch (ExpressionException e){
-		throw new RuntimeException("ExpressionException: "+e.getMessage());
+	SymbolTableEntry ste = symbolTable.getEntry(id);
+	if (ste == null){
+		ste = getPseudoConstant(id);
 	}
+	return ste;
 }
 
 /**
@@ -103,10 +99,10 @@ private void checkLinearity() throws MathException, ExpressionException {
 				// If expression is in terms of 'x','y','z' - then its ok - relax the constant requirement.
 				String[] symbols = exp.getSymbols();
 				for (int i = 0;  i < symbols.length; i++) {
-					if (!symbols[i].equals(ReservedSymbol.X.getName()) && 
-						!symbols[i].equals(ReservedSymbol.Y.getName()) && 
-						!symbols[i].equals(ReservedSymbol.Z.getName()) && 
-						!symbols[i].equals(ReservedSymbol.TIME.getName()) ) {
+					if (!symbols[i].equals(ReservedVariable.X.getName()) && 
+						!symbols[i].equals(ReservedVariable.Y.getName()) && 
+						!symbols[i].equals(ReservedVariable.Z.getName()) && 
+						!symbols[i].equals(ReservedVariable.TIME.getName()) ) {
 						throw new MathException("FastInvariant "+fi.getFunction().toString()+" isn't linear, d/d("+var.getName()+") = "+exp.toString());
 					}
 				}

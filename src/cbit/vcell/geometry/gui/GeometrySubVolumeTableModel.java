@@ -27,7 +27,7 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -105,7 +105,7 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_VALUE:{
 				if (subVolume instanceof AnalyticSubVolume){
-					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(), true, 
+					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedVariable.X.getNameScope(), true, 
 							autoCompleteSymbolFilter);
 				}
 				if (subVolume instanceof CSGObject){
@@ -188,7 +188,7 @@ public void setGeometry(Geometry geometry) {
 		autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
 			public boolean accept(SymbolTableEntry ste) {
 				int dimension = fieldGeometry.getDimension();
-				if (ste.equals(ReservedSymbol.X) || dimension > 1 && ste.equals(ReservedSymbol.Y) || dimension > 2 && ste.equals(ReservedSymbol.Z)) {
+				if (ste.equals(ReservedVariable.X) || dimension > 1 && ste.equals(ReservedVariable.Y) || dimension > 2 && ste.equals(ReservedVariable.Z)) {
 					return true;
 				}
 				return false;

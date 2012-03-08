@@ -207,7 +207,6 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -922,8 +921,9 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 
 		// add constants that may be used in the electrical stimulus.
 		VariableHash varHash = new VariableHash();
-		addResevedSymbols(varHash);
-		ArrayList<String> reserved = getReservedVars();
+		Model model = currentSimulationContext.getModel();
+		addResevedSymbols(varHash, model);
+		ArrayList<String> reserved = model.getReservedVarNames();
 
 		//
 		// rename "special" parameters (those that are not "user defined")
@@ -2267,7 +2267,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 
 		// add constants that may be used in kinetics.
 		// VariableHash varHash = getVariablesHash();
-		ArrayList<String> reserved = getReservedVars();
+		ArrayList<String> reserved = reaction.getModel().getReservedVarNames();
 
 		try {
 			if (reaction.getStructure() instanceof Membrane){
@@ -3609,7 +3609,7 @@ private Model getModel(Element param) throws XmlParseException {
 		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		while (iterator.hasNext()) {
 			varHash = new VariableHash();
-			addResevedSymbols(varHash);
+			addResevedSymbols(varHash ,newmodel);
 			org.jdom.Element temp = iterator.next();
 			reactionStepList.add(getSimpleReaction(temp, newmodel, varHash));
 		}
@@ -3617,7 +3617,7 @@ private Model getModel(Element param) throws XmlParseException {
 		iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
 			varHash = new VariableHash();
-			addResevedSymbols(varHash);
+			addResevedSymbols(varHash, newmodel);
 			org.jdom.Element temp = iterator.next();
 			reactionStepList.add(getFluxReaction(temp, newmodel, varHash));
 		}
@@ -4087,33 +4087,6 @@ private ReactionSpec getReactionSpec(Element param, Model model) throws XmlParse
 	}
 
 	return reactionspec;
-}
-
-
-/**
- * This method returns a Kinetics object from a XML Element based on the value of the kinetics type attribute.
- * Creation date: (3/19/2001 4:42:04 PM)
- * @return cbit.vcell.model.Kinetics
- * @param param org.jdom.Element
- */
-private ArrayList<String> getReservedVars() {
-	
-	ArrayList<String> reservedVars = new ArrayList<String>();
-	//
-	// add constants that may be used in kinetics.
-	//
-	reservedVars.add(ReservedSymbol.PI_CONSTANT.getName());
-	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT.getName());
-	reservedVars.add(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName());
-	reservedVars.add(ReservedSymbol.GAS_CONSTANT.getName());
-	reservedVars.add(ReservedSymbol.KMILLIVOLTS.getName());
-	reservedVars.add(ReservedSymbol.KMOLE.getName());
-	reservedVars.add(ReservedSymbol.N_PMOLE.getName());
-	reservedVars.add(ReservedSymbol.TEMPERATURE.getName());
-	reservedVars.add(ReservedSymbol.K_GHK.getName());
-	reservedVars.add(ReservedSymbol.TIME.getName());
-	
-	return reservedVars;
 }
 
 
@@ -5536,23 +5509,23 @@ private User getUser(Element param) {
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
+private void addResevedSymbols(VariableHash varHash, Model model) throws XmlParseException {
 
 	//
 	// add constants that may be used in kinetics.
 	//
 	try {
 		// add reserved symbols
-		varHash.addVariable(new Constant(ReservedSymbol.PI_CONSTANT.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getPI_CONSTANT().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getFARADAY_CONSTANT().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getFARADAY_CONSTANT_NMOLE().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getGAS_CONSTANT().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getKMILLIVOLTS().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getKMOLE().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getN_PMOLE().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getTEMPERATURE().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getK_GHK().getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(model.getTIME().getName(), new Expression(0.0)));
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies", e);

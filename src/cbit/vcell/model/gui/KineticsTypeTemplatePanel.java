@@ -40,6 +40,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
@@ -416,11 +417,12 @@ private JButton getJToggleButton() {
 					sizeUnits = MU+"m"+CUBED;
 				}
 
+				ReservedSymbol kMoleReservedSymbol = reactionStep.getModel().getKMOLE();
 				if (getKinetics() instanceof DistributedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(KineticsTypeTemplatePanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)getKinetics(), size));
+						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)getKinetics(), size, kMoleReservedSymbol));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){
@@ -433,7 +435,7 @@ private JButton getJToggleButton() {
 					try {
 						String response = DialogUtils.showInputDialog0(KineticsTypeTemplatePanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics(), size));
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics(), size, kMoleReservedSymbol));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){

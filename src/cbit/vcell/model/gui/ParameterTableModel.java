@@ -26,11 +26,11 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -167,7 +167,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		if (parameter instanceof KineticsProxyParameter) { 
 			KineticsProxyParameter kpp = (KineticsProxyParameter)parameter; 
 			SymbolTableEntry ste = kpp.getTarget();
-			if ((ste instanceof ReservedSymbol) || (ste instanceof SpeciesContext) || (ste instanceof ModelQuantity)) {
+			if ((ste instanceof Model.ReservedSymbol) || (ste instanceof SpeciesContext) || (ste instanceof ModelQuantity)) {
 				return false;
 			}
 		}
@@ -292,7 +292,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				if (aValue.equals(Boolean.FALSE)) {
 					// check box has been <unset> (<true> to <false>) : change param from global to local  
 					if ( (parameter instanceof KineticsProxyParameter) && 
-						( (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol) ||
+						( (((KineticsProxyParameter)parameter).getTarget() instanceof Model.ReservedSymbol) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof SpeciesContext) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof ModelQuantity) ) ) {
 							PopupGenerator.showErrorDialog(ownerTable, "Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");

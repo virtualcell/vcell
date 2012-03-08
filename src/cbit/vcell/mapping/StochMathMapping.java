@@ -17,6 +17,8 @@ import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
 
+import sun.security.action.GetBooleanAction;
+
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -42,6 +44,8 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
@@ -49,7 +53,6 @@ import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -107,7 +110,7 @@ private Expression getExpressionConcToExpectedCount(Expression concExpr, Species
 		// convert number of particles to concentration(particles/volume)
 		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
 		Expression numeratorExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize(), getNameScope()));
-		Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
+		Expression denominatorExpr = new Expression(getSimulationContext().getModel().getKMOLE(), getNameScope());
 		particlesExpr = Expression.div(numeratorExpr, denominatorExpr);
 	}
 	
@@ -137,7 +140,7 @@ private Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesConte
 	{
 		// convert number of particles to concentration(particles/volume) 
 		// concentration(uM) = [particles/size(um3)]*KMOLE)
-		Expression numeratorExpr = Expression.mult(particlesExpr, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+		Expression numeratorExpr = Expression.mult(particlesExpr, new Expression(getSimulationContext().getModel().getKMOLE(), getNameScope()));
 		Expression denominatorExpr = new Expression(speciesContext.getStructure().getStructureSize(), getNameScope());
 		concentrationExpr = Expression.div(numeratorExpr, denominatorExpr);
 	}
@@ -174,6 +177,7 @@ public Expression getProbabilityRate(List<ReactionParticipant> involvedRPs, Expr
 	Expression factorExpr = null; //to compose the factor that the probability expression multiplies with, which convert the rate expression under stochastic context
 	//the structure where reaction happens
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
+	Model model = getSimulationContext().getModel();
 	try 
 	{
 		//get the reaction rate constant and convert it to rate of Number of particles
@@ -183,7 +187,7 @@ public Expression getProbabilityRate(List<ReactionParticipant> involvedRPs, Expr
 	    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 	    } else {
 	    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-	    	Expression kmoleExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
+	    	Expression kmoleExpr = new Expression(model.getKMOLE(), getNameScope());
 	    	factorExpr = Expression.div(factorExpr, kmoleExpr);
 		}
 		
@@ -198,7 +202,7 @@ public Expression getProbabilityRate(List<ReactionParticipant> involvedRPs, Expr
 			if(reactSM.getStructure() instanceof Membrane) {
 				speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
 			} else {
-				Expression numExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
+				Expression numExpr = new Expression(model.getKMOLE(), getNameScope());
 				Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
 				speciesFactor =  Expression.div(numExpr, denomExpr);
 			}
@@ -373,13 +377,15 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		//
 		// conversion factors
 		//
-		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.PI_CONSTANT.getExpression(),ReservedSymbol.PI_CONSTANT.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+		Model model = simContext.getModel();
+		ReservedSymbol kMole = model.getKMOLE();
+		varHash.addVariable(new Constant(getMathSymbol(kMole, null), getIdentifierSubstitutions(kMole.getExpression(),kMole.getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null), getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null), getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null), getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null), getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null), getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null), getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
 		
 		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
@@ -796,19 +802,20 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						SpeciesContext scOut = fluxFunc.getReactants().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scOut.getStructure() instanceof Feature) {
-							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
-							Expression denomExpr = new Expression(scOut.getStructure().getStructureSize().getName());
+							Expression numExpr = new Expression(kMole, getNameScope());
+							Expression denomExpr = new Expression(scOut.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(numExpr, denomExpr);
 						} else {
-							speciesFactor = Expression.invert(new Expression(scOut.getStructure().getStructureSize().getName()));
+							throw new MappingException("Species involved in a flux have to be volume species.");
 						}
-						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scOut.getName()));	
+						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scOut, getNameScope()));	
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
-						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
-						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
+						Expression denominatorExpr = new Expression(kMole, getNameScope());
 						Expression probExp = Expression.div(numeratorExpr, denominatorExpr);
-						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
+//						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
+//						probExp.bindExpression(this);
 
 						MathMapping.ProbabilityParameter probParm = null;
 						try{
@@ -854,20 +861,20 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						}
 						SpeciesContext scIn = fluxFunc.getProducts().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
-						if(scIn.getStructure() instanceof Membrane) {
-							speciesFactor = Expression.invert(new Expression(scIn.getStructure().getStructureSize().getName()));
-						} else {
-							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
-							Expression denomExpr = new Expression(scIn.getStructure().getStructureSize().getName());
+						if(scIn.getStructure() instanceof Feature) {
+							Expression numExpr = new Expression(kMole, getNameScope());
+							Expression denomExpr = new Expression(scIn.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(numExpr, denomExpr);
+						} else {
+							throw new MappingException("Species involved in a flux have to be volume species.");
 						}
-						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scIn.getName()));	
+						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scIn, getNameScope()));	
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
-						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
-						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
+						Expression denominatorExpr = new Expression(kMole, getNameScope());
 						Expression probRevExp = Expression.div(numeratorExpr, denominatorExpr);
-						probRevExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
+//						probRevExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 						
 						MathMapping.ProbabilityParameter probRevParm = null;
 						try{

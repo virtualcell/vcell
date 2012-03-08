@@ -159,10 +159,11 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 	}
 	
 	KineticsParameter P = getKineticsParameterFromRole(ROLE_Permeability);
-	Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
-	Expression K_GHK = getSymbolExpression(ReservedSymbol.K_GHK);
-	Expression R = getSymbolExpression(ReservedSymbol.GAS_CONSTANT);
-	Expression T = getSymbolExpression(ReservedSymbol.TEMPERATURE);
+	Model model = getReactionStep().getModel();
+	Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
+	Expression K_GHK = getSymbolExpression(model.getK_GHK());
+	Expression R = getSymbolExpression(model.getGAS_CONSTANT());
+	Expression T = getSymbolExpression(model.getTEMPERATURE());
 	Membrane.MembraneVoltage V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	Expression V_exp = getSymbolExpression(V);
 	Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
@@ -201,10 +202,10 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 			Expression tempRateExpression = null;
 			Expression current = getSymbolExpression(currentParm);
 			if (getReactionStep() instanceof SimpleReaction){
-				Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+				Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());
 				tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), current);
 			}else{
-				Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+				Expression F_nmol = getSymbolExpression(model.getFARADAY_CONSTANT_NMOLE());
 				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
 			}
 			if (rateParm == null){

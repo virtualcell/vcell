@@ -33,7 +33,7 @@ import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -196,7 +196,7 @@ private void updateScanParamChoices(){
 				final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 				ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
 				ODESolverResultSet odeSolverResultSet = odeDatamanager.getODESolverResultSet();
-				int tcol = odeSolverResultSet.findColumn(ReservedSymbol.TIME.getName());
+				int tcol = odeSolverResultSet.findColumn(ReservedVariable.TIME.getName());
 				double[] tdata = odeSolverResultSet.extractColumn(tcol);
 				if (dataValues[0] == null) {
 					dataValues[0] = tdata;
@@ -233,11 +233,11 @@ private void updateScanParamChoices(){
 			if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
 			{
 				plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
-						new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});
+						new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});
 			}
 			else
 			{
-				plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, dataValues);
+				plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, dataValues);
 			}
 							
 			plotPane.setPlot2D(plot2D);

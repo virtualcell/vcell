@@ -36,7 +36,7 @@ import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -1304,11 +1304,7 @@ private void regeneratePlot2D() throws ExpressionException {
 			if(getSymbolTable() != null && yNames != null && yNames.length > 0){
 				symbolTableEntries = new SymbolTableEntry[yNames.length];
 				for(int i=0;i<yNames.length;i+= 1){
-					try{
-						symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
-					}catch(ExpressionBindingException e){
-						//Do Nothing
-					}
+					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
 				}
 				
 			}
@@ -1345,11 +1341,7 @@ private void regeneratePlot2D() throws ExpressionException {
 		if(getSymbolTable() != null && yNames != null && yNames.length > 0){
 			symbolTableEntries = new SymbolTableEntry[yNames.length];
 			for(int i=0;i<yNames.length;i+= 1){
-				try{
-					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
-				}catch(ExpressionBindingException e){
-					e.printStackTrace();
-				}
+				symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
 			}
 			
 		}
@@ -1555,7 +1547,7 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
         ColumnDescription cd = odeSolverResultSet.getColumnDescriptions(i);
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
-        if (cd.getName().equals(ReservedSymbol.TIME.getName())) {
+        if (cd.getName().equals(ReservedVariable.TIME.getName())) {
         	timeIndex = i;
         } else if (cd.getParameterName() == null) {
         	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {

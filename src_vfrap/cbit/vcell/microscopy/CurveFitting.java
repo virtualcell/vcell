@@ -17,7 +17,7 @@ import org.vcell.optimization.OptSolverCallbacks;
 import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -113,7 +113,7 @@ public class CurveFitting {
 		//
 		// undo time shift
 		//
-		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
+		fit.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));
 		//
 		// undo fluorescence normalization
 		//
@@ -195,7 +195,7 @@ public class CurveFitting {
 		}
 		
 		// undo time shift
-		fit.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));
+		fit.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));
 		
 		// undo fluorescence normalization
 		System.out.println("fit equation after unnorm:" + fit.infix());
@@ -248,7 +248,7 @@ public class CurveFitting {
 							 FRAPModel.REF_BS_CONCENTRATION_OR_A.getInitialGuess());
 		
 		//get column names for reference data to be constructed
-		String[] columnNames = new String[]{ReservedSymbol.TIME.getName(), "cellIntensityAvg", "bleachIntensityAvg"};
+		String[] columnNames = new String[]{ReservedVariable.TIME.getName(), "cellIntensityAvg", "bleachIntensityAvg"};
 		
 		if(fixedParameter == null)
 		{
@@ -328,7 +328,7 @@ public class CurveFitting {
 		double[][] refData = new double[1][];
 		refData[0] = data;
 		//column names
-		String[] colNames = new String[]{ReservedSymbol.TIME.getName(), "intensity"};
+		String[] colNames = new String[]{ReservedVariable.TIME.getName(), "intensity"};
 		//weights
 		Weights dataWeights = weights;
 		if(dataWeights == null)

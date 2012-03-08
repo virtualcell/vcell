@@ -125,8 +125,8 @@ protected void updateGeneratedExpressions() throws ExpressionException, java.bea
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
 		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
-		Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
-		Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+		Expression F = getSymbolExpression(getReactionStep().getModel().getFARADAY_CONSTANT());
+		Expression N_PMOLE = getSymbolExpression(getReactionStep().getModel().getN_PMOLE());
 		Expression lumpledJ = getSymbolExpression(lumpedReactionRate); 
 
 //		tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(lumpedReactionRate.getName()));

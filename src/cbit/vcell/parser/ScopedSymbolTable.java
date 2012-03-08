@@ -24,7 +24,7 @@ public interface ScopedSymbolTable extends SymbolTable {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException;
+SymbolTableEntry getLocalEntry(String identifier);
 /**
  * Insert the method's description here.
  * Creation date: (8/27/2003 11:44:13 AM)

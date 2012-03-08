@@ -13,6 +13,9 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -67,7 +70,7 @@ public abstract class DistributedKinetics extends Kinetics {
 		}
 	}
 
-	public static DistributedKinetics toDistributedKinetics(LumpedKinetics origLumpedKinetics, double size){
+	public static DistributedKinetics toDistributedKinetics(LumpedKinetics origLumpedKinetics, double size, ReservedSymbol kMole){
 		KineticsParameter[] origLumpedKineticsParms = origLumpedKinetics.getKineticsParameters();
 		try {
 			Vector<KineticsParameter> parmsToAdd = new Vector<KineticsParameter>();
@@ -86,7 +89,7 @@ public abstract class DistributedKinetics extends Kinetics {
 				if (origLumpedKinetics.getReactionStep().getStructure() instanceof Membrane){
 					if (origLumpedKinetics.getReactionStep() instanceof FluxReaction){
 						// KMOLE/size  (from molecules.s-1 to uM.um.s-1)
-						distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(ReservedSymbol.KMOLE),Expression.invert(new Expression(size)));
+						distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(kMole),Expression.invert(new Expression(size)));
 					}else if (origLumpedKinetics.getReactionStep() instanceof SimpleReaction){
 						// 1/size (from molecules.s-1 to molecules.um-2.s-1)
 						distributionFactor = Expression.invert(new Expression(size));
@@ -95,7 +98,7 @@ public abstract class DistributedKinetics extends Kinetics {
 					}
 				}else if (origLumpedKinetics.getReactionStep().getStructure() instanceof Feature){
 					// KMOLE/size (from molecules.s-1 to uM.s-1)
-					distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(ReservedSymbol.KMOLE),Expression.invert(new Expression(size)));
+					distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(kMole),Expression.invert(new Expression(size)));
 				}else{
 					throw new RuntimeException("unexpected structure type "+origLumpedKinetics.getReactionStep().getStructure().getClass().getName());
 				}

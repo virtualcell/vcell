@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Model;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.PredefinedSymbolTableFunctionEntry;
 import cbit.vcell.parser.Expression;
@@ -41,8 +41,8 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 	}
 	
 	private String getDescription(SymbolTableEntry symbolTableEntry) {
-		if (symbolTableEntry instanceof ReservedSymbol) {
-			return ((ReservedSymbol) symbolTableEntry).getDescription();
+		if (symbolTableEntry instanceof Model.ReservedSymbol) {
+			return ((Model.ReservedSymbol) symbolTableEntry).getDescription();
 		} 
 		if (symbolTableEntry instanceof PredefinedSymbolTableFunctionEntry) {
 			return ((PredefinedSymbolTableFunctionEntry) symbolTableEntry).getDescription();
@@ -50,8 +50,8 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		return null;
 	}
 	private String getExpression(SymbolTableEntry symbolTableEntry) {
-		if (symbolTableEntry instanceof ReservedSymbol) {
-			Expression expression = ((ReservedSymbol) symbolTableEntry).getExpression();
+		if (symbolTableEntry instanceof Model.ReservedSymbol) {
+			Expression expression = ((Model.ReservedSymbol) symbolTableEntry).getExpression();
 			if (expression != null) {
 				return expression.infix();
 			}
@@ -59,8 +59,8 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		return null;
 	}
 	private String getName(SymbolTableEntry symbolTableEntry) {
-		if (symbolTableEntry instanceof ReservedSymbol) {
-			return ((ReservedSymbol) symbolTableEntry).getName();
+		if (symbolTableEntry instanceof Model.ReservedSymbol) {
+			return ((Model.ReservedSymbol) symbolTableEntry).getName();
 		} 
 		if (symbolTableEntry instanceof PredefinedSymbolTableFunctionEntry) {
 			return ((PredefinedSymbolTableFunctionEntry) symbolTableEntry).getFunctionDeclaration();
@@ -70,7 +70,9 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 	@Override
 	protected List<SymbolTableEntry> computeData() {
 		List<SymbolTableEntry> predefinedSymbolList = new ArrayList<SymbolTableEntry>();
-		predefinedSymbolList.addAll(Arrays.asList(ReservedSymbol.ALL_RESERVED_SYMBOLS));
+		if (getModel() != null) {
+			predefinedSymbolList.addAll(Arrays.asList(getModel().getReservedSymbols()));
+		}
 		predefinedSymbolList.addAll(Arrays.asList(ASTFuncNode.predefinedSymbolTableFunctionEntries));
 		
 		List<SymbolTableEntry> searchList = null;

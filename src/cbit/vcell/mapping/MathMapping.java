@@ -85,13 +85,12 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -558,7 +557,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
@@ -722,7 +721,7 @@ public Issue[] getIssues() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 
 	//
 	// the MathMapping "nameScope" is the union of the Model and SimContext namescopes (with the addition of any locally defined parameters)
@@ -732,13 +731,7 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 	//
 	// try "truely" local first
 	//
-	SymbolTableEntry localSTE = null;	
-	localSTE = ReservedBioSymbolEntries.getEntry(identifier);
-	if (localSTE!=null){
-		return localSTE;
-	}else{
-		localSTE = getMathMappingParameter(identifier);
-	}
+	SymbolTableEntry localSTE = getMathMappingParameter(identifier);
 
 	//
 	// try "model" next
@@ -771,22 +764,22 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 		if (localSTE!=null){
 			if (modelSTE!=null){
 				// local and model
-				throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+")");
+				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+")");
 			}else{
 				// local and simContext
-				throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Application ("+simContextSTE+")");
+				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Application ("+simContextSTE+")");
 			}
 		}else{
 			// model and simContext
 			if (!modelSTE.equals(simContextSTE)) {
-				throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by Model ("+modelSTE+") and Application ("+simContextSTE+")");
+				throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by Model ("+modelSTE+") and Application ("+simContextSTE+")");
 			} else {
 				return ste;
 			}
 		}
 	}else if (resolutionCount == 3){
 		// local and model and simContext
-		throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+") and Application ("+simContextSTE+")");
+		throw new RuntimeException("identifier '"+identifier+"' ambiguous, resolved by MathMapping ("+localSTE+") and Model ("+modelSTE+") and Application ("+simContextSTE+")");
 	}	
 
 	return null;
@@ -927,7 +920,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 		return eventInitParm.getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_INIT;
 	}
 
-	if (ste instanceof ReservedSymbol){
+	if (ste instanceof Model.ReservedSymbol){
 		return steName;
 	}
 	if (ste instanceof Membrane.MembraneVoltage){
@@ -1346,7 +1339,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			FeatureMapping insideFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(insideFeature);
 			if (membraneMapping.getGeometryClass() == insideFeatureMapping.getGeometryClass()){
 				Expression insideCorrectionExp = getFluxCorrectionExpression(membraneMapping, insideFeatureMapping);
-				insideCorrectionExp.bindExpression(this);
+//				insideCorrectionExp.bindExpression(this);
 				String insideName = PARAMETER_K_FLUX_PREFIX+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
 				KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
 				newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
@@ -1359,7 +1352,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			FeatureMapping outsideFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outsideFeature);
 			if (membraneMapping.getGeometryClass() == outsideFeatureMapping.getGeometryClass()){
 				Expression outsideCorrectionExp = getFluxCorrectionExpression(membraneMapping,outsideFeatureMapping);
-				outsideCorrectionExp.bindExpression(this);
+//				outsideCorrectionExp.bindExpression(this);
 				String outsideName = PARAMETER_K_FLUX_PREFIX+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
 				KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
 				newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
@@ -1411,11 +1404,11 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 		//
 		for (int i = 0; i < globalsVector.size(); i++){
 			ModelParameter mp = globalsVector.elementAt(i);
-			Expression mpExp = new Expression(mp.getName()+";");
-			exp2.substituteInPlace(mpExp,new Expression(mp.getExpression()));
+			Expression mpExp = new Expression(mp.getName());
+			exp2.substituteInPlace(mpExp,mp.getExpression());
 		}
 	}
-	exp2.bindExpression(simContext.getModel());
+//	exp2.bindExpression(simContext.getModel());
 	return exp2;
 }
 
@@ -1468,7 +1461,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 
 	// deals with model parameters
 	Hashtable<VolVariable, EventAssignmentInitParameter> eventVolVarHash = new Hashtable<VolVariable, EventAssignmentInitParameter>();
-	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	Model model = simContext.getModel();
+	ModelParameter[] modelParameters = model.getModelParameters();
 	if (simContext.getGeometry().getDimension() == 0) {
 		//
 		// global parameters from model (that presently are constants)
@@ -1620,11 +1614,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.PI_CONSTANT.getExpression(),ReservedSymbol.PI_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null),getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null),getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
 
 	//
 	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true
@@ -1709,7 +1703,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				//Parameter dependentVoltage = currentClampDevice.getCurrentClampStimulus().getVoltageParameter();
 				Feature deviceElectrodeFeature = currentClampDevice.getCurrentClampStimulus().getElectrode().getFeature();
 				Feature groundElectrodeFeature = simContext.getGroundElectrode().getFeature();
-				Membrane membrane = simContext.getModel().getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
+				Membrane membrane = model.getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
 				GeometryClass geometryClass = null;
 				if (membrane!=null){
 					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
@@ -1733,7 +1727,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				VoltageClampElectricalDevice voltageClampDevice = (VoltageClampElectricalDevice)devices[j];
 				Feature deviceElectrodeFeature = voltageClampDevice.getVoltageClampStimulus().getElectrode().getFeature();
 				Feature groundElectrodeFeature = simContext.getGroundElectrode().getFeature();
-				Membrane membrane = simContext.getModel().getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
+				Membrane membrane = model.getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
 				GeometryClass geometryClass = null;
 				if (membrane!=null){
 					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
@@ -1952,10 +1946,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// conversion factors
 	//
-	varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(),getIdentifierSubstitutions(ReservedSymbol.KMILLIVOLTS.getExpression(),ReservedSymbol.KMILLIVOLTS.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(),getIdentifierSubstitutions(ReservedSymbol.K_GHK.getExpression(),ReservedSymbol.K_GHK.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(model.getKMOLE().getName(),getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(model.getN_PMOLE().getName(),getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(model.getKMILLIVOLTS().getName(),getIdentifierSubstitutions(model.getKMILLIVOLTS().getExpression(),model.getKMILLIVOLTS().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(model.getK_GHK().getName(),getIdentifierSubstitutions(model.getK_GHK().getExpression(),model.getK_GHK().getUnitDefinition(),null)));
 	//
 	// geometric functions
 	//
@@ -2026,7 +2020,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext);
 				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
-				sizeFunctionExpression.bindExpression(mathDesc);
+//				sizeFunctionExpression.bindExpression(mathDesc);
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm.getGeometryClass()),sm.getGeometryClass()));
 
 			}
@@ -2139,9 +2133,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (!sm.getGeometryClass().getName().equals(subDomain.getName())){
 				continue;
 			}
+			SpeciesContextSpecParameter initConcParameter = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			if ((scm.getVariable() instanceof VolumeRegionVariable) && scm.getDependencyExpression()==null){
 				VolumeRegionVariable volumeRegionVariable = (VolumeRegionVariable)scm.getVariable();
-				Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+				Expression initial = getIdentifierSubstitutions(new Expression(initConcParameter, getNameScope()), initConcParameter.getUnitDefinition(), sm.getGeometryClass());
 				Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
 				VolumeRegionEquation volumeRegionEquation = new VolumeRegionEquation(volumeRegionVariable,initial);
 				volumeRegionEquation.setVolumeRateExpression(rate);
@@ -2157,9 +2152,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+						Expression initial = getIdentifierSubstitutions(new Expression(initConcParameter, getNameScope()), initConcParameter.getUnitDefinition(), sm.getGeometryClass());
 						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
-						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
+						SpeciesContextSpecParameter diffusionParameter = scs.getDiffusionParameter();
+						Expression diffusion = getIdentifierSubstitutions(new Expression(diffusionParameter, getNameScope()), diffusionParameter.getUnitDefinition(), sm.getGeometryClass());
 						equation = new PdeEquation(variable,initial,rate,diffusion);
 						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),sm.getGeometryClass())));
 						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),sm.getGeometryClass())));
@@ -2190,7 +2186,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
+						Expression initial = new Expression(initConcParameter,null);
 						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
 						equation = new OdeEquation(variable,initial,rate);
 						subDomain.replaceEquation(equation);
@@ -2453,7 +2449,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					//
 					// independant-fast variable, create a fastRate object
 					//
-					VCUnitDefinition rateUnit = scm.getSpeciesContext().getUnitDefinition().divideBy(ReservedSymbol.TIME.getUnitDefinition());
+					VCUnitDefinition rateUnit = scm.getSpeciesContext().getUnitDefinition().divideBy(model.getTIME().getUnitDefinition());
 					FastRate fastRate = new FastRate(getIdentifierSubstitutions(scm.getFastRate(),rateUnit,surfaceClass));
 					fastSystem.addFastRate(fastRate);
 				}else{
@@ -2888,7 +2884,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldMathMappingParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 

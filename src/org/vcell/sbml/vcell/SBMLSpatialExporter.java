@@ -9,7 +9,6 @@
  */
 
 package org.vcell.sbml.vcell;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -64,32 +63,31 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
+
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.CSGNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -97,11 +95,11 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
@@ -378,6 +376,7 @@ protected void addParameters() throws ExpressionException {
 	sbmlParam.setConstant(true);
 	// Now add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
 	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
 		sbmlParam = sbmlModel.createParameter();
@@ -403,7 +402,7 @@ protected void addParameters() throws ExpressionException {
 					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 					paramExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 				}
@@ -711,6 +710,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 	// to export to SBML. We need to translate them back to VCell units within the expr; then we translate the VCell rate units into SBML units.
 
 	Model vcModel = vcBioModel.getModel();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	String[] symbols = origRateExpr.getSymbols();
 	if (symbols != null) {
 	for (int i = 0; i < symbols.length; i++) {
@@ -739,7 +739,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 			origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 		}
@@ -752,8 +752,9 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
  * addSpecies comment.
  */
 protected void addSpecies() {
-	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
-
+	Model vcModel = vcBioModel.getModel();
+	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.libsbml.Species sbmlSpecies = sbmlModel.createSpecies();
 		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
@@ -780,7 +781,7 @@ protected void addSpecies() {
 		VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
 		SBMLUnitParameter sbmlUnitParam = null;
 		try {
-			sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+			sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 			Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression()).flatten();
 			sbmlSpecies.setInitialConcentration(initConcExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
@@ -790,7 +791,7 @@ protected void addSpecies() {
 			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
 				try {
-					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 					Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression());
 					if (sbmlLevel == 2 && sbmlVersion == 3) {
 						// L2V3 - add expression as init assignment
@@ -836,9 +837,9 @@ protected void addSpecies() {
 		StructureMapping sm = getSelectedSimContext().getGeometryContext().getStructureMapping(vcSpeciesContexts[i].getStructure());
 		SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 		org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
-		CoordinateComponent ccX = sbmlGeometry.getCoordinateComponent(ReservedSymbol.X.getName());
-		CoordinateComponent ccY = sbmlGeometry.getCoordinateComponent(ReservedSymbol.Y.getName());
-		CoordinateComponent ccZ = sbmlGeometry.getCoordinateComponent(ReservedSymbol.Z.getName());
+		CoordinateComponent ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
+		CoordinateComponent ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
+		CoordinateComponent ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
 		// add diffusion, advection, boundary condition parameters for species, if they exist
 		Parameter[] scsParams = vcSpeciesContextsSpec.getParameters();
 		if (scsParams != null) {
@@ -1127,7 +1128,7 @@ protected void addEvents() throws ExpressionException {
 	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
 	
 	if (vcBioevents != null) {
-		Model vcModel = vcBioModel.getModel();
+		ReservedSymbol kMole = vcBioModel.getModel().getKMOLE();
 		for (int i = 0; i < vcBioevents.length; i++) {
 			Event sbmlEvent = sbmlModel.createEvent();
 			sbmlEvent.setId(vcBioevents[i].getName());
@@ -1164,7 +1165,7 @@ protected void addEvents() throws ExpressionException {
 					SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(spContext);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(spContext.getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 					eventAssgnExpr = Expression.mult(eventAssgnExpr, sbmlUnitParam.getExpression()).flatten();
 				}
 				math = getFormulaFromExpression(eventAssgnExpr);
@@ -1177,6 +1178,7 @@ protected void addEvents() throws ExpressionException {
 private Expression adjustSpeciesConcFactor(Expression origExpr) throws ExpressionException {
 	Expression expr = new Expression(origExpr);
 	String[] symbols = expr.getSymbols();
+	ReservedSymbol kMole = getSelectedSimContext().getModel().getKMOLE();
 	for (int k = 0; symbols != null && k < symbols.length; k++) {
 		SpeciesContext vcSpeciesContext = vcBioModel.getModel().getSpeciesContext(symbols[k]); 
 		if (vcSpeciesContext != null) {
@@ -1184,7 +1186,7 @@ private Expression adjustSpeciesConcFactor(Expression origExpr) throws Expressio
 			SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit, kMole);
 			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 			expr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 		}
@@ -1427,6 +1429,7 @@ private void addGeometry() {
 	sbmlGeometry.setCoordinateSystem("Cartesian");
 
 	Geometry vcGeometry = getSelectedSimContext().getGeometry();
+	Model vcModel = getSelectedSimContext().getModel();
 	//
 	// list of CoordinateComponents : 1 if geometry is 1-d, 2 if geometry is 2-d, 3 if geometry is 3-d
 	//
@@ -1435,9 +1438,9 @@ private void addGeometry() {
 	Origin vcOrigin = vcGeometry.getOrigin();
 	// add x coordinate component
 	CoordinateComponent xComp = sbmlGeometry.createCoordinateComponent();
-	xComp.setSpatialId(ReservedSymbol.X.getName());
+	xComp.setSpatialId(vcModel.getX().getName());
 	xComp.setComponentType("cartesianX");
-	xComp.setSbmlUnit(ReservedSymbol.X.getUnitDefinition().getSymbol());
+	xComp.setSbmlUnit(vcModel.getX().getUnitDefinition().getSymbol());
 	xComp.setIndex(0);
 	BoundaryMin minX = xComp.createBoundaryMin();
 	minX.setSpatialId("Xmin");
@@ -1449,9 +1452,9 @@ private void addGeometry() {
 	// add y coordinate component
 	if (dimension == 2 || dimension == 3) {
 		CoordinateComponent yComp = sbmlGeometry.createCoordinateComponent();
-		yComp.setSpatialId(ReservedSymbol.Y.getName());
+		yComp.setSpatialId(vcModel.getY().getName());
 		yComp.setComponentType("cartesianY");
-		yComp.setSbmlUnit(ReservedSymbol.Y.getUnitDefinition().getSymbol());
+		yComp.setSbmlUnit(vcModel.getY().getUnitDefinition().getSymbol());
 		yComp.setIndex(1);
 		BoundaryMin minY = yComp.createBoundaryMin();
 		minY.setSpatialId("Ymin");
@@ -1464,9 +1467,9 @@ private void addGeometry() {
 	// add z coordinate component
 	if (dimension == 3) {
 		CoordinateComponent zComp = sbmlGeometry.createCoordinateComponent();
-		zComp.setSpatialId(ReservedSymbol.Z.getName());
+		zComp.setSpatialId(vcModel.getZ().getName());
 		zComp.setComponentType("cartesianZ");
-		zComp.setSbmlUnit(ReservedSymbol.Z.getUnitDefinition().getSymbol());
+		zComp.setSbmlUnit(vcModel.getZ().getUnitDefinition().getSymbol());
 		zComp.setIndex(2);
 		BoundaryMin minZ = zComp.createBoundaryMin();
 		minZ.setSpatialId("Zmin");

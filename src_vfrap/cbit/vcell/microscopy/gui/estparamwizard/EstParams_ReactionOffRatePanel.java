@@ -31,12 +31,12 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -248,11 +248,11 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 
 			//experimental bleach region average intensity curve
 			double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
-			ReferenceData expRefData = new SimpleReferenceData(new String[] { ReservedSymbol.TIME.getName(), "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
+			ReferenceData expRefData = new SimpleReferenceData(new String[] { ReservedVariable.TIME.getName(), "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
 			DataSource expBleachDataSource = new DataSource.DataSourceReferenceData("exp", expRefData);
 			//Analytic - bleach region average intensity with bleach while monitoring rate
 			ODESolverResultSet koffFitOdeSolverResultSet = new ODESolverResultSet();
-			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedSymbol.TIME.getName()));
+			koffFitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(ReservedVariable.TIME.getName()));
 			Expression bleachedAvgExp = frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().getRecoveryExpressionWithCurrentParameters(currentParams);
 			try {
 				koffFitOdeSolverResultSet.addFunctionColumn(
