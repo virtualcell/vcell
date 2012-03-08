@@ -272,8 +272,7 @@ public void gatherIssues(List<Issue> issueList) {
 public ChargeCarrierValence getChargeCarrierValence() {
 	return fieldChargeCarrierValence;
 }
-public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException
-{
+public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry localSTE = getLocalEntry(identifier);
 	if (localSTE != null && !(localSTE instanceof Kinetics.UnresolvedParameter)){
 		return localSTE;
@@ -300,10 +299,10 @@ public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingExce
 	//
 	// if all else fails, try reserved symbols
 	//
-	SymbolTableEntry reservedSTE = ReservedBioSymbolEntries.getEntry(identifier);
+	SymbolTableEntry reservedSTE = getModel().getReservedSymbolByName(identifier);
 	if (reservedSTE != null){
-		if (reservedSTE.equals(ReservedSymbol.X) || reservedSTE.equals(ReservedSymbol.Y) || reservedSTE.equals(ReservedSymbol.Z)){
-			throw new ExpressionBindingException("x, y or z can not be used in the Reaction Editor. " 
+		if (reservedSTE.equals(getModel().getX()) || reservedSTE.equals(getModel().getY()) || reservedSTE.equals(getModel().getZ())){
+			throw new RuntimeException("x, y or z can not be used in the Reaction Editor. " 
 					+ "They are reserved as spatial variables and Physiological Models must be spatially independent.");
 		}
 		return getKinetics().addProxyParameter(reservedSTE);
@@ -331,8 +330,7 @@ public KeyValue getKey() {
 public Kinetics getKinetics() {
 	return fieldKinetics;
 }
-public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
-{
+public SymbolTableEntry getLocalEntry(String identifier) {
 	//
 	// check symbol against charge valence
 	//
@@ -426,7 +424,7 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
 		Expression factor = null;
 		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
-			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope()),Expression.invert(new Expression(structureSize, getNameScope())));
+			factor = Expression.mult(new Expression(model.getKMOLE(), model.getKMOLE().getNameScope()),Expression.invert(new Expression(structureSize, getNameScope())));
 		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
 			factor = Expression.invert(new Expression(structureSize, getNameScope()));
 		}else{

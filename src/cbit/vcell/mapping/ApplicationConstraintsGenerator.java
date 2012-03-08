@@ -126,28 +126,28 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		}
 
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getExpression().evaluateConstant()),
+									model.getFARADAY_CONSTANT().getName(),
+									new RealInterval(model.getFARADAY_CONSTANT().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"Faraday's constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.TEMPERATURE.getName(),
+									model.getTEMPERATURE().getName(),
 									new RealInterval(300),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"Absolute Temperature Kelvin"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.GAS_CONSTANT.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.GAS_CONSTANT.getExpression().evaluateConstant()),
+									model.getGAS_CONSTANT().getName(),
+									new RealInterval(model.getGAS_CONSTANT().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getExpression().evaluateConstant()),
+									model.getKMILLIVOLTS().getName(),
+									new RealInterval(model.getKMILLIVOLTS().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.KMOLE.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.KMOLE.getExpression().evaluateConstant()),
+									model.getKMOLE().getName(),
+									new RealInterval(model.getKMOLE().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"conversion factor"));
 		//
@@ -332,28 +332,28 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		}
 
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getExpression().evaluateConstant()),
+									model.getFARADAY_CONSTANT().getName(),
+									new RealInterval(model.getFARADAY_CONSTANT().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"Faraday's constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.TEMPERATURE.getName(),
+									model.getTEMPERATURE().getName(),
 									new RealInterval(300),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"Absolute Temperature Kelvin"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.GAS_CONSTANT.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.GAS_CONSTANT.getExpression().evaluateConstant()),
+									model.getGAS_CONSTANT().getName(),
+									new RealInterval(simContext.getModel().getGAS_CONSTANT().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getExpression().evaluateConstant()),
+									model.getKMILLIVOLTS().getName(),
+									new RealInterval(model.getKMILLIVOLTS().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
-									cbit.vcell.model.ReservedSymbol.KMOLE.getName(),
-									new RealInterval(cbit.vcell.model.ReservedSymbol.KMOLE.getExpression().evaluateConstant()),
+									model.getKMOLE().getName(),
+									new RealInterval(model.getKMOLE().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"conversion factor"));
 		//

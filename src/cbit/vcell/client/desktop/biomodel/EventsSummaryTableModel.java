@@ -24,7 +24,6 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
@@ -196,7 +195,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 				if (simulationContext.getBioEvent(inputValue) != null) {
 					return "An event with name '" + inputValue + "' already exists!";
 				}
-				if (ReservedBioSymbolEntries.getEntry(inputValue) != null) {
+				if (simulationContext.getModel().getReservedSymbolByName(inputValue) != null) {
 					return "Cannot use reserved symbol '" + inputValue + "' as an event name";
 				}
 			}

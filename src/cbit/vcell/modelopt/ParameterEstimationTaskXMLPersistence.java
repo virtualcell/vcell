@@ -20,7 +20,6 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
@@ -214,26 +213,10 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
  * @param symbol java.lang.String
  */
 private static SymbolTableEntry getSymbolTableEntry(SimulationContext simContext, String parameterName) {
-	SymbolTableEntry ste = null;
-
-	try {
-		if (parameterName.startsWith("ReservedSymbols.")){
-			String symbol = parameterName.substring(parameterName.indexOf("."));
-			ste = ReservedBioSymbolEntries.getReservedSymbolEntry(symbol);
-		}
-	}catch (Exception e){
-	}
+	SymbolTableEntry ste = simContext.getModel().getEntry(parameterName);
+	
 	if (ste==null){
-		try {
-			ste = simContext.getModel().getEntry(parameterName);
-		}catch(ExpressionBindingException e){
-		}
-	}
-	if (ste==null){
-		try {
-			ste = simContext.getEntry(parameterName);
-		}catch (ExpressionBindingException e){
-		}
+		ste = simContext.getEntry(parameterName);
 	}
 	return ste;
 }

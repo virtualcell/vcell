@@ -33,7 +33,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 
 @SuppressWarnings("serial")
 public class AddShapeJPanel extends JPanel {
@@ -508,9 +508,9 @@ public class AddShapeJPanel extends JPanel {
 		if(comboBox.getSelectedItem().equals(AddShapeJPanel.MANUAL_SELECT)){
 			return manualTextField.getText();
 		} else {
-			String X = ReservedSymbol.X.getName();
-			String Y = ReservedSymbol.Y.getName();
-			String Z = ReservedSymbol.Z.getName();
+			String X = ReservedVariable.X.getName();
+			String Y = ReservedVariable.Y.getName();
+			String Z = ReservedVariable.Z.getName();
 			if(comboBox.getSelectedItem().equals(AddShapeJPanel.CIRCLE_SELECT) ||comboBox.getSelectedItem().equals(AddShapeJPanel.SPHERE_SELECT)){
 				double radius = Double.parseDouble(circleRadiusTextField.getText());
 				double xp = 0;

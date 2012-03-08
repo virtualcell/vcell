@@ -1974,11 +1974,7 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final String varN
 private void initDataManagerVariable(final String finalVarName) {
 
 	//Create SymbolTableEntry for Copy/Paste functionality
-	try{
-		currentSymbolTablEntry = (symbolTable != null?symbolTable.getEntry(finalVarName):null);
-	}catch(ExpressionBindingException e){
-		e.printStackTrace();
-	}
+	currentSymbolTablEntry = (symbolTable != null?symbolTable.getEntry(finalVarName):null);
 	
 	String taskName = "Retrieving data for variable '" + finalVarName + "'";
 	AsynchClientTask task1  = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {	

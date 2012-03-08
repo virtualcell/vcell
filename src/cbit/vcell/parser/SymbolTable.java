@@ -14,7 +14,7 @@ import java.util.Map;
 
 public interface SymbolTable {
 
-public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException; 
+public SymbolTableEntry getEntry(String identifierString); 
 public void getEntries(Map<String, SymbolTableEntry> entryMap);
 
 }

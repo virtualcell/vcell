@@ -25,6 +25,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -187,7 +188,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -209,16 +210,16 @@ public KeyValue getKey() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
-	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
+	SymbolTableEntry ste = getModel().getReservedSymbolByName(identifier);
 	if (ste != null){
-		if (ste.equals(ReservedSymbol.X) || ste.equals(ReservedSymbol.Y) || ste.equals(ReservedSymbol.Z)){
-			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
+		if (ste.equals(getModel().getX()) || ste.equals(getModel().getY()) || ste.equals(getModel().getZ())){
+			throw new RuntimeException("can't use x, y, or z, Physiological Models must be spatially independent");
 		}
-		if (ste.equals(MathFunctionDefinitions.fieldFunctionDefinition)){
-			throw new ExpressionBindingException("can't use field functions, Physiological Models must be spatially independent");
-		}
+//		if (ste.equals(MathFunctionDefinitions.fieldFunctionDefinition)){
+//			throw new ExpressionBindingException("can't use field functions, Physiological Models must be spatially independent");
+//		}
 		return ste;
 	}	
 
@@ -366,11 +367,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 		Membrane.MembraneVoltage membraneVoltage = ((Membrane)this).getMembraneVoltage();
 		entryMap.put(membraneVoltage.getName(), membraneVoltage);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
-	entryMap.remove(ReservedSymbol.X);
-	entryMap.remove(ReservedSymbol.Y);
-	entryMap.remove(ReservedSymbol.Z);
-	entryMap.remove(MathFunctionDefinitions.fieldFunctionDefinition);
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {

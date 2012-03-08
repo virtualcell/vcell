@@ -43,7 +43,7 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
@@ -166,8 +166,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 							plotIndex ++;
 						}
 					}
-					Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
-							new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
+					Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+							new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 					plotPane.setPlot2D(plot2D);
 				}						
 			};		
@@ -205,11 +205,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			plotNames[i] = varName + " at P[" + i +"]";
 			String point = "P[" + i +"]  (" + niceCoordinateString(tp)+")";
 			pointListModel.addElement(point);
-			try{				
-				symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
-			}catch(ExpressionBindingException e){
-				e.printStackTrace();
-			}
+			symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
 		}
 		pointJList.setModel(pointListModel);
 		pointJList.setForeground(variableJList.getForeground());
@@ -220,8 +216,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		
 		plotPane = new PlotPane();
 		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
-		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
-				new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
+		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+				new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		
 		DataIdentifier[] dis = VariableType.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());

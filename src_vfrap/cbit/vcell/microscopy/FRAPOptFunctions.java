@@ -17,7 +17,7 @@ import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -29,9 +29,9 @@ public class FRAPOptFunctions
 	public static String SYMBOL_KOFF = "k_off";
 	public static String SYMBOL_BWM_RATE = "beta";
 	public static String SYMBOL_I_inibleached = "I_inibleached";
-	public static String FUNC_RECOVERY_BLEACH_REACTION_DOMINANT = "("+ SYMBOL_I_inibleached + "+" +SYMBOL_A + "*(1-exp(-1*"+SYMBOL_KOFF+"*"+ReservedSymbol.TIME.getName()+")))" + "*exp(-1*"+ SYMBOL_BWM_RATE+"*"+ ReservedSymbol.TIME.getName() +")";
+	public static String FUNC_RECOVERY_BLEACH_REACTION_DOMINANT = "("+ SYMBOL_I_inibleached + "+" +SYMBOL_A + "*(1-exp(-1*"+SYMBOL_KOFF+"*"+ReservedVariable.TIME.getName()+")))" + "*exp(-1*"+ SYMBOL_BWM_RATE+"*"+ ReservedVariable.TIME.getName() +")";
 	public static String SYMBOL_I_inicell = "I_inicell";
-	public static String FUNC_CELL_INTENSITY = SYMBOL_I_inicell + "*(exp(-1*"+SYMBOL_BWM_RATE+"*"+ReservedSymbol.TIME.getName()+"))";
+	public static String FUNC_CELL_INTENSITY = SYMBOL_I_inicell + "*(exp(-1*"+SYMBOL_BWM_RATE+"*"+ReservedVariable.TIME.getName()+"))";
 	
 	private static int NUM_PARAM_ESTIMATED = 2;//reaction off rate and bleaching while monitoring rate
 	
@@ -126,7 +126,7 @@ public class FRAPOptFunctions
 		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(currentParams[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess()));
 		bleachedAvgExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(currentParams[FRAPModel.INDEX_OFF_RATE].getInitialGuess()));
 		// time shift
-		bleachedAvgExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
+		bleachedAvgExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+frapDataTimeStamps[startIndexRecovery]));
 		
 		return bleachedAvgExp;
 	}
@@ -147,7 +147,7 @@ public class FRAPOptFunctions
 				{
 					Expression tempExp = new Expression(bleachedAvgExp);
 					double tempData;
-					tempExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(time[j]));
+					tempExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(time[j]));
 					tempData = tempExp.evaluateConstant();
 					result[i][j] = tempData;
 				}

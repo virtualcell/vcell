@@ -26,7 +26,6 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -275,20 +274,21 @@ void refreshResolvedFluxes() throws Exception {
 							}
 							
 							Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping_4_8.getNameScope());
+							cbit.vcell.model.Model.ReservedSymbol kMole = mathMapping_4_8.getSimulationContext().getModel().getKMOLE();
 							if (rp_Array[k].getStructure() == getMembrane().getInsideFeature()){
 								//
 								// for binding on inside, add to ResolvedFlux.inFlux
 								//
 								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getInsideFeature());
 								Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(insideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
-								Expression insideFluxCorrection = Expression.div(new Expression(ReservedSymbol.KMOLE, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
+								Expression insideFluxCorrection = Expression.div(new Expression(kMole, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping_4_8.getNameScope());
+									insideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
 								}
 								if (rf.inFlux.isZero()){
 									rf.inFlux = Expression.mult(insideFluxCorrection, reactionRateExpression);
@@ -302,14 +302,14 @@ void refreshResolvedFluxes() throws Exception {
 								//
 								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getOutsideFeature());
 								Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(outsideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
-								Expression outsideFluxCorrection = Expression.div(new Expression(ReservedSymbol.KMOLE, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
+								Expression outsideFluxCorrection = Expression.div(new Expression(kMole, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping_4_8.getNameScope());
+									outsideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
 								}
 								if (rf.outFlux.isZero()){
 									rf.outFlux = Expression.mult(outsideFluxCorrection, reactionRateExpression);

@@ -56,7 +56,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -561,7 +561,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			for (String varName : entryMap.keySet()) {
 				SymbolTableEntry symbolTableEntry = entryMap.get(varName);
 				if (symbolTableEntry instanceof SymbolTableFunctionEntry
-						|| symbolTableEntry instanceof ReservedSymbol) {
+						|| symbolTableEntry instanceof Model.ReservedSymbol) {
 					continue;
 				}
 				varNameList.add(varName);

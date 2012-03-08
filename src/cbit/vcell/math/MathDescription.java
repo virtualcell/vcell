@@ -1090,7 +1090,7 @@ public java.lang.String getDescription() {
  * @param qualifier java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String id) {
 	SymbolTableEntry entry = null;
 	
 	entry = ReservedMathSymbolEntries.getEntry(id,false);

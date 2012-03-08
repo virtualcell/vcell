@@ -25,10 +25,10 @@ import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
@@ -385,7 +385,7 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 		SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
 		if (modelObject!=null){
 			int mappedColumnIndex = mappedColumnCount;
-			if (modelObject.equals(ReservedSymbol.TIME)){
+			if (modelObject.equals(ReservedVariable.TIME)){
 				mappedColumnIndex = 0;
 			}
 			String origRefDataColumnName = refDataMappingSpecs[i].getReferenceDataColumnName();
@@ -412,7 +412,7 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	if (modelObjectList.size()==1){
 		throw new RuntimeException("reference data was not associated with model, must map time and at least one other column");
 	}
-	if (!modelObjectList.contains(ReservedSymbol.TIME)){
+	if (!modelObjectList.contains(ReservedVariable.TIME)){
 		throw new RuntimeException("must map time column of reference data to model");
 	}
 

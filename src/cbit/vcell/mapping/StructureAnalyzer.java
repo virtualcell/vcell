@@ -24,7 +24,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -578,7 +577,7 @@ private void refreshTotalMatrices() throws Exception {
 								exp = Expression.add(exp, Expression.mult(fluxCorrection, reactRateExp));
 								//Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp, Expression.mult(fluxCorrection, new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope()), reactRateExp));
+								exp = Expression.add(exp, Expression.mult(fluxCorrection, new Expression(reactionSteps[j].getModel().getKMOLE(), mathMapping.getNameScope()), reactRateExp));
 //								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");

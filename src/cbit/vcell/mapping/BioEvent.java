@@ -24,7 +24,6 @@ import org.vcell.util.Matchable;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
@@ -383,8 +382,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			if (simulationContext.getBioEvent(newName) != null) {
 				throw new PropertyVetoException("An event with name '" + newName + "' already exists!",evt);
 			}
-			if (ReservedBioSymbolEntries.getEntry(newName)!=null){
-				throw new PropertyVetoException("Cannot use reserved symbol '" + newName + "' as an event name",evt);
+			if (simulationContext.getEntry(newName)!=null){
+				throw new PropertyVetoException("Cannot use existing symbol '" + newName + "' as an event name",evt);
 			}
 		}
 	}

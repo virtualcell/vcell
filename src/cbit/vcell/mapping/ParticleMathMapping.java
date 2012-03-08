@@ -52,14 +52,15 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -187,7 +188,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	}
 
 	// deals with model parameters
-	ModelParameter[] modelParameters = getSimulationContext().getModel().getModelParameters();
+	Model model = getSimulationContext().getModel();
+	ModelParameter[] modelParameters = model.getModelParameters();
 	// populate in globalParameterVariants hashtable
 	for (int j = 0; j < modelParameters.length; j++){
 		Expression modelParamExpr = modelParameters[j].getExpression();
@@ -224,11 +226,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.PI_CONSTANT.getExpression(),ReservedSymbol.PI_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null),getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null),getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
 
 	//
 	// add Initial Voltages and Voltage Symbols (even though not computing potential).
@@ -282,7 +284,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			initExpr = new Expression(initParm.getExpression());
 //			if (speciesContextSpecs[i].getSpeciesContext().getStructure() instanceof Feature) {
-//				initExpr = Expression.div(initExpr, new Expression(ReservedSymbol.KMOLE, getNameScope())).flatten();
+//				initExpr = Expression.div(initExpr, new Expression(model.getKMOLE, getNameScope())).flatten();
 //			}
 		} else {
 			initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
@@ -394,10 +396,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// conversion factors
 	//
-	varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(),getIdentifierSubstitutions(ReservedSymbol.KMILLIVOLTS.getExpression(),ReservedSymbol.KMILLIVOLTS.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(),getIdentifierSubstitutions(ReservedSymbol.K_GHK.getExpression(),ReservedSymbol.K_GHK.getUnitDefinition(),null)));
+	ReservedSymbol kMole = model.getKMOLE();
+	varHash.addVariable(new Constant(getMathSymbol(kMole, null),getIdentifierSubstitutions(kMole.getExpression(),kMole.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null), getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getKMILLIVOLTS(), null),getIdentifierSubstitutions(model.getKMILLIVOLTS().getExpression(),model.getKMILLIVOLTS().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getK_GHK(), null),getIdentifierSubstitutions(model.getK_GHK().getExpression(),model.getK_GHK().getUnitDefinition(),null)));
 	//
 	// geometric functions
 	//
@@ -591,7 +594,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.div(initialDistribution, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+					initialDistribution = Expression.div(initialDistribution, new Expression(kMole, getNameScope()));
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -818,7 +821,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
 					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
 				{
-					forwardRate = Expression.div(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+					forwardRate = Expression.div(forwardRate, new Expression(kMole, getNameScope()));
 				}
 				else
 				{
@@ -829,9 +832,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					
 					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
 					if (N == 1) {
-						forwardRate = Expression.mult(forwardRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+						forwardRate = Expression.mult(forwardRate, new Expression(kMole, getNameScope()));
 					} else if (N > 1) {
-						forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+						forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(kMole, getNameScope()), new Expression((double)N)));
 					}
 				}
 				
@@ -869,7 +872,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
 					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
 				{
-					reverseRate = Expression.div(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+					reverseRate = Expression.div(reverseRate, new Expression(kMole, getNameScope()));
 				}
 				else 
 				{
@@ -880,9 +883,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					
 					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
 					if (N == 1) {
-						reverseRate = Expression.mult(reverseRate, new Expression(ReservedSymbol.KMOLE, getNameScope()));
+						reverseRate = Expression.mult(reverseRate, new Expression(kMole, getNameScope()));
 					} else if (N > 1) {
-						reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(ReservedSymbol.KMOLE, getNameScope()), new Expression((double)N)));
+						reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(kMole, getNameScope()), new Expression((double)N)));
 					}
 				}
 				

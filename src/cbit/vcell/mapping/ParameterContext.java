@@ -23,7 +23,6 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -431,7 +430,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -445,20 +444,13 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 	}
 	
 	if (ste!=null){
-		return addProxyParameter(ste);
+		if (ste instanceof SymbolTableFunctionEntry){
+			return ste;
+		} else {
+			return addProxyParameter(ste);
+		}
 	}
 	
-	//
-	// if all else fails, try reserved symbols
-	//
-	SymbolTableEntry reservedSTE = ReservedBioSymbolEntries.getEntry(identifierString);
-	if (reservedSTE instanceof SymbolTableFunctionEntry){
-		return reservedSTE;
-	}
-	if (reservedSTE != null){
-		return addProxyParameter(reservedSTE);
-	}
-
 	return null;
 }
 
@@ -468,15 +460,8 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
  * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
-	SymbolTableEntry ste = null;
-
-	ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste!=null){
-		return ste;
-	}
-
-	ste = getLocalParameterFromName(identifier);
+public SymbolTableEntry getLocalEntry(java.lang.String identifier)  {
+	SymbolTableEntry ste = getLocalParameterFromName(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -756,15 +741,10 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 void removeUnresolvedParameters(SymbolTable symbolTable) {
 	UnresolvedParameter unresolvedParms[] = fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
-		try {
-			SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
-			if (ste != unresolvedParms[i]){
-				unresolvedParms = (UnresolvedParameter[])BeanUtils.removeElement(unresolvedParms,unresolvedParms[i]);
-				i--;
-			}
-		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("unexpected exception while removing Unresolved Parameters: "+e.getMessage());
+		SymbolTableEntry ste = symbolTable.getEntry(unresolvedParms[i].getName());
+		if (ste != unresolvedParms[i]){
+			unresolvedParms = (UnresolvedParameter[])BeanUtils.removeElement(unresolvedParms,unresolvedParms[i]);
+			i--;
 		}
 	}
 	setUnresolvedParameters(unresolvedParms);
@@ -860,7 +840,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 

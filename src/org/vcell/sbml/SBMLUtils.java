@@ -29,7 +29,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -357,22 +357,22 @@ public abstract class SBMLUtils {
  * @return	non-dimensional (numerical) conversion factor
  * @throws ExpressionException
  */
-public static SBMLUnitParameter getConcUnitFactor(String name, VCUnitDefinition fromUnit, VCUnitDefinition toUnit) throws ExpressionException {
+public static SBMLUnitParameter getConcUnitFactor(String name, VCUnitDefinition fromUnit, VCUnitDefinition toUnit, ReservedSymbol kMoleSymbol) throws ExpressionException {
 	SBMLUnitParameter sbmlUnitsParam = null;
 	if (fromUnit.isCompatible(toUnit)) {
 		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
 		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
-	} else if (fromUnit.divideBy(ReservedSymbol.KMOLE.getUnitDefinition()).isCompatible(toUnit)) {
+	} else if (fromUnit.divideBy(kMoleSymbol.getUnitDefinition()).isCompatible(toUnit)) {
 		// if SBML substance unit is 'item'; VC substance unit is 'moles'
-		fromUnit = fromUnit.divideBy(ReservedSymbol.KMOLE.getUnitDefinition());
+		fromUnit = fromUnit.divideBy(kMoleSymbol.getUnitDefinition());
 		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
-		factorExpr = Expression.div(factorExpr, ReservedSymbol.KMOLE.getExpression());
+		factorExpr = Expression.div(factorExpr, kMoleSymbol.getExpression());
 		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
-	} else if (fromUnit.multiplyBy(ReservedSymbol.KMOLE.getUnitDefinition()).isCompatible(toUnit)) {
+	} else if (fromUnit.multiplyBy(kMoleSymbol.getUnitDefinition()).isCompatible(toUnit)) {
 		// if VC substance unit is 'item'; SBML substance unit is 'moles' 
-		fromUnit = fromUnit.multiplyBy(ReservedSymbol.KMOLE.getUnitDefinition());
+		fromUnit = fromUnit.multiplyBy(kMoleSymbol.getUnitDefinition());
 		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
-		factorExpr = Expression.mult(factorExpr, ReservedSymbol.KMOLE.getExpression());
+		factorExpr = Expression.mult(factorExpr,kMoleSymbol.getExpression());
 		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
 	}  else {
 		throw new RuntimeException("Unable to scale the species unit from: " + fromUnit + " -> " + toUnit.getSymbol());

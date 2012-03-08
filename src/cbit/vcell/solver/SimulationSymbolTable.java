@@ -119,7 +119,7 @@ public final Simulation getSimulation() {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	//
 	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 	//
@@ -130,7 +130,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 			return constant;
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
-			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString);
+			throw new RuntimeException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString);
 		}
 	}else if (ste instanceof Function){
 		try {
@@ -138,7 +138,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 			return function;
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
-			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage());
+			throw new RuntimeException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage());
 		}
 	}else{
 		return ste;
@@ -273,12 +273,7 @@ public Enumeration<Variable> getRequiredVariables(Expression exp) throws MathExc
  * @param variableName java.lang.String
  */
 public Variable getVariable(String variableName) {
-	try {
-		return (Variable)getEntry(variableName);
-	}catch (ExpressionBindingException e){
-		e.printStackTrace(System.out);
-		return null;
-	}
+	return (Variable)getEntry(variableName);
 }
 
 
@@ -387,7 +382,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 
 
-	public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+	public SymbolTableEntry getLocalEntry(String identifier) {
 		return getEntry(identifier);
 	}
 

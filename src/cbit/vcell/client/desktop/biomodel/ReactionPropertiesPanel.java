@@ -48,6 +48,7 @@ import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
@@ -464,6 +465,7 @@ private JButton getJToggleButton() {
 					sizeUnits = MU+"m"+CUBED;
 				}
 
+				ReservedSymbol kMoleReservedSymbol = reactionStep.getModel().getKMOLE();
 				if (kinetics instanceof DistributedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
@@ -471,7 +473,7 @@ private JButton getJToggleButton() {
 							throw new NumberFormatException("Please type in a valid compartment size.");
 						}
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size));
+						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size, kMoleReservedSymbol));
 					} catch (UtilCancelException e1) {
 					} catch (NumberFormatException ex) {
 						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						
@@ -489,7 +491,7 @@ private JButton getJToggleButton() {
 							throw new NumberFormatException("Please type in a valid compartment size.");
 						}
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size));
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size, kMoleReservedSymbol));
 					} catch (UtilCancelException e1) {
 					} catch (NumberFormatException ex) {
 						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						

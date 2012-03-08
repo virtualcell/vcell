@@ -200,12 +200,8 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 		for (int i = 0; i < annotatedFunctionsVector.size(); i ++) {
 			AnnotatedFunction func = annotatedFunctionsVector.get(i);
 			if (func.isOldUserDefined()) {
-				try {
-					SimpleSymbolTableEntry ste = (SimpleSymbolTableEntry)simpleSymbolTable.getEntry(func.getName());
-					ste.setName(simJobID + "_" + func.getName());
-				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
-				}
+				SimpleSymbolTableEntry ste = (SimpleSymbolTableEntry)simpleSymbolTable.getEntry(func.getName());
+				ste.setName(simJobID + "_" + func.getName());
 			}		
 		}
 		

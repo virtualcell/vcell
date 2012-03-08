@@ -47,12 +47,12 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.SolutionTemplate;
@@ -659,8 +659,8 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
 	
 	SimulationComparisonSummary simComparisonSummary = new SimulationComparisonSummary();
 
-	int testTimeOrHistogramIndex = testResultSet.findColumn(ReservedSymbol.TIME.getName());
-	int refTimeOrHistogramIndex = referenceResultSet.findColumn(ReservedSymbol.TIME.getName());
+	int testTimeOrHistogramIndex = testResultSet.findColumn(ReservedVariable.TIME.getName());
+	int refTimeOrHistogramIndex = referenceResultSet.findColumn(ReservedVariable.TIME.getName());
 	if (testTimeOrHistogramIndex < 0 && refTimeOrHistogramIndex < 0){
 		testTimeOrHistogramIndex = testResultSet.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);
 		refTimeOrHistogramIndex = referenceResultSet.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);

@@ -47,11 +47,12 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
@@ -192,13 +193,15 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 					return this;
 				}
 				SymbolTableEntry ste = (SymbolTableEntry)value;
-				if (ste instanceof ReservedSymbol){
+				if (ste instanceof Model.ReservedSymbol){
 					setText(ste.getName());
 				}else if (ste instanceof SpeciesContext){
 					setText("["+ste.getName()+"]");
 				}else if (ste instanceof KineticsParameter){
 					setText(ste.getNameScope().getName()+":"+ste.getName());
 				}else if (ste instanceof ModelParameter){
+					setText(ste.getName());
+				}else if (ste instanceof ReservedVariable) {
 					setText(ste.getName());
 				}else{
 					setText(ste.getNameScope().getAbsoluteScopePrefix()+ste.getName());
@@ -579,7 +582,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects();
 
 		java.util.Comparator<SymbolTableEntry> steComparator = new java.util.Comparator<SymbolTableEntry>() {
-			private Class<?>[] classOrder = new Class<?>[] { ReservedSymbol.class, SpeciesContext.class, Model.ModelParameter.class, Kinetics.KineticsParameter.class };
+			private Class<?>[] classOrder = new Class<?>[] { Model.ReservedSymbol.class, SpeciesContext.class, Model.ModelParameter.class, Kinetics.KineticsParameter.class };
 			public int compare(SymbolTableEntry ste1, SymbolTableEntry ste2){
 				int ste1Category = 100;
 				int ste2Category = 100;

@@ -24,7 +24,6 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -206,7 +205,7 @@ private void refreshResolvedFluxes() throws Exception {
 									// for binding on inside or outside, add to ResolvedFlux.flux
 									//
 									FeatureMapping featureMapping = (FeatureMapping)sm;								
-									Expression kmole = new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope());
+									Expression kmole = new Expression(mathMapping.getSimulationContext().getModel().getKMOLE(), mathMapping.getNameScope());
 									Expression volFract = new Expression(featureMapping.getVolumePerUnitVolumeParameter(), mathMapping.getNameScope());
 									Expression fluxCorrection = Expression.div(kmole, volFract).flatten(); 
 									Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping.getNameScope());

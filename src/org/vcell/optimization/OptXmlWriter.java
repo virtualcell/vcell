@@ -31,9 +31,9 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.Constraint;
@@ -320,11 +320,11 @@ public class OptXmlWriter {
 			// independent variable is t and dimension is 1, these are fixed.
 			Element timeVarElement = new Element(OptXmlTags.Variable_Tag);
 			timeVarElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Independent);
-			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
+			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedVariable.TIME.getName());
 			timeVarElement.setAttribute(OptXmlTags.VariableDimension_Attr,"1");
 			refDataElement.addContent(timeVarElement);
 			// check if t is at the first column
-			int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
+			int timeIndex = refData.findColumn(ReservedVariable.TIME.getName());
 			if (timeIndex != 0) {
 				throw new RuntimeException("t must be the first column");
 			}
@@ -550,10 +550,10 @@ public class OptXmlWriter {
 			// independent variable is t and dimension is 1, these are fixed.
 			Element timeVarElement = new Element(OptXmlTags.Variable_Tag);
 			timeVarElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Independent);
-			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
+			timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedVariable.TIME.getName());
 			refDataElement.addContent(timeVarElement);
 			// check if t is at the first column
-			int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
+			int timeIndex = refData.findColumn(ReservedVariable.TIME.getName());
 			if (timeIndex != 0) {
 				throw new RuntimeException("t must be the first column");
 			}

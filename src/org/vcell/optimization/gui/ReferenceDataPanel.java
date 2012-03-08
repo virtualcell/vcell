@@ -22,7 +22,7 @@ import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.CSV;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
@@ -479,7 +479,7 @@ private ReferenceData subsample() {
 	RowColumnResultSet rc = new RowColumnResultSet();
 	String[] columnNames = refData.getColumnNames(); 
 	for (int i = 0; i < columnNames.length; i++){
-		rc.addDataColumn(new ODESolverResultSetColumnDescription(i == timeIndex ?  ReservedSymbol.TIME.getName() : columnNames[i]));		
+		rc.addDataColumn(new ODESolverResultSetColumnDescription(i == timeIndex ?  ReservedVariable.TIME.getName() : columnNames[i]));		
 	}
 	for (int i = 0; i < refData.getNumDataRows(); i++){
 		rc.addRow((double[])refData.getDataByRow(i).clone());

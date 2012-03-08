@@ -139,7 +139,7 @@ public ConstraintContainerImpl getConstraintContainerImpl() {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	ConstraintSolver.Symbol ste = null;
 	

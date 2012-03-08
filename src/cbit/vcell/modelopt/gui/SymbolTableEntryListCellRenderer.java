@@ -10,6 +10,7 @@
 
 package cbit.vcell.modelopt.gui;
 
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 
 /**
@@ -36,7 +37,7 @@ public java.awt.Component getListCellRendererComponent(javax.swing.JList list, O
 	} else {
 		if (value instanceof cbit.vcell.parser.SymbolTableEntry){
 			cbit.vcell.parser.SymbolTableEntry ste = (cbit.vcell.parser.SymbolTableEntry)value;
-			if (ste instanceof cbit.vcell.model.ReservedSymbol){
+			if (ste instanceof Model.ReservedSymbol){
 				setText(ste.getName());
 			}else if (ste instanceof cbit.vcell.model.SpeciesContext){
 				setText("["+ste.getName()+"]");

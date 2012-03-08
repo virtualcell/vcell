@@ -50,7 +50,6 @@ import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -1264,7 +1263,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 			StringBuffer buffer = new StringBuffer();
 			for (int i = 0; symbols!=null && i < symbols.length; i++) {
 				SymbolTableEntry ste = protocolParameterExp.getSymbolBinding(symbols[i]);
-				if (!ste.equals(ReservedSymbol.TIME)){
+				if (!ste.equals(getSimulationContext().getModel().getTIME())){
 					buffer.append(ste.getName()+" ");
 				}
 			}

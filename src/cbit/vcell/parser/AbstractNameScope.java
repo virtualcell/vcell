@@ -50,7 +50,7 @@ public abstract NameScope[] getChildren();
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) throws ExpressionBindingException {
+public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) {
 	
 	String prefix = getPrefix(identifier);
 
@@ -66,7 +66,7 @@ public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSym
 				}
 			}
 		}else{
-			throw new ExpressionBindingException("error binding '"+identifier+"', nameScope '"+getName()+"' has no symbolTable");
+			throw new RuntimeException("error binding '"+identifier+"', nameScope '"+getName()+"' has no symbolTable");
 		}
 		if (getParent()!=null){
 			return getParent().getExternalEntry(identifier, localSymbolTable);
@@ -91,10 +91,11 @@ public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSym
 					return null;
 				}
 			}else{
-				throw new ExpressionBindingException("error binding '"+identifier+"', nameScope '"+getName()+"' has no symbolTable");
+				throw new RuntimeException("error binding '"+identifier+"', nameScope '"+getName()+"' has no symbolTable");
 			}
 		}else{
-			throw new ExpressionBindingException("error binding '"+identifier+"', explicit scope '"+prefix+"' was unresolved");
+			// throw new RuntimeException("error binding '"+identifier+"', explicit scope '"+prefix+"' was unresolved");
+			return null;
 		}
 	}
 }
@@ -335,12 +336,7 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
 			// if not ambiguous (bound to default binding), don't introduce relative mangling
 			//
 			SymbolTableEntry defaultBinding = null;
-			try {
-				defaultBinding = getExternalEntry(symbolTableEntry.getName(),getScopedSymbolTable());
-			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("NameScope can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no default binding");
-			}
+			defaultBinding = getExternalEntry(symbolTableEntry.getName(),getScopedSymbolTable());
 			if (defaultBinding!=null && defaultBinding.getNameScope().equals(symbolTableEntry.getNameScope())){
 				return symbolTableEntry.getName();
 			}else{

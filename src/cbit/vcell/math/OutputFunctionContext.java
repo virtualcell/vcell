@@ -326,15 +326,11 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				} 
 				namesSet.add(fnName);
 				// now see if the symbol is a math symbol - cannot use that name for new output function.
-				try {
-					SymbolTableEntry ste  = getEntry(fnName);
-					if (ste != null) {
-						if (!(ste instanceof AnnotatedFunction)) {
-							throw new PropertyVetoException(" '"+fnName+"' conflicts with existing symbol. Cannot define function with name '" + fnName +".",evt);
-						}
+				SymbolTableEntry ste  = getEntry(fnName);
+				if (ste != null) {
+					if (!(ste instanceof AnnotatedFunction)) {
+						throw new PropertyVetoException(" '"+fnName+"' conflicts with existing symbol. Cannot define function with name '" + fnName +".",evt);
 					}
-				} catch (ExpressionBindingException e) {
-					e.printStackTrace(System.out);
 				}
 			}
 
@@ -414,7 +410,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 
 
-	public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+	public SymbolTableEntry getLocalEntry(String identifier) {
 		return getEntry(identifier);
 	}
 
@@ -423,7 +419,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return nameScope;
 	}
 
-	public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+	public SymbolTableEntry getEntry(java.lang.String identifierString) {
 		//
 		// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 		//

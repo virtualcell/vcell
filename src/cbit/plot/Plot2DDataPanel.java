@@ -26,7 +26,7 @@ import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -326,14 +326,14 @@ private synchronized void copyCells(String actionCommand) {
 		//check if selected first column is time.
 		boolean bHasTimeColumn = false;
 		String selectedFirstColName = getScrollPaneTable().getColumnName(columns[0]);
-		if(selectedFirstColName.equals(ReservedSymbol.TIME.getName()))
+		if(selectedFirstColName.equals(ReservedVariable.TIME.getName()))
 		{
 			bHasTimeColumn = true;
 		}
 		//check if it is histogram (check name of the table first column name)
 		boolean bHistogram = false;
 		String firstColName = getScrollPaneTable().getColumnName(0);
-		if(!firstColName.equals(ReservedSymbol.TIME.getName()))
+		if(!firstColName.equals(ReservedVariable.TIME.getName()))
 		{
 			bHistogram = true;
 		}

@@ -33,7 +33,6 @@ import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Flux.FluxDirection;
 import cbit.vcell.parser.DivideByZeroException;
@@ -141,8 +140,8 @@ public class MassActionSolver {
 						e1.printStackTrace();
 						throw new ExpressionException(e1.getMessage());
 					}
-				}else if (substituteConst && ste instanceof ReservedSymbol){
-					ReservedSymbol rs = (ReservedSymbol)ste;
+				}else if (substituteConst && ste instanceof Model.ReservedSymbol){
+					Model.ReservedSymbol rs = (Model.ReservedSymbol)ste;
 					try {
 						if (rs.getExpression() != null) 
 						{

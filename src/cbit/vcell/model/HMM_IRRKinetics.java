@@ -233,12 +233,13 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
 		Expression tempCurrentExpression = null;
 		Expression J = getSymbolExpression(rateParm);
+		Model model = getReactionStep().getModel();
 		if (getReactionStep() instanceof SimpleReaction){
-			Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
-			Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+			Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
+			Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());
 			tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), J);
 		}else{
-			Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+			Expression F_nmol = getSymbolExpression(model.getFARADAY_CONSTANT_NMOLE());
 			tempCurrentExpression = Expression.mult(Expression.mult(z, F_nmol), J);
 		}
 		if (currentParm == null){

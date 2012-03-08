@@ -14,6 +14,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,6 +81,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private Diagram[] fieldDiagrams = new Diagram[0];
 	private ModelNameScope nameScope = new Model.ModelNameScope();
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
+	private Model.ReservedSymbol[] fieldReservedSymbols = new Model.ReservedSymbol[0];
 	private transient VCMetaData vcMetaData = null;
 
 
@@ -123,6 +125,249 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 	}
 
+	 private final ReservedSymbol TIME;
+	 private final ReservedSymbol X;
+	 private final ReservedSymbol Y;
+	 private final ReservedSymbol Z;
+	 private final ReservedSymbol TEMPERATURE;
+	 private final ReservedSymbol PI_CONSTANT;
+	 private final ReservedSymbol FARADAY_CONSTANT;
+	 private final ReservedSymbol FARADAY_CONSTANT_NMOLE;
+	 private final ReservedSymbol N_PMOLE;
+	 private final ReservedSymbol K_GHK;
+	 private final ReservedSymbol GAS_CONSTANT;
+	 private final ReservedSymbol KMILLIVOLTS;
+	 private final ReservedSymbol KMOLE;
+
+	 // collection of reserved symbol names (used in XMLReader)
+	 public final ArrayList<String> getReservedVarNames() {
+	
+		 ArrayList<String> reservedVars = new ArrayList<String>();
+		 //
+		 // add constants that may be used in kinetics.
+		 //
+		 reservedVars.add(PI_CONSTANT.getName());
+		 reservedVars.add(FARADAY_CONSTANT.getName());
+		 reservedVars.add(FARADAY_CONSTANT_NMOLE.getName());
+		 reservedVars.add(GAS_CONSTANT.getName());
+		 reservedVars.add(KMILLIVOLTS.getName());
+		 reservedVars.add(KMOLE.getName());
+		 reservedVars.add(N_PMOLE.getName());
+		 reservedVars.add(TEMPERATURE.getName());
+		 reservedVars.add(K_GHK.getName());
+		 reservedVars.add(TIME.getName());
+	
+		return reservedVars;
+	 }
+
+	 public ReservedSymbol getTIME() {
+			return TIME;
+		}
+
+
+		public ReservedSymbol getX() {
+			return X;
+		}
+
+
+		public ReservedSymbol getY() {
+			return Y;
+		}
+
+
+		public ReservedSymbol getZ() {
+			return Z;
+		}
+
+
+		public ReservedSymbol getTEMPERATURE() {
+			return TEMPERATURE;
+		}
+
+
+		public ReservedSymbol getPI_CONSTANT() {
+			return PI_CONSTANT;
+		}
+
+
+		public ReservedSymbol getFARADAY_CONSTANT() {
+			return FARADAY_CONSTANT;
+		}
+
+
+		public ReservedSymbol getFARADAY_CONSTANT_NMOLE() {
+			return FARADAY_CONSTANT_NMOLE;
+		}
+
+
+		public ReservedSymbol getN_PMOLE() {
+			return N_PMOLE;
+		}
+
+
+		public ReservedSymbol getK_GHK() {
+			return K_GHK;
+		}
+
+
+		public ReservedSymbol getGAS_CONSTANT() {
+			return GAS_CONSTANT;
+		}
+
+
+		public ReservedSymbol getKMILLIVOLTS() {
+			return KMILLIVOLTS;
+		}
+
+
+		public ReservedSymbol getKMOLE() {
+			return KMOLE;
+		}
+	 
+	 
+	public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
+	{
+	   private String name = null;
+	   private Expression constantValue = null;
+	   private String description = null;
+	   private VCUnitDefinition unitDefinition = null;
+
+	private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
+		this.name = argName;
+		this.unitDefinition = argUnitDefinition;
+		this.constantValue = argConstantValue;
+		this.description = argDescription;
+	}         
+
+
+	public boolean equals(Object obj) {
+		if (!(obj instanceof ReservedSymbol)){
+			return false;
+		}
+		ReservedSymbol rs = (ReservedSymbol)obj;
+		if (!rs.name.equals(name)){
+			return false;
+		}
+		return true;
+	}
+
+	public double getConstantValue() throws ExpressionException {
+		throw new ExpressionException(getName()+" is not constant");
+	}
+
+
+	   public final String getDescription() 
+	   { 
+		  return description; 
+	   }      
+
+
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return cbit.vcell.parser.Expression
+	 * @exception java.lang.Exception The exception description.
+	 */
+	public Expression getExpression() {
+		return constantValue;
+	}
+
+
+	/**
+	 * This method was created in VisualAge.
+	 * @return int
+	 */
+	public int getIndex() {
+		return -1;
+	}
+
+
+	   public final String getName() 
+	   { 
+		  return name; 
+	   }      
+
+
+	public NameScope getNameScope() {
+		return Model.this.getNameScope();
+	}
+
+
+	public VCUnitDefinition getUnitDefinition() {
+		return unitDefinition;
+	}
+
+
+	public int hashCode() {
+		return name.hashCode();
+	}
+
+	public boolean isConstant() {
+		return false;  //constantValue!=null;
+	}
+
+
+	public String toString()
+	{
+		return getName();
+	}
+
+
+	public boolean isDescriptionEditable() {
+		return false;
+	}
+
+
+	public boolean isExpressionEditable() {
+		return false;
+	}
+
+
+	public boolean isNameEditable() {
+		return false;
+	}
+
+
+	public boolean isUnitEditable() {
+		return false;
+	}
+
+
+	public void setDescription(String description) throws PropertyVetoException {
+		throw new RuntimeException("cannot change description of a reserved symbol");
+	}
+
+
+	public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		throw new RuntimeException("cannot change the value of a reserved symbol");
+	}
+
+
+	public void setName(String name) throws PropertyVetoException {
+		throw new RuntimeException("cannot rename a reserved symbols");
+	}
+
+
+	public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+		throw new RuntimeException("cannot change unit of a reserved symbol");
+	}
+
+
+	public boolean isX() {
+		return (this == Model.this.X);
+	}
+
+	public boolean isY() {
+		return (this == Model.this.Y);
+	}
+	public boolean isZ() {
+		return (this == Model.this.Z);
+	}
+	public boolean isTime() {
+		return (this == Model.this.TIME);
+	}
+
+	}
+	
 	public static final int ROLE_UserDefined	= 0;
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
@@ -254,6 +499,27 @@ public Model(Version argVersion) {
 	}
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
+	
+	// initialize the reserved symbols
+	TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
+	X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
+	Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
+	Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
+	TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
+	PI_CONSTANT = new ReservedSymbol("_PI_","PI constant",VCUnitDefinition.UNIT_DIMENSIONLESS,new Expression(Math.PI));
+	FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
+	FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
+	N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
+	K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
+	GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
+	KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
+	try {
+		KMOLE = new ReservedSymbol("KMOLE", "Flux unit conversion", VCUnitDefinition.UNIT_uM_um3_per_molecules, Expression.div(new Expression(1.0), new Expression(602.0)));
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error creating reserved symbol KMOLE : " + e.getMessage());
+	}
+	fieldReservedSymbols = new ReservedSymbol[]{TIME, X, Y, Z, TEMPERATURE, PI_CONSTANT, FARADAY_CONSTANT, GAS_CONSTANT, FARADAY_CONSTANT_NMOLE, N_PMOLE, K_GHK, KMILLIVOLTS, KMOLE};
 }      
 
 
@@ -262,15 +528,31 @@ public Model(String argName) {
 	this.version = null;
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
+
+	// initialize the reserved symbols
+	TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
+	X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
+	Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
+	Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
+	TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
+	PI_CONSTANT = new ReservedSymbol("_PI_","PI constant",VCUnitDefinition.UNIT_DIMENSIONLESS,new Expression(Math.PI));
+	FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
+	FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
+	N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
+	K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
+	GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
+	KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
+	try {
+		KMOLE = new ReservedSymbol("KMOLE", "Flux unit conversion", VCUnitDefinition.UNIT_uM_um3_per_molecules, Expression.div(new Expression(1.0), new Expression(602.0)));
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error creating reserved symbol KMOLE : " + e.getMessage());
+	}
+
+	fieldReservedSymbols = new ReservedSymbol[]{TIME, X, Y, Z, TEMPERATURE, PI_CONSTANT, FARADAY_CONSTANT, GAS_CONSTANT, FARADAY_CONSTANT_NMOLE, N_PMOLE, K_GHK, KMILLIVOLTS, KMOLE};
 }      
 
 
-/**
- * This method was created by a SmartGuide.
- * @param featureName java.lang.String
- * @param parent cbit.vcell.model.Feature
- * @throws PropertyVetoException 
- */
 public Feature addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
 	if (featureName.equals(membraneName)) {
 		throw new ModelException("Feature and Membrane can not have the same name.");
@@ -754,7 +1036,7 @@ public Diagram getDiagrams(int index) {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -763,6 +1045,9 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 	return getNameScope().getExternalEntry(identifierString,this);
 }
 
+public ReservedSymbol[] getReservedSymbols() {
+	return fieldReservedSymbols;
+}
 
 /**
  * This method was created in VisualAge.
@@ -931,16 +1216,14 @@ public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterN
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
-	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste != null){
-		if (ste.equals(ReservedSymbol.X) || ste.equals(ReservedSymbol.Y) || ste.equals(ReservedSymbol.Z)){
-			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
+	for (ReservedSymbol rs : fieldReservedSymbols) {
+		if (identifier.equals(rs.getName())) {
+			return rs;
 		}
-		return ste;
-	}	
-
+	}
+	
 	// look through the global/model parameters
 	for (int i = 0; i < fieldModelParameters.length; i++) {
 		if (fieldModelParameters[i].getName().equals(identifier)) {
@@ -981,7 +1264,9 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
  */
 public void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries) {
 
-	ReservedSymbol.gatherLocalEntries(symbolTableEntries);
+	for (int i = 0; i < fieldReservedSymbols.length; i++) {
+		symbolTableEntries.add(fieldReservedSymbols[i]);
+	}
 
 	for (int i = 0; i < fieldModelParameters.length; i++) {
 		symbolTableEntries.add(fieldModelParameters[i]);
@@ -2378,6 +2663,15 @@ public String toString() {
 }
 
 
+public ReservedSymbol getReservedSymbolByName(String name) {
+	for (ReservedSymbol rs : fieldReservedSymbols) {
+		if (rs.getName().equals(name)) {
+			return rs;
+		}
+	}
+	return null;	
+}
+
 /**
  * This method was created in VisualAge.
  * @param e java.beans.PropertyChangeEvent
@@ -2413,12 +2707,9 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 	if (e.getSource() instanceof MembraneVoltage){
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
-			try {
-				SymbolTableEntry existingSTE = getLocalEntry(newName);
-				if (existingSTE instanceof MembraneVoltage){
-					throw new PropertyVetoException("new name \""+newName+"\" conflicts with the voltage parameter name for membrane \""+((MembraneVoltage)existingSTE).getMembrane().getName()+"\"",e);
-				}
-			} catch (ExpressionBindingException e1) {
+			SymbolTableEntry existingSTE = getLocalEntry(newName);
+			if (existingSTE instanceof MembraneVoltage){
+				throw new PropertyVetoException("new name \""+newName+"\" conflicts with the voltage parameter name for membrane \""+((MembraneVoltage)existingSTE).getMembrane().getName()+"\"",e);
 			}
 			validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newName, e);
 		}
@@ -2426,12 +2717,9 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 	if (e.getSource() instanceof StructureSize){
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
-			try {
-				SymbolTableEntry existingSTE = getLocalEntry(newName);
-				if (existingSTE instanceof StructureSize){
-					throw new PropertyVetoException("new name \""+newName+"\" conflicts with the size parameter name for structure \""+((StructureSize)existingSTE).getStructure().getName()+"\"",e);
-				}
-			} catch (ExpressionBindingException e1) {
+			SymbolTableEntry existingSTE = getLocalEntry(newName);
+			if (existingSTE instanceof StructureSize){
+				throw new PropertyVetoException("new name \""+newName+"\" conflicts with the size parameter name for structure \""+((StructureSize)existingSTE).getStructure().getName()+"\"",e);
 			}
 			validateNamingConflicts("StructureSize",StructureSize.class, newName, e);
 		}
@@ -2458,7 +2746,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (getSpecies(commonName) != null){
 				throw new PropertyVetoException("Species with common name '"+commonName+"' already defined",e);
 			}
-			if (ReservedBioSymbolEntries.getReservedSymbolEntry(commonName)!=null){
+			if (getReservedSymbolByName(commonName)!=null){
 				throw new PropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e);
 			}
 		}
@@ -2565,13 +2853,14 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		HashSet<String> commonNameSet = new HashSet<String>();
 		for (int i=0;i<newSpeciesArray.length;i++){
-			if (commonNameSet.contains(newSpeciesArray[i].getCommonName())){
-				throw new PropertyVetoException("multiple species with common name '"+newSpeciesArray[i].getCommonName()+"' defined",e);
+			String commonName = newSpeciesArray[i].getCommonName();
+			if (commonNameSet.contains(commonName)){
+				throw new PropertyVetoException("multiple species with common name '"+commonName+"' defined",e);
 			}
-			if (ReservedBioSymbolEntries.getEntry(newSpeciesArray[i].getCommonName())!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+newSpeciesArray[i].getCommonName()+"' as a Species common name",e);
+			if (getReservedSymbolByName(commonName)!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e);
 			}
-			commonNameSet.add(newSpeciesArray[i].getCommonName());
+			commonNameSet.add(commonName);
 		}
 		//
 		// if species deleted, must not have any SpeciesContexts that need it
@@ -2734,13 +3023,14 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		HashSet<String> nameSet = new HashSet<String>();
 		for (int i=0;i<newReactionStepArr.length;i++){
-			if (nameSet.contains(newReactionStepArr[i].getName())){
-				throw new PropertyVetoException("multiple reactionSteps with name '"+newReactionStepArr[i].getName()+"' defined",e);
+			String rxnName = newReactionStepArr[i].getName();
+			if (nameSet.contains(rxnName)){
+				throw new PropertyVetoException("multiple reactionSteps with name '"+rxnName+"' defined",e);
 			}
-			if (ReservedBioSymbolEntries.getEntry(newReactionStepArr[i].getName())!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+newReactionStepArr[i].getName()+"' as a Reaction name",e);
+			if (getReservedSymbolByName(rxnName)!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+rxnName+"' as a Reaction name",e);
 			}
-			nameSet.add(newReactionStepArr[i].getName());
+			nameSet.add(rxnName);
 
 			// validateNamingConflicts("Reaction", ReactionStep.class, newReactionStepArr[i].getName(), e);
 		}
@@ -2797,12 +3087,7 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	//
 	// make sure not to change to name of any other symbol in 'model' namespace (or friendly namespaces)
 	//
-	SymbolTableEntry localSTE = null;
-	try {
-		localSTE = getLocalEntry(newSymbolName);
-	}catch (ExpressionBindingException ex){
-		ex.printStackTrace(System.out);
-	}
+	SymbolTableEntry localSTE = getLocalEntry(newSymbolName);
 	if (localSTE == null){
 		return;
 	}
@@ -2852,10 +3137,12 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldModelParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedBioSymbolEntries.getAll(entryMap);
-	entryMap.remove(ReservedSymbol.X.getName());
-	entryMap.remove(ReservedSymbol.Y.getName());
-	entryMap.remove(ReservedSymbol.Z.getName());
+	
+	for (ReservedSymbol rs : fieldReservedSymbols) {
+		if ( (rs != X) || (rs != Y) || (rs != Z) ) {
+			entryMap.put(rs.getName(), rs);
+		}
+	}
 }
 
 

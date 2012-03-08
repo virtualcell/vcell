@@ -80,7 +80,7 @@ public final class PostProcessingBlock implements SymbolTable, Serializable, Mat
 		dataGeneratorHashMap.put(dataGenerator.getName(), dataGenerator);
 	}
 
-	public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
+	public SymbolTableEntry getEntry(String id) {
 		SymbolTableEntry entry = null;
 		
 		entry = ReservedMathSymbolEntries.getEntry(id,true);

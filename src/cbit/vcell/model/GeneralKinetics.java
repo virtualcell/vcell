@@ -125,13 +125,14 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
 		Expression J = getSymbolExpression(rateParm);
 		Expression tempCurrentExpression = null;
+		Model model = getReactionStep().getModel();
 		if (getReactionStep() instanceof SimpleReaction){
-			Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
-			Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+			Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
+			Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());
 			tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), J);
 //			tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(rateParm.getName()));
 		}else{
-			Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+			Expression F_nmol = getSymbolExpression(model.getFARADAY_CONSTANT_NMOLE());
 			tempCurrentExpression = Expression.mult(z, F_nmol, J);
 //			tempCurrentExpression = Expression.mult(new Expression(z+"*"+F_nmol.getName()), new Expression(rateParm.getName()));
 		}

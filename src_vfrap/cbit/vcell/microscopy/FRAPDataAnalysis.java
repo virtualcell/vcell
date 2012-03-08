@@ -14,7 +14,7 @@ package cbit.vcell.microscopy;
 import java.io.IOException;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.opt.ElementWeights;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
@@ -279,7 +279,7 @@ public class FRAPDataAnalysis {
 			Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 			cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
 			cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
-			cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+			cellIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 			offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
 			//set bleached region intensity expression ( only t left in expression)
 			Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
@@ -287,7 +287,7 @@ public class FRAPDataAnalysis {
 			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
 			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[1]));//subsitute parameter A
 			bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(outputParamValues[2]));//reaction off rate
-			bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+			bleachIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 			offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
 		}
 		else
@@ -306,7 +306,7 @@ public class FRAPDataAnalysis {
 				Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
 				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParam.getInitialGuess()));//subsitute bwmRate
-				cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				cellIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 				offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
 				//set bleached region intensity expression ( only t left in expression)
 				Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
@@ -314,7 +314,7 @@ public class FRAPDataAnalysis {
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(fixedParam.getInitialGuess()));//subsitute bwmRate
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[0]));//subsitute parameter A
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(outputParamValues[1]));//reaction off rate
-				bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				bleachIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 				offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
 			}
 			else if(fixedParam != null && fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE]))
@@ -331,7 +331,7 @@ public class FRAPDataAnalysis {
 				Expression cellIntensityExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
 				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellROIAverage[0]));
 				cellIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
-				cellIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				cellIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 				offRateAnalysisResults.setFitBleachWhileMonitorExpression(cellIntensityExp);
 				//set bleached region intensity expression ( only t left in expression)
 				Expression bleachIntensityExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
@@ -339,7 +339,7 @@ public class FRAPDataAnalysis {
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_BWM_RATE), new Expression(outputParamValues[0]));//subsitute bwmRate
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_A), new Expression(outputParamValues[1]));//subsitute parameter A
 				bleachIntensityExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_KOFF), new Expression(fixedParam.getInitialGuess()));//reaction off rate
-				bleachIntensityExp.substituteInPlace(new Expression(ReservedSymbol.TIME.getName()), new Expression(ReservedSymbol.TIME.getName()+"-"+time[0]));//undo time shift
+				bleachIntensityExp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(ReservedVariable.TIME.getName()+"-"+time[0]));//undo time shift
 				offRateAnalysisResults.setOffRateFitExpression(bleachIntensityExp);
 			}
 			else

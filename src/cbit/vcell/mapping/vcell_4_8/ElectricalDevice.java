@@ -18,7 +18,6 @@ import org.vcell.util.TokenMangler;
 import cbit.vcell.parser.*;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -208,7 +207,7 @@ Expression getDependentVoltageExpression() {
 /**
  * getEntry method comment.
  */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	
 	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -219,7 +218,6 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedBioSymbolEntries.getAll(entryMap);
 	for (SymbolTableEntry ste : fieldParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
@@ -245,12 +243,7 @@ final SymbolTableEntry getTotalCurrentSymbol() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
-	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
-	if (ste!=null){
-		return ste;
-	}
-
+public SymbolTableEntry getLocalEntry(String identifier) {
 	ElectricalDevice.ElectricalDeviceParameter parameter = getParameter(identifier);
 	
 	return parameter;
