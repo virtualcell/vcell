@@ -213,12 +213,12 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			allTimesMax = Math.max(allTimesMax, tsJobResultsSpaceStats.getMaximums()[0][i]);
 		}
 //		double SCALE_MAX = maxIntensity.doubleValue();/*Math.pow(2,16)-1;*///Scale to 16 bits
-		double linearaScaleFactor = 1;
+		double linearScaleFactor = 1;
 		if(maxIntensity != null)
 		{
-			linearaScaleFactor = maxIntensity.doubleValue()/allTimesMax;
+			linearScaleFactor = maxIntensity.doubleValue()/allTimesMax;
 		}
-		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax + " linearScaleFactor=" + linearaScaleFactor);
+		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax + " linearScaleFactor=" + linearScaleFactor);
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
 		Random rnd = new Random();
 		int shortMax = 65535;
@@ -232,7 +232,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
 			short[] scaledDataShort = new short[rawData.length];
 			for (int j = 0; j < scaledDataShort.length; j++) {
-				double scaledRawDataJ = rawData[j]*linearaScaleFactor;
+				double scaledRawDataJ = rawData[j]*linearScaleFactor;
 				if(bNoise)
 				{
 					double ran = rnd.nextGaussian();
@@ -325,7 +325,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 	}
 	
 	
-	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, ClientTaskStatusSupport progressListener) throws Exception
+	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception
 	{
 		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput();
 		if (!inputHDF5File.exists()) {
@@ -347,7 +347,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
 		// close file resource
 		hdf5File.close();
-		//set messge to load variable
+		//set message to load variable
 		if(progressListener != null)
 		{
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
@@ -356,13 +356,28 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		double[] time = dataProcessingOutput.getTimes(); 
 		HashMap<String, Vector<SourceDataInfo>> varMaps = dataProcessingOutput.getDataGenerators();
 		Vector<SourceDataInfo> sdInfo = varMaps.get(SimDataConstants.FLUOR_DATA_NAME);
+		// find scalefactor to scale up the data to avoid losing precesion when casting double to short
+		double linearScaleFactor = 1;
+		if(maxIntensity != null)
+		{
+			double maxDataValue = 0;
+			for (int i = 0; i < time.length; i++) {
+				double[] doubleData = (double[])sdInfo.get(i).getData();
+				for(int j=0; j<doubleData.length; j++)
+				{
+					maxDataValue = Math.max(maxDataValue, doubleData[j]);
+				}
+			}
+			linearScaleFactor = maxIntensity.doubleValue()/maxDataValue;
+		}
+		//saving each time step 2D double array to a UShortImage
 		UShortImage[] dataImages = new UShortImage[time.length];
 		for (int i = 0; i < time.length; i++) {
 			double[] doubleData = (double[])sdInfo.get(i).getData();
 			short[] shortData = new short[doubleData.length];
 			for(int j=0; j<doubleData.length; j++)
 			{
-				shortData[j] = (short)doubleData[j];
+				shortData[j] = (short)(doubleData[j]*linearScaleFactor);
 			}
 			dataImages[i] = new UShortImage(
 						shortData,

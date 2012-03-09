@@ -22,12 +22,14 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -69,7 +71,43 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 	private JButton addButton;
 	private JButton deleteButton;
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, ListSelectionListener {
+	private class InternalScrollTableActionManager extends DefaultScrollTableActionManager {
+
+		InternalScrollTableActionManager(JTable table) {
+			super(table);
+		}
+
+		@Override
+		protected void constructPopupMenu() {
+			if (popupMenu == null) {
+				super.constructPopupMenu();
+				int pos = 0;
+				popupMenu.insert(getJMenuItemCopy(), pos ++);
+				popupMenu.insert(getJMenuItemCopyAll(), pos ++);
+				popupMenu.insert(getJMenuItemPaste(), pos ++);
+				popupMenu.insert(getJMenuItemPasteAll(), pos ++);
+				popupMenu.insert(new JSeparator(), pos++);
+			}
+			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
+			boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+
+			boolean bSelected = getScrollPaneTable().getSelectedRowCount() > 0;
+			bPastable = bPastable && bSelected;
+
+			if(bSelected){
+				getJMenuItemCopy().setText("Copy 'Initial Guess'");
+				getJMenuItemCopyAll().setText("Copy All 'Initial Guess'");
+				getJMenuItemPaste().setText("Paste 'Initial Guess'");
+				getJMenuItemPasteAll().setText("Paste All 'Initial Guess'");
+			}
+			
+			getJMenuItemPaste().setEnabled(bPastable);
+			getJMenuItemPasteAll().setEnabled(bPastable);
+
+		}
+	}
+	
+	private class IvjEventHandler implements java.awt.event.ActionListener, /*java.awt.event.MouseListener, */java.beans.PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == addButton) {
 				addParameter();
@@ -86,19 +124,19 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 				jMenuItemPaste_ActionPerformed(e);
 			}
 		}
-		public void mouseClicked(java.awt.event.MouseEvent e) {};
-		public void mouseEntered(java.awt.event.MouseEvent e) {};
-		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ParameterMappingPanel.this.getScrollPaneTable()) {
-				popupCopyPaste(e);
-			}
-		};
-		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ParameterMappingPanel.this.getScrollPaneTable()) {
-				popupCopyPaste(e);
-			}
-		};
+//		public void mouseClicked(java.awt.event.MouseEvent e) {};
+//		public void mouseEntered(java.awt.event.MouseEvent e) {};
+//		public void mouseExited(java.awt.event.MouseEvent e) {};
+//		public void mousePressed(java.awt.event.MouseEvent e) {
+//			if (e.getSource() == ParameterMappingPanel.this.getScrollPaneTable()) {
+//				popupCopyPaste(e);
+//			}
+//		};
+//		public void mouseReleased(java.awt.event.MouseEvent e) {
+//			if (e.getSource() == ParameterMappingPanel.this.getScrollPaneTable()) {
+//				popupCopyPaste(e);
+//			}
+//		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ParameterMappingPanel.this && (evt.getPropertyName().equals("parameterEstimationTask"))) {
 				ivjparameterMappingTableModel.setParameterEstimationTask(getParameterEstimationTask());
@@ -406,6 +444,7 @@ private JSortTable getScrollPaneTable() {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjparameterMappingTableModel = new ParameterMappingTableModel(ivjScrollPaneTable);
+			ivjScrollPaneTable.setScrollTableActionManager(new InternalScrollTableActionManager(ivjScrollPaneTable));
 			ivjScrollPaneTable.setModel(ivjparameterMappingTableModel);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -436,7 +475,7 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-	getScrollPaneTable().addMouseListener(ivjEventHandler);
+//	getScrollPaneTable().addMouseListener(ivjEventHandler);
 }
 
 /**

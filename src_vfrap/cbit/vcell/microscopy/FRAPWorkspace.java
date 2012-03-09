@@ -48,13 +48,13 @@ public abstract class FRAPWorkspace
 		return newFrapStudy;
 	}
 	
-	public static FRAPStudy loadFRAPDataFromHDF5File(File inputFile, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	public static FRAPStudy loadFRAPDataFromHDF5File(File inputFile, Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		try {
-			newFrapData = FRAPData.importFRAPDataFromHDF5Data(inputFile, clientTaskStatusSupport);
+			newFrapData = FRAPData.importFRAPDataFromHDF5Data(inputFile, maxIntensity, clientTaskStatusSupport);
 		} catch (Exception e) {
 			throw new Exception(e.getMessage());
 		}

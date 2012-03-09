@@ -89,9 +89,11 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
-    					FRAPStudy newFRAPStudy = null;
-    					
-    					File inFile = new File(fileStr);
+					FRAPStudy newFRAPStudy = null;
+					
+					File inFile = new File(fileStr);
+					if(inFile != null)
+					{
     					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) //.log (vcell log file) 
     					{
 							DataIdentifier[] dataIdentifiers = FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
@@ -133,20 +135,35 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 							}
     					}else if(inFile.getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5))
     					{
-    						if(inFile != null)
-    						{
-    							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromHDF5File(inFile,  this.getClientTaskStatusSupport());
-    							isFileLoaded = true;
-    						}
+    						scalePanel = getScalePanelForLoadingLogFile();
+							int choice = DialogUtils.showComponentOKCancelDialog(LoadFRAPData_SingleFileDescriptor.this.getPanelComponent(), scalePanel, "Input data maximum value (max: 65535) which is used to avoid losing double precision when casting it to short.");
+							if(choice == JOptionPane.OK_OPTION)
+							{
+								Double maxIntensity = null;
+								if(scalePanel.getInputScaleString() != null)
+								{
+									maxIntensity = new Double(scalePanel.getInputScaleString());
+								}
+								newFRAPStudy = FRAPWorkspace.loadFRAPDataFromHDF5File(inFile,  maxIntensity, this.getClientTaskStatusSupport());
+								isFileLoaded = true;
+							}
+							else
+							{
+								throw UserCancelException.CANCEL_GENERIC;
+							}
     					}
     					else //.lsm or other image formatss
     					{
     							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
-    					
-    					//for all loaded file
-    					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+					}
+					else
+					{
+						throw new RuntimeException("Input file is null.");
+					}
+					//for all loaded file
+					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					
     			}
     		};
