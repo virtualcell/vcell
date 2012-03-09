@@ -28,7 +28,9 @@ import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
@@ -385,7 +387,7 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 		SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
 		if (modelObject!=null){
 			int mappedColumnIndex = mappedColumnCount;
-			if (modelObject.equals(ReservedVariable.TIME)){
+			if (modelObject instanceof Model.ReservedSymbol && ((ReservedSymbol)modelObject).isTime()) {
 				mappedColumnIndex = 0;
 			}
 			String origRefDataColumnName = refDataMappingSpecs[i].getReferenceDataColumnName();
@@ -412,7 +414,14 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	if (modelObjectList.size()==1){
 		throw new RuntimeException("reference data was not associated with model, must map time and at least one other column");
 	}
-	if (!modelObjectList.contains(ReservedVariable.TIME)){
+	boolean bFoundTimeVar = false;
+	for (SymbolTableEntry ste : modelObjectList) {
+		if (ste instanceof Model.ReservedSymbol && ((ReservedSymbol)ste).isTime()) {
+			bFoundTimeVar = true;
+			break;
+		}
+	}
+	if (!bFoundTimeVar){
 		throw new RuntimeException("must map time column of reference data to model");
 	}
 

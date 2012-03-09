@@ -11,6 +11,7 @@
 package org.vcell.optimization.gui;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -44,6 +45,8 @@ public SymbolTableEntryTableCellRenderer() {
 			}else if (ste instanceof KineticsParameter){
 				setText(ste.getNameScope().getName()+":"+ste.getName());
 			}else if (ste instanceof ModelParameter){
+				setText(ste.getName());
+			}else if (ste instanceof ReservedVariable) {
 				setText(ste.getName());
 			}else{
 				setText(ste.getNameScope().getAbsoluteScopePrefix()+ste.getName());

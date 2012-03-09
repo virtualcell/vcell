@@ -2186,7 +2186,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(initConcParameter,null);
+						Expression initial = new Expression(getMathSymbol(initConcParameter,null));
 						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
 						equation = new OdeEquation(variable,initial,rate);
 						subDomain.replaceEquation(equation);
