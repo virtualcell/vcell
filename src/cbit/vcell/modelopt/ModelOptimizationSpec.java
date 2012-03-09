@@ -188,7 +188,8 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 	//
 	// add time
 	//
-	Node timeNode = new Node("t",ReservedVariable.TIME);
+	Model model = getSimulationContext().getModel();
+	Node timeNode = new Node("t", model.getTIME());
 	digraph.addNode(timeNode);
 	
 	//
@@ -209,7 +210,7 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 	//
 	// add all model (global) parameters that are not simple constants
 	//
-	ModelParameter[] modelParams = getSimulationContext().getModel().getModelParameters();
+	ModelParameter[] modelParams = model.getModelParameters();
 	for (int i = 0; modelParams!=null && i < modelParams.length; i++){
 		Expression exp = modelParams[i].getExpression();
 		if (exp!=null){
@@ -247,7 +248,7 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 	//
 	// add all reaction parameters that are not simple constants
 	//
-	ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
+	ReactionStep[] reactionSteps = model.getReactionSteps();
 	for (int i = 0; reactionSteps!=null && i < reactionSteps.length; i++){
 		Parameter[] parameters = reactionSteps[i].getKinetics().getKineticsParameters();
 		for (int j = 0; parameters!=null && j < parameters.length; j++){

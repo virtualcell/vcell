@@ -10,6 +10,7 @@
 
 package cbit.vcell.modelopt.gui;
 
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 
@@ -45,6 +46,8 @@ public java.awt.Component getListCellRendererComponent(javax.swing.JList list, O
 				setText(ste.getName());
 			}else if (ste instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 				setText(ste.getNameScope().getName()+":"+ste.getName());
+			}else if (ste instanceof ReservedVariable) {
+				setText(ste.getName());
 			}else{
 				setText(ste.getNameScope().getAbsoluteScopePrefix()+ste.getName());
 			}
