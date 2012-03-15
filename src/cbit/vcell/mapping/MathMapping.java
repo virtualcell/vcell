@@ -25,6 +25,7 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
@@ -51,6 +52,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvFunctionDefinition;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -67,17 +69,19 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.Event.Delay;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
@@ -87,9 +91,6 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -1054,6 +1055,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 	if (ste instanceof SpeciesContext){
 		SpeciesContext sc = (SpeciesContext)ste;
 		SpeciesContextMapping scm = getSpeciesContextMapping(sc);
+		if (scm == null) {
+			throw new RuntimeException("Species '" + sc.getName() + "' is referenced in model but may have been deleted. " +
+					"Find its references in '" + DocumentEditorTreeModel.DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE.getTitle() + "'.");
+		}
 		//
 		// for reactions mapped to a subvolume
 		//
