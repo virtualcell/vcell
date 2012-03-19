@@ -80,8 +80,10 @@ public class OptXmlTags {
 	public static final String ConstraintType_Attr_NonlinearEquality = "nonlinearEquality";
 	public static final String ConstraintType_Attr_NonlinearInequality = "nonlinearInequality";
 
+	public static final String OptimizationResultSet_Tag = "OptimizationResultSet";
 	public static final String OptSolverResultSet_Tag = "optSolverResultSet";
 	public static final String OptSolverResultSetBestObjectiveFunction_Attr = "bestObjectiveFunction";
+	public static final String OptSolverResultSetFunctionEvaluations_Tag = "ObjectiveFunctionEvaluations";
 	public static final String OptSolverResultSetNumObjectiveFunctionEvaluations_Attr = "numObjectiveFunctionEvaluations";
 	public static final String OptSolverResultSetStatus_Attr = "status";
 	public static final String OptSolverResultSetStatus_Attr_Unknown = "unknown";

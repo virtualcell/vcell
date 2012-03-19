@@ -12,7 +12,6 @@ package org.vcell.optimization;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom.Attribute;
@@ -22,7 +21,6 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
-import org.vcell.optimization.OptSolverResultSet.ProfileDistribution;
 
 import cbit.vcell.opt.OptimizationStatus;
 
@@ -59,25 +57,7 @@ public class OptXmlReader {
 		Element bestRunElement = optResultSetElement.getChild(OptXmlTags.bestOptRunResultSet_Tag);		
 		try {			
 			OptRunResultSet bestResultSet = getOptRunResultSet(bestRunElement);
-			ArrayList<ProfileDistribution> pdList = null;
-			Element pdListElement = optResultSetElement.getChild(OptXmlTags.ProfileDistributionList_Tag);
-			if (pdListElement != null) {
-				List<Element> pdElementList = pdListElement.getChildren(OptXmlTags.ProfileDistribution_Tag);
-				pdList = new ArrayList<ProfileDistribution>();
-				for (Element pdElement : pdElementList) {
-					String fixedParamName = pdElement.getAttributeValue(OptXmlTags.ProfileDistribution_FixedParameter_Attr);
-					ArrayList<OptRunResultSet> optRunResultSetList = new ArrayList<OptRunResultSet>();
-					
-					List<Element> optRunElementList = pdElement.getChildren(OptXmlTags.OptRunResultSet_Tag);
-					for (Element optRunElement : optRunElementList) {
-						OptRunResultSet optRun = getOptRunResultSet(optRunElement);
-						optRunResultSetList.add(optRun);
-					}
-					ProfileDistribution pd = new ProfileDistribution(fixedParamName, optRunResultSetList);
-					pdList.add(pd);
-				}
-			}			
-			OptSolverResultSet optResultSet = new OptSolverResultSet(parameterNames, bestResultSet, pdList);
+			OptSolverResultSet optResultSet = new OptSolverResultSet(parameterNames, bestResultSet);
 			return optResultSet;
 		} catch (DataConversionException e){
 			e.printStackTrace(System.out);

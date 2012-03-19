@@ -30,20 +30,26 @@ public class OptimizationResultSet implements java.io.Serializable {
 /**
  * OptimizationResultSet constructor comment.
  */
-public OptimizationResultSet(OptSolverResultSet ors, RowColumnResultSet odeSolverResultSet) {
+public OptimizationResultSet(OptSolverResultSet ors, RowColumnResultSet rcResultSet) {
 	optSolverResultSet = ors;
-	if (odeSolverResultSet!=null){
+	setSolutionFromRowColumnResultSet(rcResultSet);
+}
+
+
+public void setSolutionFromRowColumnResultSet(RowColumnResultSet rcResultSet)
+{
+	if (rcResultSet!=null){
 		try {
-			int numColumns = odeSolverResultSet.getDataColumnCount();
-			int numRows = odeSolverResultSet.getRowCount();
+			int numColumns = rcResultSet.getDataColumnCount();
+			int numRows = rcResultSet.getRowCount();
 			this.fieldSolutionNames = new String[numColumns];
 			fieldSolutionValues = new double[numRows][];
 			for (int i = 0; i < numRows; i++){
 				fieldSolutionValues[i] = new double[numColumns];
 			}
 			for (int i = 0; i < numColumns; i++){
-				fieldSolutionNames[i] = odeSolverResultSet.getDataColumnDescriptions()[i].getName();
-				double[] columnValues = odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(fieldSolutionNames[i]));
+				fieldSolutionNames[i] = rcResultSet.getDataColumnDescriptions()[i].getName();
+				double[] columnValues = rcResultSet.extractColumn(rcResultSet.findColumn(fieldSolutionNames[i]));
 
 				for (int j = 0; j < numRows; j++){
 					fieldSolutionValues[j][i] = columnValues[j];

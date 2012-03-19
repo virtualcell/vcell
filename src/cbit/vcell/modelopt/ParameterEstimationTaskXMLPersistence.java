@@ -9,17 +9,28 @@
  */
 
 package cbit.vcell.modelopt;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
+import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameterType;
+import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
+import org.vcell.optimization.OptSolverResultSet;
+import org.vcell.optimization.OptSolverStatus;
+import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.CommentStringTokenizer;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
@@ -58,6 +69,11 @@ public class ParameterEstimationTaskXMLPersistence {
 	public final static String ReferenceDataModelSymbolAttribute = "referenceDataModelSymbol";
 	public final static String OptimizationSolverSpecTag = "optimizationSolverSpec";
 	public final static String OptimizationSolverTypeAttribute = "optimizationSolverType";
+	public final static String OptimizationListOfParametersTag = "ListOfParameters";
+	public final static String OptimizationParameterTag = "Parameter";
+	public final static String OptimizationParameterNameAttribute = "Name";
+	public final static String OptimizationParameterValueAttribute = "Value";
+	public final static String OptimizationSolverNumOfRunsAttribute = "NumOfRuns";
 
 /**
  * Insert the method's description here.
@@ -195,15 +211,124 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 	//
 	Element optimizationSolverSpecElement = parameterEstimationTaskElement.getChild(OptimizationSolverSpecTag, ns);
 	if (optimizationSolverSpecElement!=null){
-		String optimizationSolverType = optimizationSolverSpecElement.getAttributeValue(OptimizationSolverTypeAttribute);
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(optimizationSolverType);
+		OptimizationSolverSpec optSolverSpec = null;
+		String optimizationSolverTypeName = optimizationSolverSpecElement.getAttributeValue(OptimizationSolverTypeAttribute);
+		
+		//getting parameters
+		Element optimizationSolverParameterList = optimizationSolverSpecElement.getChild(OptimizationListOfParametersTag, ns);
+		if(optimizationSolverParameterList != null)
+		{
+			List<Element> listOfSolverParams = optimizationSolverParameterList.getChildren(OptimizationParameterTag, ns);
+			CopasiOptimizationMethod copasiOptMethod = null;
+			if(listOfSolverParams != null && listOfSolverParams.size() > 0)
+			{
+				List<CopasiOptimizationParameter> copasiSolverParams = new ArrayList<CopasiOptimizationParameter>();
+				for(Element solverParam : listOfSolverParams)
+				{
+					String paramName = solverParam.getAttributeValue(OptimizationParameterNameAttribute);
+					double paramValue = Double.parseDouble(solverParam.getAttributeValue(OptimizationParameterValueAttribute));
+					CopasiOptimizationParameter copasiParam = new CopasiOptimizationParameter(getCopasiOptimizationParameterTypeByName(paramName), paramValue);
+					copasiSolverParams.add(copasiParam);
+				}
+				copasiOptMethod = new CopasiOptimizationMethod(getCopasiOptimizationMethodTypeByName(optimizationSolverTypeName), copasiSolverParams.toArray(new CopasiOptimizationParameter[copasiSolverParams.size()])); 
+			}
+			else //no parameters
+			{
+				copasiOptMethod = new CopasiOptimizationMethod(getCopasiOptimizationMethodTypeByName(optimizationSolverTypeName), new CopasiOptimizationParameter[0]);
+			}
+			optSolverSpec = new OptimizationSolverSpec(copasiOptMethod);
+			//add number of runs attribute
+			String numOfRunsStr = optimizationSolverSpecElement.getAttributeValue(OptimizationSolverNumOfRunsAttribute);
+			if( numOfRunsStr!= null)
+			{
+				int numOfRuns = Integer.parseInt(numOfRunsStr);
+				optSolverSpec.setNumOfRuns(numOfRuns);
+			}
+		}
+		
+		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
+	}
+	if(optimizationSolverSpecElement == null || parameterEstimationTask.getOptimizationSolverSpec() == null) //optimization solver spec is null create a default copasi evolutionary programming
+	{
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(new CopasiOptimizationMethod(CopasiOptimizationMethodType.EvolutionaryProgram));
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 	}
 
-	
+	//read optimization solver result set
+	Element optimizationResultSetElement = parameterEstimationTaskElement.getChild(OptXmlTags.OptimizationResultSet_Tag, ns);
+	if(optimizationResultSetElement != null)
+	{
+		OptimizationResultSet optResultSet = null;
+		//read optsolverResultSet
+		if(optimizationResultSetElement.getChild(OptXmlTags.bestOptRunResultSet_Tag, ns) != null)
+		{
+			Element optSolverResultSetElement = optimizationResultSetElement.getChild(OptXmlTags.bestOptRunResultSet_Tag, ns);
+			OptSolverResultSet optSolverResultSet = null;
+			//get best parameters, best func value, number of evaluations and construct an optRunResultSet
+			Element paramListElement = optSolverResultSetElement.getChild(OptimizationListOfParametersTag, ns);
+			OptRunResultSet optRunResultSet = null;
+			List<String> paramNames = new ArrayList<String>();
+			List<Double> paramValues = new ArrayList<Double>();
+			if(paramListElement != null && paramListElement.hasChildren())
+			{
+				List<Element> paramElements = paramListElement.getChildren(OptimizationParameterTag, ns);
+				if(paramElements != null)
+				{
+					for(Element paramElement : paramElements)
+					{
+						String paramName = paramElement.getAttributeValue(OptimizationParameterNameAttribute);
+						double paramValue = Double.parseDouble(paramElement.getAttributeValue(OptimizationParameterValueAttribute));
+						paramNames.add(paramName);
+						paramValues.add(paramValue);
+					}
+				}
+			}
+			Element bestFuncValueElement = optSolverResultSetElement.getChild(OptXmlTags.ObjectiveFunction_Tag, ns);
+			double bestFuncValue = Double.parseDouble(bestFuncValueElement.getAttributeValue(OptimizationParameterValueAttribute));
+			Element numEvaluationsElement = optSolverResultSetElement.getChild(OptXmlTags.OptSolverResultSetFunctionEvaluations_Tag, ns);
+			long numEvaluations = Long.parseLong(numEvaluationsElement.getAttributeValue(OptimizationParameterValueAttribute));
+			//change List<Double> to double[]
+			double[] values = new double[paramValues.size()];
+			int index = 0;
+			for(Double value : paramValues)
+			{
+				values[index++] = value;
+			}
+			optRunResultSet = new OptRunResultSet(values, bestFuncValue, numEvaluations, null);
+			//create optSolverResultSet
+			optSolverResultSet = new OptSolverResultSet(paramNames.toArray(new String[paramNames.size()]), optRunResultSet);
+			//create optimization result set
+			optResultSet = new OptimizationResultSet(optSolverResultSet, null);
+		}
+		parameterEstimationTask.setOptimizationResultSet(optResultSet);
+	}
 	return parameterEstimationTask;
 }
 
+
+private static CopasiOptimizationParameterType getCopasiOptimizationParameterTypeByName(String parameterName)
+{
+	for(CopasiOptimizationParameterType paramType : CopasiOptimizationParameterType.values())
+	{
+		if(paramType.getDisplayName().equals(parameterName))
+		{
+			return paramType;
+		}
+	}
+	return null;
+}
+
+private static CopasiOptimizationMethodType getCopasiOptimizationMethodTypeByName(String methodName)
+{
+	for(CopasiOptimizationMethodType methodType : CopasiOptimizationMethodType.values())
+	{
+		if(methodType.getName().equals(methodName))
+		{
+			return methodType;
+		}
+	}
+	return null;
+}
 
 /**
  * Insert the method's description here.
@@ -323,11 +448,71 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	// add OptimizationSolverSpec
 	//
 	if (parameterEstimationTask.getOptimizationSolverSpec()!=null){
-		Element optimizationSolverSpecElement = new Element(OptimizationSolverSpecTag);
-		optimizationSolverSpecElement.setAttribute(OptimizationSolverTypeAttribute,parameterEstimationTask.getOptimizationSolverSpec().getSolverType());
-		parameterEstimationTaskElement.addContent(optimizationSolverSpecElement);
+		OptimizationSolverSpec solverSpec = parameterEstimationTask.getOptimizationSolverSpec();
+		if(solverSpec.getCopasiOptimizationMethod() != null)
+		{
+			CopasiOptimizationMethod copasiOptMethod = solverSpec.getCopasiOptimizationMethod();
+			Element optimizationSolverSpecElement = new Element(OptimizationSolverSpecTag);
+			optimizationSolverSpecElement.setAttribute(OptimizationSolverTypeAttribute, copasiOptMethod.getType().getName());
+			optimizationSolverSpecElement.setAttribute(OptimizationSolverNumOfRunsAttribute, solverSpec.getNumOfRuns()+"");
+			//adding solve parameter list to optimization solver spec
+			CopasiOptimizationParameter[] solverParams = copasiOptMethod.getParameters();
+			if(solverParams != null && solverParams.length > 0)
+			{
+				Element listOfSolverParams = new Element(OptimizationListOfParametersTag);
+				for(CopasiOptimizationParameter solverParam : solverParams)
+				{
+					Element optSolverParam = new Element(OptimizationParameterTag);
+					optSolverParam.setAttribute(OptimizationParameterNameAttribute, solverParam.getType().getDisplayName());
+					optSolverParam.setAttribute(OptimizationParameterValueAttribute, solverParam.getValue()+"");
+					listOfSolverParams.addContent(optSolverParam);
+				}
+				optimizationSolverSpecElement.addContent(listOfSolverParams);
+			}
+					
+			parameterEstimationTaskElement.addContent(optimizationSolverSpecElement);
+		}
 	}	
 	
+	//add optimization solver result set
+	if(parameterEstimationTask.getOptimizationResultSet() != null)
+	{
+		OptimizationResultSet optResultSet = parameterEstimationTask.getOptimizationResultSet();
+		Element optimizationResultSetElement = new Element(OptXmlTags.OptimizationResultSet_Tag);
+		if(optResultSet.getOptSolverResultSet() != null)
+		{
+			OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
+			Element optSolverResultSetElement = new Element(OptXmlTags.bestOptRunResultSet_Tag);
+			//write best parameters
+			String[] paramNames = optSolverResultSet.getParameterNames();
+			double[] bestValues = optSolverResultSet.getBestEstimates();
+			if(paramNames != null && paramNames.length > 0 && bestValues != null && bestValues.length > 0 && paramNames.length == bestValues.length)
+			{
+				Element listOfBestParams = new Element(OptimizationListOfParametersTag);
+				for(int i=0; i<paramNames.length; i++)
+				{
+					Element resultParam = new Element(OptimizationParameterTag);
+					resultParam.setAttribute(OptimizationParameterNameAttribute, paramNames[i]);
+					resultParam.setAttribute(OptimizationParameterValueAttribute, bestValues[i]+"");
+					listOfBestParams.addContent(resultParam);
+				}
+				optSolverResultSetElement.addContent(listOfBestParams);
+			}
+			//write objective function value
+			double objectiveFuncValue = optSolverResultSet.getLeastObjectiveFunctionValue();
+			Element objFuncElement = new Element(OptXmlTags.ObjectiveFunction_Tag);
+			objFuncElement.setAttribute(OptimizationParameterValueAttribute, objectiveFuncValue+"");
+			optSolverResultSetElement.addContent(objFuncElement);
+			//write num function evaluations
+			long numFuncEvaluations = optSolverResultSet.getObjFunctionEvaluations();
+			Element numFuncEvaluationsElement = new Element(OptXmlTags.OptSolverResultSetFunctionEvaluations_Tag);
+			numFuncEvaluationsElement.setAttribute(OptimizationParameterValueAttribute, numFuncEvaluations+"");
+			optSolverResultSetElement.addContent(numFuncEvaluationsElement);
+			
+			optimizationResultSetElement.addContent(optSolverResultSetElement);
+		}
+		parameterEstimationTaskElement.addContent(optimizationResultSetElement);
+	}
 	return parameterEstimationTaskElement;
 }
 

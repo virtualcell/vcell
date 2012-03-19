@@ -1559,6 +1559,10 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 				}
 			}
 		}
+		else // have more than one analysis task 
+		{
+			simulationcontext.addContent( getXML(param.getAnalysisTasks()) );
+		}
 	}
 	
 	// Add (Bio)events

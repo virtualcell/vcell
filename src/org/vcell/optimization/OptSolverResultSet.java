@@ -19,7 +19,8 @@ public class OptSolverResultSet implements java.io.Serializable {
 	private OptRunResultSet bestRunResultSet = null;
 	private String[] fieldParameterNames = null;
 	private ArrayList<ProfileDistribution> profileDistributionList = new ArrayList<ProfileDistribution>();
-	//nested class
+	
+	//nested class (The class is currently only used by VirtualFRAP)
 	public static class ProfileDistribution {
 		String fixedParamName;
 		ArrayList<OptRunResultSet> optRunResultSetList = new ArrayList<OptRunResultSet>(); 

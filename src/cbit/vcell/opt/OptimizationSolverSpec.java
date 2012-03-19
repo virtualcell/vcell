@@ -162,6 +162,11 @@ public final CopasiOptimizationMethod getCopasiOptimizationMethod() {
 	return copasiOptimizationMethod;
 }
 
+public final void setCopasiOptimizationMethod(CopasiOptimizationMethod copasiOptimizationMethod)
+{
+	this.copasiOptimizationMethod = copasiOptimizationMethod;
+}
+
 public int getNumOfRuns() {
 	return numOfRuns;
 }
