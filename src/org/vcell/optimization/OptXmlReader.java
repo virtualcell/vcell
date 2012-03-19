@@ -79,7 +79,7 @@ public class OptXmlReader {
 			parameterValues[count] = Double.parseDouble(parameterElement.getAttributeValue(OptXmlTags.ParameterBestValue_Attr));
 			count++;
 		}
-		int statusID = OptSolverStatus.statusFromXMLName(status);
+		int statusID = OptimizationStatus.statusFromXMLName(status);
 		String statusMessage = null;
 		if (statusMessageAttr!=null){
 			statusMessage = statusMessageAttr.getValue();
