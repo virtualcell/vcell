@@ -12,7 +12,6 @@ package org.vcell.optimization.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -28,7 +27,6 @@ import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -43,21 +41,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.optimization.ConfidenceInterval;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptProgressType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
-import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.OptSolverResultSet.ProfileDistribution;
-import org.vcell.optimization.ProfileSummaryData;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DescriptiveStatistics;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -66,25 +58,17 @@ import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.plot.Plot2D;
-import cbit.plot.PlotData;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.InconsistentDomainException;
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.modelopt.ParameterMappingSpec;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -300,14 +284,19 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 	public static class OptimizationSolutionParameter {
 		private String name;
+		private Double modelValue;
 		private double value;
-		private OptimizationSolutionParameter(String name, double value) {
+		private OptimizationSolutionParameter(String name, Double modelValue, double value) {
 			super();
 			this.name = name;
+			this.modelValue = modelValue;
 			this.value = value;
 		}
 		public final String getName() {
 			return name;
+		}
+		public final Double getModelValue() {
+			return (modelValue == null)? null:modelValue;
 		}
 		public final double getValue() {
 			return value;
@@ -373,14 +362,27 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	
 	private static class OptimizationSolutionParameterTableModel extends VCellSortTableModel<OptimizationSolutionParameter> {
 		static final int COLUMN_Parameter = 0;
-		static final int COLUMN_Value = 1;
-		
+		static final int COLUMN_ModelValue = 1;
+		static final int COLUMN_Value = 2;
+				
 		public OptimizationSolutionParameterTableModel(ScrollTable table) {
-			super(table, new String[] {"Parameter", "Value"});
+			super(table, new String[] {"Parameter", "Model Value", "Best Estimate"});
 		}
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			OptimizationSolutionParameter cop = getValueAt(rowIndex);
-			return columnIndex == COLUMN_Parameter ? cop.getName() : cop.getValue();
+			if(columnIndex == COLUMN_Parameter)
+			{
+				return cop.getName();
+			}
+			else if(columnIndex == COLUMN_ModelValue)
+			{
+				return (cop.getModelValue() == null)?null:cop.getModelValue();
+			}
+			else if(columnIndex == COLUMN_Value)
+			{
+				return cop.getValue();
+			}
+			return null;
 		}
 
 		@Override
@@ -399,14 +401,29 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
-			return columnIndex == COLUMN_Value ? Double.class : String.class;
+			return columnIndex == COLUMN_Parameter ? String.class : Double.class;
 		}
 		
-		public void refresh(OptimizationResultSet optimizationResultSet) {
+		public void refresh(OptimizationResultSet optimizationResultSet, ParameterEstimationTask paramEstTask) {
 			ArrayList<OptimizationSolutionParameter> list = new ArrayList<OptimizationSolutionParameter>();
 			int len = optimizationResultSet.getOptSolverResultSet().getParameterNames().length;
 			for (int i = 0; i < len; i ++) {
-				list.add(new OptimizationSolutionParameter(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i], optimizationResultSet.getOptSolverResultSet().getBestEstimates()[i]));
+				Double modelValue = null;
+				if(paramEstTask != null && paramEstTask.getModelOptimizationSpec() != null && 
+				   paramEstTask.getModelOptimizationSpec().getParameterMappingSpecs() != null && paramEstTask.getModelOptimizationSpec().getParameterMappingSpecs().length > 0 &&
+				   paramEstTask.getModelParameterByMathName(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i]) != null)
+				{
+					try {
+						
+						Parameter modelParameter = paramEstTask.getModelParameterByMathName(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i]);
+						modelValue = new Double(modelParameter.getConstantValue());
+						
+					} catch (ExpressionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				list.add(new OptimizationSolutionParameter(optimizationResultSet.getOptSolverResultSet().getParameterNames()[i], modelValue, optimizationResultSet.getOptSolverResultSet().getBestEstimates()[i]));
 			}
 			setData(list);
 		}
@@ -474,11 +491,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				saveSolutionAsNewSimulation();
 			if (e.getSource() == getSolveButton()) 
 				solve();
-			else if (e.getSource() == getEvaluateConfidenceIntervalButton()) { 
-				evaluateConfidenceInterval(); 
-			} else if (e.getSource() == getOptimizationMethodComboBox()) { 
+			else if (e.getSource() == getOptimizationMethodComboBox()) { 
 				optimizationMethodComboBox_ActionPerformed();	
-			} else if (e.getSource() == helpButton) {
+			}else if (e.getSource() == getNumberOfRunComboBox()) {
+				saveNumberOfRuns();
+			}else if (e.getSource() == helpButton) {
 				showCopasiMethodHelp();
 			} else if (e.getSource() == copasiLinkLabel){
 				try {
@@ -510,6 +527,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	public ParameterEstimationRunTaskPanel() {
 		super();
 		initialize();
+	}
+	
+	public ParameterEstimationTask getParameterEstimationTask()
+	{
+		return parameterEstimationTask;
 	}
 	
 	public void showCopasiMethodHelp() 
@@ -573,7 +595,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				return this;
 			}
 		});
-		
+		getNumberOfRunComboBox().addActionListener(eventHandler);
 		getSolveButton().addActionListener(eventHandler);
 		helpButton.addActionListener(eventHandler);
 		getPlotButton().addActionListener(eventHandler);
@@ -917,10 +939,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private void optimizationResultSet_This() 
 	{
 		OptimizationResultSet optResultSet = parameterEstimationTask.getOptimizationResultSet();
-		optimizationSolutionParameterTableModel.refresh(optResultSet);
+		optimizationSolutionParameterTableModel.refresh(optResultSet, parameterEstimationTask);
 		optimizationTaskSummaryTableModel.refresh(optResultSet);
- 		String message = displayResults(optResultSet);
-		parameterEstimationTask.appendSolverMessageText("\n"+message);
+		if(optResultSet.getOptSolverResultSet().getOptimizationStatus()!= null)
+		{
+			String message = displayResults(optResultSet);
+			parameterEstimationTask.appendSolverMessageText("\n"+message);
+		}
 		if (optResultSet!=null){
 			getSaveSolutionAsNewSimButton().setEnabled(true);
 			getPlotButton().setEnabled(true);
@@ -951,6 +976,23 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			newValue.getOptSolverCallbacks().addPropertyChangeListener(eventHandler);
 		}
 		getOptimizeResultsTextPane().setText(this.getSolverMessageText());
+		// set table data
+		if(parameterEstimationTask.getOptimizationSolverSpec() != null)
+		{
+			if(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod() != null)
+			{
+				optimizationMethodComboBox.setSelectedItem(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod().getType());
+				optimizationMethodParameterTableModel.setCopasiOptimizationMethod(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod());
+			}
+			numberOfRunComboBox.setSelectedItem(parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns() + "");
+		}
+		//set result table data
+		if(parameterEstimationTask.getOptimizationResultSet() != null && parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet() != null &&
+		   parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet().getBestEstimates() != null && 
+		   parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet().getBestEstimates().length > 0)
+		{
+			optimizationResultSet_This();
+		}
 	}
 	
 	/**
@@ -959,6 +1001,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private void optimizationMethodComboBox_ActionPerformed() {
 		CopasiOptimizationMethodType methodType = (CopasiOptimizationMethodType)getOptimizationMethodComboBox().getSelectedItem();
 		CopasiOptimizationMethod com = new CopasiOptimizationMethod(methodType);
+		if(parameterEstimationTask != null && parameterEstimationTask.getOptimizationSolverSpec() != null)
+		{
+			if(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod() == null || 
+			   !parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod().getType().getDisplayName().equals(methodType.getDisplayName()))
+			{
+				parameterEstimationTask.getOptimizationSolverSpec().setCopasiOptimizationMethod(com);
+			}
+		}
 		optimizationMethodParameterTableModel.setCopasiOptimizationMethod(com);
 		if(methodType.isStochasticMethod())
 		{
@@ -972,33 +1022,12 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 	}
 
-	private void evaluateConfidenceInterval() {
-		ProfileSummaryData[] summaryData = null;
-		try {
-			summaryData = getSummaryFromOptSolverResultSet(parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet());
-		} catch (Exception e) {
-			DialogUtils.showErrorDialog(this, e.getMessage());
-			e.printStackTrace();
-		}
-		//put plotpanes of different parameters' profile likelihoods into a base panel
-		JPanel basePanel= new JPanel();
-		basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
-		for(ProfileSummaryData aSumData : summaryData)
+	private void saveNumberOfRuns() {
+		int numOfRuns = Integer.parseInt((String)(getNumberOfRunComboBox().getSelectedItem()));
+		if(parameterEstimationTask != null && parameterEstimationTask.getOptimizationSolverSpec() != null)
 		{
-			ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-			plotPanel.setProfileSummaryData(aSumData);
-			plotPanel.setBorder(new EtchedBorder());
-			
-			ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, aSumData.getParamName());
-			basePanel.add(profileDataPanel);
+			parameterEstimationTask.getOptimizationSolverSpec().setNumOfRuns(numOfRuns);
 		}
-		JScrollPane scrollPane = new JScrollPane(basePanel);
-		scrollPane.setAutoscrolls(true);
-		scrollPane.setPreferredSize(new Dimension(620, 600));
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		//show plots in a dialog
-		DialogUtils.showComponentCloseDialog(this, scrollPane, "Profile Likelihood of Parameters");
 	}
 	
 	private void solve() throws NumberFormatException{
@@ -1061,177 +1090,6 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, setResultTask}, getRunStatusDialog(), true, true, true, null, false);
 	}
 	
-	private ProfileSummaryData[] getSummaryFromOptSolverResultSet(OptSolverResultSet osrs) throws MappingException, MathException, MatrixException, ExpressionException, ModelException 
-	{
-		ProfileSummaryData[] summaryData = null;
-		ArrayList<ProfileDistribution> profileDistributionList = osrs.getProfileDistributionList();
-		if(profileDistributionList != null && profileDistributionList.size() > 0)
-		{
-			//get parameter mapping specs from which can we have lower and upper bound
-			SimulationContext simulationContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			StructureMapping structureMapping = simulationContext.getGeometryContext().getStructureMappings()[0];
-			ParameterMappingSpec[] parameterMappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpecs();
-			MathMapping mathMapping = simulationContext.createNewMathMapping();
-			summaryData = new ProfileSummaryData[profileDistributionList.size()];
-			for(int k=0; k < profileDistributionList.size(); k++)
-			{
-				ProfileDistribution profileDistribution = profileDistributionList.get(k);
-				String fixedParamName = profileDistribution.getFixedParamName();
-				ParameterMappingSpec fixedParamMappingSpec = null;
-				for (ParameterMappingSpec pms : parameterMappingSpecs) {
-					if (pms.isSelected()) {
-						String mathSymbol = mathMapping.getMathSymbol(pms.getModelParameter(),structureMapping.getGeometryClass());
-						if (mathSymbol.equals(fixedParamName)) {
-							fixedParamMappingSpec = pms;
-							break;
-						}
-					}
-				}
-				if(fixedParamMappingSpec == null)
-				{
-					throw new MappingException("Can not find parameter " + fixedParamName);
-				}
-				int paramValueIdx = osrs.getFixedParameterIndex(fixedParamName);
-				if(paramValueIdx > -1)
-				{
-					ArrayList<OptSolverResultSet.OptRunResultSet> optRunRSList= profileDistribution.getOptRunResultSetList();
-					double[] paramValArray = new double[optRunRSList.size()];
-					double[] errorArray = new double[optRunRSList.size()];
-					//profile likelihood curve
-					for(int i=0; i<optRunRSList.size(); i++)
-					{
-						paramValArray[i] = Math.log10(optRunRSList.get(i).getParameterValues()[paramValueIdx]);//TODO: not sure if the paramvalue is calcualted by log10(). 
-						errorArray[i] = optRunRSList.get(i).getObjectiveFunctionValue();
-					}
-					PlotData dataPlot = new PlotData(paramValArray, errorArray);
-					//get confidence interval line
-					//make array copy in order to not change the data orders afte the sorting
-					double[] paramValArrayCopy = new double[paramValArray.length];
-					System.arraycopy(paramValArray, 0, paramValArrayCopy, 0, paramValArray.length);
-					double[] errorArrayCopy = new double[errorArray.length];
-					System.arraycopy(errorArray, 0, errorArrayCopy, 0, errorArray.length);
-					DescriptiveStatistics paramValStat = DescriptiveStatistics.CreateBasicStatistics(paramValArrayCopy);
-					DescriptiveStatistics errorStat = DescriptiveStatistics.CreateBasicStatistics(errorArrayCopy);
-					double[] xArray = new double[2];
-					double[][] yArray = new double[ConfidenceInterval.NUM_CONFIDENCE_LEVELS][2];
-					//get confidence level plot lines
-					xArray[0] = paramValStat.getMin() -  (Math.abs(paramValStat.getMin()) * 0.2);
-					xArray[1] = paramValStat.getMax() + (Math.abs(paramValStat.getMax()) * 0.2) ;
-					for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-					{
-						yArray[i][0] = errorStat.getMin() + ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-						yArray[i][1] = yArray[i][0];
-					}
-					PlotData confidence80Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_80]);
-					PlotData confidence90Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_90]);
-					PlotData confidence95Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_95]);
-					PlotData confidence99Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_99]);
-					//generate plot2D data
-					Plot2D plots = new Plot2D(null,new String[] {"profile Likelihood Data", "80% confidence", "90% confidence", "95% confidence", "99% confidence"}, 
-							                  new PlotData[] {dataPlot, confidence80Plot, confidence90Plot, confidence95Plot, confidence99Plot},
-							                  new String[] {"Profile likelihood of " + fixedParamName, "Log base 10 of "+fixedParamName, "Profile Likelihood"}, 
-							                  new boolean[] {true, true, true, true, true});
-					//get the best parameter for the minimal error
-					int minErrIndex = -1;
-					for(int i=0; i<errorArray.length; i++)
-					{
-						if(errorArray[i] == errorStat.getMin())
-						{
-							minErrIndex = i;
-							break;
-						}
-					}
-					double bestParamVal = Math.pow(10,paramValArray[minErrIndex]);
-					//find confidence interval points
-					ConfidenceInterval[] intervals = new ConfidenceInterval[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-					//half loop through the errors(left side curve)
-					int[] smallLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
-					int[] bigLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-					for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-					{
-						smallLeftIdx[i] = -1;
-						bigLeftIdx[i] = -1;
-						for(int j=1; j < minErrIndex+1 ; j++)//loop from bigger error to smaller error
-						{
-							if((errorArray[j] < (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])) &&
-							   (errorArray[j-1] > (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])))
-							{
-								smallLeftIdx[i]= j-1;
-								bigLeftIdx[i]=j;
-								break;
-							}
-						}
-					}
-					//another half loop through the errors(right side curve)
-					int[] smallRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
-					int[] bigRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
-					for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-					{
-						smallRightIdx[i] = -1;
-						bigRightIdx[i] = -1;
-						for(int j=(minErrIndex+1); j<errorArray.length; j++)//loop from bigger error to smaller error
-						{
-							if((errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) < errorArray[j] &&
-							   (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) > errorArray[j-1])
-							{
-								smallRightIdx[i]= j-1;
-								bigRightIdx[i]=j;
-								break;
-							}
-						}
-					}
-					//calculate intervals 
-					for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
-					{
-						double lowerBound = Double.NEGATIVE_INFINITY;
-						boolean bLowerBoundOpen = true;
-						double upperBound = Double.POSITIVE_INFINITY;
-						boolean bUpperBoundOpen = true;
-						if(smallLeftIdx[i] == -1 && bigLeftIdx[i] == -1)//no lower bound
-						{
-							
-							lowerBound = fixedParamMappingSpec.getLow();//parameter LowerBound;
-							bLowerBoundOpen = false;
-						}
-						else if(smallLeftIdx[i] != -1 && bigLeftIdx[i] != -1)//there is a lower bound
-						{
-							//x=x1+(x2-x1)*(y-y1)/(y2-y1);
-							double x1 = paramValArray[smallLeftIdx[i]];
-							double x2 = paramValArray[bigLeftIdx[i]];
-							double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-							double y1 = errorArray[smallLeftIdx[i]];
-							double y2 = errorArray[bigLeftIdx[i]];
-							lowerBound = x1+(x2-x1)*(y-y1)/(y2-y1);
-							lowerBound = Math.pow(10,lowerBound);
-							bLowerBoundOpen = false;
-						}
-						if(smallRightIdx[i] == -1 && bigRightIdx[i] == -1)//no upper bound
-						{
-							upperBound = fixedParamMappingSpec.getHigh();//parameter UpperBound;
-							bUpperBoundOpen = false;
-						}
-						else if(smallRightIdx[i] != -1 && bigRightIdx[i] != -1)//there is a upper bound
-						{
-							//x=x1+(x2-x1)*(y-y1)/(y2-y1);
-							double x1 = paramValArray[smallRightIdx[i]];
-							double x2 = paramValArray[bigRightIdx[i]];
-							double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
-							double y1 = errorArray[smallRightIdx[i]];
-							double y2 = errorArray[bigRightIdx[i]];
-							upperBound = x1+(x2-x1)*(y-y1)/(y2-y1);
-							upperBound = Math.pow(10,upperBound);
-							bUpperBoundOpen = false;
-						}
-						intervals[i] = new ConfidenceInterval(lowerBound, bLowerBoundOpen, upperBound, bUpperBoundOpen);
-					}
-					
-					summaryData[k] =  new ProfileSummaryData(plots, bestParamVal, intervals, fixedParamName);
-				}
-			}
-	    }
-		return summaryData;
-	}
-
 	private void plot() {
 		try {
 			java.util.Vector<DataSource> dataSourceList = new java.util.Vector<DataSource>();
@@ -1255,6 +1113,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}
 	
 			ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
+
 			if (odeSolverResultSet!=null){
 				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("EST", odeSolverResultSet));
 				if (mappingSpecs != null) {
@@ -1277,11 +1136,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			multisourcePlotPane.select(nameArray);
 	
 			DialogUtils.showComponentCloseDialog(JOptionPane.getFrameForComponent(this), multisourcePlotPane, "Data Plot");
-		}catch (ExpressionException e){
+		}catch (Exception e){
 			e.printStackTrace(System.out);
-		} catch (InconsistentDomainException e) {
-			e.printStackTrace(System.out);
-		}
+		} 
 	}
 
 	private void saveSolutionAsNewSimulation() {
