@@ -85,12 +85,12 @@ public class CopasiOptimizationSolver {
 		private CopasiOptimizationParameterType type;
 		private double value;
 		
-		CopasiOptimizationParameter(CopasiOptimizationParameterType type, double dv) {
+		public CopasiOptimizationParameter(CopasiOptimizationParameterType type, double dv) {
 			this.type = type;
 			value = dv;
 		}
 
-		CopasiOptimizationParameter(CopasiOptimizationParameter anotherParameter) {
+		public CopasiOptimizationParameter(CopasiOptimizationParameter anotherParameter) {
 			this.type = anotherParameter.type;
 			value = anotherParameter.value;
 		}
@@ -135,6 +135,13 @@ public class CopasiOptimizationSolver {
 				realParameters[i] = new CopasiOptimizationParameter(defaultParameters[i]);
 			}
 		}
+		
+		public CopasiOptimizationMethod(CopasiOptimizationMethodType type, CopasiOptimizationParameter[] solverParams)
+		{
+			this.type = type;
+			realParameters = solverParams;
+		}
+		
 		public final CopasiOptimizationMethodType getType() {
 			return type;
 		}
@@ -332,34 +339,10 @@ public class CopasiOptimizationSolver {
 			System.out.println(inputXML);
 			String optResultsXML = solve(inputXML, optSolverCallbacks);
 			OptSolverResultSet newOptResultSet = OptXmlReader.getOptimizationResultSet(optResultsXML);
-			//create a temp simulation based on math description
-			Simulation simulation = new Simulation(parameterEstimationTask.getSimulationContext().getMathDescription());
-			
+			//get ode solution by best estimates
 			String[] parameterNames = newOptResultSet.getParameterNames();
 			double[] parameterVals = newOptResultSet.getBestEstimates();
-			ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
-			double[] times = refData.getDataByColumn(0);
-			double endTime = times[times.length-1];
-			ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
-			//set simulation ending time and output interval
-			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
-			simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
-			//set parameters as math overrides
-			MathOverrides mathOverrides = simulation.getMathOverrides();
-			for (int i = 0; i < parameterNames.length; i++){
-				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterVals[i])));
-			}
-			//get input model string
-			StringWriter stringWriter = new StringWriter();
-			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
-			idaFileWriter.write();
-			stringWriter.close();
-			StringBuffer buffer = stringWriter.getBuffer();
-			String idaInputString = buffer.toString();
-			
-			RowColumnResultSet rcResultSet = null;
-			NativeIDASolver nativeIDASolver = new NativeIDASolver();
-			rcResultSet = nativeIDASolver.solve(idaInputString);
+			RowColumnResultSet rcResultSet = parameterEstimationTask.getRowColumnRestultSetByBestEstimations(parameterNames, parameterVals);
 			
 			OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
 			return optResultSet;

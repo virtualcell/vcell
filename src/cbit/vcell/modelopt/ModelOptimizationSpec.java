@@ -42,7 +42,6 @@ import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
@@ -597,11 +596,6 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 
 	ParameterMappingSpec[] newParameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	
-	java.util.ArrayList<Issue> issueList = new java.util.ArrayList<Issue>();
-	getSimulationContext().gatherIssues(issueList);
-	getSimulationContext().getModel().gatherIssues(issueList);
-	Issue[] issues = (Issue[])BeanUtils.getArray(issueList,Issue.class);
-	
 	for (int i = 0; i < newParameterMappingSpecs.length; i++){
 		newParameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
 		//check if parameter mapping spec already exist
@@ -620,16 +614,9 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 		}
 		else //not found
 		{
-			for (int j = 0; j < issues.length; j++){
-				if (issues[j].getSource() == modelParameters[i]){
-					if (issues[j] instanceof SimpleBoundsIssue){
-						SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
-						net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
-						newParameterMappingSpecs[i].setLow(bounds.lo());
-						newParameterMappingSpecs[i].setHigh(bounds.hi());
-					}
-				}
-			}
+			double modelValue = modelParameters[i].getConstantValue();
+			newParameterMappingSpecs[i].setLow(modelValue * 0.1);//set lower bound as 10% or the model value
+			newParameterMappingSpecs[i].setHigh(modelValue * 10);//set upper bound as 10 times of the model value
 		}
 	}
 	try {
@@ -789,7 +776,7 @@ public int getReferenceDataTimeColumnIndex() {
 	if (mappingSpecs != null) {
 		for (int i = 0; i < mappingSpecs.length; i ++) {
 			SymbolTableEntry modelObject = mappingSpecs[i].getModelObject();
-			if (modelObject != null && (modelObject.equals(ReservedVariable.TIME))) {
+			if (modelObject != null && (modelObject.equals(parameterEstimationTask.getSimulationContext().getModel().getTIME()))) {
 				timeIndex = i;
 				break;
 			}

@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
@@ -59,15 +61,15 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class ParameterMappingPanel extends javax.swing.JPanel {
-	private JSortTable ivjScrollPaneTable = null;
-	private ParameterMappingTableModel ivjparameterMappingTableModel = null;
+	private JSortTable parameterMappingTable = null;
+	private ParameterMappingTableModel parameterMappingTableModel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ParameterEstimationTask fieldParameterEstimationTask = null;
-	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
-	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
-	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
-	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
-	private javax.swing.JPopupMenu ivjJPopupMenuCopyPaste = null;
+	private JMenuItem copyMenuItem = null;
+	private JMenuItem copyAllMenuItem = null;
+	private JMenuItem pasteMenuItem = null;
+	private JMenuItem pasteAllMenuItem = null;
+	private JPopupMenu copyPastePopupMenu = null;
 	private JButton addButton;
 	private JButton deleteButton;
 
@@ -139,7 +141,7 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 //		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ParameterMappingPanel.this && (evt.getPropertyName().equals("parameterEstimationTask"))) {
-				ivjparameterMappingTableModel.setParameterEstimationTask(getParameterEstimationTask());
+				parameterMappingTableModel.setParameterEstimationTask(getParameterEstimationTask());
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -162,7 +164,7 @@ public ParameterMappingPanel() {
 public void deleteParameter() {
 	ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
 	for (int row: getScrollPaneTable().getSelectedRows()) {
-		ParameterMappingSpec pms = ivjparameterMappingTableModel.getValueAt(row);
+		ParameterMappingSpec pms = parameterMappingTableModel.getValueAt(row);
 		list.add(pms);
 	}
 	for (ParameterMappingSpec pms : list) {
@@ -338,16 +340,16 @@ public void addParameter() {
  * @return javax.swing.JMenuItem
  */
 private javax.swing.JMenuItem getJMenuItemCopy() {
-	if (ivjJMenuItemCopy == null) {
+	if (copyMenuItem == null) {
 		try {
-			ivjJMenuItemCopy = new javax.swing.JMenuItem();
-			ivjJMenuItemCopy.setName("JMenuItemCopy");
-			ivjJMenuItemCopy.setText("Copy");
+			copyMenuItem = new javax.swing.JMenuItem();
+			copyMenuItem.setName("JMenuItemCopy");
+			copyMenuItem.setText("Copy");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemCopy;
+	return copyMenuItem;
 }
 
 
@@ -356,16 +358,16 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
  * @return javax.swing.JMenuItem
  */
 private javax.swing.JMenuItem getJMenuItemCopyAll() {
-	if (ivjJMenuItemCopyAll == null) {
+	if (copyAllMenuItem == null) {
 		try {
-			ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
-			ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
-			ivjJMenuItemCopyAll.setText("Copy All");
+			copyAllMenuItem = new javax.swing.JMenuItem();
+			copyAllMenuItem.setName("JMenuItemCopyAll");
+			copyAllMenuItem.setText("Copy All");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemCopyAll;
+	return copyAllMenuItem;
 }
 
 
@@ -374,16 +376,16 @@ private javax.swing.JMenuItem getJMenuItemCopyAll() {
  * @return javax.swing.JMenuItem
  */
 private javax.swing.JMenuItem getJMenuItemPaste() {
-	if (ivjJMenuItemPaste == null) {
+	if (pasteMenuItem == null) {
 		try {
-			ivjJMenuItemPaste = new javax.swing.JMenuItem();
-			ivjJMenuItemPaste.setName("JMenuItemPaste");
-			ivjJMenuItemPaste.setText("Paste");
+			pasteMenuItem = new javax.swing.JMenuItem();
+			pasteMenuItem.setName("JMenuItemPaste");
+			pasteMenuItem.setText("Paste");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemPaste;
+	return pasteMenuItem;
 }
 
 
@@ -392,16 +394,16 @@ private javax.swing.JMenuItem getJMenuItemPaste() {
  * @return javax.swing.JMenuItem
  */
 private javax.swing.JMenuItem getJMenuItemPasteAll() {
-	if (ivjJMenuItemPasteAll == null) {
+	if (pasteAllMenuItem == null) {
 		try {
-			ivjJMenuItemPasteAll = new javax.swing.JMenuItem();
-			ivjJMenuItemPasteAll.setName("JMenuItemPasteAll");
-			ivjJMenuItemPasteAll.setText("Paste All");
+			pasteAllMenuItem = new javax.swing.JMenuItem();
+			pasteAllMenuItem.setName("JMenuItemPasteAll");
+			pasteAllMenuItem.setText("Paste All");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemPasteAll;
+	return pasteAllMenuItem;
 }
 
 
@@ -409,20 +411,20 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
  * Return the JPopupMenuCopyPaste property value.
  * @return javax.swing.JPopupMenu
  */
-private javax.swing.JPopupMenu getJPopupMenuCopyPaste() {
-	if (ivjJPopupMenuCopyPaste == null) {
+private JPopupMenu getJPopupMenuCopyPaste() {
+	if (copyPastePopupMenu == null) {
 		try {
-			ivjJPopupMenuCopyPaste = new javax.swing.JPopupMenu();
-			ivjJPopupMenuCopyPaste.setName("JPopupMenuCopyPaste");
-			ivjJPopupMenuCopyPaste.add(getJMenuItemCopy());
-			ivjJPopupMenuCopyPaste.add(getJMenuItemCopyAll());
-			ivjJPopupMenuCopyPaste.add(getJMenuItemPaste());
-			ivjJPopupMenuCopyPaste.add(getJMenuItemPasteAll());
+			copyPastePopupMenu = new javax.swing.JPopupMenu();
+			copyPastePopupMenu.setName("JPopupMenuCopyPaste");
+			copyPastePopupMenu.add(getJMenuItemCopy());
+			copyPastePopupMenu.add(getJMenuItemCopyAll());
+			copyPastePopupMenu.add(getJMenuItemPaste());
+			copyPastePopupMenu.add(getJMenuItemPasteAll());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPopupMenuCopyPaste;
+	return copyPastePopupMenu;
 }
 
 /**
@@ -439,18 +441,18 @@ public ParameterEstimationTask getParameterEstimationTask() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 private JSortTable getScrollPaneTable() {
-	if (ivjScrollPaneTable == null) {
+	if (parameterMappingTable == null) {
 		try {
-			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
-			ivjparameterMappingTableModel = new ParameterMappingTableModel(ivjScrollPaneTable);
-			ivjScrollPaneTable.setScrollTableActionManager(new InternalScrollTableActionManager(ivjScrollPaneTable));
-			ivjScrollPaneTable.setModel(ivjparameterMappingTableModel);
+			parameterMappingTable = new JSortTable();
+			parameterMappingTable.setName("ScrollPaneTable");
+			parameterMappingTableModel = new ParameterMappingTableModel(parameterMappingTable);
+			parameterMappingTable.setScrollTableActionManager(new InternalScrollTableActionManager(parameterMappingTable));
+			parameterMappingTable.setModel(parameterMappingTableModel);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjScrollPaneTable;
+	return parameterMappingTable;
 }
 
 /**
@@ -561,7 +563,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			);
 			sb.append("\"Parameter Name\"\t\""+(bInitialGuess?"Initial Guess":"Solution")+"\"\n");
 			for(int i=0;i<rows.length;i+= 1){
-				ParameterMappingSpec pms = ivjparameterMappingTableModel.getValueAt(rows[i]);
+				ParameterMappingSpec pms = parameterMappingTableModel.getValueAt(rows[i]);
 				parameterMappingSpecs[i] = pms;
 				primarySymbolTableEntriesV.add(pms.getModelParameter());
 				if(msm != null){
@@ -647,7 +649,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				ParameterMappingSpec pms = ivjparameterMappingTableModel.getValueAt(rows[i]);
+				ParameterMappingSpec pms = parameterMappingTableModel.getValueAt(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =

@@ -19,18 +19,15 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ParameterVariable;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
@@ -42,9 +39,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.util.RowColumnResultSet;
 /**
@@ -92,20 +86,20 @@ public void applySolutionToMathOverrides(Simulation simulation, OptimizationResu
 			throw new RuntimeException("couldn't generate math to map parameters to simulation");
 		}
 	}
-	ParameterMappingSpec[] parameterMappingSpecs = getModelOptimizationSpec().getParameterMappingSpecs();
-	for (int i = 0; i < parameterMappingSpecs.length; i++){
-		Variable var = mathSymbolMapping.getVariable(parameterMappingSpecs[i].getModelParameter());
-		if (var instanceof Constant){
-			simulation.getMathOverrides().putConstant(new Constant(var.getName(),new Expression(parameterMappingSpecs[i].getCurrent())));
-		}
-	}
+//	ParameterMappingSpec[] parameterMappingSpecs = getModelOptimizationSpec().getParameterMappingSpecs();
+//	for (int i = 0; i < parameterMappingSpecs.length; i++){
+//		Variable var = mathSymbolMapping.getVariable(parameterMappingSpecs[i].getModelParameter());
+//		if (var instanceof Constant){
+//			simulation.getMathOverrides().putConstant(new Constant(var.getName(),new Expression(parameterMappingSpecs[i].getCurrent())));
+//		}
+//	}
 
 	//
 	// if solution exists, override initial guesses with solution
 	//
 	if (optResultSet != null){
-		String[] solutionNames = optResultSet.getSolutionNames();
-		if (solutionNames!=null && solutionNames.length>0){
+//		String[] solutionNames = optResultSet.getSolutionNames();
+		if (optResultSet.getOptSolverResultSet() != null && optResultSet.getOptSolverResultSet().getParameterNames() != null){
 			//
 			// correct math overrides with parameter solution
 			//
@@ -265,78 +259,6 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
  */
 public ModelOptimizationSpec getModelOptimizationSpec() {
 	return modelOptimizationSpec;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/30/2005 3:16:33 PM)
- * @return cbit.vcell.solver.ode.ODESolverResultSet
- * @param optResultSet cbit.vcell.opt.OptimizationResultSet
- * @throws InconsistentDomainException 
- */
-public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws ExpressionException, InconsistentDomainException {
-	if (optResultSet==null) {
-		return null;
-	}
-	String[] parameterNames = optResultSet.getOptSolverResultSet().getParameterNames();
-	if (parameterNames==null || optResultSet.getSolutionNames()==null){
-		return null;
-	}
-	String[] solutionNames = optResultSet.getSolutionNames();
-	if (solutionNames!=null && solutionNames.length>0){
-		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
-		//
-		// add data column descriptions
-		//
-		for (int i = 0; i < solutionNames.length; i++){
-			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(solutionNames[i]));
-		}
-		//
-		// add row data
-		//
-		int numRows = optResultSet.getSolutionValues(0).length;
-		for (int i = 0; i < numRows; i++){
-			odeSolverResultSet.addRow(optResultSet.getSolutionRow(i));
-		}
-		//
-		// make temporary simulation (with overrides for parameter values)
-		//
-		MathDescription mathDesc = ((OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
-		Simulation simulation = new Simulation(mathDesc);
-		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
-		//
-		// set math overrides with initial guess
-		//
-		for (int i = 0; i < optSpec.getParameters().length; i++){
-			Parameter parameter = optSpec.getParameters()[i];
-			simulation.getMathOverrides().putConstant(new Constant(parameter.getName(),new Expression(parameter.getInitialGuess())));
-		}
-		
-		//
-		// correct math overrides with parameter solution
-		//
-		for (int i = 0; i < parameterNames.length; i++){
-			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[i])));
-		}
-
-		//
-		// add functions (evaluating them at optimal parameter)
-		//
-		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList(mathDesc);
-		for (AnnotatedFunction f: annotatedFunctions){
-			Expression funcExp = f.getExpression();
-			for (int j = 0; j < parameterNames.length; j ++) {
-				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[j]));
-			}
-			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
-		}
-
-		return odeSolverResultSet;
-	}else{
-		return null;
-	}
-
 }
 
 
