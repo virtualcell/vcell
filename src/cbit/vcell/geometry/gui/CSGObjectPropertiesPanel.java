@@ -91,7 +91,8 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 			}			
 		}
 
-		public void mouseClicked(MouseEvent e) {			
+		public void mouseClicked(MouseEvent e) {
+			csgObjectTreeCellEditor.setRenaming(true);
 		}
 
 		public void mousePressed(MouseEvent e) {
