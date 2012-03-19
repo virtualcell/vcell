@@ -10,6 +10,9 @@
 
 package cbit.vcell.modelopt;
 import java.beans.PropertyVetoException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Vector;
 
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.util.Compare;
@@ -18,12 +21,32 @@ import org.vcell.util.Issue;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.InconsistentDomainException;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.NativeIDASolver;
+import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)
@@ -37,10 +60,10 @@ public class ParameterEstimationTask extends AnalysisTask {
 	public static final String PROPERTY_NAME_OPTIMIZATION_RESULT_SET = "optimizationResultSet";
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null; //parameters to be estimated, reference data and referece data/model var mapping
 	private OptimizationSolverSpec fieldOptimizationSolverSpec = null; //solver selection and setting
+	private OptimizationResultSet fieldOptimizationResultSet = null; //contains best paramters and least function value and number of evaluations
 	
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null; //objective function, constraints, model vars/parameters mapping, math symbol mapping
 	private transient MathSymbolMapping fieldMathSymbolMapping = null; //MathSymbolMapping is a field in ModelOptimizationMapping too.
-	private transient OptimizationResultSet fieldOptimizationResultSet = null;
 	private transient CopasiOptSolverCallbacks fieldOptSolverCallbacks = new CopasiOptSolverCallbacks();
 	private transient java.lang.String fieldSolverMessageText = new String();
 	private SimulationContext simulationContext = null;
@@ -135,6 +158,18 @@ public java.lang.String getAnalysisTypeDisplayName() {
  * @return cbit.vcell.mapping.MathSymbolMapping
  */
 public cbit.vcell.mapping.MathSymbolMapping getMathSymbolMapping() {
+	if(fieldMathSymbolMapping == null)
+	{
+		try {
+			fieldMathSymbolMapping = getModelOptimizationMapping().computeOptimizationSpec();
+		} catch (MathException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	return fieldMathSymbolMapping;
 }
 
@@ -158,16 +193,86 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
 	return fieldModelOptimizationSpec;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/2/2006 11:10:40 PM)
- * @return cbit.vcell.solver.ode.ODESolverResultSet
- * @throws InconsistentDomainException 
- */
-public ODESolverResultSet getOdeSolverResultSet() throws ExpressionException, InconsistentDomainException {
-	return ModelOptimizationMapping.getOdeSolverResultSet(getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
+public ODESolverResultSet getOdeSolverResultSet() throws Exception {
+	return getOdeSolverResultSet(getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
 }
+
+public ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws Exception {
+	if (optResultSet==null) {
+		return null;
+	}
+	String[] parameterNames = optResultSet.getOptSolverResultSet().getParameterNames();
+	double[] bestEstimates = optResultSet.getOptSolverResultSet().getBestEstimates();
+	//if we don't have parameter names or best estimates, return null. if we have them, we can run a simulation and generate a solution
+	if (parameterNames == null || parameterNames.length == 0  || bestEstimates ==null || bestEstimates.length == 0)
+	{
+		return null;
+	}
+	//check if we have solution or not, if not, generate a solution since we have the best estimates
+	if(optResultSet.getSolutionNames() == null)
+	{
+		RowColumnResultSet rcResultSet = getRowColumnRestultSetByBestEstimations(parameterNames, bestEstimates);
+		optResultSet.setSolutionFromRowColumnResultSet(rcResultSet);
+	}
+	
+	String[] solutionNames = optResultSet.getSolutionNames();
+	if (solutionNames!=null && solutionNames.length>0){
+		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
+		// add data column descriptions
+		for (int i = 0; i < solutionNames.length; i++){
+			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(solutionNames[i]));
+		}
+		
+		
+		
+		
+		//
+		// add row data
+		//
+		int numRows = optResultSet.getSolutionValues(0).length;
+		for (int i = 0; i < numRows; i++){
+			odeSolverResultSet.addRow(optResultSet.getSolutionRow(i));
+		}
+		//
+		// make temporary simulation (with overrides for parameter values)
+		//
+		MathDescription mathDesc = ((OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
+		Simulation simulation = new Simulation(mathDesc);
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
+		//
+		// set math overrides with initial guess
+		//
+		for (int i = 0; i < optSpec.getParameters().length; i++){
+			cbit.vcell.opt.Parameter parameter = optSpec.getParameters()[i];
+			simulation.getMathOverrides().putConstant(new Constant(parameter.getName(),new Expression(parameter.getInitialGuess())));
+		}
+		
+		//
+		// correct math overrides with parameter solution
+		//
+		for (int i = 0; i < parameterNames.length; i++){
+			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[i])));
+		}
+
+		//
+		// add functions (evaluating them at optimal parameter)
+		//
+		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList(mathDesc);
+		for (AnnotatedFunction f: annotatedFunctions){
+			Expression funcExp = f.getExpression();
+			for (int j = 0; j < parameterNames.length; j ++) {
+				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[j]));
+			}
+			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
+		}
+
+		return odeSolverResultSet;
+	}else{
+		return null;
+	}
+
+}
+
 
 
 /**
@@ -298,6 +403,21 @@ public Double getCurrentSolution(ParameterMappingSpec parameterMappingSpec) {
 }
 
 
+public Parameter getModelParameterByMathName(String mathParamName)
+{
+	ParameterMappingSpec[] paraMappingSpecs = getModelOptimizationSpec().getParameterMappingSpecs();
+	for(ParameterMappingSpec pms : paraMappingSpecs)
+	{
+		Variable var = getMathSymbolMapping().getVariable(pms.getModelParameter());
+		if(var.getName().equals(mathParamName))
+		{
+			return pms.getModelParameter();
+		}
+	}
+	
+	return null;
+}
+
 public final SimulationContext getSimulationContext() {
 	return simulationContext;
 }
@@ -317,6 +437,37 @@ public boolean isEmpty(){
 	//math symboldmapping requires parameters, checking parameters is enough
 	//optimizationResultSet, without parameters it's not meaningful.
 	return false;
+}
+
+public RowColumnResultSet getRowColumnRestultSetByBestEstimations(String[] paramNames, double[] paramValues) throws Exception
+{
+	//create a temp simulation based on math description
+	Simulation simulation = new Simulation(getSimulationContext().getMathDescription());
+	
+	ReferenceData refData = getModelOptimizationSpec().getReferenceData();
+	double[] times = refData.getDataByColumn(0);
+	double endTime = times[times.length-1];
+	ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
+	//set simulation ending time and output interval
+	simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
+	simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
+	//set parameters as math overrides
+	MathOverrides mathOverrides = simulation.getMathOverrides();
+	for (int i = 0; i < paramNames.length; i++){
+		mathOverrides.putConstant(new Constant(paramNames[i],new Expression(paramValues[i])));
+	}
+	//get input model string
+	StringWriter stringWriter = new StringWriter();
+	IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
+	idaFileWriter.write();
+	stringWriter.close();
+	StringBuffer buffer = stringWriter.getBuffer();
+	String idaInputString = buffer.toString();
+	
+	RowColumnResultSet rcResultSet = null;
+	NativeIDASolver nativeIDASolver = new NativeIDASolver();
+	rcResultSet = nativeIDASolver.solve(idaInputString);
+	return rcResultSet;
 }
 
 }
