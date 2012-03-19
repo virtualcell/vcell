@@ -15,14 +15,12 @@ import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameterType;
-import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.OptSolverStatus;
+import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.CommentStringTokenizer;
 
@@ -34,7 +32,6 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.xml.XMLTags;
