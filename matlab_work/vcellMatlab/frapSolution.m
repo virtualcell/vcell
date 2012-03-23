@@ -13,7 +13,7 @@ classdef frapSolution < handle
         numMeshPoints     % number of rows (size of cell region)
         
         % smallest N eigenvalues/eigenvectors
-        eigenVectors      % V matrix
+        eigenVectors      % V matrix (each column is an eigenvector?)
         eigenValues       % vector (not diagonal D matrix)
         
         % initial total fluorescence in mesh indices
@@ -23,6 +23,9 @@ classdef frapSolution < handle
         solutionTimes     % vector of times (including 0.0)
         solutionValues    % 2D dense matrix (numTimes x 2*numMeshPoints)
                           %   each solution vector is [Mobile Immobile]'
+                          
+        % solution projections of M+I = fluorescence for each eigenvector.
+        projection        % numTimes rows X numEigenvalues columns
     end
     
     methods
@@ -37,7 +40,7 @@ classdef frapSolution < handle
         % function animateSolution(this, var, framePauseTime)
         % function plotInitialConditions(this)
         % function plotSolution(this,var,timeIndex)
-        % function plotMesh(this, var, figure1, figure2)
+        % function plotMesh(this, var, figure1, figure2, bSymmetric)
         %
         % function computeEigenvalues(this, numSmallEigenvalues)
         % function animateEigenfunctions(this, framePauseTime)
@@ -58,6 +61,10 @@ classdef frapSolution < handle
         
         function solutionT = getSolutionT(this)
             solutionT = this.getSolutionM() + this.getSolutionI();
+        end
+        
+        function projections = getProjections(this, var)
+            projections = this.eigenVectors'*var;
         end
         
         function eigenvector = getEigenvector(this, index)
@@ -90,6 +97,11 @@ classdef frapSolution < handle
         
         function plotSolution(this,var,timeIndex)
             plotMesh(this,var(timeIndex,:),1,3,false);
+        end
+        
+        function projectFluorescence(this)
+            T = this.getSolutionT();   % numTimes x numMeshpoints
+            this.projection = T*this.eigenVectors;
         end
         
         function plotMesh(this, var, figure1, figure2, bSymmetric)

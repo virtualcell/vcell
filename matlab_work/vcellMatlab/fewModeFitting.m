@@ -25,19 +25,26 @@ solution.initialFluorescence = solution.getGaussianBleachPattern(0.63, 0.63, 80.
 
 solution.plotInitialConditions();
 
-solution.solutionTimes = 0 : 0.2 : 1;
+solution.solutionTimes = 0 : 0.05 : 1;
 solution.solve();
 
-solution.animateSolution(solution.getSolutionT(),1);
+solution.animateSolution(solution.getSolutionT(),0.1);
+
+solution.computeEigenvalues(10);
+solution.animateEigenfunctions(0.2);
+
+solution.projectFluorescence()
+solution.projection
+
+paramest = paramestFew;
+paramest.solution = solution;
+paramest.optimize();
 
 
-solution.computeEigenvalues(400);
-solution.animateEigenfunctions(0.001);
-
-projections = solution.getProjections(solution.initialFluorescence);
-projectedInitial = projections'*solution.eigenVectors';
-solution.plotMesh(projectedInitial-solution.initialFluorescence',6,7,true);
-pause
-solution.plotMesh(projectedInitial,6,7,false);
-solution.plotMesh(solution.initialFluorescence,1,3,false);
-
+% projections = solution.getProjections(solution.initialFluorescence);
+% projectedInitial = projections'*solution.eigenVectors';
+% solution.plotMesh(projectedInitial-solution.initialFluorescence',6,7,true);
+% pause
+% solution.plotMesh(projectedInitial,6,7,false);
+% solution.plotMesh(solution.initialFluorescence,1,3,false);
+% 
