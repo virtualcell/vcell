@@ -28,6 +28,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.List;
@@ -96,6 +97,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	public static final String BATCHRUN_VER_NUMBER = "VFRAP 1.1_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
+	private static final String SAVEAS_MATLAB_COMMAND = "Save Image Data to Matlab";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
 	//	private static final String PRINT_ACTION_COMMAND = "Print";
 	private static final String EXIT_ACTION_COMMAND = "Exit";
@@ -117,6 +119,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
+	private static final JMenuItem msaveasMat = new JMenuItem(SAVEAS_MATLAB_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
@@ -251,6 +254,31 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 				{
 					AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
 					ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
+				}
+				else if(arg.equals(SAVEAS_MATLAB_COMMAND))
+				{
+					String matFileName = null;
+					int option = VirtualFrapLoader.saveAsMatFileChooser.showSaveDialog(frapStudyPanel);
+					if (option == JFileChooser.APPROVE_OPTION){
+						matFileName = VirtualFrapLoader.saveAsMatFileChooser.getSelectedFile().getPath();
+					}else{
+						return;
+					}
+					if(matFileName.indexOf("."+VirtualFrapLoader.MAT_EXTENSION) < 0)
+					{
+						matFileName = matFileName + "."+VirtualFrapLoader.MAT_EXTENSION;
+					}
+					System.out.println("Writing FRAP Image data to " + matFileName);
+					try {
+						frapStudyPanel.saveAsMatLabFile(matFileName);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					System.out.println("Writing FRAP Image data is done.");
 				}
 				else if(arg.equals(EXIT_ACTION_COMMAND))
 				{
@@ -514,6 +542,9 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 		msaveas.addActionListener(menuHandler);
 		fileMenu.add(msaveas);
 
+		msaveasMat.addActionListener(menuHandler);
+		fileMenu.add(msaveasMat);
+		
 		fileMenu.addSeparator();
 
 		//    mprint.addActionListener(menuHandler);

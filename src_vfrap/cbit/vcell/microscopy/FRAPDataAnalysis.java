@@ -89,7 +89,7 @@ public class FRAPDataAnalysis {
 		//
 		double[] temp_background = frapData.getAvgBackGroundIntensity();
 		//the prebleachAvg has backgroud subtracted.
-		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
+		double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
 		//temp_fluor has subtracted background and divided by prebleach average.
 		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
 		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
@@ -229,7 +229,7 @@ public class FRAPDataAnalysis {
 		//
 		double[] temp_background = frapData.getAvgBackGroundIntensity();
 		//the prebleachAvg has backgroud subtracted.
-		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
+		double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
 		//tempBeachedAverage and tempCellROIAverage have subtracted background and divided by prebleach average. the following array has data for the full time duration.
 		double[] tempBeachedAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); 
 		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);

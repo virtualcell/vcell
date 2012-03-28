@@ -722,7 +722,7 @@ public class FRAPOptimizationUtils {
 		int startIndexRecovery = frapStudy.getStartingIndexForRecovery();
 		int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
 		double[][] sigma = new double[roiLen][timeStamp.length - startIndexRecovery];
-		double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
+		double[] prebleachAvg = FRAPData.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
 		for(int roiIdx =0; roiIdx<roiLen; roiIdx++)
 		{
 			ROI roi = fData.getRoi((FRAPData.VFRAP_ROI_ENUM.values()[roiIdx]).name());

@@ -969,50 +969,10 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{
-		ImageDataset imageDataset = getFrapData().getImageDataset();
-		if (imageDataset.getSizeC()>1){
-			throw new RuntimeException("FRAPStudy.saveImageDatasetAsExternalData(): multiple channels not yet supported");
-		}
-		Extent extent = imageDataset.getExtent();
-		ISize isize = imageDataset.getISize();
-		int numImageToStore = imageDataset.getSizeT()-startingIndexForRecovery; //not include the prebleach 
-    	double[][][] pixData = new double[numImageToStore][2][]; //original fluor data and back ground average
-    	double[] timesArray = new double[numImageToStore];
-    	double[] bgAvg = getFrapData().getAvgBackGroundIntensity();
-    	
-    	for (int tIndex = startingIndexForRecovery; tIndex < imageDataset.getSizeT(); tIndex++) {
-    		short[] originalData = imageDataset.getPixelsZ(0, tIndex);// images according to zIndex at specific time points(tIndex)
-    		double[] doubleData = new double[originalData.length];
-    		double[] expandBgAvg = new double[originalData.length];
-    		for(int i = 0; i < originalData.length; i++)
-    		{
-    			doubleData[i] = 0x0000ffff & originalData[i];
-    			expandBgAvg[i] = bgAvg[tIndex];
-    		}
-    		pixData[tIndex-startingIndexForRecovery][0] = doubleData;
-    		pixData[tIndex-startingIndexForRecovery][1] = expandBgAvg;
-    		timesArray[tIndex-startingIndexForRecovery] = imageDataset.getImageTimeStamps()[tIndex]-imageDataset.getImageTimeStamps()[startingIndexForRecovery];
-    	}
-    	//changed in March 2008. Though biomodel is not created, we still let user save to xml file.
-    	Origin origin = new Origin(0,0,0);
-    	CartesianMesh cartesianMesh  = getCartesianMesh();
-    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-    	fdos.cartesianMesh = cartesianMesh;
-    	fdos.doubleSpecData =  pixData;
-    	fdos.specEDI = newImageExtDataID;
-    	fdos.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME,"bg_average"};
-    	fdos.owner = LocalWorkspace.getDefaultOwner();
-    	fdos.times = timesArray;
-    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};
-    	fdos.origin = origin;
-    	fdos.extent = extent;
-    	fdos.isize = isize;
-		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		getFrapData().saveImageDatasetAsExternalData(localWorkspace, newImageExtDataID, startingIndexForRecovery, getCartesianMesh());
 	}
 	
-	
-	private CartesianMesh getCartesianMesh() throws Exception{
+	public CartesianMesh getCartesianMesh() throws Exception{
 		CartesianMesh cartesianMesh = null;
 		ImageDataset imgDataSet = getFrapData().getImageDataset();
 		Extent extent = imgDataSet.getExtent();
@@ -1034,69 +994,11 @@ public class FRAPStudy implements Matchable{
     	}
     	return cartesianMesh;
 	}
-	//this method calculates prebleach average for each pixel at different time points. back ground has been subtracted.
-	//should not subtract background from it when using it as a normalized factor.
-	public static double[] calculatePreBleachAverageXYZ(FRAPData frapData,int startingIndexForRecovery){
-    	long[] accumPrebleachImage = new long[frapData.getImageDataset().getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
-    	double[] avgPrebleachDouble = new double[accumPrebleachImage.length];
-    	double[] backGround = frapData.getAvgBackGroundIntensity();
-    	double accumAvgBkGround = 0; //accumulate background before starting index for recovery. used to subtract back ground.
-    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
-    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
-		if(startingIndexForRecovery > 0){
-			if(backGround != null)//subtract background
-			{
-				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
-					short[] pixels = frapData.getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
-					for (int i = 0; i < accumPrebleachImage.length; i++) {
-						accumPrebleachImage[i] += 0x0000ffff&pixels[i];
-					}
-					accumAvgBkGround += backGround[timeIndex];
-				}
-				for (int i = 0; i < avgPrebleachDouble.length; i++) {
-					avgPrebleachDouble[i] = ((double)accumPrebleachImage[i] - accumAvgBkGround)/startingIndexForRecovery;
-				}
-			}
-			else //don't subtract background
-			{
-				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
-					short[] pixels = frapData.getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
-					for (int i = 0; i < accumPrebleachImage.length; i++) {
-						accumPrebleachImage[i] += 0x0000ffff&pixels[i];
-					}
-				}
-				for (int i = 0; i < avgPrebleachDouble.length; i++) {
-					avgPrebleachDouble[i] = (double)accumPrebleachImage[i]/(double)startingIndexForRecovery;
-				}
-			}
-		}
-		else{
-			//if no prebleach image, use the last recovery image intensity as prebleach average.
-			System.err.println("need to determine factor for prebleach average if no pre bleach images.");
-			short[] pixels = frapData.getImageDataset().getPixelsZ(0, (frapData.getImageDataset().getSizeT() - 1));
-			for (int i = 0; i < pixels.length; i++) {
-				avgPrebleachDouble[i] = ((double)(0x0000ffff&pixels[i]) - backGround[frapData.getImageDataset().getSizeT() - 1]);
-			}
-		}
-		//for each pixel if it's grater than 0, we add 1 offset to it. 
-		//if it is smaller or equal to 0 , we set it to 1.
-		for (int i = 0; i < avgPrebleachDouble.length; i++) {
-			if(avgPrebleachDouble[i] <= FRAPOptimizationUtils.epsilon){
-				avgPrebleachDouble[i] = 1;
-			}
-			else
-			{
-				avgPrebleachDouble[i]=avgPrebleachDouble[i] - FRAPOptimizationUtils.epsilon +1;
-			}
-		}
-		return avgPrebleachDouble;
-	}
-	
 	public static double calculatePrebleachAvg_oneValue(FRAPData arg_frapData,int arg_startingIndexForRecovery)
 	{
 		double accum = 0;
 		int counter = 0;
-		double[] prebleachAvgXYZ = calculatePreBleachAverageXYZ(arg_frapData, arg_startingIndexForRecovery);
+		double[] prebleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(arg_frapData, arg_startingIndexForRecovery);
 		ROI cellROI = arg_frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		for(int i=0; i<prebleachAvgXYZ.length; i++)
 		{
@@ -1110,89 +1012,7 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
-			ImageDataset imageDataset = getFrapData().getImageDataset();
-			Extent extent = imageDataset.getExtent();
-			ISize isize = imageDataset.getISize();
-			int NumTimePoints = 1; 
-			int NumChannels = 13;//actually it is total number of ROIs(cell,bleached + 8 rings)+prebleach+firstPostBleach+lastPostBleach
-	    	double[][][] pixData = new double[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
-	    	
-
-	    	double[] temp_background = getFrapData().getAvgBackGroundIntensity();
-	    	double[] avgPrebleachDouble = calculatePreBleachAverageXYZ(getFrapData(),startingIndexForRecovery);
-	    	
-	    	pixData[0][0] = avgPrebleachDouble; // average of prebleach with background subtracted
-	    	// first post-bleach with background subtracted
-    		pixData[0][1] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery), temp_background[startingIndexForRecovery], true);
-//    		adjustPrebleachAndPostbleachData(avgPrebleachDouble, pixData[0][1]);
-    		// last post-bleach image (at last time point) with background subtracted
-    		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1), temp_background[imageDataset.getSizeT()-1], true);
-    		//below are ROIs, we don't need to subtract background for them.
-    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getBinaryPixelsXYZ(1), 0, false);
-    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getBinaryPixelsXYZ(1), 0, false);
-    		if (getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()) == null){
-    			//throw new RuntimeException("must first generate \"derived masks\"");
-    			pixData[0][5] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][6] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][7] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][8] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][9] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][10] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][11] = new double[imageDataset.getISize().getXYZ()];
-	    		pixData[0][12] = new double[imageDataset.getISize().getXYZ()];
-    		}
-    		else{
-    			pixData[0][5] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).getBinaryPixelsXYZ(1), 0, false);
-    		}
-    		CartesianMesh cartesianMesh = getCartesianMesh();
-    		Origin origin = new Origin(0,0,0);
-	    		    	
-	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-	    	fdos.cartesianMesh = cartesianMesh;
-	    	fdos.doubleSpecData =  pixData;
-	    	fdos.specEDI = newROIExtDataID;
-	    	fdos.varNames = new String[] {
-	    			"prebleach_avg",
-	    			"postbleach_first",
-	    			"postbleach_last",
-	    			"bleached_mask", 
-	    			"cell_mask", 
-	    			"ring1_mask",
-	    			"ring2_mask",
-	    			"ring3_mask",
-	    			"ring4_mask",
-	    			"ring5_mask",
-	    			"ring6_mask",
-	    			"ring7_mask",
-	    			"ring8_mask"};
-	    	fdos.owner = LocalWorkspace.getDefaultOwner();
-	    	fdos.times = new double[] { 0.0 };
-	    	fdos.variableTypes = new VariableType[] {
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME,
-	    			VariableType.VOLUME};
-	    	fdos.origin = origin;
-	    	fdos.extent = extent;
-	    	fdos.isize = isize;
-	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		getFrapData().saveROIsAsExternalData(localWorkspace, newROIExtDataID, startingIndexForRecovery, getCartesianMesh());
 	}
 	
 	public DataProcessingInstructions getDataProcessInstructions(LocalWorkspace localWorkspace)
@@ -1311,27 +1131,6 @@ public class FRAPStudy implements Matchable{
 		}					                                               
 	}
 	
-	//when creating double array for firstPostBleach and last PostBleach, etc images
-	//We'll clamp all pixel value <= 0 to 0 and add offset 1 to the whole image.
-	//For ROI images, we don't have to do so.
-	private double[] createDoubleArray(short[] shortData, double bkGround, boolean isOffset1ProcessNeeded){
-		double[] doubleData = new double[shortData.length];
-		for (int i = 0; i < doubleData.length; i++) {
-			doubleData[i] = ((0x0000FFFF&shortData[i]) - bkGround);
-			if(isOffset1ProcessNeeded)
-			{
-				if(doubleData[i] <= FRAPOptimizationUtils.epsilon)
-				{
-					doubleData[i] = 1;
-				}
-				else
-				{
-					doubleData[i] = doubleData[i] - FRAPOptimizationUtils.epsilon + 1;
-				}
-			}
-		}
-		return doubleData;
-	}
 	//get external image dataset file name or ROI file name
 	public File getExternalDataFile(ExternalDataInfo arg_extDataInfo)
 	{
@@ -1626,7 +1425,7 @@ public class FRAPStudy implements Matchable{
 		if(dimensionReducedExpData == null)
 		{
 			int startRecoveryIndex = getStartingIndexForRecovery();
-			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
+			double[] prebleachAvg = FRAPData.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
 			dimensionReducedExpData = FRAPOptimizationUtils.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
 		}
 		return dimensionReducedExpData;
