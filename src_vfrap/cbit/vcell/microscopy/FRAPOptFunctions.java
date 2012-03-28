@@ -117,7 +117,7 @@ public class FRAPOptFunctions
 		//Experiment - Cell ROI Average
 		double[] temp_background = frapData.getAvgBackGroundIntensity();
 		int startIndexRecovery = getExpFrapStudy().getStartingIndexForRecovery();
-		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
+		double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
 		double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
 		Expression bleachedAvgExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
 		// substitute parameter values 

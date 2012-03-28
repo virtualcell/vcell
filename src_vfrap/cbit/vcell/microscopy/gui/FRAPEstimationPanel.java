@@ -37,7 +37,6 @@ import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -441,7 +440,7 @@ public class FRAPEstimationPanel extends JPanel {
 			//Experiment - Cell ROI Average
 			//
 			double[] temp_background = initFRAPData.getAvgBackGroundIntensity();
-			double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(initFRAPData, startIndexForRecovery);
+			double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(initFRAPData, startIndexForRecovery);
 			double[] cellRegionData = FRAPDataAnalysis.getAverageROIIntensity(initFRAPData, initFRAPData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 			ReferenceData expCellAvgData =
 				new SimpleReferenceData(new String[] { "t", "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, cellRegionData });

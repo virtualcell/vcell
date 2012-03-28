@@ -345,7 +345,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	public void setData(final FRAPOptData frapOptData, final FRAPData fData, Parameter[] modelParams,final double[] frapDataTimeStamps,int startIndexForRecovery, boolean[] selectedROIs) throws Exception
 	{
 		this.frapOptData = frapOptData;
-		double[] prebleachAverage = FRAPStudy.calculatePreBleachAverageXYZ(fData, startIndexForRecovery);
+		double[] prebleachAverage = FRAPData.calculatePreBleachAverageXYZ(fData, startIndexForRecovery);
 		spatialAnalysisResults = FRAPStudy.spatialAnalysis(null, startIndexForRecovery, frapDataTimeStamps[startIndexForRecovery], modelParams, fData, prebleachAverage);
 		//allDataHash use AnalysisParameters as key, the value is dataSource[] which should have length as 2: expDataSource & simDataSouce
 		allDataHash = spatialAnalysisResults.createSummaryReportSourceData(frapDataTimeStamps, startIndexForRecovery, selectedROIs, false);

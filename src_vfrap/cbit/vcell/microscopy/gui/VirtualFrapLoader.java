@@ -76,13 +76,15 @@ public class VirtualFrapLoader {
 	//get current working directory
 	//filefilters for VFrap
 	public final static String VFRAP_EXTENSION = "vfrap";
-	public final static String LSM_EXTENSION = "lsm";
+	public final static String MAT_EXTENSION = "mat";
+ 	public final static String LSM_EXTENSION = "lsm";
 	public final static String TIFF_EXTENSION = "tif";
 	public final static String QT_EXTENSION = "mov";
 	public final static String VFRAP_BATCH_EXTENSION = "vfbatch";
 	public final static VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter(LSM_EXTENSION,"Zeiss Lsm Images");
 	public final static VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter(TIFF_EXTENSION, "TIFF Images");
 	public final static VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
+	public final static VirtualFrapMainFrame.AFileFilter filter_mat = new VirtualFrapMainFrame.AFileFilter(MAT_EXTENSION,"Matlab data Files");
 	public final static VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
 	public final static VirtualFrapMainFrame.AFileFilter filter_vfbatch = new VirtualFrapMainFrame.AFileFilter(VFRAP_BATCH_EXTENSION,"Virtual FRAP BatchRun Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
@@ -91,6 +93,7 @@ public class VirtualFrapLoader {
     public static JFileChooser loadFRAPImageFileChooser;
     public static JFileChooser addDataFileChooser_batchRun;
     public static JFileChooser saveFileChooser; 
+    public static JFileChooser saveAsMatFileChooser;
     public static JFileChooser saveFileChooser_batchRun;
     public static JFileChooser saveFileChooser_batchRunSaveSingleFileAs;
     public static JFileChooser multiOpenFileChooser; 
@@ -155,6 +158,10 @@ public class VirtualFrapLoader {
 			    saveFileChooser.setDialogTitle("Save Virtual FRAP document (.vfrap)");
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    saveFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
+			    saveAsMatFileChooser = new JFileChooser();
+			    saveAsMatFileChooser.setDialogTitle("Save image data to matlab file (.mat)");
+			    saveAsMatFileChooser.addChoosableFileFilter(filter_mat); 
+			    saveAsMatFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    saveFileChooser_batchRun = new JFileChooser();
 			    saveFileChooser_batchRun.setDialogTitle("Save Virtual FRAP batchrun document (.vfbatch)");
 			    saveFileChooser_batchRun.addChoosableFileFilter(filter_vfbatch); 

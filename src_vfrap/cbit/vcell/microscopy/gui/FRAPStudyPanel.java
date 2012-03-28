@@ -25,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -1981,5 +1982,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
+	}
+
+	public void saveAsMatLabFile(String matFileName) throws IOException, Exception 
+	{
+		FRAPStudy frapStudy = getFrapWorkspace().getWorkingFrapStudy();
+		FRAPData frapData = frapStudy.getFrapData();
+		frapData.saveImageDatasetAsExternalMatlabData(getLocalWorkspace(), matFileName, frapStudy.getStartingIndexForRecovery(), frapStudy.getCartesianMesh());
 	}
 }
