@@ -21,7 +21,7 @@ import java.util.Hashtable;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 
-import cbit.image.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterService;
 
 public class CurveRenderer implements DrawPaneModel {
 	//

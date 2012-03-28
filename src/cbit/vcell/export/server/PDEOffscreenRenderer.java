@@ -27,9 +27,9 @@ import org.vcell.util.Range;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.ImagePaneModel;
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.ImagePaneModel;
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
@@ -90,7 +90,7 @@ private int[] getCurveColors(Hashtable<SampledCurve, int[]> curvesAndMembraneInd
  * Creation date: (3/2/2001 1:37:01 AM)
  * @return cbit.image.DisplayAdapterService
  */
-private cbit.image.DisplayAdapterService getDisplayAdapterService() {
+private cbit.image.gui.DisplayAdapterService getDisplayAdapterService() {
 	return displayAdapterService;
 }
 

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -616,7 +616,7 @@ private javax.swing.JLabel getColorMapJLabel() {
 public DisplayAdapterService getDisplayAdapterService() {
 	if (ivjDisplayAdapterService == null) {
 		try {
-			ivjDisplayAdapterService = new cbit.image.DisplayAdapterService();
+			ivjDisplayAdapterService = new cbit.image.gui.DisplayAdapterService();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

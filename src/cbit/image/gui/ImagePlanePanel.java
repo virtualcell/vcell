@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 
 import java.awt.FlowLayout;
 
@@ -766,7 +766,7 @@ public void setImagePlaneMananager(ImagePlaneManager imagePlaneMananager) {
 private void setimagePlaneMananager1(ImagePlaneManager newValue) {
 	if (ivjimagePlaneMananager1 != newValue) {
 		try {
-			cbit.image.ImagePlaneManager oldValue = getimagePlaneMananager1();
+			cbit.image.gui.ImagePlaneManager oldValue = getimagePlaneMananager1();
 			/* Stop listening for events from the current object */
 			if (ivjimagePlaneMananager1 != null) {
 				ivjimagePlaneMananager1.removePropertyChangeListener(ivjEventHandler);

@@ -8,13 +8,15 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 
 import java.io.Serializable;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
+
+import cbit.image.WorldCoordinateCalculator;
 
 /**
  * Insert the type's description here.

@@ -8,7 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
+
+import cbit.image.ZoomEvent;
+import cbit.image.ZoomListener;
 
 /**
  * Insert the type's description here.

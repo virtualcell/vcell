@@ -50,10 +50,10 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 import java.awt.CardLayout;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.ImagePaneModel;
-import cbit.image.ImagePlaneManagerPanel;
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.ImagePaneModel;
+import cbit.image.gui.ImagePlaneManagerPanel;
+import cbit.image.gui.SourceDataInfo;
 
 import javax.swing.ScrollPaneConstants;
 import javax.swing.JSlider;

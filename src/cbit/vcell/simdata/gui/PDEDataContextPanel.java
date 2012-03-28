@@ -16,11 +16,11 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.DisplayAdapterServicePanel;
-import cbit.image.ImagePlaneManager;
-import cbit.image.ImagePlaneManagerPanel;
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterServicePanel;
+import cbit.image.gui.ImagePlaneManager;
+import cbit.image.gui.ImagePlaneManagerPanel;
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;

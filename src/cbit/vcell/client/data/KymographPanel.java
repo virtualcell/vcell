@@ -12,9 +12,9 @@ package cbit.vcell.client.data;
 
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import cbit.image.DisplayAdapterService;
-import cbit.image.SourceDataInfo;
 import cbit.image.ZoomEvent;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
@@ -122,9 +122,9 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private double initialLineScanTime = 0;
 	private double[][] timeSeriesDataOrig = null;
 	private double[] accumDistancesDataOrig = null;
-	private cbit.image.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
-	private cbit.image.ImagePaneScroller ivjImagePaneScroller1 = null;
-	private cbit.image.ImagePlaneManager ivjImagePlaneManager1 = null;
+	private cbit.image.gui.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
+	private cbit.image.gui.ImagePaneScroller ivjImagePaneScroller1 = null;
+	private cbit.image.gui.ImagePlaneManager ivjImagePlaneManager1 = null;
 	private javax.swing.ImageIcon cmapImageIcon = null;  //  @jve:decl-index=0:
 	private javax.swing.JLabel ivjColorMapJLabel = null;
 	private javax.swing.JLabel ivjMaxJLabel = null;
@@ -132,7 +132,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private javax.swing.JLabel ivjDisplayJLabel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.image.ImagePaneView ivjimagePaneView1 = null;
+	private cbit.image.gui.ImagePaneView ivjimagePaneView1 = null;
 	private javax.swing.JMenuItem ivjCopyJMenuItem = null;
 	private javax.swing.JPopupMenu ivjCopyJPopupMenu = null;
 	private javax.swing.JButton ivjCopyJButton = null;
@@ -1160,10 +1160,10 @@ private javax.swing.JMenuItem getCopyTimeDataJMenuItem() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.DisplayAdapterService getDisplayAdapterService1() {
+private cbit.image.gui.DisplayAdapterService getDisplayAdapterService1() {
 	if (ivjDisplayAdapterService1 == null) {
 		try {
-			ivjDisplayAdapterService1 = new cbit.image.DisplayAdapterService();
+			ivjDisplayAdapterService1 = new cbit.image.gui.DisplayAdapterService();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1248,10 +1248,10 @@ private javax.swing.JPanel getGraphJPanel() {
  * @return cbit.image.ImagePaneScroller
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePaneScroller getImagePaneScroller1() {
+private cbit.image.gui.ImagePaneScroller getImagePaneScroller1() {
 	if (ivjImagePaneScroller1 == null) {
 		try {
-			ivjImagePaneScroller1 = new cbit.image.ImagePaneScroller();
+			ivjImagePaneScroller1 = new cbit.image.gui.ImagePaneScroller();
 			ivjImagePaneScroller1.setName("ImagePaneScroller1");
 			ivjImagePaneScroller1.setPreferredSize(new java.awt.Dimension(400, 350));
 			// user code begin {1}
@@ -1270,7 +1270,7 @@ private cbit.image.ImagePaneScroller getImagePaneScroller1() {
  * @return cbit.image.ImagePaneView
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePaneView getimagePaneView1() {
+private cbit.image.gui.ImagePaneView getimagePaneView1() {
 	// user code begin {1}
 	// user code end
 	return ivjimagePaneView1;
@@ -1282,10 +1282,10 @@ private cbit.image.ImagePaneView getimagePaneView1() {
  * @return cbit.image.ImagePlaneManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePlaneManager getImagePlaneManager1() {
+private cbit.image.gui.ImagePlaneManager getImagePlaneManager1() {
 	if (ivjImagePlaneManager1 == null) {
 		try {
-			ivjImagePlaneManager1 = new cbit.image.ImagePlaneManager();
+			ivjImagePlaneManager1 = new cbit.image.gui.ImagePlaneManager();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2244,7 +2244,7 @@ private void kymograph_Initialize() {
 
 	updateColorMapDisplay();
 	
-	getImagePaneScroller1().getImagePaneModel().setMode(cbit.image.ImagePaneModel.MESH_MODE);
+	getImagePaneScroller1().getImagePaneModel().setMode(cbit.image.gui.ImagePaneModel.MESH_MODE);
 	getImagePaneScroller1().initRowColumnDescriptions("simulation Time","Distance Along Sample Line");
 	getimagePaneView1().setDrawPaneModel(this);
 	getDisplayJLabel().setText(NONE_MESSAGE);
@@ -2354,7 +2354,7 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
  * @param newValue cbit.image.ImagePaneView
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setimagePaneView1(cbit.image.ImagePaneView newValue) {
+private void setimagePaneView1(cbit.image.gui.ImagePaneView newValue) {
 	if (ivjimagePaneView1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */

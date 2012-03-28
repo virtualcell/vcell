@@ -68,7 +68,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.SourceDataInfo;
 import cbit.plot.PlotData;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;

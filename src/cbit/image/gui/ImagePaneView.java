@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -17,6 +17,8 @@ import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 
+import cbit.image.ZoomEvent;
+import cbit.image.ZoomListener;
 import cbit.vcell.geometry.gui.DrawPaneModel;
 import cbit.vcell.geometry.gui.VCellDrawable;
 
@@ -233,7 +235,7 @@ public boolean getForceZoom() {
 public ImagePaneModel getImagePaneModel() {
 	if (ivjImagePaneModel == null) {
 		try {
-			ivjImagePaneModel = new cbit.image.ImagePaneModel();
+			ivjImagePaneModel = new cbit.image.gui.ImagePaneModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -51,7 +51,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.image.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

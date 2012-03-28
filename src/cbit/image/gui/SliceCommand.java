@@ -8,7 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
+
+import cbit.image.Command;
 
 /**
  * This type was created in VisualAge.

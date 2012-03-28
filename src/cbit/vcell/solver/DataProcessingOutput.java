@@ -18,7 +18,7 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.SourceDataInfo;
 
 
 

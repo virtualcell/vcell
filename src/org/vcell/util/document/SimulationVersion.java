@@ -55,7 +55,7 @@ public KeyValue getParentSimulationReference() {
 public static SimulationVersion createTempSimulationVersion() {
 	return  new SimulationVersion(
 			new KeyValue(new BigDecimal(Math.abs(new Random().nextInt()))), 
-			"temp simulation", ResourceUtil.tempUser,
+			"temp simulation", User.tempUser,
 			new GroupAccessNone(), null, // versionBranchPointRef
 			new java.math.BigDecimal(1.0), // branchID
 			new java.util.Date(), VersionFlag.Archived, "",  null);

@@ -23,8 +23,8 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.DataAccessException;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.DisplayAdapterServicePanel;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.DataSelectRetrieve;
 import cbit.vcell.geometry.surface.Quadrilateral;
