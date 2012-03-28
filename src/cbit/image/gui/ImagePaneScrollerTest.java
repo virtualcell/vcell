@@ -8,8 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 import org.vcell.util.Range;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/5/00 6:10:39 PM)

@@ -40,7 +40,6 @@ import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
@@ -284,7 +283,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
 							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(sessionLog, usr, dataSetControllerImpl, localExportServiceImpl);
 							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-							File localSimDir = ResourceUtil.getLocalSimDir();
+							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 							LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
 							DataManager dataManager = null;
 							if (sim.isSpatial()) {
@@ -466,7 +465,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	
 			Simulation simulation = new TempSimulation(originalSimulation, false);
 			SimulationJob simJob = new SimulationJob(simulation, 0, null);
-			File inputFile = new File(ResourceUtil.getLocalSimDir(), simJob.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
+			File inputFile = new File(ResourceUtil.getLocalSimDir(User.tempUser.getName()), simJob.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
 			inputFile.deleteOnExit();
 			PrintWriter pw = new PrintWriter(inputFile);
 			SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
@@ -562,7 +561,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 	}	
 	
 	// ----------- run simulation(s)
-	final File localSimDataDir = ResourceUtil.getLocalSimDir();	
+	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 	AsynchClientTask runSimTask = new AsynchClientTask("running simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {

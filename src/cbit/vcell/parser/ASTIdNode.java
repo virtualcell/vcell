@@ -16,10 +16,6 @@ import java.util.Set;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.model.Model;
-
-
 public class ASTIdNode extends SimpleNode {
 
   String name = null;
@@ -285,30 +281,15 @@ public String infixString(int lang) {
 	}else if (lang == LANGUAGE_ECLiPSe) {
 		return TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else if (lang == LANGUAGE_VISIT) {
-		if(symbolTableEntry instanceof Model.ReservedSymbol) {
-			Model.ReservedSymbol rs = (Model.ReservedSymbol)symbolTableEntry;
-			if (rs.isX()){
-				return VISIT_RESERVED_X;
-			} else if (rs.isY()){
-				return VISIT_RESERVED_Y;
-			}  else if (rs.isZ()){
-				return VISIT_RESERVED_Z;
-			} else if (rs.isTime()){
-				return VISIT_RESERVED_T;
-			}
-		} else if(symbolTableEntry instanceof ReservedVariable) {
-			ReservedVariable rv = (ReservedVariable)symbolTableEntry;
-			if (rv.isX()){
-				return VISIT_RESERVED_X;
-			} else if (rv.isY()){
-				return VISIT_RESERVED_Y;
-			}  else if (rv.isZ()){
-				return VISIT_RESERVED_Z;
-			} else if (rv.isTIME()){
-				return VISIT_RESERVED_T;
-			}
+		if (idName.equals("x")){
+			return VISIT_RESERVED_X;
+		}else if (idName.equals("y")){
+			return VISIT_RESERVED_Y;
+		}else if (idName.equals("z")){
+			return VISIT_RESERVED_Z;
+		}else if (idName.equals("t")){
+			return VISIT_RESERVED_T;
 		}
-
 		return idName;
 		
 	}else{

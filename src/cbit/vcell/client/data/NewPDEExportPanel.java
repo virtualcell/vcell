@@ -52,7 +52,8 @@ import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
-import cbit.image.DisplayAdapterService;
+
+import cbit.image.gui.DisplayAdapterService;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager;
@@ -2516,7 +2517,7 @@ private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpe
 	try {
 		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 		File primaryDir = ResourceUtil.getLocalRootDir();
-		User usr = ResourceUtil.tempUser;
+		User usr = User.tempUser;
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
 		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
 		DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);

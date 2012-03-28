@@ -8,10 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+
+import cbit.image.ZoomEvent;
+import cbit.image.ZoomListener;
 
 /**
  * Insert the type's description here.
@@ -391,7 +394,7 @@ public ImagePaneModel getImagePaneModel(){
 public ImagePaneView getImagePaneView() {
 	if (ivjImagePaneView == null) {
 		try {
-			ivjImagePaneView = new cbit.image.ImagePaneView();
+			ivjImagePaneView = new cbit.image.gui.ImagePaneView();
 			ivjImagePaneView.setName("ImagePaneView");
 			ivjImagePaneView.setBounds(20, 20, 100, 100);
 			// user code begin {1}
@@ -494,7 +497,7 @@ private void imagePaneScroller_Initialize() {
 /**
  * Comment
  */
-private void imagePaneView_Panning(cbit.image.PanEvent panEvent) {
+private void imagePaneView_Panning(cbit.image.gui.PanEvent panEvent) {
 	//
 	java.awt.Point oldPosition = getJScrollPane1().getViewport().getViewPosition();
 	java.awt.Point newPosition = getJScrollPane1().getViewport().getViewPosition();

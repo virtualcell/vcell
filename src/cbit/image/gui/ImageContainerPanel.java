@@ -941,10 +941,10 @@ public int getImageContainerSlice() {
  * @return cbit.image.ImagePaneScroller
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.image.ImagePaneScroller getImagePaneScroller() {
+public cbit.image.gui.ImagePaneScroller getImagePaneScroller() {
 	if (ivjImagePaneScroller == null) {
 		try {
-			ivjImagePaneScroller = new cbit.image.ImagePaneScroller();
+			ivjImagePaneScroller = new cbit.image.gui.ImagePaneScroller();
 			ivjImagePaneScroller.setName("ImagePaneScroller");
 			// user code begin {1}
 			// user code end
@@ -1020,10 +1020,10 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return cbit.image.ScalePanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ScalePanel getScalePanel1() {
+private cbit.image.gui.ScalePanel getScalePanel1() {
 	if (ivjScalePanel1 == null) {
 		try {
-			ivjScalePanel1 = new cbit.image.ScalePanel();
+			ivjScalePanel1 = new cbit.image.gui.ScalePanel();
 			ivjScalePanel1.setName("ScalePanel1");
 			ivjScalePanel1.setBorder(new javax.swing.border.EtchedBorder());
 			// user code begin {1}

@@ -50,7 +50,7 @@ import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
-import cbit.image.SourceDataInfo;
+import cbit.image.gui.SourceDataInfo;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;

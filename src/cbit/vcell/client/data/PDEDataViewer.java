@@ -92,7 +92,7 @@ import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.image.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
@@ -2509,7 +2509,7 @@ private void updateDataValueSurfaceViewer() {
 			return meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex);
 		}
 		public Color getROIHighlightColor(){
-			return new Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
+			return new Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.gui.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
 		}
 		public void showComponentInFrame(Component comp,String title){
 			PDEDataViewer.this.showComponentInFrame(comp,title);

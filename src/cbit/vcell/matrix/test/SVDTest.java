@@ -8,7 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.matrix;
+package cbit.vcell.matrix.test;
+
+import cbit.vcell.matrix.RationalMatrix;
+import cbit.vcell.matrix.RationalMatrixFast;
+import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.matrix.SimpleMatrix;
 
 /**
  * Insert the type's description here.

@@ -773,7 +773,7 @@ public String getFreeSubVolumeName() {
  */
 public static final java.awt.image.IndexColorModel getHandleColorMap() {
 
-	int[] contrastColors = cbit.image.DisplayAdapterService.createContrastColorModel();
+	int[] contrastColors = cbit.image.gui.DisplayAdapterService.createContrastColorModel();
 
 	byte red[] = new byte[contrastColors.length];
 	byte green[] = new byte[contrastColors.length];

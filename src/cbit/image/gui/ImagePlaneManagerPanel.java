@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 
 import java.awt.Cursor;
 import java.awt.Point;
@@ -843,7 +843,7 @@ public int getViewZoom(){
 private ImagePaneScroller getImagePaneScroller1() {
 	if (ivjImagePaneScroller1 == null) {
 		try {
-			ivjImagePaneScroller1 = new cbit.image.ImagePaneScroller();
+			ivjImagePaneScroller1 = new cbit.image.gui.ImagePaneScroller();
 			ivjImagePaneScroller1.setName("ImagePaneScroller1");
 			// user code begin {1}
 			// user code end
@@ -873,7 +873,7 @@ private ImagePaneView getimagePaneView1() {
 public ImagePlaneManager getImagePlaneManager() {
 	if (ivjImagePlaneManager == null) {
 		try {
-			ivjImagePlaneManager = new cbit.image.ImagePlaneManager();
+			ivjImagePlaneManager = new cbit.image.gui.ImagePlaneManager();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -21,13 +21,13 @@ import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
-import cbit.image.DisplayAdapterService;
 import cbit.image.GIFImage;
 import cbit.image.ImageException;
-import cbit.image.ImagePaneModel;
-import cbit.image.ImagePlaneManagerPanel;
-import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.ImagePaneModel;
+import cbit.image.gui.ImagePlaneManagerPanel;
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
@@ -588,10 +588,10 @@ public java.lang.String getGeometryVersionString(Geometry geometry) {
  * @return cbit.image.ImagePlaneManagerPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
+private cbit.image.gui.ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 	if (ivjImagePlaneManagerPanel1 == null) {
 		try {
-			ivjImagePlaneManagerPanel1 = new cbit.image.ImagePlaneManagerPanel();
+			ivjImagePlaneManagerPanel1 = new cbit.image.gui.ImagePlaneManagerPanel();
 			ivjImagePlaneManagerPanel1.setName("ImagePlaneManagerPanel1");
 			// user code begin {1}
 			// user code end

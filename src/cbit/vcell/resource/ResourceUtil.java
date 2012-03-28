@@ -136,13 +136,11 @@ public class ResourceUtil {
 		return localRootDir; 
 	}
 
-	public static User tempUser = new User("user",new KeyValue("123"));
-
-	public static File getLocalSimDir()
+	public static File getLocalSimDir(String userSubDirName)
 	{
 		if(localSimDir == null)
 		{
-			localSimDir = new File(getLocalRootDir(), tempUser.getName());
+			localSimDir = new File(getLocalRootDir(), userSubDirName);
 			if (localSimDir.exists()) {
 				for (File file : localSimDir.listFiles()) {
 					file.delete();

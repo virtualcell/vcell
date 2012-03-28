@@ -39,8 +39,8 @@ import javax.swing.JTextField;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.ImagePaneModel;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.ImagePaneModel;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.ImageSpecs;

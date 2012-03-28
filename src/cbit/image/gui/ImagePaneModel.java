@@ -8,9 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image;
+package cbit.image.gui;
 import java.awt.*;
 import java.awt.image.*;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/3/00 11:49:20 AM)

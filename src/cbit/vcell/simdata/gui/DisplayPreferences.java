@@ -14,7 +14,7 @@ import java.util.BitSet;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
 
-import cbit.image.DisplayAdapterService;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 
 /**
