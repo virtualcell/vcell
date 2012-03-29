@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.gui;
+package org.vcell.util;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;

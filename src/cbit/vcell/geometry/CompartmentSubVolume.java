@@ -44,13 +44,6 @@ public boolean compareEqual(Matchable obj) {
 }
 
 
-/**
- * getVCML method comment.
- */
-public String getVCML() {
-	return "";
-}
-
 
 /**
  * isInside method comment.

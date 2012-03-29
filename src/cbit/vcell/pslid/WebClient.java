@@ -16,8 +16,9 @@ import java.net.URLConnection;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 
-import cbit.vcell.client.server.VCellThreadChecker;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.VCellThreadChecker;
+
 
 
 public class WebClient {

@@ -31,6 +31,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
@@ -38,7 +39,6 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.geometry.Geometry;
@@ -590,7 +590,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	// make sure that simulations and simulationContexts are listened to
 	//
-	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// unregister for old
 		//
@@ -810,7 +810,7 @@ public void setSimulationContexts(SimulationContext[] simulationContexts) throws
  */
 public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
 	Simulation[] oldValue = fieldSimulations;
-	fireVetoableChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+	fireVetoableChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);
 		oldValue[i].removeVetoableChangeListener(this);
@@ -820,7 +820,7 @@ public void setSimulations(Simulation[] simulations) throws java.beans.PropertyV
 		simulations[i].addPropertyChangeListener(this);
 		simulations[i].addVetoableChangeListener(this);
 	}
-	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 }
 
 
@@ -895,7 +895,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
-	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// check for name duplication
 		//

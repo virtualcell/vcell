@@ -848,4 +848,27 @@ public void updateSpecialColors(String colorModelID,int[] newSpecialColors) {
 		firePropertyChange("specialColors", null, specialColors);
 	}
 }
+
+
+/**
+ * This method was created in VisualAge.
+ * @return java.awt.image.IndexColorModel
+ */
+public static final java.awt.image.IndexColorModel getHandleColorMap() {
+
+	int[] contrastColors = createContrastColorModel();
+
+	byte red[] = new byte[contrastColors.length];
+	byte green[] = new byte[contrastColors.length];
+	byte blue[] = new byte[contrastColors.length];
+
+	for (int i=0;i<contrastColors.length;i++){
+		java.awt.Color color = new java.awt.Color(contrastColors[i]);
+		red[i] = (byte)color.getRed();
+		green[i] = (byte)color.getGreen();
+		blue[i] = (byte)color.getBlue();
+	}
+
+	return new java.awt.image.IndexColorModel(8,contrastColors.length,red,green,blue);
+}
 }

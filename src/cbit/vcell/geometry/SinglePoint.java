@@ -100,13 +100,6 @@ public int pickSegment(Coordinate pickCoord, double minPickDistance) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (10/19/00 2:11:30 PM)
- */
-public int pickSegmentProjected(java.awt.geom.Point2D.Double pickPoint, double minPickDistance, int axis) {
-	return Curve.NONE_SELECTED;
-}
-/**
- * Insert the method's description here.
  * Creation date: (10/10/00 4:23:11 PM)
  */
 protected double pickUSampledCurve(Coordinate pickCoord, double minPickDistance) {

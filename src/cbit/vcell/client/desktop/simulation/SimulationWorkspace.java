@@ -19,12 +19,12 @@ import java.util.List;
 
 import javax.swing.JScrollPane;
 
+import org.vcell.util.PropertyChangeListenerProxyVCell;
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.OutputContext;
@@ -673,7 +673,7 @@ int newSimulation() throws java.beans.PropertyVetoException {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == getSimulationOwner() && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)) {
+	if (evt.getSource() == getSimulationOwner() && evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS)) {
 		setSimulations(getSimulationOwner().getSimulations());
 	}
 }
@@ -713,7 +713,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 	}
 	simulationOwner = newSimulationOwner;
 	setSimulations(simulationOwner == null ? null : getSimulationOwner().getSimulations());
-	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner);
 }
 
 
@@ -725,7 +725,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 public void setSimulations(final Simulation[] simulations) {
 	Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
-	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 }
 
 /**

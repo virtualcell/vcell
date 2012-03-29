@@ -29,6 +29,7 @@ import java.util.zip.DataFormatException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Executable;
@@ -49,7 +50,6 @@ import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.MediaMethods;
 import cbit.vcell.export.gloworm.quicktime.MediaMovie;

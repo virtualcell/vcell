@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.vcell.sybil.util.JavaUtil;
+import org.vcell.util.ClientTaskStatusSupport;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class DataImporter {
 

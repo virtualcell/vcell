@@ -6,9 +6,9 @@ import javax.swing.JOptionPane;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCellClientClasspathUtils;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.server.VCellThreadChecker;
 
 public class ImageDatasetReaderFactory {
 	private static Bundle bundle = null;

@@ -29,8 +29,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.gui.HitEvent;
-import cbit.vcell.geometry.gui.HitList;
 import cbit.vcell.parser.ExpressionException;
 
 public class RayCasterBitSet {

@@ -22,10 +22,10 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -239,7 +239,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 public void gatherIssues(List<Issue> issueList) {
 	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 	if (geometrySpec != null) {
-		geometrySpec.gatherIssues(getSimulationContext(), issueList);
+		geometrySpec.gatherIssues(this, issueList);
 	}
 	
 	for (int i = 0; fieldStructureMappings!=null && i < fieldStructureMappings.length; i++){

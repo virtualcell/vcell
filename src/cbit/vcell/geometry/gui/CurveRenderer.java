@@ -1101,7 +1101,8 @@ public void removeSelected(int operation) {
 	if (getSelection() != null) {
 		Curve selected = getSelection().getCurve();
 		if (getSelection().getType() == CurveSelectionInfo.TYPE_CONTROL_POINT) {
-			int newSelectedControlPoint = ((ControlPointCurve) selected).removeControlPoint(getSelection().getControlPoint(), operation);
+			boolean bDeleteKeyPressed = (operation == java.awt.event.KeyEvent.VK_DELETE);
+			int newSelectedControlPoint = ((ControlPointCurve) selected).removeControlPoint(getSelection().getControlPoint(), bDeleteKeyPressed);
 			if (newSelectedControlPoint != CurveSelectionInfo.NONE_SELECTED) {
 				setSelection(new CurveSelectionInfo((ControlPointCurve) selected, CurveSelectionInfo.TYPE_CONTROL_POINT, newSelectedControlPoint));
 				return;

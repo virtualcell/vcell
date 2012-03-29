@@ -15,10 +15,10 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Preference;
 
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.PSLIDPanel;
 
 public class WebClientInterface {

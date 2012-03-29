@@ -9,11 +9,7 @@
  */
 
 package cbit.vcell.geometry;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -24,29 +20,24 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.swing.ImageIcon;
-
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.State;
 import org.vcell.util.document.Version;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.ImageException;
+import cbit.image.ThumbnailImage;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
-import cbit.vcell.client.server.VCellThreadChecker;
-import cbit.vcell.document.GeometryOwner;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.VCML;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -64,7 +55,7 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	private VCImage vcImage = null;
 	private transient byte[] uncompressedPixels = null;
 	private transient State<VCImage> sampledImage = new State<VCImage>(null);
-	private transient State<BufferedImage> thumbnailImage = new State<BufferedImage>(null);
+	private transient State<ThumbnailImage> thumbnailImage = new State<ThumbnailImage>(null);
 	
 	//
 	// zero dimension is a point geometry object
@@ -769,29 +760,6 @@ public String getFreeSubVolumeName() {
 
 /**
  * This method was created in VisualAge.
- * @return java.awt.image.IndexColorModel
- */
-public static final java.awt.image.IndexColorModel getHandleColorMap() {
-
-	int[] contrastColors = cbit.image.gui.DisplayAdapterService.createContrastColorModel();
-
-	byte red[] = new byte[contrastColors.length];
-	byte green[] = new byte[contrastColors.length];
-	byte blue[] = new byte[contrastColors.length];
-
-	for (int i=0;i<contrastColors.length;i++){
-		java.awt.Color color = new java.awt.Color(contrastColors[i]);
-		red[i] = (byte)color.getRed();
-		green[i] = (byte)color.getGreen();
-		blue[i] = (byte)color.getBlue();
-	}
-
-	return new java.awt.image.IndexColorModel(8,contrastColors.length,red,green,blue);
-}
-
-
-/**
- * This method was created in VisualAge.
  * @return cbit.image.FileImage
  */
 public VCImage getImage() {
@@ -891,9 +859,9 @@ public State<VCImage> getSampledImage() {
 	return sampledImage;
 }
 
-public State<BufferedImage> getThumbnailImage() {
+public State<ThumbnailImage> getThumbnailImage() {
 	if (thumbnailImage==null){
-		thumbnailImage = new State<BufferedImage>(null);
+		thumbnailImage = new State<ThumbnailImage>(null);
 		thumbnailImage.setDirty();
 	}
 	return thumbnailImage;
@@ -916,78 +884,11 @@ void fireAll() {
 	firePropertyChange(PROPERTY_NAME_THUMBNAIL_IMAGE, getThumbnailImage().getOldValue(), getThumbnailImage().getCurrentValue());
 }
 
-private static final int SAMPLED_GEOM_SIZE_MAX = 150;
-private BufferedImage createThumbnailImage() throws GeometryException {
-	try {		
-		int REAL_SAMPLE_X = 0;
-		int REAL_SAMPLE_Y = 0;
-		if(getDimension() > 0){
-			//Calc Scaling parameters
-			double srcScaleX = SAMPLED_GEOM_SIZE_MAX/getExtent().getX();
-			double srcScaleY = SAMPLED_GEOM_SIZE_MAX/getExtent().getY();
-
-			if(srcScaleX < srcScaleY){
-				REAL_SAMPLE_X = SAMPLED_GEOM_SIZE_MAX;
-				REAL_SAMPLE_Y = Math.max((int)(srcScaleX*getExtent().getY()),1);
-			}
-			else{
-				REAL_SAMPLE_Y = SAMPLED_GEOM_SIZE_MAX;
-				REAL_SAMPLE_X = Math.max((int)(srcScaleY*getExtent().getX()),1);		
-			}
-		}
-		if (getDimension() > 0) {
-			BufferedImage brightImage = 
-				new BufferedImage(REAL_SAMPLE_X,REAL_SAMPLE_Y, BufferedImage.TYPE_INT_RGB);
-			Graphics2D brightG2D = brightImage.createGraphics();
-			brightG2D.setColor(java.awt.Color.white);
-			brightG2D.fillRect(0,0,REAL_SAMPLE_X,REAL_SAMPLE_Y);
-			VCImage currSampledImage = getSampledImage().getCurrentValue();
-			java.awt.image.IndexColorModel handleColorMap = GeometrySpec.getHandleColorMap();
-			byte[] reds = new byte[256];
-			handleColorMap.getReds(reds);
-			byte[] greens = new byte[256];
-			handleColorMap.getGreens(greens);
-			byte[] blues = new byte[256];
-			handleColorMap.getBlues(blues);
-			//Create projections of each subvolume handle
-			VCPixelClass[] pixClassHandles = currSampledImage.getPixelClasses();
-			byte[] pixels = currSampledImage.getPixels();
-			for(int i = 0;i < pixClassHandles.length;i+= 1){
-				byte[] zBuf = new byte[currSampledImage.getNumX()*currSampledImage.getNumY()];
-				java.util.Arrays.fill(zBuf,(byte)0);
-				//Project z
-				for(int j =0;j<pixels.length;j+= 1){
-					if(pixels[j] == pixClassHandles[i].getPixel()){
-						zBuf[j%zBuf.length] = (byte)1;
-					}
-				}
-				//Scale X-Y
-				int cmapIndex = (pixClassHandles[i].getPixel()&0xff);
-				byte ired = reds[cmapIndex];
-				byte igrn = greens[cmapIndex];
-				byte iblu = blues[cmapIndex];
-				MemoryImageSource mis1 = new MemoryImageSource(currSampledImage.getNumX(), 
-						currSampledImage.getNumY(), 
-						new java.awt.image.IndexColorModel(8,2,
-								new byte[]{0,ired},
-								new byte[]{0,igrn},
-								new byte[]{0,iblu},
-								new byte[]{0,(byte)(200)}),
-								zBuf, 
-								0, currSampledImage.getNumX());
-				ImageIcon theImageIcon =
-					new ImageIcon(Toolkit.getDefaultToolkit().createImage(mis1).
-							getScaledInstance(REAL_SAMPLE_X,REAL_SAMPLE_Y,
-									Image.SCALE_AREA_AVERAGING));
-				brightG2D.drawImage(theImageIcon.getImage(), 0, 0, theImageIcon.getImageObserver());
-			}
-			return brightImage;
-		}
-		return null;
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new GeometryException("Imageshape refreshImage Error " + e.getMessage());
+private ThumbnailImage createThumbnailImage() throws ImageException {
+	if (GeometryThumbnailImageFactory.getGeometryThumbnailImageFactory()==null){
+		throw new ImageException("GeometryThumbnailImageFactory not set, cannot create a ThumbnailImage.");
 	}
+	return GeometryThumbnailImageFactory.getGeometryThumbnailImageFactory().getThumbnailImage(this);
 }
 
 /**
@@ -1090,27 +991,6 @@ byte[] getUncompressedPixels() throws cbit.image.ImageException {
 		}
 	}
 	return uncompressedPixels;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t" + VCML.Dimension+"   " + getDimension() + "\n");
-	buffer.append("\t" + VCML.Size+"        " + getExtent().getX() + "  "+getExtent().getY() + "  "+getExtent().getZ() + "\n");
-	buffer.append("\t" + VCML.Origin+"      " + getOrigin().getX() + "  "+getOrigin().getY() + "  "+getOrigin().getZ() + "\n");
-	if (vcImage != null && vcImage.getVersion() != null){
-		buffer.append("\t" + VCML.Image + "\t" + vcImage.getVersion().getVersionKey() + "\n");
-	} else if (vcImage != null){
-		buffer.append("\t" + VCML.Image + "\t <null image key>\n");
-	}
-	for (int i = 0; i < fieldSubVolumes.length; i++){
-		buffer.append(fieldSubVolumes[i].getVCML());
-	}
-	return(buffer.toString());		
 }
 
 
@@ -1456,13 +1336,11 @@ public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVeto
 	firePropertyChange("subVolumes", oldSubVolumes, subVolumes);
 }
 
-public void gatherIssues(GeometryOwner geometryOwner, List<Issue> issueVector) {
-	Object issueSource = null;
-	if (geometryOwner instanceof SimulationContext) {
-		issueSource = ((SimulationContext) geometryOwner).getGeometryContext();
-	} else if (geometryOwner instanceof MathModel) {
-		issueSource = geometryOwner.getGeometry();
-	}
+public void gatherIssues(Object issueSource, List<Issue> issueVector) {
+	//
+	// from SimulationContext, expecting issueSource to be a GeometryContext
+	// from a MathModel, expecting issueSource to be a geometry.
+	//
 	if (getDimension() > 0) {
 		VCImage argSampledImage = getSampledImage().getCurrentValue();
 		

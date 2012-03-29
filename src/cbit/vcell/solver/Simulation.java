@@ -21,11 +21,11 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -775,9 +775,9 @@ public void setMeshSpecification(MeshSpecification meshSpecification) throws jav
  */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	java.lang.String oldValue = fieldName;
-	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
+	fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
 	fieldName = name;
-	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
 }
 
 

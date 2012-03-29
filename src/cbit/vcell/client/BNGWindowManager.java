@@ -19,9 +19,9 @@ import java.util.Hashtable;
 
 import javax.swing.JFileChooser;
 
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.bionetgen.BNGOutputPanel;

@@ -89,9 +89,6 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	private boolean bShowReplaceButton = true;
 	
 	public static boolean debug_bShowResampleButton = false;
-	public static boolean debug_bCheckPolygonQuality = false;
-	public static double debug_maxQuadAngle = 180;
-	public static Double debug_filterCutoffFrequencyOverride = null;
 
 /**
  * Constructor

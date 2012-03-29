@@ -15,8 +15,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.PropertyConstants;
 
-import cbit.vcell.client.GuiConstants;
 
 /**
  * This type was created in VisualAge.
@@ -51,6 +51,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/2004 2:01:20 PM)
@@ -127,11 +128,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public abstract String getVCML();
-/**
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
@@ -173,9 +169,9 @@ void setHandle(int handle) {
  */
 public void setName(String aName) throws java.beans.PropertyVetoException {
 	String oldName = this.name;
-	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME,oldName,aName);
+	fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME,oldName,aName);
 	this.name = aName;
-	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME,oldName,name);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME,oldName,name);
 }
 /**
  * This method was created in VisualAge.

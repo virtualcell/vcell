@@ -8,9 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry.gui;
-import cbit.vcell.geometry.surface.Polygon;
-import cbit.vcell.geometry.surface.Surface;
+package cbit.vcell.geometry.surface;
 import cbit.vcell.render.Vect3d;
 /**
  * Insert the type's description here.

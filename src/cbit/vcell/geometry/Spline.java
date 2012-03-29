@@ -160,17 +160,6 @@ public int pickSegment(Coordinate pickCoord, double minPickDistance) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (10/10/00 1:01:52 PM)
- */
-public int pickSegmentProjected_NOT_USED(java.awt.geom.Point2D.Double pickPoint, double minPickDistance, int axis) {
-	int segment = 0;//getSampledCurve().pickSegmentProjected(pickPoint, minPickDistance, axis);
-	if (segment != Curve.NONE_SELECTED) {
-		segment = convertSampledSegmentToSplineSegment(segment);
-	}
-	return segment;
-}
-/**
- * Insert the method's description here.
  * Creation date: (10/9/00 5:49:46 PM)
  */
 public int setDesiredSampling(int argNumSamplePoints) {

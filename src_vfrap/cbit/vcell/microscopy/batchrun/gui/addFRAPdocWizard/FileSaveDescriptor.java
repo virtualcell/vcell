@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
@@ -21,7 +22,6 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;

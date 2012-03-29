@@ -12,6 +12,7 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.TestingFrameworkWindowManager;

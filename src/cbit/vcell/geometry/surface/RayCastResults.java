@@ -10,7 +10,6 @@
 
 package cbit.vcell.geometry.surface;
 
-import cbit.vcell.geometry.gui.HitList;
 
 public class RayCastResults {
 	private int numX;

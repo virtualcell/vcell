@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
 
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
+import cbit.image.ThumbnailImage;
 import cbit.vcell.geometry.Geometry;
 
 public class SubVolumeContainerShape extends ContainerShape{
@@ -47,8 +48,17 @@ public class SubVolumeContainerShape extends ContainerShape{
 		}
 	}
 
-	public void setBrightImage(BufferedImage newBrightImage){
-		brightImage = newBrightImage;
+	public void setBrightImage(ThumbnailImage thumbnailImage){
+		if (thumbnailImage!=null){
+			if (thumbnailImage.getNativeImage() instanceof BufferedImage){
+				brightImage = (BufferedImage)thumbnailImage.getNativeImage();
+			}else{
+				brightImage = new BufferedImage(thumbnailImage.getSizeX(),thumbnailImage.getSizeY(),BufferedImage.TYPE_INT_ARGB);
+				brightImage.setRGB(0, 0, thumbnailImage.getSizeX(), thumbnailImage.getSizeY(), thumbnailImage.getRGB(), 0, thumbnailImage.getSizeX());
+			}
+		}else{
+			brightImage = null;
+		}
 	}
 
 	@Override

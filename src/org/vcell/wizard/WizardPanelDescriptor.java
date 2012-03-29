@@ -5,8 +5,9 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
+import org.vcell.util.ClientTaskStatusSupport;
+
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 /**
  * Copyright © 2008, 2010 Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.

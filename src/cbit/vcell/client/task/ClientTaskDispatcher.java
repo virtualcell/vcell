@@ -21,10 +21,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialog;
-import org.vcell.util.gui.ProgressDialogListener;
 
 import swingthreads.SwingWorker;
 import cbit.vcell.client.ClientMDIManager;

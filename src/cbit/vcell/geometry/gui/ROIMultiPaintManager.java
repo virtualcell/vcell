@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry;
+package cbit.vcell.geometry.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -54,15 +54,16 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
@@ -77,11 +78,10 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
-import cbit.vcell.geometry.gui.CopyOfImageAttributePanel;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 

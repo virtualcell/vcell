@@ -23,9 +23,9 @@ import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 
@@ -72,7 +72,7 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 	}
 
 	private Color getSubvolumeColor(SubVolume subVolume) {
-		ColorModel colorModel = GeometrySpec.getHandleColorMap();
+		ColorModel colorModel = DisplayAdapterService.getHandleColorMap();
 		int handle = subVolume.getHandle();
 		return new Color(colorModel.getRGB(handle));
 	}

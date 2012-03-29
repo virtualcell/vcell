@@ -18,11 +18,11 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;

@@ -24,9 +24,9 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.Issue.IssueCategory;
 
-import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent;

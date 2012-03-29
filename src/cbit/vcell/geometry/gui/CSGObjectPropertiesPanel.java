@@ -38,10 +38,10 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -68,7 +68,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == csgObject) {
-				if (evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_NAME)) {
+				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 					titleLabel.setText("Properties for " + csgObject.getName());
 				} else if (evt.getPropertyName().equals(CSGObject.PROPERTY_NAME_ROOT)) {
 					csgObjectTreeModel.populateTree();
@@ -160,7 +160,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		}
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == csgObject && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_NAME)) {
+			if (evt.getSource() == csgObject && evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 				nodeChanged(rootNode);
 			}
 		}

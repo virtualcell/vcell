@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.optimization.ProfileData;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
@@ -46,7 +47,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;

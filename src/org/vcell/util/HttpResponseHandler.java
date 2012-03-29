@@ -21,7 +21,6 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.util.CharsetUtil;
 import org.vcell.util.NumberUtils;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class HttpResponseHandler extends SimpleChannelUpstreamHandler {
 

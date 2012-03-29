@@ -37,6 +37,7 @@ import org.vcell.util.Origin;
 import cbit.gui.graph.GraphContainerLayout;
 import cbit.gui.graph.GraphContainerLayoutVCellClassical;
 import cbit.image.VCImage;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
@@ -534,7 +535,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	protected ByteArrayOutputStream generateGeometryImage(Geometry geom) throws Exception{
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
-		IndexColorModel icm = GeometrySpec.getHandleColorMap();
+		IndexColorModel icm = DisplayAdapterService.getHandleColorMap();
 		geom.precomputeAll();
 		VCImage geomImage = geomSpec.getSampledImage().getCurrentValue();		
 		if(geomImage == null){

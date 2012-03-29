@@ -40,6 +40,7 @@ import javax.media.jai.operator.LookupDescriptor;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -62,7 +63,6 @@ import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;

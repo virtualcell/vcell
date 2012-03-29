@@ -37,6 +37,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
@@ -71,7 +72,6 @@ import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;

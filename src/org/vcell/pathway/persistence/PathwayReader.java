@@ -99,10 +99,10 @@ import org.vcell.pathway.UtilityClass;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.persistence.BiopaxProxy.*;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import static org.vcell.pathway.PathwayXMLHelper.*;
 
 public class PathwayReader {

@@ -16,11 +16,11 @@ import java.util.Comparator;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.plot.PlotData;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.AnnotatedFunction;

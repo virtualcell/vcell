@@ -2,10 +2,10 @@ package cbit.vcell.VirtualMicroscopy;
 
 import java.io.File;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public interface ImageDatasetReader {
 

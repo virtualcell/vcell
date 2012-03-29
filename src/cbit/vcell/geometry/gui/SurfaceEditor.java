@@ -12,8 +12,8 @@ package cbit.vcell.geometry.gui;
 
 import java.awt.AlphaComposite;
 import cbit.image.ImageException;
+import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.parser.ExpressionException;
@@ -938,7 +938,7 @@ private void onNewSurfaceCollection(SurfaceCollection argSurfaceCollection) {
 
 	//Set Geometry handle colors
 	if(argSurfaceCollection != null){
-		java.awt.image.IndexColorModel colorModel = (java.awt.image.IndexColorModel)GeometrySpec.getHandleColorMap();
+		java.awt.image.IndexColorModel colorModel = (java.awt.image.IndexColorModel)DisplayAdapterService.getHandleColorMap();
 		int[][] surfaceColors = new int[argSurfaceCollection.getSurfaceCount()][1];
 		final int colorOffset = 1;
 		for (int i = 0; i < argSurfaceCollection.getSurfaceCount(); i++){

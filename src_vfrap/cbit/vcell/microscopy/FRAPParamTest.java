@@ -19,12 +19,12 @@ import java.util.ArrayList;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
-import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.ProgressDialogListener;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.resource.ResourceUtil;
 /**

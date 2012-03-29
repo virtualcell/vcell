@@ -27,9 +27,9 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.mapping.SimulationContext;
@@ -55,7 +55,7 @@ public class ApplicationPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == simulationContext) {
-				if (evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_NAME) 
+				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME) 
 						|| evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_DESCRIPTION)) {
 					updateInterface();
 				}

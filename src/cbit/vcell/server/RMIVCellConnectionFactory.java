@@ -10,7 +10,7 @@
 
 package cbit.vcell.server;
 
-import cbit.vcell.client.server.VCellThreadChecker;
+import org.vcell.util.VCellThreadChecker;
 
 
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {

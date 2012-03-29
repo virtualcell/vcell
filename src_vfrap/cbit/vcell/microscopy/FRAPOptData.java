@@ -15,15 +15,15 @@ import java.util.Arrays;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.opt.Parameter;

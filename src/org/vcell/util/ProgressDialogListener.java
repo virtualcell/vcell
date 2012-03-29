@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.util.gui;
+package org.vcell.util;
 public interface ProgressDialogListener extends java.util.EventListener {
 /**
  * 
