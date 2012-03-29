@@ -29,18 +29,18 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
@@ -1198,42 +1198,6 @@ public double getTemperatureKelvin() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() throws Exception {
-	StringBuffer buffer = new StringBuffer();
-	String name = (version!=null)?(version.getName()):"unnamedSimContext";
-	buffer.append(VCMODL.SimulationContext+" "+name+" {\n");
-
-	//
-	// write Model or ModelRef
-	//
-	buffer.append(VCMODL.ModelReference+" "+getGeometryContext().getModel().toString()+"\n");
-//java.io.StringWriter stringWriter = new java.io.StringWriter();
-//getGeometryContext().getModel().writeTokens(new java.io.PrintWriter(stringWriter));
-//buffer.append(stringWriter.toString()+"\n");
-
-	//
-	// write Geometry or GeometryRef
-	//
-//	buffer.append(VCML.GeometryReference+" "+getGeometryContext().getGeometry().getName()+"\n");
-buffer.append(VCML.Geometry+" "+getGeometryContext().getGeometry().getGeometrySpec().getVCML()+"\n");
-
-	//
-	// write GeometryContext (geometric mapping)
-	//
-	buffer.append(getGeometryContext().getVCML()+"\n");
-
-	//
-	// write ReactionContext (parameter/variable mapping)
-	//
-	buffer.append(getReactionContext().getVCML()+"\n");
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -1297,7 +1261,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals("model")){
 		firePropertyChange("model", event.getOldValue(), event.getNewValue());
 	}
-	if (event.getSource() == getBioModel() && event.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)){
+	if (event.getSource() == getBioModel() && event.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS)){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])event.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
 		boolean bShouldFire = false;
@@ -1320,7 +1284,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			}
 		}
 		if (bShouldFire) {
-			firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS,oldSimulations,newSimulations);
+			firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS,oldSimulations,newSimulations);
 		}
 	}
 }
@@ -1816,9 +1780,9 @@ public void setModel(Model model) throws MappingException, PropertyVetoException
  */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
-	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
+	fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
 	fieldName = name;
-	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
+	firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
 }
 
 /**

@@ -8,8 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry.surface;
+package cbit.vcell.export;
 
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**

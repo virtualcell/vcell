@@ -51,11 +51,11 @@ import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodT
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.HyperLinkLabel;
 import org.vcell.util.gui.ProgressDialog;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.GuiConstants;

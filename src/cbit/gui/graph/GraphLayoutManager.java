@@ -13,6 +13,8 @@ package cbit.gui.graph;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.graphlayout.ContainedGraphLayouter;
 import org.vcell.util.graphlayout.EdgeTugLayouter;
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
@@ -25,7 +27,6 @@ import org.vcell.util.graphlayout.GraphLayouter.Client;
 import org.vcell.util.graphlayout.GraphLayouter.Client.Default;
 import org.vcell.util.graphlayout.energybased.ShootAndCutLayouter;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 import edu.rpi.graphdrawing.Annealer;
 import edu.rpi.graphdrawing.Blackboard;

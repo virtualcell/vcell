@@ -27,6 +27,7 @@ import javax.swing.JInternalFrame;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
@@ -36,7 +37,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;

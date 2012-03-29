@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.ProgressDialogListenerEventMulticaster;
 /**
  * Insert the type's description here.

@@ -14,9 +14,9 @@ import java.util.Arrays;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.DivideByZeroException;

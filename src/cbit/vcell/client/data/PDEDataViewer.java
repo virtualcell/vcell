@@ -67,6 +67,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
@@ -106,7 +107,6 @@ import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.MediaMethods;

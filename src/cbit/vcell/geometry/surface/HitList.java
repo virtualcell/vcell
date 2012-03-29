@@ -8,14 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.geometry.gui;
+package cbit.vcell.geometry.surface;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
-import cbit.vcell.geometry.surface.VolumeSamples;
-import cbit.vcell.geometry.surface.VolumeSamplesBitSet;
-import cbit.vcell.geometry.surface.VolumeSamplesLong;
 
 /**
  * Insert the type's description here.

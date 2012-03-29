@@ -7,10 +7,10 @@ import java.net.URL;
 
 import org.sbpax.util.StringUtil;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 
 import com.ibm.icu.impl.ICUListResourceBundle.ResourceString;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public abstract class DataImportSource {
 

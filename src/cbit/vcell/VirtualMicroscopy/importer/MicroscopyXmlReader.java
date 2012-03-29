@@ -20,6 +20,7 @@ import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -31,7 +32,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlBase;
 import cbit.vcell.xml.XmlParseException;

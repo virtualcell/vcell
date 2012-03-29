@@ -11,12 +11,13 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
+
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.simdata.SimDataConstants;
 
 public abstract class FRAPWorkspace 

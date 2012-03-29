@@ -21,11 +21,11 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldFunctionArguments;

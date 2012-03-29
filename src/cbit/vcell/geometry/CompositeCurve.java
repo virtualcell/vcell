@@ -133,15 +133,6 @@ public int pickSegment(Coordinate pickCoord,double minPickDistance) {
 	return 0;
 }
 /**
- * Insert the method's description here.
- * Creation date: (10/18/00 2:47:43 PM)
- * @return int
- * @param pickCoord cbit.vcell.geometry.Coordinate
- */
-public int pickSegmentProjected_NOT_USED(java.awt.geom.Point2D.Double pickPoint, double minPickDistance, int axis) {
-	return 0;
-}
-/**
  * This method was created in VisualAge.
  */
 public void removeCurve(int i) {

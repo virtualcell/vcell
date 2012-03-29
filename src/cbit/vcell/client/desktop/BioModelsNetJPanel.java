@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
@@ -46,7 +47,6 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.xml.XMLInfo;
 
 import javax.swing.border.TitledBorder;

@@ -13,7 +13,8 @@ package org.vcell.optimization;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
+
 
 
 

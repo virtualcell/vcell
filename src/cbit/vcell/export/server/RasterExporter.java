@@ -20,8 +20,8 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.*;
-import cbit.vcell.geometry.surface.AVS_UCD_Exporter;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 12:53:34 PM)

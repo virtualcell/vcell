@@ -23,13 +23,13 @@ import org.jdom.Element;
 import org.vcell.optimization.OptXmlTags;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;

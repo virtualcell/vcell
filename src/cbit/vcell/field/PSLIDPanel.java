@@ -42,6 +42,7 @@ import javax.swing.ScrollPaneConstants;
 import org.jdom.Element;
 import org.jdom.filter.Filter;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -57,7 +58,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.pslid.WebClientInterface;
 import cbit.vcell.simdata.VariableType;
 

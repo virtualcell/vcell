@@ -3,9 +3,9 @@ package org.vcell.util.importer;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
 import org.vcell.pathway.persistence.RDFXMLContext;
+import org.vcell.util.ClientTaskStatusSupport;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class PathwayImporter extends DataImporter {
 	

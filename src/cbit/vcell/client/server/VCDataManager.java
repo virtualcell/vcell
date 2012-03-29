@@ -13,6 +13,7 @@ package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;

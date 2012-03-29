@@ -19,9 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.ProgressDialogListener;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 @SuppressWarnings("serial")
 public class MessagePanel extends JPanel implements ClientTaskStatusSupport

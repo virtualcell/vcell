@@ -21,10 +21,10 @@ import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class PathwayModel {
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();

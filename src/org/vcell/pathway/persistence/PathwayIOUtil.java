@@ -17,8 +17,8 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.BioPAX3;
 import org.vcell.pathway.PathwayModel;
+import org.vcell.util.ClientTaskStatusSupport;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class PathwayIOUtil {
 

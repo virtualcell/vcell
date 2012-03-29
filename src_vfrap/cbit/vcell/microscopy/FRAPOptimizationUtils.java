@@ -19,6 +19,7 @@ import org.vcell.optimization.OptSolverResultSet;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.optimization.ProfileSummaryData;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DescriptiveStatistics;
 
 import cbit.function.DefaultScalarFunction;
@@ -27,7 +28,6 @@ import cbit.plot.PlotData;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;

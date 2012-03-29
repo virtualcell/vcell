@@ -23,6 +23,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -33,7 +34,6 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.simdata.DataServerImpl;
 

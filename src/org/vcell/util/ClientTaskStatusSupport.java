@@ -8,9 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.task;
+package org.vcell.util;
 
-import org.vcell.util.gui.ProgressDialogListener;
 
 public interface ClientTaskStatusSupport {
 	void setMessage(String message);

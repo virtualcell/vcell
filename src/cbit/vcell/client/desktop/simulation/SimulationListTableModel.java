@@ -14,12 +14,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -163,7 +163,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		refreshData();
 	} else if (evt.getSource() == getSimulationWorkspace()) {
-		if (evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)) {
+		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS)) {
 			Simulation[] oldValue = (Simulation[]) evt.getOldValue();
 			if (oldValue != null) {
 				for (Simulation simulation : oldValue) {

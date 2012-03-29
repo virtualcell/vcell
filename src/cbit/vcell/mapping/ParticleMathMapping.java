@@ -17,9 +17,9 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
-import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;

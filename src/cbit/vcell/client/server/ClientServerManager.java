@@ -13,6 +13,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.PopupGenerator;

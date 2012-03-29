@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import javax.swing.JInternalFrame;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -29,7 +30,6 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.SimStatusEvent;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportServiceImpl;

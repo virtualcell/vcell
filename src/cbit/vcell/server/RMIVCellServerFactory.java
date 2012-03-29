@@ -11,7 +11,8 @@
 package cbit.vcell.server;
 
 import java.rmi.*;
-import cbit.vcell.client.server.VCellThreadChecker;
+
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 
 /**

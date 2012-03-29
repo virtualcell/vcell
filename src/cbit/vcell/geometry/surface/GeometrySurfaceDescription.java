@@ -19,11 +19,11 @@ import java.util.Set;
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.State;
+import org.vcell.util.VCellThreadChecker;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.ImageException;
-import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;

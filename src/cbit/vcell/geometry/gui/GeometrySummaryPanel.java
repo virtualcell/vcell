@@ -405,7 +405,7 @@ public javax.swing.Icon createIcon(VCImage sampledImage, Geometry geom) throws c
 		}
 		MemoryImageSource mis = new MemoryImageSource(	sampledGeometryHandles.getNumX(), 
 														sampledGeometryHandles.getNumY(), 
-														GeometrySpec.getHandleColorMap(), 
+														DisplayAdapterService.getHandleColorMap(), 
 														sampledGeometryHandles.getPixels(), 
 														0, sampledGeometryHandles.getNumX());
 		java.awt.Image sampledGeometryImage = java.awt.Toolkit.getDefaultToolkit().createImage(mis);
@@ -435,7 +435,7 @@ private javax.swing.ListCellRenderer createListCellRenderer() {
 				SubVolume subVolume = (SubVolume)value;
 				
 				setText(subVolume.getName());
-				int colorInt = GeometrySpec.getHandleColorMap().getRGB(subVolume.getHandle());
+				int colorInt = DisplayAdapterService.getHandleColorMap().getRGB(subVolume.getHandle());
 				java.awt.Color handleColor = new java.awt.Color(colorInt);
 				setIcon(new ColorIcon(20,20,handleColor));
 			}else{

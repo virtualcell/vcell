@@ -50,12 +50,6 @@ public class CSGObject extends SubVolume {
 	}
 
 	@Override
-	public String getVCML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean isInside(double x, double y, double z, GeometrySpec geometrySpec) throws GeometryException, ImageException, ExpressionException {
 		if (getRoot() == null) {
 			return false;

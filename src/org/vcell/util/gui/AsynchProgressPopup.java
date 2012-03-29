@@ -19,8 +19,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.ProgressDialogListener;
 
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 /**
  * Insert the type's description here.

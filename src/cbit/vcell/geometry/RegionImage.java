@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Vector;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ObjectReferenceWrapper;
@@ -27,8 +28,6 @@ import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Tree;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.geometry.surface.OrigSurface;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Quadrilateral;
@@ -56,6 +55,11 @@ public class RegionImage implements Serializable {
 	private RegionInfo regionInfos[] = null;
 	private final static int NOT_VISITED = -1;
 	private final static int DEPTH_END_SEED = -2;
+	
+	public static boolean debug_bCheckPolygonQuality = false;
+	public static double debug_maxQuadAngle = 180;
+	public static Double debug_filterCutoffFrequencyOverride = null;
+
 
 	
 //	public static class CompactUnsignedIntStorage{
@@ -356,8 +360,8 @@ public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,dou
 	this.numZ = vcImage.getNumZ();
 	this.numXY = numX*numY;
 	this.filterCutoffFrequency = filterCutoffFrequency;
-	if (GeometryViewer.debug_filterCutoffFrequencyOverride!=null){
-		this.filterCutoffFrequency = GeometryViewer.debug_filterCutoffFrequencyOverride;
+	if (debug_filterCutoffFrequencyOverride!=null){
+		this.filterCutoffFrequency = debug_filterCutoffFrequencyOverride;
 	}
 	
 //	long startTime = System.currentTimeMillis();
@@ -886,8 +890,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 				dimension, extent, origin);
 	}
 	
-	if (surfaceCollection != null && GeometryViewer.debug_bCheckPolygonQuality){
-		verifyQuadVertexOrdering(GeometryViewer.debug_maxQuadAngle);
+	if (surfaceCollection != null && debug_bCheckPolygonQuality){
+		verifyQuadVertexOrdering(debug_maxQuadAngle);
 	}
 	//System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
@@ -899,8 +903,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	}
 	//System.out.println("----------smooth surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
-	if (surfaceCollection != null && GeometryViewer.debug_bCheckPolygonQuality){
-		verifyQuadVertexOrdering(GeometryViewer.debug_maxQuadAngle);
+	if (surfaceCollection != null && debug_bCheckPolygonQuality){
+		verifyQuadVertexOrdering(debug_maxQuadAngle);
 	}
 
 //	System.out.println("Total Num Regions = "+regionsV.size());

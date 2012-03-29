@@ -49,6 +49,7 @@ import javax.swing.undo.UndoableEditSupport;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.ISize;
@@ -78,7 +79,6 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;

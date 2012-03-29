@@ -73,7 +73,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)

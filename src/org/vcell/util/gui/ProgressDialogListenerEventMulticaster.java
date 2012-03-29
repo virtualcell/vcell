@@ -12,7 +12,7 @@ package org.vcell.util.gui;
 /**
  * This is the event multicaster class to support the cbit.util.ProgressDialogListenerEventMulticaster interface.
  */
-public class ProgressDialogListenerEventMulticaster extends java.awt.AWTEventMulticaster implements org.vcell.util.gui.ProgressDialogListener {
+public class ProgressDialogListenerEventMulticaster extends java.awt.AWTEventMulticaster implements org.vcell.util.ProgressDialogListener {
 /**
  * Constructor to support multicast events.
  * @param a java.util.EventListener
@@ -29,8 +29,8 @@ protected ProgressDialogListenerEventMulticaster(java.util.EventListener a, java
  * @param a cbit.util.ProgressDialogListener
  * @param b cbit.util.ProgressDialogListener
  */
-public static org.vcell.util.gui.ProgressDialogListener add(org.vcell.util.gui.ProgressDialogListener a, org.vcell.util.gui.ProgressDialogListener b) {
-	return (org.vcell.util.gui.ProgressDialogListener)addInternal(a, b);
+public static org.vcell.util.ProgressDialogListener add(org.vcell.util.ProgressDialogListener a, org.vcell.util.ProgressDialogListener b) {
+	return (org.vcell.util.ProgressDialogListener)addInternal(a, b);
 }
 
 
@@ -52,8 +52,8 @@ protected static java.util.EventListener addInternal(java.util.EventListener a, 
  * @param newEvent java.util.EventObject
  */
 public void cancelButton_actionPerformed(java.util.EventObject newEvent) {
-	((org.vcell.util.gui.ProgressDialogListener)a).cancelButton_actionPerformed(newEvent);
-	((org.vcell.util.gui.ProgressDialogListener)b).cancelButton_actionPerformed(newEvent);
+	((org.vcell.util.ProgressDialogListener)a).cancelButton_actionPerformed(newEvent);
+	((org.vcell.util.ProgressDialogListener)b).cancelButton_actionPerformed(newEvent);
 }
 
 
@@ -62,7 +62,7 @@ public void cancelButton_actionPerformed(java.util.EventObject newEvent) {
  * @return java.util.EventListener
  * @param oldl cbit.util.ProgressDialogListener
  */
-protected java.util.EventListener remove(org.vcell.util.gui.ProgressDialogListener oldl) {
+protected java.util.EventListener remove(org.vcell.util.ProgressDialogListener oldl) {
 	if (oldl == a)  return b;
 	if (oldl == b)  return a;
 	java.util.EventListener a2 = removeInternal(a, oldl);
@@ -79,11 +79,11 @@ protected java.util.EventListener remove(org.vcell.util.gui.ProgressDialogListen
  * @param l cbit.util.ProgressDialogListener
  * @param oldl cbit.util.ProgressDialogListener
  */
-public static org.vcell.util.gui.ProgressDialogListener remove(org.vcell.util.gui.ProgressDialogListener l, org.vcell.util.gui.ProgressDialogListener oldl) {
+public static org.vcell.util.ProgressDialogListener remove(org.vcell.util.ProgressDialogListener l, org.vcell.util.ProgressDialogListener oldl) {
 	if (l == oldl || l == null)
 		return null;
 	if(l instanceof ProgressDialogListenerEventMulticaster)
-		return (org.vcell.util.gui.ProgressDialogListener)((org.vcell.util.gui.ProgressDialogListenerEventMulticaster) l).remove(oldl);
+		return (org.vcell.util.ProgressDialogListener)((org.vcell.util.gui.ProgressDialogListenerEventMulticaster) l).remove(oldl);
 	return l;
 }
 }

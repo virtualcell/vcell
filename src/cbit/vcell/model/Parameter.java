@@ -14,8 +14,8 @@ import java.io.Serializable;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;

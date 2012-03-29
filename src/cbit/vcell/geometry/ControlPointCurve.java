@@ -333,7 +333,7 @@ public void removeControlPoint(int i) {
  * Creation date: (7/18/00 2:23:22 PM)
  * @param newControlPoint cbit.vcell.geometry.Coordinate
  */
-public int removeControlPoint(int removeIndex, int operation) {
+public int removeControlPoint(int removeIndex, boolean bDeleteKeyPressed) {
 	if (getControlPointCount() != 0 && removeIndex < getControlPointCount() && removeIndex >= 0) {
 		controlPoints.removeElementAt(removeIndex);
 		sampledCurveDirty();
@@ -343,7 +343,7 @@ public int removeControlPoint(int removeIndex, int operation) {
 		if (getControlPointCount() == 1) {
 			return 0;
 		}
-		if (operation == java.awt.event.KeyEvent.VK_DELETE) { // Press Delete key
+		if (bDeleteKeyPressed) { // Press Delete key
 			if (removeIndex >= getControlPointCount()) {
 				removeIndex = getControlPointCount() - 1;
 			}

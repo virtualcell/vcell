@@ -15,6 +15,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JProgressBar;
+
+import org.vcell.util.ProgressDialogListener;
 /**
  * Insert the type's description here.
  * Creation date: (5/18/2004 1:14:29 AM)
