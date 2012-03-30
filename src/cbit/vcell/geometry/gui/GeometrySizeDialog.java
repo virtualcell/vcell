@@ -864,7 +864,7 @@ private void Ok() throws PropertyVetoException {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			geometrySpec.setExtent(new Extent(worldExtentX,worldExtentY,worldExtentZ));
 			geometrySpec.setOrigin(new Origin(worldOriginX,worldOriginY,worldOriginZ));
-			getGeometry().precomputeAll();
+			getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		}
 	};
 	ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask}, false);

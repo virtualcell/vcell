@@ -27,6 +27,7 @@ import cbit.image.VCPixelClass;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.parser.ExpressionException;
@@ -34,7 +35,7 @@ import cbit.vcell.render.Vect3d;
 
 public class RayCaster {
 	
-	public static Geometry createGeometryFromSTL(File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
+	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory, File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
 		SurfaceCollection surfaceCollection = StlReader.readStl(stlFile);
 		
 		Node[] nodes = surfaceCollection.getNodes();
@@ -61,7 +62,7 @@ public class RayCaster {
 		
 		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);
 		
-		Geometry geometry = createGeometry(surfaceCollection, origin, extent, sampleSize);
+		Geometry geometry = createGeometry(geometryThumbnailImageFactory, surfaceCollection, origin, extent, sampleSize);
 		
 		return geometry;
 	}
@@ -630,7 +631,7 @@ public class RayCaster {
 		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ);
 	}
 
-	public static Geometry createGeometry(SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
+	public static Geometry createGeometry(GeometryThumbnailImageFactory geometryThumbnailImageFactory, SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
 			int numX = sampleSize.getX();
 			int numY = sampleSize.getY();
 			int numZ = sampleSize.getZ();
@@ -680,12 +681,12 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 		Geometry geometry = new Geometry("newGeometry",vcImage);
 		geometry.getGeometrySpec().setExtent(extent);
 		geometry.getGeometrySpec().setOrigin(origin);
-		geometry.precomputeAll(true, true);
+		geometry.precomputeAll(geometryThumbnailImageFactory, true, true);
 		
 		return geometry;
 	}
 	
-	public static Geometry resampleGeometry(Geometry origGeometry, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException {
+	public static Geometry resampleGeometry(GeometryThumbnailImageFactory geometryThumbnailImageFactory, Geometry origGeometry, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException {
 		GeometrySpec origGeometrySpec = origGeometry.getGeometrySpec();
 		VCImage origSubvolumeImage = origGeometry.getGeometrySpec().getSampledImage().getCurrentValue();
 		if (origSubvolumeImage==null){	
@@ -784,7 +785,7 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 		newGeometry.setDescription(origGeometry.getDescription());
 		newGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(origGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
 		
-		newGeometry.precomputeAll(true,true);
+		newGeometry.precomputeAll(geometryThumbnailImageFactory, true,true);
 		
 		return newGeometry;
 	}

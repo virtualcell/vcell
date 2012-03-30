@@ -22,8 +22,8 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.MathSymbolTable;
+import cbit.vcell.math.MathSymbolTableFactory;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -43,8 +43,10 @@ import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -54,15 +56,14 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.VariableType.VariableDomain;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class SimulationSymbolTable implements ScopedSymbolTable {
+public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable {
 	private Simulation simulation = null;
 	//	
 	private transient HashMap<String, Variable> localVariableHash = null;	
@@ -114,6 +115,10 @@ public SimulationSymbolTable(Simulation arg_simulation, int arg_index) {
 
 public final Simulation getSimulation() {
 	return simulation;
+}
+
+public final MathDescription getMathDescription(){
+	return simulation.getMathDescription();
 }
 
 /**
@@ -599,7 +604,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 		
 		// Size Functions
-		Set<FunctionInvocation> fiSet = FieldUtilities.getSizeFunctionInvocations(function.getExpression());
+		Set<FunctionInvocation> fiSet = MathFunctionDefinitions.getSizeFunctionInvocations(function.getExpression());
 		for (FunctionInvocation fi : fiSet) {
 			String functionName = fi.getFunctionName();
 			if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
@@ -673,5 +678,13 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 		
 		return funcType;
+	}
+
+	public static MathSymbolTableFactory getMathSymbolTableFactory() {
+		return new MathSymbolTableFactory() {
+			public MathSymbolTable createMathSymbolTable(MathDescription newMath) {
+				return new SimulationSymbolTable(new Simulation(newMath),0);
+			}
+		};
 	}
 }

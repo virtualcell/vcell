@@ -57,13 +57,13 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType.VariableDomain;
+import cbit.vcell.solver.AnnotatedFunction;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)

@@ -439,13 +439,13 @@ public String toString() {
 	return "geometry"+"@"+Integer.toHexString(hashCode())+"("+((version!=null)?(version.toString()):getName())+")";
 }
 
-public void precomputeAll() throws GeometryException, ImageException, ExpressionException {
-	precomputeAll(true, false);
+public void precomputeAll(GeometryThumbnailImageFactory geometryThumbnailImageFactory) throws GeometryException, ImageException, ExpressionException {
+	precomputeAll(geometryThumbnailImageFactory, true, false);
 }
 
-public void precomputeAll(boolean bUpdateSampledImage, boolean bForcePrecomputeSurfaces) throws GeometryException, ImageException, ExpressionException {
+public void precomputeAll(GeometryThumbnailImageFactory geometryThumbnailImageFactory, boolean bUpdateSampledImage, boolean bForcePrecomputeSurfaces) throws GeometryException, ImageException, ExpressionException {
 	if (bUpdateSampledImage) {
-		getGeometrySpec().updateSampledImage();
+		getGeometrySpec().updateSampledImage(geometryThumbnailImageFactory);
 	}
 	if (getDimension()>0 && (bForcePrecomputeSurfaces || getGeometrySurfaceDescription().getGeometricRegions()==null)) {
 		getGeometrySurfaceDescription().updateAll();					

@@ -24,13 +24,14 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -53,7 +54,7 @@ public class ClientTaskManager {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-				newSimulationContext.getGeometry().precomputeAll();
+				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 			}
 		};
 		return new AsynchClientTask[] {task0, task1};
@@ -82,7 +83,7 @@ public class ClientTaskManager {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
-				newSimulationContext.getGeometry().precomputeAll();
+				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
 					newSimulationContext.refreshMathDescription();
 				}
@@ -121,7 +122,7 @@ public class ClientTaskManager {
 
 	public static SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
 		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
-		newClonedGeometry.precomputeAll();
+		newClonedGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
 		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
 		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);

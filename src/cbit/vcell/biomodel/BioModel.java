@@ -49,7 +49,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.BioModelEntityObject;
@@ -63,6 +62,7 @@ import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)

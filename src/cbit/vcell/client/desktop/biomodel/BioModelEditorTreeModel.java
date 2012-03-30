@@ -29,7 +29,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 

@@ -18,10 +18,10 @@ import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

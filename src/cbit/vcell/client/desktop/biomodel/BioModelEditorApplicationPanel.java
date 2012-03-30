@@ -33,7 +33,8 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.geometry.GeometryOwner;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -165,7 +166,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				simulationContext.getGeometry().precomputeAll();
+				simulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("showing application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

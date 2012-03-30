@@ -92,7 +92,7 @@ public double[] getDataSetTimes() throws DataAccessException {
  * 
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
+public cbit.vcell.solver.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
 	return getVCDataManager().getFunctions(outputContext,getVcDataIdentifier());
 }
 

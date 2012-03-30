@@ -218,7 +218,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				AsynchClientTask task1 = new AsynchClientTask("changing the name", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						getGeometry().precomputeAll();
+						getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 					}
 				};
 				ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
@@ -235,7 +235,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						AsynchClientTask task1 = new AsynchClientTask("changing the expression", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
-								getGeometry().precomputeAll();
+								getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 							}
 						};
 						ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);

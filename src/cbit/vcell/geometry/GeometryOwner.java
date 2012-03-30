@@ -8,10 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.document;
+package cbit.vcell.geometry;
 import java.beans.PropertyChangeListener;
 
-import cbit.vcell.geometry.Geometry;
 
 public interface GeometryOwner {
 	public static final String PROPERTY_NAME_GEOMETRY = "geometry";

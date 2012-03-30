@@ -37,6 +37,7 @@ import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
@@ -120,7 +121,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry newGeom = (Geometry)hashTable.get("doc");
 						ClientRequestManager.continueAfterMathModelGeomChangeWarning(MathModelWindowManager.this, newGeom);
-						newGeom.precomputeAll();					}
+						newGeom.precomputeAll(new GeometryThumbnailImageFactoryAWT());					}
 			};
 			AsynchClientTask applyGeomTask = new AsynchClientTask("Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 				@Override

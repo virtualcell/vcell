@@ -34,6 +34,7 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -215,7 +216,7 @@ private void insertMathDescExternalDataLink(Connection con,User user,MathDescrip
 			fieldDataDBOperation(
 					con, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 		boolean bExtDataInserted[] = new boolean[extDataIDArr.length];
-		FieldFunctionArguments[] fieldFuncArgsArr = mathDesc.getFieldFunctionArguments();
+		FieldFunctionArguments[] fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDesc);
 		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){
 			for(int k=0;k<extDataIDArr.length;k+= 1){
 				if( !bExtDataInserted[k] && extDataIDArr[k].getName().equals(fieldFuncArgsArr[i].getFieldName())){

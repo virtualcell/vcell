@@ -71,8 +71,8 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws org.vcell.util.Da
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.math.AnnotatedFunction[])rpc("getFunctions",new Object[]{outputContext,user, vcdataID});
+public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.solver.AnnotatedFunction[])rpc("getFunctions",new Object[]{outputContext,user, vcdataID});
 }
 
 

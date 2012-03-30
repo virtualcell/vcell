@@ -14,8 +14,8 @@ import java.awt.BorderLayout;
 
 import javax.swing.JMenu;
 
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.mathmodel.MathModel;
 

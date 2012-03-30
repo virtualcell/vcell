@@ -22,7 +22,6 @@ import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationSymbolTable;
 
 public class FastSystem implements MathObject, Serializable, Matchable {
 	protected MathDescription mathDesc = null;
@@ -186,7 +185,7 @@ public MathDescription getMathDesc() {
  * Creation date: (10/10/2002 11:15:31 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(SimulationSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	//
 	// replace fastRates with flattended and substituted fastRates
 	//
@@ -208,7 +207,7 @@ void flatten(SimulationSymbolTable simSymbolTable, boolean bRoundCoefficients) t
  * Creation date: (10/10/2002 10:31:03 AM)
  * @param simSymbolTable cbit.vcell.solver.SimulationSymbolTable
  */
-private Expression getFlattenedExpression(SimulationSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
+private Expression getFlattenedExpression(MathSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 
 	if (exp == null){
 		return null;
@@ -239,7 +238,7 @@ final Enumeration<Expression> getFastRateExpressions() {
  * Creation date: (10/17/2002 1:58:28 AM)
  * @return cbit.vcell.parser.Expression[]
  */
-final Expression[] getExpressions() {
+public final Expression[] getExpressions() {
 	Vector<Expression> expList = new Vector<Expression>();
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		FastInvariant fi = fastInvariantList.elementAt(i);

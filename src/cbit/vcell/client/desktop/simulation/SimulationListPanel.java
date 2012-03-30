@@ -45,7 +45,6 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
@@ -55,6 +54,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)

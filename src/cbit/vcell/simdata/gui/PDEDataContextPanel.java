@@ -32,10 +32,10 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**

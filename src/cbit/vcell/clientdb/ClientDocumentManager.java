@@ -55,7 +55,6 @@ import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -69,10 +68,11 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldFunctionContainer;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
@@ -92,6 +92,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.util.VCellErrorMessages;
 import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -3067,19 +3068,25 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 			return;
 		}
 		//Get Objects from Document that might need to have FieldFuncs replaced
-		Vector<FieldFunctionContainer> fieldFunctionContainerV = new Vector<FieldFunctionContainer>();
+		Vector<Object> fieldFunctionContainer_mathDesc_or_simContextV = new Vector<Object>();
 		if(vcDocument instanceof MathModel){
-			fieldFunctionContainerV.add(((MathModel)vcDocument).getMathDescription());
+			fieldFunctionContainer_mathDesc_or_simContextV.add(((MathModel)vcDocument).getMathDescription());
 		}else if(vcDocument instanceof BioModel){
 			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContexts();
 			for(int i=0;i<simContextArr.length;i+= 1){
-				fieldFunctionContainerV.add(simContextArr[i]);
+				fieldFunctionContainer_mathDesc_or_simContextV.add(simContextArr[i]);
 			}
 		}
 		//Get original Field names
 		Vector<String> origFieldFuncNamesV = new Vector<String>();
-		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
-			FieldFunctionArguments[] fieldFuncArgsArr = fieldFunctionContainerV.elementAt(i).getFieldFunctionArguments();
+		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
+			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
+			FieldFunctionArguments[] fieldFuncArgsArr = null;
+			if (fieldFunctionContainer instanceof MathDescription){
+				fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription)fieldFunctionContainer);
+			}else if (fieldFunctionContainer instanceof SimulationContext){
+				fieldFuncArgsArr = ((SimulationContext)fieldFunctionContainer).getFieldFunctionArguments();
+			}
 			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
 				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
 					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
@@ -3116,8 +3123,15 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 			);
 		}
 		//Finally substitute new Field names
-		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
-			fieldFunctionContainerV.elementAt(i).substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
+		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
+			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
+			if (fieldFunctionContainer instanceof MathDescription){
+				MathDescription mathDesc = (MathDescription)fieldFunctionContainer;
+				FieldUtilities.substituteFieldFuncNames(mathDesc, copyNamesFieldDataOpResults.oldNameNewIDHash);
+			}else if (fieldFunctionContainer instanceof SimulationContext){
+				SimulationContext simContext = (SimulationContext)fieldFunctionContainer;
+				simContext.substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
+			}
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){

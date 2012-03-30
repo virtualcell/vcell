@@ -12,20 +12,26 @@ package cbit.vcell.field;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.document.ExternalDataIdentifier;
 
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FieldFunctionDefinition;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.simdata.VariableType;
 
 public class FieldUtilities {
 	
@@ -78,27 +84,6 @@ public class FieldUtilities {
 		}
 	}
 
-	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {
-		if(expression == null){
-			return null;
-		}
-		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
-			
-			public boolean accept(String functionName) {
-				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
-						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
-					return true;
-				}
-				return false;
-			}
-		});
-		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
-		for (FunctionInvocation fi : functionInvocations){
-			fiSet.add(fi);			
-		}
-		return fiSet;
-	}
-
 	private static String removeLiteralQuotes(Expression astLiteralExpression) {
 		String infix = astLiteralExpression.infix();
 		if (infix.startsWith("'") && infix.endsWith("'")) {
@@ -137,6 +122,72 @@ public class FieldUtilities {
 				}
 			}
 		}
+	}
+
+	public static void substituteFieldFuncNames(MathDescription mathDesc, Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
+		FieldUtilities.substituteFieldFuncNames(
+				oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions(mathDesc));
+	}
+
+	public static FieldFunctionArguments[] getFieldFunctionArguments(MathDescription mathDesc) throws MathException, ExpressionException {
+		return collectFieldFuncAndExpressions(mathDesc).keySet().toArray(new FieldFunctionArguments[0]);
+	}
+
+	private static Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAndExpressions(MathDescription mathDesc) throws MathException, ExpressionException {
+		// make sure each field only added once
+		Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash =
+			new Hashtable<FieldFunctionArguments, Vector<Expression>>();
+		Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+		
+		Enumeration<Variable> mathDescEnumeration = mathDesc.getVariables();
+		while (mathDescEnumeration.hasMoreElements()){
+			Variable variable = mathDescEnumeration.nextElement();
+			if(variable instanceof Function){
+				Function function = (Function)variable;
+				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,function.getExpression());
+			}
+		}
+		// go through each subdomain
+		while (enum1.hasMoreElements()){
+			SubDomain subDomain = enum1.nextElement();
+			// go through each equation
+			Enumeration<Equation> enum_equ = subDomain.getEquations();
+			while (enum_equ.hasMoreElements()){
+				Equation equation = (Equation)enum_equ.nextElement();
+				Vector<Expression> exs = equation.getExpressions(mathDesc);
+
+				// go through each expresson
+				for (int i = 0; i < exs.size(); i ++) {
+					Expression exp = (Expression)exs.get(i);
+					FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,exp);
+				}
+			}
+			// go through each Fast System
+			FastSystem fastSystem = subDomain.getFastSystem();
+			if(fastSystem != null){
+				Expression[] fsExprArr = fastSystem.getExpressions();
+				for (int i = 0; i < fsExprArr.length; i ++) {
+					FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,fsExprArr[i]);
+				}
+			}
+			// go through each Jump Process
+			for (JumpProcess jumpProcess : subDomain.getJumpProcesses()){
+				Expression[] jpExprArr = jumpProcess.getExpressions();
+				for (int i = 0; i < jpExprArr.length; i ++) {
+					FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,jpExprArr[i]);
+				}
+			}
+			// go through VarInitConditions
+			for (VarIniCondition varInitCond : subDomain.getVarIniConditions()){
+				Expression[] vicExprArr =
+					new Expression[] {varInitCond.getIniVal(),varInitCond.getVar().getExpression()};
+				for (int i = 0; i < vicExprArr.length; i ++) {
+					FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,vicExprArr[i]);
+				}
+			}
+		}
+		
+		return fieldFuncArgsExpHash;
 	}
 
 

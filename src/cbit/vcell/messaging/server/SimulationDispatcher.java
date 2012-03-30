@@ -38,6 +38,7 @@ import java.util.Vector;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -160,7 +161,7 @@ public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) thr
 			return fieldDataIDSs;
 		}
 
-		FieldFunctionArguments[] fieldFuncArgs =  sim.getMathDescription().getFieldFunctionArguments();
+		FieldFunctionArguments[] fieldFuncArgs =  FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 		if (fieldFuncArgs == null || fieldFuncArgs.length == 0) {
 			return null;
 		}

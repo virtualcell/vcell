@@ -470,30 +470,30 @@ public Hashtable<SampledCurve, Vector<Double>> getCurvesFromContours(double[] co
  * @param membraneIndexes java.util.Vector
  * @param varType cbit.vcell.simdata.VariableType
  */
-public double[] getDataValuesForMembraneIndexes(int[] membraneIndexes, double[] allMembraneDataValues, cbit.vcell.simdata.VariableType varType) {
-	if(varType.equals(cbit.vcell.simdata.VariableType.VOLUME)){
+public double[] getDataValuesForMembraneIndexes(int[] membraneIndexes, double[] allMembraneDataValues, cbit.vcell.math.VariableType varType) {
+	if(varType.equals(cbit.vcell.math.VariableType.VOLUME)){
 		return null;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.VOLUME_REGION)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.VOLUME_REGION)){
 		return null;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.MEMBRANE)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.MEMBRANE)){
 		double[] membraneDataValues = new double[membraneIndexes.length];
 		for(int i = 0;i < membraneIndexes.length;i+= 1){
 			//int mIndex = ((Integer)membraneIndexes.elementAt(i)).intValue();
 			membraneDataValues[i] = allMembraneDataValues[membraneIndexes[i]];
 		}
 		return membraneDataValues;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION)){
 		double[] regionDataValues = new double[membraneIndexes.length];
 		for(int i = 0;i < membraneIndexes.length;i+= 1){
 			//int mIndex = ((Integer)membraneIndexes.elementAt(i)).intValue();
 			regionDataValues[i] = allMembraneDataValues[getMesh().getMembraneRegionIndex(membraneIndexes[i])];
 		}
 		return regionDataValues;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.CONTOUR)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.CONTOUR)){
 		return null;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.CONTOUR_REGION)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.CONTOUR_REGION)){
 		return null;
-	}else if(varType.equals(cbit.vcell.simdata.VariableType.NONSPATIAL)){
+	}else if(varType.equals(cbit.vcell.math.VariableType.NONSPATIAL)){
 		return null;
 	}
 	return null;

@@ -42,19 +42,16 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.data.DataContext;
-import cbit.vcell.document.GeometryOwner;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -75,14 +72,16 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
-	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
+	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable {
 
 	public static final String PROPERTY_NAME_DESCRIPTION = "description";
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
@@ -980,7 +979,7 @@ public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> o
 	FieldUtilities.substituteFieldFuncNames(
 			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
 	
-	getMathDescription().substituteFieldFuncNames(oldFieldFuncArgsNameNewID);
+	FieldUtilities.substituteFieldFuncNames(getMathDescription(),oldFieldFuncArgsNameNewID);
 }
 
 public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException, ExpressionException {

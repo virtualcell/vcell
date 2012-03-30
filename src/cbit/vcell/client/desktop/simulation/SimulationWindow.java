@@ -17,8 +17,8 @@ import javax.swing.ImageIcon;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class SimulationWindow {

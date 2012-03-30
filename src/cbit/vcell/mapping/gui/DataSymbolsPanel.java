@@ -71,9 +71,9 @@ import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.psf.PointSpreadFunctionManagement;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
 

@@ -23,6 +23,7 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import ucar.ma2.ArrayDouble;
 import cbit.vcell.simdata.*;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.stoch.NetCDFEvaluator;
 import cbit.vcell.solver.stoch.NetCDFReader;
 import cbit.vcell.solvers.FunctionFileGenerator;

@@ -17,8 +17,6 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.CommentStringTokenizer;
 
-import cbit.vcell.field.FieldFunctionDefinition;
-import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
@@ -27,8 +25,6 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class MathFunctionDefinitions {
@@ -66,29 +62,6 @@ public class MathFunctionDefinitions {
 		FunctionArgType[] argTypes = argTypeList.toArray(new FunctionArgType[argTypeList.size()]);
 		
 		return new SimpleSymbolTableFunctionEntry(funcName, argNames, argTypes, null, vcUnitDefinition, nameScope);
-	}
-	
-	public static Expression substituteSizeFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
-		Expression exp = new Expression(origExp);
-		Set<FunctionInvocation> fiSet = FieldUtilities.getSizeFunctionInvocations(exp);
-		for(FunctionInvocation fi : fiSet) {
-			String functionName = fi.getFunctionName();
-			// replace vcRegionArea('domain') and vcRegionVolume('domain') with vcRegionArea or vcRegionVolume or vcRegionVolume_domain
-			// the decision is based on variable domain
-			if (variableDomain.equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
-				exp.substituteInPlace(fi.getFunctionExpression(), new Expression(functionName));
-			} else if (variableDomain.equals(VariableDomain.VARIABLEDOMAIN_MEMBRANE)) {
-				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
-					exp.substituteInPlace(fi.getFunctionExpression(), new Expression(functionName));
-				} else {
-					String domainName = fi.getArguments()[0].infix();
-					// remove single quote
-					domainName = domainName.substring(1, domainName.length() - 1);
-					exp.substituteInPlace(fi.getFunctionExpression(), new Expression(functionName + "_" + domainName));
-				}
-			}
-		}
-		return exp;
 	}
 	
 	public static Expression fixFunctionSyntax(CommentStringTokenizer tokens) throws ExpressionException {
@@ -164,6 +137,27 @@ public class MathFunctionDefinitions {
 			}
 		}
 		return exp;
+	}
+
+	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {
+		if(expression == null){
+			return null;
+		}
+		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
+			
+			public boolean accept(String functionName) {
+				if (functionName.equals(Function_regionArea_current.getFunctionName())
+						|| functionName.equals(Function_regionVolume_current.getFunctionName())) {
+					return true;
+				}
+				return false;
+			}
+		});
+		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
+		for (FunctionInvocation fi : functionInvocations){
+			fiSet.add(fi);			
+		}
+		return fiSet;
 	}
 	
 }

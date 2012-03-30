@@ -50,6 +50,7 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage;
@@ -62,6 +63,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
@@ -79,7 +81,6 @@ import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
@@ -698,7 +699,7 @@ public class FRAPStudy implements Matchable{
 		ClientTaskStatusSupport progressListener,
 		boolean bCheckSteadyState) throws Exception{
 
-		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+		FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 			if (fieldFunctionArgs[i].getFieldName().equals(imageDataExtDataID.getName())){
@@ -761,7 +762,7 @@ public class FRAPStudy implements Matchable{
 			ClientTaskStatusSupport progressListener,
 			boolean bCheckSteadyState) throws Exception{
 
-			FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+			FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 			FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 			for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 				if (fieldFunctionArgs[i].getFieldName().equals(imageDataExtDataID.getName())){

@@ -10,7 +10,6 @@
 
 package cbit.vcell.solvers;
 
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;

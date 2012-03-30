@@ -870,12 +870,12 @@ public State<ThumbnailImage> getThumbnailImage() {
  * This method was created in VisualAge.
  * @return cbit.image.VCImage
  */
-void updateSampledImage() throws GeometryException, ImageException, ExpressionException {
+void updateSampledImage(GeometryThumbnailImageFactory geometryThumbnailImageFactory) throws GeometryException, ImageException, ExpressionException {
 
 	if (getSampledImage().isDirty()){
 		ISize sampleSize = getDefaultSampledImageSize();
 		getSampledImage().setValue(createSampledImage(sampleSize));
-		getThumbnailImage().setValue(createThumbnailImage());
+		getThumbnailImage().setValue(createThumbnailImage(geometryThumbnailImageFactory));
 	}
 }
 
@@ -884,11 +884,8 @@ void fireAll() {
 	firePropertyChange(PROPERTY_NAME_THUMBNAIL_IMAGE, getThumbnailImage().getOldValue(), getThumbnailImage().getCurrentValue());
 }
 
-private ThumbnailImage createThumbnailImage() throws ImageException {
-	if (GeometryThumbnailImageFactory.getGeometryThumbnailImageFactory()==null){
-		throw new ImageException("GeometryThumbnailImageFactory not set, cannot create a ThumbnailImage.");
-	}
-	return GeometryThumbnailImageFactory.getGeometryThumbnailImageFactory().getThumbnailImage(this);
+private ThumbnailImage createThumbnailImage(GeometryThumbnailImageFactory geometryThumbnailImageFactory) throws ImageException {
+	return geometryThumbnailImageFactory.getThumbnailImage(this);
 }
 
 /**

@@ -10,7 +10,6 @@
 
 package cbit.vcell.client.data;
 
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
@@ -19,6 +18,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Structure;
+import cbit.vcell.solver.SimulationOwner;
 
 /**
  * Insert the type's description here.

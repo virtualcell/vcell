@@ -39,7 +39,7 @@ public class GeometryGuiTest {
 			
 			// try to convert this CSG geometry to image
 			ISize imageSize = csGeometry.getGeometrySpec().getDefaultSampledImageSize();
-			Geometry imageGeometry = RayCaster.resampleGeometry(csGeometry, imageSize);
+			Geometry imageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), csGeometry, imageSize);
 			
 			// aGeometryViewer.setGeometry(csGeometry);
 			aGeometryViewer.setGeometry(imageGeometry);
@@ -81,7 +81,7 @@ public class GeometryGuiTest {
 		geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("background",new Expression(1.0)));
 		geometry.getGeometrySpec().addSubVolume(csgObject, true);
 		geometry.refreshDependencies();
-		geometry.precomputeAll();
+		geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		
 		return geometry;
 	}

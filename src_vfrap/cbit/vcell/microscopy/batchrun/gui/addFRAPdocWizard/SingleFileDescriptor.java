@@ -22,6 +22,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
@@ -33,7 +34,6 @@ import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 
 public class SingleFileDescriptor extends WizardPanelDescriptor {
     

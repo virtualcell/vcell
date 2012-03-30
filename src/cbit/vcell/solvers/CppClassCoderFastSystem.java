@@ -13,6 +13,7 @@ package cbit.vcell.solvers;
 import java.util.Enumeration;
 
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.FastSystem;
 import cbit.vcell.math.MathUtilities;
@@ -356,7 +357,7 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(pc.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}
 	
-	FieldFunctionArguments[] fieldFuncArgs = simulationJob.getSimulationSymbolTable().getSimulation().getMathDescription().getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simulationJob.getSimulationSymbolTable().getSimulation().getMathDescription());
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
 		String localvarname = CppClassCoder.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);

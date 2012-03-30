@@ -12,6 +12,8 @@ package cbit.vcell.simdata;
 import java.io.*;
 import java.util.*;
 
+import cbit.vcell.math.VariableType;
+
 public class DataSet implements java.io.Serializable
 {
 

@@ -27,7 +27,8 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.SolverUtilities;
+
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
@@ -1905,7 +1906,7 @@ public void initDataManager(
 	
 	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DataIdentifier[] sortedDataIDs = VariableType.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
+			DataIdentifier[] sortedDataIDs = SolverUtilities.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
 			hashTable.put("sortedDataIDs", sortedDataIDs);
 		}
 	};

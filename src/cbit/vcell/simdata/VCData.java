@@ -14,11 +14,11 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.

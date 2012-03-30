@@ -25,18 +25,18 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.document.GeometryOwner;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.OutputFunctionContext;
-import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.model.gui.VCellNames;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)

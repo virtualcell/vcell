@@ -58,8 +58,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.pslid.WebClientInterface;
-import cbit.vcell.simdata.VariableType;
 
 
 public class PSLIDPanel extends JPanel{

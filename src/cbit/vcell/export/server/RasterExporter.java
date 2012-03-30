@@ -17,6 +17,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.client.data.OutputContext;

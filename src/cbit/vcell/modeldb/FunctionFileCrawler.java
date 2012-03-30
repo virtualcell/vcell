@@ -24,8 +24,8 @@ import org.vcell.util.document.UserInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.FunctionFileGenerator;
 
 /**

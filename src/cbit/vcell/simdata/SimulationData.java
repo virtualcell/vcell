@@ -32,22 +32,23 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.SimResampleInfoProvider;
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
@@ -175,7 +176,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 	try {
 		simpleFunction = (AnnotatedFunction)BeanUtils.cloneSerializable(function);
 		Expression exp = simpleFunction.getExpression();
-		exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
+		exp = SolverUtilities.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
@@ -828,7 +829,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		e.printStackTrace(System.out);
 		System.out.println("invalid varTypeInt = "+varTypeInt+" for variable "+varName+" at time "+time);
 		try {
-			variableType = VariableType.getVariableTypeFromLength(getMesh(),data.length);
+			variableType = SolverUtilities.getVariableTypeFromLength(getMesh(),data.length);
 		} catch (MathException ex) {
 			ex.printStackTrace(System.out);
 			throw new DataAccessException(ex.getMessage());
@@ -1027,7 +1028,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				try {
 					varType = VariableType.getVariableTypeFromInteger(varTypeInts[i]);
 				}catch (Throwable e){
-					varType = VariableType.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
+					varType = SolverUtilities.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
 				Domain domain = Variable.getDomainFromCombinedIdentifier(varNames[i]);
 				String varName = Variable.getNameFromCombinedIdentifier(varNames[i]);

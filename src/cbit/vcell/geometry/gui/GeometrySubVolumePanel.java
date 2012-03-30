@@ -130,7 +130,7 @@ private void deleteSubvolume() {
 					} else if (getSelectedSubVolume() instanceof CSGObject) {
 						getGeometrySpec().removeCSGObject((CSGObject)getSelectedSubVolume());
 					}
-					getGeometry().precomputeAll();
+					getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);			
@@ -156,7 +156,7 @@ private void moveSubvolumeFront() {
 					} else if (selectedSubVolume instanceof AnalyticSubVolume) {
 						getGeometrySpec().bringForward((AnalyticSubVolume)selectedSubVolume);
 					}
-					getGeometry().precomputeAll();
+					getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
@@ -181,7 +181,7 @@ private void moveBack() {
 					} else if (selectedSubVolume instanceof AnalyticSubVolume) {
 						getGeometrySpec().sendBackward((AnalyticSubVolume)selectedSubVolume);
 					}
-					getGeometry().precomputeAll();
+					getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
@@ -364,7 +364,7 @@ private void addSubVolume(final SubVolume subVolume) {
 			} else if (subVolume instanceof CSGObject) {
 				getGeometrySpec().addSubVolume((CSGObject)subVolume, true);
 			}
-			getGeometry().precomputeAll();
+			getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("adding subdomain", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

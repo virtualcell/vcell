@@ -44,7 +44,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
 import cbit.plot.Plot2DPanel;
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
@@ -52,6 +51,7 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
@@ -74,6 +74,7 @@ import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
@@ -95,7 +96,6 @@ import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -111,6 +111,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.util.VCellErrorMessages;
 import cbit.vcell.visit.GetSystemProperties;
 
 
@@ -1477,7 +1478,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 	Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
 
 	printWriter.println("# compartments");
-	resampledGeometry.precomputeAll();
+	resampledGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 	for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {		
 		printWriter.println(SmoldynKeyword.start_compartment + " " + subVolume.getName());		
 		for (SurfaceClass sc : resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
@@ -1505,7 +1506,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 //		}
 		
 		// gather all the points in all the regions
-		Geometry interiorPointGeometry = RayCaster.resampleGeometry(resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
+		Geometry interiorPointGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
 		SubVolume interiorPointSubVolume = interiorPointGeometry.getGeometrySpec().getSubVolume(subVolume.getName());
 		GeometricRegion[] geometricRegions = interiorPointGeometry.getGeometrySurfaceDescription().getGeometricRegions(interiorPointSubVolume);
 		RegionInfo[] regionInfos = interiorPointGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfos();

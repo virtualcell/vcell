@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.desktop.biomodel;
+package cbit.vcell.util;
 
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;

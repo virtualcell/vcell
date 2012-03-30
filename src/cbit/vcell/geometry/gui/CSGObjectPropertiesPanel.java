@@ -812,7 +812,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("regenerating geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				simulationContext.getGeometry().precomputeAll(true, true);
+				simulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, true);
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("refreshing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
