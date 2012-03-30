@@ -57,8 +57,8 @@ import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 
 public class FieldDataWindowManager 

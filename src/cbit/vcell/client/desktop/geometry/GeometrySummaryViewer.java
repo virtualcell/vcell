@@ -26,7 +26,7 @@ import javax.swing.SwingConstants;
 import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.gui.GeometryViewer;
 
 

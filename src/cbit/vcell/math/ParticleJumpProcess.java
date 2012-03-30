@@ -77,14 +77,6 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/21/2006 3:15:03 PM)
- * @param sim cbit.vcell.solver.Simulation
- */
-void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {}
-
-
-/**
  * Get an action from the list by it's index.
  * Creation date: (6/27/2006 10:10:41 AM)
  * @return cbit.vcell.math.Action

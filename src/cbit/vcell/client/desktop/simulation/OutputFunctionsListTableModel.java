@@ -18,14 +18,14 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.InconsistentDomainException;
-import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)

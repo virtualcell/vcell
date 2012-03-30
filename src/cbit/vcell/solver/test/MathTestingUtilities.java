@@ -26,7 +26,6 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -50,6 +49,8 @@ import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableHash;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Variable.Domain;
@@ -65,7 +66,6 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
@@ -1473,7 +1473,7 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MappingException {
+public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MappingException, MathException {
 
 	VariableHash varHash = new VariableHash();
 	

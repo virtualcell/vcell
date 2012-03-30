@@ -28,12 +28,13 @@ import cbit.util.graph.Tree;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.parser.ExpressionException;
 
 public class RayCasterBitSet {
 	
-	public static Geometry createGeometryFromSTL(File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
+	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory, File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
 		SurfaceCollection surfaceCollection = StlReader.readStl(stlFile);
 		
 		Node[] nodes = surfaceCollection.getNodes();
@@ -60,7 +61,7 @@ public class RayCasterBitSet {
 		
 		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);
 		
-		Geometry geometry = createGeometry(surfaceCollection, origin, extent, sampleSize);
+		Geometry geometry = createGeometry(geometryThumbnailImageFactory, surfaceCollection, origin, extent, sampleSize);
 		
 		return geometry;
 	}
@@ -547,7 +548,7 @@ public class RayCasterBitSet {
 		System.out.println("*********************** ray cast XYZ ("+hitCount+" hits), "+(t2-t1)+"ms *********************");
 		return new RayCastResults(hitListsXY, hitListsXZ, hitListsYZ, numX, numY, numZ);
 	}
-	public static Geometry createGeometry(SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
+	public static Geometry createGeometry(GeometryThumbnailImageFactory geometryThumbnailImageFactory, SurfaceCollection surfaceCollection, Origin origin, Extent extent, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException{
 		int numX = sampleSize.getX();
 		int numY = sampleSize.getY();
 		int numZ = sampleSize.getZ();
@@ -670,7 +671,7 @@ public class RayCasterBitSet {
 		Geometry geometry = new Geometry("newGeometry",vcImage);
 		geometry.getGeometrySpec().setExtent(extent);
 		geometry.getGeometrySpec().setOrigin(origin);
-		geometry.precomputeAll(true, true);
+		geometry.precomputeAll(geometryThumbnailImageFactory, true, true);
 		
 		return geometry;
 	}

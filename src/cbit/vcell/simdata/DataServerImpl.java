@@ -21,8 +21,8 @@ import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingOutput;
 
 /**

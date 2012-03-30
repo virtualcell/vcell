@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata;
 import cbit.rmi.event.*;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;

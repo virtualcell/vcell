@@ -13,10 +13,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -116,7 +116,7 @@ public double[] getDataSetTimes() throws DataAccessException {
  * 
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
+public AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
 	return getVCDataManager().getFunctions(outputContext, getVCDataIdentifier());
 }
 

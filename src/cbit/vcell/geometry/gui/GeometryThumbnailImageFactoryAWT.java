@@ -17,11 +17,10 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 
 
-public class GeometryThumbnailImageFactoryAWT extends GeometryThumbnailImageFactory {
+public class GeometryThumbnailImageFactoryAWT implements GeometryThumbnailImageFactory {
 
 	private static final int SAMPLED_GEOM_SIZE_MAX = 150;
 
-	@Override
 	public ThumbnailImage getThumbnailImage(GeometrySpec geometrySpec) throws ImageException {
 
 		int REAL_SAMPLE_X = 0;

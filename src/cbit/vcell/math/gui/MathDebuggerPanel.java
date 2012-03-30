@@ -32,9 +32,11 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathSymbolTableFactory;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.TMLPanel;
@@ -338,7 +340,7 @@ public class MathDebuggerPanel extends JPanel {
 		MathModel mathModel1 = getMathModel1();
 		MathModel mathModel2 = getMathModel2();
 		if (mathModel1!=null && mathModel2!=null){
-			MathCompareResults mathCompareResults = MathDescription.testEquivalency(mathModel1.getMathDescription(), mathModel2.getMathDescription());
+			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),mathModel1.getMathDescription(), mathModel2.getMathDescription());
 			getStatusEditorPane().setText("equiv = "+mathCompareResults.isEquivalent()+"\n"+"reason = "+mathCompareResults.toDatabaseStatus());
 		}else{
 			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed : at least one math description is null.");
@@ -395,7 +397,7 @@ public class MathDebuggerPanel extends JPanel {
 		
 		setStatus("Canonical Math for both mathDescriptions: \n");
 
-		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
+		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(SimulationSymbolTable.getMathSymbolTableFactory(),getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
 		
 		MathModel newMathModel = new MathModel(null);
 		newMathModel.setName("Math1");
@@ -517,7 +519,7 @@ public class MathDebuggerPanel extends JPanel {
 			flattenButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					try {
-						flatten();
+						flatten(SimulationSymbolTable.getMathSymbolTableFactory());
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
@@ -528,16 +530,16 @@ public class MathDebuggerPanel extends JPanel {
 		return flattenButton;
 	}
 	
-	private void flatten() throws PropertyVetoException, MathException, ExpressionException, MappingException, XmlParseException{
+	private void flatten(MathSymbolTableFactory mathSymbolTableFactory) throws PropertyVetoException, MathException, ExpressionException, MappingException, XmlParseException{
 		MathDescription math1 = getMathModel1().getMathDescription();
-		MathDescription newMath1 = MathDescription.createCanonicalMathDescription(math1);
+		MathDescription newMath1 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,math1);
 		MathModel newMathModel1 = new MathModel(null);
 		newMathModel1.setName("Math1");
 		newMathModel1.setMathDescription(newMath1);
 		setMathModel1(newMathModel1);
 		
 		MathDescription math2 = getMathModel2().getMathDescription();
-		MathDescription newMath2 = MathDescription.createCanonicalMathDescription(math2);
+		MathDescription newMath2 = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory,math2);
 		MathModel newMathModel2 = new MathModel(null);
 		newMathModel2.setName("Math2");
 		newMathModel2.setMathDescription(newMath2);

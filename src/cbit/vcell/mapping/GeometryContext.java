@@ -26,10 +26,10 @@ import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;

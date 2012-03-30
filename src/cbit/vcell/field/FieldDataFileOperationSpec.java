@@ -17,7 +17,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**

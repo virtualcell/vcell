@@ -146,7 +146,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  *
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(OutputContext outputContext, org.vcell.util.document.VCDataIdentifier vcdID) throws DataAccessException {
+public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext, org.vcell.util.document.VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getFunctions(outputContext,vcdID);
 	}catch (RemoteException e){

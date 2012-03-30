@@ -49,7 +49,6 @@ import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneParticleVariable;
@@ -67,7 +66,9 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
@@ -84,8 +85,6 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -98,6 +97,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 
@@ -224,7 +224,7 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
 			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + newExp.infix() + " in it");
 		}
 	}
-	newExp = MathFunctionDefinitions.substituteSizeFunctions(newExp, variableDomain);
+	newExp = SolverUtilities.substituteSizeFunctions(newExp, variableDomain);
 	return newExp;
 }
 

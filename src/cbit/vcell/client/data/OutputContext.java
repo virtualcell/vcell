@@ -12,7 +12,7 @@ package cbit.vcell.client.data;
 
 import java.io.Serializable;
 
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction;
 
 public class OutputContext implements Serializable {
 private AnnotatedFunction[] outputFunctions = null;

@@ -28,9 +28,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -42,11 +40,13 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -612,7 +612,7 @@ public int getSimulationIndex(Simulation sim) {
  * Creation date: (6/4/2004 2:15:23 AM)
  * @return cbit.vcell.document.SimulationOwner
  */
-public cbit.vcell.document.SimulationOwner getSimulationOwner() {
+public SimulationOwner getSimulationOwner() {
 	return simulationOwner;
 }
 

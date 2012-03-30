@@ -35,6 +35,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -278,7 +279,7 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
 	} else if (doc instanceof MathModel) {
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
-		geometry.precomputeAll();
+		geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		Simulation[] simulations = ((MathModel)doc).getSimulations();
 		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
 		for (int i = 0; i < simulations.length; i++){
@@ -286,7 +287,7 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 		}
 		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 	} else if (doc instanceof Geometry) {
-		((Geometry)doc).precomputeAll();
+		((Geometry)doc).precomputeAll(new GeometryThumbnailImageFactoryAWT());
 	}
 }
 

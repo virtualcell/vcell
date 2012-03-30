@@ -82,13 +82,11 @@ import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -100,10 +98,13 @@ import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionContour;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolver;
@@ -876,7 +877,7 @@ private SimDataBlock evaluateFunction(
 	throws ExpressionException, DataAccessException, IOException, MathException {
 
 	Expression exp = new Expression(function.getExpression());
-	exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
+	exp = SolverUtilities.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 	exp.bindExpression(simData);
 	exp = fieldFunctionSubstitution(outputContext, vcdID, exp);
 	

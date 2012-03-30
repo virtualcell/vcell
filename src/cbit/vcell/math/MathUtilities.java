@@ -13,7 +13,6 @@ package cbit.vcell.math;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -191,7 +190,7 @@ public static Expression substituteModelParameters(Expression exp, SymbolTable s
 	return exp2;
 }
 
-public static MathDescription[] getCanonicalMathDescriptions(MathDescription referenceMathDesc, MathDescription testMathDesc) throws PropertyVetoException, MathException, ExpressionException, MappingException {
+public static MathDescription[] getCanonicalMathDescriptions(MathSymbolTableFactory mathSymbolTableFactory, MathDescription referenceMathDesc, MathDescription testMathDesc) throws PropertyVetoException, MathException, ExpressionException {
 	HashSet<String> indepVars1 = referenceMathDesc.getStateVariableNames();
 	HashSet<String> indepVars2 = testMathDesc.getStateVariableNames();
 	HashSet<String> union = new HashSet<String>(indepVars1);
@@ -207,19 +206,19 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 	depVarsToSubstitute.removeAll(indepVars1);
 	
 	MathDescription canonicalMath1 = new MathDescription(MathDescription.createMathWithExpandedEquations(referenceMathDesc,union));
-	canonicalMath1.makeCanonical();
+	canonicalMath1.makeCanonical(mathSymbolTableFactory);
 	MathDescription canonicalMath2 = new MathDescription(MathDescription.createMathWithExpandedEquations(testMathDesc,union));
-	canonicalMath2.makeCanonical();
+	canonicalMath2.makeCanonical(mathSymbolTableFactory);
 
 	if (depVarsToSubstitute.size()>0){
 		String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
-		Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(referenceMathDesc,depVarNames);
-		canonicalMath1.substituteInPlace(functionsToSubstitute);
-		canonicalMath2.substituteInPlace(functionsToSubstitute);
+		Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(mathSymbolTableFactory, referenceMathDesc,depVarNames);
+		canonicalMath1.substituteInPlace(mathSymbolTableFactory, functionsToSubstitute);
+		canonicalMath2.substituteInPlace(mathSymbolTableFactory, functionsToSubstitute);
 	}
 	// flatten again
-	canonicalMath1.makeCanonical();
-	canonicalMath2.makeCanonical();
+	canonicalMath1.makeCanonical(mathSymbolTableFactory);
+	canonicalMath2.makeCanonical(mathSymbolTableFactory);
 	
 	MathDescription[] canonicalMathDescs = {canonicalMath1, canonicalMath2};
 	return canonicalMathDescs;
@@ -233,7 +232,7 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
  * @param newMath cbit.vcell.math.MathDescription
  * @deprecated
  */
-public static MathCompareResults testIfSame(MathDescription oldMathDesc, MathDescription newMathDesc) {
+public static MathCompareResults testIfSame(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMathDesc, MathDescription newMathDesc) {
 	try {
 	    if (oldMathDesc.compareEqual(newMathDesc)){
 		    return new MathCompareResults(Decision.MathEquivalent_NATIVE);
@@ -241,8 +240,8 @@ public static MathCompareResults testIfSame(MathDescription oldMathDesc, MathDes
 		    //System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
 			//System.out.println("------old native MathDescription:\n"+oldMathDesc.getVCML_database());
 			//System.out.println("------new native MathDescription:\n"+newMathDesc.getVCML_database());
-			MathDescription strippedOldMath = MathDescription.createCanonicalMathDescription(oldMathDesc);
-			MathDescription strippedNewMath = MathDescription.createCanonicalMathDescription(newMathDesc);
+			MathDescription strippedOldMath = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory, oldMathDesc);
+			MathDescription strippedNewMath = MathDescription.createCanonicalMathDescription(mathSymbolTableFactory, newMathDesc);
 			if (strippedOldMath.compareEqual(strippedNewMath)){
 				return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
 			}else{

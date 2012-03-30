@@ -33,6 +33,7 @@ import cbit.rmi.event.WorkerEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
@@ -296,7 +297,7 @@ public void startSimulation(UserLoginInfo userLoginInfo, Simulation simulation, 
 	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 	
-	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simulation.getMathDescription());
 	FieldDataIdentifierSpec[] fieldDataIDs = new FieldDataIdentifierSpec[fieldFuncArgs.length];
 	if (fieldFuncArgs.length != 0) {
 		ExternalDataIdentifier[]  qualifiedSpecs =

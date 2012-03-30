@@ -8,11 +8,14 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.math;
+package cbit.vcell.solver;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.Function;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2004 11:48:16 AM)

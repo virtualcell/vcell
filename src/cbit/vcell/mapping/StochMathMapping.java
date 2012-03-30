@@ -17,7 +17,6 @@ import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.Action;
@@ -32,6 +31,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
+import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -61,6 +61,7 @@ import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.util.VCellErrorMessages;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
  * for stochastic simulation. To get math description for deterministic simulation please reference @MathMapping.

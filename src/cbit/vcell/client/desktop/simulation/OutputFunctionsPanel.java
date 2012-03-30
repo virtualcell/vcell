@@ -53,25 +53,25 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class OutputFunctionsPanel extends DocumentEditorSubPanel {

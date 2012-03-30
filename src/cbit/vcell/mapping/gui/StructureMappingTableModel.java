@@ -30,9 +30,9 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;

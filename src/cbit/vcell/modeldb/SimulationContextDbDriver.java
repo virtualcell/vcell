@@ -51,15 +51,15 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
 /**
  * This type was created in VisualAge.
  */

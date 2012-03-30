@@ -115,6 +115,7 @@ import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -2805,7 +2806,7 @@ protected void addGeometry() {
 		
 		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
 //		vcGsd.updateAll();
-		vcGeometry.precomputeAll(true, true);
+		vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, true);
 	}   catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage());

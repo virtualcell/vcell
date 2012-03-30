@@ -25,11 +25,11 @@ public class SpatialSelectionContour extends SpatialSelection {
  * @param sampledDataIndexes int[]
  * @param selectionKind int
  */
-public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.simdata.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh, int[] sampledDataIndexes) {
+public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh, int[] sampledDataIndexes) {
 	super(argCurveSelectionInfo, argVarType, argMesh);
-	if (argVarType.equals(cbit.vcell.simdata.VariableType.CONTOUR)){
+	if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR)){
 		fieldSampledDataIndexes = sampledDataIndexes;
-	}else if (argVarType.equals(cbit.vcell.simdata.VariableType.CONTOUR_REGION)){
+	}else if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR_REGION)){
 		fieldSampledDataIndexes = new int[sampledDataIndexes.length];
 		for (int i = 0; i < sampledDataIndexes.length; i++){
 			fieldSampledDataIndexes[i] = argMesh.getContourRegionIndex(sampledDataIndexes[i]);

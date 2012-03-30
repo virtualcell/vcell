@@ -75,6 +75,7 @@ import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -1695,8 +1696,8 @@ private void addGeometry() {
 		if (!(bAnalyticGeom && dimension < 3)) {
 			try {
 				ISize imageSize = vcGeometry.getGeometrySpec().getDefaultSampledImageSize();
-				vcGeometry.precomputeAll();
-				vcGeometry = RayCaster.resampleGeometry(vcGeometry, imageSize);
+				vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
+				vcGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
 			} catch (Throwable e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());

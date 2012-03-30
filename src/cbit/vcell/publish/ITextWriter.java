@@ -43,6 +43,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.StructureCartoon;
 import cbit.vcell.graph.structures.MembraneStructureSuite;
@@ -536,7 +537,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
 		IndexColorModel icm = DisplayAdapterService.getHandleColorMap();
-		geom.precomputeAll();
+		geom.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		VCImage geomImage = geomSpec.getSampledImage().getCurrentValue();		
 		if(geomImage == null){
 			throw new Exception("generateGeometryImage error : No Image");

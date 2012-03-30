@@ -17,8 +17,8 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Structure;

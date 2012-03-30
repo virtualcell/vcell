@@ -17,7 +17,7 @@ import java.util.Vector;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;

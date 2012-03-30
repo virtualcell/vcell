@@ -50,7 +50,7 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.MeshRegionInfo.MembraneRegionMapVolumeRegion;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 /**

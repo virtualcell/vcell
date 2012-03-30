@@ -25,8 +25,8 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.solver.AnnotatedFunction;
 /**
  * This type was created in VisualAge.
  */

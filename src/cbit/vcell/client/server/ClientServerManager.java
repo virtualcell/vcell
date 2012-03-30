@@ -18,7 +18,6 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.controls.SessionManager;
@@ -34,6 +33,7 @@ import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.util.VCellErrorMessages;
 import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * Insert the type's description here.

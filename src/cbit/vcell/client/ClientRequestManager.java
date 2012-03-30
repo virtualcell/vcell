@@ -51,7 +51,6 @@ import javax.swing.ListSelectionModel;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -135,16 +134,13 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive;
-import cbit.vcell.geometry.CSGRotation;
 import cbit.vcell.geometry.CSGScale;
-import cbit.vcell.geometry.CSGSetOperator;
 import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.CSGSetOperator.OperatorType;
-import cbit.vcell.geometry.gui.GeometrySummaryPanel;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -155,6 +151,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
@@ -163,7 +160,6 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -226,7 +222,7 @@ private AsynchClientTask createSelectLoadGeomTask(final TopLevelWindowManager re
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocumentInfo vcDocumentInfo = (VCDocumentInfo)hashTable.get("vcDocumentInfo");
 			Geometry geom = getGeometryFromDocumentSelection(requester.getComponent(),vcDocumentInfo, false);
-			geom.precomputeAll();//pregenerate sampled image, cpu intensive
+			geom.precomputeAll(new GeometryThumbnailImageFactoryAWT());//pregenerate sampled image, cpu intensive
 			hashTable.put(GEOMETRY_KEY, geom);
 		}		
 	};
@@ -1106,7 +1102,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					// before trying images, try surface
 					//
 					if (ExtensionFilter.isMatchingExtension(imageFile, ".stl")){
-						Geometry geometry = RayCaster.createGeometryFromSTL(imageFile, 1000000);
+						Geometry geometry = RayCaster.createGeometryFromSTL(new GeometryThumbnailImageFactoryAWT(), imageFile, 1000000);
 						fdfos = new FieldDataFileOperationSpec();
 						fdfos.origin = geometry.getOrigin();
 						fdfos.extent = geometry.getExtent();
@@ -1374,7 +1370,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					//Create default name for image
 					geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
 					//cause update in this thread so later swing threads won't be delayed
-					geomHolder[0].precomputeAll();
+					geomHolder[0].precomputeAll(new GeometryThumbnailImageFactoryAWT());
 					hashTable.put("doc", geomHolder[0]);
 				}
 			};
@@ -1573,7 +1569,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
 						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));
-						geometry.precomputeAll();
+						geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 						hashTable.put("doc", geometry);
 					}
 				};
@@ -1603,7 +1599,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							CSGObject csgObject = new CSGObject(null, "subdomain0", 0);
 							csgObject.setRoot(translatedScaledCube);
 							geometry.getGeometrySpec().addSubVolume(csgObject, false);
-							geometry.precomputeAll();
+							geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 							hashTable.put("doc", geometry);
 						}
 					}

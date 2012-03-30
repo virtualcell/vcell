@@ -8,22 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.simdata;
+package cbit.vcell.math;
 
 import org.vcell.util.Matchable;
 
-import cbit.vcell.math.FilamentRegionVariable;
-import cbit.vcell.math.FilamentVariable;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneParticleVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -103,34 +91,6 @@ private VariableType(int varType) {
 	default:
 		throw new RuntimeException("Unknown variable type " + type);
 	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (4/28/2005 11:44:25 AM)
- */
-public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, DataIdentifier[] dataIDs){
-
-	//Sort variable names, ignore case
-	java.util.TreeSet<DataIdentifier> treeSet = new java.util.TreeSet<DataIdentifier>(
-		new java.util.Comparator<DataIdentifier>(){
-			public int compare(DataIdentifier o1, DataIdentifier o2){
-				int ignoreCaseB = o1.getName().compareToIgnoreCase(o2.getName());
-				if(ignoreCaseB == 0){
-					return o1.getName().compareTo(o2.getName());
-				}
-				return ignoreCaseB;
-			}
-		}
-	);
-	for(int i = 0; i <dataIDs.length; i += 1){
-		if (variable.getVariableType().getVariableDomain().equals(dataIDs[i].getVariableType().getVariableDomain())) {
-			treeSet.add(dataIDs[i]);
-		}
-	}
-
-	DataIdentifier[] results = new DataIdentifier[treeSet.size()];
-	treeSet.toArray(results);
-	return results;
 }
 /**
  * Insert the method's description here.
@@ -235,30 +195,6 @@ public static final VariableType getVariableTypeFromVariableTypeNameIgnoreCase(S
 	throw new IllegalArgumentException("varType="+type+" is undefined");	
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 2:48:55 PM)
- * @return cbit.vcell.simdata.PDEVariableType
- * @param mesh cbit.vcell.solvers.CartesianMesh
- * @param dataLength int
- */
-public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, int dataLength) {
-	VariableType result = null;
-	if (mesh.getDataLength(VOLUME) == dataLength) {
-		result = VOLUME;
-	} else if (mesh.getDataLength(MEMBRANE) == dataLength) {
-		result = MEMBRANE;
-	} else if (mesh.getDataLength(CONTOUR) == dataLength) {
-		result = CONTOUR;
-	} else if (mesh.getDataLength(VOLUME_REGION) == dataLength) {
-		result = VOLUME_REGION;
-	} else if (mesh.getDataLength(MEMBRANE_REGION) == dataLength) {
-		result = MEMBRANE_REGION;
-	} else if (mesh.getDataLength(CONTOUR_REGION) == dataLength) {
-		result = CONTOUR_REGION;
-	}
-	return result;
-}
 /**
  * Insert the method's description here.
  * Creation date: (10/5/00 11:01:55 AM)

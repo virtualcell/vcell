@@ -15,10 +15,11 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.math.FieldFunctionDefinition;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.simdata.VariableType;
 
 public class FieldFunctionArguments implements Serializable {
 

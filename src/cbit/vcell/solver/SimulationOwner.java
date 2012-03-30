@@ -8,12 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.document;
+package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
 
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (6/4/2004 1:56:12 AM)

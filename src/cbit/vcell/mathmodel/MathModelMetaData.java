@@ -17,7 +17,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)

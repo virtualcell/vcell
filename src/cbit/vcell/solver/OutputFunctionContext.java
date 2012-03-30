@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.math;
+package cbit.vcell.solver;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -28,13 +28,24 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InconsistentDomainException;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.ReservedMathSymbolEntries;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -42,9 +53,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.VariableType.VariableDomain;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {

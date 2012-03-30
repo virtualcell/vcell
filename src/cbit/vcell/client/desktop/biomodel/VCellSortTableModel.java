@@ -28,7 +28,7 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
-import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
 public abstract class VCellSortTableModel<T> extends AbstractTableModel  implements SortTableModel, IssueEventListener {

@@ -18,7 +18,6 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -43,6 +42,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.util.VCellErrorMessages;
 
 public class MassActionSolver {
 

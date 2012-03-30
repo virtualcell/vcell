@@ -10,6 +10,8 @@
 
 package cbit.vcell.simdata;
 
+import cbit.vcell.math.VariableType;
+
 public interface SimDataHolder {
 
 double[] getData();

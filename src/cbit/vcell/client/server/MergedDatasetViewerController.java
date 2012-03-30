@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.MergedDatasetViewer;
 import cbit.vcell.client.data.OutputContext;

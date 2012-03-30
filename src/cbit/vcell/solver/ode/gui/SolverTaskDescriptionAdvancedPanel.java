@@ -29,13 +29,13 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.util.VCellErrorMessages;
 
 /**
  * Insert the class' description here.

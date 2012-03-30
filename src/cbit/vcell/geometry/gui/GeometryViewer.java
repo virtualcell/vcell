@@ -52,8 +52,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ExportToXML;
-import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
@@ -137,7 +137,7 @@ private void resample(){
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if (getGeometry().getGeometrySurfaceDescription().getRegionImage()==null){
-				getGeometry().precomputeAll(true,true);
+				getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,true);
 			}
 		}
 	};
@@ -182,7 +182,7 @@ private void resample(){
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			ISize sampleSize = (ISize)hashTable.get("sampleSize");
-			Geometry newGeometry = RayCaster.resampleGeometry(getGeometry(), sampleSize);
+			Geometry newGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), getGeometry(), sampleSize);
 			hashTable.put("newGeometry", newGeometry);
 		}
 	};
@@ -687,7 +687,7 @@ private void updateSurfaceView() {
 		AsynchClientTask surfaceGenerationTask = new AsynchClientTask ("creating new smoothed surface", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getGeometry().precomputeAll(true, true);
+				getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT(),true, true);
 			}
 		};
 		AsynchClientTask tasks[] = new AsynchClientTask[] {surfaceGenerationTask};

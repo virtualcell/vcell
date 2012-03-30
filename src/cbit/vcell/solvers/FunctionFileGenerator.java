@@ -22,16 +22,16 @@ import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 11:06:55 AM)

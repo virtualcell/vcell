@@ -13,8 +13,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.solver.AnnotatedFunction;
 
 public interface DataManager {
 

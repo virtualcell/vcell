@@ -14,7 +14,6 @@ import java.io.*;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -367,7 +366,7 @@ public void writePSFFieldDataFunction(PrintWriter out) {
 protected void writeMain(java.io.PrintWriter out) throws Exception {
 
 	Simulation simulation = simulationJob.getSimulation();
-	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simulation.getMathDescription());
 	//FieldDataIdentifierSpec[] fieldDataIDSs = simulationJob.getFieldDataIdentifierSpecs();
 	SolverTaskDescription taskDesc = simulation.getSolverTaskDescription();
 	if (taskDesc==null){

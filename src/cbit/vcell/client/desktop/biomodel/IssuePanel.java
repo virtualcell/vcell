@@ -34,7 +34,6 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
-import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
@@ -43,9 +42,10 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
-import cbit.vcell.math.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
 public class IssuePanel extends DocumentEditorSubPanel {

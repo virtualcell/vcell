@@ -88,8 +88,8 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
@@ -122,12 +122,13 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
@@ -1355,7 +1356,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}else{
 					sim = fStudy.getBioModel().getSimulations()[0];
 				}
-				FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+				FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 				FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 				for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 					fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier());
@@ -1441,7 +1442,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		sim = fStudy.getBioModel().getSimulations()[0];
 		
-		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+		FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier());

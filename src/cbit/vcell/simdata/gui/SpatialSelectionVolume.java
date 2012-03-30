@@ -11,7 +11,7 @@
 package cbit.vcell.simdata.gui;
 
 import cbit.vcell.geometry.*;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.math.VariableType;
 
 import java.util.Arrays;
 import java.util.Vector;
@@ -38,7 +38,7 @@ public class SpatialSelectionVolume extends SpatialSelection {
  * @param sampledDataIndexes int[]
  * @param selectionKind int
  */
-public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.simdata.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {
+public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {
 	super(argCurveSelectionInfo, argVarType, argMesh);
 }
 /**
