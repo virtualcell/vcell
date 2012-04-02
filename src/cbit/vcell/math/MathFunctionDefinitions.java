@@ -11,8 +11,6 @@
 package cbit.vcell.math;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -137,27 +135,6 @@ public class MathFunctionDefinitions {
 			}
 		}
 		return exp;
-	}
-
-	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {
-		if(expression == null){
-			return null;
-		}
-		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
-			
-			public boolean accept(String functionName) {
-				if (functionName.equals(Function_regionArea_current.getFunctionName())
-						|| functionName.equals(Function_regionVolume_current.getFunctionName())) {
-					return true;
-				}
-				return false;
-			}
-		});
-		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
-		for (FunctionInvocation fi : functionInvocations){
-			fiSet.add(fi);			
-		}
-		return fiSet;
 	}
 	
 }

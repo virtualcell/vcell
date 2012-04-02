@@ -1,6 +1,7 @@
 package cbit.vcell.solver;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -8,6 +9,7 @@ import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.simdata.DataIdentifier;
@@ -17,7 +19,7 @@ public class SolverUtilities {
 
 	public static Expression substituteSizeFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
 		Expression exp = new Expression(origExp);
-		Set<FunctionInvocation> fiSet = MathFunctionDefinitions.getSizeFunctionInvocations(exp);
+		Set<FunctionInvocation> fiSet = SolverUtilities.getSizeFunctionInvocations(exp);
 		for(FunctionInvocation fi : fiSet) {
 			String functionName = fi.getFunctionName();
 			// replace vcRegionArea('domain') and vcRegionVolume('domain') with vcRegionArea or vcRegionVolume or vcRegionVolume_domain
@@ -90,6 +92,27 @@ public class SolverUtilities {
 			result = VariableType.CONTOUR_REGION;
 		}
 		return result;
+	}
+
+	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {
+		if(expression == null){
+			return null;
+		}
+		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
+			
+			public boolean accept(String functionName) {
+				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
+						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+					return true;
+				}
+				return false;
+			}
+		});
+		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
+		for (FunctionInvocation fi : functionInvocations){
+			fiSet.add(fi);			
+		}
+		return fiSet;
 	}
 
 }

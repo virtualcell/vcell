@@ -1048,7 +1048,7 @@ roundtripTimer += l2 - l1;
 				MathCompareResults mathCompareResults = null;
 				if (databaseMathDescription!=null){
 					try {
-						mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
+						mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
 						if (mathCompareResults!=null && !mathCompareResults.isEquivalent() &&
 							(mathCompareResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES) ||
 							 mathCompareResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION))){
@@ -1058,7 +1058,7 @@ roundtripTimer += l2 - l1;
 							// then try the VCell 4.8 generated math.
 							//
 							MathDescription mathDesc_4_8 = new MathMapping_4_8(scArray[i]).getMathDescription();
-							mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),mathDesc_4_8, databaseMathDescription);
+							mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),mathDesc_4_8, databaseMathDescription);
 						}
 					}catch (Exception e){
 						e.printStackTrace(System.out);
@@ -1790,7 +1790,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			//
 			if (databaseMathDescription!=null){
 				try {
-					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
+					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
 				}catch (Exception e){
 					e.printStackTrace(System.out);
 					mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
@@ -2178,7 +2178,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
 				}
 				if (databaseMathDescription!=null){
-					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
+					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
 					if (!mathCompareResults.decision.equals(Decision.MathEquivalent_SAME)){
 						bMustSaveMathDescription = true;
 					}
