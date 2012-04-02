@@ -21,6 +21,7 @@ import cbit.vcell.geometry.surface.Node;
 
 /***
  * This class implements the fast marching method, high accuracy version
+ * You are not expected to understand this code
  ***/
 public class FastMarchingMethodHA {
 	@SuppressWarnings("unused")
@@ -32,7 +33,8 @@ public class FastMarchingMethodHA {
     private static final byte STATE_NARROW = 2;	// part of the wave front, in the process of being computed
     private static final byte STATE_FROZEN = 3;	// already computed
     private static final byte STATE_COLD = 4;	// masked out, not to be computed
-    private static final double tpConst = 1.0/3.0;
+    
+    private static final double tpConst = 1.0/3.0;	// coefficients for the 2nd order polynomial
     private static final double aaConst = 9.0/4.0;
 
     
@@ -40,6 +42,12 @@ public class FastMarchingMethodHA {
     private final int numX;
     private final int numY;
     private final int numZ;
+    
+    private final double sqrInvDeltaX;
+    private final double sqrInvDeltaY;
+    private final double sqrInvDeltaZ;
+    private boolean differentZDistance = false;
+    
     private final int numXnumY;
     private final int numXMinusOne;
     private final int numYMinusOne;
@@ -53,14 +61,13 @@ public class FastMarchingMethodHA {
     private byte[] state = null;		// indicates state of each point 
     
     private BinaryHeapFast narrowBand = new BinaryHeapFast();
-
-
     public class BinaryHeapFast
     {
-		private static final double epsilon = 5e-5;
-    	private static final int DEFAULT_SIZE = 200;
-    	private int currentSize;				// # of elements
-    	private int[] array;			// the heap array
+		private static final double epsilonHeap = 5e-5;
+		private static final int DEFAULT_SIZE = 200;
+		
+		private int currentSize;		// # of elements
+		private int[] array;			// the heap array
     	
     	public BinaryHeapFast( )
     	{
@@ -68,106 +75,99 @@ public class FastMarchingMethodHA {
     		array = new int[DEFAULT_SIZE+1];
     	}
 
-    	public int insert(int globalIndex)
+    	private int insert(int globalIndex)
     	{
     		if(currentSize+1 == array.length) {
     			doubleArray();
     		}
-    		// Percolate up
+    		// percolate up
+    		int index;
     		int hole = ++currentSize;
     		array[0] = globalIndex;
 
     		for(; distanceMap[globalIndex] < distanceMap[array[hole/2]]; hole/=2) {
-    			array[hole] = array[hole/2];
-    			heapIndex[array[hole]] = hole;
+    			index = array[hole/2];
+    			array[hole] = index;
+    			heapIndex[index] = hole;
     		}
     		array[hole] = globalIndex;
-    		heapIndex[array[hole]] = hole;
+    		heapIndex[globalIndex] = hole;
     		return hole;
     	}
 
     	// returns the top of the binary heap (smallest item)
-     	public int removeMin()
+    	private int removeMin()
     	{
+     		int holeIndex = 1;
     		int minItem = array[1];
     		array[1] = array[currentSize--];
-    		percolateDown(1);
+    		int child = 2;
+    		int tmp = array[holeIndex];
+    		int position;
+    		// percolate down
+    		for(; child <= currentSize; holeIndex=child, child=holeIndex*2)
+    		{
+    			if( child != currentSize && distanceMap[array[child+1]] < distanceMap[array[child]]) {
+    				child++;
+    			}
+    			position = array[child];
+    			if(distanceMap[position] < distanceMap[tmp]) {
+    				array[holeIndex] = position;
+    				heapIndex[position] = holeIndex;
+    			} else {
+    				break;
+    			}
+    		}
+    		array[holeIndex] = tmp;
+    		heapIndex[tmp] = holeIndex;
     		heapIndex[minItem] = 0;			// object is out of the heap
     		return minItem;	
     	}
 
     	// decrease element key if element is present
      	// hole = position in array of the element whose key we want to decrease
-    	public void decreaseKey(int hole, double newDistance) {
-    		if(distanceMap[array[hole]] + epsilon < newDistance) {		// cannot decrease to a larger key
+    	private void decreaseKey(int hole, double newDistance) {
+    		int tmp = array[hole];
+    		if(distanceMap[tmp] + epsilonHeap < newDistance) {		// cannot decrease to a larger key
 //    			System.out.println("New key " + newDistance +" is larger than current key" + distanceMap[array[hole]] + " at " + hole);
     			return;
 //    			throw new RuntimeException("New key is larger than current key");
-    		} else if(Math.abs(distanceMap[array[hole]] - newDistance) < epsilon) {
+    		} else if(Math.abs(distanceMap[tmp] - newDistance) < epsilonHeap) {
     			return;		// they're equal, nothing to do
     		}
-    		int tmp = array[hole];
+    		int index;
     		distanceMap[tmp] = newDistance;
 
     		// we shift down 1 position all elements above hole which have a key larger than our element
     		// similar to "percolate up" the hole
     		for(; hole>1; hole/=2) {
     			if(distanceMap[tmp] < distanceMap[array[hole/2]]) {
-    				array[hole] = array[hole/2];	
-    				heapIndex[array[hole]] = hole;
+        			index = array[hole/2];
+    				array[hole] = index;	
+    				heapIndex[index] = hole;
     			} else {
     				break;
     			}
     		}
     		array[hole] = tmp;
-    		heapIndex[array[hole]] = hole;
+    		heapIndex[tmp] = hole;
     	}
 
-    	public boolean isEmpty()
+    	private boolean isEmpty()
     	{
     		return currentSize == 0;
     	}
 
-    	public int size()
+    	private int size()
     	{
     		return currentSize;
     	}
      
-    	public void makeEmpty()
+    	private void makeEmpty()
     	{
     		currentSize = 0;
     	}
     	
-    	@SuppressWarnings("unused")
-		private void buildHeap()
-    	{
-    		for(int i=currentSize/2; i>0; i--) {
-    			percolateDown(i);
-    		}
-    	}
-
-    	private void percolateDown(int holeIndex)
-    	{
-    		int child;
-    		int tmp = array[holeIndex];
-
-    		for(; holeIndex*2 <= currentSize; holeIndex=child)
-    		{
-    			child = holeIndex*2;
-    			if( child != currentSize && distanceMap[array[child+1]] < distanceMap[array[child]]) {
-    				child++;
-    			}
-    			if(distanceMap[array[child]] < distanceMap[tmp]) {
-    				array[holeIndex] = array[child];
-    				heapIndex[array[holeIndex]] = holeIndex;
-    			} else {
-    				break;
-    			}
-    		}
-    		array[holeIndex] = tmp;
-    		heapIndex[array[holeIndex]] = holeIndex;
-    	}
-     
     	private void doubleArray()
     	{    		
     		int[] newArray = new int[array.length*2];
@@ -175,17 +175,40 @@ public class FastMarchingMethodHA {
     		array = newArray;
        	}
     }
-
     
     // distanceMap array meaning:
     // the non-POSITIVE_INFINITY points represent the initial condition
     // all the rest initialized at Double.POSITIVE_INFINITY
     // if ignoreMask is null we don't ignore anything
 	public FastMarchingMethodHA(int numX, int numY, int numZ, double[] distanceMap, boolean[] ignoreMask) {
+		this(numX, numY, numZ, (double)1, (double)1, (double)1, distanceMap, ignoreMask);
+	}
+	// deltaX = samplesX[1]-samplesX[0];
+	public FastMarchingMethodHA(int numX, int numY, int numZ, double deltaX, double deltaY, double deltaZ,
+			double[] distanceMap, boolean[] ignoreMask) {
 		this.numX = numX;		// index = x + y*numX + z*numXnumY
 		this.numY = numY;
 		this.numZ = numZ;
-		this.numXnumY = numX*numY;
+		
+		if(deltaX==0 || deltaY==0 || deltaZ==0) {
+			throw new RuntimeException("The distance between voxels cannot be zero");
+		}
+		if(deltaX != deltaY) {
+			throw new RuntimeException("Distances between the X and Y voxels must be the same");
+		}
+		if(deltaX > deltaZ) {
+			throw new RuntimeException("Distances between the Z voxels must be equal or greater " + 
+					"than the distances between voxels on the other axes.");
+		}
+		if(deltaX < deltaZ) {
+			differentZDistance = true;
+		}
+		
+		this.sqrInvDeltaX = 1 / deltaX / deltaX;		// squared speed on each axis, in voxel units / time units
+		this.sqrInvDeltaY = 1 / deltaY / deltaY;
+		this.sqrInvDeltaZ = 1 / deltaZ / deltaZ;
+		
+		this.numXnumY = numX*numY;		// precomputed variables for speed optimization
 		this.numXMinusOne = numX-1;
 		this.numYMinusOne = numY-1;
 		this.numZMinusOne = numZ-1;
@@ -351,14 +374,14 @@ public class FastMarchingMethodHA {
 		if(val2 != MAX_NUMBER) {
 			double tp = tpConst*(4*val1-val2);
 			double aatp = aaConst*tp;
-			a += aaConst;
-			b -= 2 * aatp;
-			c+= aatp * tp;
+			a += aaConst * sqrInvDeltaX;
+			b -= 2 * aatp * sqrInvDeltaX;
+			c+= aatp * tp * sqrInvDeltaX;
 		} else 
 		if(val1 != MAX_NUMBER) {
-			a += 1;
-			b -= 2 * val1;
-			c += val1 * val1;
+			a += sqrInvDeltaX;
+			b -= 2 * val1 * sqrInvDeltaX;
+			c += val1 * val1 * sqrInvDeltaX;
 		}
 		// ============================ Y direction ===================================
 		val1 = MAX_NUMBER;
@@ -420,14 +443,14 @@ public class FastMarchingMethodHA {
 		if(val2 != MAX_NUMBER) {
 			double tp = tpConst*(4*val1-val2);
 			double aatp = aaConst*tp;
-			a += aaConst;
-			b -= 2 * aatp;
-			c+= aatp * tp;
+			a += aaConst * sqrInvDeltaY;
+			b -= 2 * aatp * sqrInvDeltaY;
+			c += aatp * tp * sqrInvDeltaY;
 		} else 
 		if(val1 != MAX_NUMBER) {
-			a += 1;
-			b -= 2 * val1;
-			c += val1 * val1;
+			a += sqrInvDeltaY;
+			b -= 2 * val1 * sqrInvDeltaY;
+			c += val1 * val1 * sqrInvDeltaY;
 		}
 		
 		// ============================== Z direction =======================================
@@ -488,106 +511,21 @@ public class FastMarchingMethodHA {
 			}
     	}
 		// update a,b,c for Z direction
-		if(val2 != MAX_NUMBER) {
+		// use low accuracy on Z axis if distance between pixels is different from the distance on X, Y
+		if(val2 != MAX_NUMBER && !differentZDistance) {
 			double tp = tpConst*(4*val1-val2);
 			double aatp = aaConst*tp;
-			a += aaConst;
-			b -= 2 * aatp;
-			c+= aatp * tp;
+			a += aaConst * sqrInvDeltaZ;
+			b -= 2 * aatp * sqrInvDeltaZ;
+			c+= aatp * tp * sqrInvDeltaZ;
 		} else 
 		if(val1 != MAX_NUMBER) {
-			a += 1;
-			b -= 2 * val1;
-			c += val1 * val1;
+			a += sqrInvDeltaZ;
+			b -= 2 * val1 * sqrInvDeltaZ;
+			c += val1 * val1 * sqrInvDeltaZ;
 		}
 		return solveQuadratic(a, b, c);
 	}
-		
-		//
-		// solve quadratic equation for distance
-		//
-    	
-//		neighborPosition[1] = nextOnX(x, candidatePosition);
-//		neighborPosition[2] = prevOnY(y, candidatePosition);
-//		neighborPosition[3] = nextOnY(y, candidatePosition);
-//		neighborPosition[4] = prevOnZ(z, candidatePosition);
-//		neighborPosition[5] = nextOnZ(z, candidatePosition);
-//		
-//		deepPosition[1] = nextOnX(neighborPosition[1]);
-//		deepPosition[2] = prevOnY(neighborPosition[2]);
-//		deepPosition[3] = nextOnY(neighborPosition[3]);
-//		deepPosition[4] = prevOnZ(neighborPosition[4]);
-//		deepPosition[5] = nextOnZ(neighborPosition[5]);
-//		
-//		neighborPosition[0] = prevOnX(x, candidatePosition);
-//		neighborPosition[1] = nextOnX(x, candidatePosition);
-//		neighborPosition[2] = prevOnY(y, candidatePosition);
-//		neighborPosition[3] = nextOnY(y, candidatePosition);
-//		neighborPosition[4] = prevOnZ(z, candidatePosition);
-//		neighborPosition[5] = nextOnZ(z, candidatePosition);
-//		
-//		deepPosition[0] = prevOnX(neighborPosition[0]);
-//		deepPosition[1] = nextOnX(neighborPosition[1]);
-//		deepPosition[2] = prevOnY(neighborPosition[2]);
-//		deepPosition[3] = nextOnY(neighborPosition[3]);
-//		deepPosition[4] = prevOnZ(neighborPosition[4]);
-//		deepPosition[5] = nextOnZ(neighborPosition[5]);
-//		
-//		double a = 0;		// coefficients for the quadratic equation
-//		double b = 0;
-//		double c = -1;
-//		
-//		int nP = 0;			// neighbour position
-//		int dP = 0;			// deep position (1 step away from np)
-//		double distance1 = MAX_NUMBER;
-//		double distance2 = MAX_NUMBER;
-//		for(int j=0; j<3; j++) {		// 3 dimensions: x y z
-//			double val1 = MAX_NUMBER;
-//			double val2 = MAX_NUMBER;
-//			for(int i=0; i<2; i++){		// 2 directions: prev, next
-//				nP = neighborPosition[2*j+i];
-//				if(nP == -1) {
-//					continue;			// neighbor out of bounds
-//				}
-//				if(state[nP] != STATE_FROZEN) {	// the only distances we know are for the frozen cells
-//					continue;
-//				}
-//
-//				distance1 = distanceMap[nP];
-//				if(distance1 == MAX_NUMBER) {		// since State says frozen, the Point element must be in the frozen list
-//					throw new RuntimeException("Frozen element missing at " +nP);
-//				}
-//				if(distance1 < val1) {
-//					val1 = distance1;
-//					distance2 = MAX_NUMBER;
-//					dP = deepPosition[2*j+i];
-//					if(dP == -1) {
-//						distance2 = MAX_NUMBER;		// neighbor out of bounds, coefficient will be ignored
-//					} else {
-//						if(state[dP] == STATE_FROZEN) {
-//							distance2 = distanceMap[dP];
-//						}
-//					}
-//					if(distance2<MAX_NUMBER && distance2<=distance1) {
-//						val2 = distance2;
-//					} else {
-//						val2 = MAX_NUMBER;
-//					}
-//				}
-//			}
-//			if(val2 != MAX_NUMBER) {
-//				double tp = (1.0/3.0)*(4*val1-val2);
-//				double aa = 9.0/4.0;
-//				a += aa;
-//				b -= 2 * aa * tp;
-//				c+= aa * tp * tp;
-//			} else 
-//			if(val1 != MAX_NUMBER) {
-//				a += 1;
-//				b -= 2 * val1;
-//				c += val1 * val1;
-//			}
-//		}
 
 	private int initializeFrozen() {
 		int frozenCount = 0;
@@ -631,21 +569,23 @@ public class FastMarchingMethodHA {
     // Quadratic Equation Solver   a.x^2 + b.x + c = 0
     private double solveQuadratic(double a, double b, double c) {
     	
-    	if ( a==0 && b==0 ) {		// cannot solve c=0
+    	if ( a==0 && b==0 ) {			// cannot solve c=0
     		throw new RuntimeException("Unable to solve ax2+bx+c=0, a=" + a + " b=" + b + " c=" + c);
     	} 
     	if ( a==0 && b!=0 ) {
-    		return -c/b;			// degenerate roots
+    		return -c/b;				// degenerate roots
     	}
     	double discriminant = b*b-4.0*a*c;		// discriminant of quadratic equation
     	// TODO: add "if discriminant between -epsilon and +epsilon we still have a -b/2/a root"
-    	if ( discriminant >= 0 ) {				// two real roots
-    		double d = Math.sqrt(discriminant)/2.0/a;
-			double r1 = -b/2.0/a-d;
-    		double r2 = -b/2.0/a+d;
+		double aTimesTwo = 2*a;
+    	if ( discriminant >= 0 ) {		// two real roots
+    		double d = Math.sqrt(discriminant)/aTimesTwo;
+    		double e = -b/aTimesTwo;
+			double r1 = e-d;
+    		double r2 = e+d;
     		return Math.max(r1, r2);
-    	} else {								// complex roots
-    		return -b/2.0/a;
+    	} else {						// complex roots
+    		return -b/aTimesTwo;
     	}
     }
 
@@ -1025,7 +965,75 @@ public class FastMarchingMethodHA {
 		}
 		out.close();
 		} catch (IOException e) {
-		}		
+		}	
+		
+		System.out.println("");
+		System.out.println(" -------------------- TEST 8 - anisotropic ---------------------- ");
+		
+		numX = 2;
+		numY = 2;
+		numZ = 5;
+		numItems = numX*numY*numZ;
+
+		distanceMap = new double[numItems];
+		Arrays.fill(distanceMap, MAX_NUMBER);
+		distanceMap[0] = 0;		// initial condition (exact distances from origin)
+		distanceMap[1] = 1;
+		distanceMap[2] = 1;
+		distanceMap[3] = 1.4142135623730950488016887242097;			// sqrt(2) - diagonal of a square
+		distanceMap[4] = 2;
+		distanceMap[5] = 2.2360679774997896964091736687313;			// sqrt(5)
+		distanceMap[6] = 2.2360679774997896964091736687313;	
+		distanceMap[7] = 2.4494897427831780981972840747059;			// sqrt(6)
+		// ----- next points distances for the above initial conditions
+		// 			FMM-plain			FMM-HA				exact computed:
+		//  8:		4.00000000			N/A					4.00000000
+		//  9:		4.19691079								4.12310562		// sqrt(17)
+		// 10:
+		// 11:		4.38072927								4.24264068
+		
+		// 12:		6.00000000								6.00000000
+		// 13:		6.16836145								6.08276253		// sqrt(37)
+		// 14:
+		// 15:		6.32866014								6.16441400		// sqrt(16+2)
+		
+		fmm = new FastMarchingMethodHA(numX, numY, numZ, 1, 1, 2, distanceMap, null);
+		
+		System.out.println("Verifying indexes manipulation; index = x + y*numX + z*numX*numY");
+
+		fmm.march();
+
+		length = fmm.numX*fmm.numY*fmm.numZ;
+		for(index=0; index<length; index++) {
+			System.out.println(index + ": " + distanceMap[index]);
+		}
+
+
+		System.out.println("");
+		System.out.println(" -------------------- TEST 9 - LONG test ---------------------- ");
+		
+		numX = 300;
+		numY = 300;
+		numZ = 300;
+		numItems = numX*numY*numZ;
+
+		distanceMap = new double[numItems];
+		Arrays.fill(distanceMap, MAX_NUMBER);
+		
+		distanceMap[0] = 0;
+		distanceMap[1] = 1;
+		distanceMap[300] = 1;
+		distanceMap[301] = 1.4142135623730950488016887242097;
+		distanceMap[90000] = 1;
+		distanceMap[90001] = 1.4142135623730950488016887242097;
+		distanceMap[90300] = 1.4142135623730950488016887242097;
+		distanceMap[90301] = 1.7320508075688772935274463415059;
+		
+		fmm = new FastMarchingMethodHA(numX, numY, numZ, distanceMap, null);
+		fmm.march();
+
+
+		
 		
 		System.out.println("Done");
 	}

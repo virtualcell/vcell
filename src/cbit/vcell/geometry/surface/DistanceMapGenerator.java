@@ -34,6 +34,10 @@ public class DistanceMapGenerator {
     private static final double MAX_NUMBER = Double.POSITIVE_INFINITY;
 
 	public static SubvolumeSignedDistanceMap[] computeDistanceMaps(Geometry geometry, VCImage subvolumeHandleImage, boolean bCellCentered) throws ImageException{
+		return computeDistanceMaps(geometry, subvolumeHandleImage, bCellCentered, false);
+	}
+	
+    public static SubvolumeSignedDistanceMap[] computeDistanceMaps(Geometry geometry, VCImage subvolumeHandleImage, boolean bCellCentered, boolean insideOnly) throws ImageException{
 		
 		double[] samplesX = new double[subvolumeHandleImage.getNumX()];
 		double[] samplesY = new double[subvolumeHandleImage.getNumY()];
@@ -65,7 +69,7 @@ public class DistanceMapGenerator {
 			// find unsigned distances in a narrow band for surfaces that bound this SubVolume (expensive)
 			// values outside the band are assumed to be initialized to MAX_NUMBER
 			long t1 = System.currentTimeMillis();
-			double[] distanceMap = localUnsignedDistanceMap(surfaces, samplesX, samplesY, samplesZ, 2);
+			double[] distanceMap = localUnsignedDistanceMap(surfaces, samplesX, samplesY, samplesZ, 3);
 			long t2 = System.currentTimeMillis();
 			System.out.println("          Distance to triangle:   " + (int)((t2-t1)/1000) + " sec.");
 			
@@ -86,43 +90,78 @@ public class DistanceMapGenerator {
 					}
 				}
 			}
-			// step 1, we compute distances for the points "inside"
-			// the points outside are cold (we don't compute their distances this step)
-			FastMarchingMethodHA fmm = new FastMarchingMethodHA(samplesX.length, samplesY.length, samplesZ.length, distanceMap, ignoreMask);
+//			// step 1, we compute distances for the points "inside"
+//			// the points outside are cold (we don't compute their distances this step)
+			double deltaX = samplesX[1]-samplesX[0];
+			double deltaY = samplesY[1]-samplesY[0];
+			double deltaZ = samplesZ[1]-samplesZ[0];
+			FastMarchingMethodHA fmm = new FastMarchingMethodHA(samplesX.length, samplesY.length, samplesZ.length, 
+					deltaX, deltaY, deltaZ, distanceMap, ignoreMask);
 			fmm.march();
 			
-			// sign change of the half-completed distance map, the "interior" will become negative as it should be
-			subvolumeHandle = subVolume.getHandle();
-			for (int i = 0; i<distanceMap.length; i++){
-				if (distanceMap[i] < MAX_NUMBER){
-					distanceMap[i] = -distanceMap[i];
+			if(!insideOnly) {
+				// we compute everything - inside and outside
+				// sign change of the half-completed distance map, the "interior" will become negative as it should be
+				for (int i = 0; i<distanceMap.length; i++){
+					if (distanceMap[i] < MAX_NUMBER){
+						distanceMap[i] = -distanceMap[i];
+					}
+				}
+				// step 2, we compute distances for the points "outside"
+				// no cold points (points we don't care about) this time, they are already frozen
+				fmm = new FastMarchingMethodHA(samplesX.length, samplesY.length, samplesZ.length, 
+						deltaX, deltaY, deltaZ, distanceMap, null);
+				fmm.march();
+			} else {	// we only compute distances for the "inside"
+				// sign change of the half-completed distance map, the "interior" will become negative as it should be
+				for (int i = 0; i<distanceMap.length; i++){
+					if (distanceMap[i] < MAX_NUMBER){
+						if(pixels[i] != subvolumeHandle) {
+							// need to filter out the part of the narrow band which is not inside
+							distanceMap[i] = MAX_NUMBER;
+						} else {
+							distanceMap[i] = -distanceMap[i];
+						}
+					}
 				}
 			}
-
-			// step 2, we compute distances for the points "outside"
-			// no cold points (points we don't care about) this time, they are already frozen
-			fmm = new FastMarchingMethodHA(samplesX.length, samplesY.length, samplesZ.length, distanceMap, null);
-			fmm.march();
 			
 //			try {		// save some points in a VisIt compatible format
 //			int xm = samplesX.length;
 //			int ym = samplesY.length;
-//			BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\mapOutside" + count + ".3D"));
+//			BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\2D_circle" + count + ".3D"));
 //			out.write("x y z value\n");
 //			
 //			for(int j=0; j<distanceMap.length; j++) {
 //				int x = getX(j,xm,ym);
 //				int y = getY(j,xm,ym);
 //				int z = getZ(j,xm,ym);
+			
 //				if(distanceMap[j] < MAX_NUMBER) {
-//					if((j%2 == 0 || j%3 == 0)  && distanceMap[j] <= -1) {
+//					if((j%2 == 0 || j%3 == 0)  && (distanceMap[j] <= -2)) {
 //						out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*10) + "\n");
-//					} else if((j%5 == 0 || j%7 == 0) && distanceMap[j] <= 1) {
+//					} else if((j%17 == 0 || j%23 == 0) && (distanceMap[j] <= 0.5) && (distanceMap[j] > -2)) {
 //						out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*10) + "\n");
-//					} else if((j%13 == 0 || j%23 == 0) && distanceMap[j] > 1) {
+//					} else if((j%31 == 0 || j%41 == 0) && (distanceMap[j] > 0.5)) {
 //						out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*10) + "\n");
 //					}
 //				} 
+			
+//				if(distanceMap[j] < MAX_NUMBER) {
+//					if(j%2 == 0) {
+//						out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*100) + "\n");
+//					}
+//				} 
+//				if(x==50 && y==50 && z==25) {		// on the surface
+//					out.write(x + " " + y + " " + z + " " + (int)(distanceMap[j]*100) + "\n");
+//				}
+//				if(x==0 && y==0 && z==0) {
+//					out.write(x + " " + y + " " + z + " " + 0 + "\n");
+//				}
+//				if(x==100 && y==100 && z==100) {
+//					out.write(x + " " + y + " " + z + " " + 0 + "\n");
+//				}
+//				
 //			}
 //			out.close();
 //			} catch (IOException e) {
@@ -162,7 +201,11 @@ public class DistanceMapGenerator {
 
 		// here we expect either triangles or nonplanar quads which will be broken up into two triangles.
 		cbit.vcell.geometry.surface.Triangle triangles[] = new cbit.vcell.geometry.surface.Triangle[2];
+		int surfaceIndex = 0;
+//		Random rand = new Random();
 		for (Surface surface : surfaces){
+//			String outstring = "";
+//			int numTrianglesTotal = 0;
 			for (int k = 0; k < surface.getPolygonCount(); k++){
 				Polygon polygon = surface.getPolygons(k);
 				Node[] nodes = polygon.getNodes();
@@ -196,7 +239,7 @@ public class DistanceMapGenerator {
 				Vect3d unitNormal = new Vect3d();
 				polygon.getUnitNormal(unitNormal);
 				// convert quads to triangles if necessary
-				int numTriangles;
+				int numTriangles = 0;
 				if (polygon.getNodeCount()==3){
 					numTriangles = 1;
 					triangles[0] = new cbit.vcell.geometry.surface.Triangle(polygon.getNodes(0), polygon.getNodes(1), polygon.getNodes(2));
@@ -209,8 +252,30 @@ public class DistanceMapGenerator {
 				}
 				
 				for (int triIndex = 0; triIndex < numTriangles; triIndex++){
+					
+//					numTrianglesTotal++;
+//					if(surfaceIndex == 0 && numTrianglesTotal <4000) {
+//						Node A = triangles[triIndex].getNodes(0);
+//						Node B = triangles[triIndex].getNodes(1);
+//						Node C = triangles[triIndex].getNodes(2);
+//						double color = rand.nextDouble();
+//						outstring += trianglePointsToString(A, B, C, color);
+//					}
+
 					cbit.vcell.geometry.surface.Triangle triangle = triangles[triIndex];
+					
+//					for (int kkk=0;kkk<numZ;kkk++){
+//						for (int jjj=0;jjj<numY;jjj++){
+//							for (int iii=0;iii<numX;iii++){
+//								int distanceMapIndex = iii+jjj*numX+kkk*numX*numY;
+//								if(distanceMapFast[distanceMapIndex] < MAX_NUMBER) {
+//									System.out.println(iii + ", " + jjj + ", " + kkk + ", " + Math.sqrt(distanceMapFast[distanceMapIndex]));
+//								}
+//							}
+//						}
+//					}
 	
+					
 					// precompute ray indices that are within the bounding box of the quad.
 					int tstartI = numX;
 					int tendI = -1;
@@ -240,22 +305,43 @@ public class DistanceMapGenerator {
 						}
 					}
 					
+					int ii=0;
+					int jj=0;
+					int kk=0;
+					int distanceMapIndex = 0;
 					tr1.set(triangle.getNodes()[0].getX(), triangle.getNodes()[0].getY(), triangle.getNodes()[0].getZ());
 					tr2.set(triangle.getNodes()[1].getX(), triangle.getNodes()[1].getY(), triangle.getNodes()[1].getZ());
 					tr3.set(triangle.getNodes()[2].getX(), triangle.getNodes()[2].getY(), triangle.getNodes()[2].getZ());
-					for (int ii=tstartI;ii<=tendI;ii++){
-						for (int jj=tstartJ;jj<=tendJ;jj++){
-							for (int kk=tstartK;kk<=tendK;kk++){
+					for (ii=tstartI;ii<=tendI;ii++){
+						for (jj=tstartJ;jj<=tendJ;jj++){
+							for (kk=tstartK;kk<=tendK;kk++){
 								testPoint.set(samplesX[ii],samplesY[jj],samplesZ[kk]);
-								int distanceMapIndex = ii+jj*numX+kk*numX*numY;
+								distanceMapIndex = ii+jj*numX+kk*numX*numY;
 								double distanceToTriangle3dSquared = DistanceMapGenerator.squaredDistanceToTriangle3d(distanceMapFast[distanceMapIndex],testPoint, tr1, tr2, tr3, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6);
 								double bestMatchFast = Math.min(distanceMapFast[distanceMapIndex],distanceToTriangle3dSquared);
 								distanceMapFast[distanceMapIndex] = bestMatchFast;
 							}
 						}
+//						if(ii==50 && jj==48 && kk==25) {
+//							System.out.println(ii + ", " + jj + ", " + kk + ", " + Math.sqrt(distanceMapFast[distanceMapIndex]));
+//						}
 					}
 				}
 			}
+//			try {
+//			if(surfaceIndex==0) {
+//				BufferedWriter out = new BufferedWriter(new FileWriter("c:\\TEMP\\triangles" + surfaceIndex + ".3D"));
+//				out.write("x y z value\n");
+//				out.write(outstring);
+//				out.write(0 + " " + 0 + " " + 0 + " " + 0 + "\n");
+//				out.write(numX + " " + numY + " " + numZ + " " + 0 + "\n");
+//				out.close();
+//			}
+//			} catch (IOException e) {
+//			}
+
+			surfaceIndex++;
+//			System.out.println("numTriangles for surface = " + numTrianglesTotal);
 		}
 		for (int i=0;i<distanceMapFast.length;i++){
 			if (distanceMapFast[i]!=MAX_NUMBER){
@@ -520,6 +606,17 @@ public class DistanceMapGenerator {
 		}
 	}
 	
+	private static String trianglePointsToString(Node A, Node B, Node C, double color) {
+		String line = "";
+		Random rand = new Random();
+		for(int i=0; i<500; i++) {
+			double a = rand.nextDouble();
+			double b = rand.nextDouble();
+			Node r = pointInTriangle(a, b, A, B, C);
+			line += new String(r.getX()*10 + " " + r.getY()*10 + " " + r.getZ()*10 + " " + (int)(color*100) + "\n");
+		}
+		return line;
+	}
 	public static double distanceToTriangleExperimental(Node p, Node A, Node B, Node C) {
 		double d = MAX_NUMBER;
 		
@@ -881,7 +978,47 @@ public class DistanceMapGenerator {
 			}
 		}
 		System.out.println(counter + " errors");
+		
+		System.out.println(" --------------------------- temp test - hardcoded ----------------------- ");
+		// 2.0096700879212155, 1.9220373530069457, 1.0017712687448852
+		A = new Node(2.0096700879212155,1.9220373530069457,1.0017712687448852);
+		B = new Node(2.017962611615153,1.9455150168421707,0.9975560101481948);
+		C = new Node(1.982037388384847,1.9455150168421707,0.9975560101481948);
+		
+		System.out.println("Node A:  " + A.getX() + ", " + A.getY() + ", " + A.getZ());
+		System.out.println("Node B:  " + B.getX() + ", " + B.getY() + ", " + B.getZ());
+		System.out.println("Node C:  " + C.getX() + ", " + C.getY() + ", " + C.getZ());
+		System.out.println(" ");
+		
+		vTestPoint = new Vect3d();
+		vA = new Vect3d(A);
+		vB = new Vect3d(B);
+		vC = new Vect3d(C);
+		
+		testPoint.setX(1.9603960396039604);
+		testPoint.setY(1.9207920792079207);
+		testPoint.setZ(0.9702970297029703);
+		vTestPoint.set(testPoint);
+		double eD = distanceToTriangleExperimental(testPoint, A, B, C);
+		double eE = distanceToTriangle3d(vTestPoint, vA, vB, vC);
+		System.out.println(" " + eD);
+		System.out.println(" " + eE);
+		System.out.println(" should be 0.04269219644426988720168280083091");
+		
+		testPoint.setX(51/25);
+		testPoint.setY(48/25);
+		testPoint.setZ(25/25);
+		vTestPoint.set(testPoint);
+		eD = distanceToTriangleExperimental(testPoint, A, B, C);
+		eE = distanceToTriangle3d(vTestPoint, vA, vB, vC);
+		System.out.println(" ");
+		System.out.println(" " + eD);
+		System.out.println(" " + eE);
+		System.out.println(" should be ");
+		
+		
 	}
+
 
 
 }
