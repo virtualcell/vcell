@@ -340,7 +340,7 @@ public class MathDebuggerPanel extends JPanel {
 		MathModel mathModel1 = getMathModel1();
 		MathModel mathModel2 = getMathModel2();
 		if (mathModel1!=null && mathModel2!=null){
-			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.getMathSymbolTableFactory(),mathModel1.getMathDescription(), mathModel2.getMathDescription());
+			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),mathModel1.getMathDescription(), mathModel2.getMathDescription());
 			getStatusEditorPane().setText("equiv = "+mathCompareResults.isEquivalent()+"\n"+"reason = "+mathCompareResults.toDatabaseStatus());
 		}else{
 			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed : at least one math description is null.");
@@ -397,7 +397,7 @@ public class MathDebuggerPanel extends JPanel {
 		
 		setStatus("Canonical Math for both mathDescriptions: \n");
 
-		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(SimulationSymbolTable.getMathSymbolTableFactory(),getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
+		MathDescription[] canonicalMathDescs = MathUtilities.getCanonicalMathDescriptions(SimulationSymbolTable.createMathSymbolTableFactory(),getMathModel1().getMathDescription(), getMathModel2().getMathDescription());
 		
 		MathModel newMathModel = new MathModel(null);
 		newMathModel.setName("Math1");
@@ -519,7 +519,7 @@ public class MathDebuggerPanel extends JPanel {
 			flattenButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					try {
-						flatten(SimulationSymbolTable.getMathSymbolTableFactory());
+						flatten(SimulationSymbolTable.createMathSymbolTableFactory());
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);

@@ -604,7 +604,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 		
 		// Size Functions
-		Set<FunctionInvocation> fiSet = MathFunctionDefinitions.getSizeFunctionInvocations(function.getExpression());
+		Set<FunctionInvocation> fiSet = SolverUtilities.getSizeFunctionInvocations(function.getExpression());
 		for (FunctionInvocation fi : fiSet) {
 			String functionName = fi.getFunctionName();
 			if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
@@ -680,7 +680,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		return funcType;
 	}
 
-	public static MathSymbolTableFactory getMathSymbolTableFactory() {
+	public static MathSymbolTableFactory createMathSymbolTableFactory() {
 		return new MathSymbolTableFactory() {
 			public MathSymbolTable createMathSymbolTable(MathDescription newMath) {
 				return new SimulationSymbolTable(new Simulation(newMath),0);
