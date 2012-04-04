@@ -58,6 +58,7 @@ import org.vcell.util.gui.HyperLinkLabel;
 import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -1046,6 +1047,12 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		parameterEstimationTask.getOptSolverCallbacks().setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
+		ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false);
+		for (AsynchClientTask task : updateTasks) {
+			taskList.add(task);
+		}
+		
 		AsynchClientTask task1 = new AsynchClientTask("checking issues", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -1067,7 +1074,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				parameterEstimationTask.refreshMappings();
 			}
 		};
-
+		taskList.add(task1);
+		
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -1076,6 +1084,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}
 
 		};
+		taskList.add(task2);
 		
 		AsynchClientTask setResultTask = new AsynchClientTask("set results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
 			@Override
@@ -1085,9 +1094,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}
 
 		};
+		taskList.add(setResultTask);
 		
-		
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, setResultTask}, getRunStatusDialog(), true, true, true, null, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), taskList.toArray(new AsynchClientTask[taskList.size()]), getRunStatusDialog(), true, true, true, null, false);
 	}
 	
 	private void plot() {
