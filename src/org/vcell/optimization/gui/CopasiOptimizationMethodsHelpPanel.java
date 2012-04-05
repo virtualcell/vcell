@@ -133,10 +133,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 				gbc.gridy = gridy;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 				gbc.anchor = GridBagConstraints.LINE_START;
-				if(!CopasiOptimizationMethodType.values()[i].equals(CopasiOptimizationMethodType.Statistics))
-				{
-					contentPanel.add(methodLabels[i], gbc);
-				}
+				contentPanel.add(methodLabels[i], gbc);
 			}
 		}
 		return contentPanel;
