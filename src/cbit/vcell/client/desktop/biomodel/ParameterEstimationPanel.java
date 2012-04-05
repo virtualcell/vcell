@@ -24,8 +24,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.vcell.optimization.gui.AnalysisTaskComboBoxModel;
 import org.vcell.optimization.gui.ParameterEstimationRunTaskPanel;
@@ -52,7 +50,6 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;

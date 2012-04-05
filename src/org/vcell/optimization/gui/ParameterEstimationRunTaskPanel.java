@@ -65,7 +65,6 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
