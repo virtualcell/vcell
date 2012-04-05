@@ -179,7 +179,6 @@ public class CopasiOptimizationSolver {
 	}
 	
 	public enum CopasiOptimizationMethodType {
-		Statistics("Current Solution Statistics", new CopasiOptimizationParameter[0], false, null, CopasiOptProgressType.NO_Progress),
 		EvolutionaryProgram("Evolutionary Programming", new CopasiOptimizationParameter[]{
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Number_of_Generations, 200),
 				new CopasiOptimizationParameter(CopasiOptimizationParameterType.Population_Size, 20),

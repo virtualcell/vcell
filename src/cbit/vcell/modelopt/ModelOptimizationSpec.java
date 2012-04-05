@@ -602,17 +602,32 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
 		{
 			memoryParameterMappingSpec = this.getParameterMappingSpecByCompareEqual(modelParameters[i]);
 		}
+		
+		double modelValue = modelParameters[i].getConstantValue();
 		//parameter mapping spec already exist
 		if(memoryParameterMappingSpec != null)
 		{
 			newParameterMappingSpecs[i].setCurrent(memoryParameterMappingSpec.getCurrent());
-			newParameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
-			newParameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
+			if(memoryParameterMappingSpec.getLow() == Double.NEGATIVE_INFINITY) //make sure not to show infinite for low and high
+			{
+				newParameterMappingSpecs[i].setLow(modelValue * 0.1);
+			}
+			else
+			{
+				newParameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
+			}
+			if(memoryParameterMappingSpec.getHigh() == Double.POSITIVE_INFINITY) //make sure not to show infinite for low and high
+			{
+				newParameterMappingSpecs[i].setHigh(modelValue * 10);
+			}
+			else
+			{
+				newParameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
+			}
 			newParameterMappingSpecs[i].setSelected(memoryParameterMappingSpec.isSelected());
 		}
 		else //not found
 		{
-			double modelValue = modelParameters[i].getConstantValue();
 			newParameterMappingSpecs[i].setLow(modelValue * 0.1);//set lower bound as 10% or the model value
 			newParameterMappingSpecs[i].setHigh(modelValue * 10);//set upper bound as 10 times of the model value
 		}
