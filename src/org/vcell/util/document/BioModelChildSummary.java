@@ -36,6 +36,7 @@ public class BioModelChildSummary implements java.io.Serializable {
 	public final static String TYPE_STOCH_STR = "Stochastic";
 	public final static String TYPE_DETER_STR = "Deterministic";
 	public final static String TYPE_UNKNOWN_STR = "Unknown";
+	public final static String GEOMETRY_DIMENSION_SUFFIX = "D";
 /**
  * Insert the method's description here.
  * Creation date: (8/23/2004 9:58:44 PM)
