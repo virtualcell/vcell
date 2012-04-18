@@ -9,7 +9,9 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 class DataBlock implements java.io.Serializable
 {
@@ -117,10 +119,11 @@ void show() {
    {
 	  byte varNameBytes[] = new byte[124];
 	  for (int i=0;i<varNameBytes.length;i++){
-	  varNameBytes[i] = (byte)0;
+		  varNameBytes[i] = (byte)0;
 	  }
-	  for (int i=0;i<varName.getBytes().length;i++){
-	  varNameBytes[i] = (varName.getBytes())[i];
+	  byte[] bytes = varName.getBytes();
+	  for (int i=0;i<bytes.length;i++){
+		  varNameBytes[i] = bytes[i];
 	  }
 	  dos.write(varNameBytes);
 	  dos.writeInt(variableTypeInt);

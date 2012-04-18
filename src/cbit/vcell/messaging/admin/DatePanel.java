@@ -12,7 +12,9 @@ package cbit.vcell.messaging.admin;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -28,7 +30,6 @@ public class DatePanel extends javax.swing.JPanel {
 	private javax.swing.JComboBox ivjMonthCombo = null;
 	private javax.swing.JComboBox ivjYearCombo = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private java.util.Calendar currcal = null;
 
 	private class IvjEventHandler implements java.awt.event.ItemListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -64,17 +65,8 @@ private void changeMonth() {
 /**
  * Comment
  */
-public void datePanel_Initialize() {
-	currcal = new java.util.GregorianCalendar();
-	int currYear = currcal.get(java.util.Calendar.YEAR);
-	for (int i = -10; i <= 0; i ++) {
-		getYearCombo().addItem((i + currYear) + "");
-	}
-	for (int i = 1; i <= 12; i ++) {
-		getMonthCombo().addItem(i + "");
-	}
-	reset();	
-	return;
+public void reset() {
+	updateInterface(new GregorianCalendar());
 }
 /**
  * Insert the method's description here.
@@ -87,14 +79,13 @@ public Date getDate() {
 	int year = Integer.parseInt((String)getYearCombo().getSelectedItem());
 
 	java.util.GregorianCalendar calendar = new java.util.GregorianCalendar(year, month - 1, day);
-	return new Date(calendar.getTimeInMillis());
+	return calendar.getTime();
 }
 
 /**
  * Return the JComboBox2 property value.
  * @return javax.swing.JComboBox
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JComboBox getDayCombo() {
 	if (ivjDayCombo == null) {
 		try {
@@ -104,11 +95,7 @@ private javax.swing.JComboBox getDayCombo() {
 			JTextField tf = new JTextField(4);
 			ivjDayCombo.setPreferredSize(tf.getPreferredSize());
 			ivjDayCombo.setEditable(true);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -118,7 +105,6 @@ private javax.swing.JComboBox getDayCombo() {
  * Return the JComboBox1 property value.
  * @return javax.swing.JComboBox
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JComboBox getMonthCombo() {
 	if (ivjMonthCombo == null) {
 		try {
@@ -169,8 +155,6 @@ private void handleException(java.lang.Throwable exception) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("DatePanel");
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -207,14 +191,20 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(getYearCombo(), gbc);
 		
-		datePanel_Initialize();
+		Calendar cal = new GregorianCalendar();
+		int currYear = cal.get(java.util.Calendar.YEAR);
+		for (int i = -20; i <= 0; i ++) {
+			getYearCombo().addItem((i + currYear) + "");
+		}
+		for (int i = 1; i <= 12; i ++) {
+			getMonthCombo().addItem(i + "");
+		}
+		updateInterface(cal);
 		getMonthCombo().addItemListener(ivjEventHandler);
 		getYearCombo().addItemListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 /**
  * Comment
@@ -226,13 +216,13 @@ private void monthCombo_ItemEvent() {
  * Insert the method's description here.
  * Creation date: (9/3/2003 8:02:44 AM)
  */
-public void reset() {
-	for (int i = 1; i <= currcal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH); i ++) {
+private void updateInterface(Calendar calendar) {
+	for (int i = 1; i <= calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH); i ++) {
 		getDayCombo().addItem(i + "");
 	}
-	getYearCombo().setSelectedItem(currcal.get(java.util.Calendar.YEAR) + "");
-	getMonthCombo().setSelectedItem((currcal.get(java.util.Calendar.MONTH) + 1) + "");
-	getDayCombo().setSelectedItem(currcal.get(java.util.Calendar.DATE) + "");	
+	getYearCombo().setSelectedItem(calendar.get(java.util.Calendar.YEAR) + "");
+	getMonthCombo().setSelectedItem((calendar.get(java.util.Calendar.MONTH) + 1) + "");
+	getDayCombo().setSelectedItem(calendar.get(java.util.Calendar.DATE) + "");	
 }
 
 @Override
@@ -248,5 +238,9 @@ public void setEnabled(boolean enabled) {
 private void yearCombo_ItemEvent() {
 	changeMonth();
 	return;
+}
+
+public void setCalendar(Calendar cal) {
+	updateInterface(cal);
 }
 }

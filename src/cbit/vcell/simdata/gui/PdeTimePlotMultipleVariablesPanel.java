@@ -45,7 +45,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
@@ -240,18 +239,20 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		JLabel label = new JLabel("Selected Points");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 0;
+		gbc.gridx = 0;
+		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.insets = new java.awt.Insets(15, 10, 4, 4);
 		add(label, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1; gbc.gridy = 0;
+		gbc.gridx = 1; 
+		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.gridwidth = 12;
-		gbc.gridheight = 6;
-		gbc.weightx = 6;
-		gbc.weighty = 3;
+		gbc.gridheight = 4;
+		gbc.weightx = 1;
+		gbc.weighty = 1;
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 0);
 		add(plotPane, gbc);
 
@@ -259,9 +260,10 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 1;
+		gbc.gridx = 0; 
+		gbc.gridy = 1;
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.weighty = 0;
+		gbc.weighty = 0.5;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
 		add(sp, gbc);
@@ -269,7 +271,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		label = new JLabel("Y Axis");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 2;
+		gbc.gridx = 0; 
+		gbc.gridy = 2;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
 		add(label, gbc);
@@ -278,11 +281,11 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 3;
+		gbc.gridx = 0; 
+		gbc.gridy = 3;
 		gbc.weightx = 0.2;
-		gbc.weighty = 0.3;
+		gbc.weighty = 1;
 		gbc.insets = new java.awt.Insets(4, 10, 50, 4);
-		gbc.gridheight = 3;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		add(sp, gbc);
 		

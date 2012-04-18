@@ -19,7 +19,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -205,11 +207,14 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedButton.setForeground(Color.blue);
 		advancedButton.setVerticalAlignment(SwingConstants.BOTTOM);
 		
-		JLabel dateLabel1 = new JLabel("Modified");
-		JLabel dateLabel2 = new JLabel("Between");
+		JLabel dateLabel1 = new JLabel("Modified between");
+		JLabel dateLabel2 = new JLabel("and");
 		advancedOptions.add(dateLabel1);
 		advancedOptions.add(dateLabel2);
 		startDatePanel = new DatePanel();
+		Calendar cal = new GregorianCalendar();
+		cal.roll(Calendar.DAY_OF_MONTH, false);
+		startDatePanel.setCalendar(cal);
 		advancedOptions.add(startDatePanel);
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
