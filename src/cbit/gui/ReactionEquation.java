@@ -134,14 +134,6 @@ public final ExpressionBindingException getExpressionBindingException() {
 	return expressionBindingException;
 }
 
-public final String getEquationleftHand() {
-	return equationleftHand;
-}
-
-public final String getEquationRightHand() {
-	return equationRightHand;
-}
-
 public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Model model, String equationString) throws ExpressionException, PropertyVetoException {
 	int gotoIndex = equationString.indexOf(REACTION_GOESTO);
 	if (gotoIndex < 1 && equationString.length() == 0) {
