@@ -779,7 +779,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
-	assignAnalysisTasksSQL(con,simContextKey, simContext);
 	
 	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
 	if(outputFunctionList != null){
@@ -793,6 +792,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
 	}
 	simContext.getModel().refreshDependencies();
+	assignAnalysisTasksSQL(con,simContextKey, simContext);
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).
 	
 	return simContext;
