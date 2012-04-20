@@ -56,7 +56,7 @@ public class ReferenceDataPanel extends javax.swing.JPanel {
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ReferenceDataPanel.this.getImportButton()) 
-				updateReferenceData(importDataFromFile());
+				updateReferenceDataFromFile();
 			if (e.getSource() == ReferenceDataPanel.this.getSubsampleButton()) 
 				updateReferenceData(subsample());
 			if (e.getSource() == ReferenceDataPanel.this.gethelpButton())
@@ -319,7 +319,7 @@ private void handleException(java.lang.Throwable exception) {
 /**
  * Comment
  */
-private ReferenceData importDataFromFile() {
+private void updateReferenceDataFromFile() {
 	try {
 		VCFileChooser fileChooser = new VCFileChooser();
 		fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
@@ -358,12 +358,12 @@ private ReferenceData importDataFromFile() {
 				double[] weights = new double[rowColumnResultSet.getDataColumnCount()];
 				java.util.Arrays.fill(weights, 1.0);
 				ReferenceData referenceData = new SimpleReferenceData(rowColumnResultSet, weights);
-				return referenceData;
+				updateReferenceData(referenceData);
 			}
 		}
-	} catch (Exception ex) {
-		DialogUtils.showErrorDialog(this, ex.getMessage(), ex);
-		return null;
+	} catch (UserCancelException ex) {
+	} catch (Exception ex2) {
+		DialogUtils.showErrorDialog(this, ex2.getMessage(), ex2);
 	}
 }
 
