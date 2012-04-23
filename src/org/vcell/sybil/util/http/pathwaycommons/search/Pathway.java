@@ -17,9 +17,11 @@ package org.vcell.sybil.util.http.pathwaycommons.search;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.w3c.dom.Element;
 
-public class Pathway { 
+public final class Pathway implements Comparable { 
 
-	protected String primaryId = "", name = ""; 
+	protected String primaryId = "";
+	protected String name = "";
+	protected Organism organism;
 	protected DataSource dataSource;
 	
 	public Pathway(Element element) {
@@ -31,11 +33,50 @@ public class Pathway {
 
 	public String primaryId() { return primaryId; }
 	public String name() { return name; }
+	public Organism getOrganism() { return organism; }
 	public DataSource dataSource() { return dataSource; }
+	
+	public void setOrganism(Organism organism) {
+		this.organism = organism;
+	}
+	
+	public boolean filterOut(String filterText) {
+		if (filterText == null || filterText.length() == 0) {
+			return false;	// keep
+		}
+		String lowerCaseFilterText = filterText.toLowerCase();
+		if(name.toLowerCase().contains(lowerCaseFilterText)) {
+			return false;
+		} else if(organism.speciesName().toLowerCase().contains(lowerCaseFilterText)) {
+			return false;
+		} else if(dataSource.name().toLowerCase().contains(lowerCaseFilterText)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == null) {
+			return false;
+		}
+		if(!(obj instanceof Pathway)) {
+			return false;
+		}
+		if (((Pathway)obj).primaryId.equals(this.primaryId)) {
+			 return true;
+		}
+		return false;
+	}
 	
 	@Override
 	public String toString() {
 		return "[Pathway: primaryId=\"" + primaryId + "\"; name=\"" + name + "\";\n" + 
 		"dataSource=" + (dataSource != null ? dataSource.toString() : "null") + "]"; 
+	}
+
+	public int compareTo(Object obj) {
+		return name.toLowerCase().compareTo(((Pathway)obj).name().toLowerCase());
 	}
 }
