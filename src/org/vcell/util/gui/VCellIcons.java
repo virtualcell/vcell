@@ -75,6 +75,10 @@ public abstract class VCellIcons {
 	public final static Icon pathwayComplexIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/complex.gif"));
 	public final static Icon pathwayParticipantsIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/modification.gif"));
 
+	public final static Icon pathwayLeafIcon = new ImageIcon(VCellIcons.class.getResource("/icons/pathwayLeaf.gif"));
+	public final static Icon sortUpIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortUp.png"));
+	public final static Icon sortDownIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortDown.png"));
+
 	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
 	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
