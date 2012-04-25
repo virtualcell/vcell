@@ -4,7 +4,7 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_trunk/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src_jvisit"/>
@@ -12,7 +12,7 @@
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_trunk/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
