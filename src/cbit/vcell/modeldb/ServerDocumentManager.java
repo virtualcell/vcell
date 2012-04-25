@@ -1094,7 +1094,7 @@ roundtripTimer += l2 - l1;
 				mathEquivalencyHash.put(updatedMathDescription,mathCompareResults);
 				bSomethingChanged = true;
 			}else{
-				mathEquivalencyHash.put(memoryMathDescription,new MathCompareResults(Decision.MathEquivalent_SAME));
+				mathEquivalencyHash.put(memoryMathDescription,new MathCompareResults(Decision.MathEquivalent_SAME_MATHDESC_AS_IN_DB));
 			}
 		}
 	}
@@ -1816,7 +1816,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 			bSomethingChanged = true;
 		}else{
-			mathCompareResults = new MathCompareResults(Decision.MathEquivalent_SAME);
+			mathCompareResults = new MathCompareResults(Decision.MathEquivalent_SAME_MATHDESC_AS_IN_DB);
 		}
 	}
 	//
@@ -2179,7 +2179,7 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 				}
 				if (databaseMathDescription!=null){
 					mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
-					if (!mathCompareResults.decision.equals(Decision.MathEquivalent_SAME)){
+					if (!mathCompareResults.decision.equals(Decision.MathEquivalent_SAME_MATHDESC_AS_IN_DB)){
 						bMustSaveMathDescription = true;
 					}
 				}
