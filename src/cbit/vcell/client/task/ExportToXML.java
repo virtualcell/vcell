@@ -14,11 +14,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
+import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.FileFilters;
 
@@ -109,6 +111,47 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				}
 			}
 			return; 									//will take care of writing to the file as well.
+		}
+		//Export a simulation to Smoldyn input file, if there are parameter scans
+		//in simulation, we'll export multiple Smoldyn input files.
+		else if (fileFilter.equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT)) 
+		{ 
+			SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
+			Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
+			if (selectedSim != null) {
+				int scanCount = selectedSim.getScanCount();
+				if(scanCount > 1) // has parameter scan
+				{
+					String baseExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf("."));
+					for(int i=0; i<scanCount; i++)
+					{
+						SimulationJob simJob = new SimulationJob(selectedSim, i, null);
+						// Need to export each parameter scan into a separate file
+						String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
+						exportFile = new File(newExportFileName);
+						
+						PrintWriter pw = new PrintWriter(exportFile);
+						SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+						smf.write();
+						pw.close();	
+					}
+				}
+				else if(scanCount == 1)// regular simulation, no parameter scan
+				{
+					SimulationJob simJob = new SimulationJob(selectedSim, 0, null);
+					// export the simulation to the selected file
+					PrintWriter pw = new PrintWriter(exportFile);
+					SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+					smf.write();
+					pw.close();
+				}
+				else
+				{
+					throw new Exception("Simulation scan count is smaller than 1.");
+				}
+			}
+			return;
+												
 		} else {
 			// convert it if other format
 			if (!fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {

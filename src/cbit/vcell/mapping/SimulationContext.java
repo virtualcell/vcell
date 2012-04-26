@@ -1186,6 +1186,17 @@ public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
+public Simulation getSimulation(String simName)
+{
+	for(Simulation sim:getSimulations())
+	{
+		if(sim.getName().equals(simName))
+		{
+			return sim;
+		}
+	}
+	return null;
+}
 
 /**
  * Gets the temperatureKelvin property (double) value.

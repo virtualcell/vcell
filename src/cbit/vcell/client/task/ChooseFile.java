@@ -13,7 +13,9 @@ import cbit.vcell.client.server.*;
 import java.util.*;
 import java.awt.Component;
 import java.io.*;
+
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
@@ -104,6 +106,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	// Set the default file filter...
@@ -150,7 +153,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
 				selectedFile = new File(selectedFileName + ".pdf");
-			}
+			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") || n.endsWith(".txt"))) {
+				selectedFile = new File(selectedFileName + ".smoldynInput");
+			} 
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
@@ -181,6 +186,16 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				// for export to L3V1 SPATIAL, only spatial apps 
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getGeometryContext().getGeometry().getDimension()>0 && !simContexts[i].isStoch()){
+						applicableAppNameList.add(simContexts[i].getName());
+					}
+				}
+				if (applicableAppNameList.size() == 0) {
+					throw new Exception("Only spatial stochastic applications can be exported to this format. No spatial stochastic applications exist in the \"" + bioModel.getName() + "\".");
+				}
+			} else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription())) {
+				// export to smoldyn input file,  only spatial stochastic applications 
+				for (int i=0;i<simContexts.length;i++){
+					if (simContexts[i].getGeometryContext().getGeometry().getDimension()>0 && simContexts[i].isStoch()){
 						applicableAppNameList.add(simContexts[i].getName());
 					}
 				}
@@ -225,12 +240,54 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					if (simContexts[i].getName().equals(chosenSimContextName)){
 						hashTable.put("chosenSimContextIndex", new Integer(i));
 						chosenSimContext = simContexts[i];
+						break;
 					}
 				}
 			}
-
-			// Select a structure and set its size only for SBML models
-			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) || 
+			// Select a spatial stochastic simulation to export 
+			if(fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription()))
+			{
+				if(chosenSimContext != null)
+				{
+					String[] simNames = new String[chosenSimContext.getSimulations().length];
+					Simulation[] sims = chosenSimContext.getSimulations();
+					for(int i=0; i< sims.length; i++)
+					{
+						simNames[i] = sims[i].getName();
+					}
+					Object choice = PopupGenerator.showListDialog(topLevelWindowManager, simNames, "Please select a simulation to export");
+					if(choice == null)
+					{
+						throw UserCancelException.CANCEL_FILE_SELECTION;
+					}
+					String chosenSimulationName = (String)choice;
+					Simulation chosenSimulation = chosenSimContext.getSimulation(chosenSimulationName);
+					if(chosenSimulation != null)
+					{
+						hashTable.put("selectedSimulation", chosenSimulation);
+						
+						
+						File tempOutputFile = new File(selectedFileName);
+			    		if(!FileFilters.FILE_FILTER_SMOLDYN_INPUT.accept(tempOutputFile)){
+	    					if(tempOutputFile.getName().indexOf(".") == -1){
+	    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName() + ".smoldynInput");
+	    					}else{
+	    						throw new Exception("Smoldyn input file has to be a text document with extension of either 'smoldynInput' or 'txt'");
+	    					}
+	    				}
+			    		if(tempOutputFile.exists())
+			    		{
+			    			String overwriteChoice = PopupGenerator.showWarningDialog(topLevelWindowManager, topLevelWindowManager.getUserPreferences(), UserMessage.warn_OverwriteFile, selectedFileName);
+			    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
+			    				throw UserCancelException.CANCEL_FILE_SELECTION;
+			    			}
+			    		}
+			    		selectedFile = tempOutputFile;
+					}
+				}
+			}
+			// Check structure sized and select a simulation to export to SBML
+			else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) ||
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ||

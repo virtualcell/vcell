@@ -220,7 +220,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		//The rate constant for transitions from state1 to state2 of molecules at surface;
 		//The membrane reaction with reactants and products all in volume, use 'rate' instead of using 'reaction' keyword.
 		rate,
-		//The binding radius is used for bimolecular membrane reaction(two reactants all one membrane)
+		//The binding radius is used for bimolecular membrane reaction(two reactants all on membrane)
 		binding_radius,
 		
 		max_mol,
