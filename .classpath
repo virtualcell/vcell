@@ -3,7 +3,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.1/nativelibs/win"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src_jvisit"/>
@@ -30,6 +30,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/new_mail.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/GlgGraphLayoutNG.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/thirdParty.jar" sourcepath="lib/vcellClientThirdParty.jar"/>
+	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sonic_Client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sonic_XA.jar"/>
 	<classpathentry kind="lib" path="lib/sonic_Crypto.jar"/>
