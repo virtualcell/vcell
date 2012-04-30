@@ -25,11 +25,11 @@ import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
@@ -549,15 +549,16 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				try {
 					if (aValue instanceof String){
 						String newUnitSymbol = (String)aValue;
+						ModelUnitSystem modelUnitSystem = getModel().getUnitSystem();
 						if (!parameter.getUnitDefinition().getSymbol().equals(newUnitSymbol)){
 							if (parameter instanceof KineticsParameter){
 								Kinetics.KineticsParameter kineticsParameter = (Kinetics.KineticsParameter)parameter;
-								kineticsParameter.setUnitDefinition(VCUnitDefinition.getInstance(newUnitSymbol));
+								kineticsParameter.setUnitDefinition(modelUnitSystem.getInstance(newUnitSymbol));
 								kineticsParameter.getKinetics().resolveUndefinedUnits();
 								fireTableRowsUpdated(rowIndex,rowIndex);
 							} else if (parameter instanceof ModelParameter){
 //								Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
-								((ModelParameter)parameter).setUnitDefinition(VCUnitDefinition.getInstance(newUnitSymbol));
+								((ModelParameter)parameter).setUnitDefinition(modelUnitSystem.getInstance(newUnitSymbol));
 								fireTableRowsUpdated(rowIndex,rowIndex);
 							}
 						}

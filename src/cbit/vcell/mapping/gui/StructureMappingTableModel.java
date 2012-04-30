@@ -590,8 +590,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							double size;
 							try{
 								size = exp.evaluateConstant();
+								VCUnitDefinition volumeUnit = getGeometryContext().getSimulationContext().getModel().getUnitSystem().getVolumeUnit();
 								StructureSizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), 
-										structure, size, VCUnitDefinition.UNIT_um3);
+										structure, size, volumeUnit);
 								fireTableRowsUpdated(0,getRowCount());
 							}catch(ExpressionException ex){
 								ex.printStackTrace(System.out);

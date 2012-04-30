@@ -12,6 +12,8 @@ package cbit.vcell.modeldb;
 
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.units.VCUnitSystem;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -117,12 +119,12 @@ public String getSQLValueList(KeyValue key, VolumeGeometricRegion volumeRegion, 
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGeometricRegion volumeRegions[], SessionLog log) throws java.sql.SQLException, DataAccessException {
+public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGeometricRegion volumeRegions[], VCUnitSystem unitSystem, SessionLog log) throws java.sql.SQLException, DataAccessException {
 
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
 	String _sizeUnitSymbol = rset.getString(this.sizeUnit.toString());
-	cbit.vcell.units.VCUnitDefinition _sizeUnit = cbit.vcell.units.VCUnitDefinition.getInstance(_sizeUnitSymbol);
+	cbit.vcell.units.VCUnitDefinition _sizeUnit = unitSystem.getInstance(_sizeUnitSymbol);
 
 	//
 	// get neighboring regions
@@ -160,7 +162,7 @@ public VolumeGeometricRegion getVolumeRegion(java.sql.ResultSet rset, cbit.vcell
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
 	String _sizeUnitSymbol = rset.getString(this.sizeUnit.toString());
-	cbit.vcell.units.VCUnitDefinition _sizeUnit = cbit.vcell.units.VCUnitDefinition.getInstance(_sizeUnitSymbol);
+	cbit.vcell.units.VCUnitDefinition _sizeUnit = geometry.getUnitSystem().getInstance(_sizeUnitSymbol);
 
 	int _regionID = rset.getInt(this.regionID.toString());
 	KeyValue _subvolumeKey = new KeyValue(rset.getBigDecimal(this.subVolumeRef.toString()));

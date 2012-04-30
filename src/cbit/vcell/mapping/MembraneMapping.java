@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.TokenMangler;
@@ -21,6 +22,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -46,8 +48,8 @@ public class MembraneMapping extends StructureMapping implements java.beans.Veto
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
-	super(membraneMapping, argSimulationContext,newGeometry);
+public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSimulationContext,Geometry newGeometry, ModelUnitSystem argModelUnitSystem) {
+	super(membraneMapping, argSimulationContext,newGeometry, argModelUnitSystem);
 	fieldCalculateVoltage = membraneMapping.fieldCalculateVoltage;
 
 	addVetoableChangeListener(this);
@@ -58,8 +60,8 @@ public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSim
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext) {
-	super(membrane, argSimulationContext);
+public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext, ModelUnitSystem argModelUnitSystem) {
+	super(membrane, argSimulationContext, argModelUnitSystem);
 	Feature outfeature = null;
 	int depth = 0;
 	Membrane m = membrane;
@@ -74,14 +76,15 @@ public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext
 	String sArea = NumberUtils.formatNumber(area, 4);
 	area = Double.parseDouble(sArea);
 	try {
+		VCUnitDefinition lengthUnitDefn = modelUnitSystem.getLengthUnit();
 		setParameters(new StructureMappingParameter[] {
-						new StructureMappingParameter(getInitialVoltageName(), new Expression(0.0), ROLE_InitialVoltage,VCUnitDefinition.UNIT_mV),
-						new StructureMappingParameter(DefaultNames[ROLE_SpecificCapacitance], new Expression(1.0), ROLE_SpecificCapacitance,VCUnitDefinition.UNIT_pF_per_um2),
-						new StructureMappingParameter(DefaultNames[ROLE_SurfaceToVolumeRatio], /*new Expression(0)*/ null, ROLE_SurfaceToVolumeRatio,VCUnitDefinition.UNIT_per_um),
-						new StructureMappingParameter(DefaultNames[ROLE_VolumeFraction], /*new Expression(0)*/ null, ROLE_VolumeFraction,VCUnitDefinition.UNIT_DIMENSIONLESS),
-						new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(area), ROLE_Size,VCUnitDefinition.UNIT_um2),
-						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitArea], /*new Expression(1)*/ null, ROLE_AreaPerUnitArea,VCUnitDefinition.UNIT_DIMENSIONLESS),
-						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitVolume], /*new Expression(1)*/ null, ROLE_AreaPerUnitVolume,VCUnitDefinition.UNIT_per_um)
+						new StructureMappingParameter(getInitialVoltageName(), new Expression(0.0), ROLE_InitialVoltage, getMembrane().getMembraneVoltage().getUnitDefinition()),
+						new StructureMappingParameter(DefaultNames[ROLE_SpecificCapacitance], new Expression(1.0), ROLE_SpecificCapacitance, modelUnitSystem.getSpecificCapacitanceUnit()),
+						new StructureMappingParameter(DefaultNames[ROLE_SurfaceToVolumeRatio], /*new Expression(0)*/ null, ROLE_SurfaceToVolumeRatio, lengthUnitDefn.getInverse()),
+						new StructureMappingParameter(DefaultNames[ROLE_VolumeFraction], /*new Expression(0)*/ null, ROLE_VolumeFraction,modelUnitSystem.getInstance_DIMENSIONLESS()),
+						new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(area), ROLE_Size, modelUnitSystem.getAreaUnit()),
+						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitArea], /*new Expression(1)*/ null, ROLE_AreaPerUnitArea,modelUnitSystem.getInstance_DIMENSIONLESS()),
+						new StructureMappingParameter(DefaultNames[ROLE_AreaPerUnitVolume], /*new Expression(1)*/ null, ROLE_AreaPerUnitVolume, lengthUnitDefn.getInverse())
 		});
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);

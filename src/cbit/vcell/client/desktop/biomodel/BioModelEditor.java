@@ -59,6 +59,8 @@ import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
+import cbit.vcell.units.UnitSystemProvider;
+import cbit.vcell.units.VCUnitSystem;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
@@ -107,10 +109,10 @@ public class BioModelEditor extends DocumentEditor {
 	/**
  * BioModelEditor constructor comment.
  */
-public BioModelEditor() {
-	super();
-	initialize();
-}
+	public BioModelEditor() {
+		super();
+		initialize();
+	}
 
 @Override
 protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, String actionCommand) {	
@@ -372,7 +374,11 @@ private StructurePropertiesPanel getStructurePropertiesPanel() {
 }
 private ParameterPropertiesPanel getParameterPropertiesPanel() {
 	if (parameterPropertiesPanel == null) {
-		parameterPropertiesPanel = new ParameterPropertiesPanel();
+		parameterPropertiesPanel = new ParameterPropertiesPanel(new UnitSystemProvider() {
+			public VCUnitSystem getUnitSystem() {
+				return bioModel.getModel().getUnitSystem();
+			}
+		});
 	}
 	return parameterPropertiesPanel;
 }

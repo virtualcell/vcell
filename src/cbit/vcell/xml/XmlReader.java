@@ -90,6 +90,7 @@ import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometryUnitSystem;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
@@ -200,6 +201,8 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
@@ -240,7 +243,6 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
-
 
 /**
  * This class implements the translation of XML data into Java Vcell objects..
@@ -924,7 +926,6 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 		VariableHash varHash = new VariableHash();
 		Model model = currentSimulationContext.getModel();
 		addResevedSymbols(varHash, model);
-		ArrayList<String> reserved = model.getReservedVarNames();
 
 		//
 		// rename "special" parameters (those that are not "user defined")
@@ -940,7 +941,7 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 					Domain domain = null;
 					varHash.addVariable(new Function(paramName,paramExp,domain));
 				} else {
-					if (reserved.contains(paramName)) {
+					if (model.getReservedSymbolByName(paramName) != null) {
 						varHash.removeVariable(paramName);
 						Domain domain = null;
 						varHash.addVariable(new Function(paramName, paramExp,domain));
@@ -1011,6 +1012,7 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 		}
 		
 		Variable sortedVariables[] = varHash.getTopologicallyReorderedVariables();
+		ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 		for (int i = sortedVariables.length-1; i >= 0 ; i--){
 			if (sortedVariables[i] instanceof Function){
 				Function paramFunction = (Function)sortedVariables[i];
@@ -1028,7 +1030,7 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 				String symbol = xmlParam.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 				VCUnitDefinition unit = null;
 				if (symbol != null) {
-					unit = VCUnitDefinition.getInstance(symbol);
+					unit = modelUnitSystem.getInstance(symbol);
 				}
 				LocalParameter tempParam = clampStimulus.getLocalParameter(paramFunction.getName());
 				if (tempParam == null) {
@@ -1214,7 +1216,7 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 	}
 
 	//*** Create new Feature Mapping ****
-	FeatureMapping feamap = new FeatureMapping(featureref,simulationContext);
+	FeatureMapping feamap = new FeatureMapping(featureref,simulationContext, simulationContext.getModel().getUnitSystem());
 
 	//Set Size
 	if(param.getAttributeValue(XMLTags.SizeTag) != null)
@@ -1812,6 +1814,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		    ArrayList<Element> volRegions = new ArrayList<Element>(param.getChildren(XMLTags.VolumeRegionTag, vcNamespace));
 			ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
 			Element temp;
+			GeometryUnitSystem geometryUnitSystem = geom.getUnitSystem();
 			for (int i = 0; i < volRegions.size(); i++) {
 				temp = (Element)volRegions.get(i);
 				String regionID = temp.getAttributeValue(XMLTags.RegionIDAttrTag);
@@ -1832,7 +1835,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 					size = Double.parseDouble(sizeStr);
 					String unitSymbol = temp.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 					if (unitSymbol != null) {
-						unit = VCUnitDefinition.getInstance(unitSymbol);
+						unit = geometryUnitSystem.getInstance(unitSymbol);
 					}
 				}
 				VolumeGeometricRegion vgr = new VolumeGeometricRegion(name, size, unit, subvolume, Integer.parseInt(regionID));
@@ -1860,7 +1863,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 					size = Double.parseDouble(sizeStr);
 					String unitSymbol = temp.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 					if (unitSymbol != null) {
-						unit = VCUnitDefinition.getInstance(unitSymbol);
+						unit = geometryUnitSystem.getInstance(unitSymbol);
 					}
 				}
 				SurfaceGeometricRegion rsl = new SurfaceGeometricRegion(name, size, unit);
@@ -2268,7 +2271,12 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 
 		// add constants that may be used in kinetics.
 		// VariableHash varHash = getVariablesHash();
-		ArrayList<String> reserved = reaction.getModel().getReservedVarNames();
+		ArrayList<String> reserved = new ArrayList<String>();
+		
+		ReservedSymbol[] reservedSymbols = reaction.getModel().getReservedSymbols();
+		for (ReservedSymbol rs : reservedSymbols) {
+			reserved.add(rs.getName());
+		}
 
 		try {
 			if (reaction.getStructure() instanceof Membrane){
@@ -2357,6 +2365,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		}
 		
 		Variable sortedVariables[] = varHash.getTopologicallyReorderedVariables();
+		ModelUnitSystem modelUnitSystem = reaction.getModel().getUnitSystem();
 		for (int i = sortedVariables.length-1; i >= 0 ; i--){
 			if (sortedVariables[i] instanceof Function){
 				Function paramFunction = (Function)sortedVariables[i];
@@ -2375,7 +2384,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				String symbol = xmlParam.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 				VCUnitDefinition unit = null;
 				if (symbol != null) {
-					unit = VCUnitDefinition.getInstance(symbol);
+					unit = modelUnitSystem.getInstance(symbol);
 				}
 				Kinetics.KineticsParameter tempParam = newKinetics.getKineticsParameter(paramFunction.getName());
 				if (tempParam == null) {
@@ -3120,7 +3129,7 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	}
 
 	//*** Create new Membrane Mapping ****
-	MembraneMapping memmap = new MembraneMapping(membraneref, simulationContext);
+	MembraneMapping memmap = new MembraneMapping(membraneref, simulationContext, simulationContext.getModel().getUnitSystem());
 
 	//Set SurfacetoVolumeRatio when it exists, amended Sept. 27th, 2007
 	if(param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag)!= null)
@@ -4390,7 +4399,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Element dataContextElement = param.getChild(XMLTags.DataContextTag, vcNamespace);
 	if (dataContextElement != null) {
 		DataContext dataContext = newsimcontext.getDataContext();
-		ArrayList<DataSymbol> dataSymbols = getDataSymbols(dataContextElement, dataContext);
+		ArrayList<DataSymbol> dataSymbols = getDataSymbols(dataContextElement, dataContext, newsimcontext.getModel().getUnitSystem());
 		for (int i = 0; i < dataSymbols.size(); i++) {
 			dataContext.addDataSymbol(dataSymbols.get(i));
 		}
@@ -4580,7 +4589,7 @@ public void getMicroscopeMeasurement(Element element, SimulationContext simConte
 	}
 }
 
-private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataContext dataContext) {
+private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataContext dataContext, ModelUnitSystem modelUnitSystem) {
 	ArrayList<DataSymbol> dataSymbolsList = new ArrayList<DataSymbol>();
 	// iterate over fieldDatasymbols. When other dataSymbol types are implemented, repeat this loop.
 	Iterator dataSymbolsElementIter = dataContextElement.getChildren(XMLTags.FieldDataSymbolTag, vcNamespace).iterator();
@@ -4591,7 +4600,7 @@ private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataCon
 		String symbol = dataSymbolElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 		VCUnitDefinition vcUnitDefinition = null;
 		if (symbol != null) {
-			vcUnitDefinition = VCUnitDefinition.getInstance(symbol);
+			vcUnitDefinition = modelUnitSystem.getInstance(symbol); 
 		}
 		// ExternalDataIdentifier dataSetID in FieldDataSymbol
 		Element dataSetIDElement = dataSymbolElement.getChild(XMLTags.ExternalDataIdentifierTag, vcNamespace);
@@ -4849,6 +4858,7 @@ private SundialsSolverOptions getSundialsSolverOptions(Element sundialsSolverOpt
 public ModelParameter[] getModelParams(Element globalParams, Model model) throws XmlParseException {
 	Iterator<Element> globalsIterator = globalParams.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
 	Vector<ModelParameter> modelParamsVector = new Vector<ModelParameter>();
+	ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 	while (globalsIterator.hasNext()) {
 		org.jdom.Element paramElement = (Element) globalsIterator.next();
 		//get its attributes : name, role and unit definition
@@ -4863,7 +4873,7 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 		String unitSymbol = paramElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 		VCUnitDefinition glParamUnit = null;
 		if (unitSymbol != null) {
-			glParamUnit = VCUnitDefinition.getInstance(unitSymbol);
+			glParamUnit = modelUnitSystem.getInstance(unitSymbol);
 		}
 		//get parameter contents : expression; annotation, if any.
 		String glParamExpStr = paramElement.getText();

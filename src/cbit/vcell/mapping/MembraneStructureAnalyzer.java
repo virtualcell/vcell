@@ -18,6 +18,8 @@ import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Product;
@@ -26,7 +28,6 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
@@ -125,7 +126,7 @@ private void refreshResolvedFluxes() throws Exception {
 				SpeciesContextSpec speciesContextSpec = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(speciesContext);
 				if (!speciesContextSpec.isConstant()){
 					if (rf == null){
-						rf = new ResolvedFlux(speciesContext);
+						rf = new ResolvedFlux(speciesContext, fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 						resolvedFluxList.addElement(rf);
 					}
 					FeatureMapping featureMapping = (FeatureMapping)structureMapping;
@@ -137,16 +138,16 @@ private void refreshResolvedFluxes() throws Exception {
 						KineticsParameter reactionRateParameter = ((DistributedKinetics)fr.getKinetics()).getReactionRateParameter();
 						Expression correctedReactionRate = Expression.mult(new Expression(reactionRateParameter, mathMapping.getNameScope()),insideFluxCorrection);
 						if (((Membrane)fr.getStructure()).getInsideFeature() == fluxes[j].getStructure()) {
-							if (rf.getFlux().isZero()){
-								rf.setFlux(correctedReactionRate.flatten());
+							if (rf.getFluxExpression().isZero()){
+								rf.setFluxExpression(correctedReactionRate.flatten());
 							}else{
-								rf.setFlux(Expression.add(rf.getFlux(),correctedReactionRate.flatten()));
+								rf.setFluxExpression(Expression.add(rf.getFluxExpression(),correctedReactionRate.flatten()));
 							}
 						} else {
-							if (rf.getFlux().isZero()){
-								rf.setFlux(Expression.negate(correctedReactionRate).flatten());
+							if (rf.getFluxExpression().isZero()){
+								rf.setFluxExpression(Expression.negate(correctedReactionRate).flatten());
 							} else {
-								rf.setFlux(Expression.add(rf.getFlux(),Expression.negate(correctedReactionRate).flatten()));
+								rf.setFluxExpression(Expression.add(rf.getFluxExpression(),Expression.negate(correctedReactionRate).flatten()));
 							}
 						}
 					}else if (fr.getKinetics() instanceof LumpedKinetics){
@@ -154,7 +155,7 @@ private void refreshResolvedFluxes() throws Exception {
 					}else{
 						throw new RuntimeException("unexpected Kinetic type in MembraneStructureAnalyzer.refreshResolvedFluxes()");
 					}
-					rf.getFlux().bindExpression(mathMapping);
+					rf.getFluxExpression().bindExpression(mathMapping);
 				}
 			}
 		}
@@ -196,7 +197,7 @@ private void refreshResolvedFluxes() throws Exception {
 									}
 								}
 								if (rf == null){
-									rf = new ResolvedFlux(rp_Array[k].getSpeciesContext());
+									rf = new ResolvedFlux(rp_Array[k].getSpeciesContext(), sr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 									resolvedFluxList.addElement(rf);
 								}
 								
@@ -209,12 +210,12 @@ private void refreshResolvedFluxes() throws Exception {
 									Expression volFract = new Expression(featureMapping.getVolumePerUnitVolumeParameter(), mathMapping.getNameScope());
 									Expression fluxCorrection = Expression.div(kmole, volFract).flatten(); 
 									Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping.getNameScope());
-									if (rf.getFlux().isZero()){
-										rf.setFlux(Expression.mult(fluxCorrection,reactionRateExpression));
+									if (rf.getFluxExpression().isZero()){
+										rf.setFluxExpression(Expression.mult(fluxCorrection,reactionRateExpression));
 									}else{
-										rf.setFlux(Expression.add(rf.getFlux(),Expression.mult(fluxCorrection,reactionRateExpression)));
+										rf.setFluxExpression(Expression.add(rf.getFluxExpression(),Expression.mult(fluxCorrection,reactionRateExpression)));
 									}
-									rf.getFlux().bindExpression(mathMapping);
+									rf.getFluxExpression().bindExpression(mathMapping);
 								} else if (sm.getGeometryClass() == getSurfaceClass()) {
 									throw new Exception("In Application '" + mathMapping.getSimulationContext().getName() + "', membrane reaction with reactant in volume mapped to surface not yet implemented.");
 								} else {

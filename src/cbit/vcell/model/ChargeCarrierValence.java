@@ -10,7 +10,10 @@
 
 package cbit.vcell.model;
 
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/20/2002 4:16:31 PM)
@@ -20,16 +23,18 @@ public class ChargeCarrierValence implements org.vcell.util.Matchable, SymbolTab
 	private java.lang.String fieldName = null;
 	private cbit.vcell.parser.NameScope fieldNameScope = null;
 	private cbit.vcell.parser.Expression fieldExpression = null;
+	private VCUnitDefinition fieldUnitDefn = null;
 	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 /**
  * MembraneVoltage constructor comment.
  */
-public ChargeCarrierValence(String name, NameScope nameScope) {
+public ChargeCarrierValence(String name, NameScope nameScope, VCUnitDefinition unitDefn) {
 	super();
 	fieldName = name;
 	fieldNameScope = nameScope;
+	fieldUnitDefn = unitDefn;
 	fieldExpression = new Expression(0.0);
 }
 /**
@@ -124,7 +129,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return cbit.vcell.units.VCUnitDefinition
  */
 public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-	return cbit.vcell.units.VCUnitDefinition.UNIT_DIMENSIONLESS;
+	return fieldUnitDefn;
 }
 /**
  * Accessor for the vetoPropertyChange field.
@@ -185,4 +190,9 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
+
+public void setUnitDefinition(VCUnitDefinition unitDefn) throws java.beans.PropertyVetoException {
+	fieldUnitDefn = unitDefn;
+}
+
 }

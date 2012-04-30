@@ -72,6 +72,7 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 		if (evt.getSource() == this) {
 			if (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
 				bioModelChange(evt);
+				refreshData();
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}

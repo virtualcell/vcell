@@ -333,6 +333,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					// check if kinetic proxy parameter is in kinetic parameter expression
 					if (newExpression.hasSymbol(oldKprps[j].getName())) {
 						SymbolTableEntry ste = oldKprps[j].getTarget();
+						Model pasteFromModel = copyFromReactionStep.getModel();
 						if (ste instanceof SpeciesContext) {
 							// if newRxnStruct is a feature/membrane, get matching spContexts from old reaction and replace them in new rate expr. 
 							SpeciesContext oldSC = (SpeciesContext)ste;
@@ -340,7 +341,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 							if (newSC == null) {
 								// the speciesContext (ste) was not a rxnParticipant. If paste-model is different from copy/cut-model, 
 								// check if oldSc is present in paste-model; if not, add it.
-								if (!pasteToModel.equals(copyFromReactionStep.getModel())) {
+								if (!pasteToModel.equals(pasteFromModel)) {
 									if (pasteToModel.getSpeciesContext(oldSC.getName()) == null) {
 										// if paste-model has oldSc struct, paste it there, 
 										Structure newSCStruct = pasteToModel.getStructure(oldSC.getStructure().getName()); 
@@ -408,7 +409,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 							} 
 						} else if (ste instanceof ModelParameter) {
 							// see if model has this global parameter (if rxn is being pasted into another model, it won't)
-							if (!pasteToModel.equals(copyFromReactionStep.getModel())) {
+							if (!pasteToModel.equals(pasteFromModel)) {
 								ModelParameter oldMp = (ModelParameter)ste;
 								ModelParameter mp = pasteToModel.getModelParameter(oldMp.getName());
 								boolean bNonNumeric = false;
@@ -427,7 +428,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 											bNonNumeric = true;
 										}
 										ModelParameter newMp = pasteToModel.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
-										String annotation = "Copied from model : " + copyFromReactionStep.getModel().getNameScope();
+										String annotation = "Copied from model : " + pasteFromModel.getNameScope();
 										newMp.setModelParameterAnnotation(annotation);
 										pasteToModel.addModelParameter(newMp);
 										// if global param name had to be changed, make sure newExpr is updated as well.
@@ -444,7 +445,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 										bNonNumeric = true;
 									}
 									ModelParameter newMp = pasteToModel.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
-									String annotation = "Copied from model : " + copyFromReactionStep.getModel().getNameScope();
+									String annotation = "Copied from model : " + pasteFromModel.getNameScope();
 									newMp.setModelParameterAnnotation(annotation);
 									pasteToModel.addModelParameter(newMp);	
 								}

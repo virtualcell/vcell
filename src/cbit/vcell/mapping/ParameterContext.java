@@ -21,6 +21,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.SpeciesContext;
@@ -34,7 +35,9 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
+import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 
 public class ParameterContext implements Matchable, ScopedSymbolTable, Serializable {
 	
@@ -211,7 +214,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 		}
 
 		public VCUnitDefinition getUnitDefinition() {
-			return VCUnitDefinition.UNIT_TBD;
+			return unitSystemProvider.getUnitSystem().getInstance_TBD();
 		}
 
 		public NameScope getNameScope() {
@@ -307,6 +310,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 	private UnresolvedParameter[] fieldUnresolvedParameters = new UnresolvedParameter[0];
 	private BioNameScope nameScope = null;
 	private ParameterPolicy parameterPolicy = null;
+	private UnitSystemProvider unitSystemProvider = null;
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -339,9 +343,10 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 		}
 	};
 	
-public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPolicy) {
+public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPolicy, UnitSystemProvider argUnitSystemProvider) {
 	this.nameScope = bioNameScope;
 	this.parameterPolicy = parameterPolicy;
+	this.unitSystemProvider = argUnitSystemProvider;
 	addPropertyChangeListener(listener);
 }            
 
@@ -658,13 +663,14 @@ public void resolveUndefinedUnits() {
 	// try to fix units for UserDefined parameters
 	//
 	if (!bResolvingUnits){
+		VCUnitSystem unitSystem = unitSystemProvider.getUnitSystem();
 		try {
 			bResolvingUnits = true;
 			boolean bAnyTBDUnits = false;
 			for (int i=0;i<fieldParameters.length;i++){
 				if (fieldParameters[i].getUnitDefinition()==null){
 					return; // not ready to resolve units yet
-				}else if (fieldParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
+				}else if (fieldParameters[i].getUnitDefinition().compareEqual(unitSystem.getInstance_TBD())){
 					bAnyTBDUnits = true;
 				}
 			}
@@ -672,7 +678,8 @@ public void resolveUndefinedUnits() {
 			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
 			//
 			if (bAnyTBDUnits){
-				VCUnitDefinition vcUnitDefinitions[] = VCUnitEvaluator.suggestUnitDefinitions(fieldParameters);
+				VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(unitSystem);
+				VCUnitDefinition vcUnitDefinitions[] = unitEvaluator.suggestUnitDefinitions(fieldParameters);
 				for (int i = 0; i < fieldParameters.length; i++){
 					if (!fieldParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
 						fieldParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
@@ -803,15 +810,15 @@ final void cleanupParameters() throws ExpressionException, PropertyVetoException
  * Creation date: (5/11/2004 6:19:00 PM)
  * @param bReading boolean
  */
-public void reading(boolean argReading) {
-	if (argReading == bReading){
-		throw new RuntimeException("flag conflict");
-	}
-	this.bReading = argReading;
-	if (!bReading){
-		resolveUndefinedUnits();
-	}
-}
+//public void reading(boolean argReading) {
+//	if (argReading == bReading){
+//		throw new RuntimeException("flag conflict");
+//	}
+//	this.bReading = argReading;
+//	if (!bReading){
+//		resolveUndefinedUnits();
+//	}
+//}
 
 /**
  * Sets the parameters property (cbit.vcell.model.Parameter[]) value.

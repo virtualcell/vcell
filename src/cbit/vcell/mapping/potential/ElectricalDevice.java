@@ -14,12 +14,15 @@ import java.util.Map;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

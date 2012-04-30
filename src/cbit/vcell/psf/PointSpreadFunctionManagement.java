@@ -171,7 +171,7 @@ public class PointSpreadFunctionManagement {
 				
 		   		String fluorName = "psf_" + initialFieldDataName;
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.POINT_SPREAD_FUNCTION, 
-						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
+						simulationContext.getDataContext(), simulationContext.getModel().getUnitSystem().getInstance_TBD(),
 						pSFImageEDI, SimDataConstants.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), 0D);
 				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 			}

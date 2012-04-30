@@ -58,6 +58,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
@@ -280,11 +281,12 @@ public class VFrapXmlHelper {
 		String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 		
 		SimulationContext simContext = bioModel.getSimulationContexts()[0];
+		ModelUnitSystem modelUnitSystem = bioModel.getModel().getUnitSystem();
 		for (int i=0; i<channelNames.length; i++) {
 			// TODO: construct dataSymbolName from vFrapConstants::nameFromToken()
 			String dataSymbolName = channelNames[i] + "_" + initialFieldDataName;			// item name postfixed with field data name
 			DataSymbol dataSymbol = new FieldDataSymbol(dataSymbolName, channelVFrapImageType[i],
-					simContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
+					simContext.getDataContext(), modelUnitSystem.getInstance_TBD(),
 					vfrapMisc, channelNames[i], VariableType.VOLUME.getTypeName(), 0D);
 			simContext.getDataContext().addDataSymbol(dataSymbol);
 		}	

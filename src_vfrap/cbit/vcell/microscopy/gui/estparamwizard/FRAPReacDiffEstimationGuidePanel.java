@@ -39,6 +39,7 @@ import cbit.vcell.microscopy.EstimatedParameter;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPUnitSystem;
 import cbit.vcell.microscopy.gui.DiffOnRateEstimationPanel;
 import cbit.vcell.microscopy.gui.DiffRateEstimationPanel;
 import cbit.vcell.opt.Parameter;
@@ -62,6 +63,9 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	private JTextField konTextField = new JTextField(8);
 	private JButton estButton = new JButton("Estimate Reaction Diffusion Parameters");
 	private JButton helpOnRateButton = null;
+	
+	// to get units for diffusion rate, etc. in 'updateTableParameterParameter()' 
+	private FRAPUnitSystem frapUnitsystem = null;
 	
 	private JScrollPane tableScroll = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	private JTable paramTable = new JTable();
@@ -113,6 +117,10 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	
 	public FRAPReacDiffEstimationGuidePanel() {
 		super();
+		
+		// create the FRAPUnitSystem
+		this.frapUnitsystem = new FRAPUnitSystem();
+		
 		setPreferredSize(new Dimension(580, 450));
 		this.setLayout(new GridBagLayout());
 
@@ -397,6 +405,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		gridBagConstraints3.gridx = 0;
 		gridBagConstraints3.fill = GridBagConstraints.BOTH;
 		add(tableScroll, gridBagConstraints3);
+		
 	}
 
 	public void estimateDiffRate()
@@ -508,21 +517,21 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 			estimatedParameters[i]=null;
 		}
 		
-		estimatedParameters[IDX_FreePartDiffRate] = new EstimatedParameter(paramNames[IDX_FreePartDiffRate], paramDescriptions[IDX_FreePartDiffRate], null, new Double(d_f), VCUnitDefinition.UNIT_um2_per_s);
-		estimatedParameters[IDX_FreePartConc]	= new EstimatedParameter(paramNames[IDX_FreePartConc], paramDescriptions[IDX_FreePartConc], new Expression(paramExpStr[IDX_FreePartConc]), new Double(C_f), VCUnitDefinition.UNIT_DIMENSIONLESS);
-		estimatedParameters[IDX_ComplexConc] = new EstimatedParameter(paramNames[IDX_ComplexConc], paramDescriptions[IDX_ComplexConc], new Expression(paramExpStr[IDX_ComplexConc]), new Double(C_c), VCUnitDefinition.UNIT_DIMENSIONLESS);
+		estimatedParameters[IDX_FreePartDiffRate] = new EstimatedParameter(paramNames[IDX_FreePartDiffRate], paramDescriptions[IDX_FreePartDiffRate], null, new Double(d_f), frapUnitsystem.getDiffusionRateUnit());
+		estimatedParameters[IDX_FreePartConc]	= new EstimatedParameter(paramNames[IDX_FreePartConc], paramDescriptions[IDX_FreePartConc], new Expression(paramExpStr[IDX_FreePartConc]), new Double(C_f), frapUnitsystem.getInstance_DIMENSIONLESS());
+		estimatedParameters[IDX_ComplexConc] = new EstimatedParameter(paramNames[IDX_ComplexConc], paramDescriptions[IDX_ComplexConc], new Expression(paramExpStr[IDX_ComplexConc]), new Double(C_c), frapUnitsystem.getInstance_DIMENSIONLESS());
 		if(isOnRateKnown)
 		{
-			estimatedParameters[IDX_ReacPseudoOnRate] = new EstimatedParameter(paramNames[IDX_ReacPseudoOnRate], paramDescriptions[IDX_ReacPseudoOnRate], null, new Double(K_on), VCUnitDefinition.UNIT_per_s);
-			estimatedParameters[IDX_ReacOffRate]	= new EstimatedParameter(paramNames[IDX_ReacOffRate], paramDescriptions[IDX_ReacOffRate], new Expression(paramExpStr[IDX_ReacOffRate]), new Double(K_off), VCUnitDefinition.UNIT_per_s);
+			estimatedParameters[IDX_ReacPseudoOnRate] = new EstimatedParameter(paramNames[IDX_ReacPseudoOnRate], paramDescriptions[IDX_ReacPseudoOnRate], null, new Double(K_on), frapUnitsystem.getReactionOffRateUnit());		// using reactionOffRate for 'PseudoOnRate' unit, since both are in '/s' 
+			estimatedParameters[IDX_ReacOffRate]	= new EstimatedParameter(paramNames[IDX_ReacOffRate], paramDescriptions[IDX_ReacOffRate], new Expression(paramExpStr[IDX_ReacOffRate]), new Double(K_off), frapUnitsystem.getReactionOffRateUnit());
 		}
 		else
 		{
-			estimatedParameters[IDX_ReacPseudoOnRate] = new EstimatedParameter(paramNames[IDX_ReacPseudoOnRate], paramDescriptions[IDX_ReacPseudoOnRate], new Expression(paramExpStr[IDX_ReacPseudoOnRate]), new Double(K_on), VCUnitDefinition.UNIT_per_s);
-			estimatedParameters[IDX_ReacOffRate]	= new EstimatedParameter(paramNames[IDX_ReacOffRate], paramDescriptions[IDX_ReacOffRate], null, new Double(K_off), VCUnitDefinition.UNIT_per_s);
+			estimatedParameters[IDX_ReacPseudoOnRate] = new EstimatedParameter(paramNames[IDX_ReacPseudoOnRate], paramDescriptions[IDX_ReacPseudoOnRate], new Expression(paramExpStr[IDX_ReacPseudoOnRate]), new Double(K_on), frapUnitsystem.getReactionOffRateUnit()); // using reactionOffRate for 'PseudoOnRate' unit, since both are in '
+			estimatedParameters[IDX_ReacOffRate]	= new EstimatedParameter(paramNames[IDX_ReacOffRate], paramDescriptions[IDX_ReacOffRate], null, new Double(K_off), frapUnitsystem.getReactionOffRateUnit());
 		}
-		estimatedParameters[IDX_BWMRate] = new EstimatedParameter(paramNames[IDX_BWMRate], paramDescriptions[IDX_BWMRate], null, new Double(bwmRate), VCUnitDefinition.UNIT_per_s);
-		estimatedParameters[IDX_Immobile] = new EstimatedParameter(paramNames[IDX_Immobile], paramDescriptions[IDX_Immobile], null, new Double(immConc), VCUnitDefinition.UNIT_DIMENSIONLESS);
+		estimatedParameters[IDX_BWMRate] = new EstimatedParameter(paramNames[IDX_BWMRate], paramDescriptions[IDX_BWMRate], null, new Double(bwmRate), frapUnitsystem.getBleachingWhileMonitoringRateUnit());
+		estimatedParameters[IDX_Immobile] = new EstimatedParameter(paramNames[IDX_Immobile], paramDescriptions[IDX_Immobile], null, new Double(immConc), frapUnitsystem.getInstance_DIMENSIONLESS());
 		
 		paramTableModel.setEstimatedParameters(estimatedParameters);
 		

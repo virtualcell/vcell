@@ -56,6 +56,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -190,6 +191,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 
 	// deals with model parameters
 	Model model = getSimulationContext().getModel();
+	ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 	ModelParameter[] modelParameters = model.getModelParameters();
 	// populate in globalParameterVariants hashtable
 	for (int j = 0; j < modelParameters.length; j++){
@@ -231,7 +233,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null),getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()), model.getTEMPERATURE().getUnitDefinition(),null)));
 
 	//
 	// add Initial Voltages and Voltage Symbols (even though not computing potential).
@@ -325,7 +327,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	// diffusion constants (either function or constant)
 	//
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter diffParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_DiffusionRate);
 		if (diffParm!=null){
 			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
@@ -634,7 +635,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) || kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
 		{
 			Expression radiusExp = getIdentifierSubstitutions(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getExpression(), 
-					                                    reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getUnitDefinition(), reactionStepGeometryClass);
+					                                    modelUnitSystem.getBindingRadiusUnit(), reactionStepGeometryClass);
 			if(radiusExp != null)
 			{
 				Expression expCopy = new Expression(radiusExp);

@@ -39,10 +39,10 @@ public VoltageClampStimulus(Electrode argElectrode, String argName, Expression a
 		//throw new RuntimeException(e.getMessage());
 	}
 	LocalParameter[] localParameters = new LocalParameter[1];
-	
+	VCUnitDefinition voltageUnit = argSimulationContext.getModel().getUnitSystem().getVoltageUnit();
 	localParameters[0] = parameterContext.new LocalParameter(
 			DefaultNames[ROLE_Voltage], argVoltExpr, 
-			ROLE_Voltage, VCUnitDefinition.UNIT_mV, 
+			ROLE_Voltage, voltageUnit, 
 			"applied voltage");
 	
 	try {

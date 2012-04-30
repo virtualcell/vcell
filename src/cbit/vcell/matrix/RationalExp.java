@@ -12,6 +12,12 @@ package cbit.vcell.matrix;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Vector;
+
+import jscl.text.ParseException;
+
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/27/2003 12:16:31 PM)
@@ -133,6 +139,7 @@ public class RationalExp implements java.io.Serializable {
 		public String toString() {
 			return "Term@"+Integer.toHexString(hashCode())+" "+infixString();
 		}
+		
 	}
 
 /**
@@ -648,6 +655,51 @@ public RationalExp simplify() {
 
 /**
  * Insert the method's description here.
+ * Creation date: (4/22/2006 2:09:08 PM)
+ * @throws ExpressionException 
+ * @throws ParseException 
+ */
+public cbit.vcell.parser.Expression simplifyAsExpression() throws ExpressionException, ParseException {
+	//
+	// use symbolic capabilities of JSCL Mediator library to further simplify
+	//
+	if (numTermList.size()==1 && denTermList.size()==1){
+		Term numTerm = new Term(numTermList.get(0));
+		Term denTerm = new Term(denTermList.get(0));
+		removeSharedSymbols(numTerm,denTerm);
+		cbit.vcell.parser.Expression exp = cbit.vcell.parser.Expression.div(getTermExpression(numTerm),getTermExpression(denTerm));
+		return exp.flatten();
+	}else{
+		cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(infixString());
+		jscl.math.Expression jsclExpression = null;
+		String jsclExpressionString = exp.infix_JSCL();
+		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+		jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
+		cbit.vcell.parser.Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+		return solution;
+	}
+}
+
+private cbit.vcell.parser.Expression getTermExpression(Term term) throws ExpressionException{
+	cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(term.getCoefficient().doubleValue());
+	while (!term.symbolList.isEmpty()){
+		String symbol = term.symbolList.remove(0);
+		int count = 1;
+		while (term.symbolList.remove(symbol)){
+			count++;
+		}
+		cbit.vcell.parser.Expression tempExp = null;
+		if (count==1){
+			exp = cbit.vcell.parser.Expression.mult(exp, new cbit.vcell.parser.Expression(symbol));
+		}else{
+			exp = cbit.vcell.parser.Expression.mult(exp, cbit.vcell.parser.Expression.power(new Expression(symbol),count));
+		}
+	}
+	return exp;
+}
+
+/**
+ * Insert the method's description here.
  * Creation date: (3/27/2003 12:50:27 PM)
  * @return cbit.vcell.mapping.RationalNumber
  * @param num cbit.vcell.mapping.RationalNumber
@@ -676,6 +728,20 @@ public RationalExp sub(RationalExp rational) {
 	}
 }
 
+private void removeSharedSymbols(Term numTerm, Term denTerm) {
+	boolean done = false;
+	while (!done){
+		done = true;
+		for (String symbol : numTerm.symbolList){
+			if (denTerm.symbolList.contains(symbol)){
+				denTerm.symbolList.remove(symbol);
+				numTerm.symbolList.remove(symbol);
+				done = false;
+				break;
+			}
+		}
+	}
+}
 
 /**
  * Insert the method's description here.

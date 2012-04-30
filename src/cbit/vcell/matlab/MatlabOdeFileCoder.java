@@ -327,10 +327,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	for (int i = 0; i < constants.length; i++){
 		boolean isInitialCondition = false;
 		for (int j = 0; j < volVars.length; j++){
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2)){
-				isInitialCondition = true;
-			}
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM)){
+			if (constants[i].getName().startsWith(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
 				isInitialCondition = true;
 			}
 		}
@@ -381,10 +378,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 		//
 		int initialConditionIndex = -1;
 		for (int j = 0; j < volVars.length; j++){
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2)){
-				initialConditionIndex = j;
-			}
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM)){
+			if (constants[i].getName().startsWith(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
 				initialConditionIndex = j;
 			}
 		}

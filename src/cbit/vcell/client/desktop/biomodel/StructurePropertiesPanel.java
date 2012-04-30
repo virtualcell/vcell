@@ -33,8 +33,11 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -279,9 +282,11 @@ private void updateInterface() {
 	if (bNonNullStructure) {
 		nameTextField.setText(structure.getName());
 		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
-		sizeTextField.setText(structure.getStructureSize().getName() + " [" + (bMembrane ? VCUnitDefinition.UNIT_um2.getSymbol() : VCUnitDefinition.UNIT_um3.getSymbol()) + "]");
+		StructureSize structureSize = structure.getStructureSize();
+		sizeTextField.setText(structureSize.getName() + " [" + structureSize.getUnitDefinition().getSymbol() + "]");
 		if (bMembrane) {
-			voltageTextField.setText(((Membrane)structure).getMembraneVoltage().getName() + " [" + VCUnitDefinition.UNIT_mV.getSymbol() + "]");
+			MembraneVoltage memVoltage = ((Membrane)structure).getMembraneVoltage();
+			voltageTextField.setText(memVoltage.getName() + " [" + memVoltage.getUnitDefinition().getSymbol() + "]");
 		}
 	} else {
 		annotationTextArea.setText(null);

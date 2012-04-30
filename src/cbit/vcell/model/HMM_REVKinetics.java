@@ -182,40 +182,44 @@ protected void refreshUnits() {
 		Kinetics.KineticsParameter vmaxFwdParm = getVmaxFwdParameter();
 		Kinetics.KineticsParameter kmRevParm = getKmRevParameter();
 		Kinetics.KineticsParameter vmaxRevParm = getVmaxRevParameter();
-		if (getReactionStep().getStructure() instanceof Membrane){
-			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
-			}
-			if (currentDensityParm!=null){
-				currentDensityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
-			}
-			if (vmaxFwdParm!=null){
-				vmaxFwdParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
-			}
-			if (vmaxRevParm!=null){
-				vmaxRevParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
-			}
-			if (kmFwdParm!=null){
-				kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
-			}
-			if (kmRevParm!=null){
-				kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
-			}
-		}else{
-			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
-			}
-			if (vmaxFwdParm!=null){
-				vmaxFwdParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
-			}
-			if (vmaxRevParm!=null){
-				vmaxRevParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
-			}
-			if (kmFwdParm!=null){
-				kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
-			}
-			if (kmRevParm!=null){
-				kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			if (getReactionStep().getStructure() instanceof Membrane){
+				if (rateParm!=null){
+					rateParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
+				}
+				if (currentDensityParm!=null){
+					currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+				}
+				if (vmaxFwdParm!=null){
+					vmaxFwdParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
+				}
+				if (vmaxRevParm!=null){
+					vmaxRevParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
+				}
+				if (kmFwdParm!=null){
+					kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+				}
+				if (kmRevParm!=null){
+					kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+				}
+			}else{
+				if (rateParm!=null){
+					rateParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
+				}
+				if (vmaxFwdParm!=null){
+					vmaxFwdParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
+				}
+				if (vmaxRevParm!=null){
+					vmaxRevParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
+				}
+				if (kmFwdParm!=null){
+					kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+				}
+				if (kmRevParm!=null){
+					kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+				}
 			}
 		}
 	}finally{
@@ -293,7 +297,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 			tempCurrentExpression = Expression.mult(z, F_nmol, J);
 		}
 		if (currentParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),tempCurrentExpression,ROLE_CurrentDensity,cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),tempCurrentExpression,ROLE_CurrentDensity, getReactionStep().getModel().getUnitSystem().getCurrentDensityUnit()));
 		}else{
 			currentParm.setExpression(tempCurrentExpression);
 		}

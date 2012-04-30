@@ -291,8 +291,9 @@ public String infixString(int lang) {
 			return VISIT_RESERVED_T;
 		}
 		return idName;
-		
-	}else{
+	}else if (lang == LANGUAGE_UNITS){
+		return idName;
+	} else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}
 }

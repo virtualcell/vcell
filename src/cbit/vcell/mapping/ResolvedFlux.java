@@ -12,15 +12,18 @@ package cbit.vcell.mapping;
 
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class ResolvedFlux {
 	private SpeciesContext speciesContext=null;
-	private Expression flux = new Expression(0.0);
+	private Expression fluxExpression = new Expression(0.0);
+	private VCUnitDefinition unitDefinition = null;
 	/**
 	 * ResolvedFlux constructor comment.
 	 */
-	ResolvedFlux(SpeciesContext arg_speciesContext) {
+	ResolvedFlux(SpeciesContext arg_speciesContext, VCUnitDefinition unit) {
 		this.speciesContext = arg_speciesContext;
+		unitDefinition = unit;
 	}
 	/**
 	 * This method was created in VisualAge.
@@ -29,10 +32,13 @@ public class ResolvedFlux {
 	public SpeciesContext getSpeciesContext() {
 		return speciesContext;
 	}
-	public Expression getFlux() {
-		return flux;
+	public Expression getFluxExpression() {
+		return fluxExpression;
 	}
-	public void setFlux(Expression flux) {
-		this.flux = flux;
+	public void setFluxExpression(Expression flux) {
+		this.fluxExpression = flux;
+	}
+	public VCUnitDefinition getUnitDefinition() {
+		return unitDefinition;
 	}
 	}

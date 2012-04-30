@@ -39,11 +39,11 @@ public class Geometry implements VCDocument, Versionable {
 	private java.lang.String fieldName = new String();
 	private java.lang.String fieldDescription = new String();
 	private GeometrySpec fieldGeometrySpec = null;
+	private GeometryUnitSystem fieldGeometryUnitSystem = new GeometryUnitSystem();
 
 	private GeometrySurfaceDescription fieldGeometrySurfaceDescription = null;
 
 /**
- * This method was created in VisualAge.
  * @param name java.lang.String
  */
 public Geometry(Version aVersion, int aDimension) {
@@ -60,7 +60,6 @@ public Geometry(Version aVersion, int aDimension) {
 
 
 /**
- * This method was created in VisualAge.
  * @param name java.lang.String
  */
 public Geometry(Version aVersion, VCImage aVCImage) {
@@ -77,6 +76,7 @@ public Geometry(Geometry geometry) {
 	this.version = geometry.version;
 	this.fieldName = geometry.fieldName;
 	this.fieldDescription = geometry.fieldDescription;
+	this.fieldGeometryUnitSystem = geometry.fieldGeometryUnitSystem;
 	fieldGeometrySpec = new GeometrySpec(geometry.getGeometrySpec());
 	if (geometry.getDimension() > 0) {
 		fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this);
@@ -84,13 +84,13 @@ public Geometry(Geometry geometry) {
 
 }
 /**
- * This method was created in VisualAge.
  * @param name java.lang.String
  */
 public Geometry(Geometry geometry, VCImage aVCImage) {
 	this.version = geometry.version;
 	this.fieldName = geometry.fieldName;
 	this.fieldDescription = geometry.fieldDescription;
+	this.fieldGeometryUnitSystem = geometry.fieldGeometryUnitSystem;
 	fieldGeometrySpec = new GeometrySpec(geometry.getGeometrySpec());
 	try {
 		getGeometrySpec().setImage(aVCImage);
@@ -103,7 +103,6 @@ public Geometry(Geometry geometry, VCImage aVCImage) {
 
 
 /**
- * This method was created in VisualAge.
  * @param name java.lang.String
  */
 public Geometry(String aName, int aDimension) {
@@ -117,7 +116,6 @@ public Geometry(String aName, int aDimension) {
 
 
 /**
- * This method was created in VisualAge.
  * @param name java.lang.String
  */
 public Geometry(String aName, VCImage aVCImage) {
@@ -142,6 +140,9 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
+public GeometryUnitSystem getUnitSystem() {
+	return fieldGeometryUnitSystem;
+}
 
 /**
  * Insert the method's description here.

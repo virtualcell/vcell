@@ -118,7 +118,7 @@ public abstract class ReactionStep implements BioModelEntityObject,
 protected ReactionStep(Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
 	super();
 	nameScope = new ReactionStep.ReactionNameScope();
-	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope());
+	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope(), null);
 	setStructure(structure);
 	this.key = key;
 	removePropertyChangeListener(this);
@@ -530,6 +530,12 @@ public void propertyChange(PropertyChangeEvent evt) {
  */
 public void rebindAllToModel(Model model) throws ExpressionException, ModelException, PropertyVetoException {
 	this.model = model;
+
+	// could not set chanrgeCarrierValence to DIMENSIONLESS in constructor, since no model (modelUnitsystem). Set it here, when setting model on reactionStep.
+	if (getChargeCarrierValence() != null && getChargeCarrierValence().getUnitDefinition() != null) {
+		getChargeCarrierValence().setUnitDefinition(this.model.getUnitSystem().getInstance_DIMENSIONLESS());
+	}
+	
 	if (getName() == null){
 		try {
 			if (this instanceof FluxReaction){
@@ -581,7 +587,10 @@ public void rebindAllToModel(Model model) throws ExpressionException, ModelExcep
 			}
 		}
 		getKinetics().bind(this);
+		getKinetics().resolveUndefinedUnits();
+		getKinetics().refreshUnits();
 	}
+	
 }
 public void refreshDependencies() {
 	fieldKinetics.refreshDependencies();

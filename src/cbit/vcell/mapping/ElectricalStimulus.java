@@ -27,6 +27,7 @@ import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
@@ -34,7 +35,9 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:14:58 AM)
@@ -63,7 +66,12 @@ public abstract class ElectricalStimulus implements Matchable, java.io.Serializa
 		
 		
 	};
-	protected final ParameterContext parameterContext = new ParameterContext(nameScope,parameterPolicy);
+	
+	protected final ParameterContext parameterContext = new ParameterContext(nameScope,parameterPolicy, new UnitSystemProvider() {
+		public VCUnitSystem getUnitSystem() {
+			return getSimulationContext().getModel().getUnitSystem();
+		}
+	});
 
 	private static final String GENERAL_PROTOCOL = "General_Protocol";
 	
@@ -357,6 +365,7 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 		throw new RuntimeException(ElectricalStimulus.class.getName()+".parameterVCMLRead, unexpected token ");
 	}
 	String token = null;
+	ModelUnitSystem modelUnitSystem = simulationContext.getModel().getUnitSystem();
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCMODL.EndBlock)){
@@ -378,7 +387,7 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			
 			String unitsString = tokens.nextToken();
-			VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
+			VCUnitDefinition unitDef = modelUnitSystem.getInstance_TBD();
 			if (unitsString.startsWith("[")){
 				while (!unitsString.endsWith("]")){
 					String tempToken = tokens.nextToken();
@@ -387,7 +396,7 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 				//
 				// now string starts with '[' and ends with ']'
 				//
-				unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+				unitDef = modelUnitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
 			}else{
 				tokens.pushToken(unitsString);
 			}
@@ -477,6 +486,10 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 	parameterContext.renameLocalParameter(oldName, newName);
 }
 
+public SimulationContext getSimulationContext() {
+	return simulationContext;
+}
+
 /**
  * Sets the annotation property (java.lang.String) value.
  * @param annotation The new value for the property.
@@ -537,9 +550,10 @@ public void setParameterValue(LocalParameter parm, Expression exp) throws Expres
 				symbolsToAdd.add(symbols[i]);
 			}
 		}
+		ModelUnitSystem modelUnitSystem = simulationContext.getModel().getUnitSystem();
 		for (int i = 0; i < symbolsToAdd.size(); i++){
 			newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,
-				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD,RoleDescs[ROLE_UserDefined]));
+				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD(),RoleDescs[ROLE_UserDefined]));
 		}
 		parameterContext.setLocalParameters(newLocalParameters);
 		exp.bindExpression(parameterContext);

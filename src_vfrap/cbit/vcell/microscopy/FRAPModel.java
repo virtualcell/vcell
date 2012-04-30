@@ -46,14 +46,15 @@ public class FRAPModel implements Matchable
 																"Reaction_off_rate"};
 	//intended to use VCUnitDefinition, however couldn't find units for BWMR(intensity/s), and units for fractions (no unit)
 	//have to use String at the time being.
-	public static VCUnitDefinition[] MODEL_PARAMETER_UNITS = new VCUnitDefinition[]{VCUnitDefinition.UNIT_um2_per_s,
-																VCUnitDefinition.UNIT_DIMENSIONLESS,
-																VCUnitDefinition.UNIT_per_s,//bwm = Kon for single molecule reaction
-																VCUnitDefinition.UNIT_um2_per_s,
-																VCUnitDefinition.UNIT_DIMENSIONLESS,
-																VCUnitDefinition.UNIT_DIMENSIONLESS,//ratio of total fluorescence?
-																VCUnitDefinition.UNIT_per_um_per_s,
-																VCUnitDefinition.UNIT_per_s};
+	private static FRAPUnitSystem frapUnitSystem = new FRAPUnitSystem(); 
+	public static VCUnitDefinition[] MODEL_PARAMETER_UNITS = new VCUnitDefinition[]{frapUnitSystem.getDiffusionRateUnit(),
+																frapUnitSystem.getInstance_DIMENSIONLESS(),
+																frapUnitSystem.getBleachingWhileMonitoringRateUnit(),//bwm = Kon for single molecule reaction
+																frapUnitSystem.getDiffusionRateUnit(),
+																frapUnitSystem.getInstance_DIMENSIONLESS(),
+																frapUnitSystem.getInstance_DIMENSIONLESS(),//ratio of total fluorescence?
+																frapUnitSystem.getReactionOnRateUnit(),
+																frapUnitSystem.getReactionOffRateUnit()};
 	//referenced parameters
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
 		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);

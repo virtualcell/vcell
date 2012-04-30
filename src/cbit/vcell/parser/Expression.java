@@ -22,6 +22,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.Matchable;
 
+import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 @SuppressWarnings("serial")
@@ -60,6 +61,19 @@ public Expression(double value) {
 	this.rootNode = new ASTFloatNode(value);
 	this.normalizedInfixString = Double.toString(value);
 }
+
+public Expression(RationalNumber value) {
+	this.rootNode = new ASTMultNode();
+	ASTFloatNode numerator = new ASTFloatNode(value.getNumBigInteger().doubleValue());
+	this.rootNode.jjtAddChild(numerator,0);
+	ASTInvertTermNode invNode = new ASTInvertTermNode();
+	ASTFloatNode denominator = new ASTFloatNode(value.getDenBigInteger().doubleValue());
+	invNode.jjtAddChild(denominator);
+	this.rootNode.jjtAddChild(invNode, 1);
+	this.normalizedInfixString = value.toString();
+}
+
+
 /**
  * This method was created by a SmartGuide.
  * @param exp cbit.vcell.parser.Expression
@@ -514,6 +528,16 @@ public int hashCode() {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_JSCL);
 	  }
    }   
+
+   public String infix_UNITS()
+   {
+	  if (rootNode==null){
+		 return null;
+	  }else{
+		 return rootNode.infixString(SimpleNode.LANGUAGE_UNITS);
+	  }
+   }   
+
    public String infix_Matlab()
    {
 	  if (rootNode==null){

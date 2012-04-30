@@ -24,6 +24,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -594,10 +595,9 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 										}
 										Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 										if(localMathVariable == null){
-											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
-											if (localMathVariable==null){
-												localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
-											}
+											// try if localMathVariable is a speciesContext init parameter
+											String initSuffix = MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scs.getInitialConcentrationParameter().getUnitDefinition().getSymbol());
+											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+ initSuffix);
 										}
 										if(localMathVariable != null){
 											SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);

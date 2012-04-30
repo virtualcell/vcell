@@ -773,7 +773,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		stmt.close();
 	}
 
-	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user);
+	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user, simContext.getModel().getUnitSystem());
 	
 	assignStimuliSQL(con,simContextKey, simContext);
 	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);

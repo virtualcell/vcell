@@ -13,8 +13,6 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

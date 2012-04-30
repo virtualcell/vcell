@@ -10,7 +10,9 @@
 
 package org.vcell.cellml;
 import ucar.units.RationalNumber;
+import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
 import ucar.units.Factor;
@@ -75,7 +77,7 @@ private VCUnitTranslator() { super(); }
 
 	//takes a CellML units jdom element.Similar to its SBML counterpart.
 	//part of the recursive retrieval of CellML units.
-	public static VCUnitDefinition CellMLToVCUnit(Element source, Namespace sNamespace, Namespace sAttNamespace) {
+	public static VCUnitDefinition CellMLToVCUnit(Element source, Namespace sNamespace, Namespace sAttNamespace, VCUnitSystem vcUnitSystem) {
  
 		@SuppressWarnings("unchecked")
 		ArrayList<Element> list = new ArrayList<Element>(source.getChildren(CELLMLTags.UNIT, sNamespace));
@@ -87,14 +89,14 @@ private VCUnitTranslator() { super(); }
 		Unit unit = null;
 		for (int i = 0; i < list.size(); i++) {
 			Element temp = (Element)list.get(i);
-			unit = processCellMLUnit(temp, sNamespace, sAttNamespace);
+			unit = processCellMLUnit(temp, sNamespace, sAttNamespace, vcUnitSystem);
 			if (unit == null) {        //for dimensionless and unresolved?
 				continue;
 			}
 			if (totalUnit == null) {
-				totalUnit = VCUnitDefinition.getInstance(unit);
+				totalUnit = vcUnitSystem.getInstance(unit.getSymbol());
 			} else {
-				totalUnit = totalUnit.multiplyBy(VCUnitDefinition.getInstance(unit));        //?
+				totalUnit = totalUnit.multiplyBy(vcUnitSystem.getInstance(unit.getSymbol()));        //?
 			}
 		}
 		if (totalUnit != null) {
@@ -172,7 +174,7 @@ private VCUnitTranslator() { super(); }
 
 
 //works for both SBML and CellML
-	public static VCUnitDefinition getBaseUnit(String kind) {
+	public static VCUnitDefinition getBaseUnit(String kind, VCUnitSystem vcUnitSystem) {
 
 		Unit unit;
 		
@@ -198,7 +200,7 @@ private VCUnitTranslator() { super(); }
 		if (unit == null) {
 			return null;
 		} else {
-			return VCUnitDefinition.getInstance(unit);
+			return vcUnitSystem.getInstance(unit);
 		}
 	}
 
@@ -226,14 +228,14 @@ private VCUnitTranslator() { super(); }
 
 
 //check first if its a base unit. If not, search if its defined 'locally', then 'globally'.
-	public static VCUnitDefinition getMatchingCellMLUnitDef(Element owner, Namespace sAttNamespace, String unitSymbol) {
+	public static VCUnitDefinition getMatchingCellMLUnitDef(Element owner, Namespace sAttNamespace, String unitSymbol, VCUnitSystem vcUnitSystem) {
 
 		VCUnitDefinition unitDef = null;
 		
 		if (owner == null || sAttNamespace == null) {
 			throw new IllegalArgumentException("CellML unit owner/namespace not probably defined: " + owner + " " + sAttNamespace);
 		}
-		unitDef = getBaseUnit(unitSymbol);
+		unitDef = getBaseUnit(unitSymbol, vcUnitSystem);
 		if (unitDef != null) {
 			return unitDef;
 		}
@@ -269,7 +271,7 @@ private VCUnitTranslator() { super(); }
 
 //derives the ucar unit equivalent to a single cellml 'unit'
 //part of the recursive retrieval of CellML units.
-	private static Unit processCellMLUnit(Element cellUnit, Namespace sNamespace, Namespace sAttNamespace) {
+	private static Unit processCellMLUnit(Element cellUnit, Namespace sNamespace, Namespace sAttNamespace, VCUnitSystem vcUnitSystem) {
 
 		Unit unit = null;
 		UnitName uName;
@@ -304,7 +306,7 @@ private VCUnitTranslator() { super(); }
 				Element owner = cellUnit.getParent().getParent();
 				String ownerName = owner.getAttributeValue(CELLMLTags.name, sAttNamespace);
 				//check if already added.
-				VCUnitDefinition unitDef = getMatchingCellMLUnitDef(owner, sAttNamespace, kind);
+				VCUnitDefinition unitDef = getMatchingCellMLUnitDef(owner, sAttNamespace, kind, vcUnitSystem);
 				if (unitDef != null) { 
 					unit = unitDef.getUcarUnit();
 				} else {                              
@@ -322,7 +324,7 @@ private VCUnitTranslator() { super(); }
 						}
 					}
 					if (cellUnitDef != null) {
-						unitDef = CellMLToVCUnit(cellUnitDef, sNamespace, sAttNamespace);
+						unitDef = CellMLToVCUnit(cellUnitDef, sNamespace, sAttNamespace, vcUnitSystem);
 					} else {
 						System.err.println("Unit definition: " + kind + " is missing. >>> 3");
 						return null;
@@ -365,30 +367,31 @@ private VCUnitTranslator() { super(); }
 //returns a cellml 'Units' element
 	public static Element VCUnitToCellML(String unitSymbol, Namespace tNamespace, Namespace tAttNamespace) {
 
-		ArrayList<Element> transUnits;
-		if (unitSymbol == null || unitSymbol.length() == 0) {
-			throw new IllegalArgumentException("Invalid value for the VC unit: " + unitSymbol);
-		}
-		if (unitSymbol.equals(VCUnitDefinition.TBD_SYMBOL)) {
-			System.err.println("No translation possible for unit " + VCUnitDefinition.TBD_SYMBOL);
-			return null;
-		}
-		VCUnitDefinition VC_unitDef = VCUnitDefinition.getInstance(unitSymbol);
-		Unit unit = VC_unitDef.getUcarUnit();
-		Element unitDef = new Element(CELLMLTags.UNITS, tNamespace);
-	    if (VC_unitDef.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
-		    unitDef.setAttribute(CELLMLTags.name, CELLMLTags.noDimUnit);
-			transUnits = new ArrayList<Element>();
-			transUnits.add(getCellMLTransUnit(new RationalNumber(1), 1.0, 0, CELLMLTags.noDimUnit));
-		} else {
-			unitDef.setAttribute(CELLMLTags.name, unitSymbol);
-	    	transUnits = expandUcarCellML(1.0, 0, unit, new ArrayList<Element>());
-		}
-		for (int i = 0; i < transUnits.size(); i++) {   
-			Element basicUnit = (Element)transUnits.get(i); 
-			unitDef.addContent(basicUnit);
-		}
-
-		return unitDef;
+//		ArrayList<Element> transUnits;
+//		if (unitSymbol == null || unitSymbol.length() == 0) {
+//			throw new IllegalArgumentException("Invalid value for the VC unit: " + unitSymbol);
+//		}
+//		if (unitSymbol.equals(VCUnitDefinition.TBD_SYMBOL)) {
+//			System.err.println("No translation possible for unit " + VCUnitDefinition.TBD_SYMBOL);
+//			return null;
+//		}
+//		VCUnitDefinition VC_unitDef = VCUnitDefinition.getInstance(unitSymbol);
+//		Unit unit = VC_unitDef.getUcarUnit();
+//		Element unitDef = new Element(CELLMLTags.UNITS, tNamespace);
+//	    if (VC_unitDef.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
+//		    unitDef.setAttribute(CELLMLTags.name, CELLMLTags.noDimUnit);
+//			transUnits = new ArrayList<Element>();
+//			transUnits.add(getCellMLTransUnit(new RationalNumber(1), 1.0, 0, CELLMLTags.noDimUnit));
+//		} else {
+//			unitDef.setAttribute(CELLMLTags.name, unitSymbol);
+//	    	transUnits = expandUcarCellML(1.0, 0, unit, new ArrayList<Element>());
+//		}
+//		for (int i = 0; i < transUnits.size(); i++) {   
+//			Element basicUnit = (Element)transUnits.get(i); 
+//			unitDef.addContent(basicUnit);
+//		}
+//
+//		return unitDef;
+		return null;
 	}
 }

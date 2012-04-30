@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.BeanUtils;
@@ -29,6 +30,7 @@ import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.SimpleBoundsIssue;
@@ -115,9 +117,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 					|| fieldParameterRole == ROLE_BoundaryValueZm
 					|| fieldParameterRole == ROLE_BoundaryValueZp) {
 				if (fieldUnitDefinition != null) {
+					VCUnitDefinition lengthPerTimeUnitDefn = getLengthPerTimeUnit();
 					if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition())) {
 						return "<html><i>&lt;initial value&gt;</i></html>"; 
-					} else if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um_per_s))){
+					} else if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition().multiplyBy(lengthPerTimeUnitDefn))){
 						return "<html><i>&lt;zero flux&gt;</i></html>";
 					}
 				}
@@ -407,32 +410,36 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 	this.bConstant = speciesContextSpec.bConstant;
 //	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
 	this.bWellMixed = speciesContextSpec.bWellMixed;
+	this.simulationContext = argSimulationContext;
 	fieldParameters = new SpeciesContextSpecParameter[speciesContextSpec.fieldParameters.length];
 	for (int i = 0; i < speciesContextSpec.fieldParameters.length; i++){
 		SpeciesContextSpecParameter otherParm = speciesContextSpec.fieldParameters[i];
 		Expression otherParmExp = (otherParm.getExpression()==null)?(null):(new Expression(otherParm.getExpression()));
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
-	this.simulationContext = argSimulationContext;
 	refreshDependencies();
 }            
 
 
 public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
 	this.speciesContext = speciesContext;
+	this.simulationContext = argSimulationContext;
 
 	// avoid unit computation for case of micromolar
-	VCUnitDefinition unit = speciesContext.getUnitDefinition();
-	VCUnitDefinition fluxUnits = computeFluxUnit();
 	fieldParameters = new SpeciesContextSpecParameter[NUM_ROLES];
+	ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition fluxUnits = computeFluxUnit();
+	VCUnitDefinition spContextUnit = speciesContext.getUnitDefinition();
+	VCUnitDefinition stochasticSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
+
 	if(argSimulationContext == null)//called from XmlReader.getSpeciesContextSpec(Element)
 	{
 		fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
-															ROLE_InitialConcentration,unit,
+															ROLE_InitialConcentration,spContextUnit,
 															RoleDescriptions[ROLE_InitialConcentration]);
 		
 		fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
-															ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+															ROLE_InitialCount, stochasticSubstanceUnit,
 															RoleDescriptions[ROLE_InitialCount]);
 	}
 	else //called from ReactionContext.refreshSpeciesContextSpecs()
@@ -440,26 +447,26 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 		if(argSimulationContext.isUsingConcentration())
 		{
 			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], new Expression(0),
-					ROLE_InitialConcentration,unit,
+					ROLE_InitialConcentration,spContextUnit,
 					RoleDescriptions[ROLE_InitialConcentration]);
 
 			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
-					ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+					ROLE_InitialCount, stochasticSubstanceUnit,
 					RoleDescriptions[ROLE_InitialCount]);
 		}
 		else
 		{
 			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
-					ROLE_InitialConcentration,unit,
+					ROLE_InitialConcentration,spContextUnit,
 					RoleDescriptions[ROLE_InitialConcentration]);
 
 			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], new Expression(0),
-					ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+					ROLE_InitialCount, stochasticSubstanceUnit,
 					RoleDescriptions[ROLE_InitialCount]);
 		}
 	}
 	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(0.0),
-														ROLE_DiffusionRate,VCUnitDefinition.UNIT_um2_per_s,
+														ROLE_DiffusionRate, modelUnitSystem.getDiffusionRateUnit(),
 														RoleDescriptions[ROLE_DiffusionRate]);
 
 	fieldParameters[ROLE_BoundaryValueXm] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueXm],null,
@@ -485,18 +492,25 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 	fieldParameters[ROLE_BoundaryValueZp] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZp],null,
 														ROLE_BoundaryValueZp,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueZp]);
+	VCUnitDefinition velocityUnit = getLengthPerTimeUnit();
 	fieldParameters[ROLE_VelocityX] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityX], null,
-														ROLE_VelocityX, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityX]);
+														ROLE_VelocityX, velocityUnit,	RoleDescriptions[ROLE_VelocityX]);
 	
 	fieldParameters[ROLE_VelocityY] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityY], null,
-														ROLE_VelocityY, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityY]);
+														ROLE_VelocityY, velocityUnit,	RoleDescriptions[ROLE_VelocityY]);
 	
 	fieldParameters[ROLE_VelocityZ] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityZ], null,
-														ROLE_VelocityZ, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityZ]);
+														ROLE_VelocityZ, velocityUnit,	RoleDescriptions[ROLE_VelocityZ]);
 
-	this.simulationContext = argSimulationContext;
 	resetDefaults();
 	refreshDependencies();
+}
+
+
+private VCUnitDefinition getLengthPerTimeUnit() {
+	ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition lengthPerTimeUnit = modelUnitSystem.getLengthUnit().divideBy(modelUnitSystem.getTimeUnit());
+	return lengthPerTimeUnit;
 }            
 
 public void initializeForSpatial() {
@@ -522,7 +536,7 @@ public void initializeForSpatial() {
 }
 
 public VCUnitDefinition computeFluxUnit() {
-	return speciesContext.getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um_per_s);
+	return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
 }
 
 

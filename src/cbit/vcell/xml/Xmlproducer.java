@@ -182,6 +182,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
@@ -1572,7 +1573,7 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	
 	// Add Datacontext
 	if (param.getDataContext()!=null && param.getDataContext().getDataSymbols().length>0){
-		simulationcontext.addContent( getXML(param.getDataContext()) );
+		simulationcontext.addContent( getXML(param.getDataContext(), param.getModel().getUnitSystem()) );
 	}
 	
 	//Add Metadata (if any)
@@ -1616,14 +1617,14 @@ public Element getXML(MicroscopeMeasurement microscopeMeasurement) {
 	return element;
 }
 
-private Element getXML(DataContext dataContext) {
+private Element getXML(DataContext dataContext, ModelUnitSystem modelUnitSystem) {
 	Element dataContextElement = new Element(XMLTags.DataContextTag);
 	Element dataSymbolElement = null;
 	
 	for(int i=0; i<dataContext.getDataSymbols().length; i++) {
 		DataSymbol ds = dataContext.getDataSymbols()[i];
 		if (ds instanceof FieldDataSymbol){
-			dataSymbolElement = getXML((FieldDataSymbol)ds);
+			dataSymbolElement = getXML((FieldDataSymbol)ds, modelUnitSystem);
 		}else{
 			throw new RuntimeException("XML persistence not supported for analysis type "+ds.getClass().getName());
 		}
@@ -1633,7 +1634,7 @@ private Element getXML(DataContext dataContext) {
 }
 
 
-private Element getXML(FieldDataSymbol fds) {
+private Element getXML(FieldDataSymbol fds, ModelUnitSystem modelUnitSystem) {
 	Element fieldDataSymbolElement = new Element(XMLTags.FieldDataSymbolTag);
 
 	fieldDataSymbolElement.setAttribute(XMLTags.DataSymbolNameTag, fds.getName());
@@ -3273,7 +3274,7 @@ public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 
 	return outputFunctionsElement;
 }
-public Element getXML(ModelParameter[] modelParams) {
+public Element getXML(ModelParameter[] modelParams, ModelUnitSystem modelUnitSystem) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
 		Element glParamElement = new Element(XMLTags.ParameterTag);
@@ -3326,7 +3327,7 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 	// get global parameters
 	ModelParameter[] modelGlobals = param.getModelParameters();
 	if (modelGlobals != null && modelGlobals.length > 0) {
-		modelnode.addContent(getXML(modelGlobals));
+		modelnode.addContent(getXML(modelGlobals, param.getUnitSystem()));
 	}
 
 

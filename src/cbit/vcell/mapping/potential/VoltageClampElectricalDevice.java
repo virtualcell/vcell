@@ -12,8 +12,12 @@ package cbit.vcell.mapping.potential;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.model.ModelUnitSystem;
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -26,23 +30,25 @@ public class VoltageClampElectricalDevice extends ElectricalDevice {
  * Insert the method's description here.
  * Creation date: (4/7/2004 11:00:30 AM)
  */
-public VoltageClampElectricalDevice(cbit.vcell.mapping.VoltageClampStimulus argVoltageClampStimulus, cbit.vcell.mapping.MathMapping argMathMapping) throws ExpressionException {
+public VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, MathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argVoltageClampStimulus.getName(), argMathMapping);
 	this.voltageClampStimulus = argVoltageClampStimulus;
 	
 	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
 	
+	ModelUnitSystem modelUnitSystem = mathMapping.getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition currentUnit = modelUnitSystem.getCurrentUnit();
 	parameters[0] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TotalCurrent],
 							new Expression(DefaultNames[ROLE_TransmembraneCurrent]),
 							ROLE_TotalCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
 	
 	parameters[1] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TransmembraneCurrent],
 							null,
 							ROLE_TransmembraneCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
 
 	LocalParameter voltageParm = voltageClampStimulus.getVoltageParameter();
 	parameters[2] = new ElectricalDeviceParameter(

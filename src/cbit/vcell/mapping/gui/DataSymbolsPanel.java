@@ -185,7 +185,7 @@ private void addAssociate() {
    			String fluorName = fieldDataVarName + "_" + df.format(fieldDataVarTime).substring(0, df.format(fieldDataVarTime).indexOf(".")) + "s" + df.format(fieldDataVarTime).substring(1+df.format(fieldDataVarTime).indexOf(".")) + "_" + dataSetID.getName();
 //TODO:  symbol names may not be unique, must check for unicity and prompt the user
 			FieldDataSymbol dataSymbol = new FieldDataSymbol(fluorName, DataSymbolType.GENERIC_SYMBOL,
-					simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
+					simulationContext.getDataContext(), simulationContext.getModel().getUnitSystem().getInstance_TBD(),
 					dataSetID, 
 					fieldDataVarName, fieldDataVarType.getTypeName(), fieldDataVarTime);
 			simulationContext.getDataContext().addDataSymbol(dataSymbol);
@@ -375,7 +375,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 	   			String fluorName = "fluor_" + df.format(time).substring(0, df.format(time).indexOf(".")) + "s" + df.format(time).substring(1+df.format(time).indexOf(".")) + "_" + initialFieldDataName;
 //				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
-						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
+						simulationContext.getDataContext(), simulationContext.getModel().getUnitSystem().getInstance_TBD(),
 						timeSeriesEDI, SimDataConstants.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), time);
 				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 	   		}

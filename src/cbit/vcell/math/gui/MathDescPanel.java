@@ -723,9 +723,7 @@ private void refreshEquations() throws ExpressionException {
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
 			if(getMathDescription().isNonSpatialStoch() && 
-					((function.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) >= 0) || 
-					 (function.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) >= 0))) 
-			{
+					function.getName().startsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
 				try{
 					double value = exp.evaluateConstant();
 					expString = new String[] {function.getName()+" = "+Math.round(value)};
@@ -752,9 +750,7 @@ private void refreshEquations() throws ExpressionException {
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
 			if(getMathDescription().isNonSpatialStoch() && 
-					((constant.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) >= 0) ||
-					 (constant.getName().indexOf(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) >= 0)))
-			{
+					constant.getName().startsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
 				try{
 					double value = exp.evaluateConstant();
 					expString = new String[] {constant.getName()+" = "+Math.round(value)};

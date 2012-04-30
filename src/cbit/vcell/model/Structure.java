@@ -30,6 +30,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
@@ -95,18 +96,19 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 		}
 
 		public VCUnitDefinition getUnitDefinition() {
+			ModelUnitSystem modelUnitSystem = getModel().getUnitSystem();
 			switch (getDimension()){
 				case 0: {
-					return VCUnitDefinition.UNIT_DIMENSIONLESS;
+					return modelUnitSystem.getInstance_DIMENSIONLESS();
 				}
 				case 1: {
-					return VCUnitDefinition.UNIT_um;
+					return modelUnitSystem.getLengthUnit();
 				}
 				case 2: {
-					return VCUnitDefinition.UNIT_um2;
+					return modelUnitSystem.getAreaUnit();
 				}
 				case 3: {
-					return VCUnitDefinition.UNIT_um3;
+					return modelUnitSystem.getVolumeUnit();
 				}
 				default:{
 					throw new RuntimeException("unexpected structure dimension: "+getDimension());

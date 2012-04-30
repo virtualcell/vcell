@@ -43,12 +43,15 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProxyParameter;
@@ -58,8 +61,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
@@ -467,12 +468,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		// conversion factors
 		//
 		Model model = simContext.getModel();
+    	ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 		varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null),getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null),getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),model.getTEMPERATURE().getUnitDefinition(),null)));
 		
 		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
@@ -654,7 +656,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				Expression exp = scm.getDependencyExpression();
 				exp.bindExpression(this);
 				SpeciesCountParameter spCountParam = getSpeciesCountParameter(scm.getSpeciesContext());
-				varHash.addVariable(new Function(getMathSymbol(spCountParam,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules, sm),nullDomain));
+				varHash.addVariable(new Function(getMathSymbol(spCountParam,sm),getIdentifierSubstitutions(exp, spCountParam.getUnitDefinition(), sm),nullDomain));
 			}
 		}
 
@@ -712,6 +714,10 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 //				}
 //			};
 			// Different ways to deal with simple reactions and flux reactions
+			
+	    	// probability parameter from modelUnitSystem
+	    	VCUnitDefinition probabilityParamUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getTimeUnit());
+
 			if(reactionStep instanceof SimpleReaction) // simple reactions
 			{
 				// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
@@ -767,7 +773,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		    		isReverseRatePresent = true;
 		    	}
 			    
-				// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
+		    	// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
 				// we process it as forward reaction
 				if ((isForwardRatePresent) /*|| ((forwardRate == null) && (reverseRate == null))*/)
 				{
@@ -783,14 +789,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					
 					MathMapping_4_8.ProbabilityParameter probParm = null;
 					try{
-						probParm = addProbabilityParameter("P_"+jpName, exp,MathMapping_4_8.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+						probParm = addProbabilityParameter("P_"+jpName, exp,MathMapping_4_8.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
 					}
 					
 					//add probability to function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, probabilityParamUnit, sm)));
 										
 					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
 					// actions
@@ -836,13 +842,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					
 					MathMapping_4_8.ProbabilityParameter probRevParm = null;
 					try{
-						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping_4_8.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping_4_8.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
 					}
 					//add probability to function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, probabilityParamUnit, sm)));
 									
 					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
 					// actions
@@ -912,13 +918,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 
 						MathMapping_4_8.ProbabilityParameter probParm = null;
 						try{
-							probParm = addProbabilityParameter("P_"+jpName,probExp,MathMapping_4_8.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+							probParm = addProbabilityParameter("P_"+jpName,probExp,MathMapping_4_8.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, probabilityParamUnit, sm)));
 										
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
 						// actions
@@ -966,13 +972,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						
 						MathMapping_4_8.ProbabilityParameter probRevParm = null;
 						try{
-							probRevParm = addProbabilityParameter("P_"+jpName,probRevExp,MathMapping_4_8.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+							probRevParm = addProbabilityParameter("P_"+jpName,probRevExp,MathMapping_4_8.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, probabilityParamUnit, sm)));
 										
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
 						// actions
@@ -1210,6 +1216,10 @@ private void refreshVariables() throws MappingException {
 	// non-constant independant variables require either a membrane or volume variable
 	//
 	enum1 = getSpeciesContextMappings();
+	// stochastic substance unit from modelUnitSystem
+	ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition stochSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
+
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
@@ -1218,7 +1228,7 @@ private void refreshVariables() throws MappingException {
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, MathMapping_4_8.PARAMETER_ROLE_COUNT, VCUnitDefinition.UNIT_molecules, scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, MathMapping_4_8.PARAMETER_ROLE_COUNT, stochSubstanceUnit, scs);
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());

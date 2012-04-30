@@ -41,10 +41,10 @@ public class CurrentDensityClampStimulus extends ElectricalStimulus {
 			//throw new RuntimeException(e.getMessage());
 		}
 		LocalParameter[] localParameters = new LocalParameter[1];
-		
+		VCUnitDefinition currentDensityUnit = argSimulationContext.getModel().getUnitSystem().getCurrentDensityUnit();
 		localParameters[0] = parameterContext.new LocalParameter(
 				DefaultNames[ROLE_CurrentDensity], argCurrExpr, 
-				ROLE_CurrentDensity, VCUnitDefinition.UNIT_pA_per_um2, 
+				ROLE_CurrentDensity, currentDensityUnit, 
 				"applied current density (deprecated)");
 		
 

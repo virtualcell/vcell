@@ -39,10 +39,10 @@ public class TotalCurrentClampStimulus extends ElectricalStimulus {
 			//throw new RuntimeException(e.getMessage());
 		}
 		LocalParameter[] localParameters = new LocalParameter[1];
-		
+		VCUnitDefinition currentUnit = argSimulationContext.getModel().getUnitSystem().getCurrentUnit();
 		localParameters[0] = parameterContext.new LocalParameter(
 				DefaultNames[ROLE_TotalCurrent], argCurrExpr, 
-				ROLE_TotalCurrent, VCUnitDefinition.UNIT_pA, 
+				ROLE_TotalCurrent, currentUnit, 
 				"applied current");
 		
 		try {
