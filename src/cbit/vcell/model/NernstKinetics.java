@@ -126,18 +126,21 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		
-		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
-		if (rateParm != null){
-			rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
-		}
-		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
-		if (currentDensityParm != null){
-			currentDensityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
-		}
-		Kinetics.KineticsParameter conductivityParm = getConductivityParameter();
-		if (conductivityParm != null){
-			conductivityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_nS_per_um2);
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			Kinetics.KineticsParameter rateParm = getReactionRateParameter();
+			if (rateParm != null){
+				rateParm.setUnitDefinition(modelUnitSystem.getFluxReactionUnit());
+			}
+			Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
+			if (currentDensityParm != null){
+				currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+			}
+			Kinetics.KineticsParameter conductivityParm = getConductivityParameter();
+			if (conductivityParm != null){
+				conductivityParm.setUnitDefinition(modelUnitSystem.getMembraneConductivityUnit());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;

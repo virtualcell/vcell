@@ -33,6 +33,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Structure;
@@ -254,6 +255,9 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 	protected SimulationContext simulationContext = null; // for determining NameScope parent only
 	private BoundaryConditionType boundaryConditionTypes[] = new BoundaryConditionType[6];
 	private boolean boundaryConditionValid[] = new boolean[6];
+	
+	// model unit system for structureMappingParameters
+	protected ModelUnitSystem modelUnitSystem = null;
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -303,7 +307,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 	};
 	private StructureMapping.StructureMappingParameter[] fieldParameters = null;
 
-protected StructureMapping(StructureMapping structureMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
+protected StructureMapping(StructureMapping structureMapping, SimulationContext argSimulationContext,Geometry newGeometry, ModelUnitSystem argModelUnitSystem) {
 	if (argSimulationContext == null) {
 		throw new IllegalArgumentException("SimulationContext is null");
 	}	
@@ -321,10 +325,13 @@ protected StructureMapping(StructureMapping structureMapping, SimulationContext 
 		String geomClassName = structureMapping.getGeometryClass().getName();
 		this.geometryClass = newGeometry.getGeometryClass(geomClassName);
 	}
+	
+	// unit system
+	modelUnitSystem = argModelUnitSystem;
 }      
 
 
-protected StructureMapping(Structure structure, SimulationContext argSimulationContext) {
+protected StructureMapping(Structure structure, SimulationContext argSimulationContext, ModelUnitSystem argModelUnitSystem) {
 	if (argSimulationContext == null) {
 		throw new IllegalArgumentException("SimulationContext is null");
 	}
@@ -334,6 +341,10 @@ protected StructureMapping(Structure structure, SimulationContext argSimulationC
 		boundaryConditionTypes[i]=BoundaryConditionType.getNEUMANN();
 		boundaryConditionValid[i]=false;
 	}
+	
+	// unit system
+	modelUnitSystem = argModelUnitSystem;
+
 }      
 
 
@@ -828,6 +839,9 @@ public void setParameters(StructureMapping.StructureMappingParameter[] parameter
  */
 public void setSimulationContext(SimulationContext argSimulationContext) {
 	this.simulationContext = argSimulationContext;
+	if (this.simulationContext != null && this.simulationContext.getModel() != null) {
+		modelUnitSystem = this.simulationContext.getModel().getUnitSystem();
+	}
 }
 
 

@@ -18,6 +18,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -130,17 +131,21 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
-		if (rateParm != null){
-			rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_um_per_s);
-		}
-		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
-		if (currentDensityParm != null){
-			currentDensityParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
-		}
-		Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
-		if (permeabilityParm != null){
-			permeabilityParm.setUnitDefinition(VCUnitDefinition.UNIT_um_per_s);
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			Kinetics.KineticsParameter rateParm = getReactionRateParameter();
+			if (rateParm != null){
+				rateParm.setUnitDefinition(modelUnitSystem.getFluxReactionUnit());
+			}
+			Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
+			if (currentDensityParm != null){
+				currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+			}
+			Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
+			if (permeabilityParm != null){
+				permeabilityParm.setUnitDefinition(modelUnitSystem.getPermeabilityUnit());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -209,7 +214,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
 			}
 			if (rateParm == null){
-				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),tempRateExpression,ROLE_ReactionRate,cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s));
+				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),tempRateExpression,ROLE_ReactionRate, getReactionStep().getModel().getUnitSystem().getMembraneReactionRateUnit()));
 			}else{
 				rateParm.setExpression(tempRateExpression);
 			}

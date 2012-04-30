@@ -765,7 +765,7 @@ void updateFromMathDescription() {
 				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
 					String name_repaired_to_uM = name.replace(
 							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM);
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM);
 					if (mathDescriptionHash.contains(name_repaired_to_uM)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_uM;
@@ -781,7 +781,7 @@ void updateFromMathDescription() {
 				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
 					String name_repaired_to_molecule_per_um2 = name.replace(
 							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2);
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecule_per_um2);
 					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_molecule_per_um2;

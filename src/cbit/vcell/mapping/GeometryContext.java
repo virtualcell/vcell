@@ -90,9 +90,9 @@ GeometryContext(GeometryContext geometryContext, SimulationContext newSimulation
 		// invoke appropriate copy constructor
 		//
 		if (geometryContext.fieldStructureMappings[i] instanceof FeatureMapping){
-			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry);
+			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry, fieldModel.getUnitSystem());
 		}else if (geometryContext.fieldStructureMappings[i] instanceof MembraneMapping){
-			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry);
+			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry, fieldModel.getUnitSystem());
 		}else {
 			throw new RuntimeException("unexpected structureMapping = "+geometryContext.fieldStructureMappings[i]);
 		}
@@ -736,14 +736,14 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		}
 		if (sm == null){
 			if (structure instanceof Feature){
-				FeatureMapping fm = new FeatureMapping((Feature)structure,fieldSimulationContext);
+				FeatureMapping fm = new FeatureMapping((Feature)structure,fieldSimulationContext, getModel().getUnitSystem());
 				fm.setSimulationContext(this.fieldSimulationContext);
 				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,fm);
 				if (getGeometry().getDimension()==0){
 					fm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else if (structure instanceof Membrane){
-				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext);
+				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext, getModel().getUnitSystem());
 				mm.setSimulationContext(fieldSimulationContext);
 				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,mm);
 				if (getGeometry().getDimension()==0){

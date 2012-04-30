@@ -448,6 +448,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 		bioModel = newValue;		
 		parametersFunctionsTableModel.setBioModel(bioModel);
+		predefinedSymbolsTableModel.setBioModel(bioModel);
 	}
 	
 	@Override

@@ -29,6 +29,7 @@ import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -36,7 +37,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
@@ -389,8 +389,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (aValue instanceof String && parameter instanceof Kinetics.KineticsParameter && ((Kinetics.KineticsParameter)parameter).getRole()==Kinetics.ROLE_UserDefined){
 						String newUnitString = (String)aValue;
 						Kinetics.KineticsParameter kineticsParm = (Kinetics.KineticsParameter)parameter;
+						ModelUnitSystem modelUnitSystem = reactionStep.getModel().getUnitSystem();
 						if (!kineticsParm.getUnitDefinition().getSymbol().equals(newUnitString)){
-							kineticsParm.setUnitDefinition(VCUnitDefinition.getInstance(newUnitString));
+							kineticsParm.setUnitDefinition(modelUnitSystem.getInstance(newUnitString));
 							reactionStep.getKinetics().resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}

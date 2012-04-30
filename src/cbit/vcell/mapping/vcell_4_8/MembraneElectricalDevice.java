@@ -11,9 +11,12 @@
 package cbit.vcell.mapping.vcell_4_8;
 
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -31,24 +34,26 @@ MembraneElectricalDevice(MembraneMapping argMembraneMapping, MathMapping_4_8 arg
 	this.membraneMapping = argMembraneMapping;
 
 	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
+	ModelUnitSystem modelUnitSystem = mathMapping_4_8.getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition currentUnit = modelUnitSystem.getCurrentUnit();
 
 	parameters[0] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TotalCurrent],
 							null, // (need to calculate)
 							ROLE_TotalCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
 
     parameters[1] = new ElectricalDeviceParameter(
 						    DefaultNames[ROLE_TransmembraneCurrent],
 							null, // given
 							ROLE_TransmembraneCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
     
 	parameters[2] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_Capacitance],
 							Expression.mult(new Expression(membraneMapping.getSpecificCapacitanceParameter(),mathMapping_4_8.getNameScope()), new Expression(membraneMapping.getSizeParameter(),mathMapping_4_8.getNameScope())), // given
 							ROLE_Capacitance,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pF);
+							modelUnitSystem.getSpecificCapacitanceUnit().multiplyBy(modelUnitSystem.getAreaUnit()));
 
 	setParameters(parameters);
 }

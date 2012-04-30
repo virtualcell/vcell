@@ -42,10 +42,12 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.opt.solvers.OdeLSFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -54,6 +56,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.solver.stoch.MassActionSolver;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
@@ -82,6 +85,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private ModelNameScope nameScope = new Model.ModelNameScope();
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
 	private Model.ReservedSymbol[] fieldReservedSymbols = new Model.ReservedSymbol[0];
+	private ModelUnitSystem unitSystem = null;
 	private transient VCMetaData vcMetaData = null;
 
 
@@ -125,103 +129,84 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 	}
 
-	 private final ReservedSymbol TIME;
-	 private final ReservedSymbol X;
-	 private final ReservedSymbol Y;
-	 private final ReservedSymbol Z;
-	 private final ReservedSymbol TEMPERATURE;
-	 private final ReservedSymbol PI_CONSTANT;
-	 private final ReservedSymbol FARADAY_CONSTANT;
-	 private final ReservedSymbol FARADAY_CONSTANT_NMOLE;
-	 private final ReservedSymbol N_PMOLE;
-	 private final ReservedSymbol K_GHK;
-	 private final ReservedSymbol GAS_CONSTANT;
-	 private final ReservedSymbol KMILLIVOLTS;
-	 private final ReservedSymbol KMOLE;
+	public enum ReservedSymbolRole {
+		TIME, 
+		X, 
+		Y, 
+		Z, 
+		TEMPERATURE, 
+		PI_CONSTANT, 
+		FARADAY_CONSTANT, 
+		FARADAY_CONSTANT_NMOLE, 
+		N_PMOLE, 
+		K_GHK, 
+		GAS_CONSTANT, 
+		KMILLIVOLTS, 
+		KMOLE
+	};
 
-	 // collection of reserved symbol names (used in XMLReader)
-	 public final ArrayList<String> getReservedVarNames() {
-	
-		 ArrayList<String> reservedVars = new ArrayList<String>();
-		 //
-		 // add constants that may be used in kinetics.
-		 //
-		 reservedVars.add(PI_CONSTANT.getName());
-		 reservedVars.add(FARADAY_CONSTANT.getName());
-		 reservedVars.add(FARADAY_CONSTANT_NMOLE.getName());
-		 reservedVars.add(GAS_CONSTANT.getName());
-		 reservedVars.add(KMILLIVOLTS.getName());
-		 reservedVars.add(KMOLE.getName());
-		 reservedVars.add(N_PMOLE.getName());
-		 reservedVars.add(TEMPERATURE.getName());
-		 reservedVars.add(K_GHK.getName());
-		 reservedVars.add(TIME.getName());
-	
-		return reservedVars;
-	 }
-
-	 public ReservedSymbol getTIME() {
-			return TIME;
-		}
+	public ReservedSymbol getTIME() {
+		return getReservedSymbolByRole(ReservedSymbolRole.TIME);
+	}
 
 
 		public ReservedSymbol getX() {
-			return X;
+			return getReservedSymbolByRole(ReservedSymbolRole.X);
 		}
 
 
 		public ReservedSymbol getY() {
-			return Y;
+			return getReservedSymbolByRole(ReservedSymbolRole.Y);
 		}
 
 
 		public ReservedSymbol getZ() {
-			return Z;
+			return getReservedSymbolByRole(ReservedSymbolRole.Z);
 		}
 
 
 		public ReservedSymbol getTEMPERATURE() {
-			return TEMPERATURE;
+			return getReservedSymbolByRole(ReservedSymbolRole.TEMPERATURE);
 		}
 
 
 		public ReservedSymbol getPI_CONSTANT() {
-			return PI_CONSTANT;
+			return getReservedSymbolByRole(ReservedSymbolRole.PI_CONSTANT);
 		}
 
 
 		public ReservedSymbol getFARADAY_CONSTANT() {
-			return FARADAY_CONSTANT;
+			return getReservedSymbolByRole(ReservedSymbolRole.FARADAY_CONSTANT);
 		}
 
 
 		public ReservedSymbol getFARADAY_CONSTANT_NMOLE() {
-			return FARADAY_CONSTANT_NMOLE;
+			return getReservedSymbolByRole(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE);
 		}
 
 
 		public ReservedSymbol getN_PMOLE() {
-			return N_PMOLE;
+			return getReservedSymbolByRole(ReservedSymbolRole.N_PMOLE);
 		}
 
 
 		public ReservedSymbol getK_GHK() {
-			return K_GHK;
+			return getReservedSymbolByRole(ReservedSymbolRole.K_GHK);
 		}
 
 
 		public ReservedSymbol getGAS_CONSTANT() {
-			return GAS_CONSTANT;
+			return getReservedSymbolByRole(ReservedSymbolRole.GAS_CONSTANT);
 		}
 
 
 		public ReservedSymbol getKMILLIVOLTS() {
-			return KMILLIVOLTS;
+			return getReservedSymbolByRole(ReservedSymbolRole.KMILLIVOLTS);
 		}
 
 
 		public ReservedSymbol getKMOLE() {
-			return KMOLE;
+			return getReservedSymbolByRole(ReservedSymbolRole.KMOLE);
 		}
 	 
 	 
@@ -231,8 +216,10 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	   private Expression constantValue = null;
 	   private String description = null;
 	   private VCUnitDefinition unitDefinition = null;
+	   private ReservedSymbolRole role = null;
 
-	private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
+	private ReservedSymbol(ReservedSymbolRole role, String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
+		this.role = role;
 		this.name = argName;
 		this.unitDefinition = argUnitDefinition;
 		this.constantValue = argConstantValue;
@@ -255,6 +242,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		throw new ExpressionException(getName()+" is not constant");
 	}
 
+	public ReservedSymbolRole getRole(){
+		return role;
+	}
 
 	   public final String getDescription() 
 	   { 
@@ -353,17 +343,17 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 
 	public boolean isX() {
-		return (this == Model.this.X);
+		return (this.role.equals(ReservedSymbolRole.X));
 	}
 
 	public boolean isY() {
-		return (this == Model.this.Y);
+		return (this.role.equals(ReservedSymbolRole.Y));
 	}
 	public boolean isZ() {
-		return (this == Model.this.Z);
+		return (this.role.equals(ReservedSymbolRole.Z));
 	}
 	public boolean isTime() {
-		return (this == Model.this.TIME);
+		return (this.role.equals(ReservedSymbolRole.TIME));
 	}
 
 	}
@@ -500,26 +490,12 @@ public Model(Version argVersion) {
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
 	
+	// initialize a unit system
+	this.unitSystem = new ModelUnitSystem();
+	
 	// initialize the reserved symbols
-	TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
-	X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
-	Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
-	Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
-	TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
-	PI_CONSTANT = new ReservedSymbol("_PI_","PI constant",VCUnitDefinition.UNIT_DIMENSIONLESS,new Expression(Math.PI));
-	FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
-	FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
-	N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
-	K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
-	GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
-	KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
-	try {
-		KMOLE = new ReservedSymbol("KMOLE", "Flux unit conversion", VCUnitDefinition.UNIT_uM_um3_per_molecules, Expression.div(new Expression(1.0), new Expression(602.0)));
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error creating reserved symbol KMOLE : " + e.getMessage());
-	}
-	fieldReservedSymbols = new ReservedSymbol[]{TIME, X, Y, Z, TEMPERATURE, PI_CONSTANT, FARADAY_CONSTANT, GAS_CONSTANT, FARADAY_CONSTANT_NMOLE, N_PMOLE, K_GHK, KMILLIVOLTS, KMOLE};
+	fieldReservedSymbols = createReservedSymbols();
+	
 }      
 
 
@@ -529,30 +505,31 @@ public Model(String argName) {
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
 
-	// initialize the reserved symbols
-	TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
-	X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
-	Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
-	Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
-	TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
-	PI_CONSTANT = new ReservedSymbol("_PI_","PI constant",VCUnitDefinition.UNIT_DIMENSIONLESS,new Expression(Math.PI));
-	FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday constant",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
-	FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday constant",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
-	N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
-	K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
-	GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
-	KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
-	try {
-		KMOLE = new ReservedSymbol("KMOLE", "Flux unit conversion", VCUnitDefinition.UNIT_uM_um3_per_molecules, Expression.div(new Expression(1.0), new Expression(602.0)));
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error creating reserved symbol KMOLE : " + e.getMessage());
-	}
+	// initialize a unit system
+	this.unitSystem = new ModelUnitSystem();
 
-	fieldReservedSymbols = new ReservedSymbol[]{TIME, X, Y, Z, TEMPERATURE, PI_CONSTANT, FARADAY_CONSTANT, GAS_CONSTANT, FARADAY_CONSTANT_NMOLE, N_PMOLE, K_GHK, KMILLIVOLTS, KMOLE};
+	// initialize the reserved symbols
+	fieldReservedSymbols = createReservedSymbols();
 }      
 
+private ReservedSymbol[] createReservedSymbols() {
+	return  new ReservedSymbol[]{ 
+			new ReservedSymbol(ReservedSymbolRole.TIME, "t","time", unitSystem.getTimeUnit(), null), 
+			new ReservedSymbol(ReservedSymbolRole.X, "x","x coord", unitSystem.getLengthUnit(), null),  
+			new ReservedSymbol(ReservedSymbolRole.Y, "y","y coord", unitSystem.getLengthUnit(), null), 
+			new ReservedSymbol(ReservedSymbolRole.Z, "z","z coord", unitSystem.getLengthUnit(), null),	
+			new ReservedSymbol(ReservedSymbolRole.TEMPERATURE, "_T_","temperature", unitSystem.getTemperatureUnit(), null), 
+			new ReservedSymbol(ReservedSymbolRole.PI_CONSTANT, "_PI_","PI constant", unitSystem.getInstance_DIMENSIONLESS(),new Expression(Math.PI)),  
+			new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT, "_F_","Faraday constant",unitSystem.getFaradayConstantUnit(), new Expression(9.648e4)),  
+			new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE, "_F_nmol_","Faraday constant", unitSystem.getFaradayConstantNMoleUnit(),new Expression(9.648e-5)), 
+			new ReservedSymbol(ReservedSymbolRole.N_PMOLE, "_N_pmol_","Avagadro Num (scaled)",unitSystem.getN_PMoleUnit(),new Expression(6.02e11)), 
+			new ReservedSymbol(ReservedSymbolRole.K_GHK, "_K_GHK_","GHK unit scale",unitSystem.getK_GHKUnit(), new Expression(1e-9)), 
+			new ReservedSymbol(ReservedSymbolRole.GAS_CONSTANT, "_R_","Gas Constant",unitSystem.getGasConstantUnit(), new Expression(8314.0)), 
+			new ReservedSymbol(ReservedSymbolRole.KMILLIVOLTS, "K_millivolts_per_volt","voltage scale", unitSystem.getK_mV_perV_Unit(), new Expression(1000)), 
+			new ReservedSymbol(ReservedSymbolRole.KMOLE, "KMOLE", "Flux unit conversion", unitSystem.getKMoleUnit(), new Expression(new RationalNumber(1, 602)))
+	};
 
+}
 public Feature addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
 	if (featureName.equals(membraneName)) {
 		throw new ModelException("Feature and Membrane can not have the same name.");
@@ -667,6 +644,7 @@ public SpeciesContext addSpeciesContext(Species species, Structure structure) th
 	if (speciesContext != null){
 		throw new Exception("speciesContext for "+species.getCommonName()+" within "+structure.getName()+" already defined");
 	}
+	
 	speciesContext = new SpeciesContext(species,structure);
 	speciesContext.setModel(this);
 	return addSpeciesContext(speciesContext);
@@ -916,14 +894,15 @@ public void gatherIssues(List<Issue> issueList) {
 		//
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
+				VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(getUnitSystem());
 				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
-				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
+				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				} else if (expUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				} else if (paramUnitDef.isTBD()) {
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + VCUnitDefinition.TBD_SYMBOL + ")",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
 				} else if (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
@@ -1177,7 +1156,7 @@ public ModelParameter createModelParameter() {
 		count++;
 	}
 	try {
-		ModelParameter modelParameter = new ModelParameter(globalParamName, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+		ModelParameter modelParameter = new ModelParameter(globalParamName, new Expression(0), Model.ROLE_UserDefined, unitSystem.getInstance_TBD());
 		addModelParameter(modelParameter);
 		return modelParameter;
 	} catch (PropertyVetoException e) {
@@ -2567,6 +2546,9 @@ public void setStructures(Structure[] structures) throws java.beans.PropertyVeto
 	Structure[] oldValue = fieldStructures;
 	fireVetoableChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 	fieldStructures = structures;
+	for (int i=0;i<structures.length;i++){	
+		structures[i].setModel(this);
+	}
 	refreshDiagrams();
 	firePropertyChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 
@@ -2586,7 +2568,7 @@ public void setStructures(Structure[] structures) throws java.beans.PropertyVeto
 	for (int i=0;i<newValue.length;i++){	
 		newValue[i].addPropertyChangeListener(this);
 		newValue[i].addVetoableChangeListener(this);
-		newValue[i].setModel(this);
+//		newValue[i].setModel(this);
 		newValue[i].getStructureSize().addPropertyChangeListener(this);
 		newValue[i].getStructureSize().addVetoableChangeListener(this);
 		if (newValue[i] instanceof Membrane){
@@ -2666,6 +2648,15 @@ public String toString() {
 public ReservedSymbol getReservedSymbolByName(String name) {
 	for (ReservedSymbol rs : fieldReservedSymbols) {
 		if (rs.getName().equals(name)) {
+			return rs;
+		}
+	}
+	return null;	
+}
+
+public ReservedSymbol getReservedSymbolByRole(ReservedSymbolRole role) {
+	for (ReservedSymbol rs : fieldReservedSymbols) {
+		if (rs.getRole().equals(role)) {
 			return rs;
 		}
 	}
@@ -3139,7 +3130,7 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 	
 	for (ReservedSymbol rs : fieldReservedSymbols) {
-		if ( (rs != X) || (rs != Y) || (rs != Z) ) {
+		if ( (rs != getX()) || (rs != getY()) || (rs != getZ()) ) {
 			entryMap.put(rs.getName(), rs);
 		}
 	}
@@ -3301,6 +3292,10 @@ public String isValidForStochApp()
 		else if(object instanceof ReactionStep) { removeReactionStep((ReactionStep) object); }
 		else if(object instanceof Species) { removeSpecies((Species) object); }
 		else if(object instanceof SpeciesContext) { removeSpeciesContext((SpeciesContext) object); }
+	}
+	
+	public ModelUnitSystem getUnitSystem() {
+		return unitSystem;
 	}
 	
 }

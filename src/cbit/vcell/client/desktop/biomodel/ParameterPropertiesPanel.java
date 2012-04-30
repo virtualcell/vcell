@@ -39,6 +39,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -55,6 +56,7 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 	private TextFieldAutoCompletion expressionTextField = null;
 	private JTextField descriptionTextField = null;
 	private JLabel pathLabel = null;
+	private UnitSystemProvider fieldUnitSystemProvider = null;
 
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
@@ -92,8 +94,9 @@ public class ParameterPropertiesPanel extends DocumentEditorSubPanel {
 /**
  * EditSpeciesDialog constructor comment.
  */
-public ParameterPropertiesPanel() {
+public ParameterPropertiesPanel(UnitSystemProvider argUnitSystemProvider) {
 	super();
+	this.fieldUnitSystemProvider = argUnitSystemProvider;
 	initialize();
 }
 
@@ -266,9 +269,9 @@ private void changeUnit() {
 		}
 		String text = unitTextField.getText();
 		if (text.length() == 0) {
-			parameter.setUnitDefinition(VCUnitDefinition.UNIT_TBD);
+			parameter.setUnitDefinition(fieldUnitSystemProvider.getUnitSystem().getInstance_TBD());
 		} else if (parameter.getUnitDefinition() == null ||  !parameter.getUnitDefinition().getSymbol().equals(text)){
-			parameter.setUnitDefinition(VCUnitDefinition.getInstance(text));
+			parameter.setUnitDefinition(fieldUnitSystemProvider.getUnitSystem().getInstance(text));
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);

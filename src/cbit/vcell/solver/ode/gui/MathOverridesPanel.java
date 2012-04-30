@@ -34,14 +34,11 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.parser.Expression;
@@ -820,41 +817,29 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 						}else if(rvs.getAlternateSymbolTableEntries() != null && rvs.getAlternateSymbolTableEntries()[j] instanceof Constant){
 							pastedConstant = (Constant)rvs.getAlternateSymbolTableEntries()[j];
 						}
-						if(pastedConstant == null && rvs.getPrimarySymbolTableEntries()[j] instanceof Function){
-							Function function = (Function)rvs.getPrimarySymbolTableEntries()[j];
-							if (function.getDomain()!=null){
-								SubDomain subDomain = null;
-								Enumeration<SubDomain> subDomainEnum = getMathOverrides().getSimulation().getMathDescription().getSubDomains();
-								while (subDomainEnum.hasMoreElements()){
-									SubDomain sd = subDomainEnum.nextElement();
-									if (new Variable.Domain(sd).compareEqual(function.getDomain())){
-										subDomain = sd;
-										break;
-									}
-								}
-								if (subDomain instanceof CompartmentSubDomain){
-									pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,rvs.getExpressionValues()[j]);
-								}else if (subDomain instanceof MembraneSubDomain){
-									pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2,rvs.getExpressionValues()[j]);
+						//
+						// if a Constant is not on the clipboard, try to find a corresponding Constant that starts with "varname_init_"
+						//
+						if(pastedConstant == null && 
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof Function) ||
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof VolVariable) ||
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof VolumeRegionVariable) ||
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof MemVariable) ||
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof MembraneRegionVariable)){
+							
+							MathDescription mathDescription = getMathOverrides().getSimulation().getMathDescription();
+							Enumeration<Constant> constants = mathDescription.getConstants();
+							while (constants.hasMoreElements()){
+								Constant constant = constants.nextElement();
+								if (constant.getName().startsWith(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+									pastedConstant = new Constant(constant.getName(),rvs.getExpressionValues()[j]);
 								}
 							}
-							if (pastedConstant == null){ // default to a volume function
-								pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,rvs.getExpressionValues()[j]);
-							}	
 						}
-						if(pastedConstant == null && (
-								(rvs.getPrimarySymbolTableEntries()[j] instanceof VolVariable) ||
-								(rvs.getPrimarySymbolTableEntries()[j] instanceof VolumeRegionVariable)
-							)){
-								pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,rvs.getExpressionValues()[j]);
-								
-							}
-						if(pastedConstant == null && (
-								(rvs.getPrimarySymbolTableEntries()[j] instanceof MemVariable) ||
-								(rvs.getPrimarySymbolTableEntries()[j] instanceof MembraneRegionVariable)
-							)){
-								pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2,rvs.getExpressionValues()[j]);
-							}
+						
+						//
+						// find row of math overrides table with the same name as the pastedConstant and propose to change that override to the pasted value
+						//
 						String rowName = (String)getJTableFixed().getValueAt(rows[i],MathOverridesTableModel.COLUMN_PARAMETER);
 						if(pastedConstant != null && pastedConstant.getName().equals(rowName)){
 							changedParameterNamesV.add(rowName);

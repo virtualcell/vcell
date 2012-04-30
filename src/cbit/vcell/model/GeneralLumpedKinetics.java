@@ -15,6 +15,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -91,17 +92,19 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		
-		Kinetics.KineticsParameter lumpedReactionRateParm = getLumpedReactionRateParameter();
-		Kinetics.KineticsParameter lumpedCurrentParm = getLumpedCurrentParameter();
-	
-		if (getReactionStep().getStructure() instanceof Membrane){
-			if (lumpedCurrentParm!=null){
-				lumpedCurrentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA);
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			Kinetics.KineticsParameter lumpedReactionRateParm = getLumpedReactionRateParameter();
+			Kinetics.KineticsParameter lumpedCurrentParm = getLumpedCurrentParameter();
+			if (getReactionStep().getStructure() instanceof Membrane){
+				if (lumpedCurrentParm!=null){
+					lumpedCurrentParm.setUnitDefinition(modelUnitSystem.getCurrentUnit());
+				}
 			}
-		}
-		if (lumpedReactionRateParm!=null){
-			lumpedReactionRateParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_s);
+			if (lumpedReactionRateParm!=null){
+				lumpedReactionRateParm.setUnitDefinition(modelUnitSystem.getLumpedReactionRateUnit());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -132,7 +135,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, java.bea
 //		tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(lumpedReactionRate.getName()));
 		tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), lumpledJ);
 		if (lumpedCurrentParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),tempCurrentExpression,ROLE_LumpedCurrent,VCUnitDefinition.UNIT_pA));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),tempCurrentExpression,ROLE_LumpedCurrent, getReactionStep().getModel().getUnitSystem().getCurrentUnit()));
 		}else{
 			lumpedCurrentParm.setExpression(tempCurrentExpression);
 		}

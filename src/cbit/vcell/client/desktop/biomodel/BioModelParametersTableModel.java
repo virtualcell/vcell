@@ -33,6 +33,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
@@ -406,10 +407,13 @@ public void setValueAt(Object value, int row, int col) {
 				break;
 			}
 			case COLUMN_UNIT:{
+				ModelUnitSystem modelUnitSystem = getModel().getUnitSystem();
 				if (inputValue.length() == 0) {
-					parameter.setUnitDefinition(VCUnitDefinition.UNIT_TBD);
-				} else if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
-					parameter.setUnitDefinition(VCUnitDefinition.getInstance(inputValue));
+					parameter.setUnitDefinition(modelUnitSystem.getInstance_TBD());
+				} else {
+					if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
+						parameter.setUnitDefinition(modelUnitSystem.getInstance(inputValue));
+					}
 				}
 				break;
 			}

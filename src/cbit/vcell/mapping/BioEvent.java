@@ -29,6 +29,8 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.UnitSystemProvider;
+import cbit.vcell.units.VCUnitSystem;
 
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
@@ -177,7 +179,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public final static int ROLE_UserDefined = 0;
 	
 	private BioEventNameScope nameScope = new BioEventNameScope();
-	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy);
+	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy, new UnitSystemProvider() {
+		public VCUnitSystem getUnitSystem() {
+			return getSimulationContext().getModel().getUnitSystem();
+		}
+	});
 	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;

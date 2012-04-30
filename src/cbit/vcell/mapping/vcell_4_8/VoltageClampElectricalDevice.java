@@ -13,9 +13,11 @@ package cbit.vcell.mapping.vcell_4_8;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -33,18 +35,19 @@ VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, MathM
 	this.voltageClampStimulus = argVoltageClampStimulus;
 	
 	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
-	
+	ModelUnitSystem modelUnitSystem = mathMapping_4_8.getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition currentUnit = modelUnitSystem.getCurrentUnit(); 
 	parameters[0] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TotalCurrent],
 							new Expression(DefaultNames[ROLE_TransmembraneCurrent]),
 							ROLE_TotalCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
 	
 	parameters[1] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TransmembraneCurrent],
 							null,
 							ROLE_TransmembraneCurrent,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+							currentUnit);
 
 	LocalParameter voltageParm = voltageClampStimulus.getVoltageParameter();
 	parameters[2] = new ElectricalDeviceParameter(

@@ -17,6 +17,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class Macroscopic_IRRKinetics extends DistributedKinetics {
@@ -117,40 +118,43 @@ public class Macroscopic_IRRKinetics extends DistributedKinetics {
 			Kinetics.KineticsParameter diff_react_2Param = getDiffReactant2Parameter();
 			Kinetics.KineticsParameter conc_react_1Param = getConcReactant1Parameter();
 			Kinetics.KineticsParameter conc_react_2Param = getConcReactant2Parameter();
-
-			if (getReactionStep().getStructure() instanceof Membrane){
-				rateParam.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
-				if (currentDensityParam!=null){
-					currentDensityParam.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+			Model model = getReactionStep().getModel();
+			if (model != null) {
+				ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+				if (getReactionStep().getStructure() instanceof Membrane){
+					rateParam.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
+					if (currentDensityParam!=null){
+						currentDensityParam.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+					}
+				}else if (getReactionStep().getStructure() instanceof Feature){
+					throw new RuntimeException("Macroscopic_IRR kinetics not supported in a volumetric compartment.");
+				}else{
+					throw new RuntimeException("unexpected structure type "+getReactionStep().getStructure()+" in Macroscopic_IRRKinetics.refreshUnits()");
 				}
-			}else if (getReactionStep().getStructure() instanceof Feature){
-				throw new RuntimeException("Macroscopic_IRR kinetics not supported in a volumetric compartment.");
-			}else{
-				throw new RuntimeException("unexpected structure type "+getReactionStep().getStructure()+" in Macroscopic_IRRKinetics.refreshUnits()");
-			}
-			
-			if (bindingRadiusParam != null) {
-				bindingRadiusParam.setUnitDefinition(VCUnitDefinition.UNIT_um);
-			}
-			
-			if (kOnParam != null) {
-				kOnParam.setUnitDefinition(VCUnitDefinition.UNIT_per_s.divideBy(VCUnitDefinition.UNIT_molecules_per_um2));
-			}
-			
-			if (diff_react_1Param != null) {
-				diff_react_1Param.setUnitDefinition(VCUnitDefinition.UNIT_um2_per_s);
-			}
-
-			if (diff_react_2Param != null) {
-				diff_react_2Param.setUnitDefinition(VCUnitDefinition.UNIT_um2_per_s);
-			}
-
-			if (conc_react_1Param != null) {
-				conc_react_1Param.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2);
-			}
-
-			if (conc_react_2Param != null) {
-				conc_react_2Param.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2);
+				
+				if (bindingRadiusParam != null) {
+					bindingRadiusParam.setUnitDefinition(modelUnitSystem.getBindingRadiusUnit());
+				}
+				
+				if (kOnParam != null) {
+					kOnParam.setUnitDefinition(modelUnitSystem.getTimeUnit().getInverse().divideBy(modelUnitSystem.getMembraneConcentrationUnit()));
+				}
+				
+				if (diff_react_1Param != null) {
+					diff_react_1Param.setUnitDefinition(modelUnitSystem.getDiffusionRateUnit());
+				}
+	
+				if (diff_react_2Param != null) {
+					diff_react_2Param.setUnitDefinition(modelUnitSystem.getDiffusionRateUnit());
+				}
+	
+				if (conc_react_1Param != null) {
+					conc_react_1Param.setUnitDefinition(modelUnitSystem.getMembraneConcentrationUnit());
+				}
+	
+				if (conc_react_2Param != null) {
+					conc_react_2Param.setUnitDefinition(modelUnitSystem.getMembraneConcentrationUnit());
+				}
 			}
 		}finally{
 			bRefreshingUnits=false;

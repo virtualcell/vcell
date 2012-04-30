@@ -14,16 +14,17 @@ import org.vcell.pathway.sbpax.UOMEToVCUnitMapper;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
 
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 
 public class UOMEUnitExtractor {
 
-	public static VCUnitDefinition extractVCUnitDefinition(SBMeasurable measurable) {
-		VCUnitDefinition unit = VCUnitDefinition.UNIT_TBD;
+	public static VCUnitDefinition extractVCUnitDefinition(SBMeasurable measurable, VCUnitSystem vcUnitSystem) {
+		String unit = vcUnitSystem.getInstance_TBD().getSymbol();
 		for(UnitOfMeasurement uomeUnit : measurable.getUnit()) {
-			VCUnitDefinition unitNew = UOMEToVCUnitMapper.getVCUnit(uomeUnit);
+			String unitNew = UOMEToVCUnitMapper.getVCUnitSymbol(uomeUnit);
 			if(unitNew != null) { unit = unitNew; }
 		}
-		return unit;
+		return vcUnitSystem.getInstance(unit);
 	}
 	
 }

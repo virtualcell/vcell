@@ -376,6 +376,7 @@ private void refreshTotalDependancies() throws Exception {
 				
 	StructureAnalyzer.Dependency[] dependencies = refreshTotalDependancies(totalNullSpaceMatrix,speciesContextMappings,mathMapping,false);
 
+	VCUnitDefinition totalMassUnit = mathMapping.getSimulationContext().getModel().getUnitSystem().getVolumeConcentrationUnit();
 	for (int i = 0; i < dependencies.length; i++){
 		String constantName = dependencies[i].invariantSymbolName;
 		Expression constantExp = dependencies[i].conservedMoietyExpression;
@@ -385,7 +386,7 @@ private void refreshTotalDependancies() throws Exception {
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
 		GeometryClass geometryClass = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure()).getGeometryClass();
-		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,VCUnitDefinition.UNIT_uM, geometryClass);
+		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS, totalMassUnit, geometryClass);
 		//
 		// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 		//

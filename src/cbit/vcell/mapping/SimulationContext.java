@@ -52,7 +52,6 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
@@ -61,7 +60,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.Expression;
@@ -70,7 +68,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
@@ -392,7 +389,6 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 
 	addVetoableChangeListener(this);
 	setIsStoch(bStoch);
-	
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
@@ -419,7 +415,6 @@ public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws 
 
 	addVetoableChangeListener(this);
 	setIsStoch(bStoch);
-	
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();

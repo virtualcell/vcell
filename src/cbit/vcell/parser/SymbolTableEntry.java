@@ -10,6 +10,8 @@
 
 package cbit.vcell.parser;
 
+import cbit.vcell.units.VCUnitDefinition;
+
 /**
  * A <code>SymbolTableEntry</code> describes an interface for any object that
  * can represent the value corresponding to a symbol in an expression.  
@@ -52,7 +54,7 @@ NameScope getNameScope();
  * Creation date: (3/31/2004 10:33:52 AM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-cbit.vcell.units.VCUnitDefinition getUnitDefinition();
+VCUnitDefinition getUnitDefinition();
 /**
  * This method was created by a SmartGuide.
  * @return boolean

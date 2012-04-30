@@ -15,11 +15,12 @@ import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -55,6 +56,8 @@ private void initializeParameters() throws ExpressionException {
 	// set the transmembrane current (total current, if necessary derive it from the current density).
 	//
 	ElectricalDeviceParameter transMembraneCurrent = null;
+	ModelUnitSystem modelUnitSystem = mathMapping.getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition currentUnit = modelUnitSystem.getCurrentUnit();
 	if (currentClampStimulus instanceof TotalCurrentClampStimulus){
 		TotalCurrentClampStimulus stimulus = (TotalCurrentClampStimulus)currentClampStimulus;
 		LocalParameter currentParameter = stimulus.getCurrentParameter();
@@ -62,7 +65,7 @@ private void initializeParameters() throws ExpressionException {
 				DefaultNames[ROLE_TransmembraneCurrent],
 				new Expression(currentParameter.getExpression()),
 				ROLE_TransmembraneCurrent,
-				VCUnitDefinition.UNIT_pA);
+				currentUnit);
 	}else if (currentClampStimulus instanceof CurrentDensityClampStimulus){
 		CurrentDensityClampStimulus stimulus = (CurrentDensityClampStimulus)currentClampStimulus;
 		LocalParameter currentDensityParameter = stimulus.getCurrentDensityParameter();
@@ -93,7 +96,7 @@ private void initializeParameters() throws ExpressionException {
 				DefaultNames[ROLE_TransmembraneCurrent],
 				Expression.mult(new Expression(currentDensityParameter.getExpression()),area),
 				ROLE_TransmembraneCurrent,
-				VCUnitDefinition.UNIT_pA);
+				currentUnit);
 		
 	}else{
 		throw new RuntimeException("unexpected current clamp stimulus type : "+currentClampStimulus.getClass().getName());
@@ -102,13 +105,13 @@ private void initializeParameters() throws ExpressionException {
 			DefaultNames[ROLE_TotalCurrent],
 			new Expression(transMembraneCurrent, getNameScope()),
 			ROLE_TotalCurrent,
-			VCUnitDefinition.UNIT_pA);
+			currentUnit);
 	
 	ElectricalDeviceParameter voltage = new ElectricalDeviceParameter(
 			DefaultNames[ROLE_Voltage],
 			null,
 			ROLE_Voltage,
-			VCUnitDefinition.UNIT_mV);
+			modelUnitSystem.getVoltageUnit());
 	
 	parameters[0] = totalCurrent;
 	parameters[1] = transMembraneCurrent;

@@ -20,6 +20,7 @@ import org.sbml.libsbml.libsbmlConstants;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 
 /**
  * Insert the type's description here.
@@ -38,13 +39,18 @@ public class SBMLUnitTranslator {
 	public static final String LENGTH = "length";
 	public static final String TIME = "time";
 	
-	private static TreeMap<String, VCUnitDefinition> SbmlDefaultUnits = new TreeMap<String, VCUnitDefinition>();  
+	private static TreeMap<String, String> SbmlDefaultUnits = new TreeMap<String, String>();  
 	static {            
-		SbmlDefaultUnits.put("substance", VCUnitDefinition.getInstance("mole"));
-		SbmlDefaultUnits.put("volume", VCUnitDefinition.UNIT_L);
-		SbmlDefaultUnits.put("area", VCUnitDefinition.getInstance("metre2"));
-		SbmlDefaultUnits.put("length", cbit.vcell.units.VCUnitDefinition.getInstance("metre"));
-		SbmlDefaultUnits.put("time", VCUnitDefinition.UNIT_s);
+		SbmlDefaultUnits.put("substance", "mol");
+		SbmlDefaultUnits.put("volume", "litre");
+		SbmlDefaultUnits.put("area", "m2");
+		SbmlDefaultUnits.put("length", "m");
+		SbmlDefaultUnits.put("time", "s");
+//		SbmlDefaultUnits.put("substance", "mole");
+//		SbmlDefaultUnits.put("volume", "litre");
+//		SbmlDefaultUnits.put("area", "metre2");
+//		SbmlDefaultUnits.put("length", "metre");
+//		SbmlDefaultUnits.put("time", "second");
 	}
 
 	private static ArrayList<String> SbmlBaseUnits = new ArrayList<String>();
@@ -155,21 +161,21 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, 
 }
 
 
-public static VCUnitDefinition getDefaultSBMLUnit(String builtInName) {
-	return (VCUnitDefinition)SbmlDefaultUnits.get(builtInName);
+public static String getDefaultSBMLUnitSymbol(String builtInName) {
+	return SbmlDefaultUnits.get(builtInName);
 }
 
 
-public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, long level, long version) {
+public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, long level, long version, VCUnitSystem vcUnitSystem) {
 	UnitDefinition sbmlUnitDefn = null;
-	String sbmlUnitSymbol = org.vcell.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
+	String sbmlUnitSymbol = TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
 
 	// If VC unit is DIMENSIONLESS ...
 	if (vcUnitDefn.isTBD()) {
 		throw new RuntimeException("TBD unit has no SBML equivalent");
-	} else if (vcUnitDefn.isCompatible(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
+	} else if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())) {
 		double multiplier = 1.0;
-		multiplier = vcUnitDefn.convertTo(multiplier, VCUnitDefinition.UNIT_DIMENSIONLESS);
+		multiplier = vcUnitDefn.convertTo(multiplier, vcUnitSystem.getInstance_DIMENSIONLESS());
 		sbmlUnitDefn = new UnitDefinition(level, version);
 		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(vcUnitDefn.getSymbol())));
 		Unit dimensionlessUnit = new Unit(level, version);
@@ -199,7 +205,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 	/*
 	 *  getVCUnit : 
 	 */
-	private static VCUnitDefinition getVCUnit(org.sbml.libsbml.Unit unit) {
+	private static VCUnitDefinition getVCUnit(org.sbml.libsbml.Unit unit, VCUnitSystem vcUnitSystem) {
 		// Get the attributes of the unit 'element', 'kind', 'multiplier', 'scale', 'offset', etc.
 		String unitKind = org.sbml.libsbml.libsbml.UnitKind_toString(unit.getKind());
 		int unitExponent = unit.getExponent();
@@ -211,28 +217,28 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 
 		// convert the sbmlUnit into a vcell unit with the appropriate multiplier, scale, exponent, offset, etc ..
 		if (unit.isDimensionless()) {        //'dimensionless' can be part of a bigger unit definition     
-			vcUnit = VCUnitDefinition.getInstance(vcScaleStr);
+			vcUnit = vcUnitSystem.getInstance(vcScaleStr);
 			return vcUnit;
 		} else {
 			if (unit.isItem()) {
 				System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
-				vcUnit = VCUnitDefinition.getInstance(vcScaleStr + " molecules" + unitExponent);
+				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " molecules" + unitExponent);
 			} else {
-				vcUnit = VCUnitDefinition.getInstance(vcScaleStr + " " + unitKind + unitExponent);
+				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + unitKind + unitExponent);
 			}
 		}
 		return vcUnit;
 	}
 
 
-public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefinition sbmlUnitDefn) {
+public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefinition sbmlUnitDefn, VCUnitSystem vcUnitSystem) {
 	// Each SBML UnitDefinition contains a list of Units, the total unit (VC unit) as represented by
 	// an SBML UnitDefinition is the product of the list of units it contains.
 	VCUnitDefinition vcUnitDefn = null;
 	org.sbml.libsbml.ListOf listofUnits = sbmlUnitDefn.getListOfUnits();
 	for (int j = 0; j < sbmlUnitDefn.getNumUnits(); j++) {
 		org.sbml.libsbml.Unit sbmlUnit = (org.sbml.libsbml.Unit)listofUnits.get(j);
-		VCUnitDefinition vcUnit = getVCUnit(sbmlUnit);
+		VCUnitDefinition vcUnit = getVCUnit(sbmlUnit, vcUnitSystem);
 		if (vcUnitDefn == null) {
 			vcUnitDefn = vcUnit;
 		} else {

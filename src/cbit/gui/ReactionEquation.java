@@ -27,6 +27,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -147,6 +148,7 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 	StringTokenizer st = new StringTokenizer(leftHand, "+");
 	ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();
 	HashMap<String, SpeciesContext> speciesContextMap = new HashMap<String, SpeciesContext>();
+	Structure rxnStructure = reactionStep.getStructure();
 	while (st.hasMoreElements()) {
 		String nextToken = st.nextToken().trim();
 		if (nextToken.length() == 0) {
@@ -174,7 +176,7 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 				if (species == null) {
 					species = new Species(var, null);
 				}
-				sc = new SpeciesContext(species, reactionStep.getStructure());
+				sc = new SpeciesContext(species, rxnStructure);
 				sc.setName(var);
 				speciesContextMap.put(var, sc);
 			}
@@ -213,7 +215,7 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 				if (species == null) {
 					species = new Species(var, null);
 				}
-				sc = new SpeciesContext(species, reactionStep.getStructure());
+				sc = new SpeciesContext(species, rxnStructure);
 				sc.setName(var);
 				speciesContextMap.put(var, sc);
 			}

@@ -23,7 +23,6 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.SBMLError;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
@@ -36,11 +35,11 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -48,11 +47,12 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -73,7 +73,7 @@ public class SBMLExporter {
 	private int sbmlVersion = 3;
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
-
+	 
 	private SimulationContext vcSelectedSimContext = null;
 	private SimulationJob vcSelectedSimJob = null;
 	
@@ -84,9 +84,10 @@ public class SBMLExporter {
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
 
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
-	private SBMLExportSpec sbmlExportSpec = new SBMLExportSpec(VCUnitDefinition.UNIT_molecules, VCUnitDefinition.UNIT_um3, VCUnitDefinition.UNIT_um2, VCUnitDefinition.UNIT_um, VCUnitDefinition.UNIT_s);
+
+	private SBMLExportSpec sbmlExportSpec = null;
 	
-	public static class SBMLExportSpec {
+	public class SBMLExportSpec {
 		private VCUnitDefinition substanceUnits = null;
 		private VCUnitDefinition volUnits = null;
 		private VCUnitDefinition areaUnits = null;
@@ -94,19 +95,20 @@ public class SBMLExporter {
 		private VCUnitDefinition timeUnits = null;
 		
 		public SBMLExportSpec(VCUnitDefinition argSunits, VCUnitDefinition argVUnits, VCUnitDefinition argAUnits, VCUnitDefinition argLUnits, VCUnitDefinition argTUnits) {
-			if (!argSunits.isCompatible(VCUnitDefinition.UNIT_molecules) && !argSunits.isCompatible(VCUnitDefinition.UNIT_mol)) {
+			ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
+			if (!argSunits.isCompatible(vcModelUnitSystem.getMembraneSubstanceUnit()) && !argSunits.isCompatible(vcModelUnitSystem.getVolumeSubstanceUnit())) {
 				throw new RuntimeException("Substance units not compatible with molecules or moles");
 			}
-			if (!argVUnits.isCompatible(VCUnitDefinition.UNIT_um3)) {
+			if (!argVUnits.isCompatible(vcModelUnitSystem.getVolumeUnit())) {
 				throw new RuntimeException("Volume units not compatible with m3 (eg., um3 or litre)");
 			}
-			if (!argAUnits.isCompatible(VCUnitDefinition.UNIT_um2)) {
+			if (!argAUnits.isCompatible(vcModelUnitSystem.getAreaUnit())) {
 				throw new RuntimeException("Area units not compatible with m2");
 			}
-			if (!argLUnits.isCompatible(VCUnitDefinition.UNIT_um)) {
+			if (!argLUnits.isCompatible(vcModelUnitSystem.getLengthUnit())) {
 				throw new RuntimeException("Length units not compatible with m");
 			}
-			if (!argTUnits.isCompatible(VCUnitDefinition.UNIT_s)) {
+			if (!argTUnits.isCompatible(vcModelUnitSystem.getTimeUnit())) {
 				throw new RuntimeException("Time units not compatible with sec");
 			}
 			this.substanceUnits = argSunits;
@@ -154,12 +156,14 @@ public class SBMLExporter {
 	 */
 	public SBMLExporter(BioModel argBioModel, int argSbmlLevel, int argSbmlVersion) {
 		super();
-		vcBioModel = argBioModel;
+		this.vcBioModel = argBioModel;
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
 		if (vcBioModel != null) {
 			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
 		}
+		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
+		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
 	}
 	
 	/**
@@ -177,8 +181,8 @@ public class SBMLExporter {
  * addCompartments comment.
  */
 protected void addCompartments() {
-	cbit.vcell.model.Structure[] vcStructures = vcBioModel.getModel().getStructures();
-	
+	Model vcModel = vcBioModel.getModel();
+	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
 	for (int i = 0; i < vcStructures.length; i++){
 		org.sbml.libsbml.Compartment sbmlCompartment = sbmlModel.createCompartment();
 		sbmlCompartment.setId(TokenMangler.mangleToSName(vcStructures[i].getName()));
@@ -198,6 +202,7 @@ protected void addCompartments() {
 				}
 			}
 			sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
+			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
@@ -262,12 +267,13 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 
 	Vector<Parameter> paramsVector = new Vector<Parameter>();
 	// Add globals
-	ModelParameter[] globalParams = vcBioModel.getModel().getModelParameters();
+	Model vcModel = vcBioModel.getModel();
+	ModelParameter[] globalParams = vcModel.getModelParameters();
 	for (int i = 0; i < globalParams.length; i++) {
 		paramsVector.addElement(globalParams[i]);
 	}
 	// Add reaction kinetic parameters
-	ReactionStep[] vcReactions = vcBioModel.getModel().getReactionSteps();
+	ReactionStep[] vcReactions = vcModel.getReactionSteps();
 	for (int i = 0; i < vcReactions.length; i++) {
 		Kinetics rxnKinetics = vcReactions[i].getKinetics();
 		Parameter[] kineticParams = rxnKinetics.getKineticsParameters();
@@ -276,6 +282,7 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 		}
 	}
 
+	ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
 	for (int i = 0; i < paramsVector.size(); i++){
 		Parameter param = (Parameter)paramsVector.elementAt(i);
 		VCUnitDefinition paramUnitDefn = param.getUnitDefinition();
@@ -292,7 +299,7 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 			continue;
 		}
 		if (!paramUnitDefn.isTBD()) {
-			UnitDefinition newUnitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(paramUnitDefn, sbmlLevel, sbmlVersion);
+			UnitDefinition newUnitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(paramUnitDefn, sbmlLevel, sbmlVersion, vcModelUnitSystem);
 			if (newUnitDefn != null) {
 				unitsList.add(unitSymbol);
 				sbmlModel.addUnitDefinition(newUnitDefn);
@@ -307,15 +314,14 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
  */
 protected void addParameters() throws ExpressionException {
 	// first add an SBML parameter for VCell reserved symbol 'KMOLE'.
-	org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
-	String paramUnits = TokenMangler.mangleToSName(VCUnitDefinition.UNIT_uM_um3_per_molecules.getSymbol());
-	sbmlParam.setId("KMOLE");
-	sbmlParam.setValue(1.0/602.0);
-	sbmlParam.setUnits(paramUnits);
-	sbmlParam.setConstant(true);
-	// Now add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
 	ReservedSymbol kMole = vcModel.getKMOLE();
+	org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
+	sbmlParam.setId(kMole.getName());
+	sbmlParam.setValue(kMole.getConstantValue());
+	sbmlParam.setUnits(TokenMangler.mangleToSName(kMole.getUnitDefinition().getSymbol()));
+	sbmlParam.setConstant(true);
+	// Now add VCell global parameters to the SBML listofParameters
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
 	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
 		sbmlParam = sbmlModel.createParameter();
@@ -353,7 +359,7 @@ protected void addParameters() throws ExpressionException {
 			sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		}
 		VCUnitDefinition vcParamUnit = vcGlobalParams[i].getUnitDefinition();
-		if (!vcParamUnit.compareEqual(VCUnitDefinition.UNIT_TBD)) {
+		if (!vcParamUnit.compareEqual(vcModel.getUnitSystem().getInstance_TBD())) {
 			sbmlParam.setUnits(TokenMangler.mangleToSName(vcParamUnit.getSymbol()));
 		}
 	}
@@ -682,8 +688,8 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
  */
 protected void addSpecies() {
 	Model vcModel = vcBioModel.getModel();
-	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 	ReservedSymbol kMole = vcModel.getKMOLE();
+	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.libsbml.Species sbmlSpecies = sbmlModel.createSpecies();
 		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
@@ -772,42 +778,57 @@ protected void addSpecies() {
  * Add unit definitions to the model.
  */
 protected void addUnitDefinitions() {
+
+	Model vcModel = vcBioModel.getModel();
+	ModelUnitSystem vcUnitSystem = vcModel.getUnitSystem();
+
 	// Define molecule - SUBSTANCE
-	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getSubstanceUnits(), sbmlLevel, sbmlVersion);
+	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getSubstanceUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	unitDefn.setId(SBMLUnitTranslator.SUBSTANCE);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um3 - VOLUME
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits(), sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	unitDefn.setId(SBMLUnitTranslator.VOLUME);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - AREA
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits(), sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	unitDefn.setId(SBMLUnitTranslator.AREA);
 	sbmlModel.addUnitDefinition(unitDefn);
 
+	// Define um2 - LENGTH
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getLengthUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
+	unitDefn.setId(SBMLUnitTranslator.LENGTH);
+	sbmlModel.addUnitDefinition(unitDefn);
+
+	// Define um2 - TIME
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getTimeUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
+	unitDefn.setId(SBMLUnitTranslator.TIME);
+	sbmlModel.addUnitDefinition(unitDefn);
+
+
 	// Redefine molecules as 'item' 
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_molecules, sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getMembraneSubstanceUnit(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define umol.um3.L-1 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_umol_um3_per_L, sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_umol_um3_per_L), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - VCell
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_um2, sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define KMOLE units : uM.um3/molecules - VCell (required in exported SBML for other tools).
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_uM_um3_per_molecules, sbmlLevel, sbmlVersion);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcModel.getKMOLE().getUnitDefinition(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-	// Add units from paramater list in kinetics
+	// Add units from parameter list in kinetics
 	ArrayList<String> unitList = new ArrayList<String>();
-	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_um3_per_L.getSymbol()));
-	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(vcUnitSystem.getMembraneSubstanceUnit().getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(vcUnitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_umol_um3_per_L).getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(sbmlExportSpec.getAreaUnits().getSymbol()));
 	addKineticAndGlobalParameterUnits(unitList);
 }
 
@@ -866,7 +887,8 @@ protected void addEvents() throws ExpressionException {
 private Expression adjustSpeciesConcFactor(Expression origExpr) throws ExpressionException {
 	Expression expr = new Expression(origExpr);
 	String[] symbols = expr.getSymbols();
-	ReservedSymbol kMole = getSelectedSimContext().getModel().getKMOLE();
+	Model vcModel = getSelectedSimContext().getModel();
+	ReservedSymbol kMole = vcModel.getKMOLE();
 	for (int k = 0; symbols != null && k < symbols.length; k++) {
 		SpeciesContext vcSpeciesContext = vcBioModel.getModel().getSpeciesContext(symbols[k]); 
 		if (vcSpeciesContext != null) {

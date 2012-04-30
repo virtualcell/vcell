@@ -36,6 +36,7 @@ import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -43,6 +44,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 
 import com.ibm.icu.util.StringTokenizer;
@@ -102,13 +104,14 @@ public class PathwayMapping {
 		}else{
 			name = getSafetyName(bioPaxObject.getName().get(0));
 		}
-		SpeciesContext freeSpeciesContext = bioModel.getModel().getSpeciesContext(name);
+		Model model = bioModel.getModel();
+		SpeciesContext freeSpeciesContext = model.getSpeciesContext(name);
 		if(freeSpeciesContext == null){
 		// create the new speciesContex Object, and link it to the corresponding pathway object
-			if(bioModel.getModel().getSpecies(name) == null){
-				freeSpeciesContext = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+			if(model.getSpecies(name) == null){
+				freeSpeciesContext = model.createSpeciesContext(model.getStructures()[0]);
 			}else{
-				 freeSpeciesContext = new SpeciesContext(bioModel.getModel().getSpecies(name), bioModel.getModel().getStructures()[0]);
+				 freeSpeciesContext = new SpeciesContext(model.getSpecies(name), model.getStructures()[0]);
 			}
 			freeSpeciesContext.setName(name);
 			RelationshipObject newRelationship = new RelationshipObject(freeSpeciesContext, bioPaxObject);
@@ -150,13 +153,14 @@ public class PathwayMapping {
 		}else{
 			name = getSafetyName(bioPaxObject.getName().get(0));
 		}
-		SpeciesContext freeSpeciesContext = bioModel.getModel().getSpeciesContext(safeId);
+		Model model = bioModel.getModel();
+		SpeciesContext freeSpeciesContext = model.getSpeciesContext(safeId);
 		if(freeSpeciesContext == null){
 		// create the new speciesContex Object, and link it to the corresponding pathway object
-			if(bioModel.getModel().getSpecies(name) == null){
-				freeSpeciesContext = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructure(location));
+			if(model.getSpecies(name) == null){
+				freeSpeciesContext = model.createSpeciesContext(model.getStructure(location));
 			}else {
-				freeSpeciesContext = new SpeciesContext(bioModel.getModel().getSpecies(name), bioModel.getModel().getStructure(location));
+				freeSpeciesContext = new SpeciesContext(model.getSpecies(name), model.getStructure(location));
 			}
 			freeSpeciesContext.setName(safeId);
 			RelationshipObject newRelationship = new RelationshipObject(freeSpeciesContext, bioPaxObject);
@@ -535,6 +539,8 @@ public class PathwayMapping {
 		HashMap<String, SpeciesContext> speciesContextMap = new HashMap<String, SpeciesContext>();
 		ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();
 		// create and add reaction participants to list for left-hand side of equation
+		Model model = bioModel.getModel();
+		Structure structure = reactionStep.getStructure();
 		while (st.hasMoreElements()) {
 			String nextToken = st.nextToken().trim();
 			if (nextToken.length() == 0) {
@@ -556,17 +562,17 @@ public class PathwayMapping {
 			String var = nextToken.substring(stoichiIndex).trim();
 			// get speciesContext object based on its name
 			// if the speciesContext is not existed, create a new one
-			SpeciesContext sc = bioModel.getModel().getSpeciesContext(var);
+			SpeciesContext sc = model.getSpeciesContext(var);
 			if (sc == null) {
 				sc = speciesContextMap.get(var);
 				if (sc == null) {
 					// get species object based on its name
 					// if the species is not existed, create a new one
-					Species species = bioModel.getModel().getSpecies(var);
+					Species species = model.getSpecies(var);
 					if (species == null) {
 						species = new Species(var, null);
 					}
-					sc = new SpeciesContext(species, reactionStep.getStructure());
+					sc = new SpeciesContext(species, structure);
 					sc.setName(var);
 					speciesContextMap.put(var, sc);
 				}
@@ -599,15 +605,15 @@ public class PathwayMapping {
 				stoichi = Integer.parseInt(tmp);
 			}
 			String var = nextToken.substring(stoichiIndex);
-			SpeciesContext sc = bioModel.getModel().getSpeciesContext(var);
+			SpeciesContext sc = model.getSpeciesContext(var);
 			if (sc == null) {
 				sc = speciesContextMap.get(var);
 				if (sc == null) {
-					Species species = bioModel.getModel().getSpecies(var);
+					Species species = model.getSpecies(var);
 					if (species == null) {
 						species = new Species(var, null);
 					}
-					sc = new SpeciesContext(species, reactionStep.getStructure());
+					sc = new SpeciesContext(species, structure);
 					sc.setName(var);
 					speciesContextMap.put(var, sc);
 				}

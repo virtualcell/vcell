@@ -433,6 +433,10 @@ public RationalNumber sub(RationalNumber rational) {
  * @return java.lang.String
  */
 public String toString() {
+	return infix();
+}
+
+public String infix() {
 	if (this.bigden.equals(BigInteger.ONE)){
 		return this.bignum.toString();
 	}else{

@@ -20,6 +20,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Product;
@@ -151,7 +152,7 @@ void refreshResolvedFluxes() throws Exception {
 				bNoFluxIfFixedExercised = true;
 			}
 			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier());
+				rf = new ResolvedFlux(fr.getFluxCarrier(), fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 				resolvedFluxList.addElement(rf);
 			}
 			FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getInsideFeature());
@@ -171,10 +172,10 @@ void refreshResolvedFluxes() throws Exception {
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
 				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping_4_8.getNameScope());
-				if (rf.inFlux.isZero()){
-					rf.inFlux = Expression.mult(reactionRateParameter,insideFluxCorrection).flatten();
+				if (rf.inFluxExpression.isZero()){
+					rf.inFluxExpression = Expression.mult(reactionRateParameter,insideFluxCorrection).flatten();
 				}else{
-					rf.inFlux = Expression.add(rf.inFlux,Expression.mult(reactionRateParameter,insideFluxCorrection).flatten());
+					rf.inFluxExpression = Expression.add(rf.inFluxExpression,Expression.mult(reactionRateParameter,insideFluxCorrection).flatten());
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics for fluxes not yet supported");
@@ -194,7 +195,7 @@ void refreshResolvedFluxes() throws Exception {
 				bNoFluxIfFixedExercised = true;
 			}
 			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier());
+				rf = new ResolvedFlux(fr.getFluxCarrier(), fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 				resolvedFluxList.addElement(rf);
 			}
 			FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getOutsideFeature());
@@ -213,10 +214,10 @@ void refreshResolvedFluxes() throws Exception {
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
 				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping_4_8.getNameScope());
-				if (rf.outFlux.isZero()){
-					rf.outFlux = Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten();
+				if (rf.outFluxExpression.isZero()){
+					rf.outFluxExpression = Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten();
 				}else{
-					rf.outFlux = Expression.add(rf.outFlux,Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten());
+					rf.outFluxExpression = Expression.add(rf.outFluxExpression,Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten());
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics not yet supported for Flux Reaction: "+fr.getName());
@@ -269,7 +270,7 @@ void refreshResolvedFluxes() throws Exception {
 								}
 							}
 							if (rf == null){
-								rf = new ResolvedFlux(rp_Array[k].getSpecies());
+								rf = new ResolvedFlux(rp_Array[k].getSpecies(), sr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 								resolvedFluxList.addElement(rf);
 							}
 							
@@ -290,10 +291,10 @@ void refreshResolvedFluxes() throws Exception {
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
 									insideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
 								}
-								if (rf.inFlux.isZero()){
-									rf.inFlux = Expression.mult(insideFluxCorrection, reactionRateExpression);
+								if (rf.inFluxExpression.isZero()){
+									rf.inFluxExpression = Expression.mult(insideFluxCorrection, reactionRateExpression);
 								}else{
-									rf.inFlux = Expression.add(rf.inFlux,Expression.mult(insideFluxCorrection, reactionRateExpression));
+									rf.inFluxExpression = Expression.add(rf.inFluxExpression,Expression.mult(insideFluxCorrection, reactionRateExpression));
 								}
 //								rf.inFlux.bindExpression(mathMapping);
 							}else if (rp_Array[k].getStructure() == getMembrane().getOutsideFeature()){
@@ -311,10 +312,10 @@ void refreshResolvedFluxes() throws Exception {
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
 									outsideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
 								}
-								if (rf.outFlux.isZero()){
-									rf.outFlux = Expression.mult(outsideFluxCorrection, reactionRateExpression);
+								if (rf.outFluxExpression.isZero()){
+									rf.outFluxExpression = Expression.mult(outsideFluxCorrection, reactionRateExpression);
 								}else{
-									rf.outFlux = Expression.add(rf.outFlux,Expression.mult(outsideFluxCorrection, reactionRateExpression));
+									rf.outFluxExpression = Expression.add(rf.outFluxExpression,Expression.mult(outsideFluxCorrection, reactionRateExpression));
 								}
 //								rf.outFlux.bindExpression(mathMapping);
 							}else{

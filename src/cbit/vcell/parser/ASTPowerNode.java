@@ -241,7 +241,7 @@ public String infixString(int lang){
 	
 	StringBuffer buffer = new StringBuffer();
 
-	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
+	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL || lang == LANGUAGE_UNITS){
 		buffer.append("(");
 		buffer.append(jjtGetChild(0).infixString(lang));
 		buffer.append(" ^ ");

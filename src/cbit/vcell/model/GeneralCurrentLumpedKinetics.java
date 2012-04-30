@@ -12,12 +12,14 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import org.openrdf.model.util.ModelUtil;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -105,18 +107,21 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		
-		Kinetics.KineticsParameter rateParm = getLumpedReactionRateParameter();
-		if (getReactionStep() instanceof FluxReaction){
-			if (rateParm != null){
-				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_s);
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			Kinetics.KineticsParameter rateParm = getLumpedReactionRateParameter();
+			if (getReactionStep() instanceof FluxReaction){
+				if (rateParm != null){
+					rateParm.setUnitDefinition(modelUnitSystem.getLumpedReactionRateUnit());
+				}
+			}else if (getReactionStep() instanceof SimpleReaction){
+				throw new RuntimeException("General Current Lumped Kinetics not expected within a flux reaction only");
 			}
-		}else if (getReactionStep() instanceof SimpleReaction){
-			throw new RuntimeException("General Current Lumped Kinetics not expected within a flux reaction only");
-		}
-		Kinetics.KineticsParameter currentParm = getLumpedCurrentParameter();
-		if (currentParm != null){
-			currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA);
+			Kinetics.KineticsParameter currentParm = getLumpedCurrentParameter();
+			if (currentParm != null){
+				currentParm.setUnitDefinition(modelUnitSystem.getCurrentUnit());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -147,7 +152,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, java.bea
 		Expression tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), lumpedCurrent);
 		
 		if (lumpedReactionRate == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedReactionRate),tempRateExpression,ROLE_LumpedReactionRate,VCUnitDefinition.UNIT_molecules_per_s));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedReactionRate),tempRateExpression,ROLE_LumpedReactionRate, getReactionStep().getModel().getUnitSystem().getLumpedReactionRateUnit()));
 		}else{
 			lumpedReactionRate.setExpression(tempRateExpression);
 		}

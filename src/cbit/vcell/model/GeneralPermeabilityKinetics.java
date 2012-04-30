@@ -126,18 +126,21 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		
-		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
-		if (rateParm != null){
-			rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
-		}
-		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
-		if (currentDensityParm != null){
-			currentDensityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
-		}
-		Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
-		if (permeabilityParm != null){
-			permeabilityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_um_per_s);
+		Model model = getReactionStep().getModel();
+		if (model != null) {
+			ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+			Kinetics.KineticsParameter rateParm = getReactionRateParameter();
+			if (rateParm != null){
+				rateParm.setUnitDefinition(modelUnitSystem.getFluxReactionUnit());
+			}
+			Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
+			if (currentDensityParm != null){
+				currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+			}
+			Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
+			if (permeabilityParm != null){
+				permeabilityParm.setUnitDefinition(modelUnitSystem.getPermeabilityUnit());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;

@@ -741,7 +741,7 @@ System.out.println(sql);
 System.out.println(sql);
 		rset = stmt.executeQuery(sql);
 		while (rset.next()){
-			SurfaceGeometricRegion surfaceRegion = geoRegionTable.getSurfaceRegion(rset, volumeRegions, log);
+			SurfaceGeometricRegion surfaceRegion = geoRegionTable.getSurfaceRegion(rset, volumeRegions, geom.getUnitSystem(), log);
 			regionList.add(surfaceRegion);
 		}
 

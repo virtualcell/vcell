@@ -468,8 +468,8 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 			!name.startsWith(MathMapping.PARAMETER_VOL_FRACT_PREFIX) && 
 			!name.startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && 
 			!name.startsWith("Kflux_") &&
-			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
-			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
+//			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
+//			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
 			!name.endsWith(MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
 			!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
 			return true;

@@ -13,6 +13,7 @@ import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBMeasurable;
 
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
@@ -29,11 +30,14 @@ public class SBPAXParameterExtractor {
 		Set<SBOTerm> sboTerms = SBPAXSBOExtractor.extractSBOTerms(measurable);
 		String symbol = null;
 		VCUnitDefinition targetUnit = null;
+		Model model = reaction.getModel();
+		ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 		Set<SBOTerm> termsWithUnituM = SetUtil.newSet(SBOList.sbo0000027MichaelisConstant, 
 				SBOList.sbo0000322MichaelisConstantForSubstrate);
 		for(SBOTerm sboTerm : sboTerms) {
 			if(termsWithUnituM.contains(sboTerm)) {
-				targetUnit = VCUnitDefinition.UNIT_uM;
+				targetUnit = modelUnitSystem.getVolumeConcentrationUnit(); 
+				// targetUnit = VCUnitDefinition.UNIT_uM;
 			}
 			if(StringUtil.notEmpty(sboTerm.getSymbol())) {
 				symbol = sboTerm.getSymbol();
@@ -45,16 +49,16 @@ public class SBPAXParameterExtractor {
 				}
 			}
 		}
-		VCUnitDefinition unit = UOMEUnitExtractor.extractVCUnitDefinition(measurable);
+		VCUnitDefinition unit = UOMEUnitExtractor.extractVCUnitDefinition(measurable, modelUnitSystem);
 		double conversionFactor = 1.0;
-		if(targetUnit != null && unit != null && unit != VCUnitDefinition.UNIT_TBD && 
+		if(targetUnit != null && unit != null && unit != modelUnitSystem.getInstance_TBD() && 
 				!targetUnit.equals(unit)) {
-			if(unit.equals(VCUnitDefinition.UNIT_M) && targetUnit.equals(VCUnitDefinition.UNIT_uM)) {
-				conversionFactor = 1e6;
-				unit = VCUnitDefinition.UNIT_uM;
+//			if(unit.equals(VCUnitDefinition.UNIT_M) && targetUnit.equals(VCUnitDefinition.UNIT_uM)) {
+			if(unit.isCompatible(targetUnit)) {
+				conversionFactor = unit.convertTo(conversionFactor, targetUnit);
+				unit = targetUnit;
 			}
 		}
-		Model model = reaction.getModel();
 		ArrayList<Double> numbers = measurable.getNumber();
 		if(StringUtil.isEmpty(symbol)) {
 			symbol = "p" + (++nParameter);

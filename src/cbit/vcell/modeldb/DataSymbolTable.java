@@ -30,6 +30,7 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 
 public class DataSymbolTable extends Table {
 	private static final String TABLE_NAME = "vc_datasymbol";
@@ -96,7 +97,7 @@ public void saveDataSymbols(Connection con,KeyValue simContextRef,DataContext da
 		DbDriver.updateCleanSQL(con, sql);
 	}
 }
-public void populateDataSymbols(Connection con,KeyValue simContextRef,DataContext dataContext,User simcontextOwner) throws SQLException,DataAccessException{
+public void populateDataSymbols(Connection con,KeyValue simContextRef,DataContext dataContext,User simcontextOwner, VCUnitSystem unitSystem) throws SQLException,DataAccessException{
 	Statement stmt = null;
 	try{
 		HashMap<BigDecimal, ExternalDataIdentifier> extDataIDHashMap = new HashMap<BigDecimal, ExternalDataIdentifier>();
@@ -129,7 +130,7 @@ public void populateDataSymbols(Connection con,KeyValue simContextRef,DataContex
 			DataSymbolType nextDataSymbolType = DataSymbolType.valueOf(nextDataSymbolTypeS);
 			String nextDataSymbolVCUnitDefS = rset.getString(DataSymbolTable.table.dataSymbolVCUnitDef.toString());
 			nextDataSymbolVCUnitDefS = TokenMangler.getSQLRestoredString(nextDataSymbolVCUnitDefS);
-			VCUnitDefinition nextVCUnitDefinition = VCUnitDefinition.getInstance(nextDataSymbolVCUnitDefS);
+			VCUnitDefinition nextVCUnitDefinition = unitSystem.getInstance(nextDataSymbolVCUnitDefS);
 			
 			//FieldDataSymbol (ExternalDataIdentifier) - (only data symbol defined right now)
 			BigDecimal extDataBigDecimal = rset.getBigDecimal(DataSymbolTable.table.fieldDataRef.getUnqualifiedColName());

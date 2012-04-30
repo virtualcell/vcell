@@ -2432,7 +2432,13 @@ public String infixString(int lang) {
 		// pow() is treated specially, Matlab needs a^b.
 		//
 	 	case POW: {		      
-			if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
+	 		if (lang == LANGUAGE_DEFAULT){
+	 			buffer.append("pow(");
+	 			buffer.append(jjtGetChild(0).infixString(lang));
+	 			buffer.append(",");
+	 			buffer.append(jjtGetChild(1).infixString(lang));
+	 			buffer.append(")");
+	 		}else if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL || lang == LANGUAGE_UNITS){
 				buffer.append("(");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(" ^ ");
@@ -2443,12 +2449,6 @@ public String infixString(int lang) {
 				buffer.append("((double)(" + jjtGetChild(0).infixString(lang) + "))");
 				buffer.append(",");
 				buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
-				buffer.append(")");
-			} else if (lang == LANGUAGE_DEFAULT){
-				buffer.append("pow(");
-				buffer.append(jjtGetChild(0).infixString(lang));
-				buffer.append(",");
-				buffer.append(jjtGetChild(1).infixString(lang));
 				buffer.append(")");
 			}
 			break;

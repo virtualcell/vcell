@@ -13,6 +13,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
 
 public class Membrane extends Structure {
 	private Feature insideFeature = null;
@@ -41,7 +42,7 @@ public class Membrane extends Structure {
 		}
 
 		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-			return cbit.vcell.units.VCUnitDefinition.UNIT_mV;
+			return getModel().getUnitSystem().getVoltageUnit();
 		}
 
 		public void setUnitDefinition(VCUnitDefinition unit) {

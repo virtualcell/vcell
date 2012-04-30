@@ -33,17 +33,17 @@ public class MathFunctionDefinitions {
 	public final static String FunctionName_field_old		= "field";
 	public final static String FunctionName_grad_old		= "grad";
 	
-	public final static SymbolTableFunctionEntry Function_regionArea_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_indexed, VCUnitDefinition.UNIT_um2, null);
-	public final static SymbolTableFunctionEntry Function_regionArea_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_current, VCUnitDefinition.UNIT_um2, null);
-	public final static SymbolTableFunctionEntry Function_regionVolume_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_indexed, VCUnitDefinition.UNIT_um3, null);
-	public final static SymbolTableFunctionEntry Function_regionVolume_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_current, VCUnitDefinition.UNIT_um3, null);
+	public final static SymbolTableFunctionEntry Function_regionArea_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_indexed, null);
+	public final static SymbolTableFunctionEntry Function_regionArea_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_current, null);
+	public final static SymbolTableFunctionEntry Function_regionVolume_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_indexed, null);
+	public final static SymbolTableFunctionEntry Function_regionVolume_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_current, null);
 	public final static FieldFunctionDefinition fieldFunctionDefinition = new FieldFunctionDefinition();
 	public final static GradientFunctionDefinition gradientFunctionDefinition = new GradientFunctionDefinition();
 	public final static ConvFunctionDefinition convFunctionDefinition = new ConvFunctionDefinition();
 	public final static ProjectFunctionDefinition projectFunctionDefinition = new ProjectFunctionDefinition();
 	
 	
-	private static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, VCUnitDefinition vcUnitDefinition, NameScope nameScope){
+	private static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, NameScope nameScope){
 		StringTokenizer tokens = new StringTokenizer(formalDefinition,"(),", false);
 		String funcName = tokens.nextToken();
 		ArrayList<FunctionArgType> argTypeList = new ArrayList<FunctionArgType>();
@@ -59,7 +59,7 @@ public class MathFunctionDefinitions {
 		String[] argNames = argNameList.toArray(new String[argNameList.size()]);
 		FunctionArgType[] argTypes = argTypeList.toArray(new FunctionArgType[argTypeList.size()]);
 		
-		return new SimpleSymbolTableFunctionEntry(funcName, argNames, argTypes, null, vcUnitDefinition, nameScope);
+		return new SimpleSymbolTableFunctionEntry(funcName, argNames, argTypes, null, null, nameScope);
 	}
 	
 	public static Expression fixFunctionSyntax(CommentStringTokenizer tokens) throws ExpressionException {

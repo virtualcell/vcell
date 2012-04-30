@@ -36,6 +36,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
+import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -492,7 +493,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		}
 
 		public VCUnitDefinition getUnitDefinition() {
-			return VCUnitDefinition.UNIT_TBD;
+			return getReactionStep().getModel().getUnitSystem().getInstance_TBD();
 		}
 
 		public NameScope getNameScope() {
@@ -906,6 +907,16 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 		// now read in, and check predefined ones at the end 
 		reading(true);
 		
+		Model model = getReactionStep().getModel();
+		VCUnitSystem vcUnitSystem = null;
+		if (model != null) {
+			vcUnitSystem = model.getUnitSystem();
+		}
+		// if modelUnitSystem is null for some reason, create a temp vcUnitSystem to parse units which will get bound when refreshDependencies() is called.
+		if (vcUnitSystem == null) {
+			vcUnitSystem = new VCUnitSystem() {
+			};
+		}
 		ReactionStep reactionStep = getReactionStep();
 			
 		String token = null;
@@ -938,7 +949,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 					parm = getUnresolvedParameter(token);
 				}
 				String unitsString = tokens.nextToken();
-				VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
+				VCUnitDefinition unitDef = vcUnitSystem.getInstance_TBD();
 				if (unitsString.startsWith("[")){
 					while (!unitsString.endsWith("]")){
 						String tempToken = tokens.nextToken();
@@ -947,7 +958,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 					//
 					// now string starts with '[' and ends with ']'
 					//
-					unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+					unitDef = vcUnitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
 				}else{
 					tokens.pushToken(unitsString);
 				}
@@ -1012,7 +1023,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 							}
 						}
 						String unitsString = tokens.nextToken();
-						VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
+						VCUnitDefinition unitDef = vcUnitSystem.getInstance_TBD();
 						if (unitsString.startsWith("[")){
 							while (!unitsString.endsWith("]")){
 								String tempToken = tokens.nextToken();
@@ -1021,7 +1032,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 							//
 							// now string starts with '[' and ends with ']'
 							//
-							unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+							unitDef = vcUnitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
 						}else{
 							tokens.pushToken(unitsString);
 						}
@@ -1227,14 +1238,16 @@ public void gatherIssues(List<Issue> issueList) {
 		//
 		// determine unit consistency for each expression
 		//
+		ModelUnitSystem modelUnitSystem = getReactionStep().getModel().getUnitSystem();
+		VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(modelUnitSystem);
 		for (int i = 0; i < fieldKineticsParameters.length; i++){
 			try {
 				VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
-				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
+				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD()){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + VCUnitDefinition.TBD_SYMBOL,Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
 					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
@@ -1661,6 +1674,8 @@ public void refreshDependencies() {
 	}catch (ExpressionException e){
 	}catch (PropertyVetoException e){
 	}
+	
+	// if modelUnitSystem was null for some reason while reading fromTokens(), a temp vcUnitSystem was used to parse units which can be re-bound within refreshUnits()
 	refreshUnits();
 	//resolveUndefinedUnits();
 }
@@ -1847,7 +1862,7 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
  */
 public void resolveCurrentWithStructure(Structure structure) throws PropertyVetoException{
 	
-	
+	ModelUnitSystem modelUnitSystem = reactionStep.getModel().getUnitSystem();
 	if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity) != null){
 		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity));
 		
@@ -1856,12 +1871,12 @@ public void resolveCurrentWithStructure(Structure structure) throws PropertyVeto
 		
 	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity) == null){
 		String pname = this.getDefaultParameterName(Kinetics.ROLE_CurrentDensity);
-		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_CurrentDensity,VCUnitDefinition.UNIT_pA_per_um2);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_CurrentDensity, modelUnitSystem.getCurrentDensityUnit());
 		addKineticsParameter(currentParm);
 		
 	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_LumpedCurrent) == null){
 		String pname = this.getDefaultParameterName(Kinetics.ROLE_LumpedCurrent);
-		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_LumpedCurrent,VCUnitDefinition.UNIT_pA);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_LumpedCurrent, modelUnitSystem.getCurrentUnit());
 		addKineticsParameter(currentParm);
 	}
 	
@@ -1878,27 +1893,31 @@ public void resolveUndefinedUnits() {
 	// try to fix units for UserDefined parameters
 	//
 	if (!bResolvingUnits){
+		bResolvingUnits = true;
 		try {
-			bResolvingUnits = true;
-			boolean bAnyTBDUnits = false;
-			for (int i=0;i<fieldKineticsParameters.length;i++){
-				if (fieldKineticsParameters[i].getUnitDefinition()==null){
-					return; // not ready to resolve units yet
-				}else if (fieldKineticsParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
-					bAnyTBDUnits = true;
-				}
-			}
-			//
-			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
-			//
-			if (bAnyTBDUnits){
-				VCUnitDefinition vcUnitDefinitions[] = VCUnitEvaluator.suggestUnitDefinitions(fieldKineticsParameters);
-				for (int i = 0; i < fieldKineticsParameters.length; i++){
-					if (!fieldKineticsParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
-						fieldKineticsParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
+			if (getReactionStep().getModel() != null) {
+				ModelUnitSystem modelUnitSystem = getReactionStep().getModel().getUnitSystem();
+				boolean bAnyTBDUnits = false;
+				for (int i=0;i<fieldKineticsParameters.length;i++){
+					if (fieldKineticsParameters[i].getUnitDefinition()==null){
+						return; // not ready to resolve units yet
+					}else if (fieldKineticsParameters[i].getUnitDefinition().compareEqual(modelUnitSystem.getInstance_TBD())){
+						bAnyTBDUnits = true;
 					}
 				}
-				//System.out.println("successfully completed Kinetics.resolveUndefinedUnits() for ReactionStep '"+getReactionStep()+"'");
+				//
+				// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
+				//
+				if (bAnyTBDUnits){
+					VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(modelUnitSystem);
+					VCUnitDefinition vcUnitDefinitions[] = unitEvaluator.suggestUnitDefinitions(fieldKineticsParameters);
+					for (int i = 0; i < fieldKineticsParameters.length; i++){
+						if (!fieldKineticsParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
+							fieldKineticsParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
+						}
+					}
+					//System.out.println("successfully completed Kinetics.resolveUndefinedUnits() for ReactionStep '"+getReactionStep()+"'");
+				}
 			}
 		}catch (ExpressionBindingException e){
 			System.out.println("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
@@ -1965,10 +1984,11 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
 		KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
 		String symbols[] = exp.getSymbols();
+		ModelUnitSystem modelUnitSystem = getReactionStep().getModel().getUnitSystem();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
 			if (ste==null){
-				newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD));
+				newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD()));
 			}
 		}
 		parm.setExpression(exp);

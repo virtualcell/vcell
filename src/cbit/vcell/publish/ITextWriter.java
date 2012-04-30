@@ -55,15 +55,15 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.StructureMappingCartoon;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -91,6 +91,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -111,6 +112,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.units.VCUnitDefinition;
+
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Chunk;
@@ -2311,6 +2313,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 		}*/
 		StructureMapping structMap [] = gc.getStructureMappings();
 		Table structMapTable = null;
+		ModelUnitSystem modelUnitSystem = sc.getModel().getUnitSystem();
 		for (int i = 0; i < structMap.length; i++) {
 			if (!(structMap[i] instanceof FeatureMapping)) {
 				continue;
@@ -2341,7 +2344,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 					VCUnitDefinition tempUnit = smp.getUnitDefinition();
 					if (tempExp != null) {
 						surfVolStr = tempExp.infix();
-						if (tempUnit != null && !VCUnitDefinition.UNIT_DIMENSIONLESS.compareEqual(tempUnit)) {  //no need to add '1' for dimensionless unit
+						if (tempUnit != null && !modelUnitSystem.getInstance_DIMENSIONLESS().compareEqual(tempUnit)) {  //no need to add '1' for dimensionless unit
 							surfVolStr += " " + tempUnit.getSymbol();
 						}
 					}
@@ -2352,7 +2355,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 					VCUnitDefinition tempUnit = smp.getUnitDefinition();
 					if (tempExp != null) {
 						volFractStr = tempExp.infix();
-						if (tempUnit != null && !VCUnitDefinition.UNIT_DIMENSIONLESS.compareEqual(tempUnit)) { 
+						if (tempUnit != null && !modelUnitSystem.getInstance_DIMENSIONLESS().compareEqual(tempUnit)) { 
 							volFractStr += " " + tempUnit.getSymbol();
 						}
 					}

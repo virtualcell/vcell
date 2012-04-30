@@ -12,12 +12,13 @@ package cbit.vcell.solver.test;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocument;
+
+import Jama.Matrix;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.PDEDataViewer;
@@ -638,7 +639,7 @@ public static double[] interpolateArray(double[] sampleTimes, double[] dataTimes
 				neighboringTimePts[n - minusIndex] = dataTimes[n];
 				neighboringValues[n - minusIndex] = dataValues[n];
 			}
-			sampledData[j] = SBMLUtils.taylorInterpolation(sampleTimes[j], neighboringTimePts, neighboringValues);
+			sampledData[j] = MathTestingUtilities.taylorInterpolation(sampleTimes[j], neighboringTimePts, neighboringValues);
 		}
 	}
 
@@ -770,6 +771,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			if (equation.getExactSolution()!=null){
 				throw new RuntimeException("exact solution already exists");
 			}
+			Enumeration<Constant> origMathConstants = mathDesc.getConstants();
 			if (equation instanceof OdeEquation){
 				OdeEquation odeEquation = (OdeEquation)equation;
 				Expression substitutedRateExp = substituteWithExactSolution(odeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
@@ -778,10 +780,12 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				
 				String varName = odeEquation.getVariable().getName();
 				String initName = null;
-				if (subDomain instanceof MembraneSubDomain){
-					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2;
-				}else{
-					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM;
+				
+				while (origMathConstants.hasMoreElements()){
+					Constant constant = origMathConstants.nextElement();
+					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+						initName = constant.getName();
+					}
 				}
 				String exactName = varName+"_"+subDomain.getName()+"_exact";
 				String errorName = varName+"_"+subDomain.getName()+"_error";
@@ -821,10 +825,11 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				
 				String varName = pdeEquation.getVariable().getName();
 				String initName = null;
-				if (subDomain instanceof MembraneSubDomain){
-					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2;
-				}else{
-					initName = varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM;
+				while (origMathConstants.hasMoreElements()){
+					Constant constant = origMathConstants.nextElement();
+					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+						initName = constant.getName();
+					}
 				}
 				String diffusionRateName = "_"+varName+"_"+subDomain.getName()+"_diffusionRate";
 				String exactName = varName+"_"+subDomain.getName()+"_exact";
@@ -2295,5 +2300,76 @@ private static Expression substituteWithExactSolution(Expression origExp, Membra
 	}
 	substitutedExp.bindExpression(null);
 	return substitutedExp;
+}
+
+public static double taylorInterpolation(
+    double reqdTimePt,
+    double[] neighboringTimePts,
+    double[] neighboringValues) {
+    //
+    // This method applies a Taylor's series approximation to interpolate the function value at a required time point.
+    // 'reqdTimePt' is the point at which the value of the function is required.
+    // The 'neighboringTimePts' array contains the time points before and after the 'reqdTimePt' at which the value
+    // of the function is known, using which the value of fn at 'reqdTimePt' has to be interpolated.
+    // The 'neighboringValues' array contains the values of function at the time points provided in 'neighboringTimePts'.
+    //
+
+    if (neighboringTimePts.length != neighboringValues.length) {
+        throw new RuntimeException("Number of values provided in the 2 arrays are not equal, cannot proceed!");
+    }
+
+    // 
+    // Create a matrix (A_matrix) with the neighboring time points. The matrix is of the form :
+    //
+    //		1	del_t1	(del_t1^2)/2!	(del_t1^3)/3!
+    //		1	del_t2  (del_t2^2)/2!	(del_t2^3)/3!
+    //		1	del_t3  (del_t3^2)/2!	(del_t3^3)/3!
+    //		1	del_t4  (del_t4^2)/2!	(del_t4^3)/3!
+    //
+    // if interpolation is done using 4 points; 
+    // where del_ti is the difference between reqdTimePt and time points used for interpolation.
+    // 
+    int dim = neighboringTimePts.length;
+    Jama.Matrix A_matrix = new Jama.Matrix(dim, dim);
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            double val = neighboringTimePts[i] - reqdTimePt;
+            val = Math.pow(val, j);
+            val = val / factorial(j);
+            A_matrix.set(i, j, val);
+        }
+    }
+
+    // B_matrix is a column matrix containing the values of functions at the known time points (neighboringTimePts).
+    Jama.Matrix B_matrix = new Jama.Matrix(neighboringValues, dim);
+
+    // Solve A_matrix * F = B_matrix to obtain F, which is the transpose of [ f(t)	f'(t)	f''(t)	f'''(t) ]
+    Jama.Matrix solutionMatrix = A_matrix.solve(B_matrix);
+
+    // The required interpolated value at 'reqdTimePt' is the first value in solutionMatrix (F)
+    double reqdValue = solutionMatrix.get(0, 0);
+
+    return reqdValue;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (12/28/2004 12:21:16 PM)
+ * @return int
+ * @param n int
+ */
+private static int factorial(int n) {
+    if (n < 0) {
+        throw new RuntimeException("Cannot evaluate factorial of negative number");
+    }
+
+    int factorial = 1;
+    int index = 1;
+    while (index <= n) {
+        factorial *= index;
+        index++;
+    }
+
+    return factorial;
 }
 }

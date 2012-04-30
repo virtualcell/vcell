@@ -17,6 +17,8 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -36,8 +38,8 @@ public class FeatureMapping extends StructureMapping {
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
-	super(featureMapping, argSimulationContext,newGeometry);
+public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimulationContext,Geometry newGeometry, ModelUnitSystem argModelUnitSystem) {
+	super(featureMapping, argSimulationContext,newGeometry, argModelUnitSystem);
 }
 
 
@@ -47,8 +49,8 @@ public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimula
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public FeatureMapping(Feature feature, SimulationContext argSimulationContext) {
-	super(feature, argSimulationContext);
+public FeatureMapping(Feature feature, SimulationContext argSimulationContext, ModelUnitSystem argModelUnitSystem) {
+	super(feature, argSimulationContext, argModelUnitSystem);
 	Membrane outmembrane = null;
 	int depth = 0;
 	Feature f = feature;
@@ -56,11 +58,11 @@ public FeatureMapping(Feature feature, SimulationContext argSimulationContext) {
 		f = outmembrane.getOutsideFeature();
 	}
 	double volume = 50000.0 / Math.pow(10, depth);
-	try {
+	try { 
 		setParameters(new StructureMappingParameter[] {
-				new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(volume), ROLE_Size, VCUnitDefinition.UNIT_um3),
-				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitArea], null, ROLE_VolumePerUnitArea, VCUnitDefinition.UNIT_um),
-				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitVolume], null, ROLE_VolumePerUnitVolume, VCUnitDefinition.UNIT_DIMENSIONLESS),			
+				new StructureMappingParameter(DefaultNames[ROLE_Size], new Expression(volume), ROLE_Size, modelUnitSystem.getVolumeUnit()),
+				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitArea], null, ROLE_VolumePerUnitArea, modelUnitSystem.getLengthUnit()),
+				new StructureMappingParameter(DefaultNames[ROLE_VolumePerUnitVolume], null, ROLE_VolumePerUnitVolume, modelUnitSystem.getInstance_DIMENSIONLESS()),			
 		});
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);

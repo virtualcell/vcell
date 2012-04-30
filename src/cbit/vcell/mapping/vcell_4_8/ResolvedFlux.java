@@ -12,18 +12,21 @@ package cbit.vcell.mapping.vcell_4_8;
 
 import cbit.vcell.model.Species;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
 class ResolvedFlux {
 	private Species species=null;
-	Expression inFlux = new Expression(0.0);
-	Expression outFlux = new Expression(0.0);
+	Expression inFluxExpression = new Expression(0.0);
+	Expression outFluxExpression = new Expression(0.0);
+	private VCUnitDefinition unitDefinition = null;
 /**
  * ResolvedFlux constructor comment.
  */
-ResolvedFlux(Species Aspecies) {
+ResolvedFlux(Species Aspecies, VCUnitDefinition unitDefn) {
 	this.species = Aspecies;
+	this.unitDefinition = unitDefn;
 }
 /**
  * This method was created in VisualAge.
@@ -32,4 +35,9 @@ ResolvedFlux(Species Aspecies) {
 Species getSpecies() {
 	return species;
 }
+
+public VCUnitDefinition getUnitDefinition() {
+	return unitDefinition;
+}
+
 }

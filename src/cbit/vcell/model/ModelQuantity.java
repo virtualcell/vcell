@@ -13,6 +13,7 @@ import org.vcell.util.Compare;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/20/2002 4:16:31 PM)
@@ -168,7 +169,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Creation date: (3/31/2004 12:09:04 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-public abstract cbit.vcell.units.VCUnitDefinition getUnitDefinition();
+public abstract VCUnitDefinition getUnitDefinition();
 
 /**
  * Accessor for the vetoPropertyChange field.

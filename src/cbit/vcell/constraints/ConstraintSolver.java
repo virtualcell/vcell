@@ -9,6 +9,15 @@
  */
 
 package cbit.vcell.constraints;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
+
+import net.sourceforge.interval.ia_math.RealInterval;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.parser.ConstraintSymbolTableEntry;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -17,19 +26,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
-
-import org.vcell.util.BeanUtils;
-/**
- * Insert the type's description here.
- * Creation date: (6/25/01 4:40:26 PM)
- * @author: Jim Schaff
- */
-import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ConstraintSolver implements SymbolTable, java.beans.PropertyChangeListener {
 	private Vector<Expression> expressionList = new java.util.Vector<Expression>();

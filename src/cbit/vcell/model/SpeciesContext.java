@@ -23,7 +23,10 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
@@ -157,14 +160,10 @@ public static String getTerm() {
 }
 
 public VCUnitDefinition getUnitDefinition() {
-	if (structure instanceof Feature){
-		return VCUnitDefinition.UNIT_uM;
-	}else if (structure instanceof Membrane){
-		return VCUnitDefinition.UNIT_molecules_per_um2;
-	}else{
-		System.out.println("SpeciesContext ... don't know what units are for SpeciesContext "+fieldName);
-		return null;
-	}
+	if (model != null) {
+		return model.getUnitSystem().getConcentrationUnit(structure);
+	} 
+	return null;
 }
 
 protected VetoableChangeSupport getVetoPropertyChange() {

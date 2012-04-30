@@ -13,33 +13,34 @@ package org.vcell.pathway.sbpax;
 import java.util.HashMap;
 import java.util.Map;
 
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class UOMEToVCUnitMapper {
 
-	protected static Map<UnitOfMeasurement, VCUnitDefinition> uome2vcell = 
-			new HashMap<UnitOfMeasurement, VCUnitDefinition>();
-	protected static Map<VCUnitDefinition, UnitOfMeasurement> vcell2uome = 
-			new HashMap<VCUnitDefinition, UnitOfMeasurement>();
+	protected static Map<UnitOfMeasurement, String> uome2vcell = 
+			new HashMap<UnitOfMeasurement, String>();
+	protected static Map<String, UnitOfMeasurement> vcell2uome = 
+			new HashMap<String, UnitOfMeasurement>();
 	
-	public static VCUnitDefinition getVCUnit(UnitOfMeasurement uomeUnit) {
+	public static String getVCUnitSymbol(UnitOfMeasurement uomeUnit) {
 		return uome2vcell.get(uomeUnit);
 	}
 	
-	public static UnitOfMeasurement getUOMEUnit(VCUnitDefinition vcellUnit) {
+	public static UnitOfMeasurement getUOMEUnit(String vcellUnit) {
 		return vcell2uome.get(vcellUnit);
 	}
 	
-	public static void put(UnitOfMeasurement uomeUnit, VCUnitDefinition vcellUnit) {
+	public static void put(UnitOfMeasurement uomeUnit, String vcellUnit) {
 		uome2vcell.put(uomeUnit, vcellUnit);
 		vcell2uome.put(vcellUnit, uomeUnit);
 	}
 	
 	static {
-		put(UnitOfMeasurementPool.MICROMOLAR, VCUnitDefinition.UNIT_uM);
-		put(UnitOfMeasurementPool.MOLAR, VCUnitDefinition.UNIT_M);
-		put(UnitOfMeasurementPool.PER_SECOND, VCUnitDefinition.UNIT_per_s);
-		put(UnitOfMeasurementPool.SECOND, VCUnitDefinition.UNIT_s);
+		put(UnitOfMeasurementPool.MICROMOLAR, ModelUnitSystem.UNITSYMBOL_uM);
+		put(UnitOfMeasurementPool.MOLAR, ModelUnitSystem.UNITSYMBOL_M);
+		put(UnitOfMeasurementPool.PER_SECOND, ModelUnitSystem.UNITSYMBOL_per_s);
+		put(UnitOfMeasurementPool.SECOND, ModelUnitSystem.UNITSYMBOL_s);
 	}
 	
 }

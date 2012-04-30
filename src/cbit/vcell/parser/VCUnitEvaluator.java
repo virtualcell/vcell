@@ -10,9 +10,11 @@
 
 package cbit.vcell.parser;
 import ucar.units.RationalNumber;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
+import cbit.vcell.units.VCUnitSystem;
 
 import java.util.ArrayList;
 /**
@@ -23,7 +25,6 @@ import java.util.ArrayList;
  */
 public class VCUnitEvaluator {
 
-	public static VCUnitDefinition defaultLengthUnit = VCUnitDefinition.UNIT_um;
 
 	public static class UnitsHashMap {
 		boolean bDirty = false;
@@ -58,7 +59,14 @@ public class VCUnitEvaluator {
 	}
 
 
-	private static void assignAndVerify(VCUnitDefinition nodeUnit, SimpleNode node, UnitsHashMap unitsHashMap) throws ExpressionException {
+	private VCUnitSystem unitSystem = null;
+
+	public VCUnitEvaluator(VCUnitSystem vcUnitSystem) {
+		super();
+		this.unitSystem = vcUnitSystem;
+	}
+
+	private void assignAndVerify(VCUnitDefinition nodeUnit, SimpleNode node, UnitsHashMap unitsHashMap) throws ExpressionException {
 		
 		if (node == null) {
 			throw new RuntimeException("VCUnitEvaluator.assignAndVerify(): node is null");
@@ -72,7 +80,7 @@ public class VCUnitEvaluator {
 		//
 		if (node instanceof ASTAndNode || node instanceof ASTOrNode || node instanceof ASTNotNode) {
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(i),unitsHashMap);
+				assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(i),unitsHashMap);
 			}
 		}else if (node instanceof ASTRelationalNode){
 			//
@@ -83,8 +91,8 @@ public class VCUnitEvaluator {
 			VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 			VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
 			if (unit0.isTBD() && unit1.isTBD()){
-				assignAndVerify(VCUnitDefinition.UNIT_TBD,child0,unitsHashMap);
-				assignAndVerify(VCUnitDefinition.UNIT_TBD,child1,unitsHashMap);				
+				assignAndVerify(unitSystem.getInstance_TBD(),child0,unitsHashMap);
+				assignAndVerify(unitSystem.getInstance_TBD(),child1,unitsHashMap);				
 				return;
 			} else if (unit0.isTBD()){
 				assignAndVerify(unit1,child0,unitsHashMap);
@@ -142,9 +150,9 @@ public class VCUnitEvaluator {
 				}
 				if (unknownChildCount==0 && constantChildCount==0){
 					// should cancel to dimensionless, but if constant children (numbers...) are used in a product, then can assume appropriate units.
-					if (!accumUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
+					if (!accumUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
 						//accumUnit.show();
-						//accumUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS);
+						//accumUnit.compareEquals(unitSystem.getInstance_DIMENSIONLESS());
 						throw new RuntimeException("expression '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' missing factor of '"+accumUnit.getSymbol()+"'");
 					}
 				}else if (unknownChildCount==1){
@@ -176,9 +184,9 @@ public class VCUnitEvaluator {
 			if (functionName.equalsIgnoreCase("sqrt")) {         //?              
 				assignAndVerify(nodeUnit.raiseTo(new RationalNumber(2)),(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 			}else if (functionName.equalsIgnoreCase("exp")) {         //?              
-				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(0),unitsHashMap);
+				assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 			}else if (functionName.equalsIgnoreCase("pow")) {              							 // later....
-				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(1),unitsHashMap);  // exponent should always be dimensionless
+				assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(1),unitsHashMap);  // exponent should always be dimensionless
 				//
 				// for base, impose the 1/Nth root of nodeUnit if exponent is constant
 				//
@@ -192,7 +200,7 @@ public class VCUnitEvaluator {
 					//
 					// a^b where b not constant, a must be non-dimensional
 					//
-					assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
+					assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
 				}
 			} else if (functionName.equalsIgnoreCase("abs") || functionName.equalsIgnoreCase("min") ||
 					   functionName.equalsIgnoreCase("max")) {
@@ -203,16 +211,16 @@ public class VCUnitEvaluator {
 					assignAndVerify(nodeUnit,(SimpleNode)node.jjtGetChild(i),unitsHashMap);
 				}
 			} else {
-				if (!nodeUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
+				if (!nodeUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
 					throw new RuntimeException("function '"+functionName+"' should be dimensionless, assignAndVerify trying to impose '"+nodeUnit.getSymbol());
 				}
 				//
 				// child should be dimensionless
 				//
-				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(0),unitsHashMap);
+				assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 			}
 		} else if (node instanceof ASTPowerNode) {
-				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(1),unitsHashMap);  // exponent should always be dimensionless
+				assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(1),unitsHashMap);  // exponent should always be dimensionless
 				//
 				// for base, impose the 1/Nth root of nodeUnit if exponent is constant
 				//
@@ -224,7 +232,7 @@ public class VCUnitEvaluator {
 					//
 					// a^b where b not constant, a must be non-dimensional
 					//
-					assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
+					assignAndVerify(unitSystem.getInstance_DIMENSIONLESS(),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
 				}
 		} else if (node instanceof ASTIdNode) {
 			if (!nodeUnit.isTBD()){
@@ -236,17 +244,17 @@ public class VCUnitEvaluator {
 	}
 
 
-	public static VCUnitDefinition computeUnit(VCUnitDefinition units []) throws VCUnitException {
+	public VCUnitDefinition computeUnit(VCUnitDefinition units []) throws VCUnitException {
 
 		return computeUnit(units, false);		
 	}
 
 
-	public static VCUnitDefinition computeUnit(VCUnitDefinition units [], boolean assignTBDs) throws VCUnitException {
+	public VCUnitDefinition computeUnit(VCUnitDefinition units [], boolean assignTBDs) throws VCUnitException {
 	
 		if (units == null || units.length == 0)
 			return null;
-		VCUnitDefinition unit = VCUnitDefinition.UNIT_TBD;
+		VCUnitDefinition unit = unitSystem.getInstance_TBD();
 		boolean first = true;
 		for (int i = 0; i < units.length; i++) {
 			if (units[i].isTBD()) {
@@ -275,7 +283,7 @@ public class VCUnitEvaluator {
 	}
 
 
-	public static VCUnitDefinition getUnitDefinition(Expression exp) throws ExpressionException, VCUnitException {
+	public VCUnitDefinition getUnitDefinition(Expression exp) throws ExpressionException, VCUnitException {
 		UnitsHashMap unitsHashMap = new UnitsHashMap();
 		String symbols[] = exp.getSymbols();
 		for (int i = 0;symbols!=null && i < symbols.length; i++){
@@ -286,7 +294,7 @@ public class VCUnitEvaluator {
 	}
 
 
-	private static VCUnitDefinition getUnitDefinition(SimpleNode node, UnitsHashMap unitsHashMap) throws ExpressionException, VCUnitException {
+	private VCUnitDefinition getUnitDefinition(SimpleNode node, UnitsHashMap unitsHashMap) throws ExpressionException, VCUnitException {
 		
 		VCUnitDefinition unit = null;                                //temp variable
 
@@ -297,18 +305,18 @@ public class VCUnitEvaluator {
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 				VCUnitDefinition childUnit = getUnitDefinition(child,unitsHashMap);
-				if (!childUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
+				if (!childUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
 					throw new VCUnitException("argument to boolean expression '"+child.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' must be dimensionless");
 				}
 			}
-			return VCUnitDefinition.UNIT_DIMENSIONLESS;
+			return unitSystem.getInstance_DIMENSIONLESS();
 		} else if (node instanceof ASTRelationalNode) {
 			ArrayList<VCUnitDefinition> units = new ArrayList<VCUnitDefinition>();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				units.add(getUnitDefinition((SimpleNode)node.jjtGetChild(i),unitsHashMap));
 			}
 			computeUnit((VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true); // looking for imcompatabilities
-			return VCUnitDefinition.UNIT_DIMENSIONLESS;
+			return unitSystem.getInstance_DIMENSIONLESS();
 		} else if (node instanceof ASTAddNode || node instanceof ASTMinusTermNode) {
 			ArrayList<VCUnitDefinition> units = new ArrayList<VCUnitDefinition>();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
@@ -345,10 +353,11 @@ public class VCUnitEvaluator {
 			unit = getUnitDefinition((SimpleNode)node.jjtGetChild(1),unitsHashMap);
 			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit);
 		} else if (node instanceof ASTLaplacianNode) {
-			unit = defaultLengthUnit;
+			// TODO: reevaluate
+			unit = unitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_um);
 			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit).divideBy(unit);
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless. 
-			return VCUnitDefinition.UNIT_TBD;
+			return unitSystem.getInstance_TBD();
 		} else if (node instanceof ASTFuncNode) {   
 			String functionName = ((ASTFuncNode)node).getName();
 			if (functionName.equalsIgnoreCase("pow")) {       
@@ -356,10 +365,10 @@ public class VCUnitEvaluator {
 				SimpleNode child1 =  (SimpleNode)node.jjtGetChild(1);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 				VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
-				if (!unit1.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit1.compareEqual(VCUnitDefinition.UNIT_TBD)){
+				if (!unit1.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.compareEqual(unitSystem.getInstance_TBD())){
 					throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
-				if (unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) || unit0.isTBD()){
+				if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
 					return unit0;
 				}
 				try {
@@ -367,19 +376,19 @@ public class VCUnitEvaluator {
 					RationalNumber rn = RationalNumber.getApproximateFraction(d);
 					return unit0.raiseTo(rn);
 				}catch(ExpressionException e){
-					return VCUnitDefinition.UNIT_TBD;  // ????? don't know the unit now
+					return unitSystem.getInstance_TBD();  // ????? don't know the unit now
 				}
 			}else if (functionName.equalsIgnoreCase("exp")) {       
 				SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
-				if (!unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit0.isTBD()){
+				if (!unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit0.isTBD()){
 					throw new VCUnitException("exponent of exp() '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
-				return VCUnitDefinition.UNIT_DIMENSIONLESS;
+				return unitSystem.getInstance_DIMENSIONLESS();
 			}else if (functionName.equalsIgnoreCase("sqrt")) {       
 				SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
-				if (unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) || unit0.isTBD()){
+				if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
 					return unit0;
 				}
 				RationalNumber rn = new RationalNumber(1,2);
@@ -395,20 +404,20 @@ public class VCUnitEvaluator {
 						return stfe.getUnitDefinition();
 					}
 				}
-				return VCUnitDefinition.UNIT_TBD;
+				return unitSystem.getInstance_TBD();
 			}else{
-				return VCUnitDefinition.UNIT_DIMENSIONLESS;
+				return unitSystem.getInstance_DIMENSIONLESS();
 			}
 		} else if (node instanceof ASTPowerNode) {
 			SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 			SimpleNode child1 =  (SimpleNode)node.jjtGetChild(1);
 			VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 			VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
-			if (!unit1.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit1.compareEqual(VCUnitDefinition.UNIT_TBD)){
+			if (!unit1.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.compareEqual(unitSystem.getInstance_TBD())){
 				throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 			}
-			if (unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
-				return VCUnitDefinition.UNIT_DIMENSIONLESS;
+			if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
+				return unitSystem.getInstance_DIMENSIONLESS();
 			}
 			boolean bConstantExponent = false;
 			double exponentValue = 1;
@@ -420,13 +429,13 @@ public class VCUnitEvaluator {
 			}
 			if (bConstantExponent){ //
 				if (unit0.isTBD()){
-					return VCUnitDefinition.UNIT_TBD;
+					return unitSystem.getInstance_TBD();
 				}else{
 					RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
 					return unit0.raiseTo(rn);
 				}
 			}else{
-				return VCUnitDefinition.UNIT_TBD;
+				return unitSystem.getInstance_TBD();
 			}
 		} else if (node instanceof ASTIdNode) {
 			SymbolTableEntry ste = ((ASTIdNode)node).symbolTableEntry;
@@ -446,7 +455,7 @@ public class VCUnitEvaluator {
 	}
 
 
-public static VCUnitDefinition[] suggestUnitDefinitions(SymbolTableEntry symbolTableEntries[]) throws ExpressionException, VCUnitException {
+public VCUnitDefinition[] suggestUnitDefinitions(SymbolTableEntry symbolTableEntries[]) throws ExpressionException, VCUnitException {
 	
 	//
 	// initialize to already known units
