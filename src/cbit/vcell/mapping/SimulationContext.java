@@ -1081,7 +1081,11 @@ public OutputFunctionContext getOutputFunctionContext() {
  * This method was created in VisualAge.
  */
 public Model getModel() {
-	return geoContext.getModel();
+	if  (geoContext != null) {
+		return geoContext.getModel();
+	} else {
+		return null;
+	}
 }
 
 
