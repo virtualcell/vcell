@@ -512,6 +512,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	// set the default file filter...
@@ -554,6 +555,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
 				selectedFile = new File(selectedFileName + ".pdf");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") ||(n.endsWith(".txt")))) {
+				selectedFile = new File(selectedFileName + ".smoldynInput");
 			}
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -562,6 +565,47 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				mathModel.getMathDescription().getGeometry().getDimension() != 0) {
 				throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
 			}
+			// Select a spatial stochastic simulation to export 
+			else if(fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription()))
+			{
+				Simulation[] sims = mathModel.getSimulations();
+				String[] simNames = new String[sims.length];
+				for(int i=0; i< sims.length; i++)
+				{
+					simNames[i] = sims[i].getName();
+				}
+				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, simNames, "Please select a simulation to export");
+				if(choice == null)
+				{
+					throw UserCancelException.CANCEL_FILE_SELECTION;
+				}
+				String chosenSimulationName = (String)choice;
+				Simulation chosenSimulation = mathModel.getSimulation(chosenSimulationName);
+				if(chosenSimulation != null)
+				{
+					hashTable.put("selectedSimulation", chosenSimulation);
+					
+					
+					File tempOutputFile = new File(selectedFileName);
+		    		if(!FileFilters.FILE_FILTER_SMOLDYN_INPUT.accept(tempOutputFile)){
+    					if(tempOutputFile.getName().indexOf(".") == -1){
+    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName() + ".smoldynInput");
+    					}else{
+    						throw new Exception("Smoldyn input file has to be a text document with extension of either 'smoldynInput' or 'txt'");
+    					}
+    				}
+		    		if(tempOutputFile.exists())
+		    		{
+		    			String overwriteChoice = PopupGenerator.showWarningDialog(topLevelWindowManager, topLevelWindowManager.getUserPreferences(), UserMessage.warn_OverwriteFile, selectedFileName);
+		    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
+		    				throw UserCancelException.CANCEL_FILE_SELECTION;
+		    			}
+		    		}
+		    		selectedFile = tempOutputFile;
+				}
+				
+			}
+			
 			resetPreferredFilePath(selectedFile, userPreferences);
 
 			return selectedFile;

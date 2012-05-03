@@ -753,4 +753,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 		return description;		
 	}
+
+
+	public Simulation getSimulation(String chosenSimulationName) {
+		for(Simulation sim: getSimulations())
+		{
+			if(sim.getName().equals(chosenSimulationName))
+			{
+				return sim;
+			}
+		}
+		return null;
+	}
 }
