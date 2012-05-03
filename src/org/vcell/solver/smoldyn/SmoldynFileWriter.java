@@ -295,7 +295,8 @@ public class SmoldynFileWriter extends SolverFileWriter
 		Origin,
 		Size,
 		VolumeSamples,
-		highResVolumeSamplesFile,
+		start_highResVolumeSamples,
+		end_highResVolumeSamples,
 		CompartmentHighResPixelMap,
 	}
 	
@@ -419,36 +420,32 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 }
 
 private void writeHighResVolumeSamples() {	
-	PrintWriter pw = null;
 	try {
-		File hrvsFile = new File(baseFileName + SimDataConstants.SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION);
-		printWriter.println("# "+VCellSmoldynKeyword.highResVolumeSamplesFile);
-		printWriter.println(VCellSmoldynKeyword.highResVolumeSamplesFile + " " + hrvsFile);
-		printWriter.println();
+		printWriter.println("# HighResVolumeSamples");
+		printWriter.println(VCellSmoldynKeyword.start_highResVolumeSamples);
 		
-		pw = new PrintWriter(hrvsFile);
 		Origin origin = resampledGeometry.getOrigin();
 		Extent extent = resampledGeometry.getExtent();
 		int numSamples = 10000000;
 		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
 		VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
 			
-		pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
-		pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
-		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
+		printWriter.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
+		printWriter.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
+		printWriter.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
 		VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
 		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
 			for(VCPixelClass vcPixelClass : pixelclasses )
 			{
 				if(vcPixelClass.getPixel() == subVolume.getHandle())
 				{
-					pw.println(subVolume.getName() + " " + vcPixelClass.getPixel());
+					printWriter.println(subVolume.getName() + " " + vcPixelClass.getPixel());
 					break;
 				}
 			}
 		}
 		
-		pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
+		printWriter.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
 		
 		if (vcImage != null) {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -457,16 +454,19 @@ private void writeHighResVolumeSamples() {
 			dos.write(pixels, 0, pixels.length);
 			dos.close();
 			byte[] compressedPixels = bos.toByteArray();
-			pw.println(Hex.toString(compressedPixels));
+			String compressedStr = Hex.toString(compressedPixels);
+			int strchar=250;
+			int length = compressedStr.length();
+			for (int i = 0; i < Math.ceil(length * 1.0 / strchar); ++ i) {
+				printWriter.println(compressedStr.substring(i * strchar, Math.min(length, (i+1) * strchar)));
+			}
 		}		
+		printWriter.println(VCellSmoldynKeyword.end_highResVolumeSamples);
+		printWriter.println();
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
-	} finally {
-		if (pw != null) {
-			pw.close();
-		}
-	}
+	} 
 }
 
 private void writeRandomSeed() {
