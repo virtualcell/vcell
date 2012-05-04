@@ -12,7 +12,6 @@ package cbit.gui.graph;
 
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
@@ -149,12 +148,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		}
 
 		Container dialogOwner = BeanUtils.findTypeParentOfComponent(
-				graphPaneSeekingOwner, JDesktopPane.class);
-		if (dialogOwner != null) {
-			return dialogOwner;
-		}
-
-		dialogOwner = BeanUtils.findTypeParentOfComponent(
 				graphPaneSeekingOwner, JFrame.class);
 		if (dialogOwner != null) {
 			return ((JFrame) dialogOwner).getContentPane();
@@ -166,14 +159,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 
 	public GraphPane getGraphPane() {
 		return this.graphPane;
-	}
-
-	protected JDesktopPaneEnhanced getJDesktopPane() {
-		if (getGraphPane() == null) {
-			return null;
-		}
-		return (JDesktopPaneEnhanced) BeanUtils.findTypeParentOfComponent(
-				getGraphPane(), JDesktopPaneEnhanced.class);
 	}
 
 	public final static Mode getMode(String actionCommand) {

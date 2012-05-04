@@ -18,15 +18,20 @@ import java.awt.event.ComponentListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import org.vcell.util.DataAccessException;
 
 import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.DisplayAdapterServicePanel;
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataSelectRetrieve;
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.solvers.MembraneElement;
@@ -52,7 +57,6 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 		public int getMembraneIndex(int surfaceIndex,int polygonIndex);
 		public void plotTimeSeriesData(int[][] indices,boolean bAllTimes,boolean bTimeStats,boolean bSpaceStats) throws DataAccessException;
 		public org.vcell.util.Coordinate getCentroid(int surfaceIndex,int polygonIndex);
-		public void showComponentInFrame(java.awt.Component comp,String title);
 		public java.awt.Color getROIHighlightColor();
 		public void makeMovie(SurfaceCanvas surfaceCanvas);
 	}
@@ -191,7 +195,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 		}	
 	}
 	//
-	private cbit.vcell.client.data.DataSelectRetrieve dsr = new cbit.vcell.client.data.DataSelectRetrieve();
+	private final cbit.vcell.client.data.DataSelectRetrieve dsr = new cbit.vcell.client.data.DataSelectRetrieve();
 	//
 	javax.swing.Timer mouseOverTimer = new javax.swing.Timer(500,
 		new java.awt.event.ActionListener() {
@@ -1058,16 +1062,16 @@ private void initialize() {
  */
 private void jButtonDSR_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
-	//if(dsrJDialog == null){
-		dsr.setModeInstruction("(CNTRL-CLICK on surface to add/remove from selection)");
-		//dsrJDialog = new javax.swing.JDialog((java.awt.Frame)cbit.util.BeanUtils.findTypeParentOfComponent(this,java.awt.Frame.class));
-		//dsrJDialog.getContentPane().add(dsr);
-		//dsrJDialog.pack();
-		//cbit.util.BeanUtils.centerOnComponent(dsrJDialog,this);
-	//}
-	//dsrJDialog.show();
+	dsr.setModeInstruction("(CTRL-CLICK on surface to add/remove from selection)");
 
-	getSurfaceCollectionDataInfoProvider().showComponentInFrame(dsr,"Define Region Of Interest");
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(DataValueSurfaceViewer.this);
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(dsr);
+	if (childWindow==null){
+		childWindow = childWindowManager.addChildWindow(dsr,dsr,"Define Region Of Interest");
+		childWindow.pack();
+		childWindow.setIsCenteredOnParent();
+	}
+	childWindow.show();	
 }
 
 
@@ -1693,3 +1697,4 @@ private void updatePickInfoDisplay() {
 		displayAdapterServicePanel.setDisplayAdapterService(displayAdapterService);
 	}
 }
+

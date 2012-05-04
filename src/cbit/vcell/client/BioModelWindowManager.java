@@ -10,33 +10,24 @@
 
 package cbit.vcell.client;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Vector;
 
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.JTaskBar;
-import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.importer.DataImporter;
 import org.vcell.util.importer.PathwayImportPanel;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 import org.vcell.util.importer.PathwayImporter;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
@@ -60,13 +51,11 @@ import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
  * @author: Ion Moraru
  */
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {	
+	private static final String MIRIAM_WINDOW = "MIRIAM_WINDOW";
 	private BioModel bioModel = null;
 	private Hashtable<SimulationContext, ApplicationComponents> applicationsHash = new Hashtable<SimulationContext, ApplicationComponents>();
-	private JDesktopPaneEnhanced jDesktopPane = null;
 	private BioModelEditor bioModelEditor = null;
-	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
-	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
 	private PropertyChangeListener miriamPropertyChangeListener =
 		new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -88,17 +77,14 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
  * @param documentWindow cbit.vcell.client.desktop.DocumentWindow
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel, int newlyCreatedDesktops) {
-	super(panel, requestManager, bioModel, newlyCreatedDesktops);
-	setJDesktopPane(new JDesktopPaneEnhanced());
+public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel) {
+	super(panel, requestManager, bioModel);
 	getJPanel().setLayout(new BorderLayout());
-	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
-		taskBar = new JTaskBar(getJDesktopPane());
-	}
 	setBioModel(bioModel);
 	setBioModelEditor(new BioModelEditor());
-	createBioModelFrame();
+	getBioModelEditor().setBioModelWindowManager(this);
+	getBioModelEditor().setBioModel(getBioModel());
+	getJPanel().add(getBioModelEditor(), BorderLayout.CENTER);
 	pathwayImportPanel = new PathwayImportPanel(pathwayImporter, getBioModelEditor().getSelectionManager());	
 }
 	/**
@@ -109,36 +95,9 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	final Object source = e.getSource();
 	
-//	if(source == this && actionCommand.equals(GuiConstants.ACTIONCMD_EDIT_OCCURRED_GEOMETRY)){
-//		ApplicationComponents applicationComponents = findAppComponentsForSimContextGeomViewer((ApplicationEditor)source);
-//		if(applicationComponents != null){
-//			showSurfaceViewerFrame((SimulationContext)applicationComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner(), false);
-//		}
-//	}
-//
 	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		
-//		AsynchClientTask oldEditorTask = new AsynchClientTask("creating new geometry",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-//			@Override
-//			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				Geometry newGeom = (Geometry)hashTable.get("doc");
-//				if(newGeom == null){
-//					throw new IllegalArgumentException("No template geometry found during create.");
-//				}
-//				Boolean bShowOldGeomEditor = (Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR);
-//				if(bShowOldGeomEditor){
-//					GeometryViewer localGeometryViewer = new GeometryViewer(false);
-//					localGeometryViewer.setGeometry(newGeom);
-//					localGeometryViewer.setPreferredSize(new Dimension(700,500));
-//					int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
-//					localGeometryViewer.setGeometry(null);//force cleanup so localGeometryViewer can be garbage collected
-//					if(result != JOptionPane.OK_OPTION){
-//						throw UserCancelException.CANCEL_GENERIC;
-//					}
-//				}
-//			}
-//		};
 		AsynchClientTask precomputeAllTask = new AsynchClientTask("precomputeAll geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -181,49 +140,30 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		SimulationContext sc = ((MathematicsPanel)source).getSimulationContext();
 		getRequestManager().createMathModelFromApplication(this, "Untitled", sc);
 	}
-////	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY)) {
-////		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
-////		showGeometryViewerFrame(sc);
-////	}
+
 	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		getRequestManager().changeGeometry(this,(SimulationContext)geometryViewer.getGeometryOwner());
 	}
 }
 
-
-//private ApplicationComponents findAppComponentsForSimContextGeomViewer(GeometrySummaryViewer geometrySummaryViewer){
-//		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
-//		while (appComponentsEnum.hasMoreElements()) {
-//			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
-//			ApplicationEditor appEditor = appComponents.getAppEditor();
-//			if (appComponents.get == applicationEditor) {
-//				SimulationOwner simOwner  = (SimulationOwner)appComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner();
-//				if (simOwner instanceof SimulationContext) {
-//					return appComponents;
-//				} 
-//			}
-//		}
-//		Geometry geom = applicationEditor.getSimulationWorkspace().getSimulationOwner().getGeometry();
-//		DialogUtils.showErrorDialog(getComponent(), "Geometry "+(geom!= null?geom.getName():null)+" key="+(geom != null?geom.getVersion().getVersionKey():null)+" not found in application hash");
-//
-//		return null;
-//}
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 7:32:07 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(SimulationWindow simWindow) {
-//	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
-//			// create components
-//		createAppComponents((SimulationContext) simWindow.getSimOwner());
-//	}
-	
+public void addResultsFrame(SimulationWindow simWindow) {	
 	ApplicationComponents appComponents = getApplicationsHash().get(simWindow.getSimOwner());
 	appComponents.addDataViewer(simWindow);
-	simWindow.getFrame().setLocation(10,10);
-	showFrame(simWindow.getFrame());
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
+	if (childWindow==null){
+		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, "simulation results for "+simWindow.getSimulation().getName());
+		simWindow.setChildWindow(childWindow);
+		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
+	}
+	childWindow.show();
 }
 
 
@@ -293,7 +233,9 @@ private void updateSimulationDataViewers(ApplicationComponents appComponents, Si
 		if (hash.containsKey(simWindows[i].getVcSimulationIdentifier())) {
 			simWindows[i].resetSimulation((Simulation)hash.get(simWindows[i].getVcSimulationIdentifier()));
 		} else {
-			close(simWindows[i].getFrame(), getJDesktopPane());
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
+			childWindowManager.closeChildWindow(childWindow);
 		}
 	}
 }
@@ -303,35 +245,12 @@ private void updateSimulationDataViewers(ApplicationComponents appComponents, Si
  * create components
  */
 private void createAppComponents(SimulationContext simContext) {
-	ApplicationComponents appComponents = new ApplicationComponents(simContext, this, getJDesktopPane());
+	ApplicationComponents appComponents = new ApplicationComponents(simContext, this);
 	getApplicationsHash().put(simContext, appComponents);
 	// register for events
 	simContext.addPropertyChangeListener(this);
 //	appComponents.getAppEditor().addActionListener(this);
 //	appComponents.getGeometrySummaryViewer().addActionListener(this);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void createBioModelFrame() {	
-	getBioModelEditor().setBioModelWindowManager(this);
-	getBioModelEditor().setBioModel(getBioModel());
-	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
-	editorFrame.setFrameIcon(VCellIcons.documentIcon);	
-	editorFrame.add(bioModelEditor);
-	getJDesktopPane().add(editorFrame);
-	editorFrame.setMinimumSize(new Dimension(400, 300));
-	editorFrame.setSize(850, 680);
-	editorFrame.setLocation(0,0);
-	editorFrame.show();
-	try {
-		editorFrame.setMaximum(true);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace();
-	}
 }
 
 
@@ -372,16 +291,6 @@ public ApplicationComponents getApplicationComponents(SimulationContext simulati
  */
 private BioModelEditor getBioModelEditor() {
 	return bioModelEditor;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 1:49:01 PM)
- * @return javax.swing.JDesktopPane
- */
-protected JDesktopPaneEnhanced getJDesktopPane() {
-	return jDesktopPane;
 }
 
 
@@ -432,19 +341,6 @@ public boolean isRecyclable() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/13/2004 11:17:41 PM)
- */
-//public void preloadApps() {
-////System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
-//	SimulationContext[] scs = getBioModel().getSimulationContexts();
-//	for (int i = 0; i < scs.length; i++){
-//		createAppComponents(scs[i]);
-//	}
-////System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
-//}
-
 
 	/**
 	 * This method gets called when a bound property is changed.
@@ -476,7 +372,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 private void remove(ApplicationComponents appComponents, SimulationContext sc) {
 	sc.removePropertyChangeListener(this);
 	getApplicationsHash().remove(sc);
-	close(appComponents.getDataViewerFrames(), getJDesktopPane());
+	for (ChildWindow childWindow : appComponents.getDataViewerFrames(getJPanel())){
+		childWindow.close();
+	}
 }
 
 
@@ -490,10 +388,7 @@ public void resetDocument(VCDocument newDocument) {
 	setDocumentID(getBioModel());
 	updateApplicationHash(true);
 	getBioModelEditor().setBioModel(getBioModel());
-	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
-	while (en.hasMoreElements()) {
-		close((JInternalFrame)en.nextElement(), getJDesktopPane());
-	}
+	ChildWindowManager.findChildWindowManager(getJPanel()).closeAllChildWindows();
 	getRequestManager().updateStatusNow();
 }
 
@@ -526,101 +421,7 @@ private void setBioModelEditor(BioModelEditor newBioModelEditor) {
 	bioModelEditor = newBioModelEditor;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 1:49:01 PM)
- * @param newJDesktopPane javax.swing.JDesktopPane
- */
-private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
-	jDesktopPane = newJDesktopPane;
-}
-
-//public void showApplicationFrame(final SimulationContext simContext) {
-//	AsynchClientTask task1 = new AsynchClientTask("preload the application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//		
-//		@Override
-//		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			if (!getApplicationsHash().containsKey(simContext)) {
-//				simContext.getGeometry().precomputeAll();
-//				Simulation[] simulations = simContext.getSimulations();
-//				if (simulations != null) {
-//					// preload simulation status
-//					ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
-//					for (int i = 0; i < simulations.length; i++){
-//						if (simulations[i].getSimulationInfo()!=null){
-//							simIDs.add(simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
-//						}
-//					}
-//					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[simIDs.size()]));
-//				}
-//			}
-//		}
-//	};
-//		
-//	AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-//		
-//		@Override
-//		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			if (! getApplicationsHash().containsKey(simContext)) {
-//				// create components
-//				createAppComponents(simContext);
-//			}
-//		}
-//	};
-//	ClientTaskDispatcher.dispatch(getJDesktopPane(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });		
-//	
-//}
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-private void showDataViewerPlotsFrame(final javax.swing.JInternalFrame plotFrame) {
-	dataViewerPlotsFramesVector.add(plotFrame);
-	showFrame(plotFrame);
-	plotFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			dataViewerPlotsFramesVector.remove(plotFrame);
-		}
-	});
-}
 	
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
-	for (int i = 0; i < plotFrames.length; i++){
-		showDataViewerPlotsFrame(plotFrames[i]);
-	}
-}
-	
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:40:41 PM)
- */
-public void showFrame(javax.swing.JInternalFrame frame) {
-	showFrame(frame,getJDesktopPane());
-}
-
-
-///**
-// * Insert the method's description here.
-// * Creation date: (5/5/2004 9:44:15 PM)
-// */
-//private void showGeometryViewerFrame(SimulationContext simContext) {
-//	JInternalFrameEnhanced editorFrame = null;
-//	if (getApplicationsHash().containsKey(simContext)) {
-//		editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
-//		setDefaultTitle(editorFrame);
-//		showFrame(editorFrame);
-//	}
-//	editorFrame.requestFocus();
-//}
-
 /**
  * Insert the method's description here.
  * Creation date: (6/9/2004 3:58:21 PM)
@@ -693,24 +494,12 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 
 
 private void closeMIRIAMWindow(){
-	try{
-		if(mIRIAMAnnotationEditorFrame != null && getJDesktopPane() != null){
-			close(mIRIAMAnnotationEditorFrame,getJDesktopPane());
-		}
-	}catch(Exception e){
-		//ignore
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(MIRIAM_WINDOW);
+	if (childWindow!=null){
+		childWindow.close();
 	}
 }
-
-//private void closeSybilWindow(){
-//	try{
-//		if(sybilFrame != null && getJDesktopPane() != null){
-//			close(sybilFrame,getJDesktopPane());
-//		}
-//	}catch(Exception e){
-//		//ignore
-//	}
-//}
 
 protected void refreshMIRIAMDependencies(BioModel oldBioModel,BioModel newBioModel){
 	try {
@@ -799,42 +588,20 @@ protected void refreshMIRIAMDependencies(BioModel oldBioModel,BioModel newBioMod
 
 public void showMIRIAMWindow() {
 
-	if(mIRIAMAnnotationEditorFrame == null){
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(MIRIAM_WINDOW);
+	if (childWindow==null){
 		MIRIAMAnnotationViewer miriamAnnotationViewer = new MIRIAMAnnotationViewer();
 		miriamAnnotationViewer.setBiomodel(bioModel);
-		mIRIAMAnnotationEditorFrame = new JInternalFrame();
-		mIRIAMAnnotationEditorFrame.setTitle("View/Add/Delete/Edit MIRIAM Annotation");
-		mIRIAMAnnotationEditorFrame.addInternalFrameListener (
-				new InternalFrameListener(){
-					public void internalFrameActivated(InternalFrameEvent e) {
-					}
-					public void internalFrameClosed(InternalFrameEvent e) {
-					}
-					public void internalFrameClosing(InternalFrameEvent e) {
-						close(mIRIAMAnnotationEditorFrame, getJDesktopPane());
-					}
-					public void internalFrameDeactivated(InternalFrameEvent e) {
-					}
-					public void internalFrameDeiconified(InternalFrameEvent e) {
-					}
-					public void internalFrameIconified(InternalFrameEvent e) {
-					}
-					public void internalFrameOpened(InternalFrameEvent e) {
-					}
-				});
-
-		mIRIAMAnnotationEditorFrame.getContentPane().add(miriamAnnotationViewer);
-		mIRIAMAnnotationEditorFrame.setSize(600,400);
-		mIRIAMAnnotationEditorFrame.setClosable(true);
-		mIRIAMAnnotationEditorFrame.setResizable(true);
+		childWindow = childWindowManager.addChildWindow(miriamAnnotationViewer, MIRIAM_WINDOW, "View/Add/Delete/Edit MIRIAM Annotation");
+		childWindow.setSize(600,400);
+		childWindow.setResizable(true);
 	}
 
-	if(!mIRIAMAnnotationEditorFrame.isShowing()){
-		((MIRIAMAnnotationViewer)mIRIAMAnnotationEditorFrame.getContentPane().getComponent(0)).setBiomodel(bioModel);
+	if(!childWindow.isShowing()){
+		((MIRIAMAnnotationViewer)childWindow.getContentPane()).setBiomodel(bioModel);
 	}
-
-//	showDataViewerPlotsFrame(mIRIAMAnnotationEditorFrame);
-	showFrame(mIRIAMAnnotationEditorFrame);
+	childWindow.show();
 }
 
 
@@ -855,3 +622,4 @@ public void importPathway(PathwayImportOption pathwayImportOption) {
 }
 
 }
+

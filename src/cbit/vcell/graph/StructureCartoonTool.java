@@ -638,7 +638,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 					destinations[i] = validDestinations[i].getName();
 				}
 				String featureSelection = (String) DialogUtils.showListDialog(
-						getJDesktopPane(), destinations,
+						this.getDialogOwner(getGraphPane()),  destinations,
 						"Select destination for Moving Feature '"
 						+ featureShape.getFeature().getName() + "'");
 
@@ -671,7 +671,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 						}
 					}
 					if (message.length() > 0) {
-						String result = DialogUtils.showWarningDialog(getJDesktopPane(),
+						String result = DialogUtils.showWarningDialog(this.getDialogOwner(getGraphPane()),
 								"The following species must be copied to destination '"
 								+ finalDestination.getName()
 								+ "'\n"
@@ -723,7 +723,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 					}
 					if (message.length() > 0) {
 						String result = DialogUtils.showWarningDialog(
-								getJDesktopPane(),
+								this.getDialogOwner(getGraphPane()),
 								"The following Species from Feature '"
 								+ parentOfMoving.getName()
 								+ "' that were used by\n"

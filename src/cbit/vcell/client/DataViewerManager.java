@@ -42,14 +42,6 @@ public RequestManager getRequestManager();
  */
 public void removeDataListener(DataListener newListener);
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public abstract void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames);
-	
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)

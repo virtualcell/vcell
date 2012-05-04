@@ -34,6 +34,8 @@ public class ResourceUtil {
 	private final static boolean b64bit = system_osarch.endsWith("64");
 	public final static boolean bMacPpc = bMac && system_osarch.contains("ppc");
 	
+	public static enum JavaVersion  {FIVE,SIX,SEVEN};
+	
 	// temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	private static String lastUserLocalDir = null;
 	
@@ -101,6 +103,23 @@ public class ResourceUtil {
 	
 	private static List<String> libList = null;
 
+	public static JavaVersion getJavaVersion() {
+		if ((System.getProperty("java.version")).contains("1.5")) {
+			return JavaVersion.FIVE;
+		} 
+		else if ((System.getProperty("java.version")).contains("1.6")) {
+			return JavaVersion.SIX;
+		} 
+		else if ((System.getProperty("java.version")).contains("1.7")) {
+			return JavaVersion.SEVEN;
+		} 
+		else {
+			System.err.println("Whoa... VCell only runs on JVM versions 1.5, 1.6 or 1.7 and can't determine that its running on one of these.  Assuming 1.5 as a default for safety");
+			return JavaVersion.FIVE;
+			}
+			
+	}
+	
 	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	public static String getLastUserLocalDir() {
 		return lastUserLocalDir;

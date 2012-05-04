@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -39,6 +40,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -65,8 +67,6 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.EditorScrollTable;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
@@ -75,9 +75,13 @@ import cbit.gui.ReactionEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -157,8 +161,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	
 	private CartoonEditorPanelFixed cartoonEditorPanel = null;
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
-	private JDesktopPaneEnhanced desktopPane = null;
-	private JInternalFrameEnhanced diagramViewInternalFrame = null;	
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
@@ -723,51 +725,53 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void showDiagramView() {
 		if (tabbedPane.getSelectedIndex() == ModelPanelTabID.reaction_diagram.ordinal()) {
 			if (tabbedPane.getComponentAt(ModelPanelTabID.reaction_diagram.ordinal()) != modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent()) {
-				try {
-					if (diagramViewInternalFrame != null) {
-						diagramViewInternalFrame.setSelected(true);
+				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+				if (childWindowManager!=null){
+					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(this.reactionCartoonEditorPanel);
+					if (childWindow!=null){
+						childWindow.setIsCenteredOnParent();
+						childWindow.show();
 					}
-				} catch (PropertyVetoException e) {
-					e.printStackTrace();
 				}
 			}
 		}
 	}
 	
 	private void floatDiagramView(boolean bFloating) {
-		if (desktopPane == null) {
-			desktopPane = (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(this);
-		}
-		if (desktopPane == null) {
-			return;
-		}
+	
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		
 		if (bFloating) {
-			diagramViewInternalFrame = new JInternalFrameEnhanced("Reaction Diagram View");
-			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), new JPanel());
+			//
+			// insert dummy panel into tabbed pane, real one is floating now.
+			//
+			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), new JPanel());  
+			
+			//
+			// create new panel to add to client window (and hold the reactionCartoonEditorPanel)
+			//
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
-			diagramViewInternalFrame.setResizable(true);
-			diagramViewInternalFrame.setClosable(true);
-			diagramViewInternalFrame.addInternalFrameListener(new InternalFrameAdapter() {
-
-				@Override
-				public void internalFrameClosing(InternalFrameEvent e) {					
+			ChildWindow childWindow = childWindowManager.addChildWindow(panel, reactionCartoonEditorPanel, "model diagram");
+			childWindow.setSize(500, 400);
+			childWindow.setIsCenteredOnParent();
+			childWindow.addChildWindowListener(new ChildWindowListener() {				
+				public void closing(ChildWindow childWindow) {
 					reactionCartoonEditorPanel.setFloatingRequested(false);
-				}
-				
+				}				
+				public void closed(ChildWindow childWindow) {}
 			});
-			diagramViewInternalFrame.setMaximizable(true);
-			diagramViewInternalFrame.setIconifiable(true);
-			diagramViewInternalFrame.add(panel);
-			diagramViewInternalFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
-			diagramViewInternalFrame.pack();
-			diagramViewInternalFrame.setLocation(20,20);
-			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
+
+			childWindow.show();
+//			diagramViewInternalFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 		} else {
-			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);
+			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(reactionCartoonEditorPanel);
+			if (childWindow!=null){
+				childWindowManager.closeChildWindow(childWindow);
+			}
 			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent());
 			tabbedPane.setSelectedIndex(ModelPanelTabID.reaction_diagram.ordinal());
 		}

@@ -43,7 +43,8 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.desktop.LoginManager;
+import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 
@@ -100,15 +101,15 @@ public class UserRegistrationOP implements Serializable{
 
 	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, 
 			final ClientServerInfo currentClientServerInfo, final String userAction, final ClientServerManager clientServerManager) throws Exception{
-		if(!(userAction.equals(LoginDialog.USERACTION_REGISTER) ||
-				userAction.equals(LoginDialog.USERACTION_EDITINFO) ||
-				userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD))){
+		if(!(userAction.equals(LoginManager.USERACTION_REGISTER) ||
+				userAction.equals(LoginManager.USERACTION_EDITINFO) ||
+				userAction.equals(LoginManager.USERACTION_LOSTPASSWORD))){
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Only New registration, Edit UserInfo or Lost Password allowed.");
 		}
-		if((userAction.equals(LoginDialog.USERACTION_REGISTER) || userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD)) && clientServerManager != null){
+		if((userAction.equals(LoginManager.USERACTION_REGISTER) || userAction.equals(LoginManager.USERACTION_LOSTPASSWORD)) && clientServerManager != null){
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Register New User Info requires clientServerManager null.");			
 		}
-		if(userAction.equals(LoginDialog.USERACTION_EDITINFO) && clientServerManager == null){
+		if(userAction.equals(LoginManager.USERACTION_EDITINFO) && clientServerManager == null){
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 		}
 
@@ -198,7 +199,7 @@ public class UserRegistrationOP implements Serializable{
 				registrationProvider = new RegistrationProvider(vcellBootstrap);
 			}
 		}
-		if(userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD)){
+		if(userAction.equals(LoginManager.USERACTION_LOSTPASSWORD)){
 			if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
 				throw new IllegalArgumentException("Lost Password requires a VCell User Name.");
 			}
@@ -221,7 +222,7 @@ public class UserRegistrationOP implements Serializable{
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
+				if(userAction.equals(LoginManager.USERACTION_EDITINFO)){
 					UserInfo originalUserInfoHolder = finalRegistrationProvider.getUserInfo(clientServerManager.getUser().getID());
 					hashTable.put("originalUserInfoHolder", originalUserInfoHolder);
 				}
@@ -240,12 +241,12 @@ public class UserRegistrationOP implements Serializable{
 					}
 				}
 				UserInfo originalUserInfoHolder = (UserInfo)hashTable.get("originalUserInfoHolder");;
-				if(userAction.equals(LoginDialog.USERACTION_EDITINFO) && originalUserInfoHolder != null) {
+				if(userAction.equals(LoginManager.USERACTION_EDITINFO) && originalUserInfoHolder != null) {
 					registrationPanel.setUserInfo(originalUserInfoHolder,true);					
 				}
 				do {
 					int result = DialogUtils.showComponentOKCancelDialog(currWindowManager.getComponent(), registrationPanel,
-								(userAction.equals(LoginDialog.USERACTION_REGISTER)?"Create New User Registration":"Update Registration Information ("+clientServerManager.getUser().getName()+")"));
+								(userAction.equals(LoginManager.USERACTION_REGISTER)?"Create New User Registration":"Update Registration Information ("+clientServerManager.getUser().getName()+")"));
 					if (result != JOptionPane.OK_OPTION) {
 						throw UserCancelException.CANCEL_GENERIC;
 					}
@@ -267,18 +268,18 @@ public class UserRegistrationOP implements Serializable{
 			}
 		};
 		
-		AsynchClientTask updateDbTask = new AsynchClientTask(userAction.equals(LoginDialog.USERACTION_REGISTER)?"registering new user":"updating user info", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		AsynchClientTask updateDbTask = new AsynchClientTask(userAction.equals(LoginManager.USERACTION_REGISTER)?"registering new user":"updating user info", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				UserInfo newUserInfo = (UserInfo)hashTable.get("newUserInfo");
 				try {					
-					UserInfo registeredUserInfo = finalRegistrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginDialog.USERACTION_EDITINFO)?true:false));
+					UserInfo registeredUserInfo = finalRegistrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginManager.USERACTION_EDITINFO)?true:false));
 					hashTable.put("registeredUserInfo", registeredUserInfo);
 				}catch (Exception e) {
 					e.printStackTrace();
 					throw new Exception("Error " 
-							+ (userAction.equals(LoginDialog.USERACTION_REGISTER)?"registering new user" :"updating user info ") +  " ("+newUserInfo.userid+"), "
+							+ (userAction.equals(LoginManager.USERACTION_REGISTER)?"registering new user" :"updating user info ") +  " ("+newUserInfo.userid+"), "
 							+ e.getMessage());
 				}
 			}			
@@ -290,7 +291,7 @@ public class UserRegistrationOP implements Serializable{
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				UserInfo registeredUserInfo = (UserInfo)hashTable.get("registeredUserInfo");
 				try {					
-					if (userAction.equals(LoginDialog.USERACTION_REGISTER)) {
+					if (userAction.equals(LoginManager.USERACTION_REGISTER)) {
 						try{
 							ClientServerInfo newClientServerInfo = VCellClient.createClientServerInfo(currentClientServerInfo, registeredUserInfo.userid, registeredUserInfo.password);
 							requestManager.connectToServer(currWindowManager, newClientServerInfo);

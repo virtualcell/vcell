@@ -11,25 +11,16 @@
 package cbit.vcell.client;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.beans.PropertyVetoException;
-import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Vector;
 
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.JTaskBar;
-import org.vcell.util.gui.VCellIcons;
 
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -52,12 +43,10 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class MathModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener{
 	private MathModel mathModel = null;
-	private JDesktopPaneEnhanced jDesktopPane = null;
 	private MathModelEditor mathModelEditor = null;
 	
 	// results windows and plots
 	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
-	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 	private SimulationWorkspace simulationWorkspace;
 	
 	//Field Data help.  Set if copied from a BioModel Application.
@@ -70,19 +59,18 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
  * @param vcellClient cbit.vcell.client.VCellClient
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel, int newlyCreatedDesktops) {
-	super(panel, aRequestManager, aMathModel, newlyCreatedDesktops);
+public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel) {
+	super(panel, aRequestManager, aMathModel);
 	mathModel = aMathModel;
 	simulationWorkspace = new SimulationWorkspace(MathModelWindowManager.this, getMathModel());
 	mathModel.addPropertyChangeListener(this);
 	
-	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
-	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
-		taskBar = new JTaskBar(getJDesktopPane());
-	}
-	createMathModelFrame();
+	mathModelEditor = new MathModelEditor();
+	mathModelEditor.setMathModel(getMathModel());
+	mathModelEditor.setMathModelWindowManager(this);
+
+	getJPanel().add(mathModelEditor, BorderLayout.CENTER);
 }
 
 
@@ -95,27 +83,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	final Object source = e.getSource();
 
 	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
-//			AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-//			@Override
-//				public void run(Hashtable<String, Object> hashTable) throws Exception {
-//					Geometry newGeom = (Geometry)hashTable.get("doc");
-//					if(newGeom != null){
-//						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)){
-//							GeometryViewer localGeometryViewer = new GeometryViewer(false);
-//							localGeometryViewer.setGeometry(newGeom);
-//							localGeometryViewer.setSize(800,600);
-//							int result = DialogUtils.showComponentOKCancelDialog(
-//									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
-//							localGeometryViewer.setGeometry(null);
-//							if(result != JOptionPane.OK_OPTION){
-//								throw UserCancelException.CANCEL_GENERIC;
-//							}
-//						}
-//					}else{
-//						throw new Exception("No Geometry found in edit task");
-//					}
-//				}
-//			};
 			AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -153,18 +120,17 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void addResultsFrame(SimulationWindow simWindow) {
-	if (simWindow.getSimOwner() != getMathModel()) {
-		// it shouldn't happen, but check anyway...
-		try {
-			throw new RuntimeException("we are asked to show results but we don't have the simOwner");
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-		}
-		return;
-	}
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
-	simWindow.getFrame().setLocation(10, 10);
-	showFrame(simWindow.getFrame());
+	
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
+	if (childWindow==null){
+		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, "simulation results for "+simWindow.getSimulation().getName());
+		simWindow.setChildWindow(childWindow);
+		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
+	}
+	childWindow.show();
 }
 
 
@@ -187,20 +153,12 @@ private void checkValidSimulationDataViewerFrames() {
 		if (hash.containsKey(simWindows[i].getVcSimulationIdentifier())) {
 			simWindows[i].resetSimulation((Simulation)hash.get(simWindows[i].getVcSimulationIdentifier()));
 		} else {
-			close(simWindows[i].getFrame(), getJDesktopPane());
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
+			childWindow.close();
 		}
 	}
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 1:58:14 PM)
- * @return javax.swing.JDesktopPane
- */
-protected JDesktopPaneEnhanced getJDesktopPane() {
-	return jDesktopPane;
-}
-
 
 /**
  * Insert the method's description here.
@@ -253,31 +211,6 @@ SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentif
 	} else {
 		return null;
 	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void createMathModelFrame() {
-	mathModelEditor = new MathModelEditor();
-	mathModelEditor.setMathModel(getMathModel());
-	mathModelEditor.setMathModelWindowManager(this);
-
-	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("MathModel", true, false, true, true);
-	editorFrame.setFrameIcon(VCellIcons.documentIcon);	
-	editorFrame.add(mathModelEditor);
-	getJDesktopPane().add(editorFrame);
-	editorFrame.setMinimumSize(new Dimension(400, 300));
-	editorFrame.setSize(850, 680);
-	editorFrame.setLocation(0,0);
-	editorFrame.show();
-	try {
-		editorFrame.setMaximum(true);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace();
-	}	
 }
 
 
@@ -375,22 +308,12 @@ public void resetDocument(VCDocument newDocument) {
 	mathModelEditor.setMathModel(mathModel);
 
 	checkValidSimulationDataViewerFrames();
-	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
-	while (en.hasMoreElements()) {
-		close(en.nextElement(), getJDesktopPane());
-	}
+	
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
+	childWindowManager.closeAllChildWindows();
+
 	getRequestManager().updateStatusNow();
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 1:58:14 PM)
- * @param newJDesktopPane javax.swing.JDesktopPane
- */
-private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
-	jDesktopPane = newJDesktopPane;
-}
-
 
 /**
  * Insert the method's description here.
@@ -423,40 +346,32 @@ private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 //	}
 //}
 
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-private void showDataViewerPlotsFrame(final javax.swing.JInternalFrame plotFrame) {
-	dataViewerPlotsFramesVector.add(plotFrame);
-	showFrame(plotFrame);
-	plotFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			dataViewerPlotsFramesVector.remove(plotFrame);
-		}
-	});
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (6/14/2004 10:55:40 PM)
+// * @param newDocument cbit.vcell.document.VCDocument
+// */
+//private void showDataViewerPlotsFrame(final javax.swing.JInternalFrame plotFrame) {
+//	dataViewerPlotsFramesVector.add(plotFrame);
+//	showFrame(plotFrame);
+//	plotFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+//		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+//			dataViewerPlotsFramesVector.remove(plotFrame);
+//		}
+//	});
+//}
 	
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
-	for (int i = 0; i < plotFrames.length; i++){
-		showDataViewerPlotsFrame(plotFrames[i]);
-	}
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (6/14/2004 10:55:40 PM)
+// * @param newDocument cbit.vcell.document.VCDocument
+// */
+//public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
+//	for (int i = 0; i < plotFrames.length; i++){
+//		showDataViewerPlotsFrame(plotFrames[i]);
+//	}
+//}
 	
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- */
-public void showFrame(javax.swing.JInternalFrame frame) {
-	showFrame(frame, getJDesktopPane());
-}
 
 /**
  * Insert the method's description here.

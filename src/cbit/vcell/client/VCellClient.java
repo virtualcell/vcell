@@ -10,21 +10,15 @@
 
 package cbit.vcell.client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
@@ -33,7 +27,8 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.desktop.LoginDelegate;
+import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.UserRegistrationOP;
@@ -49,7 +44,7 @@ public class VCellClient {
 	private MDIManager mdiManager = null;
 	private boolean isApplet = false;
 	
-	private static class CheckThreadViolationRepaintManager extends RepaintManager {
+	public static class CheckThreadViolationRepaintManager extends RepaintManager {
 	    // it is recommended to pass the complete check  
 	    private boolean completeCheck = true;
 
@@ -67,7 +62,7 @@ public class VCellClient {
 	    }
 
 	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
-	        checkThreadViolations(component);
+	    	// thought to be safe to call off the Event Dispatch Thread (EDT) ... actual painting is done on EDT.
 	        super.addDirtyRegion(component, x, y, w, h);
 	    }
 
@@ -114,16 +109,16 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	/* Create the first document desktop */
 	switch (startupDoc.getDocumentType()) {
 		case VCDocument.BIOMODEL_DOC: {
-			windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+			windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc);
 //				((BioModelWindowManager)windowManager).preloadApps();
 			break;
 		}
 		case VCDocument.MATHMODEL_DOC: {
-			windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+			windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc);
 			break;
 		}
 		case VCDocument.GEOMETRY_DOC: {
-			windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc, getMdiManager().getNewlyCreatedDesktops());
+			windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc);
 			break;
 		}
 	}	
@@ -286,64 +281,68 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 }
 
 public static void login(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager currWindowManager){	
-	final LoginDialog loginDialog = new LoginDialog(JOptionPane.getFrameForComponent(currWindowManager.getComponent()));
-	loginDialog.setLoggedInUser(null);
-	loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	loginDialog.pack();
-	loginDialog.setResizable(false);
-	BeanUtils.centerOnScreen(loginDialog);
-	ActionListener listener = new ActionListener() {
-		public void actionPerformed(ActionEvent evt) {
-			if (evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)) {
-				AsynchClientTask task1 = new AsynchClientTask("connect to server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, loginDialog.getUser(),
-								loginDialog.getPassword());
-						requestManager.connectToServer(currWindowManager, newClientServerInfo);
-					}					
-				};
-				AsynchClientTask task2 = new AsynchClientTask("logging in", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	final LoginManager loginManager = new LoginManager();
+	LoginDelegate loginDelegate = new LoginDelegate() {
+		
+		public void login(final String userid, final String password)
+		{
+			AsynchClientTask task1 = new AsynchClientTask("connect to server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
-						if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-							login(requestManager,clientServerInfo, currWindowManager);
-						}
-					}
-				};
-				ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, userid, password);
+					requestManager.connectToServer(currWindowManager, newClientServerInfo);
+				}	
+			};
 			
-			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
-				loginDialog.dispose();
-				try {
-					UserRegistrationOP.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
-				} catch (UserCancelException e) {
-					//do nothing
-				} catch (Exception e) {
-					e.printStackTrace();
-					PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
+			AsynchClientTask task2 = new AsynchClientTask("logging in", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
+					loginManager.close();
+					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+						VCellClient.login(requestManager,clientServerInfo, currWindowManager);
+					}
 				}
-			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
-				try {
-					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
-					UserRegistrationOP.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
-				} catch (UserCancelException e) {
-					//do nothing
-				} catch (Exception e) {
-					e.printStackTrace();
-					PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
-				}
-			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_CANCEL)){
-				PopupGenerator.showInfoDialog(currWindowManager, 
-					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+			};
+			ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+		}
+
+		public void registerRequest() {
+			loginManager.close();
+			try {
+				UserRegistrationOP.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginManager.USERACTION_REGISTER,null);
+			} catch (UserCancelException e) {
+				//do nothing
+			} catch (Exception e) {
+				e.printStackTrace();
+				PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
 			}
 		}
+
+		public void lostPasswordRequest(String userid) {
+			try {
+				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,userid,null);
+				UserRegistrationOP.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginManager.USERACTION_LOSTPASSWORD,null);
+			} catch (UserCancelException e) {
+				//do nothing
+			} catch (Exception e) {
+				e.printStackTrace();
+				PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
+			}
+		}
+		
+		public void userCancel(){
+			loginManager.close();
+			PopupGenerator.showInfoDialog(currWindowManager, 
+					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+		}
 	};
-	loginDialog.addActionListener(listener);
-	ZEnforcer.showModalDialogOnTop(loginDialog, currWindowManager.getComponent());
+	
+	loginManager.showLoginDialog(currWindowManager.getComponent(), currWindowManager, loginDelegate);
+
 }
 
 

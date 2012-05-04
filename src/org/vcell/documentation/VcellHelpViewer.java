@@ -19,6 +19,7 @@ import java.net.URL;
 import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.VCellIcons;
@@ -35,21 +36,17 @@ import cbit.vcell.client.desktop.DocumentWindowAboutBox;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class VcellHelpViewer extends JFrame 
+public class VcellHelpViewer extends JPanel 
 {
 	public static final int DEFAULT_HELP_DIALOG_WIDTH = 900;
-	public static final int DEFAULT_HELP_DIALOG_HIGHT = 700;
-	private static final int DEFAULT_HELP_DIALOG_LOCX = 300;
-	private static final int DEFAULT_HELP_DIALOG_LOCY = 200;
+	public static final int DEFAULT_HELP_DIALOG_HEIGHT = 700;
 	
-	public VcellHelpViewer() {
-		super("Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")");
-		setIconImage(VCellIcons.getJFrameImageIcon());
+	public static final String VFRAP_DOC_URL = "/doc/HelpSet.hs";
+	public static final String VCELL_DOC_URL = "/vcellDoc/HelpSet.hs";
+	
+	public VcellHelpViewer(String docUrl) {
+		URL resourceURL = VcellHelpViewer.class.getResource(docUrl);
 
-		URL resourceURL = VcellHelpViewer.class.getResource("/vcellDoc/HelpSet.hs");
-
-		Container contentPane = getContentPane();
-		//URL hsURL;
 		HelpSet hs;
 		try {
 			// get the system class loader
@@ -57,40 +54,13 @@ public class VcellHelpViewer extends JFrame
 			// create helpset
 			hs = new HelpSet(cl, resourceURL);
 			JHelp jhelp = new JHelp(hs);
-			contentPane.setLayout(new BorderLayout());
-			contentPane.add(jhelp);
+			setLayout(new BorderLayout());
+			add(jhelp);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
 		}
 		
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				VcellHelpViewer.this.setVisible(false);
-			}
-		});
-		
-		setLocation(DEFAULT_HELP_DIALOG_LOCX,DEFAULT_HELP_DIALOG_LOCY);
-		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HIGHT));
-		pack();
+		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HEIGHT));
 	}
-
-
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (Exception e) { }
-
-		final VcellHelpViewer viewer = new VcellHelpViewer();
-		viewer.setVisible(true);
-		viewer.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				viewer.dispose();
-				System.exit(0);
-			}
-		});
-	}
-
 }

@@ -241,7 +241,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 
 			}
 		}catch (IllegalMappingException e){
-			PopupGenerator.showErrorDialog(getJDesktopPane(), "mapping error\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this.getDialogOwner(getGraphPane()), "mapping error\n"+e.getMessage());
 			setMode(Mode.SELECT);
 		}catch (Exception e){
 			System.out.println("CartoonTool.mouseReleased: uncaught exception");

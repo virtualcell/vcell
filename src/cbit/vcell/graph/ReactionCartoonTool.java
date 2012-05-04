@@ -33,7 +33,6 @@ import javax.swing.JViewport;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
@@ -51,6 +50,8 @@ import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -92,6 +93,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	private Point endPointWorld = null;
 	private RubberBandEdgeShape edgeShape = null;
 	private Mode mode = null;
+
+	private final static String SEARCHABLE_REACTIONS_CONTEXT_OBJECT = "SearchableReactionsContextObject";
 	
 	public static enum LineType {
 		NULL("<<?>>", Color.red, Cursor.MOVE_CURSOR), CATALYST("<<C A T A L Y S T>>", Color.GRAY), 
@@ -524,9 +527,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						worldPoint.y - parentLocation.y);
 						saveDiagram();
 						// setMode(SELECT_MODE);
-						Shape shape = getReactionCartoon()
-								.getShapeFromModelObject(fluxReaction);
-						showFluxReactionPropertiesDialog((FluxReactionShape) shape);
 					} else {
 						// setMode(SELECT_MODE);
 						// throw new Exception("fluxes only applicable to membranes");
@@ -1766,86 +1766,24 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		return true;
 	}
 
-	public void showFluxReactionPropertiesDialog(FluxReactionShape fluxReactionShape) {
-//		if (getReactionCartoon() == null) {
-//			return;
-//		}
-//		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
-//				getGraphPane(), JFrame.class);
-//		FluxReaction_Dialog fluxReaction_Dialog = new FluxReaction_Dialog(parent, true);
-//		fluxReaction_Dialog.init(fluxReactionShape.getFluxReaction(),
-//				getReactionCartoon().getModel());
-//		fluxReaction_Dialog.setTitle("Flux Reaction Editor");
-//		ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog, getJDesktopPane());
-//		// update in case of name change (should really be a listener)
-//		fluxReactionShape.refreshLabel();
-//		getReactionCartoon().fireGraphChanged();
-	}
-
-	public void showProductPropertiesDialog(ProductShape productShape, Point location) {
-		if (getReactionCartoon() == null
-				|| getDialogOwner(getGraphPane()) == null) {
-			return;
-		}
-		Product product = (Product) productShape.getModelObject();
-		String typed = JOptionPane.showInputDialog(
-				getDialogOwner(getGraphPane()), "Current stoichiometry is: "
-						+ product.getStoichiometry(), "Input stoichiometry",
-				JOptionPane.QUESTION_MESSAGE);
-		if (typed != null) {
-			try {
-				product.setStoichiometry(Integer.parseInt(typed));
-				productShape.refreshLabel();
-				getReactionCartoon().fireGraphChanged();
-			} catch (NumberFormatException exc) {
-				JOptionPane.showMessageDialog(getDialogOwner(getGraphPane()),
-						"You did not type a valid number", "Error:",
-						JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
-
-	public void showReactantPropertiesDialog(ReactantShape reactantShape, Point location) {
-		if(getReactionCartoon() == null || getDialogOwner(getGraphPane()) == null){
-			return;
-		}
-		Reactant reactant = (Reactant) reactantShape.getModelObject();
-		String typed = JOptionPane.showInputDialog(
-				getDialogOwner(getGraphPane()), "Current stoichiometry is: "
-						+ reactant.getStoichiometry(), "Input stoichiometry",
-				JOptionPane.QUESTION_MESSAGE);
-		if (typed != null) {
-			try {
-				reactant.setStoichiometry(Integer.parseInt(typed));
-				reactantShape.refreshLabel();
-				getReactionCartoon().fireGraphChanged();
-			} catch (NumberFormatException exc) {
-				JOptionPane.showMessageDialog(getDialogOwner(getGraphPane()),
-						"You did not type a valid number", "Error:",
-						JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
-
 	public void showReactionBrowserDialog(Structure struct,Point location) throws Exception{
 		if(getReactionCartoon() == null || getDocumentManager() == null || getDialogOwner(getGraphPane()) == null){
 			return;
 		}
-		JInternalFrameEnhanced jif = new JInternalFrameEnhanced(
-				"Create Reaction within structure '" + struct.getName() + "'",
-				true, true);
+		
 		DBReactionWizardPanel dbrqWiz = new DBReactionWizardPanel();
 		dbrqWiz.setModel(getModel());
 		dbrqWiz.setStructure(struct);
 		dbrqWiz.setDocumentManager(getDocumentManager());
-		jif.setContentPane(dbrqWiz);
-		if(location != null){
-			jif.setLocation(location);
-		}
-		getDialogOwner(getGraphPane()).add(jif, JLayeredPane.MODAL_LAYER);
-		jif.pack();
-		BeanUtils.centerOnComponent(jif, getDialogOwner(getGraphPane()));
-		jif.show();
+		
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this.getGraphPane());
+		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within structure '" + struct.getName() + "'" );
+		
+		dbrqWiz.setChildWindow(childWindow); // this is needed so that the wizard can close itself.
+		
+		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
+		childWindow.show();
 	}
 
 	// TO DO: allow user preferences for directory selection.

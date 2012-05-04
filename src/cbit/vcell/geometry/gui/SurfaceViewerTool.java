@@ -142,10 +142,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public void fullRepaint() {
 
 	if(canvasParentWindow == null){
-		canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Frame.class);
-		if(canvasParentWindow == null){
-			canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),javax.swing.JInternalFrame.class);
-		}
+		canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Window.class);
 	}
 	
 	try{

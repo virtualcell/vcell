@@ -33,7 +33,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
@@ -84,7 +83,6 @@ public class TestingFrameworkWindowPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JDesktopPaneEnhanced ivjJDesktopPane1 = null;
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
@@ -243,28 +241,6 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
-
-/**
- * Return the JDesktopPane1 property value.
- * @return javax.swing.JDesktopPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public JDesktopPaneEnhanced getJDesktopPane1() {
-	if (ivjJDesktopPane1 == null) {
-		try {
-			ivjJDesktopPane1 = new JDesktopPaneEnhanced();
-			ivjJDesktopPane1.setName("JDesktopPane1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJDesktopPane1;
-}
-
 /**
  * Return the JSplitPane1 property value.
  * @return javax.swing.JSplitPane
@@ -276,7 +252,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
 			ivjJSplitPane1.setName("JSplitPane1");
 			getJSplitPane1().add(gettestingFrameworkPanel(), "left");
-			getJSplitPane1().add(getJDesktopPane1(), "right");
+			getJSplitPane1().add(new JPanel(),"right");  //
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

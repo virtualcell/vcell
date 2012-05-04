@@ -48,6 +48,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -86,12 +87,10 @@ import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.FileFilters;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.gui.DisplayAdapterService;
 import cbit.plot.Plot2D;
@@ -101,8 +100,11 @@ import cbit.plot.SingleXPlot2D;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.client.ChildWindowListener;
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -530,8 +532,6 @@ public class PDEDataViewer extends DataViewer {
 //	private JButton ivjJButtonStatistics = null;
 	private Simulation fieldSimulation = null;
 
-	private JInternalFrame visitControlJInternalFrame;
-
 public PDEDataViewer() {
 	super();
 	initialize();
@@ -840,8 +840,16 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 			"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
-	showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+
-			(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName():""));
+	String title = "Statistics: ("+tsjrss.getVariableNames()[0]+") ";
+	if (getSimulationModelInfo() != null) {
+		title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+	}
+		
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+	ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
+	childWindow.setIsCenteredOnParent();
+	childWindow.pack();
+	childWindow.show();
 }		
 
 
@@ -1030,21 +1038,13 @@ private void roiAction(){
 								plotSpaceStats(tsJobResultsSpaceStats);
 							}
 						};	
-						if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
-						{
-							ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
-						}
-						else //this is added to show progress dialog on top for vfrap ring simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-							
-						{
-							ClientTaskDispatcher.dispatch(PDEDataViewer.this,hash,new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
-						}
+						ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);						
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage(), e1);
 					}
 				}
-				BeanUtils.dispose(mainJPanel);
+				BeanUtils.disposeParentWindow(mainJPanel);
 			}
 		});
 		okCancelJPanel.add(okButton);
@@ -1061,7 +1061,7 @@ private void roiAction(){
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				BeanUtils.dispose(mainJPanel);
+				BeanUtils.disposeParentWindow(mainJPanel);
 			}
 		});
 		okCancelJPanel.add(cancelButton);
@@ -1079,7 +1079,7 @@ private void roiAction(){
 				"  Choose times and 1 or more ROI(s).");
 		d.setResizable(true);
 		try {
-			ZEnforcer.showModalDialogOnTop(d,PDEDataViewer.this);
+			DialogUtils.showModalJDialogOnTop(d,PDEDataViewer.this);
 		}finally {
 			d.dispose();
 		}		
@@ -1381,18 +1381,19 @@ private void openInVisit() {
 			visitBinDir=chooser.getSelectedFile().getParentFile().getAbsolutePath();
 		}
 		
-		final JDesktopPaneEnhanced desktopPane = (JDesktopPaneEnhanced) JOptionPane.getDesktopPaneForComponent(this);
+		//final JDesktopPaneEnhanced desktopPane = (JDesktopPaneEnhanced) JOptionPane.getDesktopPaneForComponent(this);
 		
 		final VisitSession visitSession = getDataViewerManager().getRequestManager().createNewVisitSession(visitBinDir);
 		visitSession.addPropertyChangeListener(new PropertyChangeListener() {
 			
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(VisitSession.PROPERTY_NAME_VIEWER_WAS_CLOSED)) {
-					if (visitControlJInternalFrame != null) {
-						DocumentWindowManager.close(visitControlJInternalFrame, desktopPane);
+					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(visitSession);
+					if (childWindow!=null){
+						childWindow.close();
 					}
 				}
-				
 			}
 		});
 		
@@ -1407,55 +1408,20 @@ private void openInVisit() {
 		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitSession);
 		final boolean[] bClose = visitSession.pollViewerPoll();
 
-			InternalFrameAdapter internalFrameAdapter = new InternalFrameAdapter() {
-
-			@Override
-			public void internalFrameClosing(InternalFrameEvent e) {
-				// TODO Auto-generated method stub
-				super.internalFrameClosing(e);
+		ChildWindowListener childWindowListener = new ChildWindowListener() {		
+			public void closing(ChildWindow childWindow) {
 				visitSession.close();
 				bClose[0]=true;
+			}		
+			public void closed(ChildWindow childWindow) {
 			}
 		};
-			
-		visitControlJInternalFrame = new JInternalFrame("Visit Control Panel", true, true, true, true);
-		visitControlJInternalFrame.addInternalFrameListener(internalFrameAdapter);
-		
-		//TODO: Visit Window does not close when VCell is quit
-		
-		visitControlJInternalFrame.add(visitControlPanel);
-		visitControlJInternalFrame.pack();
-		BeanUtils.centerOnComponent(visitControlJInternalFrame,PDEDataViewer.this);
-		DocumentWindowManager.showFrame(visitControlJInternalFrame,desktopPane);
-			
-//		AsynchClientTask pollViewerTask = new AsynchClientTask("Viewer close event poll",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				System.out.println("Frame viewer close poll started");
-//				while (true){
-//					if (visitSession.viewerIsClosed()) {
-//						frame.dispose();
-//						System.out.println("Bye bye from the VisitControlPanel");
-//						
-//					}
-//					try {
-//						Thread.sleep(1000);
-//					} catch (InterruptedException ex) {
-//						
-//					}
-//				}
-//			}
-//		};
-//		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{pollViewerTask});
-		
-		//showComponentInFrame0(visitControlPanel, "Visit Control Panel",internalFrameAdapter);
-		
-//		Runnable eventLoopWorker = new Runnable(){
-//			public void run(){
-//				visitSession.runEventLoop();
-//			}
-//		};
-//		Thread thread = new Thread(eventLoopWorker,"VisitEventLoop");
-//		thread.start();
+
+		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(PDEDataViewer.this).addChildWindow(visitControlPanel, visitSession, "Visit Control Panel");
+		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
+		childWindow.addChildWindowListener(childWindowListener);
+		childWindow.show();
 
 	} catch(Exception e1) {
 		e1.printStackTrace();
@@ -2159,40 +2125,6 @@ public void setSimulation(Simulation simulation) {
 	firePropertyChange("simulation", oldValue, simulation);
 }
 
-protected void showComponentInFrame(final Component comp,final String title) {
-	showComponentInFrame0(comp, title,null);
-}
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2006 2:24:21 PM)
- */
-private void showComponentInFrame0(final Component comp,final String title,InternalFrameAdapter internalFrameAdapter) {
-	final JDesktopPaneEnhanced jDesktopPane = (JDesktopPaneEnhanced)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPaneEnhanced.class);
-	if(jDesktopPane != null){
-		final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
-		if(internalFrameAdapter != null){
-			frame.addInternalFrameListener(internalFrameAdapter);
-		}
-		
-		//TODO: Visit Window does not close when VCell is quit
-		
-		frame.getContentPane().add(comp);
-		frame.pack();
-		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-		DocumentWindowManager.showFrame(frame,jDesktopPane);		
-	}else{//for vfrap to show dialog on top, because it has no JDeskTopPane
-		final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
-		JOptionPane inputDialog = new JOptionPane(comp, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[0]);
-		final JDialog d = inputDialog.createDialog(dialogOwner, title);
-		d.setResizable(true);
-		try {
-			ZEnforcer.showModalDialogOnTop(d,PDEDataViewer.this);				
-		}finally {
-			d.dispose();
-		}
-	}
-}
-
 /**
  * Comment
  */
@@ -2314,8 +2246,18 @@ private void showSpatialPlot() {
 					Plot2D plot2D = new Plot2D(symbolTableEntries, new String[] { varName },new PlotData[] { plotData },
 								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"});
 					plotPane.setPlot2D(	plot2D);
-					String title = getSimulation().getName() + " : Spatial Plot : " + varName;
-					showComponentInFrame(plotPane, title);
+					String title = null;
+					if (getSimulation()!=null){
+						title = getSimulation().getName() + " : Spatial Plot : " + varName;
+					}else{
+						title = "Spatial Plot : " + varName;
+					}
+					
+					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
+					childWindow.setIsCenteredOnParent();
+					childWindow.pack();
+					childWindow.show();
 				}
 			}
 		}
@@ -2394,34 +2336,23 @@ private void showTimePlot() {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, 
 						getPDEPlotControlPanel1().getVariableListCellRenderer(),
 						getSimulation(), singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
-				final JInternalFrame frame = new JInternalFrame(getSimulation().getName() + " : Time Plot : " + varName, true, true, true, true);
-				frame.setFrameIcon(new ImageIcon(getClass().getResource("/data_exporter_20x20.gif")));
-				frame.add(pdeTimePlotPanel);
-				frame.setSize(900, 550);
-				BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-				if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
-				{
-					DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this));
-				}
-				else////for vfrap to show dialog on top, because it has no JDeskTopPane
-				{
-					DialogUtils.showComponentCloseDialog(PDEDataViewer.this, pdeTimePlotPanel, "Time Plot");
-				}
+				
+				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+				ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, "Time Plot");
+				childWindow.setSize(900, 550);
+				childWindow.setIsCenteredOnParent();
+				childWindow.show();
+				
 			}						
 		};	
-		if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
-		{//for vcell which has non-modal progress 
-			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
-		}
-		else//for vfrap to show modal progress on top
-		{
-			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
-		}
-		
+
+		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+	
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 	}
@@ -2511,9 +2442,9 @@ private void updateDataValueSurfaceViewer() {
 		public Color getROIHighlightColor(){
 			return new Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.gui.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
 		}
-		public void showComponentInFrame(Component comp,String title){
-			PDEDataViewer.this.showComponentInFrame(comp,title);
-		}
+//		public void showComponentInFrame(Component comp,String title){
+//			PDEDataViewer.this.showComponentInFrame(comp,title);
+//		}
 		public void plotTimeSeriesData(
 				int[][] indices,
 				boolean bAllTimes,

@@ -45,6 +45,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
@@ -52,7 +53,12 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPModel;
@@ -63,9 +69,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
-import cbit.vcell.microscopy.gui.AboutDialog;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.HelpViewer;
 import cbit.vcell.microscopy.gui.StatusBar;
 import cbit.vcell.microscopy.gui.ToolBar;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
@@ -79,11 +83,13 @@ import cbit.vcell.opt.Parameter;
  * Created in Dec 2009.
  */
 @SuppressWarnings("serial")
-public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListener
+public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListener, TopLevelWindow
 {
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
+	
+	private ChildWindowManager childWindowManager;
 	
 	private JSplitPane mainSplitPane = null;
 	private BatchRunDetailsPanel detailsPanel = null;
@@ -116,7 +122,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	public static JMenuBar mb = null;
 	private static StatusBar statusBarNew = new StatusBar();
 	public static ToolBar toolBar = null;
-	private HelpViewer hviewer = null;
+	private VcellHelpViewer hviewer = null;
 	  
 	//for opening batch run file, may be changed later
 	ArrayList<String> frapFileList = null;
@@ -177,6 +183,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 					if (result == UserMessage.OPTION_CLOSE)
 					{
 						VirtualFrapBatchRunFrame.this.dispose();
+						childWindowManager.closeAllChildWindows();
 					}
 				}
 				else if(arg.equals(VIEW_JOB_ACTION_COMMAND))
@@ -195,7 +202,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					if(hviewer == null)
 					{
-						hviewer = new HelpViewer();
+						hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
 					}
 					else
 					{
@@ -204,7 +211,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				}
 				else if(arg.equals(ABOUT_ACTION_COMMAND))
 				{
-					new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapBatchRunFrame.this);
+					DocumentWindow.showAboutBox(VirtualFrapBatchRunFrame.this);
 				}
 		    }
 	 	}
@@ -286,6 +293,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	    super();
 	    this.localWorkspace = localWorkspace;
 	    this.batchRunWorkspace = batchRunWorkspace;
+	    childWindowManager = new ChildWindowManager(this);
 	    
 	    setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
 	    //initialize components
@@ -1066,5 +1074,29 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public TopLevelWindowManager getTopLevelWindowManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void updateConnectionStatus(ConnectionStatus connectionStatus) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateMemoryStatus(long freeBytes, long totalBytes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateWhileInitializing(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ChildWindowManager getChildWindowManager() {
+		return childWindowManager;
 	}
 }

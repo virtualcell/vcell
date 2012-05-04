@@ -32,9 +32,6 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
-
 import cbit.gui.graph.GraphModel.NotReadyException;
 
 @SuppressWarnings("serial")
@@ -253,40 +250,6 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 	@Override
 	public boolean isFocusTraversable() {
 		return true;
-	}
-
-	public static void main(String[] args) {
-		try {
-			JFrame frame = new JFrame();
-			JDesktopPane desktop = new JDesktopPaneEnhanced();
-			JInternalFrame iframe = new JInternalFrameEnhanced("", true, true, true, true);
-			JPanel panel = new JPanel();
-			GraphPane aGraphPane = new GraphPane();
-			panel.setName("JInternalFrameContentPane");
-			panel.setLayout(new BorderLayout());
-			panel.add(aGraphPane, "Center");
-			panel.add(new javax.swing.JButton("hello"), "South");
-			iframe.setName("JInternalFrame");
-			iframe.setBounds(50, 50, 400, 300);
-			iframe.setTitle("GraphPane");
-			iframe.getContentPane().add(panel);
-			//		iframe.setContentPane(panel);
-			desktop.setName("JDesktopPane1");
-			desktop.add(iframe, iframe.getName());
-			frame.getContentPane().setLayout(new BorderLayout());
-			frame.getContentPane().add(desktop, "Center");
-			frame.setSize(iframe.getSize());
-			frame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(WindowEvent e) {
-					System.exit(0);
-				};
-			});
-			frame.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of cbit.vcell.graph.GraphPane");
-			exception.printStackTrace(System.out);
-		}
 	}
 
 	public void mouseClicked(MouseEvent e) {}

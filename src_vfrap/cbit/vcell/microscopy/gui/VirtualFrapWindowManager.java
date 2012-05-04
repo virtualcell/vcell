@@ -148,12 +148,6 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	}
 	public void removeDataListener(DataListener newListener){
 	}
-	public void showDataViewerPlotsFrames(JInternalFrame[] plotFrames){
-//		for(int i=0;i<plotFrames.length;i+= 1){
-//			plotFrames[i].setLocation(100,100);
-//			DocumentWindowManager.showFrame(plotFrames[i], jdp);
-//		}
-	}
 	
 	public void startExport(OutputContext outContext, ExportSpecs exportSpecs){
 		try {

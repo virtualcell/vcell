@@ -43,7 +43,6 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
@@ -695,7 +694,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 				// Else, pop-up an error dialog indicating that function cannot be added.
 				//
 				cardLayout.show(getAddFunctionPanel(), funcNameAndExprPanel.getName());
-				ZEnforcer.showModalDialogOnTop(getAddFunctionDialog(), OutputFunctionsPanel.this);
+				DialogUtils.showModalJDialogOnTop(getAddFunctionDialog(), OutputFunctionsPanel.this);
 			}
 		};
 		ClientTaskDispatcher.dispatch(OutputFunctionsPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });

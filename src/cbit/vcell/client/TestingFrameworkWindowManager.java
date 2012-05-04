@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -49,19 +48,18 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
@@ -171,7 +169,6 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 	private EditTestCriteriaPanel editTestCriteriaPanel =
 		new EditTestCriteriaPanel();
 	private TestCaseAddPanel testCaseAddPanel = new TestCaseAddPanel();
-	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 	private AddTestSuitePanel addTestSuitePanel = new AddTestSuitePanel();
 	private JOptionPane addTestSuiteDialog =
 		new JOptionPane(
@@ -654,14 +651,12 @@ public void compare(final TestCriteriaNew testCriteria,final SimulationInfo user
 			viewer.setDataViewerManager(TestingFrameworkWindowManager.this);
 			addExportListener(viewer);
 			
-			// create the simCompareWindow - this is just a lightweight window to display the simResults. 
-			// It was created originally to compare 2 sims, it can also be used here instead of creating the more heavy-weight SimWindow.
-			SimulationCompareWindow simCompareWindow = new SimulationCompareWindow((MergedDataInfo)hashTable.get(KEY_MERGEDDATAINFO), viewer);
-			if (simCompareWindow != null) {
-				// just show it right now...
-				final JInternalFrame existingFrame = simCompareWindow.getFrame();
-				DocumentWindowManager.showFrame(existingFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
-			}
+			VCDataIdentifier vcDataIdentifier = (MergedDataInfo)hashTable.get(KEY_MERGEDDATAINFO);
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+			ChildWindow childWindow = childWindowManager.addChildWindow(viewer, vcDataIdentifier, "Comparing ... "+vcDataIdentifier.getID());
+			childWindow.setSize(450, 450);
+			childWindow.setIsCenteredOnParent();
+			childWindow.show();
 		}
 	};
 	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherDataTask,showResultsTask}, false);
@@ -2119,7 +2114,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		final JSortTable table = new JSortTable();
 		table.setModel(tableModel);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		JScrollPane scrollPane = new JScrollPane(table);
+		final JScrollPane scrollPaneContentPane = new JScrollPane(table);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 
 		table.getColumnModel().getColumn(TSDATE_OFFSET).setCellRenderer(
@@ -2148,9 +2143,6 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 //			);
 
 //		table.getTableHeader().setReorderingAllowed(false);
-
-//		final JDialog d = new JDialog();
-		final JInternalFrame d = new JInternalFrame();
 
 		//Popup Menu
 		final TestCriteriaCrossRefOPResults.CrossRefData xrefDataSourceFinal = xrefDataSource;
@@ -2186,12 +2178,15 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.tsKey:missingTSKey),(xrefData != null?xrefData.tcaseKey:null),(xrefData != null?xrefData.tcritKey:null));
 					}else if(actionEvent.getActionCommand().equals(SELECT_REGR_REF_IN_TREE)){
 						if(xrefData == null){
-							PopupGenerator.showErrorDialog(d, "No Regression Reference info available.");
+							PopupGenerator.showErrorDialog(getComponent(), "No Regression Reference info available.");
 							return;
 						}
 						getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.regressionModelTSuiteID:null),(xrefData != null?xrefData.regressionModelTCaseID:null),(xrefData != null?xrefData.regressionModelTCritID:null));						
 					}
-					d.setVisible(true);
+					ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+					if (childWindow!=null){
+						childWindow.show();
+					}
 				}
 			};
 		showInTreeMenuItem.addActionListener(showInTreeActionListener);
@@ -2226,7 +2221,10 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				if(failureS.length() > 0 || openCount == 0){
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed to open some models\n"+failureS+(openCount == 0?"Selection(s) had no model(s)":""));
 				}
-				d.setVisible(true);
+				ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+				if (childWindow!=null){
+					childWindow.show();
+				}
 			}
 		};
 		openModelMenuItem.addActionListener(openModelsActionListener);
@@ -2258,7 +2256,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						Double absoluteErrorLimit = null;
 						while(true){
 							try{
-								String ret = PopupGenerator.showInputDialog(d,
+								String ret = PopupGenerator.showInputDialog(getComponent(),
 										"Enter new TestCriteria Error Limits for '"+xrefDataSourceFinal.simName+"'.  '-'(dash) to keep original value.",
 										"RelativeErrorLimit,AbsoluteErrorLimit");
 								int commaPosition = ret.indexOf(',');
@@ -2282,7 +2280,10 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								}
 								break;
 							}catch(UserCancelException e){
-								d.setVisible(true);
+								ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+								if (childWindow!=null){
+									childWindow.show();
+								}
 								return;
 							}catch(Exception e){
 								PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error parsing Error Limits\n"+e.getMessage());
@@ -2302,19 +2303,22 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						}
 						try{
 							PopupGenerator.showComponentOKCancelTableList(
-								d, "Confirm Error Limit Changes",
+								getComponent(), "Confirm Error Limit Changes",
 								new String[] {"TSVersion","Orig RelErrorLimit","New RelErrorLimit","Orig AbsErrorLimit","New AbsErrorLimit"},
 								rows,
 								null);
 						}catch(UserCancelException e){
-							d.setVisible(true);
+							ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+							if (childWindow!=null){
+								childWindow.show();
+							}
 							return;
 						}
 						
 						//Get information needed to generate new TestCriteria Reports
 						final String YES_ANSWER = "Yes";
 						Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> genReportHash = null;
-						String genRepResult = PopupGenerator.showWarningDialog(d, "Generate Reports for changed Test Criterias?", new String[] {YES_ANSWER,"No"}, YES_ANSWER);
+						String genRepResult = PopupGenerator.showWarningDialog(getComponent(), "Generate Reports for changed Test Criterias?", new String[] {YES_ANSWER,"No"}, YES_ANSWER);
 						if(genRepResult != null && genRepResult.equals(YES_ANSWER)){
 							genReportHash = new Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>>();
 							for (int i = 0; i < changeTCritV.size(); i++) {
@@ -2352,7 +2356,10 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed Changing Error limits for selected "+xrefDataSourceFinal.simName+"\n"+e.getMessage());
 							return;
 						}
-						d.dispose();
+						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+						if (childWindow!=null){
+							childWindow.close();
+						}
 						getTestingFrameworkWindowPanel().refreshTree((TestSuiteInfoNew)null);
 						if(genReportHash != null){
 							updateReports(genReportHash);
@@ -2426,22 +2433,17 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 			}
 		});
 		
-		//Create dialog
-		d.setTitle(
-				(xrefDataSource.isBioModel?"BM":"MM")+
+		String title = (xrefDataSource.isBioModel?"BM":"MM")+
 				" "+xrefDataSource.tcSolutionType+
 				" ("+sourceTestSuite+") "+
 				" \""+(xrefDataSource.isBioModel?xrefDataSource.bmName:xrefDataSource.mmName)+
-				"\"  ::  "+(xrefDataSource.isBioModel?"app=\""+xrefDataSource.bmAppName+"\"  ::  sim=\""+xrefDataSource.simName+"\"":"sim=\""+xrefDataSource.simName+"\""));
-//		d.setModal(false);
-		d.getContentPane().add(scrollPane);
-		d.setSize(600,400);
-//		d.setLocation(300,200);
-//		BeanUtils.centerOnComponent(d,null);
-//		d.setVisible(true);
-		d.setClosable(true);
-		d.setResizable(true);
-		showDataViewerPlotsFrame(d);
+				"\"  ::  "+(xrefDataSource.isBioModel?"app=\""+xrefDataSource.bmAppName+"\"  ::  sim=\""+xrefDataSource.simName+"\"":"sim=\""+xrefDataSource.simName+"\"");
+		
+		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).addChildWindow(scrollPaneContentPane,scrollPaneContentPane,title);
+		childWindow.setSize(600,400);
+		childWindow.setIsCenteredOnParent();
+		childWindow.setResizable(true);
+		childWindow.show();
 
 	} catch (DataAccessException e) {
 		e.printStackTrace();
@@ -2678,7 +2680,7 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
 	JDialog d = getAddTestCaseDialog().createDialog(requester, "Add New TestCase:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d, requester);
+	DialogUtils.showModalJDialogOnTop(d, requester);
 	return getAddTestCaseDialog().getValue();
 	
 }
@@ -2697,38 +2699,10 @@ private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester
 	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"Add New TestSuite"));
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d, requester);
+	DialogUtils.showModalJDialogOnTop(d, requester);
 	return getAddTestSuiteDialog().getValue();
 	
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-private void showDataViewerPlotsFrame(final javax.swing.JInternalFrame plotFrame) {
-	dataViewerPlotsFramesVector.add(plotFrame);
-	DocumentWindowManager.showFrame(plotFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
-	plotFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			dataViewerPlotsFramesVector.remove(plotFrame);
-		}
-	});
-}
-	
-/**
- * Insert the method's description here.
- * Creation date: (11/18/2004 4:44:45 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
-	for (int i = 0; i < plotFrames.length; i++){
-		showDataViewerPlotsFrame(plotFrames[i]);
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -2742,7 +2716,7 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 	JDialog d = getEditTestCriteriaDialog().createDialog(requester, "Edit Test Criteria:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d, requester);
+	DialogUtils.showModalJDialogOnTop(d, requester);
 	return getEditTestCriteriaDialog().getValue();
 }
 
@@ -3080,13 +3054,13 @@ public void viewResults(TestCriteriaNew testCriteria) {
 		addExportListener(viewer);
 		
 		// create the simCompareWindow - this is just a lightweight window to display the simResults. 
-		// It was created originally to compare 2 sims, it can also be used here instead of creating the mor eheavy-weight SimWindow.
-		SimulationCompareWindow simCompareWindow = new SimulationCompareWindow(vcdID, viewer);
-		if (simCompareWindow != null) {
-			// just show it right now...
-			final JInternalFrame existingFrame = simCompareWindow.getFrame();
-			DocumentWindowManager.showFrame(existingFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
-		}
+		// It was created originally to compare 2 sims, it can also be used here instead of creating the more heavy-weight SimWindow.
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+		ChildWindow childWindow = childWindowManager.addChildWindow(viewer, vcdID, "Comparing ... "+vcdID, true);
+		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
+		childWindow.show();
+
 	} catch (Throwable e) {
 		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, e.getMessage());
 	}

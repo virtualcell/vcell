@@ -14,8 +14,9 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.ZEnforcer;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.export.gloworm.atoms.AtomConstants;
 
 //import sun.misc.Compare;
@@ -342,59 +343,6 @@ public void setSourceFiles(java.io.File[] newSourceFiles) {
 	params.sourceFiles = newSourceFiles;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static void showErrorDialog(final Component requester, String message) {
-	final JDialog dialog = prepareErrorDialog(null, message);
-	if (SwingUtilities.isEventDispatchThread()) {
-		ZEnforcer.showModalDialogOnTop(dialog,requester);
-	} else {
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					ZEnforcer.showModalDialogOnTop(dialog,requester);
-				}
-			});
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-		} finally {
-			dialog.dispose();
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static void showInfoDialog(java.awt.Component component, String message) {
-	final JDialog dialog = prepareInfoDialog(component, message);
-	if (SwingUtilities.isEventDispatchThread()) {
-		ZEnforcer.showModalDialogOnTop(dialog,JOptionPane.getRootFrame());
-	} else {
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					ZEnforcer.showModalDialogOnTop(dialog,JOptionPane.getRootFrame());
-				}
-			});
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-		} finally {
-			dialog.dispose();
-		}
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/27/2005 1:10:48 AM)
@@ -450,7 +398,7 @@ public void writeQTVR() throws java.io.IOException, java.util.zip.DataFormatExce
 						offsets[i] = ar.getDataOffset();
 					}
 					if (error != null) {
-						showErrorDialog(getParent(), error);
+						DialogUtils.showErrorDialog(getParent(), error);
 						return null;
 					}
 					// create QTVR file
@@ -464,10 +412,10 @@ public void writeQTVR() throws java.io.IOException, java.util.zip.DataFormatExce
 		}
 		public void finished() {
 			if (exc != null) {
-				showErrorDialog(getParent(), "Create QTVR failed\n"+exc);
+				DialogUtils.showErrorDialog(getParent(), "Create QTVR failed\n"+exc);
 			} else {
 				Toolkit.getDefaultToolkit().beep();
-				if (workerCount == 0) showInfoDialog(getParent(), "QTVR file(s) succesfully created");
+				if (workerCount == 0) DialogUtils.showInfoDialog(getParent(), "QTVR file(s) succesfully created");
 			}
 			if (workerCount == 0) pp.stop();
 		}

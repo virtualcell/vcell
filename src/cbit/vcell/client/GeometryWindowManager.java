@@ -10,16 +10,12 @@
 
 package cbit.vcell.client;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.JTaskBar;
 
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.desktop.geometry.GeometryEditor;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -36,15 +32,11 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  */
 public class GeometryWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener {
 	private Geometry geometry = null;
-	private JDesktopPaneEnhanced jDesktopPane = null;
 	private GeometryEditor geometryEditor = null;
 
 	private SurfaceViewerPanel surfaceViewer;
 	private GeometryDisplayPanel geoViewer;
-
-	JInternalFrameEnhanced geometryViewerEditorFrame = null;		
-	JInternalFrameEnhanced surfaceViewerEditorFrame = null;
-
+	
 /**
  * GeometryWindowManager constructor comment.
  * @param pane javax.swing.JDesktopPane
@@ -52,22 +44,14 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
  * @param vcDocument cbit.vcell.document.VCDocument
  * @param newlyCreatedDesktops int
  */
-public GeometryWindowManager(JPanel panel, RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
-	super(panel, requestManager, aGeometry, newlyCreatedDesktops);
+public GeometryWindowManager(JPanel panel, RequestManager requestManager, final Geometry aGeometry) {
+	super(panel, requestManager, aGeometry);
+	setGeometry(aGeometry);
+	getJPanel().setLayout(new BorderLayout());
+	createGeometryEditor();
+	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
 	surfaceViewer = new SurfaceViewerPanel();
 	geoViewer = new GeometryDisplayPanel();
-	setGeometry(aGeometry);
-	setJDesktopPane(new JDesktopPaneEnhanced());
-	getJPanel().setLayout(new BorderLayout());
-	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
-		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
-		getJPanel().add(taskBar, BorderLayout.SOUTH);
-	}	
-	createGeometryEditor();
-	initializeInternalFrames();
-	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
-	showGeometryViewer(true);
 }
 
 
@@ -131,16 +115,6 @@ private GeometryEditor getGeometryEditor() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/3/2004 10:19:49 AM)
- * @return javax.swing.JDesktopPane
- */
-protected JDesktopPaneEnhanced getJDesktopPane() {
-	return jDesktopPane;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/27/2004 1:46:17 PM)
  * @return javax.swing.JPanel
  */
@@ -169,41 +143,67 @@ SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentif
 }
 
 
+private void hideGeometryViewer(){
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(geoViewer);
+	if (childWindow != null){
+		childWindow.hide();
+	}
+}
+
+private void hideSurfaceViewer(){
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(surfaceViewer);
+	if (childWindow != null){
+		childWindow.hide();
+	}
+}
+
+private void showGeometryViewer() {
+
+	String geoViewerTitle = "Geometry Editor";
+	geoViewer.setGeometry(getGeometry());
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(geoViewer);
+	if (childWindow == null){
+		childWindow = childWindowManager.addChildWindow(geoViewer,geoViewer,geoViewerTitle);
+		childWindow.setSize(600, 600);
+		childWindow.setIsCenteredOnParent();
+		childWindow.addChildWindowListener(new ChildWindowListener() {
+			public void closing(ChildWindow childWindow) {
+				getGeometryEditor().setToggleButtonSelected("Geometry Editor", false);
+			}
+			public void closed(ChildWindow childWindow) {
+			}
+		});
+	}
+	childWindow.show();
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void initializeInternalFrames() {
+private void showSurfaceViewer() {
 
-	// Initialize Geometry Editor internal frame
-	String geoViewerTitle = "Geometry Editor";
-	geoViewer.setGeometry(getGeometry());
-	geometryViewerEditorFrame = new JInternalFrameEnhanced(geoViewerTitle, true, true, true, true);
-	geometryViewerEditorFrame.setContentPane(geoViewer);
-	geometryViewerEditorFrame.setSize(600, 600);
-	geometryViewerEditorFrame.setLocation(10, 10);
-	geometryViewerEditorFrame.setMinimumSize(new Dimension(450, 450));
-	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getGeometryEditor().setToggleButtonSelected("Geometry Editor", false);
-		};
-	});		
-	
-	
-	// Initialize Surface Viewer internal frame
 	String surfaceViewerTitle = "Surface Viewer";
 	surfaceViewer.setGeometry(getGeometry());
-	surfaceViewerEditorFrame = new JInternalFrameEnhanced(surfaceViewerTitle, true, true, true, true);
-	surfaceViewerEditorFrame.setContentPane(surfaceViewer);
-	surfaceViewerEditorFrame.setSize(600, 600);
-	surfaceViewerEditorFrame.setLocation(300, 100);
-	surfaceViewerEditorFrame.setMinimumSize(new Dimension(450, 450));
-	surfaceViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getGeometryEditor().setToggleButtonSelected("Surface Viewer", false);
-		};
-	});
-	
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(surfaceViewer);
+	if (childWindow == null){
+		childWindow = childWindowManager.addChildWindow(surfaceViewer, surfaceViewer, surfaceViewerTitle);
+		childWindow.setSize(600, 600);
+		childWindow.setPosition(300, 100);
+		childWindow.addChildWindowListener(new ChildWindowListener() {
+			public void closing(ChildWindow childWindow) {
+				getGeometryEditor().setToggleButtonSelected("Surface Viewer", false);
+			}
+			public void closed(ChildWindow childWindow) {
+			}
+		});
+	}
+	childWindow.show();
 }
 
 
@@ -227,7 +227,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if(evt.getSource() instanceof GeometrySpec){
 		getGeometryEditor().setToggleButtonSelected("Surface Viewer",false);
 		//do this because button.setSelected does not fire action event
-		if(surfaceViewerEditorFrame != null){
+		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(surfaceViewer);
+		if (childWindow!=null && childWindow.isShowing()){
 			surfaceViewerButtonPressed(false);
 		}
 	}
@@ -279,46 +280,12 @@ private void setGeometry(Geometry newGeometry) {
  * Creation date: (6/3/2004 10:19:49 AM)
  * @param newJDesktopPane javax.swing.JDesktopPane
  */
-private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
-	jDesktopPane = newJDesktopPane;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 11:30:24 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
-	// ignore
-	return;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:54:11 PM)
- */
-public void showFrame(javax.swing.JInternalFrame frame) {
-	showFrame(frame, getJDesktopPane());
-}	
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 10:19:49 AM)
- * @param newJDesktopPane javax.swing.JDesktopPane
- */
 private void showGeometryViewer(boolean bGeoEditorButtonSelected) {
 	if (bGeoEditorButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		showFrame(geometryViewerEditorFrame);
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(geometryViewerEditorFrame, getJDesktopPane());
-	}	
+		showGeometryViewer();
+	}else{
+		hideGeometryViewer();
+	}
 }
 
 
@@ -329,10 +296,8 @@ private void showGeometryViewer(boolean bGeoEditorButtonSelected) {
  */
 private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 	if (bSurfaceViewerButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		showFrame(surfaceViewerEditorFrame);
-		//
+		showSurfaceViewer();
+		
 		if(getGeometry() != null && getGeometry().getGeometrySurfaceDescription() != null && getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null){
 			try{
 				surfaceViewer.updateSurfaces();
@@ -340,11 +305,10 @@ private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 				PopupGenerator.showErrorDialog(this, "Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage(), e);
 			}
 		}
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(surfaceViewerEditorFrame, getJDesktopPane());
-	}	
+		
+	}else{
+		hideSurfaceViewer();
+	}
 }
 
 

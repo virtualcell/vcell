@@ -29,6 +29,7 @@ import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -73,6 +74,7 @@ public class DatabaseWindow extends JFrame implements TopLevelWindow {
 	private DatabaseWindowManager ivjdatabaseWindowManager1 = null;
 	private DatabaseWindowPanel ivjdatabaseWindowPanel = null;
 	private JMenuItem menuItemReconnect = null;
+	private final ChildWindowManager childWindowManager;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -112,6 +114,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DatabaseWindow() {
 	super();
 	initialize();
+	childWindowManager = new ChildWindowManager(this);
 }
 
 /**
@@ -1438,6 +1441,10 @@ private void reconnect(java.awt.event.ActionEvent arg1) {
 		// user code end
 		handleException(ivjExc);
 	}
+}
+
+public ChildWindowManager getChildWindowManager() {
+	return childWindowManager;
 }
 
 }

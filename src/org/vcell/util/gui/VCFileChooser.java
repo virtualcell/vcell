@@ -163,7 +163,7 @@ public int showDialog(final Component parent, String approveButtonText) {
 
 	localDialog.setResizable(false);
 	try {
-		ZEnforcer.showModalDialogOnTop(localDialog, parent);
+		DialogUtils.showModalJDialogOnTop(localDialog, parent);
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		throw new RuntimeException(exc.getMessage());

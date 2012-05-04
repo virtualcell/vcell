@@ -9,24 +9,16 @@
  */
 
 package cbit.vcell.client;
-import java.awt.Rectangle;
-import java.beans.PropertyVetoException;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JTaskBar;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.rmi.event.DataJobEvent;
@@ -84,21 +76,17 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 		}
 	}
 	
-	protected JTaskBar taskBar = null;
+	//protected JTaskBar taskBar = null;
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 5:14:36 PM)
  * @param documentWindow cbit.vcell.client.desktop.DocumentWindow
  */
-public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocument vcDocument, int newlyCreatedDesktops) {
+public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocument vcDocument) {
 	super(requestManager);
 	setJPanel(panel);
 	// figure out unique documentID
 	setDocumentID(vcDocument);
-}
-
-public JTaskBar getTaskBar() {
-	return taskBar; 
 }
 
 /**
@@ -113,40 +101,32 @@ public abstract void addResultsFrame(SimulationWindow simWindow);
  * Comment
  */
 public void cascadeWindows() {
-	JInternalFrame[] iframes = getOpenWindows();
-	int dx = getJDesktopPane().getWidth() / iframes.length;
-	int dy = getJDesktopPane().getHeight() / iframes.length;
-	dx = (dx > 0) ? dx : 1; dx = (dx > 28) ? 28 : dx;
-	dy = (dy > 0) ? dy : 1; dy = (dy > 28) ? 28 : dy;
-	for (int i=0;i<iframes.length;i++) {
-		iframes[i].setLocation(i * dx, i * dy);
-		iframes[i].show();
-	}
+	ChildWindowManager.findChildWindowManager(getComponent()).cascadeWindows();
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 2:50:14 AM)
- */
-public static void close(JInternalFrame[] editorFrames, JDesktopPane pane) {
-	if (editorFrames != null && editorFrames.length > 0) {
-		for (int i = 0; i < editorFrames.length; i++){
-			close(editorFrames[i], pane);
-		}
-	}
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (6/1/2004 2:50:14 AM)
+// */
+//public static void close(JInternalFrame[] editorFrames) {
+//	if (editorFrames != null && editorFrames.length > 0) {
+//		for (int i = 0; i < editorFrames.length; i++){
+//			close(editorFrames[i]);
+//		}
+//	}
+//}
+//
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 2:50:14 AM)
- */
-public static void close(JInternalFrame editorFrame, JDesktopPane pane) {
-	pane.getDesktopManager().closeFrame(editorFrame);
-	editorFrame.dispose();
-}
-
+///**
+// * Insert the method's description here.
+// * Creation date: (6/1/2004 2:50:14 AM)
+// */
+//public static void close(JFrame editorFrame) {
+//	pane.getDesktopManager().closeFrame(editorFrame);
+//	editorFrame.dispose();
+//}
+//
 
 /**
 Processes the comparison (XML based) of the loaded model with its saved edition.
@@ -251,14 +231,6 @@ public JComponent getComponent() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/21/2005 1:05:03 PM)
- * @return javax.swing.JDesktopPane
- */
-protected abstract JDesktopPaneEnhanced getJDesktopPane();
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/24/2004 2:48:52 AM)
  * @return java.lang.String
  */
@@ -267,20 +239,20 @@ public String getManagerID() {
 }
 
 
-/**
- * Comment
- */
-private JInternalFrame[] getOpenWindows() {
-	JInternalFrame[] allFrames = getJDesktopPane().getAllFrames();
-	Vector<JInternalFrame> openWindows = new Vector<JInternalFrame>();
-	for (int i=0;i<allFrames.length;i++) {
-		if ((! allFrames[i].isClosed()) && (allFrames[i].isVisible())) {
-			openWindows.add(allFrames[i]);
-		}
-	}
-	return (JInternalFrame[])openWindows.toArray(new JInternalFrame[openWindows.size()]);
-}
-
+///**
+// * Comment
+// */
+//private JInternalFrame[] getOpenWindows() {
+//	JInternalFrame[] allFrames = getJDesktopPane().getAllFrames();
+//	Vector<JInternalFrame> openWindows = new Vector<JInternalFrame>();
+//	for (int i=0;i<allFrames.length;i++) {
+//		if ((! allFrames[i].isClosed()) && (allFrames[i].isVisible())) {
+//			openWindows.add(allFrames[i]);
+//		}
+//	}
+//	return (JInternalFrame[])openWindows.toArray(new JInternalFrame[openWindows.size()]);
+//}
+//
 
 /**
  * Insert the method's description here.
@@ -459,13 +431,6 @@ public void showDatabaseWindow() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/14/2004 10:55:40 PM)
- * @param newDocument cbit.vcell.document.VCDocument
- */
-public abstract void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames);
-	
 /**
  * Insert the method's description here.
  * Creation date: (1/22/2007 7:52:25 AM)
@@ -854,44 +819,44 @@ public void showFieldDataWindow() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 4:42:35 AM)
- */
-public abstract void showFrame(JInternalFrame frame);
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 4:42:35 AM)
+// */
+//public abstract void showFrame(JInternalFrame frame);
 
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 4:42:35 AM)
- */
-public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
-	if (!BeanUtils.arrayContains(pane.getAllFrames(),frame)){
-		pane.add(frame);
-	}
-	
-	if (frame.isClosed()) {
-		try {
-			frame.setClosed(false);
-		} catch (java.beans.PropertyVetoException exc) {
-		}
-	}
-	if (frame.isIcon()) {
-		try {
-			frame.setIcon(false);
-		} catch (java.beans.PropertyVetoException exc) {
-		}
-	}
-	//frame.pack();
-	frame.setSize(750, 600);
-//	BeanUtils.centerOnComponent(frame, pane);
-	frame.show();
-	try {
-		frame.setSelected(true);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace();
-	}
-}
-
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 4:42:35 AM)
+// */
+//public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
+//	if (!BeanUtils.arrayContains(pane.getAllFrames(),frame)){
+//		pane.add(frame);
+//	}
+//	
+//	if (frame.isClosed()) {
+//		try {
+//			frame.setClosed(false);
+//		} catch (java.beans.PropertyVetoException exc) {
+//		}
+//	}
+//	if (frame.isIcon()) {
+//		try {
+//			frame.setIcon(false);
+//		} catch (java.beans.PropertyVetoException exc) {
+//		}
+//	}
+//	//frame.pack();
+//	frame.setSize(750, 600);
+////	BeanUtils.centerOnComponent(frame, pane);
+//	frame.show();
+//	try {
+//		frame.setSelected(true);
+//	} catch (PropertyVetoException e) {
+//		e.printStackTrace();
+//	}
+//}
+//
 
 /**
  * Comment
@@ -915,12 +880,7 @@ public void startExport(
  * Comment
  */
 public void tileWindows(boolean horizontal) {
-	JInternalFrame[] iframes = getOpenWindows();
-	Rectangle[] bounds = BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
-	for (int i=0;i<iframes.length;i++) {
-		iframes[i].setBounds(bounds[i]);
-		iframes[i].show();
-	}
+	ChildWindowManager.findChildWindowManager(getComponent()).tileWindows(horizontal);
 }
 
 public abstract void updateConnectionStatus(ConnectionStatus connStatus);

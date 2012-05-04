@@ -65,7 +65,6 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -657,7 +656,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		jDialog.getContentPane().add(copyOfImageAttributePanel,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
 		jDialog.setSize(500,300);
-		ZEnforcer.showModalDialogOnTop(jDialog,overlayEditorPanelJAI);
+		DialogUtils.showModalJDialogOnTop(jDialog,overlayEditorPanelJAI);
 
 		if(cancelHolder[0]){
 			throw UserCancelException.CANCEL_GENERIC;
@@ -821,7 +820,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
 		jDialog.setSize(700,600);
-		ZEnforcer.showModalDialogOnTop(jDialog,parentComponent);
+		DialogUtils.showModalJDialogOnTop(jDialog,parentComponent);
 		
 		if(finalGeometryHolder[0] == null){
 			throw UserCancelException.CANCEL_GENERIC;

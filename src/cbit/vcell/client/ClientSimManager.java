@@ -38,6 +38,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
@@ -316,8 +317,15 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 				final VCSimulationIdentifier vcSimulationIdentifier = simsToShow[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();				
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
 				if (simWindow != null) {
-					JInternalFrame existingFrame = simWindow.getFrame();
-					documentWindowManager.showFrame(existingFrame);
+					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(documentWindowManager.getComponent());
+					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
+					if (childWindow==null){
+						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, simWindow.getTitle());
+					}
+					childWindow.pack();
+					childWindow.show();
+//					JInternalFrame existingFrame = simWindow.getFrame();
+//					documentWindowManager.showFrame(existingFrame);
 				} else {					
 					// wire it up the viewer
 					DataViewerController viewerController = dataViewerControllers.get(vcSimulationIdentifier);

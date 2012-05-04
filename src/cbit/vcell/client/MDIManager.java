@@ -59,7 +59,7 @@ DatabaseWindowManager getDatabaseWindowManager();
  * Creation date: (5/24/2004 12:39:55 PM)
  * @return int
  */
-int getNewlyCreatedDesktops();
+int getNumCreatedDocumentWindows();
 
 
 /**
