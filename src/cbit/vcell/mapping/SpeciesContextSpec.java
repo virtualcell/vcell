@@ -118,9 +118,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 					|| fieldParameterRole == ROLE_BoundaryValueZp) {
 				if (fieldUnitDefinition != null) {
 					VCUnitDefinition lengthPerTimeUnitDefn = getLengthPerTimeUnit();
-					if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition())) {
+					if (fieldUnitDefinition.isEquivalent(getSpeciesContext().getUnitDefinition())) {
 						return "<html><i>&lt;initial value&gt;</i></html>"; 
-					} else if (fieldUnitDefinition.compareEqual(getSpeciesContext().getUnitDefinition().multiplyBy(lengthPerTimeUnitDefn))){
+					} else if (fieldUnitDefinition.isEquivalent(getSpeciesContext().getUnitDefinition().multiplyBy(lengthPerTimeUnitDefn))){
 						return "<html><i>&lt;zero flux&gt;</i></html>";
 					}
 				}

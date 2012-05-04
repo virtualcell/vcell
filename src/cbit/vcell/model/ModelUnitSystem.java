@@ -71,6 +71,7 @@ public class ModelUnitSystem extends VCUnitSystem {
 		private VCUnitDefinition currentDensityUnit = null;
 		private VCUnitDefinition permeabilityUnit = null;
 		private VCUnitDefinition diffusionRateUnit = null;
+
 		private VCUnitDefinition TemperatureUnit = null;
 		private VCUnitDefinition FaradayUnit = null;
 		private VCUnitDefinition FaradayNMoleUnit = null;
@@ -217,7 +218,7 @@ public class ModelUnitSystem extends VCUnitSystem {
 
 		public VCUnitDefinition getFluxReactionUnit() {
 			if (fluxReactionUnit == null) {
-				String fluxReactionUnitSymbol = UNITSYMBOL_volumeConcentrationUnit+ "." + UNITSYMBOL_lengthUnit + "-1." + UNITSYMBOL_timeUnit + "-1";
+				String fluxReactionUnitSymbol = UNITSYMBOL_volumeConcentrationUnit+ "." + UNITSYMBOL_lengthUnit + "." + UNITSYMBOL_timeUnit + "-1";
 				fluxReactionUnit = getInstance(fluxReactionUnitSymbol);
 			} 
 			return fluxReactionUnit;

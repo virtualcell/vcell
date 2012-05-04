@@ -38,7 +38,7 @@ public class VCUnitEvaluator {
 			VCUnitDefinition oldUnit = hashMap.put(keySTE,unitDefinition);
 			if (oldUnit==null){
 				bDirty = true;
-			}else if (!oldUnit.isTBD() && !unitDefinition.compareEqual(oldUnit)){
+			}else if (!oldUnit.isTBD() && !unitDefinition.isEquivalent(oldUnit)){
 				throw new RuntimeException("unit for '"+keySTE.getName()+"' set to '"+unitDefinition.getSymbol()+"', was '"+oldUnit.getSymbol());
 			}
 			return oldUnit;
@@ -100,7 +100,7 @@ public class VCUnitEvaluator {
 			} else if (unit1.isTBD()){
 				assignAndVerify(unit0,child1,unitsHashMap);
 				return;
-			} else if (!unit0.compareEqual(unit1)){
+			} else if (!unit0.isEquivalent(unit1)){
 				throw new RuntimeException("operands of a relational operator are not same ["+unit0.getSymbol()+"] and ["+unit1.getSymbol()+"]");
 			} else {
 				assignAndVerify(unit0,child0,unitsHashMap);
@@ -150,7 +150,7 @@ public class VCUnitEvaluator {
 				}
 				if (unknownChildCount==0 && constantChildCount==0){
 					// should cancel to dimensionless, but if constant children (numbers...) are used in a product, then can assume appropriate units.
-					if (!accumUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
+					if (!accumUnit.isEquivalent(unitSystem.getInstance_DIMENSIONLESS())){
 						//accumUnit.show();
 						//accumUnit.compareEquals(unitSystem.getInstance_DIMENSIONLESS());
 						throw new RuntimeException("expression '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' missing factor of '"+accumUnit.getSymbol()+"'");
@@ -211,7 +211,7 @@ public class VCUnitEvaluator {
 					assignAndVerify(nodeUnit,(SimpleNode)node.jjtGetChild(i),unitsHashMap);
 				}
 			} else {
-				if (!nodeUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
+				if (!nodeUnit.isEquivalent(unitSystem.getInstance_DIMENSIONLESS())){
 					throw new RuntimeException("function '"+functionName+"' should be dimensionless, assignAndVerify trying to impose '"+nodeUnit.getSymbol());
 				}
 				//
@@ -266,7 +266,7 @@ public class VCUnitEvaluator {
 					continue;
 				}
 			}
-			if (!unit.compareEqual(units[i])){
+			if (!unit.isEquivalent(units[i])){
 				throw new VCUnitException("Incompatible units: [" + unit.getSymbol() + "] and [" + units[i].getSymbol() + "]");
 			}
 		}
@@ -305,7 +305,7 @@ public class VCUnitEvaluator {
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 				VCUnitDefinition childUnit = getUnitDefinition(child,unitsHashMap);
-				if (!childUnit.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
+				if (!childUnit.isEquivalent(unitSystem.getInstance_DIMENSIONLESS())){
 					throw new VCUnitException("argument to boolean expression '"+child.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' must be dimensionless");
 				}
 			}
@@ -365,10 +365,10 @@ public class VCUnitEvaluator {
 				SimpleNode child1 =  (SimpleNode)node.jjtGetChild(1);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 				VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
-				if (!unit1.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.compareEqual(unitSystem.getInstance_TBD())){
+				if (!unit1.isEquivalent(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.isTBD()){
 					throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
-				if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
+				if (unit0.isEquivalent(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
 					return unit0;
 				}
 				try {
@@ -381,14 +381,14 @@ public class VCUnitEvaluator {
 			}else if (functionName.equalsIgnoreCase("exp")) {       
 				SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
-				if (!unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit0.isTBD()){
+				if (!unit0.isEquivalent(unitSystem.getInstance_DIMENSIONLESS()) && !unit0.isTBD()){
 					throw new VCUnitException("exponent of exp() '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
 				return unitSystem.getInstance_DIMENSIONLESS();
 			}else if (functionName.equalsIgnoreCase("sqrt")) {       
 				SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
-				if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
+				if (unit0.isEquivalent(unitSystem.getInstance_DIMENSIONLESS()) || unit0.isTBD()){
 					return unit0;
 				}
 				RationalNumber rn = new RationalNumber(1,2);
@@ -413,10 +413,10 @@ public class VCUnitEvaluator {
 			SimpleNode child1 =  (SimpleNode)node.jjtGetChild(1);
 			VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 			VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
-			if (!unit1.compareEqual(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.compareEqual(unitSystem.getInstance_TBD())){
+			if (!unit1.isEquivalent(unitSystem.getInstance_DIMENSIONLESS()) && !unit1.isTBD()){
 				throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 			}
-			if (unit0.compareEqual(unitSystem.getInstance_DIMENSIONLESS())){
+			if (unit0.isEquivalent(unitSystem.getInstance_DIMENSIONLESS())){
 				return unitSystem.getInstance_DIMENSIONLESS();
 			}
 			boolean bConstantExponent = false;

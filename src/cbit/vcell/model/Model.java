@@ -903,7 +903,7 @@ public void gatherIssues(List<Issue> issueList) {
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				} else if (paramUnitDef.isTBD()) {
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
-				} else if (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
+				} else if (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
 					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){

@@ -670,7 +670,7 @@ public void resolveUndefinedUnits() {
 			for (int i=0;i<fieldParameters.length;i++){
 				if (fieldParameters[i].getUnitDefinition()==null){
 					return; // not ready to resolve units yet
-				}else if (fieldParameters[i].getUnitDefinition().compareEqual(unitSystem.getInstance_TBD())){
+				}else if (fieldParameters[i].getUnitDefinition().isTBD()){
 					bAnyTBDUnits = true;
 				}
 			}
@@ -681,7 +681,7 @@ public void resolveUndefinedUnits() {
 				VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(unitSystem);
 				VCUnitDefinition vcUnitDefinitions[] = unitEvaluator.suggestUnitDefinitions(fieldParameters);
 				for (int i = 0; i < fieldParameters.length; i++){
-					if (!fieldParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
+					if (!fieldParameters[i].getUnitDefinition().isEquivalent(vcUnitDefinitions[i])){
 						fieldParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
 					}
 				}

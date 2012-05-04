@@ -3274,7 +3274,7 @@ public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 
 	return outputFunctionsElement;
 }
-public Element getXML(ModelParameter[] modelParams, ModelUnitSystem modelUnitSystem) {
+public Element getXML(ModelParameter[] modelParams) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
 		Element glParamElement = new Element(XMLTags.ParameterTag);
@@ -3327,7 +3327,7 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 	// get global parameters
 	ModelParameter[] modelGlobals = param.getModelParameters();
 	if (modelGlobals != null && modelGlobals.length > 0) {
-		modelnode.addContent(getXML(modelGlobals, param.getUnitSystem()));
+		modelnode.addContent(getXML(modelGlobals));
 	}
 
 
