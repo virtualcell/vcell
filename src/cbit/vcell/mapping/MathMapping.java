@@ -2140,8 +2140,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 		}
 		if (mappedFM != null){
-			subDomain.setBoundaryConditionXm(mappedFM.getBoundaryConditionTypeXm());
-			subDomain.setBoundaryConditionXp(mappedFM.getBoundaryConditionTypeXp());
+			if (simContext.getGeometry().getDimension()>0){
+				subDomain.setBoundaryConditionXm(mappedFM.getBoundaryConditionTypeXm());
+				subDomain.setBoundaryConditionXp(mappedFM.getBoundaryConditionTypeXp());
+			}
 			if (simContext.getGeometry().getDimension()>1){
 				subDomain.setBoundaryConditionYm(mappedFM.getBoundaryConditionTypeYm());
 				subDomain.setBoundaryConditionYp(mappedFM.getBoundaryConditionTypeYp());
