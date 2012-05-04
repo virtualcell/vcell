@@ -34,7 +34,6 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.plot.TimeFunctionPanel;
@@ -1291,7 +1290,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 		});
     	jdialog.setContentPane(timeFunctionPanel);
     	jdialog.pack();
-    	ZEnforcer.showModalDialogOnTop(jdialog, this);
+    	DialogUtils.showModalJDialogOnTop(jdialog, this);
     	
 
 	}

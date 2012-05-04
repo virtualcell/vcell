@@ -30,8 +30,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
-import org.vcell.util.gui.ZEnforcer;
 
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -97,6 +98,8 @@ public class DBReactionWizardPanel extends javax.swing.JPanel implements java.aw
 	private Hashtable<String, Vector<String>> mapRXStringtoRXIDs = new Hashtable<String, Vector<String>>();
 	private Hashtable<KeyValue, KeyValue> mapRXIDtoBMIDs = new Hashtable<KeyValue, KeyValue>();
 	private Hashtable<KeyValue, KeyValue> mapRXIDtoStructRefIDs = new Hashtable<KeyValue, KeyValue>();
+	
+	private ChildWindow childWindow = null;
 	//
 	private ReactionDescription resolvedReaction = null;
 	private javax.swing.JButton ivjBackJButton = null;
@@ -130,7 +133,7 @@ public class DBReactionWizardPanel extends javax.swing.JPanel implements java.aw
 	private javax.swing.JRadioButton ivjSearchUserJRadioButton = null;
 	private javax.swing.ButtonGroup ivjSearchTypeButtonGroup = null;
 	private ReactionStep fieldReactionStep0 = null;
-	private javax.swing.JButton ivjJButton1 = null;
+	private javax.swing.JButton jButtonClose = null;
 	private ReactionDescription fieldReactionDescription = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjRXDescriptionLSM = null;
@@ -157,7 +160,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC13(e);
 			if (e.getSource() == DBReactionWizardPanel.this.getNextJButton()) 
 				connEtoC14(e);
-			if (e.getSource() == DBReactionWizardPanel.this.getJButton1()) 
+			if (e.getSource() == DBReactionWizardPanel.this.getJButtonClose()) 
 				connEtoC26(e);
 			if (e.getSource() == DBReactionWizardPanel.this.getFindRXTextRadioButton()) 
 				connEtoC15(e);
@@ -238,6 +241,13 @@ public DBReactionWizardPanel(boolean isDoubleBuffered) {
 	super(isDoubleBuffered);
 }
 
+public void setChildWindow(ChildWindow childWindow){
+	this.childWindow = childWindow;
+}
+
+public ChildWindow getChildWindow(){
+	return this.childWindow;
+}
 
 	/**
 	 * Invoked when an action occurs.
@@ -390,16 +400,9 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
  * Creation date: (9/18/2003 2:01:32 PM)
  */
 private void closeParent() {
-    //Try to close whoever contains us
-    javax.swing.JInternalFrame jif = (javax.swing.JInternalFrame)BeanUtils.findTypeParentOfComponent(this, javax.swing.JInternalFrame.class);
-    if (jif != null) {
-        jif.dispose();
-    } else {
-        java.awt.Window window = (java.awt.Window)BeanUtils.findTypeParentOfComponent(this, java.awt.Window.class);
-        if (window != null) {
-            window.dispose();
-        }
-    }
+	if (childWindow!=null){
+		childWindow.close();
+	}
 }
 
 
@@ -1304,12 +1307,12 @@ private javax.swing.JButton getFinishJButton() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButton1() {
-	if (ivjJButton1 == null) {
+private javax.swing.JButton getJButtonClose() {
+	if (jButtonClose == null) {
 		try {
-			ivjJButton1 = new javax.swing.JButton();
-			ivjJButton1.setName("JButton1");
-			ivjJButton1.setText("Close");
+			jButtonClose = new javax.swing.JButton();
+			jButtonClose.setName("JButtonClose");
+			jButtonClose.setText("Close");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1318,7 +1321,7 @@ private javax.swing.JButton getJButton1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJButton1;
+	return jButtonClose;
 }
 
 
@@ -2187,7 +2190,7 @@ private void initConnections() throws java.lang.Exception {
 	getNextJButton().addActionListener(ivjEventHandler);
 	getReactionsJList().addPropertyChangeListener(ivjEventHandler);
 	getParameterNamesJList().addPropertyChangeListener(ivjEventHandler);
-	getJButton1().addActionListener(ivjEventHandler);
+	getJButtonClose().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getParameterValuesJList().addPropertyChangeListener(ivjEventHandler);
 	getFindRXTextRadioButton().addActionListener(ivjEventHandler);
@@ -2231,7 +2234,7 @@ private void initialize() {
 		constraintsJButton1.gridx = 1; constraintsJButton1.gridy = 1;
 		constraintsJButton1.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJButton1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJButton1(), constraintsJButton1);
+		add(getJButtonClose(), constraintsJButton1);
 		initConnections();
 		connEtoC4();
 	} catch (java.lang.Throwable ivjExc) {
@@ -3047,7 +3050,7 @@ private DBFormalSpecies showSpeciesBrowser() {
 	sqd.setDocumentManager(getDocumentManager());
 	sqd.setSize(550,500);
 	BeanUtils.centerOnScreen(sqd);
-	ZEnforcer.showModalDialogOnTop(sqd,this);
+	DialogUtils.showModalJDialogOnTop(sqd,this);
 	//sqd.setVisible(true);
 
 	DBFormalSpecies dbfs = null;

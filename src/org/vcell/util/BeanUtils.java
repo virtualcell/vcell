@@ -161,41 +161,35 @@ public final class BeanUtils {
 		}
 	}
 
-	public static void centerOnComponent(Component c, Component reference) {
-		if (c == null) {
+	public static void centerOnComponent(Window window, Component reference) {
+		if (window == null) {
 			return;
 		}
 		if (reference == null) {
 			System.out.println("BeanUtils.centerOnComponent, reference=null");
 			Thread.dumpStack();
-			c.setLocation(0, 0);
+			window.setLocation(0, 0);
 			return;
 		}
 		try{
 			Point pR = reference.getLocationOnScreen();
-			if (!(c instanceof Window)) { // not top level window, has to use relative coordinates.
-				if (reference instanceof JDesktopPane || (findTypeParentOfComponent(reference, JDesktopPane.class) != null)) {
-					Component rootComponent = SwingUtilities.getRoot(reference);
-					SwingUtilities.convertPointFromScreen(pR,rootComponent);
-				}
-			}
-			pR.x += Math.max((reference.getWidth() - c.getWidth()) / 2, 0);
-			pR.y += Math.max((reference.getHeight() - c.getHeight()) / 2, 0);
-			c.setLocation(pR);
+			pR.x += Math.max((reference.getWidth() - window.getWidth()) / 2, 0);
+			pR.y += Math.max((reference.getHeight() - window.getHeight()) / 2, 0);
+			window.setLocation(pR);
 		}catch(Exception e){
-			centerOnScreen(c);
+			centerOnScreen(window);
 		}
 	}
 
-	public static void centerOnScreen(Component c) {
-		if (c != null) {
+	public static void centerOnScreen(Window window) {
+		if (window != null) {
 			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-			Dimension size = c.getSize();
+			Dimension size = window.getSize();
 			if (size.height > screenSize.height)
 				size.height = screenSize.height;
 			if (size.width > screenSize.width)
 				size.width = screenSize.width;
-			c.setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height) / 2);
+			window.setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height) / 2);
 		}
 	}
 
@@ -316,15 +310,6 @@ public final class BeanUtils {
 		return clone;
 	}
 
-	public static void closeAllWindows(JDesktopPane pane) {
-		JInternalFrame[] frames = pane.getAllFrames();
-		if (frames != null) {
-			for (int i = 0; i < frames.length; i++){
-				pane.getDesktopManager().closeFrame(frames[i]);
-			}
-		}
-	}
-
 	public static byte[] compress(byte[] bytes) throws java.io.IOException {	
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
@@ -351,15 +336,17 @@ public final class BeanUtils {
 		return index;
 	}
 
-	public static void dispose(Component disposableChild){
+	/**
+	 * @deprecated should not have to do this
+	 * @param disposableChild
+	 */
+	public static void disposeParentWindow(Component disposableChild){
 		if(BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class) != null){
 			((JDialog)BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class)).dispose();
-		}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class) != null){
-			((JInternalFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class)).dispose();
 		}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class) != null){
 			((JFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class)).dispose();
 		}else{
-			throw new IllegalArgumentException(BeanUtils.class.getName()+".dispose(...) only handles JInternalFrame and JFrame parents");
+			throw new IllegalArgumentException(BeanUtils.class.getName()+".dispose(...) only handles JFrame parents");
 		}
 	}
 

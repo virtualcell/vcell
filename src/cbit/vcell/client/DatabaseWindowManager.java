@@ -49,7 +49,7 @@ import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.ZEnforcer;
+
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.ACLEditor;
@@ -1030,7 +1030,7 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
 	accessPermissionDialog.setValue(null);
 	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d,requester);
+	DialogUtils.showModalJDialogOnTop(d,requester);
 	return accessPermissionDialog.getValue();
 }
 
@@ -1108,7 +1108,7 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
 	getMathModelDbTreePanel().addActionListener(doubleClickListener);
 	getGeometryTreePanel().addActionListener(doubleClickListener);
 
-	ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
+	DialogUtils.showModalJDialogOnTop(theJDialog,requester.getComponent());
 	
 	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
 	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
@@ -1166,7 +1166,7 @@ public String showSaveDialog(final int documentType, final Component requester, 
 	final Timer getFocus = new Timer(100, al);
 	getFocus.setRepeats(false);
 	getFocus.start();	
-	ZEnforcer.showModalDialogOnTop(d,requester);
+	DialogUtils.showModalJDialogOnTop(d,requester);
 	if ("Save".equals(saveDialog.getValue())) {
 		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
 	} else {

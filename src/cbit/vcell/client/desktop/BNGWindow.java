@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.client.desktop;
+
+import cbit.vcell.client.ChildWindowManager;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2006 11:06:11 AM)
@@ -17,6 +20,7 @@ package cbit.vcell.client.desktop;
 public class BNGWindow extends javax.swing.JFrame implements TopLevelWindow {
 	private javax.swing.JPanel ivjJFrameContentPane = null;
 	private cbit.vcell.client.BNGWindowManager fieldBngWindowManager = null;
+	private final ChildWindowManager childWindowManager;
 
 /**
  * BNGWindow constructor comment.
@@ -24,6 +28,7 @@ public class BNGWindow extends javax.swing.JFrame implements TopLevelWindow {
 public BNGWindow() {
 	super();
 	initialize();
+	childWindowManager = new ChildWindowManager(this);
 }
 
 /**
@@ -170,4 +175,8 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {}
  * @param i int
  */
 public void updateWhileInitializing(int i) {}
+
+public ChildWindowManager getChildWindowManager() {
+	return childWindowManager;
+}
 }

@@ -48,4 +48,7 @@ void updateMemoryStatus(long freeBytes, long totalBytes);
  * @param i int
  */
 void updateWhileInitializing(int i);
+
+
+ChildWindowManager getChildWindowManager();
 }

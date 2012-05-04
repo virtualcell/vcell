@@ -197,7 +197,7 @@ public class DialogUtils {
 				dialog.setResizable(true);
 				dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 				try {
-					ZEnforcer.showModalDialogOnTop(dialog,requester);
+					DialogUtils.showModalJDialogOnTop(dialog,requester);
 					if (checkBox!=null){
 						preferences.setShowWarning(userMessage.getUserPreferenceWarning(), ! checkBox.isSelected());
 					}
@@ -370,7 +370,7 @@ public static String showAnnotationDialog(final Component requester, final Strin
 			final JDialog dialog = pane.createDialog(requester, "Edit Annotation:");
 			dialog.setResizable(true);
 			try {
-				ZEnforcer.showModalDialogOnTop(dialog,requester);
+				DialogUtils.showModalJDialogOnTop(dialog,requester);
 				Object selectedValue = pane.getValue();
 				if(selectedValue == null ||
 					(((Integer)selectedValue).intValue() == JOptionPane.CLOSED_OPTION) ||
@@ -401,7 +401,7 @@ public static void showComponentCloseDialog(final Component requester,final Comp
 			final JDialog d = inputDialog.createDialog(requester, title);
 			d.setResizable(true);
 			try {
-				ZEnforcer.showModalDialogOnTop(d,requester);				
+				DialogUtils.showModalJDialogOnTop(d, requester);				
 			}finally {
 				d.dispose();
 			}
@@ -426,7 +426,7 @@ public static int showComponentOKCancelDialog(final Component requester,final Co
  * @param owner java.awt.Component
  * @param message java.lang.Object
  */
-private static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
+public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
 	Component newRequester = requester;
 	if (requester instanceof JTable) {
 		newRequester = BeanUtils.findTypeParentOfComponent(requester, Window.class);
@@ -438,7 +438,7 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 		okEnabler.setJOptionPane(inputDialog);
 	}
 	try {
-		ZEnforcer.showModalDialogOnTop(d,newRequester);
+		DialogUtils.showModalJDialogOnTop(d, newRequester);
 		if(inputDialog.getValue() instanceof Integer){
 			return ((Integer)inputDialog.getValue()).intValue();
 		}else if(inputDialog.getValue() == null){
@@ -598,7 +598,7 @@ private static String showDialog(final Component requester, String title, final 
 	dialog.setResizable(true);
 	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 	try {
-		ZEnforcer.showModalDialogOnTop(dialog,requester);
+		DialogUtils.showModalJDialogOnTop(dialog, requester);
 		Object selectedValue = pane.getValue();
 		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
 			return SimpleUserMessage.OPTION_CANCEL;
@@ -623,7 +623,7 @@ private static String showOptionsDialog(final Component requester,Component show
 		okEnabler.setJOptionPane(pane);
 	}
 	try {
-		ZEnforcer.showModalDialogOnTop(dialog,requester);
+		DialogUtils.showModalJDialogOnTop(dialog, requester);
 		Object selectedValue = pane.getValue();
 		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
 			return SimpleUserMessage.OPTION_CANCEL;
@@ -672,7 +672,7 @@ public static void showErrorDialog(final Component requester, final String messa
 			JDialog dialog = pane.createDialog(requester, "Error");
 			dialog.setResizable(true);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog,requester);
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
 				if (bSER && VCellClientTest.getVCellClient() != null) {
 					VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
 				}
@@ -689,7 +689,7 @@ public static void showWarningDialog(final Component requester, final String mes
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareWarningDialog(requester, message);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog, requester);
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
 			}finally{
 				dialog.dispose();
 			}
@@ -714,7 +714,7 @@ public static void showInfoDialog(final Component requester, final String title,
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareInfoDialog(requester, title, message);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog, requester);
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
 			}finally{
 				dialog.dispose();
 			}
@@ -755,7 +755,7 @@ public static String showInputDialog0(final Component requester,final  String me
 				String id = Long.toString(System.currentTimeMillis());
 				Hashtable<String, Object> choices  = new Hashtable<String, Object>();
 				try {
-					ZEnforcer.showModalDialogOnTop(d,requester);				
+					DialogUtils.showModalJDialogOnTop(d,requester);				
 					if(inputDialog.getValue() instanceof Integer && ((Integer)inputDialog.getValue()).intValue() == JOptionPane.CANCEL_OPTION){
 						throw UtilCancelException.CANCEL_GENERIC;
 					}
@@ -845,7 +845,7 @@ public static Object showListDialog(final Component requester,final  Object[] na
 			final JDialog dialog = pane.createDialog(requester, dialogTitle);
 			dialog.setResizable(true);
 			try {
-				ZEnforcer.showModalDialogOnTop(dialog,requester);
+				DialogUtils.showModalJDialogOnTop(dialog,requester);
 				Object selectedValue = pane.getValue();
 				if(selectedValue == null || (((Integer)selectedValue).intValue() == JOptionPane.CLOSED_OPTION) || (((Integer)selectedValue).intValue() == JOptionPane.CANCEL_OPTION)) {
 					return null;
@@ -888,7 +888,7 @@ protected static void showReportDialog(final Component requester, final String r
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION); 
 			final JDialog dialog = pane.createDialog(requester, "Complete Report");
 			try {
-				ZEnforcer.showModalDialogOnTop(dialog, requester);
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
 				return null;
 			}finally {
 				dialog.dispose();
@@ -936,6 +936,11 @@ public static String showOKCancelWarningDialog(final Component parentComponent, 
 			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
 		}
 	}.dispatchWrapRuntime();	
+}
+
+public static void showModalJDialogOnTop(JDialog jdialog, Component component) {
+	jdialog.setModal(true);
+	jdialog.setVisible(true);
 }
 
 }

@@ -240,7 +240,7 @@ public class ROIAssistPanel extends JPanel {
 				if(disposableWindow != null){
 					disposableWindow.dispose();
 				}else{
-					BeanUtils.dispose(ROIAssistPanel.this);
+					BeanUtils.disposeParentWindow(ROIAssistPanel.this);
 				}
 			}
 		});
@@ -260,7 +260,7 @@ public class ROIAssistPanel extends JPanel {
 				if(disposableWindow != null){
 					disposableWindow.dispose();
 				}else{
-					BeanUtils.dispose(ROIAssistPanel.this);
+					BeanUtils.disposeParentWindow(ROIAssistPanel.this);
 				}
 			}
 		});

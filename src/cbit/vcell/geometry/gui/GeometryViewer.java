@@ -34,7 +34,6 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -42,6 +41,7 @@ import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.image.gui.SourceDataInfo;
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -57,7 +57,6 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.mathmodel.MathModel;
 /**
  * This type was created in VisualAge.
@@ -68,7 +67,6 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	private javax.swing.JLabel ivjSizeLabel = null;
 	private Geometry ivjGeometry = null;
 	private CurveRendererGeometry ivjCurveRendererGeometry1 = null;
-	private GeometryFilamentCurveDialog ivjGeometryFilamentCurveDialog1 = null;
 	private ImagePlaneManagerPanel ivjImagePlaneManagerPanel1 = null;
 	private GeometrySizeDialog ivjGeometrySizeDialog1 = null;
 	private javax.swing.JButton ivjJButtonChangeDomain = null;
@@ -301,28 +299,6 @@ public Geometry getGeometry() {
 	// user code begin {1}
 	// user code end
 	return ivjGeometry;
-}
-
-/**
- * Return the GeometryFilamentCurveDialog1 property value.
- * @return cbit.vcell.geometry.GeometryFilamentCurveDialog
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public GeometryFilamentCurveDialog getGeometryFilamentCurveDialog1() {
-	if (ivjGeometryFilamentCurveDialog1 == null) {
-		try {
-			ivjGeometryFilamentCurveDialog1 = new GeometryFilamentCurveDialog();
-			ivjGeometryFilamentCurveDialog1.setName("GeometryFilamentCurveDialog1");
-			ivjGeometryFilamentCurveDialog1.setLocation(618, 437);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjGeometryFilamentCurveDialog1;
 }
 
 /**
@@ -673,7 +649,7 @@ public void setGeometry(Geometry newValue) {
  */
 private void showSizeDialog() {	
 	getGeometrySizeDialog1().init(getGeometry());
-	ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
+	DialogUtils.showModalJDialogOnTop(getGeometrySizeDialog1(),this);
 }
 
 public void stateChanged(ChangeEvent e) {

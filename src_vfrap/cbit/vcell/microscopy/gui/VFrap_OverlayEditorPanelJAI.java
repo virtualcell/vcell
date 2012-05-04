@@ -15,7 +15,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -35,8 +34,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -58,12 +57,11 @@ import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
@@ -224,10 +222,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return true;
 	}
 	private void waitCursor(boolean bOn){
-		Container topLevelContainer = BeanUtils.findTypeParentOfComponent(this, JDesktopPane.class);
-		if(topLevelContainer == null){
-			topLevelContainer = BeanUtils.findTypeParentOfComponent(this, Frame.class);
-		}
+		Container topLevelContainer = BeanUtils.findTypeParentOfComponent(this, JFrame.class);
 		BeanUtils.setCursorThroughout(topLevelContainer,
 				(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
 		if(!bOn){

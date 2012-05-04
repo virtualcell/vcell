@@ -33,7 +33,6 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
@@ -45,6 +44,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
@@ -172,14 +172,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				}						
 			};		
 			
-			if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PdeTimePlotMultipleVariablesPanel.this) != null)
-			{//for vcell which has non-modal progress 
-				ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
-			}
-			else//for vfrap to show modal progress on top
-			{
-				ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
-			}
+			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
@@ -205,7 +199,13 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			plotNames[i] = varName + " at P[" + i +"]";
 			String point = "P[" + i +"]  (" + niceCoordinateString(tp)+")";
 			pointListModel.addElement(point);
-			symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
+			if (simulation!=null){
+				symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
+			}else{
+				System.out.println("PdeTimePlotMultipleVariablesPanel.initialize() adding artificial symbol table entries for field data");
+				SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[] { varName });
+				symbolTableEntries[0] = simpleSymbolTable.getEntry(varName);			
+			}
 		}
 		pointJList.setModel(pointListModel);
 		pointJList.setForeground(variableJList.getForeground());

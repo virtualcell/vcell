@@ -79,7 +79,6 @@ import org.vcell.util.gui.ExtensionFilter;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.gui.ImageResizePanel;
@@ -128,7 +127,8 @@ import cbit.vcell.client.task.SaveDocument;
 import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
-import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.desktop.LoginManager;
+import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -858,7 +858,7 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 
 private BioModel createDefaultBioModelDocument() throws Exception {
 	BioModel bioModel = new BioModel(null);
-	bioModel.setName("BioModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
+	bioModel.setName("BioModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
 	Model model = bioModel.getModel();
 	model.createFeature(null);
 	return bioModel;
@@ -867,7 +867,7 @@ private BioModel createDefaultBioModelDocument() throws Exception {
 private MathModel createDefaultMathModelDocument() throws Exception {
 	Geometry geometry = new Geometry("Untitled", 0);
 	MathModel mathModel = createMathModel("Untitled", geometry);
-	mathModel.setName("MathModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
+	mathModel.setName("MathModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
 	return mathModel;
 }
 
@@ -1475,7 +1475,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							geometry = (Geometry)hashTable.get(GEOMETRY_KEY);
 						}
 						MathModel mathModel = createMathModel("Untitled", geometry);
-						mathModel.setName("MathModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
+						mathModel.setName("MathModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
 						hashTable.put("doc", mathModel);
 					}
 				};
@@ -1567,7 +1567,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 				AsynchClientTask task1 = new AsynchClientTask("creating analytic geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
+						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1), documentCreationInfo.getOption());
 						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));
 						geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 						hashTable.put("doc", geometry);
@@ -1580,7 +1580,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 				AsynchClientTask task1 = new AsynchClientTask("creating constructed solid geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), 3);
+						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNumCreatedDocumentWindows() + 1), 3);
 						Extent extent = geometry.getExtent();
 						if (extent != null) {
 							// create a CSGPrimitive of type cube and scale it to the 'extent' components. Use this as the default or background CSGObject (subdomain).
@@ -1715,7 +1715,7 @@ public void updateUserRegistration(final DocumentWindowManager currWindowManager
 	try {
 		UserRegistrationOP.registrationOperationGUI(this, currWindowManager, 
 				getClientServerManager().getClientServerInfo(),
-				(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
+				(bNewUser?LoginManager.USERACTION_REGISTER:LoginManager.USERACTION_EDITINFO),
 				(bNewUser?null:getClientServerManager()));
 	} catch (UserCancelException e) {
 		return;
@@ -1731,7 +1731,7 @@ public void sendLostPassword(final DocumentWindowManager currWindowManager, fina
 		UserRegistrationOP.registrationOperationGUI(this, currWindowManager,
 				VCellClient.createClientServerInfo(
 					getClientServerManager().getClientServerInfo(), userid, null),
-				LoginDialog.USERACTION_LOSTPASSWORD,
+					LoginManager.USERACTION_LOSTPASSWORD,
 				null);
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -2217,7 +2217,7 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 				Geometry geometry = null;
 				geometry = (Geometry)hashTable.get("doc");
 				MathModel mathModel = createMathModel("Untitled", geometry);
-				mathModel.setName("MathModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
+				mathModel.setName("MathModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
 				hashTable.put("doc", mathModel);
 			}
 		};
@@ -2484,11 +2484,11 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
 	JPanel newJPanel = new JPanel();
 	if(doc instanceof BioModel){
-		return new BioModelWindowManager(newJPanel, ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+		return new BioModelWindowManager(newJPanel, ClientRequestManager.this, (BioModel)doc);
 	}else if(doc instanceof MathModel){
-		return new MathModelWindowManager(newJPanel, ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+		return new MathModelWindowManager(newJPanel, ClientRequestManager.this, (MathModel)doc);
 	}else if(doc instanceof Geometry){
-		return new GeometryWindowManager(newJPanel, ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+		return new GeometryWindowManager(newJPanel, ClientRequestManager.this, (Geometry)doc);
 	}
 	throw new RuntimeException("Unknown VCDocument type "+doc);
 }
@@ -3294,13 +3294,11 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 	compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	compareDialog.setResizable(true);
 	compareDialog.pack();
-	ZEnforcer.showModalDialogOnTop(compareDialog,JOptionPane.getFrameForComponent(requester.getComponent()));
+	compareDialog.setVisible(true);
+	//ZEnforcer.showModalDialogOnTop(compareDialog,JOptionPane.getFrameForComponent(requester.getComponent()));
 	if ("Apply Changes".equals(comparePane.getValue())) {
 		if (!comparePanel.tagsResolved()) {
-			JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
-			JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
-			messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
+			DialogUtils.showErrorDialog(comparePanel, "Please resolve all tagged elements/attributes before proceeding.");
 		} else {
 			BeanUtils.setCursorThroughout((Container)requester.getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {

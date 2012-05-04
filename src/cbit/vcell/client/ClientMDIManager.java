@@ -60,7 +60,7 @@ public class ClientMDIManager implements MDIManager {
 	private RequestManager requestManager = null;
 	private Hashtable<String, TopLevelWindow> windowsHash = new Hashtable<String, TopLevelWindow>();
 	private Hashtable<String, TopLevelWindowManager> managersHash = new Hashtable<String, TopLevelWindowManager>();
-	private int newlyCreatedDesktops = 0;
+	private int numCreatedDocumentWindows = 0;
 	
 	private WindowAdapter windowListener = new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
@@ -233,7 +233,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	setCanonicalTitle(windowID);
 	documentWindow.setWindowManager(windowManager);
 	documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
-	setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
+	setNewlyCreatedDesktops(getNumCreatedDocumentWindows() + 1);
 	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 	// done
 	documentWindow.setVisible(true);
@@ -383,8 +383,8 @@ private Hashtable<String, TopLevelWindowManager> getManagersHash() {
 /**
  * Return the value of the field newlyCreatedDesktops
  */
-public int getNewlyCreatedDesktops() {
-	return newlyCreatedDesktops;
+public int getNumCreatedDocumentWindows() {
+	return numCreatedDocumentWindows;
 }
 
 
@@ -532,7 +532,7 @@ public void setCanonicalTitle(java.lang.String windowID) {
  * Set the value of the field newlyCreatedDesktops
  */
 private void setNewlyCreatedDesktops(int aNewlyCreatedDesktops) {
-	newlyCreatedDesktops = aNewlyCreatedDesktops;
+	numCreatedDocumentWindows = aNewlyCreatedDesktops;
 }
 
 

@@ -37,11 +37,10 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
@@ -71,7 +70,6 @@ public class FieldDataWindowManager
 
 	private FieldDataGUIPanel fieldDataGUIPanel;
 	private ExternalDataIdentifier currentlyViewedEDI;
-	private JFrame currentlyViewedJFrame;
 	private PDEDataViewer currentlyViewedPDEDV;
 	
 	public static abstract class OpenModelInfoHolder{
@@ -252,14 +250,15 @@ public class FieldDataWindowManager
 		return 
 			((PDEDataManager)getRequestManager().getDataManager(null, eDI, true)).getPDEDataContext();
 	}
+	
 public void viewData(final ExternalDataIdentifier eDI){
 	
 	if(eDI != null && eDI.equals(currentlyViewedEDI)){
-		if((currentlyViewedJFrame.getExtendedState() & Frame.ICONIFIED) != 0){
-			currentlyViewedJFrame.setExtendedState(
-					currentlyViewedJFrame.getExtendedState() & (~Frame.ICONIFIED));
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+		ChildWindow childWindow = childWindowManager.getChildWindowFromContext(eDI);
+		if (childWindow!=null){
+			childWindow.show();
 		}
-		currentlyViewedJFrame.setVisible(true);
 	} else {
 		if(currentlyViewedPDEDV != null){
 			if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
@@ -269,10 +268,13 @@ public void viewData(final ExternalDataIdentifier eDI){
 				currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
 			}
 		}
-		if(currentlyViewedJFrame != null){
-			currentlyViewedJFrame.dispose();
+		if(currentlyViewedPDEDV != null){
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(eDI);
+			if (childWindow!=null){
+				childWindow.close();
+			}
 		}
-		currentlyViewedJFrame = null;
 		currentlyViewedEDI = null;
 		currentlyViewedPDEDV = null;
 		if(eDI == null){
@@ -292,7 +294,6 @@ public void viewData(final ExternalDataIdentifier eDI){
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {				
 				try{
-					final JDesktopPaneEnhanced jdp = new JDesktopPaneEnhanced();
 					currentlyViewedPDEDV = new PDEDataViewer();
 					PDEDataContext newPDEDataContext = (PDEDataContext)hashTable.get("newPDEDataContext");
 					currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
@@ -310,12 +311,6 @@ public void viewData(final ExternalDataIdentifier eDI){
 							return getRequestManager().getUserPreferences();
 						}
 						public void removeDataListener(DataListener newListener){
-						}
-						public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames){
-							for(int i=0;i<plotFrames.length;i+= 1){
-								plotFrames[i].setLocation(100,100);
-								DocumentWindowManager.showFrame(plotFrames[i], jdp);
-							}
 						}
 						public void startExport(
 								OutputContext outputContext,ExportSpecs exportSpecs){
@@ -336,22 +331,13 @@ public void viewData(final ExternalDataIdentifier eDI){
 						e.printStackTrace();
 					}
 					
-					JInternalFrameEnhanced jif = new JInternalFrameEnhanced("Field Data", true, false, true, true);
-					jif.setContentPane(currentlyViewedPDEDV);
-					jif.setSize(600,500);
-					jif.setClosable(false);
-					jif.setVisible(true);
-					
-					jdp.add(jif);
-		
-					JFrame jFrame = new JFrame("Field Data Viewer ("+eDI.getName()+")");
-					jFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-					jFrame.setContentPane(jdp);
-					jFrame.setSize(650, 550);
-					jFrame.setVisible(true);
-					
-					currentlyViewedJFrame = jFrame;
+					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 					currentlyViewedEDI = eDI;
+					ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedPDEDV, currentlyViewedEDI, "Field Data Viewer ("+eDI.getName()+")");
+					childWindow.setSize(600,500);
+					childWindow.setIsCenteredOnParent();
+					childWindow.show();
+
 				} catch (Exception e){
 					if(currentlyViewedPDEDV != null){
 						if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){

@@ -35,7 +35,6 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -50,20 +49,24 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
 
 /**
@@ -75,8 +78,12 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
 /** The main frame of the application. */
 @SuppressWarnings("serial")
-public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
+public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, TopLevelWindow
 {
+	private final ChildWindowManager childWindowManager;
+	
+	private final static String HELP_VIEWER_CONTEXT_OBJECT = "Help Viewer Context Object";
+	
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
 	private FRAPSingleWorkspace frapWorkspace = null;
@@ -130,7 +137,6 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private static StatusBar statusBarNew = new StatusBar();
 	public static ToolBar toolBar = null;
 	public static FRAPStudyPanel frapStudyPanel = null;
-	private HelpViewer hviewer = null;
 	private UndoableEdit lastUndoableEdit;
 	private PreferencePanel preferencePanel = null;
 	private VirtualFrapBatchRunFrame batchRunFrame = null;
@@ -301,24 +307,26 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 				}
 				else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
 				{
-					if(hviewer == null)
+					ChildWindow helpViewerWindow = childWindowManager.getChildWindowFromContext(HELP_VIEWER_CONTEXT_OBJECT);
+					if(helpViewerWindow == null)
 					{
-						//						SwingUtilities.invokeLater(new Runnable() {
-						//							public void run() {
-						//								// TODO Auto-generated method stub
-						hviewer = new HelpViewer();
-						//							}
-						//						});
+						VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
+						helpViewerWindow = getChildWindowManager().addChildWindow(hviewer,HELP_VIEWER_CONTEXT_OBJECT,"Virtual FRAP Help", false);
+						
+						helpViewerWindow.setIsCenteredOnParent();
+						helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
+						helpViewerWindow.pack();
+						helpViewerWindow.show();
 					}
 					else
 					{
-						hviewer.setVisible(true);
+						helpViewerWindow.show();
 					}
 
 				}
 				else if(arg.equals(ABOUT_ACTION_COMMAND))
 				{
-					new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapMainFrame.this);
+					DocumentWindow.showAboutBox(VirtualFrapMainFrame.this);
 				}else if(arg.equals(UNDO_ACTION_COMMAND)){
 					mUndo.setEnabled(false);
 					lastUndoableEdit.undo();
@@ -420,6 +428,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone)
 	{
 		super();
+		childWindowManager = new ChildWindowManager(this);
 		this.localWorkspace = localWorkspace;
 		this.frapWorkspace = frapWorkspace;
 		this.batchRunWorkspace = batchRunWorkspace;
@@ -698,6 +707,30 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public TopLevelWindowManager getTopLevelWindowManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void updateConnectionStatus(ConnectionStatus connectionStatus) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateMemoryStatus(long freeBytes, long totalBytes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateWhileInitializing(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ChildWindowManager getChildWindowManager() {
+		return childWindowManager;
 	}
 
 } // end of class MainFrame

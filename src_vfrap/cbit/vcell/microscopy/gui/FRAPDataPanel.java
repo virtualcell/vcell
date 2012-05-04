@@ -31,6 +31,8 @@ import cbit.plot.PlotPane;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -292,7 +294,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		double[] averageFluor =
 			FRAPDataAnalysis.getAverageROIIntensity(fStudy.getFrapData(),
 					fStudy.getFrapData().getCurrentlyDisplayedROI(),null,null);
-		FRAPDataPanel.showCurve(new String[] { "f" }, fStudy.getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
+		            showCurve(new String[] { "f" }, fStudy.getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
 	}
 	
 	public void saveROI(){
@@ -334,7 +336,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		return frapWorkspace;
 	}
 	
-	private static void showCurve(String[] varNames, double[] independent, double[][] dependents){
+	private void showCurve(String[] varNames, double[] independent, double[][] dependents){
 		PlotPane plotter = new PlotPane();
 		PlotData[] plotDatas = new PlotData[dependents.length];
 		for (int i = 0; i < plotDatas.length; i++) {
@@ -343,14 +345,12 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		Plot2D plot2D = new Plot2D(null, varNames, plotDatas);
 		
 		plotter.setPlot2D(plot2D);
-		
-		JDialog plotDialog = new JDialog();
-		plotDialog.setTitle("ROI time course");
-		plotDialog.getContentPane().add(plotter);
-		plotDialog.setLocation(new Point(300,300));
-		plotDialog.setSize(new Dimension(400,400));
-		plotDialog.setModal(true);
-		plotDialog.setVisible(true);
+
+		ChildWindow plotChildWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(plotter, plotter, "ROI time course", true);
+		plotChildWindow.setTitle("ROI time course");
+		plotChildWindow.setIsCenteredOnParent();
+		plotChildWindow.setSize(new Dimension(400,400));
+		plotChildWindow.showModal();
 	}
 	
 	

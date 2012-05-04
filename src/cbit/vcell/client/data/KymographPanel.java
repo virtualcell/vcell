@@ -18,7 +18,9 @@ import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -40,8 +42,8 @@ import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.text.DecimalFormat;
@@ -2028,7 +2030,12 @@ private void initDataManagerVariable(final String finalVarName) {
 				currentSelectionImg = new Point(0,closestTimeIndex);
 				currentSelectionUnit = new Point2D.Double(0,(double)closestTimeIndex/(double)(currentTimes.length-1));
 				configurePlotData((int)currentSelectionImg.getX(),(int)currentSelectionImg.getY());	
-				pdeDataViewer.showComponentInFrame(KymographPanel.this, title);
+				
+				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(pdeDataViewer);
+				ChildWindow childWindow = childWindowManager.addChildWindow(KymographPanel.this,KymographPanel.this,title);
+				childWindow.setIsCenteredOnParent();
+				childWindow.pack();
+				childWindow.show();
 				zoomToFill();
 			}else{
 				getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
@@ -2036,15 +2043,7 @@ private void initDataManagerVariable(final String finalVarName) {
 		}
 	};
 	
-	
-	if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(pdeDataViewer) != null)
-	{//for vcell which has non-modal progress 
-		ClientTaskDispatcher.dispatch(pdeDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
-	}
-	else//for vfrap to show modal progress on top
-	{
-		ClientTaskDispatcher.dispatch(this,  new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, true, null, true);
-	}
+	ClientTaskDispatcher.dispatch(this,  new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, true, null, true);
 }
 
 

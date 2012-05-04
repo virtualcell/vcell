@@ -19,6 +19,7 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import cbit.vcell.client.VCellClient;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -26,51 +27,6 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.resource.ResourceUtil;
 
 public class VirtualFrapLoader {
-	
-	public static class CheckThreadViolationRepaintManager extends RepaintManager {
-	    // it is recommended to pass the complete check  
-	    private boolean completeCheck = true;
-
-	    public boolean isCompleteCheck() {
-	        return completeCheck;
-	    }
-
-	    public void setCompleteCheck(boolean completeCheck) {
-	        this.completeCheck = completeCheck;
-	    }
-
-	    public synchronized void addInvalidComponent(JComponent component) {
-	        checkThreadViolations(component);
-	        super.addInvalidComponent(component);
-	    }
-
-	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
-	        checkThreadViolations(component);
-	        super.addDirtyRegion(component, x, y, w, h);
-	    }
-
-	    private void checkThreadViolations(JComponent c) {
-	        if (!SwingUtilities.isEventDispatchThread() && (completeCheck || c.isShowing())) {
-	            Exception exception = new Exception();
-	            boolean repaint = false;
-	            boolean fromSwing = false;
-	            StackTraceElement[] stackTrace = exception.getStackTrace();
-	            for (StackTraceElement st : stackTrace) {
-	                if (repaint && st.getClassName().startsWith("javax.swing.")) {
-	                    fromSwing = true;
-	                }
-	                if ("repaint".equals(st.getMethodName())) {
-	                    repaint = true;
-	                }
-	            }
-	            if (repaint && !fromSwing) {
-	                //no problems here, since repaint() is thread safe
-	                return;
-	            }
-	            exception.printStackTrace();
-	        }
-	    }
-	}
 	
 	//get paths
 	//get current working directory
@@ -113,7 +69,6 @@ public class VirtualFrapLoader {
 				wd = new File(args[0]);
 			}
 			final File workingDirectory = wd;
-			RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager()); 
 
 			SwingUtilities.invokeLater(new Runnable(){public void run(){
 				LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
@@ -226,6 +181,8 @@ public class VirtualFrapLoader {
         UIManager.put ("OptionPane.font",defaultFont);
         UIManager.put ("FileChooser.font", defaultFont);
         
+		RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager()); 
+
 		loadVFRAP(args, true);
 	}
 }

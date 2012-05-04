@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.biomodel;
+import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -19,6 +21,8 @@ import javax.swing.JInternalFrame;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -39,7 +43,7 @@ public class ApplicationComponents {
  * Creation date: (6/3/2004 4:41:32 PM)
  * @param simContext cbit.vcell.mapping.SimulationContext
  */
-public ApplicationComponents(SimulationContext simContext, BioModelWindowManager bioModelWindowManager, final JDesktopPane pane) {
+public ApplicationComponents(SimulationContext simContext, BioModelWindowManager bioModelWindowManager) {
 	// make the surface viewer
 	simulationWorkspace = new SimulationWorkspace(bioModelWindowManager, simContext);
 }
@@ -94,13 +98,17 @@ public void cleanSimWindowsHash() {
  * Insert the method's description here.
  * Creation date: (6/3/2004 4:40:40 PM)
  */
-public JInternalFrame[] getDataViewerFrames() {
+public ChildWindow[] getDataViewerFrames(Component component) {
 	SimulationWindow[] simWindows = (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
-	JInternalFrame[] frames = new JInternalFrame[simWindows.length];
+	ArrayList<ChildWindow> childWindows = new ArrayList<ChildWindow>();
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(component);
 	for (int i = 0; i < simWindows.length; i++){
-		frames[i] = simWindows[i].getFrame();
+		ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
+		if (childWindow!=null){
+			childWindows.add(childWindow);
+		}
 	}
-	return frames;
+	return childWindows.toArray(new ChildWindow[0]);
 }
 
 /**

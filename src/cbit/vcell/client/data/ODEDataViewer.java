@@ -18,11 +18,11 @@ import javax.swing.JOptionPane;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.plot.PlotPane;
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.Simulation;
@@ -357,11 +357,13 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 		return;
 	}
 	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager);
-	final JInternalFrameEnhanced frame = new JInternalFrameEnhanced("Time Plot with multiple parameter value sets", 
-			true, true, true, true);
-	frame.add(panel);
-	frame.setSize(600, 600);
-	BeanUtils.centerOnComponent(frame, this);
-	DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(this));	
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(panel);
+	if (childWindow==null){
+		childWindowManager.addChildWindow(panel, this, "Time Plot with multiple parameter value sets");
+	}
+	childWindow.setIsCenteredOnParent();
+	childWindow.setSize(600,600);
+	childWindow.show();
 }
 }

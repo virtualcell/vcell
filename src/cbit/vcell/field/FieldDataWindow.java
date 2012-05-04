@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -25,6 +26,8 @@ public class FieldDataWindow extends JFrame implements TopLevelWindow {
 	
 	private boolean bTreeNeedsUpdate = true;
 	private boolean bWindowOpened = false;
+	private final ChildWindowManager childWindowManager;
+
 /**
  * FieldDataWindow constructor comment.
  */
@@ -40,6 +43,7 @@ public FieldDataWindow() {
 				}
 			}
 	);
+	childWindowManager = new ChildWindowManager(this);
 }
 
 /**
@@ -195,5 +199,9 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {}
  * @param i int
  */
 public void updateWhileInitializing(int i) {}
+
+public ChildWindowManager getChildWindowManager() {
+	return childWindowManager;
+}
 
 }

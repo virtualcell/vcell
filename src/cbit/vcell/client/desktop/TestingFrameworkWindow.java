@@ -17,6 +17,7 @@ package cbit.vcell.client.desktop;
  */
 import org.vcell.util.UserCancelException;
 
+import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;
 public class TestingFrameworkWindow extends javax.swing.JFrame implements TopLevelWindow {
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
@@ -27,6 +28,7 @@ public class TestingFrameworkWindow extends javax.swing.JFrame implements TopLev
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JMenuItem ivjExitMenuItem = null;
 	private javax.swing.JSeparator ivjJSeparator1 = null;
+	private ChildWindowManager childWindowManager = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -41,6 +43,7 @@ class IvjEventHandler implements java.awt.event.ActionListener {
  */
 public TestingFrameworkWindow() {
 	super();
+	childWindowManager = new ChildWindowManager(this);
 	initialize();
 }
 /**
@@ -339,4 +342,8 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {}
  * @param i int
  */
 public void updateWhileInitializing(int i) {}
+
+public ChildWindowManager getChildWindowManager() {
+	return childWindowManager;
+}
 }

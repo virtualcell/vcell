@@ -19,9 +19,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
+import cbit.vcell.client.ChildWindowManager;
+import org.vcell.util.ClientTaskStatusSupport;;
 
 /**
  * Insert the type's description here.
@@ -289,7 +290,7 @@ private void startPrivate(final boolean bKeepOnTop) {
 				AsynchProgressPopup.super.start();
 			}			
 			if(bKeepOnTop){
-				ZEnforcer.showModalDialogOnTop(getDialog(), requester);
+				DialogUtils.showModalJDialogOnTop(getDialog(), requester);
 			}else{
 				getDialog().setVisible(true);
 			}

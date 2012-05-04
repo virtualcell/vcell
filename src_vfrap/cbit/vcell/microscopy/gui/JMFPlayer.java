@@ -40,7 +40,6 @@ import javax.swing.SwingUtilities;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -223,7 +222,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		dialog.getContentPane().add(jp, BorderLayout.CENTER);
 		dialog.setSize(250,500);
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		ZEnforcer.showModalDialogOnTop(dialog, parent);
+		DialogUtils.showModalJDialogOnTop(dialog, parent);
 		// frame.addWindowListener(new WindowAdapter(){
 		// public void windowClosing(WindowEvent e)
 		// {

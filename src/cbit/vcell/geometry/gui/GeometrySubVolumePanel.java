@@ -38,7 +38,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
@@ -431,7 +430,7 @@ private void addAnalyticSubVolume() {
 			d.setModal(true);
 			d.getContentPane().add(main);
 			d.pack();
-			ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
+			DialogUtils.showModalJDialogOnTop(d, GeometrySubVolumePanel.this);
 
 			if(acceptFlag[0]){
 				addSubVolume(new AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(),

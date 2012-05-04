@@ -12,20 +12,17 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -38,7 +35,6 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
 import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -46,12 +42,13 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
@@ -61,7 +58,8 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.desktop.LoginDelegate;
+import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 /**
@@ -70,8 +68,10 @@ import cbit.vcell.model.gui.TransformMassActionPanel;
 @SuppressWarnings("serial")
 public class DocumentWindow extends JFrame implements TopLevelWindow {	
 
-	private JDialog compareDialog = null;
-	private LoginDialog loginDialog = null;
+	private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
+
+	private final ChildWindowManager childWindowManager;
+	
 	private JMenuItem ivjAbout_BoxMenuItem = null;
 	private JMenuItem ivjCascadeMenuItem = null;
 	private JMenuItem ivjChange_UserMenuItem = null;
@@ -129,7 +129,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
-	private VcellHelpViewer helpFrame = null;
 	
 	private JMenu menuImportPathway = null;
 	private JMenuItem menuItemImportPathwayWebLocation = null;
@@ -209,7 +208,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp()) 
 				connEtoC25(e);
 			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem()) 
-				invokeNewHelp(e);
+				showVCellHelpWindow();
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getRunVFrapItem()) 
@@ -241,15 +240,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 public DocumentWindow() {
 	super();
 	initialize();
-}
-
-public VcellHelpViewer getHelpFrame()
-{
-	if(helpFrame == null)
-	{
-		helpFrame = new VcellHelpViewer();
-	}
-	return helpFrame;
+	childWindowManager = new ChildWindowManager(this);
 }
 
 /**
@@ -449,9 +440,20 @@ private void connEtoC19(java.awt.event.ActionEvent arg1) {
 }
 
 
-private void invokeNewHelp(ActionEvent e) {
-	// TODO Auto-generated method stub
-	getHelpFrame().setVisible(true);
+private void showVCellHelpWindow() {
+
+	ChildWindow helpWindow = childWindowManager.getChildWindowFromContext(HelpViewerContextObject);
+	if (helpWindow!=null){
+		helpWindow.show();
+	}else{
+		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
+		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
+		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
+		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
+		helpWindow.pack();
+		helpWindow.setIsCenteredOnParent();
+		helpWindow.show();
+	}
 }
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
@@ -502,7 +504,8 @@ private void connEtoC21(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.tileHorizontal();
+		boolean bHorizontal = true;
+		getChildWindowManager().tileWindows(bHorizontal);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -521,7 +524,8 @@ private void connEtoC22(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.tileVertically();
+		boolean bHorizontal = false;
+		getChildWindowManager().tileWindows(bHorizontal);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -959,6 +963,7 @@ private javax.swing.JMenuItem getCascadeMenuItem() {
 			ivjCascadeMenuItem = new javax.swing.JMenuItem();
 			ivjCascadeMenuItem.setName("CascadeMenuItem");
 			ivjCascadeMenuItem.setText("Cascade");
+			//ivjCascadeMenuItem.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1032,26 +1037,6 @@ private javax.swing.JMenuItem getCloseMenuItem() {
 		}
 	}
 	return ivjCloseMenuItem;
-}
-
-
-/**
- * Comment
- */
-private JDialog getCompareDialog() {
-	if (compareDialog == null) {
-		compareDialog = new JDialog(this,  "Comparison with Saved Version", false);
-		compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		WindowAdapter listener = new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				if (e.getSource() == DocumentWindow.this) {
-					compareDialog.dispose();
-				}
-			}
-		};
-		DocumentWindow.this.addWindowListener(listener);
-	}
-	return compareDialog;
 }
 
 /**
@@ -1626,29 +1611,6 @@ private javax.swing.JMenuItem getLocalMenuItem() {
 /**
  * Comment
  */
-private JDialog getLoginDialog() {
-	if (loginDialog == null) {
-		loginDialog = new LoginDialog(this);
-		loginDialog.setLoggedInUser(getWindowManager().getUser());
-		loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		loginDialog.pack();
-		loginDialog.setResizable(false);
-		ActionListener listener = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
-					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
-				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
-					loginDialog.dispose();
-					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), true);
-				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
-					getWindowManager().getRequestManager().sendLostPassword(getWindowManager(), loginDialog.getUser());
-				}
-			}
-		};
-		loginDialog.addActionListener(listener);
-	}
-	return loginDialog;
-}
 
 
 /**
@@ -2122,6 +2084,7 @@ private javax.swing.JMenuItem getTile_HorizontallyMenuItem() {
 			ivjTile_HorizontallyMenuItem = new javax.swing.JMenuItem();
 			ivjTile_HorizontallyMenuItem.setName("Tile_HorizontallyMenuItem");
 			ivjTile_HorizontallyMenuItem.setText("Tile Horizontally");
+			//ivjTile_HorizontallyMenuItem.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2144,6 +2107,7 @@ private javax.swing.JMenuItem getTile_VerticallyMenuItem() {
 			ivjTile_VerticallyMenuItem = new javax.swing.JMenuItem();
 			ivjTile_VerticallyMenuItem.setName("Tile_VerticallyMenuItem");
 			ivjTile_VerticallyMenuItem.setText("Tile Vertically");
+			//ivjTile_VerticallyMenuItem.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2453,10 +2417,10 @@ public void setWindowManager(DocumentWindowManager windowManager) {
 	fieldWindowManager = windowManager;
 	firePropertyChange("windowManager", oldValue, windowManager);//May 2009,found it doesn't fire to any where.
 	
-	if (windowManager.getTaskBar() != null) {
-		windowManager.getTaskBar().setBackground(getStatusBarPane().getBackground());
-		getStatusBarPane().add(windowManager.getTaskBar(), BorderLayout.CENTER);
-	}
+//	if (windowManager.getTaskBar() != null) {
+//		windowManager.getTaskBar().setBackground(getStatusBarPane().getBackground());
+//		getStatusBarPane().add(windowManager.getTaskBar(), BorderLayout.CENTER);
+//	}
 }
 
 
@@ -2470,7 +2434,7 @@ public void setWorkArea(Component c) {
 }
 
 
-private void showAboutBox() {
+public static void showAboutBox(Component parent) {
 	/* Create the AboutBox dialog */
 	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox();
 	String version = "";
@@ -2485,7 +2449,11 @@ private void showAboutBox() {
 	aDocumentWindowAboutBox.getVersion().setText(version);
 	aDocumentWindowAboutBox.getBuildNumber().setText(build);
 	aDocumentWindowAboutBox.setPreferredSize(new Dimension(390,120));
-	DialogUtils.showComponentCloseDialog(this, aDocumentWindowAboutBox, "About the Virtual Cell");
+	DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About the Virtual Cell");
+}
+
+private void showAboutBox() {
+	showAboutBox(this);
 }
 
 
@@ -2494,20 +2462,6 @@ private void showAboutBox() {
  */
 private void  showBNGWindow() {
 	getWindowManager().showBNGWindow();	
-}
-
-
-/**
- * Comment
- */
-public void showCompareDialog(Container contentPane) {
-	if (getCompareDialog().isShowing()) {
-		getCompareDialog().setVisible(false);
-	}
-	getCompareDialog().setContentPane(contentPane);
-	getCompareDialog().setSize((int)(getWidth() * 0.5), (int)(getHeight() * 0.8));
-	BeanUtils.centerOnComponent(getCompareDialog(), getContentPane());
-	getCompareDialog().setVisible(true);
 }
 
 
@@ -2567,7 +2521,34 @@ private void showEditAnnotationWindow() {
  * Comment
  */
 private void showLoginDialog() {
-	ZEnforcer.showModalDialogOnTop(getLoginDialog(),this);
+
+	final LoginManager loginManager = new LoginManager();
+
+	LoginDelegate loginDelegate = new LoginDelegate(){
+
+		public void userCancel() {
+			loginManager.close();
+			PopupGenerator.showInfoDialog(DocumentWindow.this, 
+					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+		}
+		public void registerRequest() {
+			loginManager.close();
+			System.out.println("LoginManager.registerRequest()");
+			getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), true);
+		}
+
+		public void login(String userid, String password) {
+			System.out.println("LoginManager.login("+userid+","+password+")");
+			getWindowManager().connectAs(userid, password);
+		}
+
+		public void lostPasswordRequest(String userid) {
+			System.out.println("LoginManager.lostPasswordRequest("+userid+")");
+			getWindowManager().getRequestManager().sendLostPassword(getWindowManager(), userid);
+		}
+	};
+
+	loginManager.showLoginDialog(this, getWindowManager(), loginDelegate);
 }
 
 
@@ -2576,22 +2557,6 @@ private void showLoginDialog() {
  */
 private void showTestingFrameworkWindow() {
 	getWindowManager().showTestingFrameworkWindow();
-}
-
-
-/**
- * Comment
- */
-private void tileHorizontal() {
-	getWindowManager().tileWindows(true);
-}
-
-
-/**
- * Comment
- */
-private void tileVertically() {
-	getWindowManager().tileWindows(false);
 }
 
 
@@ -2794,7 +2759,7 @@ public void showTransMADialog()
 				public void actionPerformed(ActionEvent arg0) {
 					DialogUtils.showInfoDialog(DocumentWindow.this,
 							"The Virtual Cell is free software distributed under the following MIT licensing terms:\n\n"+
-							"Copyright (c) 1998-2011 University of Connecticut Health Center\n\n" +
+							"Copyright (c) 1998-2012 University of Connecticut Health Center\n\n" +
 							"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
 							"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n"+
 							"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n"+
@@ -2813,5 +2778,9 @@ public void showTransMADialog()
 			separator = new JSeparator();
 		}
 		return separator;
+	}
+
+	public ChildWindowManager getChildWindowManager() {
+		return childWindowManager;
 	}
 }

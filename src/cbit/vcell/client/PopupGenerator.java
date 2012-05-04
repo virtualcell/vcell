@@ -99,7 +99,7 @@ public static String showInputDialog(TopLevelWindowManager requester, String mes
 public static String showInputDialog(final Component requester, String message, String initialValue) throws UserCancelException{
 
 	try{
-		return showInputDialog0(requester,message,initialValue);
+		return DialogUtils.showInputDialog0(requester,message,initialValue);
 	}catch(UtilCancelException e){
 		throw UserCancelException.CANCEL_GENERIC;
 	}
@@ -117,7 +117,7 @@ public static String showInputDialog(final Component requester, String message, 
  * @param preferenceName java.lang.String
  */
 public static Object showListDialog(TopLevelWindowManager requester, Object[] names, String dialogTitle) {
-	return showListDialog(requester.getComponent(), names, dialogTitle);
+	return DialogUtils.showListDialog(requester.getComponent(), names, dialogTitle);
 }
 
 
@@ -145,7 +145,7 @@ public static void showReportDialog(TopLevelWindowManager requester, String repo
  * @param preferenceName java.lang.String
  */
 public static String showWarningDialog(TopLevelWindowManager requester, UserPreferences preferences, UserMessage userMessage, String replacementText) {
-	return showDialog(requester.getComponent(), preferences, userMessage, replacementText,JOptionPane.WARNING_MESSAGE);
+	return DialogUtils.showDialog(requester.getComponent(), preferences, userMessage, replacementText,JOptionPane.WARNING_MESSAGE);
 }
 
 
@@ -159,6 +159,6 @@ public static String showWarningDialog(TopLevelWindowManager requester, UserPref
  * @param preferenceName java.lang.String
  */
 public static String showWarningDialog(Component component, UserPreferences preferences, UserMessage userMessage, String replacementText) {
-	return showDialog(component, preferences, userMessage, replacementText,JOptionPane.WARNING_MESSAGE);
+	return DialogUtils.showDialog(component, preferences, userMessage, replacementText,JOptionPane.WARNING_MESSAGE);
 }
 }

@@ -49,7 +49,6 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.client.UserMessage;
@@ -266,7 +265,7 @@ public void viewFunction() {
 		d.setResizable(true);
 		d.pack();
 		try {
-			ZEnforcer.showModalDialogOnTop(d,this);
+			DialogUtils.showModalJDialogOnTop(d,this);
 			if (inputDialog.getValue() != null && inputDialog.getValue().equals(COPYEXP)) {
 				VCellTransferable.sendToClipboard(newexp.infix());
 			}
