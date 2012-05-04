@@ -135,4 +135,8 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	public String toString(){
 		return super.toString()+" "+getSymbol();
 	}
+
+	public boolean isEquivalent(VCUnitDefinition otherUnit) {
+		return this.fieldUnitDefinition.compareEqual(otherUnit.fieldUnitDefinition);
+	}
 }

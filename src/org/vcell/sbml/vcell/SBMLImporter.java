@@ -645,7 +645,7 @@ private Expression adjustExpression(Expression valueExpr, Model vcModel) throws 
 				// within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
 				try {
 					SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit, kMole);
-					if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(modelUnitSystem.getInstance_DIMENSIONLESS())) ) {
+					if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().isEquivalent(modelUnitSystem.getInstance_DIMENSIONLESS())) ) {
 						// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
 						// No conversion is required, and we don't need to include a concentration scale factor for the species.
 					} else {
@@ -1165,7 +1165,7 @@ protected void addReactions(VCMetaData metaData) {
 						   we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
 						   into VCell units (using 'sbmlRateFactor') */
 						SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcUnit", VC_conc_unit, SBML_conc_unit, kMole);
-						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(vcModelUnitSystem.getInstance_DIMENSIONLESS())) ) {
+						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().isEquivalent(vcModelUnitSystem.getInstance_DIMENSIONLESS())) ) {
 							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
 							// No conversion is required, and we don't need to include a concentration scale factor for the species.
 						} else {

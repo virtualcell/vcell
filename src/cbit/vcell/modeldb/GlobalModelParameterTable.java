@@ -51,7 +51,7 @@ public void insertModelParameters(Connection con,Model.ModelParameter[] modelPar
 	String modelParameeterXML = null;
 	if(modelParametersArr != null && modelParametersArr.length > 0){
 		Xmlproducer xmlProducer = new Xmlproducer(true);
-		modelParameeterXML = XmlUtil.xmlToString(xmlProducer.getXML(modelParametersArr, null));
+		modelParameeterXML = XmlUtil.xmlToString(xmlProducer.getXML(modelParametersArr));
 	}
 	if(modelParameeterXML == null){
 		return;

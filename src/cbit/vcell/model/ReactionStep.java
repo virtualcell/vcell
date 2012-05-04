@@ -299,13 +299,15 @@ public SymbolTableEntry getEntry(String identifier) {
 	//
 	// if all else fails, try reserved symbols
 	//
-	SymbolTableEntry reservedSTE = getModel().getReservedSymbolByName(identifier);
-	if (reservedSTE != null){
-		if (reservedSTE.equals(getModel().getX()) || reservedSTE.equals(getModel().getY()) || reservedSTE.equals(getModel().getZ())){
-			throw new RuntimeException("x, y or z can not be used in the Reaction Editor. " 
-					+ "They are reserved as spatial variables and Physiological Models must be spatially independent.");
+	if (getModel() != null) {
+		SymbolTableEntry reservedSTE = getModel().getReservedSymbolByName(identifier);
+		if (reservedSTE != null){
+			if (reservedSTE.equals(getModel().getX()) || reservedSTE.equals(getModel().getY()) || reservedSTE.equals(getModel().getZ())){
+				throw new RuntimeException("x, y or z can not be used in the Reaction Editor. " 
+						+ "They are reserved as spatial variables and Physiological Models must be spatially independent.");
+			}
+			return getKinetics().addProxyParameter(reservedSTE);
 		}
-		return getKinetics().addProxyParameter(reservedSTE);
 	}
 
 	return null;

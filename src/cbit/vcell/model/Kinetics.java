@@ -1250,7 +1250,7 @@ public void gatherIssues(List<Issue> issueList) {
 					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
 					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
-				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
+				}else if (paramUnitDef.isTBD() || (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD())){
 					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
@@ -1901,7 +1901,7 @@ public void resolveUndefinedUnits() {
 				for (int i=0;i<fieldKineticsParameters.length;i++){
 					if (fieldKineticsParameters[i].getUnitDefinition()==null){
 						return; // not ready to resolve units yet
-					}else if (fieldKineticsParameters[i].getUnitDefinition().compareEqual(modelUnitSystem.getInstance_TBD())){
+					}else if (fieldKineticsParameters[i].getUnitDefinition().isTBD()){
 						bAnyTBDUnits = true;
 					}
 				}
@@ -1912,7 +1912,7 @@ public void resolveUndefinedUnits() {
 					VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(modelUnitSystem);
 					VCUnitDefinition vcUnitDefinitions[] = unitEvaluator.suggestUnitDefinitions(fieldKineticsParameters);
 					for (int i = 0; i < fieldKineticsParameters.length; i++){
-						if (!fieldKineticsParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
+						if (!fieldKineticsParameters[i].getUnitDefinition().isEquivalent(vcUnitDefinitions[i])){
 							fieldKineticsParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
 						}
 					}

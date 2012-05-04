@@ -420,7 +420,7 @@ protected void addParameters() throws ExpressionException {
 			sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		}
 		VCUnitDefinition vcParamUnit = vcGlobalParams[i].getUnitDefinition();
-		if (!vcParamUnit.compareEqual(vcModel.getUnitSystem().getInstance_TBD())) {
+		if (!vcParamUnit.isTBD()) {
 			sbmlParam.setUnits(TokenMangler.mangleToSName(vcParamUnit.getSymbol()));
 		}
 	}
