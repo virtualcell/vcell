@@ -41,6 +41,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
@@ -53,8 +54,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 
 	/** The player object */
 	Player thePlayer = null;
-
-	JDialog parentFrame = null;
+	
+	private ChildWindow childWindow = null;
 
 	/** The visual component (if any) */
 	Component visualComponent = null;
@@ -73,10 +74,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	private JPanel playerPanel;
 
 	/** Construct the player object and the GUI. */
-	public JMFPlayer(JDialog pf, String mediaName, String fileStr) {
+	public JMFPlayer(String mediaName, String fileStr) {
 		super();
-		parentFrame = pf;
-		// mediaName = media;
 		setLayout(new BorderLayout());
 
 		JPanel infoPanel = new JPanel();
@@ -133,9 +132,13 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		// Start the player: this will notify ControllerListener.
 		thePlayer.start(); // start playing
 	}
+	
+	public void setChildWindow(ChildWindow childWindow){
+		this.childWindow = childWindow;
+	}
 
 	private void save(final File movieFile){
-		int choice = VirtualFrapLoader.saveMovieFileChooser.showSaveDialog(parentFrame);
+		int choice = VirtualFrapLoader.saveMovieFileChooser.showSaveDialog(this);
 		File outputFile = null;
 		if (choice == JFileChooser.APPROVE_OPTION) {
 			String outputFileName = VirtualFrapLoader.saveMovieFileChooser
@@ -147,7 +150,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 							outputFile.getName() + "."
 									+ VirtualFrapLoader.QT_EXTENSION);
 				} else {
-					DialogUtils.showErrorDialog(parentFrame,
+					DialogUtils.showErrorDialog(this,
 							"Quick Time movie must have an extension of ."
 									+ VirtualFrapLoader.QT_EXTENSION);
 					return;
@@ -194,41 +197,21 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 			if ((controlComponent = thePlayer.getControlPanelComponent()) != null)
 				playerPanel.add(BorderLayout.SOUTH, controlComponent);
 			// re-size the main window
-			if (parentFrame != null) {
+			if (childWindow != null) {
 				try {
 
 					SwingUtilities.invokeAndWait(new Runnable() {
 						public void run() {
-							parentFrame.pack();
-							parentFrame.toFront();
+							childWindow.pack();
+							childWindow.toFront();
 						}
 					});
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
-				parentFrame.setTitle("VFRAP Movie");
+				childWindow.setTitle("VFRAP Movie");
 			}
 		}
-	}
-
-	public static void showMovieInDialog(final Dialog parent,
-			final String urlStr, final String fileStr) {
-		JDialog dialog = new JDialog(parent, "VFRAP Movie");
-		dialog.setModal(true);
-		dialog.setLayout(new BorderLayout());
-		// add info. panel
-		// add movie player in the center
-		JMFPlayer jp = new JMFPlayer(dialog, urlStr, fileStr);
-		dialog.getContentPane().add(jp, BorderLayout.CENTER);
-		dialog.setSize(250,500);
-		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		DialogUtils.showModalJDialogOnTop(dialog, parent);
-		// frame.addWindowListener(new WindowAdapter(){
-		// public void windowClosing(WindowEvent e)
-		// {
-		// new File(fileStr).deleteOnExit();
-		// }
-		// });
 	}
 
 	public static void main(String[] argv) {
@@ -252,7 +235,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		JDialog dialog = new JDialog();
 		dialog.setTitle("VFRAP Movie");
 		dialog.setSize(500,500);
-		showMovieInDialog(dialog, "file:///C:/VirtualMicroscopy/test.mov",
-				"C:/VirtualMicroscopy/test.mov");
+		/*showMovieInDialog(dialog, "file:///C:/VirtualMicroscopy/test.mov",
+				"C:/VirtualMicroscopy/test.mov");*/
 	}
 }

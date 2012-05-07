@@ -13,6 +13,7 @@ package cbit.vcell.microscopy.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -34,6 +35,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -70,6 +72,9 @@ import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowListener;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.client.data.OutputContext;
@@ -204,8 +209,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private EstParams_TwoDiffComponentDescriptor diffTwoDescriptor = null;
 	private EstParams_ReactionOffRateDescriptor  offRateDescriptor = null;
 	private EstParams_CompareResultsDescriptor compareResultsDescriptor = null;
-	//show result dialog
-	JDialog result2DDialog = null;
+	private final String Sim2DResultsContextObj = "2DSimulationResultsChildWindow";
+	private final String movieContextObj = "movieChildWindow";
+	
 	//output context for PDEViewer and MovieViewer
 	OutputContext outputContext = null;
 	
@@ -513,8 +519,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   		{
 	  	   			try {
 						refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
-						BeanUtils.centerOnComponent(get2DResultDialog(), FRAPStudyPanel.this);
-						get2DResultDialog().setVisible(true);
+						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(Sim2DResultsContextObj);
+						if(childWindow == null)
+						{
+							childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).addChildWindow(getSimResultsViewPanel(), Sim2DResultsContextObj, "2D Simulation Results", true);
+							childWindow.setSize(new Dimension(1000,700));
+						}
+						childWindow.setIsCenteredOnParent();
+						childWindow.show();
 					} catch (Exception ex) {
 						ex.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Simulation results not available due to :\n" + ex.getMessage());
@@ -698,22 +710,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		return frapDataPanel;
 	}
-
-	public JDialog get2DResultDialog()
-	{
-		if(result2DDialog == null)
-		{
-			result2DDialog = new JDialog(JOptionPane.getFrameForComponent(this));
-			result2DDialog.setTitle("2D Simulation Results");
-			result2DDialog.setLayout(new BorderLayout());
-			result2DDialog.add(getSimResultsViewPanel(), BorderLayout.CENTER);
-			result2DDialog.setModal(true);
-			
-			result2DDialog.setSize(new Dimension(1000,700));
-		}
-		return result2DDialog;
-	}
-
 
 	private FRAPSimDataViewerPanel getFRAPSimDataViewerPanel(){
 		if(frapSimDataViewerPanel == null){
@@ -1426,12 +1422,26 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					fStudy.setMovieURLString(fileURLString);
 					fStudy.setMovieFileString(fileString);
 				}
-				JMFPlayer.showMovieInDialog(get2DResultDialog(),fStudy.getMovieURLString(), fStudy.getMovieFileString());
+				showMovieInDialog(fStudy.getMovieURLString(), fStudy.getMovieFileString());
 			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, true, true, null, true);
 	}
 	
+	public void showMovieInDialog(final String urlStr, final String fileStr) {
+		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(this).getChildWindowFromContext(movieContextObj);
+		if(childWindow != null)
+		{
+			childWindow.close();
+		}
+		JMFPlayer jp = new JMFPlayer(urlStr, fileStr);
+		childWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(jp, movieContextObj, "VFRAP Movie");
+		jp.setChildWindow(childWindow);
+		childWindow.setPreferredSize(new Dimension(250,500));
+		childWindow.setIsCenteredOnParent();
+
+		childWindow.show();
+	}
 	
 	protected void refreshPDEDisplay(DisplayChoice choice) throws Exception {
 		Simulation sim = null;
@@ -1991,4 +2001,5 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		FRAPData frapData = frapStudy.getFrapData();
 		frapData.saveImageDatasetAsExternalMatlabData(getLocalWorkspace(), matFileName, frapStudy.getStartingIndexForRecovery(), frapStudy.getCartesianMesh());
 	}
+	
 }

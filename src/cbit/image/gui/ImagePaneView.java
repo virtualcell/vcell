@@ -138,28 +138,28 @@ private void connEtoC3(java.awt.event.MouseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-		if(focusOwner != null){
-			Component focusOwnerTopComponent = null;
-			for (Container p = focusOwner.getParent(); p != null; p = p.getParent()) {
-				if(p.getParent() == null) {
-					focusOwnerTopComponent = p;
-					break;
-				}
-			}
-			Component thisTopComponent = null;
-			for (Container p = this.getParent(); p != null; p = p.getParent()) {
-				if(p.getParent() == null) {
-					thisTopComponent = p;
-					break;
-				}
-			}
-			if(focusOwnerTopComponent == thisTopComponent){
-				this.requestFocus();
-			}
-		}else{
-			this.requestFocus();
-		}
+//		Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+//		if(focusOwner != null){
+//			Component focusOwnerTopComponent = null;
+//			for (Container p = focusOwner.getParent(); p != null; p = p.getParent()) {
+//				if(p.getParent() == null) {
+//					focusOwnerTopComponent = p;
+//					break;
+//				}
+//			}
+//			Component thisTopComponent = null;
+//			for (Container p = this.getParent(); p != null; p = p.getParent()) {
+//				if(p.getParent() == null) {
+//					thisTopComponent = p;
+//					break;
+//				}
+//			}
+//			if(focusOwnerTopComponent == thisTopComponent){
+//				this.requestFocus();
+//			}
+//		}else{
+//			this.requestFocus();
+//		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
