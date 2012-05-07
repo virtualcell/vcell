@@ -346,6 +346,34 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 			refreshData();
+		} else if (evt.getSource() instanceof ReactionStep && (evt.getPropertyName().equals(ReactionStep.PROPERTY_NAME_KINETICS))) {
+			Kinetics oldValue = (Kinetics)evt.getOldValue();
+			if (oldValue != null) {
+				oldValue.removePropertyChangeListener(this);
+				for (KineticsParameter kineticsParameter : oldValue.getKineticsParameters()) {
+					kineticsParameter.removePropertyChangeListener(this);
+				}
+				for (ProxyParameter proxyParameter : oldValue.getProxyParameters()) {
+					proxyParameter.removePropertyChangeListener(this);
+				}
+				for (UnresolvedParameter unresolvedParameter: oldValue.getUnresolvedParameters()) {
+					unresolvedParameter.removePropertyChangeListener(this);
+				}
+			}
+			Kinetics newValue = (Kinetics)evt.getNewValue();
+			if (newValue != null) {
+				newValue.addPropertyChangeListener(this);
+				for (KineticsParameter kineticsParameter : newValue.getKineticsParameters()) {
+					kineticsParameter.addPropertyChangeListener(this);
+				}
+				for (ProxyParameter proxyParameter : newValue.getProxyParameters()) {
+					proxyParameter.addPropertyChangeListener(this);
+				}
+				for (UnresolvedParameter unresolvedParameter: newValue.getUnresolvedParameters()) {
+					unresolvedParameter.addPropertyChangeListener(this);
+				}
+			}
+			refreshData();
 		} else if (evt.getSource() instanceof Kinetics && (evt.getPropertyName().equals(Kinetics.PROPERTY_NAME_KINETICS_PARAMETERS))) {
 			Parameter oldValue[] = (Parameter[])evt.getOldValue();
 			if (oldValue != null) {
