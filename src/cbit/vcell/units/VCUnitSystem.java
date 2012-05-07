@@ -28,6 +28,9 @@ public abstract class VCUnitSystem implements Serializable {
 	private HashMap<String, VCUnitDefinition> vcUnitDefinitionsHash = new HashMap<String, VCUnitDefinition>();
 
 	public VCUnitDefinition getInstance(String symbol) {
+		if (symbol.equals("")) {
+			return getInstance_TBD();
+		}
 		VCUnitDefinition vcUnitDefinition = vcUnitDefinitionsHash.get(symbol);
 		if (vcUnitDefinition != null) {
 			return vcUnitDefinition;
