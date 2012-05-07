@@ -253,8 +253,11 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// fire up the GUI
 			VCDocument startupDoc = (VCDocument)hashTable.get("startupDoc");
-		    DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc);
-		    RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
+
+			// needs to be set first, else throw away dirty/needs paint information stored in previous instance.
+			RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
+
+			DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc);
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
