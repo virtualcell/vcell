@@ -111,14 +111,13 @@ public class ChildWindowManager {
 		private ChildWindow(Container contentPane, Object aContextObject, String title) {
 			this.contentPane = contentPane;
 			this.contextObject = aContextObject;
+			this.title = title;
 		}
 					
 		private void initDialog(){
 			dialog.addWindowListener(windowListener);
-			//dialog = new JDialog(parent, title, false);
 			dialog.getContentPane().setLayout(new BorderLayout());
 			dialog.getContentPane().add(contentPane);
-//				dialog.setContentPane(contentPane);
 			dialog.setAlwaysOnTop(false);
 			if (location!=null){
 				dialog.setLocation(location);
@@ -176,7 +175,6 @@ public class ChildWindowManager {
 		private void dispose(){			
 			if (dialog != null){
 				dialog.setVisible(false);
-				//dialog.setContentPane(null);
 				dialog.dispose();
 				dialog = null;
 			} else {
@@ -311,18 +309,18 @@ public class ChildWindowManager {
 
 		public void showModal() {
 			if (dialog==null){
-				dialog = (new JDialogFactory()).createJDialog(parent, title, false);
+				dialog = (new JDialogFactory()).createJDialog(parent, title, true);
 				initDialog();
 				dialog.setVisible(true);
-				dialog.toFront();
 			}else if (!dialog.isVisible()){
 				dialog.setVisible(true);
-				dialog.toFront();
 			}
 		}
 
 		public void toFront() {
-			dialog.toFront();
+			if(dialog != null){
+				dialog.toFront();
+			}
 		}
 
 	};   

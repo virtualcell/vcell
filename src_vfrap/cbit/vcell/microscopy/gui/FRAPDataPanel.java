@@ -291,10 +291,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			return;
 		}
 		saveROI();
-		double[] averageFluor =
-			FRAPDataAnalysis.getAverageROIIntensity(fStudy.getFrapData(),
-					fStudy.getFrapData().getCurrentlyDisplayedROI(),null,null);
-		            showCurve(new String[] { "f" }, fStudy.getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
+		double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(fStudy.getFrapData(), fStudy.getFrapData().getCurrentlyDisplayedROI(),null,null);
+		showCurve(new String[] { "f" }, fStudy.getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
 	}
 	
 	public void saveROI(){
