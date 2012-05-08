@@ -13,7 +13,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -33,9 +32,7 @@ import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -50,7 +47,6 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
 import org.vcell.optimization.ProfileData;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
@@ -72,7 +68,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.UserMessage;
@@ -130,10 +125,10 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
@@ -359,29 +354,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	   						}
 		  	   					}
 	  	   					}
-		  	   				if(selectedROIsChanged)
-		  	   				{
-		  	   				    //set need save flag
-	  	   						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
-	  	   						//set diffusion only parameters to null, an optimization need to be done with newly selected ROIs
-	  	   						//in addition, profile likelihood need to be done with newly selected ROIs too.
-	  	   						if(newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT) != null)
-	  	   						{
-	  	   							newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT).setModelParameters(null);
-	  	   							newFrapStudy.setProfileData_oneDiffComponent(null);
-	  	   						}
-	  	   						if(newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS) != null)
-	  	   						{
-	  	   							newFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS).setModelParameters(null);
-	  	   							newFrapStudy.setProfileData_twoDiffComponents(null);
-	  	   						}
-		  	   				}
+		  	   				
 		  	   				//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
 	  	   					if(!Compare.isEqualOrNull(lastCellROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBleachROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBackgroundROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastImgISize,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getISize()) ||
-	  	   					   !Compare.isEqualOrNull(oldStartIndexForRecovery, newFrapStudy.getStartingIndexForRecovery()))
+	  	   					   !Compare.isEqualOrNull(oldStartIndexForRecovery, newFrapStudy.getStartingIndexForRecovery()) ||
+	  	   					   selectedROIsChanged)
 	  	   					{
 	  	   						//set need save flag
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
@@ -412,6 +392,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   						//reset best model and updateUI
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setBestModelIndex(null);
 	  	   						updateAnalysisResult(getFrapWorkspace().getWorkingFrapStudy());
+	  	   						//turn off results and movie viewers if any
+	  	   						ChildWindow resultsChildWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(Sim2DResultsContextObj);
+	  	   						if(resultsChildWindow != null)
+	  	   						{
+	  	   							resultsChildWindow.close();
+	  	   						}
+		  	   					ChildWindow movieChildWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(movieContextObj);
+	  	   						if(movieChildWindow != null)
+	  	   						{
+	  	   							movieChildWindow.close();
+	  	   						}
 	  	   					}
 	  	   				}
 	  	   			}
