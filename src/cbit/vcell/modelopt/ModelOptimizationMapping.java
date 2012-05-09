@@ -157,9 +157,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	if (referenceData==null){
 		throw new RuntimeException("no referenced data defined");
 	}
-	OdeObjectiveFunction odeObjectiveFunction = new OdeObjectiveFunction(origMathDesc,referenceData);
-	optSpec.setObjectiveFunction(odeObjectiveFunction);
-
+ 
 	//
 	// get parameter mappings
 	//

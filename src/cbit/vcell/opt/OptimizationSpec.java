@@ -111,7 +111,10 @@ public void gatherIssues(List<Issue> issueList) {
 	//
 	// check for validity of objective function
 	//
-	objectiveFunction.gatherIssues(issueList);
+	if(objectiveFunction != null)
+	{
+		objectiveFunction.gatherIssues(issueList);
+	}
 }
 
 
