@@ -236,7 +236,7 @@ public ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, Optimi
 		//
 		// make temporary simulation (with overrides for parameter values)
 		//
-		MathDescription mathDesc = ((OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
+		MathDescription mathDesc = simulationContext.getMathDescription();
 		Simulation simulation = new Simulation(mathDesc);
 		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 		//
