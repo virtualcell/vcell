@@ -23,6 +23,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -46,6 +47,9 @@ public static void main(java.lang.String[] args) {
 		stringBuffer.append("arg"+i+"=\""+args[i]+"\" ");
 	}
 	System.out.println("starting with arguments ["+stringBuffer+"]");
+	System.out.println("Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
+			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
+			" of the "+(System.getProperty("os.name"))+" operating system");
 	
 	ClientServerInfo csInfo = null;
 	String hoststr = System.getProperty(PropertyLoader.vcellServerHost);
