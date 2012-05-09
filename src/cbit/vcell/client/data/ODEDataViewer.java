@@ -358,10 +358,13 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	}
 	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
-	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(panel);
-	if (childWindow==null){
-		childWindowManager.addChildWindow(panel, this, "Time Plot with multiple parameter value sets");
-	}
+	//ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(panel);
+	
+	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "");
+	String titleStr = childWindow.getParent().getTitle();
+	titleStr = titleStr.substring(0, titleStr.indexOf("("));
+	childWindow.setTitle("Parameter scan results time plot for " + titleStr);
+	
 	childWindow.setIsCenteredOnParent();
 	childWindow.setSize(600,600);
 	childWindow.show();
