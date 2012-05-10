@@ -1437,14 +1437,29 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					}
 					neighbors.addAll(nodeTriMap.get(node));
 				}
-				printWriter.print(SmoldynKeyword.neighbors + " " +triPanel.name);
+				//printWriter.print(SmoldynKeyword.neighbors + " " +triPanel.name);
+				int maxNeighborCount = 4; //to allow smoldyn read line length as 256, chop the neighbors to multiple lines
+				List<String> neighs = new ArrayList<String>();
 				for(String nghb : neighbors)
 				{
 					if(nghb.equals(triPanel.name)) continue;
-					printWriter.print(" "+ nghb);
+					else neighs.add(nghb);
 				}
-				printWriter.println();
+
+				int count = 0;
+				for(String neigh:neighs)
+				{
+					if(count%maxNeighborCount == 0)
+					{
+						printWriter.println();
+						printWriter.print(SmoldynKeyword.neighbors + " " + triPanel.name);
+					}
+					printWriter.print(" "+ neigh);
+					count++;
+				}
+				
 			}
+			printWriter.println();
 			printWriter.println(SmoldynKeyword.end_surface);
 			printWriter.println();
 		}
