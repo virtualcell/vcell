@@ -11,19 +11,19 @@
 package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Frame;
+import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.FocusManager;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
 
 import swingthreads.SwingWorker;
@@ -97,7 +97,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
 		private AsynchProgressPopup pp = null;
-		private Frame frameParent = null;
+		private Window windowParent = null;
 		private Component focusOwner = null;
 		public Object construct() {
 			if (bShowProgressPopup) {
@@ -113,15 +113,15 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				}
 			}
 			if (requester != null) {
-				frameParent = JOptionPane.getFrameForComponent(requester);				
+				windowParent = GuiUtils.getWindowForComponent(requester);				
 			}
 			try {
-				if (frameParent != null) {
+				if (windowParent != null) {
 					focusOwner = FocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 					SwingUtilities.invokeAndWait(new Runnable() {
 						public void run() {
-							ClientMDIManager.blockWindow(frameParent);
-							frameParent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+							ClientMDIManager.blockWindow(windowParent);
+							windowParent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						}
 					});
 				}
@@ -229,13 +229,14 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
 			}
-			if (frameParent != null) {
-				ClientMDIManager.unBlockWindow(frameParent);
-				frameParent.setCursor(Cursor.getDefaultCursor());
+			if (windowParent != null) {
+				ClientMDIManager.unBlockWindow(windowParent);
+				windowParent.setCursor(Cursor.getDefaultCursor());
 				if (focusOwner != null) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							try {
+								windowParent.requestFocusInWindow();
 								focusOwner.requestFocusInWindow();
 							} catch (Throwable exc) {
 								recordException(exc, hash);
