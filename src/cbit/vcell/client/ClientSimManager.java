@@ -323,6 +323,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, simWindow.getTitle());
 					}
 					childWindow.pack();
+					childWindow.setIsCenteredOnParent();
 					childWindow.show();
 //					JInternalFrame existingFrame = simWindow.getFrame();
 //					documentWindowManager.showFrame(existingFrame);

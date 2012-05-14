@@ -12,11 +12,15 @@ package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Frame;
+import java.awt.HeadlessException;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellRenderer;
@@ -27,6 +31,15 @@ import javax.swing.tree.TreePath;
 import cbit.vcell.desktop.BioModelNode;
 
 public class GuiUtils {
+	public static Window getWindowForComponent(Component parentComponent) 
+	        throws HeadlessException {
+	        if (parentComponent == null)
+	            return null;
+	        if (parentComponent instanceof Window)
+	            return (Window)parentComponent;
+	        return getWindowForComponent(parentComponent.getParent());
+    }
+	
 	public static void treeExpandAll(JTree tree, BioModelNode treeNode, boolean bExpand) {
 		int childCount = treeNode.getChildCount();
 		if (childCount > 0) {
