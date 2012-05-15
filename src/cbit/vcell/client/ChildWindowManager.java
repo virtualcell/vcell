@@ -103,7 +103,7 @@ public class ChildWindowManager {
 		private Boolean pack = null;
 		private Dimension size = null;
 		private Boolean isCenteredOnScreen = null;
-		private Boolean isCenteredOnParent = null;
+		private Boolean isCenteredOnParent = true;
 		
 		
 		private ArrayList<ChildWindowListener> listeners = new ArrayList<ChildWindowListener>();
@@ -145,6 +145,24 @@ public class ChildWindowManager {
 			}
 			
 			System.out.println("Making a child window.  My parent is a "+this.getParent().getName());
+		}
+		
+		
+		public void setLocationRelativeToParent(int x, int y) {
+			if (dialog!=null){
+				dialog.setLocationRelativeTo(dialog.getParent());
+				dialog.setLocation(x, y);
+				isCenteredOnScreen = false;
+				isCenteredOnParent = false;
+			}
+		}
+		
+		public void setLocationRelativeToComponent(Component component) {
+			if (dialog!=null){
+				dialog.setLocationRelativeTo(component);
+				isCenteredOnScreen = false;
+				isCenteredOnParent = false;
+			}
 		}
 		
 		public void setIsCenteredOnParent(){
