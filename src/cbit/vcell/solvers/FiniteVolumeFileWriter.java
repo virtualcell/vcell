@@ -42,7 +42,6 @@ import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGenerator
 import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Equation;
-import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastSystem;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.GaussianDistribution;
@@ -66,8 +65,8 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
@@ -78,7 +77,6 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -100,6 +98,12 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import edu.northwestern.at.utils.math.MonadicFunction;
+import edu.northwestern.at.utils.math.rootfinders.Bisection;
+import edu.northwestern.at.utils.math.rootfinders.MonadicFunctionRootFinder;
+import edu.northwestern.at.utils.math.rootfinders.RootFinderConvergenceTest;
+import edu.northwestern.at.utils.math.rootfinders.RootFinderIterationInformation;
+import edu.northwestern.at.utils.math.rootfinders.StandardRootFinderConvergenceTest;
 
 /**
  * Insert the type's description here.
@@ -964,6 +968,7 @@ private void writeModelDescription() throws MathException {
 private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSet<Double> discontinuityTimes) throws ExpressionException, MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	MonadicFunctionRootFinder rootFinder = new Bisection();
 	
 	for (Discontinuity discontinuity : discontinuities) {
 		Expression rfexp = discontinuity.getRootFindingExp();
@@ -978,22 +983,124 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 		}
 		if (bHasT) {
 			if (symbols.length != 1) {
-				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
-						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " can only be a function of time");
+				System.err.println(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+						+  ": discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not just a function of time, not handled properly by solver");
+				continue;
 			}
-			Expression deriv = rfexp.differentiate(ReservedVariable.TIME.getName());
-			double d = deriv.evaluateConstant(); // we don't allow 5t < 3 
-			if (d != 1 && d != -1) {
-				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
-						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not allowed.");
-			}
-			rfexp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(0));
-			rfexp.flatten();
-			double st = Math.abs(rfexp.evaluateConstant());
-			discontinuityTimes.add(st);
+		
+			double startTime = simulation.getSolverTaskDescription().getTimeBounds().getStartingTime();
+			double endTime = simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
+			findAllRoots(rfexp,startTime,endTime,rootFinder,discontinuityTimes,false);
 		}
 	}
 }
+
+/**
+ * 
+ * @param timeFunction
+ * @param startTime
+ * @param endTime
+ * @param rootFinder
+ * @param uniqueRootTimes
+ * @param bPrintIterations
+ * @throws ExpressionException
+ * 
+ * for testing within scrapbook, see below:
+ * 
+ *  
+ * try {
+	edu.northwestern.at.utils.math.rootfinders.MonadicFunctionRootFinder rootFinder = 
+//			new edu.northwestern.at.utils.math.rootfinders.Brent();
+			new edu.northwestern.at.utils.math.rootfinders.Bisection();
+//			new edu.northwestern.at.utils.math.rootfinders.NewtonRaphson();
+//			new edu.northwestern.at.utils.math.rootfinders.Secant();
+	cbit.vcell.parser.SimpleSymbolTable simpleSymbolTable = new cbit.vcell.parser.SimpleSymbolTable(new String[] { "t" });
+
+	cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression("t-0.56");
+	
+	exp.bindExpression(simpleSymbolTable);
+	java.util.TreeSet<Double> rootTimes = new java.util.TreeSet<Double>();
+	double startTime = 0.0;
+	double endTime = 100.0;
+	System.out.print("exp = '"+ exp.infix() + "'");
+	long currentTimeMS = System.currentTimeMillis();
+	cbit.vcell.solvers.FiniteVolumeFileWriter.findAllRoots(exp,startTime,endTime,rootFinder,rootTimes,false);
+	long finalTimeMS = System.currentTimeMillis();
+	for (double root : rootTimes){
+		System.out.println("root = "+root);
+	}
+	System.out.println("elapsedTime of computation = "+(finalTimeMS-currentTimeMS)+" ms, found " + rootTimes.size() + " roots (not unique)");
+	
+}catch (Exception e){
+	e.printStackTrace(System.out);
+}
+
+ */
+public static void findAllRoots(Expression timeFunction, double startTime, double endTime, MonadicFunctionRootFinder rootFinder, TreeSet<Double> uniqueRootTimes, boolean bPrintIterations) throws ExpressionException{
+	TreeSet<Double> allRootTimes = new TreeSet<Double>();
+	final Expression function_exp = new Expression(timeFunction);
+	MonadicFunction valueFunction = new MonadicFunction() {
+		double[] values = new double[1];
+		public double f(double t) {
+			values[0] = t;
+			try {
+				return function_exp.evaluateVector(values);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("expression exception "+e.getMessage());
+			}
+		}
+	};
+	
+	final Expression derivative_exp = new Expression(timeFunction.differentiate(ReservedVariable.TIME.getName()));
+	MonadicFunction derivativeFunction = new MonadicFunction() {
+		double[] values = new double[1];
+		public double f(double t) {
+			values[0] = t;
+			try {
+				return derivative_exp.evaluateVector(values);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("expression exception "+e.getMessage());
+			}
+		}
+	};
+	
+	RootFinderConvergenceTest convergenceTest = new StandardRootFinderConvergenceTest();
+	RootFinderIterationInformation iterationInformation = null;
+	if (bPrintIterations){
+		iterationInformation = new RootFinderIterationInformation() {				
+			public void iterationInformation(double x, double fx, double dfx, int currentIteration) {
+				System.out.println(currentIteration+") x="+x+", fx="+fx+", dfx="+dfx);
+			}
+		};
+	}
+	int NUM_BRACKETS = 1000;
+	double simulationTime = endTime - startTime;
+	double tolerance = simulationTime/1e10;
+	int maxIter = 1000;
+	
+	for (int i=0;i<NUM_BRACKETS-1;i++){
+		double bracketMin = startTime + simulationTime*i/NUM_BRACKETS;
+		double bracketMax = startTime + simulationTime*(i+1)/NUM_BRACKETS;
+	
+		double root = rootFinder.findRoot(bracketMin, bracketMax, tolerance, maxIter, valueFunction, derivativeFunction, convergenceTest, iterationInformation);
+		if (root>startTime && root<endTime && valueFunction.f(root)<=tolerance){
+			allRootTimes.add(root);
+		}
+	}
+	double uniqueTolerance = tolerance * 100;
+	double lastUniqueRoot = Double.NEGATIVE_INFINITY;
+	for (double root : allRootTimes){
+		if (root-lastUniqueRoot > uniqueTolerance){
+			uniqueRootTimes.add(root);
+		}
+		lastUniqueRoot = root;
+	}
+
+}
+
+
 /**
 # Simulation Parameters
 SIMULATION_PARAM_BEGIN
