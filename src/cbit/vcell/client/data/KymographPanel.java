@@ -2036,6 +2036,7 @@ private void initDataManagerVariable(final String finalVarName) {
 				childWindow.setIsCenteredOnParent();
 				childWindow.pack();
 				childWindow.show();
+				System.out.println("Kymograph panel ChildWindow requesting focus.  Answer is: "+childWindow.requestFocusInWindow());
 				zoomToFill();
 			}else{
 				getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
@@ -2044,6 +2045,7 @@ private void initDataManagerVariable(final String finalVarName) {
 	};
 	
 	ClientTaskDispatcher.dispatch(this,  new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, true, null, true);
+	System.out.println("Waiting here");
 }
 
 
@@ -2229,7 +2231,7 @@ private void jCheckBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
 private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
 	initDataManagerVariable((String)getVarNamesJComboBox().getSelectedItem());
-	getimagePaneView1().requestFocusInWindow();
+    getimagePaneView1().requestFocusInWindow();
 }
 
 
