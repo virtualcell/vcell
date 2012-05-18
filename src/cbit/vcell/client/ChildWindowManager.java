@@ -142,6 +142,9 @@ public class ChildWindowManager {
 			
 			if (isCenteredOnParent != null) {
 				dialog.setLocationRelativeTo(dialog.getParent());
+				
+			dialog.toFront();
+			//dialog.requestFocus();
 			}
 			
 			System.out.println("Making a child window.  My parent is a "+this.getParent().getName());
@@ -256,6 +259,20 @@ public class ChildWindowManager {
 		}
 		public void removehildWindowListener(ChildWindowListener childWindowListener) {
 			listeners.remove(childWindowListener);
+		}
+		
+		public void requestFocus(){
+			if (dialog!=null){
+				dialog.requestFocus();
+			}
+		}
+		
+		public boolean requestFocusInWindow(){
+			boolean isLikelyToSucceed = false;
+			if (dialog!=null){
+				isLikelyToSucceed = dialog.requestFocusInWindow();
+			}
+			return isLikelyToSucceed;
 		}
 
 		public void setContextObject(Object context) {

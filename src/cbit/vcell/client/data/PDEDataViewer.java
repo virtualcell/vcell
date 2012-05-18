@@ -2258,6 +2258,7 @@ private void showSpatialPlot() {
 					childWindow.setIsCenteredOnParent();
 					childWindow.pack();
 					childWindow.show();
+					System.out.println("Spatial plot requesting focus.  Result is: "+childWindow.requestFocusInWindow());
 				}
 			}
 		}
