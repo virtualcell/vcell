@@ -47,11 +47,11 @@ public class ImagePaneView extends javax.swing.JPanel implements VCellDrawable {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.beans.PropertyChangeListener {
-		public void mouseClicked(java.awt.event.MouseEvent e) {};
-		public void mouseEntered(java.awt.event.MouseEvent e) {
+		public void mouseClicked(java.awt.event.MouseEvent e) {
 			if (e.getSource() == ImagePaneView.this) 
 				connEtoC3(e);
 		};
+		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {};
 		public void mouseReleased(java.awt.event.MouseEvent e) {};
@@ -135,33 +135,32 @@ private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3(java.awt.event.MouseEvent arg1) {
+	
 	try {
-		// user code begin {1}
-		// user code end
-//		Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-//		if(focusOwner != null){
-//			Component focusOwnerTopComponent = null;
-//			for (Container p = focusOwner.getParent(); p != null; p = p.getParent()) {
-//				if(p.getParent() == null) {
-//					focusOwnerTopComponent = p;
-//					break;
-//				}
-//			}
-//			Component thisTopComponent = null;
-//			for (Container p = this.getParent(); p != null; p = p.getParent()) {
-//				if(p.getParent() == null) {
-//					thisTopComponent = p;
-//					break;
-//				}
-//			}
-//			if(focusOwnerTopComponent == thisTopComponent){
-//				this.requestFocus();
-//			}
-//		}else{
-//			this.requestFocus();
-//		}
-		// user code begin {2}
-		// user code end
+		Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		if(focusOwner != null && (focusOwner instanceof cbit.image.gui.ImagePaneView)) {
+			Component focusOwnerTopComponent = null;
+			for (Container p = focusOwner.getParent(); p != null; p = p.getParent()) {
+				if(p.getParent() == null) {
+					focusOwnerTopComponent = p;
+					break;
+				}
+			}
+			Component thisTopComponent = null;
+			for (Container p = this.getParent(); p != null; p = p.getParent()) {
+				if(p.getParent() == null) {
+					thisTopComponent = p;
+					break;
+				}
+			}
+			if(focusOwnerTopComponent == thisTopComponent){
+				this.requestFocus();
+			}
+		}else{
+			this.requestFocus();
+			
+		}
+	
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
