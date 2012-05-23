@@ -618,55 +618,38 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			throw new IOException("neither primary user dir nor secondary user dir exists");
 		}
 
-		File dataProcessingOutputFile = new File(primaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
-		if (!dataProcessingOutputFile.exists()){
-			dataProcessingOutputFile = new File(secondaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
-		}
-		if (!dataProcessingOutputFile.exists()) {
-			throw new Exception("File not found "+dataProcessingOutputFile.getAbsolutePath());
-		}
-		FileInputStream fis = new FileInputStream(dataProcessingOutputFile);
-		byte[] byteArray = new byte[(int)dataProcessingOutputFile.length()];
-		int numRead = fis.read(byteArray);
-		if (numRead!=byteArray.length){
-			throw new IOException("read only "+numRead+" / "+byteArray.length+" bytes in DataProcessingOutput file");
-		}
-		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput();
-		
-		
-		
+		DataProcessingOutput dataProcessingOutput = null;
 		File dataProcessingOutputFileDDF5 = new File(primaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		if (!dataProcessingOutputFileDDF5.exists()){
 			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		}
-		if (!dataProcessingOutputFileDDF5.exists()) {
-			throw new Exception("File not found "+dataProcessingOutputFileDDF5.getAbsolutePath());
+		if (dataProcessingOutputFileDDF5.exists()) {
+			dataProcessingOutput = new DataProcessingOutput();
+			// retrieve an instance of H5File
+			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+			if (fileFormat == null){
+				throw new Exception("Cannot find HDF5 FileFormat.");
+			}
+			// open the file with read-only access
+			FileFormat testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+			if (testFile == null){
+				throw new Exception("Failed to open file: "+dataProcessingOutputFileDDF5.getAbsolutePath());
+			}
+			// open the file and retrieve the file structure
+			testFile.open();
+			Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
+			populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
+			// close file resource
+			testFile.close();
 		}
-		// retrieve an instance of H5File
-	    FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-	    if (fileFormat == null){
-	        throw new Exception("Cannot find HDF5 FileFormat.");
-	    }
-	    // open the file with read-only access
-	    FileFormat testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
-	    if (testFile == null){
-	        throw new Exception("Failed to open file: "+dataProcessingOutputFileDDF5.getAbsolutePath());
-	    }
-	    // open the file and retrieve the file structure
-	    testFile.open();
-	    Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
-	    populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
-	    // close file resource
-	    testFile.close();
 
-		
 		return dataProcessingOutput;
 	}catch (Exception e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
-public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVS,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception
+public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVarStatistics,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception
 {
     if (g == null)
         return;
@@ -689,11 +672,15 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 	    		String[] variableStatNames = new String[attrHashMap.size()];
 	    		Iterator<String> attrIter = attrHashMap.keySet().iterator();
 	    		for (int j = 0; j < attrHashMap.size(); j++) {
-	        		variableStatNames[j] = attrHashMap.get(attrIter.next());
+	    			String compVal = attrIter.next();
+	    			String compValtemp = compVal.substring(5);
+	    			int compValIdx = Integer.parseInt(compVal);
+	    			variableStatNames[compValIdx] = attrHashMap.get(compVal);
 				}
+	    		
 	        	dataProcessingOutput.setVariableStatNames(variableStatNames);
 	        	dataProcessingOutput.setVariableStatValues(new double[variableStatNames.length][dataProcessingOutput.getTimes().length]);
-	        	bVS = true;
+	        	bVarStatistics = true;
 	    	}
         }else if(obj instanceof H5ScalarDS){
         	H5ScalarDS h5ScalarDS = (H5ScalarDS)obj;
@@ -738,7 +725,7 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         	if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMES)){
             	double[] times = (double[])data;
             	dataProcessingOutput.setTimes(times);        		
-        	}else if(bVS){
+        	}else if(bVarStatistics){
         		double[] stats = (double[])data;
         		int timeIndex = Integer.parseInt(obj.getName().substring("time".length()));
         		for (int j = 0; j < stats.length; j++) {
@@ -764,7 +751,7 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         		}
         	}
         }else if (obj instanceof H5Group && !obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING)){
-        	bVS = false;
+        	bVarStatistics = false;
         	imgDataName = obj.getName();
         	dataProcessingOutput.getDataGenerators().put(imgDataName, new Vector<SourceDataInfo>());
 
@@ -782,7 +769,7 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         
         if (obj instanceof Group)
         {
-        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVS,imgDataName,imgDataOrigin,imgDataExtent);
+        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVarStatistics,imgDataName,imgDataOrigin,imgDataExtent);
         }
     }
 }
