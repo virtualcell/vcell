@@ -315,6 +315,9 @@ private void writeSmoldyn() throws Exception {
 private void writePostProcessingBlock() throws SolverException, ExpressionException {
 	PostProcessingBlock postProcessingBlock = simulationJob.getSimulation().getMathDescription().getPostProcessingBlock();
 	if (postProcessingBlock.getNumDataGenerators() == 0) {
+		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
+		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_END);
+		printWriter.println();
 		return;
 	}
 	printWriter.println(" # Post Processing Block");
