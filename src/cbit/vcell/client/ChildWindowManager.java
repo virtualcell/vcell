@@ -413,8 +413,10 @@ public class ChildWindowManager {
 	}
 	
 	public void closeChildWindow(ChildWindow childWindow){
-		childWindow.dispose();
-		childWindows.remove(childWindow);
+		if(childWindow != null) {
+			childWindow.dispose();
+			childWindows.remove(childWindow);
+		}
 	}
 
 	
