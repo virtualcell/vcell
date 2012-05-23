@@ -235,7 +235,9 @@ private void updateSimulationDataViewers(ApplicationComponents appComponents, Si
 		} else {
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
-			childWindowManager.closeChildWindow(childWindow);
+			if(childWindow != null) {
+				childWindowManager.closeChildWindow(childWindow);
+			}
 		}
 	}
 }
