@@ -11,6 +11,10 @@
 package cbit.image.gui;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
@@ -914,6 +918,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
+			//ivjInfoJlabel.setMinimumSize(new Dimension(50,15));
 //			ivjInfoJlabel.setBorder(BorderFactory.createEtchedBorder());
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -1437,6 +1442,10 @@ private void updateInfo(MouseEvent mouseEvent) {
 			//getInfoJlabel().setText((infoS == null?defaultInfoString:infoS));
 	//}
 	getimagePaneView1().setToolTipText(infoS == null?defaultInfoString:infoS);
+	
+	//make sure the vertical space for the infoText is sufficient to avoid resizing
+	FontMetrics fontMetrics = getInfoJlabel().getGraphics().getFontMetrics();
+	getInfoJlabel().setMinimumSize(new Dimension(50, (fontMetrics.getMaxAscent()+fontMetrics.getMaxDescent()+1)));
 	getInfoJlabel().setText((infoS == null?defaultInfoString:infoS));
 }
 /**
