@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="VCell_Admin_Scripts/Fei/Deploy/jar/Rel/vcellAll_5.0_REL_11.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VCell_5.0/vcellAll.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_2"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;icons"/>
+        <file path="/VCell_5.0/resources/rulesTable.xml"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Protocols"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;sybil.images.layout"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.PropertiesPanes"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.JavaHelpSearch"/>
+        <file path="/VCell_5.0/resources/vcellDoc/topics/chapter_6/PathwayImportTable.html"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Geometry"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.ParameterEstimation"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_1"/>
+        <file path="/VCell_5.0/resources/vcellDoc/topics/chapter_6/PathwayOverview.html"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_5"/>
+        <file path="/VCell_5.0/resources/planet.gif"/>
+        <file path="/VCell_5.0/resources/vcellDoc/topics/chapter_6/BiopaxSummary/BiopaxSummaryView.html"/>
+        <file path="/VCell_5.0/resources/pan.gif"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;images"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_6.PathwayObjects"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.Appendix"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;sybil"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Nonspatial"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_4"/>
+        <javaElement handleIdentifier="=VCell_5.0/src"/>
+        <file path="/VCell_5.0/resources/data_exporter_20x20.gif"/>
+        <file path="/VCell_5.0/resources/data_sets_20x20.gif"/>
+        <file path="/VCell_5.0/resources/zoom.gif"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_6.PathwayDiagram"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Spatial"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Specifications"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;sybil.images.files"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3.Simulations"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_3"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.chapter_7"/>
+        <file path="/VCell_5.0/resources/bioModelsNetInfo.xml"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics.image"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;vcellDoc.topics"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;sybil.images.edit"/>
+        <javaElement handleIdentifier="=VCell_5.0/resources&lt;sybil.images.biopax"/>
+    </selectedElements>
+</jardesc>
