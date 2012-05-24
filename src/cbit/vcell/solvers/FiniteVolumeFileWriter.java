@@ -281,7 +281,6 @@ public void write(String[] parameterNames) throws Exception {
 	writeParameters(parameterNames);
 	writeSerialParameterScans();	
 	writeFieldData();	
-	writeDataProcessor();
 	writePostProcessingBlock();
 	writeCompartments();	
 	writeMembranes();
@@ -367,7 +366,7 @@ DATA_PROCESSOR_END
  * @throws ExpressionException 
  * @throws DivideByZeroException 
 */
-private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
+/*private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
@@ -410,7 +409,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 
 	
 }
-
+*/
 /**
 # fast system dimension num_dependents
 FAST_SYSTEM_BEGIN 2 2
