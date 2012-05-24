@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="VCell_Admin_Scripts/Fei/JavaWebStart/Linux/resourceLinux_x64.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VCell_5.0/resourceLinux_x64.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/VCell_5.0/resources/cbit/vcell/resource/linux/BNG2"/>
+        <file path="/VCell_5.0/resources/cbit/vcell/resource/linux/smoldyn_x64"/>
+        <file path="/VCell_5.0/resources/cbit/vcell/resource/linux/run_network"/>
+        <file path="/VCell_5.0/resources/cbit/vcell/resource/linux/SundialsSolverStandalone_x64"/>
+    </selectedElements>
+</jardesc>
