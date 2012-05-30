@@ -674,7 +674,7 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 	    		for (int j = 0; j < attrHashMap.size(); j++) {
 	    			String compVal = attrIter.next();
 	    			String compValtemp = compVal.substring(5);
-	    			int compValIdx = Integer.parseInt(compVal);
+	    			int compValIdx = Integer.parseInt(compValtemp);
 	    			variableStatNames[compValIdx] = attrHashMap.get(compVal);
 				}
 	    		
