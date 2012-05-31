@@ -155,7 +155,9 @@ private void checkValidSimulationDataViewerFrames() {
 		} else {
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
-			childWindow.close();
+			if (childWindow != null) {
+				childWindow.close();
+			}
 		}
 	}
 }
