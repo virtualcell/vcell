@@ -202,7 +202,7 @@ private synchronized TimeWrapper put(Object key, TimeWrapper timeWrapper) throws
 
 	return oldTimeWrapper;
 }
-public void putProtected(KeyValue key, Cacheable cacheable) {
+public void putProtected(KeyValue key, Cacheable cacheable) throws CacheException {
 
 	if(!((cacheable instanceof Cloneable) || (cacheable instanceof Immutable) ||(cacheable instanceof Serializable))){
 		throw new CacheException("put:Object not Cloneable, Immutable or Serializable");
@@ -249,7 +249,7 @@ System.out.println("replacing object ALREADY IN DATABASE_CACHE "+oldTimeWrapper.
 //	System.out.print("put(cacheable="+cacheable+") ");
 	show();	
 }
-public void putUnprotected(KeyValue key, Cacheable cacheable) {
+public void putUnprotected(KeyValue key, Cacheable cacheable) throws CacheException {
 
 	if(!((cacheable instanceof Cloneable) || (cacheable instanceof Immutable) ||(cacheable instanceof Serializable))){
 		throw new CacheException("put:Object not Cloneable, Immutable or Serializable");

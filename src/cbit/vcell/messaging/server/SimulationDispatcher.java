@@ -17,6 +17,7 @@ import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
 
 import org.vcell.util.BigString;
+import org.vcell.util.CacheException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
@@ -232,7 +233,12 @@ public Simulation getSimulation(User user, KeyValue simKey) throws JMSException,
 			throw new DataAccessException(e.getMessage());
 		}
 		if (sim != null) {
-			simulationMap.putProtected(simKey, sim);
+			try {
+				simulationMap.putProtected(simKey, sim);
+			} catch (CacheException e) {
+				// if can't cache the simulation, it is ok
+				e.printStackTrace();
+			}
 		}
 	}
 	
