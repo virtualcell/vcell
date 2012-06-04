@@ -358,8 +358,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Exception ex = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-				if (ex == null) {
+				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
 					ODEDataManager odeDatamanager = (ODEDataManager)hashTable.get("odeDatamanager");
 					odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
 					odeDataViewer.setVcDataIdentifier(vcdid);

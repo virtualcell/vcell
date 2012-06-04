@@ -1610,7 +1610,7 @@ private void setTimeFromSlider(int sliderPosition) {
 			};
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 					if (exc == null) {
 						updateTimeTextField(getPdeDataContext().getTimePoint());
 					} else {
@@ -1716,7 +1716,7 @@ private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionE
 			
 		AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 				if (e != null) {
 					int index = -1;
 					if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){

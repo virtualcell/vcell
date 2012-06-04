@@ -164,7 +164,7 @@ public synchronized void ping() {
 	}
 //	System.gc();
 }
-public VCData put(VCDataIdentifier vcdID, VCData data) {
+public VCData put(VCDataIdentifier vcdID, VCData data) throws CacheException {
 
 	VCData oldData = null;
 			
@@ -178,7 +178,7 @@ public VCData put(VCDataIdentifier vcdID, VCData data) {
 	
 	return oldData;
 }
-public ODEDataBlock put(ODEDataInfo odeDataInfo, ODEDataBlock odeDataBlock) {
+public ODEDataBlock put(ODEDataInfo odeDataInfo, ODEDataBlock odeDataBlock) throws CacheException {
 
 	ODEDataBlock oldODEDataBlock = null;
 	
@@ -192,7 +192,7 @@ public ODEDataBlock put(ODEDataInfo odeDataInfo, ODEDataBlock odeDataBlock) {
 	
 	return oldODEDataBlock;
 }
-public ParticleDataBlock put(ParticleDataInfo particleDataInfo, ParticleDataBlock particleDataBlock) {
+public ParticleDataBlock put(ParticleDataInfo particleDataInfo, ParticleDataBlock particleDataBlock) throws CacheException {
 
 	ParticleDataBlock oldParticleDataBlock = null;
 			
@@ -206,7 +206,7 @@ public ParticleDataBlock put(ParticleDataInfo particleDataInfo, ParticleDataBloc
 	
 	return oldParticleDataBlock;
 }
-public SimDataBlock put(PDEDataInfo pdeDataInfo, SimDataBlock simData) {
+public SimDataBlock put(PDEDataInfo pdeDataInfo, SimDataBlock simData) throws CacheException {
 
 	SimDataBlock oldSimDataBlock = null;
 			
