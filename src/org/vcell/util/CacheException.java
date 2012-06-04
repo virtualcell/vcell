@@ -13,7 +13,7 @@ package org.vcell.util;
 /**
  * This type was created in VisualAge.
  */
-public class CacheException extends RuntimeException {
+public class CacheException extends Exception {
 /**
  * CacheException constructor comment.
  * @param s java.lang.String

@@ -37,6 +37,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.vcell.sybil.actions.files.ExitAction;
+import org.vcell.util.CacheException;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
@@ -2244,7 +2245,12 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 			if (odeDataBlock != null){
 //					cacheTable.put(odeDataInfo, odeDataBlock);
 				if(cacheTable0 != null){
-					cacheTable0.put(odeDataInfo, odeDataBlock);
+					try {
+						cacheTable0.put(odeDataInfo, odeDataBlock);
+					} catch (CacheException e) {
+						// if can't cache the results, it is ok
+						e.printStackTrace();
+					}
 				}
 				return odeDataBlock;
 			}else{
@@ -2283,7 +2289,12 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 			if (particleDataBlock != null){
 //				cacheTable.put(particleDataInfo, particleDataBlock);
 				if(cacheTable0 != null){
-					cacheTable0.put(particleDataInfo, particleDataBlock);
+					try {
+						cacheTable0.put(particleDataInfo, particleDataBlock);
+					} catch (CacheException e) {
+						// if can't cache the data, it is ok
+						e.printStackTrace();
+					}
 				}
 				return particleDataBlock;
 			}else{
@@ -2335,7 +2346,12 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 				if (simDataBlock != null && dataCachingEnabled) {
 //					cacheTable.put(pdeDataInfo,simDataBlock);
 					if(cacheTable0 != null){
-						cacheTable0.put(pdeDataInfo,simDataBlock);
+						try {
+							cacheTable0.put(pdeDataInfo,simDataBlock);
+						} catch (CacheException e) {
+							// if can't cache the data, it is ok
+							e.printStackTrace();
+						}
 					}
 				}
 			}				
@@ -2955,7 +2971,12 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 		}
 		if(cacheTable0 != null){
-			cacheTable0.put(vcdID,vcData);
+			try {
+				cacheTable0.put(vcdID,vcData);
+			} catch (CacheException e) {
+				// if  can't cache the data, it is ok
+				e.printStackTrace();
+			}
 		}
 	}
 
