@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="VCell_Admin_Scripts/Fei/Deploy/jar/Beta/vcellAll_5.1_Beta_15.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VCell_5.1/vcellAll.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/geom_structure_mapping.html"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Spatial"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;sybil.images.biopax"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.JavaHelpSearch"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.image"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;sybil.images.edit"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;icons"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;sybil"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.PropertiesPanes"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_6"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_6.BiopaxSummary"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;images"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_6.PathwayDiagram"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;sybil.images.layout"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_4"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Simulations"/>
+        <file path="/VCell_5.1/resources/planet.gif"/>
+        <file path="/VCell_5.1/resources/zoom.gif"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_7"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.originalImages"/>
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/GeometryOverview.html"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.ParameterEstimation"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_6.PathwayObjects"/>
+        <file path="/VCell_5.1/resources/rulesTable.xml"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc"/>
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/geom_Analytic.html"/>
+        <file path="/VCell_5.1/resources/bioModelsNetInfo.xml"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources_vfrap"/>
+        <file path="/VCell_5.1/resources/pan.gif"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_1"/>
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/fieldData.html"/>
+        <file path="/VCell_5.1/resources/data_sets_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Specifications"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results"/>
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/ApplicationOverview.html"/>
+        <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/geom_from_images.html"/>
+        <javaElement handleIdentifier="=VCell_5.1/src"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Nonspatial"/>
+        <file path="/VCell_5.1/resources/data_exporter_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_5"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_2"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;sybil.images.files"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.Appendix"/>
+        <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.Protocols"/>
+        <javaElement handleIdentifier="=VCell_5.1/src_vfrap"/>
+    </selectedElements>
+</jardesc>
