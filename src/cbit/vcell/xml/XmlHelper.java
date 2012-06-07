@@ -189,7 +189,7 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 		    sbmlExporter.setSelectedSimulationJob(simJob);
 		    return sbmlExporter.getSBMLFile();
 		} else {
-			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter(clonedSimContext.getBioModel());
+			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter(clonedSimContext.getBioModel(), level, version);
 			sbmlSpatialExporter.setSelectedSimContext(clonedSimContext);
 			sbmlSpatialExporter.setSelectedSimulationJob(simJob);
 			return sbmlSpatialExporter.getSBMLFile();
