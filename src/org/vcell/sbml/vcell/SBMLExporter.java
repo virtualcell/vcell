@@ -166,16 +166,6 @@ public class SBMLExporter {
 		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
 	}
 	
-	/**
-	 * SBMLExporter constructor comment.
-	 */
-	public SBMLExporter(BioModel argBioModel) {
-		super();
-		vcBioModel = argBioModel;
-		if (vcBioModel != null) {
-			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
-		}
-	}
 
 /**
  * addCompartments comment.
@@ -318,7 +308,7 @@ protected void addParameters() throws ExpressionException {
 	ReservedSymbol kMole = vcModel.getKMOLE();
 	org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
 	sbmlParam.setId(kMole.getName());
-	sbmlParam.setValue(kMole.getConstantValue());
+	sbmlParam.setValue(kMole.getExpression().evaluateConstant());
 	sbmlParam.setUnits(TokenMangler.mangleToSName(kMole.getUnitDefinition().getSymbol()));
 	sbmlParam.setConstant(true);
 	// Now add VCell global parameters to the SBML listofParameters
@@ -807,19 +797,30 @@ protected void addUnitDefinitions() {
 	unitDefn.setId(SBMLUnitTranslator.TIME);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-
 	// Redefine molecules as 'item' 
 	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getMembraneSubstanceUnit(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-	// Define umol.um3.L-1 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_umol_um3_per_L), sbmlLevel, sbmlVersion, vcUnitSystem);
+	// Define um3 - VCell
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - VCell
 	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
 
+	// Define um - VCell
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getLengthUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
+	sbmlModel.addUnitDefinition(unitDefn);
+
+	// Define s (time) - VCell
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getTimeUnits(), sbmlLevel, sbmlVersion, vcUnitSystem);
+	sbmlModel.addUnitDefinition(unitDefn);
+
+	// Define umol.um3.L-1 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_umol_um3_per_L), sbmlLevel, sbmlVersion, vcUnitSystem);
+	sbmlModel.addUnitDefinition(unitDefn);
+	
 	// Define KMOLE units : uM.um3/molecules - VCell (required in exported SBML for other tools).
 	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcModel.getKMOLE().getUnitDefinition(), sbmlLevel, sbmlVersion, vcUnitSystem);
 	sbmlModel.addUnitDefinition(unitDefn);
@@ -828,7 +829,10 @@ protected void addUnitDefinitions() {
 	ArrayList<String> unitList = new ArrayList<String>();
 	unitList.add(org.vcell.util.TokenMangler.mangleToSName(vcUnitSystem.getMembraneSubstanceUnit().getSymbol()));
 	unitList.add(org.vcell.util.TokenMangler.mangleToSName(vcUnitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_umol_um3_per_L).getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(sbmlExportSpec.getVolumeUnits().getSymbol()));
 	unitList.add(org.vcell.util.TokenMangler.mangleToSName(sbmlExportSpec.getAreaUnits().getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(sbmlExportSpec.getLengthUnits().getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(sbmlExportSpec.getTimeUnits().getSymbol()));
 	addKineticAndGlobalParameterUnits(unitList);
 }
 
