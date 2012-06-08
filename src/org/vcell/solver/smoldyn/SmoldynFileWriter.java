@@ -733,13 +733,12 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 				else //membrane reactions which are not one to one, or 0th order, or consuming species
 				{
-					// membrane reaction requires at least one mambrane bound reactant
-					if((getMembraneVariableCount(reactants) == 1))
+					if((getMembraneVariableCount(reactants) == 1)) // membrane reaction has one mambrane bound reactant
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinition);
 					}
-					else // bimolecular membrane reaction
+					else if(getMembraneVariableCount(reactants) == 2) // bimolecular membrane reaction
 					{
 						if(jprd instanceof InteractionRadius)
 						{
@@ -748,8 +747,12 @@ private void writeReactions() throws ExpressionException, MathException {
 						}
 						else
 						{
-							throw new MathException("VCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
+							throw new MathException("Error with reaction: " + pjp.getName() + ".\nVCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
 						}
+					}
+					else if(getMembraneVariableCount(reactants) == 0)
+					{
+						throw new MathException("Error with reaction: " + pjp.getName() + ".\nIn VCell spatial stochastic modeling, the membrane reaction requires at least one mambrane bound reactant.");
 					}
 				}
 			}
