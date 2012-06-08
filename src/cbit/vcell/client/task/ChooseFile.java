@@ -388,10 +388,11 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_STL);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PLY);
 	}
-	// set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+	// set the default file filter...
+	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
+
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
@@ -423,6 +424,11 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
 				selectedFile = new File(selectedFileName + ".pdf");
 			}
+			
+			if (fileFilter==null) {
+				throw new Exception("No file save type was selected.");
+			}
+			
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			resetPreferredFilePath(selectedFile, userPreferences);
