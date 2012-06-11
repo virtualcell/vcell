@@ -543,17 +543,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	try {
 		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 			SolverDescription solverDescription = getSolverDescription();
-			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
+			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver() || solverDescription.isGibsonSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
 				if (!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
-					// not only uniform output is supported.
-					double outputTime;
-					if (getOutputTimeSpec() instanceof DefaultOutputTimeSpec) {
-						DefaultOutputTimeSpec dot = (DefaultOutputTimeSpec)getOutputTimeSpec();
-						outputTime = dot.getKeepEvery() * getTimeStep().getDefaultTimeStep();
-					} else {
-						outputTime = timeBounds.getEndingTime()/20;
-					}
+					// set to uniform output if it is not.
+					double outputTime = (timeBounds.getEndingTime()-timeBounds.getStartingTime())/20;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
 				
