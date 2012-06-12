@@ -21,7 +21,8 @@ public class VCellLookAndFeel {
 	
 	public static Font defaultFont = null;
 	public static void setVCellLookAndFeel() {
-		if (!ResourceUtil.bLinux) {
+//		if (!ResourceUtil.bLinux) {
+			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (ClassNotFoundException e) {
@@ -33,7 +34,7 @@ public class VCellLookAndFeel {
 			} catch (UnsupportedLookAndFeelException e) {
 				e.printStackTrace();
 			}
-		}
+//		}
 		if (defaultFont == null) {			
 			defaultFont = UIManager.getFont("Label.font");		
 			if (ResourceUtil.bMac) {
