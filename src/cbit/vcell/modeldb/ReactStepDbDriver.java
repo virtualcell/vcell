@@ -38,6 +38,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -203,7 +204,7 @@ private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connec
 /**
  * getModels method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
+public ReactionStep getReactionStep(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 
 	Field[] f =
 	{
@@ -223,7 +224,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(QueryHashtable dbc, Connect
 		
 	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
 	
-	ReactionStep[] rsArr = getReactionStepArray(dbc, con,sql);
+	ReactionStep[] rsArr = getReactionStepArray(dbc, con, model, sql);
 	if(rsArr != null && rsArr.length > 0){
 		return rsArr[0];
 	}
@@ -237,7 +238,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(QueryHashtable dbc, Connect
  * @param rset java.sql.ResultSet
  * @exception java.sql.SQLException The exception description.
  */
-private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultSet rset) throws SQLException, DataAccessException, PropertyVetoException {
+private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultSet rset, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 
 	//
 	// try to get ReactionStep from the object cache
@@ -254,7 +255,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(ReactStepTable.table.structRef.toString()));
 	
 	Structure structure = getStructureHeirarchy(dbc, con, structKey);
-	rs = reactStepTable.getReactionStep(structure, rsKey, rset, log);
+	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset, log);
 
 	//
 	// add reaction participants for this reactionStep
@@ -279,7 +280,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 /**
  * getModels method comment.
  */
-private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con,String sql) throws SQLException, DataAccessException, PropertyVetoException {
+private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con, Model model, String sql) throws SQLException, DataAccessException, PropertyVetoException {
 
 	java.util.Vector reactStepList = new java.util.Vector();
 	Statement stmt = con.createStatement();
@@ -291,7 +292,7 @@ private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con,S
 		// get all objects
 		//
 		while (rset.next()) {
-			ReactionStep reactionStep = getReactionStep(dbc, con, rset);
+			ReactionStep reactionStep = getReactionStep(dbc, con, rset, model);
 			reactStepList.addElement(reactionStep);
 		}
 	} finally {
@@ -328,14 +329,14 @@ private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con,S
 /**
  * getModels method comment.
  */
-ReactionStep[] getReactionStepsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey) throws SQLException, DataAccessException, PropertyVetoException {
+ReactionStep[] getReactionStepsFromModel(QueryHashtable dbc, Connection con, Model model, KeyValue modelKey) throws SQLException, DataAccessException, PropertyVetoException {
 	//log.print("ModelDbDriver.getReactionSteps(modelKey=" + modelKey + ")");
 	String sql;
 	sql = 	" SELECT " + reactStepTable.getTableName()+".*" + 
 			" FROM " + reactStepTable.getTableName() + 
 			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + modelKey;
 			
-	return getReactionStepArray(dbc, con,sql);
+	return getReactionStepArray(dbc, con, model, sql);
 }
 
 

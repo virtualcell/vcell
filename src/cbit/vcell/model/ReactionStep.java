@@ -115,8 +115,15 @@ public abstract class ReactionStep implements BioModelEntityObject,
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
 	super();
+	
+	if (model != null) {
+		this.model = model;
+	} else {
+		throw new RuntimeException("Model cannot be null");
+	}
+	
 	nameScope = new ReactionStep.ReactionNameScope();
 	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope(), null);
 	setStructure(structure);
@@ -129,14 +136,14 @@ protected ReactionStep(Structure structure, KeyValue key, String name,String ann
 	this.annotation = annotation;
 }
 
-protected ReactionStep(Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
-	this(structure,key,name,null);
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
+	this(model, structure,key,name,null);
 }
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Structure structure, String name) throws PropertyVetoException {
-	this(structure,null,name);
+protected ReactionStep(Model model, Structure structure, String name) throws PropertyVetoException {
+	this(model, structure,null,name);
 }
 
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
@@ -247,12 +254,6 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
     getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public abstract void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception;
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 10:26:42 PM)

@@ -23,8 +23,8 @@ import cbit.vcell.parser.ExpressionException;
 public class FluxReaction extends ReactionStep {
 	private Species fieldFluxCarrier = null;
 
-public FluxReaction(Membrane membrane, KeyValue argKey, String name) throws PropertyVetoException {
-    super(membrane, argKey, name);
+public FluxReaction(Model model, Membrane membrane, KeyValue argKey, String name) throws PropertyVetoException {
+    super(model, membrane, argKey, name);
 	try {
 		setKinetics(new GeneralKinetics(this));
 	}catch (Exception e){
@@ -34,7 +34,7 @@ public FluxReaction(Membrane membrane, KeyValue argKey, String name) throws Prop
 
 
 public FluxReaction(Membrane membrane, Species fluxCarrier, Model model, KeyValue key,String name) throws Exception {
-	super(membrane,key,name);
+	super(model, membrane,key,name);
 	setFluxCarrier(fluxCarrier,model);
 	try {
 		setKinetics(new GeneralKinetics(this));
@@ -66,52 +66,6 @@ public boolean compareEqual(Matchable obj) {
 		return true;
 	}else{
 		return false;
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception {
-	String token = null;
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCMODL.EndBlock)){
-			break;
-		}			
-		if (token.equalsIgnoreCase(VCMODL.Valence)){
-			getChargeCarrierValence().setExpression(new Expression((double)Integer.parseInt(tokens.nextToken())));
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.PhysicsOptions)){
-			setPhysicsOptions(Integer.parseInt(tokens.nextToken()));
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Catalyst)){
-			Catalyst catalyst = new Catalyst(null,this);
-			catalyst.fromTokens(tokens,model);
-			addReactionParticipant(catalyst);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Kinetics)){
-			String kineticsType = tokens.nextToken();	// read MassActionKinetics or GeneralKinetics
-			if (kineticsType==null){
-				throw new Exception("unexpected EOF in FluxReaction");
-			}
-			KineticsDescription kineticsDescription = KineticsDescription.fromVCMLKineticsName(kineticsType);
-			if (kineticsDescription!=null){
-				Kinetics kinetics = kineticsDescription.createKinetics(this);
-				setKinetics(kinetics);
-				getKinetics().fromTokens(tokens);
-			}else{
-				throw new Exception("unknown kinetic type '"+kineticsType+"' in FluxReaction");
-			}						
-			continue;
-		}
-		throw new Exception("FluxReaction.fromTokens(), unexpected identifier "+token);
 	}
 }
 

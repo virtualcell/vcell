@@ -70,7 +70,7 @@ private ReactStepTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sql.ResultSet rset, SessionLog log) throws java.sql.SQLException, DataAccessException {
+public ReactionStep getReactionStep(Structure structure, Model model, KeyValue rsKey, java.sql.ResultSet rset, SessionLog log) throws java.sql.SQLException, DataAccessException {
 	
 	KeyValue key = rsKey;
 	if (rset.wasNull()){
@@ -90,9 +90,9 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 	ReactionStep rs = null;
 	try {
 		if (reactType.equals(ReactStepTable.REACTTYPE_FLUX)){
-			rs = new FluxReaction((Membrane)structure,key,reactionStepName);
+			rs = new FluxReaction(model, (Membrane)structure,key,reactionStepName);
 		}else if (reactType.equals(ReactStepTable.REACTTYPE_SIMPLE)){
-			rs = new SimpleReaction(structure,key,reactionStepName);
+			rs = new SimpleReaction(model, structure,key,reactionStepName);
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
@@ -146,7 +146,7 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 		}else{
 			throw new DataAccessException("expected valid kinetics type, read '"+token+"'");
 		}		
-		kinetics.fromTokens(tokens);
+		kinetics.fromTokens(kinetics_vcml);
 //
 // for debug purposes only, remove when unresolvedParameters are ok ... when globals exist
 //

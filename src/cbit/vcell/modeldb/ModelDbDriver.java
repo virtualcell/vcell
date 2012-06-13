@@ -251,7 +251,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		// add reactionSteps for this model
 		//
-		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(dbc, con,modelKey);
+		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(dbc, con, model, modelKey);
 		if (reactSteps != null) {
 			model.setReactionSteps(reactSteps);
 			for (int i=0; i < reactSteps.length; i ++){

@@ -1075,13 +1075,13 @@ protected void addReactions(VCMetaData metaData) {
 						}
 					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
-						vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
+						vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
 					}
 				} else {
-					vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
+					vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
 				}
 			} else {
-				vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
+				vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
 			}
 			
 			// set annotations and notes on vcReactions[i]

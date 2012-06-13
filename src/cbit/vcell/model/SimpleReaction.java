@@ -21,8 +21,8 @@ import cbit.vcell.parser.ExpressionException;
 @SuppressWarnings("serial")
 public class SimpleReaction extends ReactionStep
 {
-public SimpleReaction(Structure structure,KeyValue key,String name) throws java.beans.PropertyVetoException {
-	super(structure,key,name);
+public SimpleReaction(Model model, Structure structure,KeyValue key,String name) throws java.beans.PropertyVetoException {
+	super(model, structure,key,name);
 	try {
 		setKinetics(new MassActionKinetics(this));
 	} catch (ExpressionException e){
@@ -31,8 +31,8 @@ public SimpleReaction(Structure structure,KeyValue key,String name) throws java.
 	}
 }
 
-public SimpleReaction(Structure structure,String name) throws java.beans.PropertyVetoException {
-	this(structure,null,name);
+public SimpleReaction(Model model, Structure structure,String name) throws java.beans.PropertyVetoException {
+	this(model, structure,null,name);
 }
 
 public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws Exception {
@@ -110,64 +110,6 @@ public boolean compareEqual(Matchable obj) {
 		return true;
 	}else{
 		return false;
-	}
-}
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception {
-	while (tokens.hasMoreTokens()){
-		String token = tokens.nextToken();
-		if (token==null){
-			throw new Exception("unexpected EOF in SimpleReaction");
-		}
-		if (token.equalsIgnoreCase(VCMODL.EndBlock)){
-			break;
-		}			
-		if (token.equalsIgnoreCase(VCMODL.Reactant)){
-			Reactant reactant = new Reactant(null,this);
-			reactant.fromTokens(tokens,model);
-			addReactionParticipant(reactant);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Product)){
-			Product product = new Product(null,this);
-			product.fromTokens(tokens,model);
-			addReactionParticipant(product);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Catalyst)){
-			Catalyst catalyst = new Catalyst(null,this);
-			catalyst.fromTokens(tokens,model);
-			addReactionParticipant(catalyst);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Valence)){
-			getChargeCarrierValence().setExpression(new Expression(Integer.parseInt(tokens.nextToken())));
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.PhysicsOptions)){
-			setPhysicsOptions(Integer.parseInt(tokens.nextToken()));
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.Kinetics)){
-			String kineticsType = tokens.nextToken();	// read MassActionKinetics or GeneralKinetics
-			if (kineticsType==null){
-				throw new Exception("unexpected EOF in SimpleReaction");
-			}
-			KineticsDescription kineticsDescription = KineticsDescription.fromVCMLKineticsName(kineticsType);
-			if (kineticsDescription!=null){
-				Kinetics kinetics = kineticsDescription.createKinetics(this);
-				setKinetics(kinetics);
-				getKinetics().fromTokens(tokens);
-			}else{
-				throw new Exception("unknown kinetic type '"+kineticsType+"' in SimpleReaction");
-			}						
-			continue;
-		}
-		throw new Exception("unexpected identifier "+token);
 	}
 }
 public int getNumProducts() {
