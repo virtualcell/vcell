@@ -618,8 +618,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			OutputTimeSpec ots = null;
 			if(getDefaultOutputRadioButton().isSelected()){
 				int keepEvery = Integer.parseInt(getKeepEveryTextField().getText());
-				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() ||
-						solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)) {
+				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
 					ots = new DefaultOutputTimeSpec(keepEvery);
 				} else {
 					int keepAtMost = Integer.parseInt(getKeepAtMostTextField().getText());
@@ -766,7 +765,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		}
 
 		DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
-		UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.1);
+		UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.05);
 		ExplicitOutputTimeSpec eots = new ExplicitOutputTimeSpec(new double[] {0.1});
 		
 		if (solverDesc.supports(dots)) {
@@ -789,8 +788,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				BeanUtils.enableComponents(getExplicitOutputPanel(), true);
 			}
 		}
-		if (solverDesc.equals(SolverDescription.StochGibson) 
-				|| solverDesc.isSemiImplicitPdeSolver()){
+		if (solverDesc.isSemiImplicitPdeSolver()){
 			getKeepAtMostTextField().setText("");
 			getKeepAtMostTextField().setEnabled(false);
 		}

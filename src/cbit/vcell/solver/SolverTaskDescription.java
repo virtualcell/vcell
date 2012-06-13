@@ -543,10 +543,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	try {
 		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 			SolverDescription solverDescription = getSolverDescription();
-			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
+			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver() || solverDescription.isGibsonSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
-				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
-					double outputTime = timeBounds.getEndingTime()/20;
+				if (!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+					// set to uniform output if it is not.
+					double outputTime = (timeBounds.getEndingTime()-timeBounds.getStartingTime())/20;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
 				

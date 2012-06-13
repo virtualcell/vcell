@@ -656,12 +656,13 @@ public boolean compareEqual(Matchable obj) {
 public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
 {
 	switch (type) {
+	    case TYPE_STOCH_GIBSON:
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
 		case TYPE_HYBRID_MIL_Adaptive:
 		case TYPE_SMOLDYN:
 		case TYPE_SUNDIALS_PDE:	{
-			return new UniformOutputTimeSpec(0.1);
+			return new UniformOutputTimeSpec(0.05);
 		}
 		default:	
 			return new DefaultOutputTimeSpec();
@@ -795,6 +796,10 @@ public boolean isJavaSolver() {
  */
 public boolean isNonSpatialStochasticSolver() {
 	return getSupportedFeatures().containsAll(Arrays.asList(NonSpatialStochasticFeatureSet));
+}
+
+public boolean isGibsonSolver(){
+	return type == TYPE_STOCH_GIBSON;
 }
 
 public boolean isSpatialStochasticSolver() {
