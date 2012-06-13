@@ -708,10 +708,10 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
 		if (scm.isPDERequired() || mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isWellMixed()){
-			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 		if (scm.hasEventAssignment()){
-			rsList.addElement(new EventReactionStep("EventReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			rsList.addElement(new EventReactionStep("EventReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 	}
 	if (rsList.size()>0){

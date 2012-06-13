@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 
 import cbit.vcell.model.GeneralKinetics;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -25,8 +26,8 @@ public class DiffusionReactionStep extends SimpleReaction {
  * @param structure cbit.vcell.model.Structure
  * @throws ExpressionException 
  */
-public DiffusionReactionStep(String name, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
-	super(structure,name);
+public DiffusionReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
+	super(model, structure,name);
 	try {
 		setKinetics(new GeneralKinetics(this));
 	} catch (ExpressionException e) {

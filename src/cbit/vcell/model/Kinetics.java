@@ -14,8 +14,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -526,6 +529,11 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
  * @param name java.lang.String
  */
 protected Kinetics(String name, ReactionStep reactionStep) {
+	
+	if (reactionStep.getModel() == null) {
+		throw new RuntimeException("Model cannot be null");
+	}
+	
 	this.name = name;
 	this.reactionStep = reactionStep;
 	addVetoableChangeListener(this);
@@ -846,12 +854,32 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
+public final void fromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException {
+	try {
+		reading(true);
+		ArrayList<KineticsParameter> localKineticParameters = getKineticsParametersFromTokens(kinetics_vcmlStr);
+		
+		// remove any existing proxyParameters and unresolvedParameters (the list of localKineticParameters, when bound, will re-create the required proxy parameters
+		fieldProxyParameters = new KineticsProxyParameter[0];
+		fieldUnresolvedParameters = new UnresolvedParameter[0];
+		
+		// set kinetic parameters from the localParameters
+		fieldKineticsParameters = localKineticParameters.toArray(new KineticsParameter[localKineticParameters.size()]);
+		
+		// bind all kinetic parameters (to automatically create proxy (and unresolved?) parameters
+		bind(reactionStep);
+		
+	} finally {
+		reading(false);
+	}
+	
+	
+}
+
+
+
+
+private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException {
 	//
 	//  old format (version 1) (still supported for reading)
 	//
@@ -888,286 +916,230 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 	//      CurrentDensity currentDensity;
 	//  }
 	//
+	//	Kinetics GeneralCurrentKinetics {
+	//		Parameter currentDensity a+b/c; [uM]
+	//      Parameter a 10; [s-1]
+	//      Parameter b 3; [m-1]
+	//      Parameter c d/2; [uM.s-1]
+	//      Parameter d 5; [s]
+	//      CurrentDensity currentDensity; [s]
+	//  }
+	//
 	//
 
-
+	
+	// first pass : 
 	// protect predefined parameters
-	Kinetics.KineticsParameter[] predefParams = getKineticsParameters();
-	for (int i = 0; i < predefParams.length; i++){
-		if (predefParams[i].getRole() == ROLE_UserDefined) {
-			BeanUtils.removeElement(predefParams, predefParams[i]);
-			i--;
-		} else {
-			renameParameter(predefParams[i].getName(), PREDEFINED_MANGLED_PREFIX + predefParams[i].getName());
+	ArrayList<KineticsParameter> localParameters = new ArrayList<Kinetics.KineticsParameter>();
+	KineticsParameter[] predefinedKineticParameters = getKineticsParameters();
+	for (KineticsParameter kp : predefinedKineticParameters){
+		if (kp.getRole() != ROLE_UserDefined){
+			localParameters.add(kp);
 		}
 	}
-		
-	try {
-		
-		// now read in, and check predefined ones at the end 
-		reading(true);
-		
-		Model model = getReactionStep().getModel();
-		VCUnitSystem vcUnitSystem = null;
-		if (model != null) {
-			vcUnitSystem = model.getUnitSystem();
-		}
-		// if modelUnitSystem is null for some reason, create a temp vcUnitSystem to parse units which will get bound when refreshDependencies() is called.
-		if (vcUnitSystem == null) {
-			vcUnitSystem = new VCUnitSystem() {
-			};
-		}
-		ReactionStep reactionStep = getReactionStep();
-			
-		String token = null;
-		tokens.nextToken(); // read "{"
+	
+	
+	CommentStringTokenizer tokens = new CommentStringTokenizer(kinetics_vcmlStr);
+	String kineticsKeywordToken = tokens.nextToken();
+	String kineticsNameToken = tokens.nextToken();
+	String beginBraceToken = tokens.nextToken(); // read "{"
+	ModelUnitSystem unitSystem = reactionStep.getModel().getUnitSystem();
+	
+	HashMap<String,String> symbolRenamings = new HashMap<String, String>();
 
-		while (tokens.hasMoreTokens()){
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCMODL.EndBlock)){
+	while (tokens.hasMoreTokens()){
+		String firstTokenOfLine = tokens.nextToken();
+		if (firstTokenOfLine.equalsIgnoreCase(VCMODL.EndBlock)){
+			break;
+		}
+		if (firstTokenOfLine.equalsIgnoreCase(VCMODL.Fast)){
+			//setFast(true);
+			continue;
+		}
+		if (firstTokenOfLine.equalsIgnoreCase(VCMODL.Parameter)){
+			String name = tokens.nextToken();
+			Expression exp = new Expression(tokens.readToSemicolon());
+			String unitsString = tokens.nextToken();
+			VCUnitDefinition unitDef = unitSystem.getInstance_TBD();
+			if (unitsString.startsWith("[")){
+				while (!unitsString.endsWith("]")){
+					String tempToken = tokens.nextToken();
+					unitsString = unitsString + " " + tempToken;
+				}
+				//
+				// now string starts with '[' and ends with ']'
+				//
+				unitDef = unitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
+			}else{
+				tokens.pushToken(unitsString);  // read too far, put it back in the stream.
+			}
+			localParameters.add(new KineticsParameter(name,exp,ROLE_UserDefined,unitDef)); // could have two parameters with same name (one reserved, one user defined)
+			continue;
+		}
+		//
+		// not written as a parameter, try a requiredIdentifier
+		//
+		if (this instanceof GeneralLumpedKinetics) {
+			if (firstTokenOfLine.equals(VCMODL.ReactionRate) || firstTokenOfLine.equals(VCMODL.CurrentDensity) || firstTokenOfLine.equals(VCMODL.AssumedCompartmentSize_oldname)){
+				firstTokenOfLine = tokens.nextToken();
+				continue;
+			} else if (firstTokenOfLine.equals(VCMODL.TotalRate_oldname)) {
+				firstTokenOfLine = VCMODL.LumpedReactionRate;
+			}
+		}
+		//
+		// assume that this line is a reserved ROLE
+		//
+		KineticsParameter parameterForRole = null;
+		for (int i = 0; i < RoleTags.length; i++){
+			if (firstTokenOfLine.equalsIgnoreCase(RoleTags[i])){
+				//
+				// get the parameter with this reserved role
+				//
+				for (KineticsParameter kp : localParameters){
+					if (kp.getRole() == i){
+						parameterForRole = kp;
+						break;
+					}
+				}
+				if (parameterForRole==null){
+					throw new RuntimeException("parameter for role "+RoleTags[i]+" not found in kinetic law "+this.getKineticsDescription().getName());
+				}
+			}
+		}
+
+		String nextTokenAfterRole = tokens.nextToken();
+		if (nextTokenAfterRole.endsWith("'") && nextTokenAfterRole.startsWith("'")){
+			//
+			// if requiredIdentifier name is present (delimited by single quotes)
+			// use it as the user-supplied name for that required parameter
+			//
+			//     e.g. CurrentDensity 'currentDensity'
+			//
+			String parmName = nextTokenAfterRole.substring(1,nextTokenAfterRole.length()-1);
+			if (!parameterForRole.getName().equals(parmName)){
+				symbolRenamings.put(parameterForRole.getName(),parmName);
+			}
+		}else{
+			//
+			// else if a non-trivial expression, then use the default name for the requiredParameter.
+			//      if a single identifier expression, then use that identifier as the requiredParameter name.
+			//
+			
+			// first token (already popped) must be part of the expression (need to push it back).
+			//
+			//     e.g. CurrentDensity a+b/c;
+			//
+			tokens.pushToken(nextTokenAfterRole); // put back expression token for subsequent parsing.
+			Expression exp = new Expression(tokens.readToSemicolon());
+			
+			//
+			// find out if expression refers to another parameter declaration (expression of type "paramName;").
+			//
+			String[] symbols = exp.getSymbols();
+			boolean bIsSingleId = false;
+			if (symbols != null && symbols.length==1){
+				if (exp.compareEqual(new Expression(symbols[0]))){
+					bIsSingleId = true;
+				}
+			}
+			
+			//
+			// get unit definition (optional)
+			//
+			String unitsString = tokens.nextToken();
+			VCUnitDefinition unitDef = unitSystem.getInstance_TBD();
+			if (unitsString.startsWith("[")){
+				while (!unitsString.endsWith("]")){
+					String tempToken = tokens.nextToken();
+					unitsString = unitsString + " " + tempToken;
+				}
+				//
+				// now string starts with '[' and ends with ']'
+				//
+				unitDef = unitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
+			}else{
+				tokens.pushToken(unitsString); // from the next line put it back in the stream.
+			}
+			
+			if (!bIsSingleId){
+				//
+				// expression is real, not just a reference to a parameter defined on another line
+				// set expression and unit
+				//
+				parameterForRole.setExpression(exp);
+				if (unitDef!=null && !unitDef.isTBD()){
+					parameterForRole.setUnitDefinition(unitDef);
+				}
+			}else{
+				//
+				// expression is just a reference to a parameter defined on another line (e.g. Kf_012;)
+				// rename the reserved parameter to that name
+				//
+				// NOTE: COULD CREATE A CONFLICT ... TWO PARAMETERS WITH THE SAME NAME (RESOLVE LATER)
+				//
+				String parmName = symbols[0];
+				if (!parameterForRole.getName().equals(parmName)){
+					symbolRenamings.put(parameterForRole.getName(),parmName);
+				}
+			}
+		}
+	}
+	
+	//
+	// rename reserved parameter names and update expressions to reflect new names
+	//
+	for (String origSymbol : symbolRenamings.keySet()){
+		String newSymbol = symbolRenamings.get(origSymbol);
+		for (KineticsParameter kp : localParameters){
+			if (kp.getName().equals(origSymbol)){
+				kp.setName(newSymbol);
+			}
+			if (kp.getExpression().hasSymbol(origSymbol)){
+				kp.getExpression().substituteInPlace(new Expression(origSymbol), new Expression(newSymbol));
+			}
+		}
+	}
+	
+	//
+	// merge parameters with same name (one is UserDefined, the other is Reserved role)
+	//
+	boolean bDirty = true;
+	while (bDirty){
+		bDirty = false;
+		for (KineticsParameter kp1 : localParameters){
+			KineticsParameter kp_withSameName = null;
+			for (KineticsParameter kp2 : localParameters){
+				if (kp1!=kp2 && kp1.getName().equals(kp2.getName())){
+					kp_withSameName = kp2;
+				}
+			}
+			if (kp_withSameName!=null){
+				// copy expression and unit from UserDefined Parameter to the Reserved Parmaeter and remove the user defined parameter
+				KineticsParameter userParameter = null;
+				KineticsParameter reservedParameter = null;
+				if (kp1.getRole()==ROLE_UserDefined && kp_withSameName.getRole()!=ROLE_UserDefined){
+					userParameter = kp1;
+					reservedParameter = kp_withSameName;
+				}else if (kp_withSameName.getRole()==ROLE_UserDefined && kp1.getRole()!=ROLE_UserDefined){
+					reservedParameter = kp1;
+					userParameter = kp_withSameName;
+				}else{
+					throw new RuntimeException("found two parameters with same name '"+kp1.getName()+"' in reaction '"+reactionStep.getName()+"', not able to reconcile");
+				}
+				reservedParameter.setExpression(userParameter.getExpression());
+				if (userParameter.getUnitDefinition()==null || userParameter.getUnitDefinition().isTBD()){
+					reservedParameter.setUnitDefinition(userParameter.getUnitDefinition());
+				}
+				localParameters.remove(userParameter);
+
+				bDirty = true;
 				break;
 			}
-			if (token.equalsIgnoreCase(VCMODL.Fast)){
-				//setFast(true);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCMODL.Parameter)){
-				token = tokens.nextToken();
-				Expression exp = new Expression(tokens.readToSemicolon());
-				String symbols[] = exp.getSymbols();
-				for (int j = 0;symbols!=null && j < symbols.length; j++){
-					if (getReactionStep().getLocalEntry(symbols[j])==null){
-						addUnresolvedParameter(symbols[j]);
-					}
-				}
-				exp.bindExpression(reactionStep);
-				Parameter parm = getKineticsParameter(token);
-				if (parm==null){
-					parm = getProxyParameter(token);
-				}
-				if (parm==null){
-					parm = getUnresolvedParameter(token);
-				}
-				String unitsString = tokens.nextToken();
-				VCUnitDefinition unitDef = vcUnitSystem.getInstance_TBD();
-				if (unitsString.startsWith("[")){
-					while (!unitsString.endsWith("]")){
-						String tempToken = tokens.nextToken();
-						unitsString = unitsString + " " + tempToken;
-					}
-					//
-					// now string starts with '[' and ends with ']'
-					//
-					unitDef = vcUnitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
-				}else{
-					tokens.pushToken(unitsString);
-				}
-				if (parm == null){
-					addKineticsParameter(new KineticsParameter(token,exp,ROLE_UserDefined,unitDef));
-				}else if (parm instanceof UnresolvedParameter){
-					removeUnresolvedParameter((UnresolvedParameter)parm);
-					addKineticsParameter(new KineticsParameter(token,exp,ROLE_UserDefined,unitDef));
-				}else if (parm instanceof KineticsParameter){
-					((KineticsParameter)parm).setExpression(exp);
-				}else{
-					throw new RuntimeException("unexpected parameter type '"+parm.getClass().getName()+"'");
-				}
-				continue;
-			}
-			//
-			// not written as a parameter, try a requiredIdentifier
-			//
-			if (this instanceof GeneralLumpedKinetics) {
-				if (token.equals(VCMODL.ReactionRate) || token.equals(VCMODL.CurrentDensity) || token.equals(VCMODL.AssumedCompartmentSize_oldname)){
-					token = tokens.nextToken();
-					continue;
-				} else if (token.equals(VCMODL.TotalRate_oldname)) {
-					token = VCMODL.LumpedReactionRate;
-				}
-			}
-			boolean bTokenFound = false;
-			for (int i = 0; i < RoleTags.length; i++){
-				if (token.equalsIgnoreCase(RoleTags[i])){
-					int role = i;
-					bTokenFound = true;
-					token = tokens.nextToken();
-					String parmName = null;
-					if (token.endsWith("'") && token.startsWith("'")){
-						//
-						// if requiredIdentifier name is present (delimited by single quotes)
-						// use it as the user-supplied name for that required parameter
-						//
-						//     e.g. CurrentDensity 'currentDensity'
-						//
-						parmName = token.substring(1,token.length()-1);
-						KineticsParameter parm = getKineticsParameterFromRole(role);
-						parm.setName(parmName);
-					}else{
-						//
-						// else if a non-trivial expression, then use the default name for the requiredParameter.
-						//      if a single identifier expression, then use that identifier as the requiredParameter name.
-						//
-						
-						// first token (already popped) must be part of the expression (need to push it back).
-						//
-						//     e.g. CurrentDensity a+b/c;
-						//
-						tokens.pushToken(token);
-						Expression exp = new Expression(tokens.readToSemicolon());
-						
-						String[] symbols = exp.getSymbols();
-						boolean bIsSingleId = false;
-						if (symbols != null && symbols.length==1){
-							if (exp.compareEqual(new Expression(symbols[0]))){
-								bIsSingleId = true;
-							}
-						}
-						String unitsString = tokens.nextToken();
-						VCUnitDefinition unitDef = vcUnitSystem.getInstance_TBD();
-						if (unitsString.startsWith("[")){
-							while (!unitsString.endsWith("]")){
-								String tempToken = tokens.nextToken();
-								unitsString = unitsString + " " + tempToken;
-							}
-							//
-							// now string starts with '[' and ends with ']'
-							//
-							unitDef = vcUnitSystem.getInstance(unitsString.substring(1,unitsString.length()-1));
-						}else{
-							tokens.pushToken(unitsString);
-						}
-						Parameter parm = null;
-						if (!bIsSingleId){
-							//
-							// normal expression (not just a single identifier), resolve symbols and bind
-							//
-							for (int j = 0;symbols!=null && j < symbols.length; j++){
-								if (getReactionStep().getLocalEntry(symbols[j])==null){
-									addUnresolvedParameter(symbols[j]);
-								}
-							}
-							exp.bindExpression(reactionStep);
-							
-							//
-							// use "requiredIdentifier" name
-							//
-							parm = getKineticsParameterFromRole(role);
-							if (parm==null){
-								addKineticsParameter(new KineticsParameter(getDefaultParameterName(role),exp,role,unitDef));
-							}else if (parm instanceof UnresolvedParameter){
-								removeUnresolvedParameter((UnresolvedParameter)parm);
-								addKineticsParameter(new KineticsParameter(getDefaultParameterName(role),exp,role,unitDef));							
-							}else if (parm instanceof KineticsParameter){
-								((KineticsParameter)parm).setExpression(exp);
-							}else{
-								throw new RuntimeException("unexpected parameter type '"+parm.getClass().getName()+"'");
-							}
-						}else{
-							//
-							// must be a single identifier expression (e.g. Kf_012;) ... use this as the parameter's name, and continue parsing...
-							// later, this parameter will be defined, and the expression will be set.
-							//
-							parmName = symbols[0];
-							//
-							// if already using the default name, don't change anything
-							//
-							KineticsParameter parmFromRole = getKineticsParameterFromRole(role);
-							Parameter parmFromName = getKineticsParameter(parmName);
-							if (parmFromName==null){
-								parmFromName = getProxyParameter(parmName);
-							}
-							if (parmFromName==null){
-								parmFromName = getUnresolvedParameter(parmName);
-							}
-							if (parmFromRole == null){
-								throw new RuntimeException("parameter for role '"+Kinetics.RoleTags[role]+"' not defined");
-								////
-								//// "special" parameter not yet instantiated
-								////
-								//Expression newExp = new Expression(0.0);
-								//if (parmFromName instanceof UnresolvedParameter){
-									//removeUnresolvedParameter((UnresolvedParameter)parmFromName);
-								//}else if (parmFromName instanceof KineticsParameter){
-									//removeKineticsParameter((KineticsParameter)parmFromName);
-									//newExp = parmFromName.getExpression();
-								//}else if (parmFromName != null){
-									//throw new RuntimeException("unexpected parameter '"+parmFromName+"'");
-								//}
-								//addKineticsParameter(new KineticsParameter(parmName,newExp,role,unitDef));
-							}else{
-								//
-								// "special" parameter already exists
-								//
-								if (parmFromName == null){
-									parmFromRole.setName(parmName);
-								}else if (parmFromName == parmFromRole){
-									//
-									// do nothing, already has the correct name and role
-									//
-								}else if (parmFromName instanceof KineticsParameter){
-									if (((KineticsParameter)parmFromName).getRole() == ROLE_UserDefined) {
-										//
-										// sometimes models have user defined parameters with the default name of a parameter with a non-user role.
-										// (e.g.  user defined parameter of "J" and actual rate parameter of "J_channel")
-										// in this case a swap of roles are required.  But since roles are immutable, swap name
-										// in this case, don't remove those parameters
-										//
-										// swap name and expression between parmFromName and parmFromRole
-										// ... usually, parmFromName will later be discarded by cleanupParameters().
-										// 
-										String tempName = parmFromRole.getName();
-										Expression tempExp = parmFromRole.getExpression();
-										parmFromRole.setName(parmName);
-										parmFromRole.setExpression(new Expression(parmFromName.getExpression()));
-										((Kinetics.KineticsParameter)parmFromName).setName(tempName);
-										((Kinetics.KineticsParameter)parmFromName).setExpression(new Expression(tempExp));
-										//removeKineticsParameter((KineticsParameter)parmFromName);
-									} else {
-										parmFromRole.setExpression(new Expression(parmFromName.getName()));
-										if (!unitDef.isTBD()){
-											parmFromRole.setUnitDefinition(unitDef);
-										}
-									}
-								}else if (parmFromName instanceof UnresolvedParameter){
-									parmFromRole.setName(parmName);
-									removeUnresolvedParameter((UnresolvedParameter)parmFromName);
-								}
-							}
-						}
-					}
-					break;
-				}
-			}
-			if (bTokenFound){
-				continue;
-			}
-			throw new RuntimeException("KineticsTemplate.fromTokens(), unexpected token "+token);
-		}
-		
-		
-	}finally{
-		reading(false);
-		// now check on our protected predefined params
-		predefParams = getKineticsParameters();
-		for (int i = 0; i < predefParams.length; i++){
-			if (predefParams[i].getName().startsWith(PREDEFINED_MANGLED_PREFIX)) {
-				String defaultName = Kinetics.DefaultNames[predefParams[i].getRole()];
-				if (defaultName == null) {
-					// was replaced during read in
-				} else {
-					// was renamed during read in; make it nice again, *but* must avoid conflicts
-					while (getKineticsParameter(defaultName) != null) {
-						defaultName = TokenMangler.getNextEnumeratedToken(defaultName);
-					}
-					renameParameter(predefParams[i].getName(), defaultName);
-				}
-			} else {
-				// it has been renamed by stored user-defined name
-			}
 		}
 	}
+	return localParameters;
 }
-
 
 /**
  * Insert the method's description here.
@@ -2222,12 +2194,7 @@ public final String writeTokensWithReplacingProxyParams(Hashtable<String, Expres
 
 protected Expression getSymbolExpression(SymbolTableEntry ste) throws ExpressionBindingException {
 	SymbolTableEntry entry = getReactionStep().getEntry(ste.getName());
-	if (getReactionStep().getModel() == null && entry == null) {
-		UnresolvedParameter newParameter = addUnresolvedParameter(ste.getName());
-		return new Expression(newParameter, getReactionStep().getNameScope());
-	} else {
-		return new Expression(entry, getReactionStep().getNameScope());
-	}
+	return new Expression(entry, getReactionStep().getNameScope());
 }
 
 public abstract KineticsParameter getAuthoritativeParameter();

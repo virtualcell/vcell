@@ -1074,7 +1074,7 @@ private String getFreeMembraneName() {
 public SimpleReaction createSimpleReaction(Structure structure) {
 	String reactionStepName = getFreeReactionName();
 	try {
-		SimpleReaction simpleReaction = new SimpleReaction(structure, reactionStepName);
+		SimpleReaction simpleReaction = new SimpleReaction(this, structure, reactionStepName);
 		addReactionStep(simpleReaction);
 		return simpleReaction;
 	} catch (PropertyVetoException e) {
@@ -1110,7 +1110,7 @@ public FluxReaction createFluxReaction(Membrane membrane) {
 		count++;
 	}
 	try {
-		FluxReaction fluxReaction = new FluxReaction(membrane, null, reactionStepName);
+		FluxReaction fluxReaction = new FluxReaction(this, membrane, null, reactionStepName);
 		addReactionStep(fluxReaction);
 		return fluxReaction;
 	} catch (PropertyVetoException e) {

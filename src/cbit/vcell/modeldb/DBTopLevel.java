@@ -755,16 +755,16 @@ public Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAc
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-ReactionStep getReactionStep(QueryHashtable dbc, User user,KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+ReactionStep getReactionStep(QueryHashtable dbc, User user,KeyValue reactionStepKey,boolean bEnableRetry, Model model) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return reactStepDB.getReactionStep(dbc, con,user,reactionStepKey);
+		return reactStepDB.getReactionStep(dbc, con,user,reactionStepKey, model);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getReactionStep(dbc, user,reactionStepKey,false);
+			return getReactionStep(dbc, user,reactionStepKey,false, model);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

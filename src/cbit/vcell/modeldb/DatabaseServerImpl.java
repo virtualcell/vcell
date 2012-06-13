@@ -46,6 +46,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
@@ -635,7 +636,7 @@ public Preference[] getPreferences(User user) throws DataAccessException {
 public ReactionStep getReactionStep(User user, KeyValue reactionStepKey) throws DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getReactionStep");
-		return dbTop.getReactionStep(new QueryHashtable(), user,reactionStepKey,true);
+		return dbTop.getReactionStep(new QueryHashtable(), user,reactionStepKey, true, new Model("dummy"));
 	} catch (SQLException e) {
 		log.exception(e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());

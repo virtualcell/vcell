@@ -4125,8 +4125,7 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
     String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
     
     try {
-        simplereaction = new SimpleReaction(structureref, key, name);
-        simplereaction.setModel(model);
+        simplereaction = new SimpleReaction(model, structureref, key, name);
     } catch (java.beans.PropertyVetoException e) {
         e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name, e);

@@ -989,7 +989,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		if (reactionEditorPanel == null) {
 			reactionEditorPanel = new ReactionEditorPanel();
 		}
-		reactionEditorPanel.setModel(getModel());
+		Model model = getModel();
+		reactionEditorPanel.setModel(model);
 		while (true) {
 			int confirm = DialogUtils.showComponentOKCancelDialog(this, reactionEditorPanel, "Add New Reaction");
 			if (confirm == javax.swing.JOptionPane.OK_OPTION) {
@@ -1003,7 +1004,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (getModel().getReactionStep(reactionName) != null) {
 						throw new RuntimeException("Reaction '" + reactionName + "' already exists.");
 					}
-					ReactionStep simpleReaction = new SimpleReaction(reactionStructure, "dummy");
+					ReactionStep simpleReaction = new SimpleReaction(model, reactionStructure, "dummy");
 					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(simpleReaction, getModel(), equationString);
 					for (ReactionParticipant reactionParticipant : rpArray) {
 						if (reactionParticipant.getStructure() == reactionStructure) {

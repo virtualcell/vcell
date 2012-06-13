@@ -262,9 +262,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			ReactionStep newReactionStep = null;
 
 			if (copyFromReactionStep instanceof SimpleReaction) {
-				newReactionStep = new SimpleReaction(currentStruct, newName);
+				newReactionStep = new SimpleReaction(pasteToModel, currentStruct, newName);
 			} else if (copyFromReactionStep instanceof FluxReaction && currentStruct instanceof Membrane) {
-				newReactionStep = new FluxReaction((Membrane)currentStruct, null, newName);
+				newReactionStep = new FluxReaction(pasteToModel, (Membrane)currentStruct, null, newName);
 			}
 
 			pasteToModel.addReactionStep(newReactionStep);
@@ -478,7 +478,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			String kineticType = kineticsTokens.nextToken();
 			Kinetics newkinetics = KineticsDescription.fromVCMLKineticsName(kineticType).createKinetics(newReactionStep);
 			// use the remaining tokens to construct the new kinetics
-			newkinetics.fromTokens(kineticsTokens);
+			newkinetics.fromTokens(newKineticsStr);
 			// bind newkinetics to newReactionStep and add it to newReactionStep 
 			newkinetics.bind(newReactionStep);
 			newReactionStep.setKinetics(newkinetics);
