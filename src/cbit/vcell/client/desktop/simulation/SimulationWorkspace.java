@@ -183,15 +183,8 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		warningSizeBytes = Simulation.WARNING_STOCH_MEGABYTES*1000000L;
 	}
 	
-	long expectedNumTimePoints;
-	if(simulation.getMathDescription().isNonSpatialStoch())
-	{
-		expectedNumTimePoints = getEstimatedNumTimePointsForStoch(simSymbolTable); 
-	}
-	else
-	{
-		expectedNumTimePoints = getExpectedNumTimePoints(simulation);
-	}
+	long expectedNumTimePoints = getExpectedNumTimePoints(simulation);
+	
 	long expectedSizeBytes = getExpectedSizeBytes(simSymbolTable);
 	//
 	// check for error conditions (hard limits on resources) ... Note: each user should have it's own limits (and quotas).

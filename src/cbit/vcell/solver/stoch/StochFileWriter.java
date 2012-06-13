@@ -180,10 +180,13 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	printWriter.println("ENDING_TIME "+"\t"+ timeBounds.getEndingTime());
 //		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
 	printWriter.println("TOLERANCE "+"\t"+errorTolerance.getAbsoluteErrorTolerance());
-	if(outputTimeSpec.isDefault())
+	if(outputTimeSpec.isDefault()){
 		printWriter.println("SAMPLE_INTERVAL"+"\t"+((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
-	else if (outputTimeSpec.isUniform())
+		printWriter.println("MAX_SAVE_POINTS" +"\t"+((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
+	}
+	else if (outputTimeSpec.isUniform()){
 		printWriter.println("SAVE_PERIOD"+"\t"+((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
+	}
 	printWriter.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
 
 	if(stochOpt.isUseCustomSeed())
