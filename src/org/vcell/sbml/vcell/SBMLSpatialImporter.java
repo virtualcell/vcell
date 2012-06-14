@@ -542,14 +542,6 @@ protected void addInitialAssignments() {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment '"+initAssgnSymbol+"' size has an initial assignment, cannot handle it at this time.");
 			}
 			Expression initAssignMathExpr = getExpressionFromFormula(initAssgn.getMath());
-			// Check if init assgn expr for a species is in terms of x,y,z or other species. Not allowed for species.
-			if (sbmlModel.getSpecies(initAssgnSymbol) != null) {
-				if (initAssignMathExpr.hasSymbol(vcModel.getX().getName()) || 
-					initAssignMathExpr.hasSymbol(vcModel.getY().getName()) ||
-					initAssignMathExpr.hasSymbol(vcModel.getZ().getName()) ) {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "species '"+initAssgnSymbol+"' initial assignment expression cannot contain 'x', 'y', 'z'.");
-				}
-			}
 			
 			initAssignMathExpr = adjustExpression(initAssignMathExpr, vcModel);
 			// set the init assgn expr on VCell species init condn or global parameter expression

@@ -342,7 +342,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						structSize = applnStructInputPanel.getStructureSize();
 						// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set
 						if ( (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
-							 (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecified()) ||
+							 ((strucName == null || structSize <= 0.0) && (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecified())) ||
 							 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
 							 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
 							 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {

@@ -230,7 +230,7 @@ protected void addCompartments() {
 		if (vcStructures[i] instanceof Feature) {
 			Feature vcFeature = (Feature)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(3);
-			sbmlCompartment.setConstant(true);
+			// sbmlCompartment.setConstant(true);
 			String outside = null;
 			if (vcFeature.getParentStructure() != null) {
 				outside = TokenMangler.mangleToSName(vcFeature.getParentStructure().getName());
@@ -249,6 +249,7 @@ protected void addCompartments() {
 			sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
+		sbmlCompartment.setConstant(true);
 
 		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
@@ -679,7 +680,13 @@ protected void addReactions() {
 
 		if (vcReactionSpecs[i].isFast()) {
 			sbmlReaction.setFast(true);
+		} else {
+			// mandatory for L3, optional for L2
+			sbmlReaction.setFast(false);
 		}
+		
+		// mandatory for L3, optional for L2
+		sbmlReaction.setReversible(true);
 		
 		// set requiredElements attributes
 		RequiredElementsSBasePlugin reqplugin = (RequiredElementsSBasePlugin)sbmlReaction.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
@@ -789,8 +796,8 @@ protected void addSpecies() {
 				try {
 					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits, kMole);
 					Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression());
-					if (sbmlLevel == 2 && sbmlVersion == 3) {
-						// L2V3 - add expression as init assignment
+					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
+						// >= L2V3 - add expression as init assignment
 						ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
 						InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 						initAssignment.setSymbol(vcSpeciesContexts[i].getName());
@@ -816,6 +823,9 @@ protected void addSpecies() {
 		// Get (and set) the boundary condition value
 		boolean bBoundaryCondition = getBoundaryCondition(vcSpeciesContexts[i]);
 		sbmlSpecies.setBoundaryCondition(bBoundaryCondition); 
+
+		// mandatory for L3, optional for L2
+		sbmlSpecies.setConstant(false);
 
 		// set species substance units as 'molecules' - same as defined in the model; irrespective of it is in surface or volume.
 		sbmlSpecies.setSubstanceUnits(sbmlExportSpec.getSubstanceUnits().getSymbol());
@@ -891,7 +901,7 @@ protected void addSpecies() {
 							// set diffusionCoefficient element in SpatialParameterPlugin for param
 							DiffusionCoefficient sbmlDiffCoeff = spplugin.getDiffusionCoefficient();
 							sbmlDiffCoeff.setVariable(vcSpeciesContexts[i].getName());
-							sbmlDiffCoeff.setCoordinateIndex(0);
+							// sbmlDiffCoeff.setCoordinateIndex(0);
 						} 
 						if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 							// set BoundaryCondn Xm element in SpatialParameterPlugin for param

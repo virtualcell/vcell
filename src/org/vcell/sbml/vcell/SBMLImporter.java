@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AlgebraicRule;
 import org.sbml.libsbml.AssignmentRule;
@@ -118,6 +119,7 @@ public class SBMLImporter {
 	private static String RATE_NAME = XMLTags.ReactionRateTag;
 	private static String SPECIES_NAME = XMLTags.SpeciesTag;
 	private static String REACTION = XMLTags.ReactionTag;
+	private static String OUTSIDE_COMP_NAME = XMLTags.OutsideCompartmentTag;
 	
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -195,9 +197,20 @@ protected void addCompartments(VCMetaData metaData) {
 		// Second pass - connect the structures - add membranes if needed.
 		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 			org.sbml.libsbml.Compartment compartment = (org.sbml.libsbml.Compartment)listofCompartments.get(i);
+			String outsideCompartmentId = null;
 			if (compartment.getOutside() != null && compartment.getOutside().length() > 0) {
 				//compartment.getOutside returns the Sid of the 'outside' compartment, so get its name from model.
-				String outsideCompartmentId = compartment.getOutside();
+				outsideCompartmentId = compartment.getOutside();
+			} else {
+				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(compartment);
+				if (sbmlImportRelatedElement != null) {
+					Element embeddedVCellElement = sbmlImportRelatedElement.getChild(OUTSIDE_COMP_NAME, Namespace.getNamespace(SBMLUtils.SBML_VCELL_NS));
+					if (embeddedVCellElement != null) {
+						outsideCompartmentId = embeddedVCellElement.getAttributeValue(XMLTags.NameTag);
+					}
+				}
+			}
+			if (outsideCompartmentId != null) {
 				Compartment outsideCompartment = sbmlModel.getCompartment(outsideCompartmentId);
 				Structure outsideStructure = (Structure)structureNameMap.get(outsideCompartment.getId());
 				if (compartment.getSpatialDimensions() == 3) {
@@ -1888,6 +1901,8 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
 		} else if (sbmlImportRelatedElement.getChild(XMLTags.SimpleReactionTag, sbmlImportRelatedElement.getNamespace()) != null) {
 			elementName = XMLTags.SimpleReactionTag;
 		}
+	} else if (tag.equals(OUTSIDE_COMP_NAME)) {
+		elementName = XMLTags.OutsideCompartmentTag;
 	}
 	// If there is an annotation element for the reaction or species, retrieve and return.
 	if (sbmlImportRelatedElement != null) {
