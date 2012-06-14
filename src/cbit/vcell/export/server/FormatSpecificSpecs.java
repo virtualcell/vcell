@@ -18,6 +18,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+
 import org.vcell.util.Coordinate;
 
 import cbit.image.ImagePaneModel;
@@ -81,12 +87,17 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		}
 
 	public static VideoMediaSampleJPEG encodeJPEG(BufferedImage bufferedImage,float compressionQuality,int width,int height,int sampleDuration,int bitsPerPixel,boolean isGrayscale) throws Exception{
+		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		com.sun.image.codec.jpeg.JPEGImageEncoder enc = com.sun.image.codec.jpeg.JPEGCodec.createJPEGEncoder(byteArrayOutputStream);
-		com.sun.image.codec.jpeg.JPEGEncodeParam params = enc.getDefaultJPEGEncodeParam(bufferedImage);
-		params.setQuality(compressionQuality, false);//quality 0(very compressed, lossy) -> 1.0(less compressed,loss-less)
-		enc.setJPEGEncodeParam(params);
-		enc.encode(bufferedImage);
+		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(byteArrayOutputStream);
+		imageWriter.setOutput(imageOutputStream);
+		ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
+		imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		imageWriteParam.setCompressionQuality(compressionQuality);  // quality 0(very compressed, lossy) -> 1.0(less compressed,loss-less)
+		IIOImage iioImage = new IIOImage(bufferedImage, null, null);
+		imageWriter.write(null, iioImage, imageWriteParam);
+		imageOutputStream.close();
+		imageWriter.dispose();
 		return new VideoMediaSampleJPEG(width, height,sampleDuration, byteArrayOutputStream.toByteArray(), bitsPerPixel, isGrayscale);
 	}
 	
