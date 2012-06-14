@@ -1003,8 +1003,16 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 					}
 				}
 				if (parameterForRole==null){
-					throw new RuntimeException("parameter for role "+RoleTags[i]+" not found in kinetic law "+this.getKineticsDescription().getName());
+					for (KineticsParameter kp : localParameters){
+						if (isEquivalentRoleFromKineticsVCMLTokens(i, kp.getRole())){
+							parameterForRole = kp;
+							break;
+						}
+					}
 				}
+				if (parameterForRole == null) {
+					throw new RuntimeException("parameter for role "+RoleTags[i]+" not found in kinetic law "+this.getKineticsDescription().getName());
+				}	
 			}
 		}
 
@@ -1139,6 +1147,16 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		}
 	}
 	return localParameters;
+}
+
+private boolean isEquivalentRoleFromKineticsVCMLTokens(int role1, int role2) {
+	if ( (role1 == ROLE_KmFwd && role2 == ROLE_Km) || (role2 == ROLE_KmFwd && role1 == ROLE_Km) ) {
+		return true;
+	}
+	if ( (role1 == ROLE_VmaxFwd && role2 == ROLE_Vmax) || (role2 == ROLE_VmaxFwd && role1 == ROLE_Vmax) ) {
+		return true;
+	}
+	return false;
 }
 
 /**
