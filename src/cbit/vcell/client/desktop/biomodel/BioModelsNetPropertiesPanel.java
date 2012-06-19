@@ -41,18 +41,18 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel nameLabel;
 	private JLabel idLabel;
 	private JLabel linkLabel = null;
-	private JButton importButton = null;
+//	private JButton importButton = null;
 	private BioModelsNetModelInfo bioModelsNetModelInfo = null;
 	private DocumentWindowManager documentWindowManager = null;
 	
 	private EventHandler eventHandler = new EventHandler();
 	
-	private class EventHandler implements ActionListener, MouseListener {
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == importButton) {
-				importFromBioModelsNet();
-			}
-		}
+	private class EventHandler implements /*ActionListener, */MouseListener {
+//		public void actionPerformed(ActionEvent e) {
+//			if (e.getSource() == importButton) {
+//				importFromBioModelsNet();
+//			}
+//		}
 
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
@@ -118,9 +118,9 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 				"</html>");
 		urlLabel.addMouseListener(eventHandler);
 		idLabel = new JLabel();
-		importButton = new JButton("Import");
-		importButton.addActionListener(eventHandler);
-		importButton.setEnabled(true);
+//		importButton = new JButton("Import");
+//		importButton.addActionListener(eventHandler);
+//		importButton.setEnabled(true);
 		linkLabel = new JLabel();
 		linkLabel.addMouseListener(eventHandler);
 		linkLabel.setForeground(Color.blue);
@@ -130,7 +130,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(14,4,4,4);
 		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		JLabel label = new JLabel("BioModels.net:");
@@ -143,7 +143,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(14,4,4,4);
 		add(urlLabel, gbc);
 		
 		gridy ++;
@@ -207,8 +207,8 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.PAGE_START;
-		gbc.insets = new Insets(4,4,4,4);
-		add(importButton, gbc);
+//		gbc.insets = new Insets(4,4,4,4);
+		add(new JLabel(""), gbc); //put the black label here for the better alignment of the database file info.
 	}
 
 	public void setDocumentWindowManager(DocumentWindowManager newValue) {
@@ -221,11 +221,11 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		this.bioModelsNetModelInfo = bioModelsNetModelInfo;
 		if (bioModelsNetModelInfo == null) {
-			importButton.setEnabled(false);
+//			importButton.setEnabled(false);
 			nameLabel.setText(null);
 			idLabel.setText(null);
 		} else {
-			importButton.setEnabled(true);
+//			importButton.setEnabled(true);
 			nameLabel.setText(bioModelsNetModelInfo.getName());
 			idLabel.setText(bioModelsNetModelInfo.getId());
 			linkLabel.setText("<html><u>" + bioModelsNetModelInfo.getLink() + "</u></html>");
