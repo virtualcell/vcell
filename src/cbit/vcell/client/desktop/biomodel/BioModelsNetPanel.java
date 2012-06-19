@@ -17,6 +17,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -153,7 +155,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";	
 	
 	private class EventHandler implements ActionListener, TreeSelectionListener {
-
+		
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == importButton) {
 				importFromBioModelsNet();
@@ -244,6 +246,19 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		treeModel = new BioModelsNetTreeModel();
 		tree.setModel(treeModel);
 		tree.getSelectionModel().addTreeSelectionListener(eventHandler);
+		tree.addMouseListener(new MouseAdapter() {
+		     public void mouseClicked(MouseEvent e) {
+		         int selRow = tree.getRowForLocation(e.getX(), e.getY());
+		         if(selRow > -1) {
+		             if(e.getClickCount() == 1) {
+//		                 for other feature implementation use single mouse click
+		             }
+		             else if(e.getClickCount() == 2) {
+		            	 importFromBioModelsNet();
+		             }
+		         }
+		     }
+		 });
 				
 		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", false);
 		searchPanel.getContentPanel().setLayout(new GridBagLayout());
