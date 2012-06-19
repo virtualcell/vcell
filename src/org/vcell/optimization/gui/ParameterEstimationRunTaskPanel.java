@@ -977,7 +977,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 		getOptimizeResultsTextPane().setText(this.getSolverMessageText());
 		// set table data
-		if(parameterEstimationTask.getOptimizationSolverSpec() != null)
+		if(parameterEstimationTask != null && parameterEstimationTask.getOptimizationSolverSpec() != null)
 		{
 			if(parameterEstimationTask.getOptimizationSolverSpec().getCopasiOptimizationMethod() != null)
 			{
@@ -987,7 +987,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			numberOfRunComboBox.setSelectedItem(parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns() + "");
 		}
 		//set result table data
-		if(parameterEstimationTask.getOptimizationResultSet() != null && parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet() != null &&
+		if(parameterEstimationTask != null && parameterEstimationTask.getOptimizationResultSet() != null && parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet() != null &&
 		   parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet().getBestEstimates() != null && 
 		   parameterEstimationTask.getOptimizationResultSet().getOptSolverResultSet().getBestEstimates().length > 0)
 		{
