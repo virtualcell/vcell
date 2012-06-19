@@ -251,6 +251,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		int counter = 0;
 		Structure currentStruct = pasteToStructure;
 		String copiedStructName = copyFromRxSteps[counter].getStructure().getName();
+		IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
+		IdentityHashMap<SpeciesContext, SpeciesContext> speciesContextHash = new IdentityHashMap<SpeciesContext, SpeciesContext>();
 		Vector<Issue> issueVector = new Vector<Issue>();
 		do{
 			// create a new reaction, instead of cloning the old one; set struc
@@ -277,8 +279,6 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			}
 
 			// add appropriate reactionParticipants to newReactionStep.
-			IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-			IdentityHashMap<SpeciesContext, SpeciesContext> speciesContextHash = new IdentityHashMap<SpeciesContext, SpeciesContext>();
 			ReactionParticipant[] copyFromRxParticipantArr = copyFromReactionStep.getReactionParticipants();
 			Species fluxCarrierSp = null;
 			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
