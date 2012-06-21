@@ -18,10 +18,26 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.View;
 
 import org.sbpax.schemas.util.SBPAX3Util;
 import org.vcell.pathway.BioPAXUtil;
@@ -33,10 +49,12 @@ import org.vcell.pathway.Control;
 import org.vcell.pathway.Dna;
 import org.vcell.pathway.DnaRegion;
 import org.vcell.pathway.Entity;
+import org.vcell.pathway.EntityReference;
 import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
+import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Protein;
 import org.vcell.pathway.PublicationXref;
@@ -122,7 +140,6 @@ public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel {
 		public boolean isSortable(int col) {
 			return false;
 		}
-		
 	}
 			
 public BioPaxObjectPropertiesPanel() {
@@ -149,7 +166,7 @@ private void initialize() {
 		
 		setLayout(new BorderLayout());
 		add(table.getEnclosingScrollPane(), BorderLayout.CENTER);
-		setBackground(Color.white);		
+		setBackground(Color.white);
 		table.addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -173,6 +190,13 @@ private void initialize() {
 			    	} else if (bioPaxObject instanceof Xref) { // if xRef, get url
 			    		String url = ((Xref) bioPaxObject).getURL();
 			    		DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
+			    	} else if (bioPaxObject instanceof SBEntity) {		// TODO: kineticLaw
+			    		SBEntity sbE = (SBEntity)bioPaxObject;
+						if(sbE.getID().contains("kineticLaw")) {
+							String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+							DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
+						}
+
 			    	}
 			    }
 				
@@ -206,6 +230,17 @@ private void initialize() {
 									setForeground(Color.blue);
 								}
 								setText("<html><u>" + text + "</u></html>");
+							}
+						} else if(bpObject instanceof SBEntity) {
+							String url = ((SBEntity) bpObject).getID();
+							if(url.contains("kineticLaw")) {
+								setToolTipText(url);
+								if (!isSelected) {
+									setForeground(Color.blue);
+								}
+								if(url.contains("http")) {
+									setText("<html><u>" + text + "</u></html>");
+								}
 							}
 						}
 					}
@@ -278,6 +313,21 @@ protected void refreshInterface() {
 				// physicalEntity::memberPhysicalEntity (***ignored***)
 				// physicalEntity::notFeature (***ignored***)
 
+	// TODO:  extract the kinetic law, then the SBEntities, then the measurables, units, aso
+				Set<SBEntity> kineticLaws = BioPAXUtil.getKineticLawsOfController(physicalEntity, bioModel);
+				if(!kineticLaws.isEmpty()) {
+					propertyList.add(new BioPaxObjectProperty("Role", "Controller"));	// if we found kinetic laws then it's a controller
+				}
+				for(SBEntity kL : kineticLaws) {
+					propertyList.add(new BioPaxObjectProperty("Kinetic Law", kL.getID(), kL));
+					ArrayList<SBEntity> klProperties = kL.getSBSubEntity();
+					for(SBEntity klProperty : klProperties) {
+						propertyList.add(new BioPaxObjectProperty("\tSubEntities", klProperty.getID()));
+					}
+				}
+
+				
+				
 				if(!(physicalEntity instanceof SmallMolecule)){
 					// physicalEntity::cellular location
 					CellularLocationVocabulary cellularLocation = physicalEntity.getCellularLocation();
@@ -306,9 +356,15 @@ protected void refreshInterface() {
 					// protein::entity reference (***ignored***)
 
 				} else if (entity instanceof SmallMolecule){
-					//				SmallMolecule smallMolecule = (SmallMolecule) entity;
-					// smallMolecule::entityReference (***ignored***)
-
+					SmallMolecule sm = (SmallMolecule)entity;
+					EntityReference er = sm.getEntityReference();
+					if(!er.getName().isEmpty() && !er.getName().get(0).isEmpty()) {
+						propertyList.add(new BioPaxObjectProperty("Entity Reference", er.getName().get(0)));
+						ArrayList<Xref> xrefList = er.getxRef();
+						for (Xref xref : xrefList) {
+							propertyList.add(new BioPaxObjectProperty("\tXref", xref.getDb() + ":" + xref.getId(), xref));
+						}
+					}
 				} else if (entity instanceof Dna){
 					// dna::entityReference (***ignored***)
 
@@ -322,7 +378,7 @@ protected void refreshInterface() {
 					// rnaRegion::entityReference (***ignored***)
 
 				}
-			}else if(entity instanceof Interaction){
+			} else if(entity instanceof Interaction){
 				Interaction interaction = (Interaction)entity;
 				// interaction::interactionType
 				for (InteractionVocabulary interactionVocabulary : interaction.getInteractionTypes()){
@@ -342,11 +398,23 @@ protected void refreshInterface() {
 				}
 
 				// get the catalysts for interactions
+				// TODO: find the controllers for this conversion and extract / display the kinetic law
 				Set<String> catalysisList = getCatalysisSet(interaction);
 				if(catalysisList.size() > 0 ){
 					for(String str : catalysisList){
 						propertyList.add(new BioPaxObjectProperty("Catalyzed by", str, interaction));
 					}
+					Set<Catalysis> catalysts = BioPAXUtil.getCatalystsOfInteraction(interaction, bioModel);
+					for(Catalysis catalysis : catalysts) {
+						ArrayList<SBEntity> sbEntities = catalysis.getSBSubEntity();
+						for(SBEntity sbE : sbEntities) {
+							if(sbE.getID().contains("kineticLaw")) {
+								propertyList.add(new BioPaxObjectProperty("Kinetic Law ID", sbE.getID(), sbE));									
+							}
+						}
+					}
+
+
 				}
 
 				// get the controls for interactions
@@ -370,7 +438,7 @@ protected void refreshInterface() {
 					}
 				}
 
-			}else if(entity instanceof GroupObject){
+			} else if(entity instanceof GroupObject){
 				GroupObject groupObject = (GroupObject)entity;
 				for(BioPaxObject bpo : groupObject.getGroupedObjects()){
 					propertyList.add(new BioPaxObjectProperty("Element::" + bpo.getTypeLabel(), 
@@ -412,19 +480,21 @@ protected void refreshInterface() {
 //			for(SBVocabulary sbVocab : sbEntity.getSBTerm()) {
 //				propertyList.add(new BioPaxObjectProperty("SBO Term", SBPAXLabelUtil.makeLabel(sbVocab)));
 //			}
-			if(sbEntity instanceof Interaction) {
-				Interaction interaction = (Interaction) sbEntity;
-				Set<SBEntity> subEntities = new HashSet<SBEntity>();
-				subEntities.add(interaction);
-				Set<Control> controls = BioPAXUtil.findAllControls(interaction, bioModel.getPathwayModel());
-				subEntities.addAll(controls);
-				subEntities = SBPAX3Util.extractAllEntities(subEntities);
-				for(SBEntity subEntity : subEntities) {
-					if(subEntity instanceof SBMeasurable) {
-						propertyList.add(new BioPaxObjectProperty("Measured quantity", SBPAXLabelUtil.makeLabel(subEntity)));									
-					}
-				}
-			}
+			
+//			if(sbEntity instanceof Interaction) {
+//				// TODO: this goes away
+//				Interaction interaction = (Interaction) sbEntity;
+//				Set<SBEntity> subEntities = new HashSet<SBEntity>();
+//				subEntities.add(interaction);
+//				Set<Control> controls = BioPAXUtil.findAllControls(interaction, bioModel.getPathwayModel());
+//				subEntities.addAll(controls);
+//				subEntities = SBPAX3Util.extractAllEntities(subEntities);
+//				for(SBEntity subEntity : subEntities) {
+//					if(subEntity instanceof SBMeasurable) {
+//						propertyList.add(new BioPaxObjectProperty("Measured quantity", SBPAXLabelUtil.makeLabel(subEntity)));									
+//					}
+//				}
+//			}
 		}
 	}
 	tableModel.setData(propertyList);
@@ -498,5 +568,36 @@ private String getEntityName(Entity bpObject){
 	}
 }
 
-}
 
+public static void main(String[] argv) {
+	
+	JEditorPane jep = new JEditorPane("text/html", "The rain in <a href='http://foo.com/'>"  
+			+"Spain</a> falls mainly on the <a href='http://bar.com/'>plain</a>.");   
+	jep.setEditable(false);   
+	jep.setOpaque(false);   
+	jep.addHyperlinkListener(new HyperlinkListener() {
+		public void hyperlinkUpdate(HyperlinkEvent hle) {   
+			if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {   
+				System.out.println(hle.getURL());   
+			}
+		}
+	});
+	JEditorPane jep1 = new JEditorPane("text/html", "ala bala por to calaala bala por to calaala bala por to calaala bala por to calaala bala por to cala");   
+	jep1.setEditable(false);   
+	jep1.setOpaque(false);
+	    
+	JPanel p = new JPanel();   
+	p.add( new JLabel("Foo.") );   
+	p.add( jep );   
+	p.add( new JLabel("Bar.") );
+	p.add( new JEditorPane("text","ala bala por to calaala bala por to calaala bala por to calaala bala por to calaala bala por to cala"));
+	p.add( jep1 );   
+	  
+	JFrame f = new JFrame("HyperlinkListener");   
+	f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   
+	f.getContentPane().add(p, BorderLayout.CENTER);   
+	f.setSize(400, 150);   
+	f.setVisible(true);   
+	}  
+
+}
