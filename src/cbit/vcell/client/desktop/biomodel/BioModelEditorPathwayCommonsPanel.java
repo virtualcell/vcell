@@ -390,7 +390,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(eventHandler);
-		showPathwayButton = new JButton("Import Pathway");
+		showPathwayButton = new JButton("Preview");
 		showPathwayButton.addActionListener(eventHandler);
 		showPathwayButton.setEnabled(false);
 		gotoPathwayButton = new JButton("Open WebLink");
