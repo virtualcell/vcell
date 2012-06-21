@@ -2568,7 +2568,7 @@ public void setStructures(Structure[] structures) throws java.beans.PropertyVeto
 	for (int i=0;i<newValue.length;i++){	
 		newValue[i].addPropertyChangeListener(this);
 		newValue[i].addVetoableChangeListener(this);
-//		newValue[i].setModel(this);
+		newValue[i].setModel(this);
 		newValue[i].getStructureSize().addPropertyChangeListener(this);
 		newValue[i].getStructureSize().addVetoableChangeListener(this);
 		if (newValue[i] instanceof Membrane){
