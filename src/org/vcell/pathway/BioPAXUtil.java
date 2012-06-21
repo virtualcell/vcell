@@ -20,8 +20,12 @@ import org.sbpax.util.sets.SetOfOne;
 import org.sbpax.util.sets.SetOfThree;
 import org.sbpax.util.sets.SetOfTwo;
 import org.vcell.pathway.InteractionParticipant.Type;
+import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.sybil.util.JavaUtil;
 import org.vcell.util.TokenMangler;
+
+import cbit.vcell.biomodel.BioModel;
+//import cbit.vcell.client.desktop.biomodel.BioPaxObjectPropertiesPanel.BioPaxObjectProperty;
 
 public class BioPAXUtil {
 
@@ -42,6 +46,76 @@ public class BioPAXUtil {
 	public static Set<Control> findAllControls(Interaction interaction, PathwayModel pathwayModel) {
 		return findAllControls(interaction, pathwayModel, 0);
 	}
+	
+	// internal use only
+	private static Set<Catalysis> getCatalyses(BioModel bioModel) {
+		Set<Catalysis> catalyses = new HashSet<Catalysis>();
+		if(bioModel == null) {
+			return catalyses;
+		}
+		PathwayModel pathwayModel = bioModel.getPathwayModel();
+		
+		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
+		for(BioPaxObject bpObject : bpObjects) {
+			if(bpObject instanceof Catalysis) {
+				Catalysis catalysis = (Catalysis) bpObject;
+				catalyses.add(catalysis);
+			}
+		}
+		return catalyses;
+	}
+	// find the catalyses for which this physical entity is a controller
+	private static Set<Catalysis> getCatalysesOfController(PhysicalEntity controller, BioModel bioModel) {
+		Set<Catalysis> filteredCatalyses = new HashSet<Catalysis>();
+		if(bioModel == null) {
+			return filteredCatalyses;
+		}
+		Set<Catalysis> allCatalyses = getCatalyses(bioModel);
+		for(Catalysis catalysis : allCatalyses) {
+			List<PhysicalEntity> controllers = catalysis.getPhysicalControllers();
+			for(PhysicalEntity pE : controllers) {
+				if(pE.getID().equals(controller.getID())) {
+					filteredCatalyses.add(catalysis);
+					break;
+				}
+			}
+		}
+		return filteredCatalyses;
+	}
+	// find the kinetic laws of the catalyses for which this physical entity is a controller
+	public static Set<SBEntity> getKineticLawsOfController(PhysicalEntity controller, BioModel bioModel) {
+		Set<SBEntity> kineticLaws = new HashSet<SBEntity>();
+		if(bioModel == null) {
+			return kineticLaws;
+		}
+		Set<Catalysis> catalyses = getCatalysesOfController(controller, bioModel);
+		for(Catalysis catalysis : catalyses) {
+			ArrayList<SBEntity> kLaws = catalysis.getSBSubEntity();
+			for(SBEntity kL : kLaws) {
+				kineticLaws.add(kL);
+			}
+		}
+		return kineticLaws;
+	}
+	// find catalysts of this interaction
+	public static Set<Catalysis> getCatalystsOfInteraction(Interaction interaction, BioModel bioModel) {
+		Set<Catalysis> catalysts = new HashSet<Catalysis>();
+		if(bioModel == null) {
+			return catalysts;
+		}
+		PathwayModel pathwayModel = bioModel.getPathwayModel();
+		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
+		for(BioPaxObject bpObject : bpObjects) {
+			if(bpObject instanceof Catalysis) {
+				Catalysis catalysis = (Catalysis) bpObject;
+				if(catalysis.getControlledInteraction() == interaction){	// TODO: is this reliable or should we check by ID?
+					catalysts.add(catalysis);
+				}
+			}
+		}
+		return catalysts;
+	}
+	
 
 	public static Set<Control> findAllControls(Interaction interaction, PathwayModel pathwayModel, int depth) {
 		if(depth >= MAX_INTERACTION_CONTROL_CHAIN_DEPTH) {
