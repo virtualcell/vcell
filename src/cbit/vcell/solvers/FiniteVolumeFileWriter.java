@@ -83,7 +83,6 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
@@ -98,12 +97,6 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import edu.northwestern.at.utils.math.MonadicFunction;
-import edu.northwestern.at.utils.math.rootfinders.Bisection;
-import edu.northwestern.at.utils.math.rootfinders.MonadicFunctionRootFinder;
-import edu.northwestern.at.utils.math.rootfinders.RootFinderConvergenceTest;
-import edu.northwestern.at.utils.math.rootfinders.RootFinderIterationInformation;
-import edu.northwestern.at.utils.math.rootfinders.StandardRootFinderConvergenceTest;
 
 /**
  * Insert the type's description here.
@@ -970,6 +963,38 @@ private void writeModelDescription() throws MathException {
 private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSet<Double> discontinuityTimes) throws ExpressionException, MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
+	for (Discontinuity discontinuity : discontinuities) {
+		Expression rfexp = discontinuity.getRootFindingExp();
+		rfexp.bindExpression(simSymbolTable);
+		rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
+		String[] symbols = rfexp.getSymbols();
+		boolean bHasT = false;
+		for (String symbol : symbols) {
+			if (symbol.equals(ReservedVariable.TIME.getName())) {
+				bHasT = true;
+			}
+		}
+		if (bHasT) {
+			if (symbols.length != 1) {
+				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " can only be a function of time");
+			}
+			Expression deriv = rfexp.differentiate(ReservedVariable.TIME.getName());
+			double d = deriv.evaluateConstant(); // we don't allow 5t < 3 
+			if (d != 1 && d != -1) {
+				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not allowed.");
+			}
+			rfexp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(0));
+			rfexp.flatten();
+			double st = Math.abs(rfexp.evaluateConstant());
+			discontinuityTimes.add(st);
+		}
+	}
+	
+	/*Simulation simulation = simulationJob.getSimulation();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	MonadicFunctionRootFinder rootFinder = new Bisection();
 	
 	for (Discontinuity discontinuity : discontinuities) {
@@ -994,7 +1019,7 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 			double endTime = simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
 			findAllRoots(rfexp,startTime,endTime,rootFinder,discontinuityTimes,false);
 		}
-	}
+	} ---------------------------------JIM's CODE COMMENTTED FOR FUTURE DEVELOPMENT*/
 }
 
 /**
@@ -1038,7 +1063,7 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 }
 
  */
-public static void findAllRoots(Expression timeFunction, double startTime, double endTime, MonadicFunctionRootFinder rootFinder, TreeSet<Double> uniqueRootTimes, boolean bPrintIterations) throws ExpressionException{
+/*public static void findAllRoots(Expression timeFunction, double startTime, double endTime, MonadicFunctionRootFinder rootFinder, TreeSet<Double> uniqueRootTimes, boolean bPrintIterations) throws ExpressionException{
 	TreeSet<Double> allRootTimes = new TreeSet<Double>();
 	final Expression function_exp = new Expression(timeFunction);
 	MonadicFunction valueFunction = new MonadicFunction() {
@@ -1100,7 +1125,7 @@ public static void findAllRoots(Expression timeFunction, double startTime, doubl
 		lastUniqueRoot = root;
 	}
 
-}
+}  ---------------------------------JIM's CODE COMMENTTED FOR FUTURE DEVELOPMENT*/
 
 
 /**
