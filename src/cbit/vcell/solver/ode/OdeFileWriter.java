@@ -70,7 +70,7 @@ public OdeFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
 public Discontinuity getSubsitutedAndFlattened(Discontinuity discontinuity, SymbolTable st) throws ExpressionException {		
 	Expression discontinuityExp = MathUtilities.substituteFunctions(discontinuity.getDiscontinuityExp(), st).flatten();
 	Expression rootFindingExp = MathUtilities.substituteFunctions(discontinuity.getRootFindingExp(), st).flatten();
-	return new Discontinuity(discontinuityExp,rootFindingExp);
+	return new Discontinuity(discontinuityExp,rootFindingExp,discontinuity.getASTRelationOperator());
 }
 
 /**
