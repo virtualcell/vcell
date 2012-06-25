@@ -669,7 +669,7 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionException {
  * @param expression Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression negate(Expression expression) throws ExpressionException {
+public static Expression negate(Expression expression) {
 	Expression exp = new Expression();
 	ASTMinusTermNode minusNode = new ASTMinusTermNode();
 	Node termNode = expression.rootNode.copyTree();
