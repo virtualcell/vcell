@@ -15,17 +15,37 @@ import org.vcell.util.Compare;
 public class Discontinuity {
 	Expression discontinuityExp;
 	Expression rootFindingExp;
+	int astRelationOperator;
 	
-	public Discontinuity(Expression argOriginalExp, Expression argRootFindingExp) {
+	public Discontinuity(Expression argOriginalExp, Expression argRootFindingExp, int argAstRelationOperator) {
 		super();
 		this.discontinuityExp = argOriginalExp;
 		this.rootFindingExp = argRootFindingExp;
+		if(argAstRelationOperator < ASTRelationalNode.GT  || argAstRelationOperator > ASTRelationalNode.NE)
+		{
+			throw new IllegalArgumentException("AST Relational node out of range.");
+		}
+		this.astRelationOperator = argAstRelationOperator;
 	}
 	public Expression getDiscontinuityExp() {
 		return discontinuityExp;
 	}
 	public Expression getRootFindingExp() {
 		return rootFindingExp;
+	}
+	public int getASTRelationOperator()
+	{
+		return astRelationOperator;
+	}
+	public Expression getSignedRootFindingExp() {
+		if(astRelationOperator == ASTRelationalNode.LT || astRelationOperator == ASTRelationalNode.LE)
+		{
+			return Expression.negate(rootFindingExp);
+		}
+		else
+		{
+			return rootFindingExp;
+		}
 	}
 	@Override
 	public boolean equals(Object obj) {
