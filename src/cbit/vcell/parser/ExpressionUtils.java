@@ -11,6 +11,7 @@
 package cbit.vcell.parser;
 
 import java.util.Random;
+import java.util.Vector;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 /**
@@ -489,6 +490,29 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		if (numEvaluations < REQUIRED_NUM_EVALUATIONS){
 			//savedException.printStackTrace(System.out);
 			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
+		}
+		Vector<Discontinuity> discont1 = exp1.getDiscontinuities();
+		Vector<Discontinuity> discont2 = exp2.getDiscontinuities();
+		if(discont1.size() != discont2.size())
+		{
+			return false;
+		}
+		else
+		{
+			if (discont1.size() != 0)
+			{
+				Expression productOfdiscont1 = new Expression(1);
+				Expression productOfdiscont2 = new Expression(1);
+				for(Discontinuity dis1 : discont1)
+				{
+					productOfdiscont1 = Expression.mult(productOfdiscont1, dis1.getSignedRootFindingExp());
+				}
+				for(Discontinuity dis2 : discont2)
+				{
+					productOfdiscont2 = Expression.mult(productOfdiscont2, dis2.getSignedRootFindingExp());
+				}
+				return functionallyEquivalent(productOfdiscont1, productOfdiscont2, verifySameSymbols, relativeTolerance, absoluteTolerance);
+			}
 		}
 		return true;
 	}catch (cbit.vcell.parser.ExpressionException e){

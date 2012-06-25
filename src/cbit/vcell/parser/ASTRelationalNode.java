@@ -519,7 +519,7 @@ public SimpleNode getRootFindingExpression() throws ExpressionException {
 
 @Override
 public void getDiscontinuities(Vector<Discontinuity> v)	throws ExpressionException {
-	Discontinuity od = new Discontinuity(new Expression((SimpleNode)copyTree()), new Expression(getRootFindingExpression()));			  
+	Discontinuity od = new Discontinuity(new Expression((SimpleNode)copyTree()), new Expression(getRootFindingExpression()), operation);			  
 	v.add(od);
 	super.getDiscontinuities(v);
 }
