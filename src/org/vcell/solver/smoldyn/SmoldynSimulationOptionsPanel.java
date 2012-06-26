@@ -251,7 +251,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 	private void refresh() {
 		if (solverTaskDescription != null) {
 			MathDescription mathDescription = solverTaskDescription.getSimulation().getMathDescription();
-			if (!mathDescription.isSpatialStoch()) {
+			if (!(mathDescription.isSpatialStoch() || mathDescription.isSpatialHybrid())) {
 				setVisible(false);
 				return;
 			}

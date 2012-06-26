@@ -419,7 +419,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 }
 
-private void writeHighResVolumeSamples() {	
+private void writeHighResVolumeSamples() throws SolverException {	
 	try {
 		printWriter.println("# HighResVolumeSamples");
 		printWriter.println(VCellSmoldynKeyword.start_highResVolumeSamples);
@@ -434,6 +434,11 @@ private void writeHighResVolumeSamples() {
 		printWriter.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
 		printWriter.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
 		VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
+		if(pixelclasses != null &&  resampledGeometry.getGeometrySpec().getSubVolumes()!= null
+		  && pixelclasses.length != resampledGeometry.getGeometrySpec().getSubVolumes().length)
+		{
+			throw new SolverException("Fast mesh sampling failed. Found " + pixelclasses.length +" of " + resampledGeometry.getGeometrySpec().getSubVolumes().length + " volume domains.\n");
+		}
 		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
 			for(VCPixelClass vcPixelClass : pixelclasses )
 			{
