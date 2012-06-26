@@ -125,7 +125,7 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	else {
 		setStochOpt(null);
 	}
-	if (simulation.getMathDescription().isSpatialStoch()) {
+	if (simulation.getMathDescription().isSpatialStoch() || simulation.getMathDescription().isSpatialHybrid()) {
 		smoldynSimulationOptions = new SmoldynSimulationOptions(solverTaskDescription.smoldynSimulationOptions);
 	} else {
 		smoldynSimulationOptions = null;
