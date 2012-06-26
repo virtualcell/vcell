@@ -13,7 +13,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -87,8 +86,8 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -100,12 +99,12 @@ import cbit.vcell.simdata.gui.SpatialSelectionContour;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolver;
@@ -611,7 +610,6 @@ private TimeSeriesJobResults calculateStatisticsFromWhole(
 public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException {
 
 	try {
-
 		User user = vcdID.getOwner();
 		File primaryUserDir = getPrimaryUserDir(user, false);
 		File secondaryUserDir = getSecondaryUserDir(user);
@@ -631,23 +629,27 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			if (fileFormat == null){
 				throw new Exception("Cannot find HDF5 FileFormat.");
 			}
-			// open the file with read-only access
-			FileFormat testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
-			if (testFile == null){
-				throw new Exception("Failed to open file: "+dataProcessingOutputFileDDF5.getAbsolutePath());
+			// open the file with read-only access	
+			FileFormat testFile = null;
+			try{
+				testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+				// open the file and retrieve the file structure
+				testFile.open();
+				Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
+				populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
+			}catch(Exception e){
+				throw new IOException("Error reading file");
+			}finally{
+				if(testFile != null){testFile.close();}
 			}
-			// open the file and retrieve the file structure
-			testFile.open();
-			Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
-			populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
-			// close file resource
-			testFile.close();
+		}else{
+			throw new FileNotFoundException("file not found");
 		}
 
 		return dataProcessingOutput;
 	}catch (Exception e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}
 }
 public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVarStatistics,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception

@@ -12,7 +12,6 @@ package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -43,13 +42,10 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -61,8 +57,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -102,9 +96,8 @@ import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -129,12 +122,11 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -301,6 +293,7 @@ public class PDEDataViewer extends DataViewer {
 	private DataProcessingResultsPanel dataProcessingResultsPanel;
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
+	private static final String POST_PROCESS_TABNAME = "Post Processing Data";
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -364,7 +357,7 @@ public class PDEDataViewer extends DataViewer {
 							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
 						}
 					}
-					dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
+//					dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
 					//set Smoldyn flag for exports to create "particle" media
@@ -1780,7 +1773,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.insertTab("View Data", null, getViewData(), null, 0);
 			ivjJTabbedPane1.insertTab(EXPORT_DATA_TABNAME, null, getExportData(), null, 1);
 			dataProcessingResultsPanel = new DataProcessingResultsPanel();
-			ivjJTabbedPane1.addTab("Post Processing Data", dataProcessingResultsPanel);
+			ivjJTabbedPane1.addTab(POST_PROCESS_TABNAME, dataProcessingResultsPanel);
 			ivjJTabbedPane1.addChangeListener(
 				new ChangeListener(){
 					public void stateChanged(ChangeEvent e) {
@@ -1790,6 +1783,8 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 							SpatialSelection[] spatialSelectionsMembrane =
 								getPDEDataContextPanel1().fetchSpatialSelectionsAll(VariableType.MEMBRANE);
 							getPDEExportPanel1().setSpatialSelections(spatialSelectionsVolume, spatialSelectionsMembrane,getPDEDataContextPanel1().getViewZoom());
+						}else if(ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_TABNAME)){
+							dataProcessingResultsPanel.update(getPdeDataContext());
 						}
 					}
 				}
