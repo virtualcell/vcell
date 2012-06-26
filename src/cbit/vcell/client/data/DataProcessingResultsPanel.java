@@ -10,36 +10,38 @@
 
 package cbit.vcell.client.data;
 
+import java.awt.CardLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import ucar.ma2.ArrayDouble;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.ImagePaneModel;
+import cbit.image.gui.ImagePlaneManagerPanel;
+import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
@@ -48,23 +50,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
-import java.awt.CardLayout;
-
-import cbit.image.gui.DisplayAdapterService;
-import cbit.image.gui.ImagePaneModel;
-import cbit.image.gui.ImagePlaneManagerPanel;
-import cbit.image.gui.SourceDataInfo;
-
-import javax.swing.ScrollPaneConstants;
-import javax.swing.JSlider;
-import javax.swing.SwingConstants;
-import java.awt.BorderLayout;
-import javax.swing.JLabel;
 
 @SuppressWarnings("serial")
-public class DataProcessingResultsPanel extends JPanel implements PropertyChangeListener {
+public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
 
-	private PDEDataContext pdeDataContext;
+//	private PDEDataContext pdeDataContext;
 //	private NetcdfFile ncfile;
 	private JList varJList;
 	private PlotPane plotPane = null;
@@ -282,58 +272,48 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 		}
 	}
 	
-	public void setPdeDataContext(PDEDataContext newValue) {
-		if (this.pdeDataContext == newValue) {
-			return;
-		}
-		PDEDataContext oldValue = pdeDataContext;
-		if (oldValue != null) {
-			oldValue.removePropertyChangeListener(this);
-		}
-		this.pdeDataContext = newValue;	
-		if (newValue != null) {
-			newValue.addPropertyChangeListener(this);
-		}
-		update();
-	}
+//	public void setPdeDataContext(PDEDataContext newValue) {
+//		if (this.pdeDataContext == newValue) {
+//			return;
+//		}
+//		PDEDataContext oldValue = pdeDataContext;
+//		if (oldValue != null) {
+//			oldValue.removePropertyChangeListener(this);
+//		}
+//		this.pdeDataContext = newValue;	
+//		if (newValue != null) {
+//			newValue.addPropertyChangeListener(this);
+//		}
+//		update();
+//	}
 
-	private void read() {
+	private void read(PDEDataContext pdeDataContext) throws Exception {
+		
+		if(dpo != null && timeArray!= null && timeArray.length == pdeDataContext.getTimePoints().length){
+			System.out.println("--------------------"+timeArray.length+"=="+pdeDataContext.getTimePoints().length);
+			//we already read this
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+		dpo = null;
+		timeArray = null;
+		
 		try {
 			dpo = pdeDataContext.getDataProcessingOutput();
 			if (dpo != null) {
 				timeArray = dpo.getTimes();
-
-//				byte[] nc_content = dpo.toBytes();
-//				ncfile = NetcdfFile.openInMemory("temp.inmemory", nc_content);
-//				
-//				ucar.nc2.Variable tVar = ncfile.findVariable(ReservedSymbol.TIME.getName());
-//				int[] shape = tVar.getShape();
-//				int[] origin = new int[1];
-//				timeArray = new double[shape[0]];
-//				ArrayDouble.D1 data = null;
-//				try {
-//					data = (ArrayDouble.D1)tVar.read(origin, shape);
-//				} catch (Exception e) {
-//					e.printStackTrace(System.err);
-//					throw new IOException("Can not read volVar data.");
-//				}
-//				for (int i = 0; i < shape[0]; i++) {
-//					timeArray[i] = data.get(i);					
-//				}
 			}
-
-		} catch (Exception e1) {
-			DialogUtils.showErrorDialog(this, e1.getMessage(), e1);
-			e1.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
 		}
 	}
 	
-	private void update() {
+	public void update(final PDEDataContext pdeDataContext) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {		
-				read();
+				read(pdeDataContext);
 			}
 		};
 		
@@ -447,12 +427,12 @@ public class DataProcessingResultsPanel extends JPanel implements PropertyChange
 			e1.printStackTrace();
 		}
 	}
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS)) {
-			update();
-		}
-		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER)) {
-			update();
-		}
-	}
+//	public void propertyChange(PropertyChangeEvent evt) {
+//		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS)) {
+//			update();
+//		}
+//		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER)) {
+//			update();
+//		}
+//	}
 }

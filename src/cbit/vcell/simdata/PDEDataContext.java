@@ -79,7 +79,6 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 	private CartesianMesh cartesianMesh = null;
 //	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
-	private DataProcessingOutput dataProcessingOutput;
 	private VCDataIdentifier vcDataIdentifier = null;
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
@@ -228,16 +227,9 @@ protected abstract SimDataBlock getSimDataBlock(String varName, double time) thr
 protected abstract DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException;
 
 public DataProcessingOutput getDataProcessingOutput() throws DataAccessException {
-	if (dataProcessingOutput == null) {
-		dataProcessingOutput = retrieveDataProcessingOutput();
-	}
-	return dataProcessingOutput;
+	return retrieveDataProcessingOutput();
 }
 
-private void clearDataProcessingOutput()
-{
-	dataProcessingOutput = null;
-}
 /**
  * Gets the timePoint property (double) value.
  * @return The timePoint property value.
@@ -608,8 +600,6 @@ final void setVCDataIdentifier(VCDataIdentifier newValue) {
 	}
 	VCDataIdentifier oldValue = vcDataIdentifier;
 	this.vcDataIdentifier = newValue;
-	//clear up the data processing output, once the scan(basically job id) has been changed)
-	clearDataProcessingOutput(); 
 	
 	firePropertyChange(PROPERTY_NAME_VCDATA_IDENTIFIER, oldValue, newValue);
 }
