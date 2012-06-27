@@ -922,7 +922,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 	}
 	if (ste instanceof MathMapping.EventAssignmentInitParameter){
 		MathMapping.EventAssignmentInitParameter eventInitParm = (MathMapping.EventAssignmentInitParameter)ste;
-		return eventInitParm.getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_INIT;
+		return eventInitParm.getName();
 	}
 
 	if (ste instanceof Model.ReservedSymbol){
@@ -1492,7 +1492,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (eventAssignTargets.contains(modelParameters[j])) {
 				EventAssignmentInitParameter eap = null;
 				try {
-					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParamExpr, 
+					eap = addEventAssignmentInitParameter(modelParameters[j].getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_INIT, modelParamExpr, 
 							PARAMETER_ROLE_EVENTASSIGN_INITCONDN, modelParameters[j].getUnitDefinition());
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
