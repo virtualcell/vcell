@@ -21,8 +21,11 @@ import cbit.vcell.parser.ExpressionException;
 @SuppressWarnings("serial")
 public class SimpleReaction extends ReactionStep
 {
-public SimpleReaction(Model model, Structure structure,KeyValue key,String name) throws java.beans.PropertyVetoException {
+	private String fieldAnnotation = null;
+	
+public SimpleReaction(Model model, Structure structure, KeyValue key, String name, String argAnnotation) throws java.beans.PropertyVetoException {
 	super(model, structure,key,name);
+	this.fieldAnnotation = argAnnotation;
 	try {
 		setKinetics(new MassActionKinetics(this));
 	} catch (ExpressionException e){
@@ -30,16 +33,22 @@ public SimpleReaction(Model model, Structure structure,KeyValue key,String name)
 		throw new RuntimeException(e.getMessage());
 	}
 }
+public SimpleReaction(Model model, Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
+	this(model, structure, key, name, null);
+}
 
+public SimpleReaction(Model model, Structure structure,String name, String argAnnotation) throws java.beans.PropertyVetoException {
+	this(model, structure, null, name, argAnnotation);
+}
 public SimpleReaction(Model model, Structure structure,String name) throws java.beans.PropertyVetoException {
-	this(model, structure,null,name);
+	this(model, structure, null, name, null);
 }
 
 public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws Exception {
 
 	int count = countNumReactionParticipants(speciesContext);
 
-	// NOTE : right now, we are not taking into account the possiblity of allowing 
+	// NOTE : right now, we are not taking into account the possibility of allowing 
 	// a speciesContext to be a Catalyst as well as pdt or reactant.
 	if (count == 0) {
 		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt
@@ -69,7 +78,7 @@ public void addReactant(SpeciesContext speciesContext,int stoichiometry) throws 
 
 	int count = countNumReactionParticipants(speciesContext);
 
-	// NOTE : right now, we are not taking into account the possiblity of allowing 
+	// NOTE : right now, we are not taking into account the possibility of allowing 
 	// a speciesContext to be a Catalyst as well as pdt or reactant.
 	if (count == 0) {
 		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt

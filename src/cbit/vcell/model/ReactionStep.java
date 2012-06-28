@@ -50,14 +50,11 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * @since   VCELL1.0
  */
 @SuppressWarnings("serial")
-public abstract class ReactionStep implements BioModelEntityObject,
-		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
-{
+public abstract class ReactionStep implements BioModelEntityObject, Cacheable, Serializable, 
+	ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable {
 
 	public static final String PROPERTY_NAME_KINETICS = "kinetics";
-	
 	private String annotation = null;
-	
 	
 	public final static int PHYSICS_MOLECULAR_ONLY = 0;
 	public final static int PHYSICS_MOLECULAR_AND_ELECTRICAL = 1;
@@ -115,7 +112,7 @@ public abstract class ReactionStep implements BioModelEntityObject,
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Model model, Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name, String annotation) throws java.beans.PropertyVetoException {
 	super();
 	
 	if (model != null) {
