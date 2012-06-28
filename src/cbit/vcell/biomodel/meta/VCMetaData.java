@@ -199,7 +199,7 @@ public class VCMetaData implements Serializable {
 				} catch (URNParseFailureException e) {
 					e.printStackTrace(System.out);
 				}
-				// set nonRDF annotatoins to null
+				// set nonRDF annotations to null
 				NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(entryIdentifiable);
 				if(nonRDFAnnotation != null) {
 					nonRDFAnnotation.setFreeTextAnnotation(null);

@@ -37,6 +37,8 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -61,6 +63,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private ScrollTable ivjScrollPaneTable = null;
 	private EventHandler eventHandler = new EventHandler();
 	private ReactionElectricalPropertiesPanel reactionElectricalPropertiesPanel;
+	
 	private JTextArea annotationTextArea = null;
 	private JTextField nameTextField = null;
 	private JLabel electricalPropertiesLabel;
@@ -99,7 +102,9 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
-			if (e.getSource() == nameTextField) {
+			if (e.getSource() == annotationTextArea) {
+				changeFreeTextAnnotation();
+			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
 		}
@@ -156,6 +161,10 @@ private void handleException(java.lang.Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	 exception.printStackTrace(System.out);
+}
+
+private void initConnections() throws java.lang.Exception {
+	annotationTextArea.addFocusListener(eventHandler);
 }
 
 private void initialize() {
@@ -262,6 +271,7 @@ private void initialize() {
 		getKineticsTypeComboBox().addActionListener(eventHandler);
 		getKineticsTypeComboBox().setEnabled(false);
 		initKineticChoices();
+		initConnections();
 		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -270,6 +280,21 @@ private void initialize() {
 	// user code end
 }
 
+private void changeFreeTextAnnotation() {
+	try{
+		if(reactionStep == null) {
+			return;
+		}
+		// set text from annotationTextField in free text annotation for simple reactions in vcMetaData (from model)
+		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+			vcMetaData.setFreeTextAnnotation(reactionStep, annotationTextArea.getText());	
+		}
+	} catch(Exception e){
+		e.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this,"Edit Reaction Error\n"+e.getMessage(), e);
+	}
+}
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -309,6 +334,8 @@ private void setReactionStep(ReactionStep newValue) {
 	}
 	// commit the changes before switch to another reaction step
 	changeName();
+	changeFreeTextAnnotation();
+	
 	reactionStep = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
@@ -572,8 +599,10 @@ protected void updateInterface() {
 		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 		updateToggleButtonLabel();
 		nameTextField.setText(reactionStep.getName());
+		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
 	} else {
 		nameTextField.setText(null);
+		annotationTextArea.setText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
 
