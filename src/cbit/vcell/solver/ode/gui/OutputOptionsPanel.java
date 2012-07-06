@@ -68,6 +68,9 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
 				refresh();
 			}
+			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_STEP))) {
+				refresh();
+			}
 			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) {  
 				onPropertyChange_TimeBounds();			
 			}

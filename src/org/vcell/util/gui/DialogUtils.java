@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -36,6 +37,7 @@ import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -329,7 +331,7 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
 	  	if(componentsArr[i] instanceof Container){
 		  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
 			  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
-				  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase("Cancel")){
+				  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase(getCancelText())){
 				  	if(bEnabled){
 					  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
 				  	}else{
@@ -431,16 +433,20 @@ public static int showComponentOKCancelDialog(final Component requester,final Co
 	if (requester instanceof JTable) {
 		newRequester = BeanUtils.findTypeParentOfComponent(requester, Window.class);
 	}
-	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-	final JDialog d = inputDialog.createDialog(newRequester, title);
+	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
+	JDialog d = inputDialog.createDialog(newRequester, title);
 	d.setResizable(true);
 	if (okEnabler != null) {
 		okEnabler.setJOptionPane(inputDialog);
 	}
 	try {
 		DialogUtils.showModalJDialogOnTop(d, newRequester);
-		if(inputDialog.getValue() instanceof Integer){
-			return ((Integer)inputDialog.getValue()).intValue();
+		if(inputDialog.getValue() instanceof String){
+			if(inputDialog.getValue().equals(getOKText())){
+				return JOptionPane.OK_OPTION;
+			}if(inputDialog.getValue().equals(getCancelText())){
+				return JOptionPane.CANCEL_OPTION;
+			}
 		}else if(inputDialog.getValue() == null){
 			return JOptionPane.CLOSED_OPTION;
 		}else if(inputDialog.getValue().equals(JOptionPane.UNINITIALIZED_VALUE)){
@@ -450,6 +456,13 @@ public static int showComponentOKCancelDialog(final Component requester,final Co
 	}finally {
 		d.dispose();
 	}
+}
+
+private static String getOKText(){
+	return UIManager.getString("OptionPane.okButtonText",Locale.getDefault());
+}
+private static String getCancelText(){
+	return UIManager.getString("OptionPane.cancelButtonText",Locale.getDefault());
 }
 
 public static int[] showComponentOKCancelTableList(final Component requester,final String title,

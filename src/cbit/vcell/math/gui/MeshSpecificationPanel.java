@@ -171,7 +171,7 @@ private javax.swing.JLabel getGeometrySizeLabel() {
 		try {
 			ivjGeometrySizeLabel = new javax.swing.JLabel();
 			ivjGeometrySizeLabel.setName("GeometrySizeLabel");
-			ivjGeometrySizeLabel.setText("Geometry Size (�m)");
+			ivjGeometrySizeLabel.setText("Geometry Size (um)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -599,7 +599,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("Spatial Step (�m)"), gbc);
+		add(new JLabel("Spatial Step (um)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
